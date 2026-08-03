@@ -1,6 +1,6 @@
 const fs = require("fs");
 const path = require("path");
-const OwnVehicle = require("../models/OwnVehicle");
+const OwnVehicle = require("../models/ownVehicle");
 
 /* ==========================================
    Upload path
