@@ -22,7 +22,8 @@ import {
 import {
   Bar,
   BarChart,
-  CartesianGrid,
+  Line,
+  LineChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -400,28 +401,39 @@ const Ownvehicledash = () => {
     },
   ];
 
-  const chartData = [
+  const overviewChartData = [
     {
-      name:
-        "Total Vehicles",
+      name: "Total",
       value: totalVehicles,
     },
     {
-      name:
-        "GPS Available",
+      name: "GPS",
       value: gpsAvailable,
     },
     {
-      name: "Without GPS",
+      name: "No GPS",
       value: withoutGps,
     },
     {
-      name:
-        "Purchased This Year",
-      value:
-        purchasedThisYear,
+      name: "This Year",
+      value: purchasedThisYear,
     },
   ];
+
+  const activityChartData = useMemo(() => {
+    const years = Array.from(
+      { length: 6 },
+      (_, index) => currentYear - 5 + index
+    );
+
+    return years.map((year) => ({
+      year: String(year),
+      vehicles: vehicles.filter(
+        (vehicle) =>
+          Number(vehicle.purchaseYear) === year
+      ).length,
+    }));
+  }, [vehicles, currentYear]);
 
   return (
     <div className="own-vehicle-page">
@@ -512,101 +524,179 @@ const Ownvehicledash = () => {
         )}
       </div>
 
-      {/* Chart */}
+      {/* Compact charts */}
 
-      <section className="own-chart-card">
-        <div className="own-chart-header">
-          <h2>
-            Vehicle Overview
-          </h2>
+      <section
+        className="own-mini-charts"
+        aria-label="Own vehicle charts"
+      >
+        <article className="own-mini-chart-card">
+          <div className="own-mini-chart-header">
+            <div>
+              <span>Fleet overview</span>
 
-          <p>
-            Summary of vehicle
-            availability and GPS
-            status.
-          </p>
-        </div>
-
-        <div className="own-chart-wrapper">
-          {isLoading ? (
-            <div className="own-loading-state">
-              Loading vehicle
-              overview...
+              <h2>Vehicle Summary</h2>
             </div>
-          ) : (
-            <ResponsiveContainer
-              width="100%"
-              height="100%"
-            >
-              <BarChart
-                data={chartData}
-                margin={{
-                  top: 15,
-                  right: 20,
-                  left: 0,
-                  bottom: 10,
-                }}
+
+            <strong>
+              {isLoading
+                ? "..."
+                : totalVehicles}
+            </strong>
+          </div>
+
+          <div className="own-mini-chart-body">
+            {isLoading ? (
+              <div className="own-loading-state">
+                Loading chart...
+              </div>
+            ) : (
+              <ResponsiveContainer
+                width="100%"
+                height="100%"
               >
-                <CartesianGrid
-                  strokeDasharray="4 4"
-                  vertical={false}
-                  stroke="#e5eaf2"
-                />
-
-                <XAxis
-                  dataKey="name"
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{
-                    fill:
-                      "#61728e",
-                    fontSize: 12,
+                <BarChart
+                  data={overviewChartData}
+                  margin={{
+                    top: 10,
+                    right: 4,
+                    bottom: 0,
+                    left: 4,
                   }}
-                />
+                  barCategoryGap="28%"
+                >
+                  <XAxis
+                    dataKey="name"
+                    hide
+                  />
 
-                <YAxis
-                  allowDecimals={
-                    false
-                  }
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{
-                    fill:
-                      "#61728e",
-                    fontSize: 12,
-                  }}
-                />
+                  <YAxis hide />
 
-                <Tooltip
-                  cursor={{
-                    fill:
-                      "rgba(23, 71, 159, 0.05)",
-                  }}
-                  contentStyle={{
-                    borderRadius:
-                      "10px",
-                    border:
-                      "1px solid #e1e7f0",
-                    boxShadow:
-                      "0 8px 20px rgba(15, 35, 70, 0.08)",
-                  }}
-                />
+                  <Tooltip
+                    cursor={{
+                      fill:
+                        "rgba(245, 158, 11, 0.08)",
+                    }}
+                    formatter={(value) => [
+                      value,
+                      "Vehicles",
+                    ]}
+                    contentStyle={{
+                      border:
+                        "1px solid #e2e8f0",
+                      borderRadius: "10px",
+                      backgroundColor: "#ffffff",
+                      boxShadow:
+                        "0 10px 24px rgba(15, 23, 42, 0.10)",
+                    }}
+                  />
 
-                <Bar
-                  dataKey="value"
-                  fill="#17479f"
-                  radius={[
-                    8,
-                    8,
-                    0,
-                    0,
-                  ]}
-                  maxBarSize={65}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          )}
-        </div>
+                  <Bar
+                    dataKey="value"
+                    fill="#f59e0b"
+                    radius={[7, 7, 7, 7]}
+                    maxBarSize={38}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+
+          <div className="own-mini-chart-labels">
+            {overviewChartData.map(
+              (item) => (
+                <span key={item.name}>
+                  {item.name}
+                </span>
+              )
+            )}
+          </div>
+        </article>
+
+        <article className="own-mini-chart-card">
+          <div className="own-mini-chart-header">
+            <div>
+              <span>Purchase trend</span>
+
+              <h2>Fleet Growth</h2>
+            </div>
+
+            <strong>
+              {isLoading
+                ? "..."
+                : purchasedThisYear}
+            </strong>
+          </div>
+
+          <div className="own-mini-chart-body">
+            {isLoading ? (
+              <div className="own-loading-state">
+                Loading chart...
+              </div>
+            ) : (
+              <ResponsiveContainer
+                width="100%"
+                height="100%"
+              >
+                <LineChart
+                  data={activityChartData}
+                  margin={{
+                    top: 12,
+                    right: 6,
+                    bottom: 0,
+                    left: 6,
+                  }}
+                >
+                  <XAxis
+                    dataKey="year"
+                    hide
+                  />
+
+                  <YAxis hide />
+
+                  <Tooltip
+                    formatter={(value) => [
+                      value,
+                      "Vehicles purchased",
+                    ]}
+                    labelFormatter={(label) =>
+                      `Year: ${label}`
+                    }
+                    contentStyle={{
+                      border:
+                        "1px solid #e2e8f0",
+                      borderRadius: "10px",
+                      backgroundColor: "#ffffff",
+                      boxShadow:
+                        "0 10px 24px rgba(15, 23, 42, 0.10)",
+                    }}
+                  />
+
+                  <Line
+                    type="monotone"
+                    dataKey="vehicles"
+                    stroke="#7c3aed"
+                    strokeWidth={3}
+                    dot={false}
+                    activeDot={{
+                      r: 4,
+                    }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+
+          <div className="own-mini-chart-years">
+            {activityChartData.map(
+              (item) => (
+                <span key={item.year}>
+                  {item.year}
+                </span>
+              )
+            )}
+          </div>
+        </article>
       </section>
 
       {/* Table */}

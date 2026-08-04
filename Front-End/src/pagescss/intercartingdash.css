@@ -237,69 +237,63 @@
 }
 
 
-/* Site-wise Vehicle Dashboard Chart */
+/* Compact Fleet Charts */
 
-.intercarting-chart-card {
-  min-width: 0;
+.intercarting-mini-charts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
   margin-bottom: 25px;
-  overflow: hidden;
-  border: 1px solid #d4dce8;
-  border-radius: 14px;
+}
+
+.intercarting-mini-chart-card {
+  min-width: 0;
+  min-height: 220px;
+  padding: 22px;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
   background: #ffffff;
-  box-shadow: 0 10px 30px rgba(17, 39, 74, 0.055);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
 }
 
-.intercarting-chart-header {
-  min-height: 84px;
+.intercarting-mini-chart-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: 20px;
-  padding: 18px 20px;
-  border-bottom: 1px solid #e1e7ef;
+  gap: 16px;
+  margin-bottom: 12px;
 }
 
-.intercarting-chart-eyebrow {
-  display: inline-block;
+.intercarting-mini-chart-header span {
+  display: block;
   margin-bottom: 5px;
-  color: #2563eb;
-  font-size: 9px;
-  font-weight: 850;
-  letter-spacing: 0.7px;
+  color: #94a3b8;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
-.intercarting-chart-header h2 {
+.intercarting-mini-chart-header h2 {
   margin: 0;
-  color: #132949;
+  color: #172033;
   font-size: 19px;
+  font-weight: 750;
+  letter-spacing: -0.2px;
+}
+
+.intercarting-mini-chart-header strong {
+  min-width: 42px;
+  color: #0f172a;
+  font-size: 26px;
   font-weight: 800;
+  line-height: 1;
+  text-align: right;
 }
 
-.intercarting-chart-header p {
-  margin: 5px 0 0;
-  color: #8490a2;
-  font-size: 11px;
-}
-
-.intercarting-chart-summary {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 9px 12px;
-  border: 1px solid #dbe7fb;
-  border-radius: 9px;
-  background: #eef4ff;
-  color: #1d5fb7;
-  font-size: 11px;
-  font-weight: 800;
-  white-space: nowrap;
-}
-
-.intercarting-chart-body {
+.intercarting-mini-chart-body {
   width: 100%;
-  height: 390px;
-  padding: 18px 18px 8px 8px;
+  height: 135px;
 }
 
 .intercarting-chart-state {
@@ -307,9 +301,9 @@
   height: 100%;
   display: grid;
   place-items: center;
-  color: #7c899c;
+  color: #64748b;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 /* Vehicle Panel */
@@ -677,21 +671,20 @@
 }
 
 @media (max-width: 780px) {
-  .intercarting-chart-header {
-    align-items: stretch;
-    flex-direction: column;
+  .intercarting-mini-charts {
+    grid-template-columns: 1fr;
   }
 
-  .intercarting-chart-summary {
-    align-self: flex-start;
+  .intercarting-mini-chart-card {
+    min-height: 205px;
+    padding: 18px;
   }
 
-  .intercarting-chart-body {
-    height: 330px;
-    padding: 16px 10px 8px 4px;
+  .intercarting-mini-chart-body {
+    height: 125px;
   }
 
-  .intercarting-dashboard {
+.intercarting-dashboard {
     padding: 15px;
   }
 
@@ -727,6 +720,23 @@
 }
 
 @media (max-width: 520px) {
+  .intercarting-mini-chart-card {
+    padding: 16px;
+    border-radius: 14px;
+  }
+
+  .intercarting-mini-chart-header h2 {
+    font-size: 17px;
+  }
+
+  .intercarting-mini-chart-header strong {
+    font-size: 23px;
+  }
+
+  .intercarting-mini-chart-body {
+    height: 115px;
+  }
+
   .intercarting-chart-body {
     height: 300px;
   }

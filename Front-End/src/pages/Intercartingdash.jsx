@@ -26,9 +26,8 @@ import {
 import {
   Bar,
   BarChart,
-  CartesianGrid,
-  Cell,
-  Legend,
+  Line,
+  LineChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -286,6 +285,29 @@ const Intercartingdash = () => {
         );
     }, [vehicles]);
 
+  const fleetStatusChartData =
+    useMemo(
+      () => [
+        {
+          name: "Total",
+          value: vehicleStatistics.total,
+        },
+        {
+          name: "Active",
+          value: vehicleStatistics.active,
+        },
+        {
+          name: "Maintenance",
+          value: vehicleStatistics.maintenance,
+        },
+        {
+          name: "Off-duty",
+          value: vehicleStatistics.inactive,
+        },
+      ],
+      [vehicleStatistics]
+    );
+
   useEffect(() => {
     setCurrentPage(1);
   }, [searchText]);
@@ -525,145 +547,155 @@ const Intercartingdash = () => {
         </article>
       </section>
 
-      <section className="intercarting-chart-card">
-        <div className="intercarting-chart-header">
-          <div>
-            <span className="intercarting-chart-eyebrow">
-              Vehicle Dashboard
-            </span>
+      <section
+        className="intercarting-mini-charts"
+        aria-label="Fleet charts"
+      >
+        <article className="intercarting-mini-chart-card">
+          <div className="intercarting-mini-chart-header">
+            <div>
+              <span>Fleet overview</span>
+              <h2>Vehicles by Site</h2>
+            </div>
 
-            <h2>
-              Site-wise Vehicle
-              Distribution
-            </h2>
-
-            <p>
-              Number of vehicles
-              assigned to each site.
-            </p>
+            <strong>
+              {vehicleStatistics.total}
+            </strong>
           </div>
 
-          <div className="intercarting-chart-summary">
-            <Car size={18} />
-
-            <span>
-              {
-                vehicleStatistics
-                  .total
-              }{" "}
-              total vehicles
-            </span>
-          </div>
-        </div>
-
-        <div className="intercarting-chart-body">
-          {loading ? (
-            <div className="intercarting-chart-state">
-              Loading chart data...
-            </div>
-          ) : siteWiseChartData
-            .length === 0 ? (
-            <div className="intercarting-chart-state">
-              No site data available.
-            </div>
-          ) : (
-            <ResponsiveContainer
-              width="100%"
-              height="100%"
-            >
-              <BarChart
-                data={
-                  siteWiseChartData
-                }
-                margin={{
-                  top: 12,
-                  right: 16,
-                  bottom: 36,
-                  left: 0,
-                }}
+          <div className="intercarting-mini-chart-body">
+            {loading ? (
+              <div className="intercarting-chart-state">
+                Loading chart...
+              </div>
+            ) : siteWiseChartData.length === 0 ? (
+              <div className="intercarting-chart-state">
+                No site data available.
+              </div>
+            ) : (
+              <ResponsiveContainer
+                width="100%"
+                height="100%"
               >
-                <CartesianGrid
-                  vertical={false}
-                  strokeDasharray="4 4"
-                  stroke="#e3e9f1"
-                />
-
-                <XAxis
-                  dataKey="name"
-                  axisLine={false}
-                  tickLine={false}
-                  interval={0}
-                  angle={-25}
-                  textAnchor="end"
-                  height={78}
-                  tick={{
-                    fill:
-                      "#667085",
-                    fontSize: 11,
+                <BarChart
+                  data={siteWiseChartData}
+                  margin={{
+                    top: 10,
+                    right: 4,
+                    bottom: 0,
+                    left: 4,
                   }}
-                />
-
-                <YAxis
-                  allowDecimals={false}
-                  axisLine={false}
-                  tickLine={false}
-                  width={34}
-                  tick={{
-                    fill:
-                      "#667085",
-                    fontSize: 11,
-                  }}
-                />
-
-                <Tooltip
-                  formatter={(value) => [
-                    value,
-                    "Vehicles",
-                  ]}
-                  labelFormatter={(
-                    label
-                  ) =>
-                    `Site: ${label}`
-                  }
-                />
-
-                <Legend
-                  verticalAlign="top"
-                  align="right"
-                  iconType="circle"
-                />
-
-                <Bar
-                  dataKey="total"
-                  name="Vehicles"
-                  radius={[
-                    6,
-                    6,
-                    0,
-                    0,
-                  ]}
-                  maxBarSize={68}
+                  barCategoryGap="28%"
                 >
-                  {siteWiseChartData.map(
-                    (
-                      entry,
-                      index
-                    ) => (
-                      <Cell
-                        key={`${entry.name}-${entry.total}`}
-                        fill={
-                          index === 0
-                            ? "#1d4ed8"
-                            : "#bfd4f7"
-                        }
-                      />
-                    )
-                  )}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          )}
-        </div>
+                  <XAxis
+                    dataKey="name"
+                    hide
+                  />
+
+                  <YAxis hide />
+
+                  <Tooltip
+                    cursor={{
+                      fill:
+                        "rgba(37, 99, 235, 0.05)",
+                    }}
+                    formatter={(value) => [
+                      value,
+                      "Vehicles",
+                    ]}
+                    labelFormatter={(label) =>
+                      `Site: ${label}`
+                    }
+                    contentStyle={{
+                      border:
+                        "1px solid #e2e8f0",
+                      borderRadius: "10px",
+                      backgroundColor: "#ffffff",
+                      boxShadow:
+                        "0 10px 24px rgba(15, 23, 42, 0.10)",
+                    }}
+                  />
+
+                  <Bar
+                    dataKey="total"
+                    fill="#fbbf24"
+                    radius={[7, 7, 7, 7]}
+                    maxBarSize={34}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+        </article>
+
+        <article className="intercarting-mini-chart-card">
+          <div className="intercarting-mini-chart-header">
+            <div>
+              <span>Operational status</span>
+              <h2>Fleet Activity</h2>
+            </div>
+
+            <strong>
+              {vehicleStatistics.active}
+            </strong>
+          </div>
+
+          <div className="intercarting-mini-chart-body">
+            {loading ? (
+              <div className="intercarting-chart-state">
+                Loading chart...
+              </div>
+            ) : (
+              <ResponsiveContainer
+                width="100%"
+                height="100%"
+              >
+                <LineChart
+                  data={fleetStatusChartData}
+                  margin={{
+                    top: 12,
+                    right: 6,
+                    bottom: 0,
+                    left: 6,
+                  }}
+                >
+                  <XAxis
+                    dataKey="name"
+                    hide
+                  />
+
+                  <YAxis hide />
+
+                  <Tooltip
+                    formatter={(value) => [
+                      value,
+                      "Vehicles",
+                    ]}
+                    contentStyle={{
+                      border:
+                        "1px solid #e2e8f0",
+                      borderRadius: "10px",
+                      backgroundColor: "#ffffff",
+                      boxShadow:
+                        "0 10px 24px rgba(15, 23, 42, 0.10)",
+                    }}
+                  />
+
+                  <Line
+                    type="monotone"
+                    dataKey="value"
+                    stroke="#7c3aed"
+                    strokeWidth={3}
+                    dot={false}
+                    activeDot={{
+                      r: 4,
+                    }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+        </article>
       </section>
 
       <section className="intercarting-vehicle-panel">
