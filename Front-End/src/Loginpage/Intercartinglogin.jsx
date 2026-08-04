@@ -7,7 +7,7 @@ import React, {
 import "./intercartinglogin.css";
 
 const VALID_USERNAME = "admin";
-const VALID_PASSWORD = "admin123";
+const VALID_PASSWORD = "admin@2026";
 
 const Intercarttinglogin = ({
   open,
