@@ -25,7 +25,7 @@ import {
   YAxis,
 } from "recharts";
 
-import "../intercartingcss/intercarting.css";
+import "../Intercartingcss/intercarting.css";
 
 const weeklyChartData = [
   { name: "Mon", value: 180 },

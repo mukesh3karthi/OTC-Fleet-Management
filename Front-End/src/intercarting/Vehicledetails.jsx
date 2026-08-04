@@ -29,7 +29,7 @@ import {
 import Vehicletable from "./Vehicletable";
 import Addvehicles from "./Addvehicles";
 
-import "../Intercartingcss/Vehicledetails.css";
+import "../Intercartingcss/vehicledetails.css";
 
 const API_URL =
   import.meta.env.VITE_VEHICLE_API_URL ||
