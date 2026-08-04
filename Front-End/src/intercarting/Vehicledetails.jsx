@@ -31,12 +31,16 @@ import Addvehicles from "./Addvehicles";
 
 import "../Intercartingcss/vehicledetails.css";
 
+const API_BASE_URL = (
+  import.meta.env.VITE_API_URL ||
+  "http://localhost:5000"
+).replace(/\/+$/, "");
+
 const API_URL =
-  import.meta.env.VITE_VEHICLE_API_URL ||
-  "http://localhost:5000/api/vehicles";
+  `${API_BASE_URL}/api/vehicles`;
 
 const API_OPTIONS = {
-  timeout: 15000,
+  timeout: 60000,
   headers: {
     "Content-Type":
       "application/json",
