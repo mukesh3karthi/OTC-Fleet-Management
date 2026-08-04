@@ -33,10 +33,13 @@ import Ownvehiclelogin from "../Loginpage/Ownvehiclelogin";
 
 import "./ownvehicledash.css";
 
+const API_BASE_URL = (
+  import.meta.env.VITE_API_URL ||
+  "http://localhost:5000"
+).replace(/\/+$/, "");
+
 const OWN_VEHICLE_API =
-  import.meta.env
-    .VITE_OWN_VEHICLE_API_URL ||
-  "http://localhost:5000/api/ownvehicles";
+  `${API_BASE_URL}/api/ownvehicles`;
 
 const RECORDS_PER_PAGE = 5;
 
@@ -180,7 +183,7 @@ const Ownvehicledash = () => {
           await axios.get(
             OWN_VEHICLE_API,
             {
-              timeout: 10000,
+              timeout: 60000,
             }
           );
 

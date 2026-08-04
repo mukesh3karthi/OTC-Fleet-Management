@@ -17,7 +17,11 @@ import {
 
 import "./documentuploadmodal.css";
 
-const BACKEND_URL = "http://localhost:5000";
+const BACKEND_URL = (
+  import.meta.env.VITE_API_URL ||
+  "http://localhost:5000"
+).replace(/\/+$/, "");
+
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const ALLOWED_FILE_TYPES = ["application/pdf", "image/jpeg", "image/png"];
 
@@ -144,9 +148,9 @@ const getDocumentUrl = (documentData) => {
 const hasStoredDocument = (documentData) =>
   Boolean(
     getStoredPath(documentData) ||
-      documentData?.fileName ||
-      documentData?.filename ||
-      documentData?.originalName
+    documentData?.fileName ||
+    documentData?.filename ||
+    documentData?.originalName
   );
 
 const getStoredFileName = (documentData, fallbackTitle) =>
@@ -504,11 +508,9 @@ const DocumentUploadModal = ({
                 return (
                   <article
                     key={key}
-                    className={`document-upload-card ${
-                      documentAvailable ? "file-selected" : ""
-                    } ${uploadMode ? "upload-mode" : ""} ${
-                      documentData.replacementRequired ? "replacement-required" : ""
-                    }`}
+                    className={`document-upload-card ${documentAvailable ? "file-selected" : ""
+                      } ${uploadMode ? "upload-mode" : ""} ${documentData.replacementRequired ? "replacement-required" : ""
+                      }`}
                     role="button"
                     tabIndex={saving ? -1 : 0}
                     aria-label={`${title}: ${statusText}`}
@@ -585,9 +587,8 @@ const DocumentUploadModal = ({
         <footer className="document-upload-footer">
           <div className="document-upload-summary">
             {availableDocumentCount > 0
-              ? `${availableDocumentCount} document${
-                  availableDocumentCount === 1 ? "" : "s"
-                } available`
+              ? `${availableDocumentCount} document${availableDocumentCount === 1 ? "" : "s"
+              } available`
               : "No documents uploaded"}
 
             {newFileCount > 0 && (
