@@ -7,15 +7,21 @@ import axios from "axios";
 
 import DashChart from "../Charts/DashChart";
 
-const API_URL =
-  "http://localhost:5000/";
+const API_BASE_URL = (
+  import.meta.env.VITE_API_URL ||
+  "http://localhost:5000"
+).replace(/\/+$/, "");
 
 const DashContent = () => {
-  const [serverMessage, setServerMessage] =
-    useState("");
+  const [
+    serverMessage,
+    setServerMessage,
+  ] = useState("");
 
-  const [serverError, setServerError] =
-    useState("");
+  const [
+    serverError,
+    setServerError,
+  ] = useState("");
 
   useEffect(() => {
     let isMounted = true;
@@ -23,9 +29,12 @@ const DashContent = () => {
     const fetchData = async () => {
       try {
         const response =
-          await axios.get(API_URL, {
-            timeout: 10000,
-          });
+          await axios.get(
+            API_BASE_URL,
+            {
+              timeout: 60000,
+            }
+          );
 
         if (!isMounted) {
           return;
@@ -33,12 +42,13 @@ const DashContent = () => {
 
         const message =
           typeof response.data ===
-          "string"
+            "string"
             ? response.data
             : response.data?.message;
 
         setServerMessage(
-          message || "Server connected"
+          message ||
+          "Server connected"
         );
 
         setServerError("");
@@ -50,10 +60,14 @@ const DashContent = () => {
         console.error(
           "Dashboard API error:",
           error.response?.data ||
-            error.message
+          error.message
         );
 
+        setServerMessage("");
+
         setServerError(
+          error.response?.data
+            ?.message ||
           "Unable to connect to the backend server."
         );
       }
@@ -72,7 +86,8 @@ const DashContent = () => {
         <h1>Welcome</h1>
 
         <p>
-          Thinking the way forward...
+          Thinking the way
+          forward...
         </p>
       </header>
 

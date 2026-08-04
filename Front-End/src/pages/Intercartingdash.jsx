@@ -39,8 +39,13 @@ import Intercarttinglogin from "../Loginpage/Intercartinglogin";
 
 import "../pagescss/intercartingdash.css";
 
+const API_BASE_URL = (
+  import.meta.env.VITE_API_URL ||
+  "http://localhost:5000"
+).replace(/\/+$/, "");
+
 const VEHICLE_API =
-  "http://localhost:5000/api/vehicles";
+  `${API_BASE_URL}/api/vehicles`;
 
 const RECORDS_PER_PAGE = 15;
 
@@ -127,7 +132,7 @@ const Intercartingdash = () => {
           await axios.get(
             VEHICLE_API,
             {
-              timeout: 10000,
+              timeout: 60000,
             }
           );
 
@@ -836,8 +841,8 @@ const Intercartingdash = () => {
                         <td>
                           <span
                             className={`intercarting-status ${status.isActive
-                                ? "active"
-                                : "inactive"
+                              ? "active"
+                              : "inactive"
                               }`}
                           >
                             {

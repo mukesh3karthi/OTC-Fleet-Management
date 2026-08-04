@@ -27,11 +27,16 @@ import DocumentUploadModal, {
 
 import Ownvehiclemodal from "../Ownvehicledetails/Ownvehiclemodal";
 
+const API_BASE_URL = (
+  import.meta.env.VITE_API_URL ||
+  "http://localhost:5000"
+).replace(/\/+$/, "");
+
 const OWN_VEHICLE_API =
-  "http://localhost:5000/api/ownvehicles";
+  `${API_BASE_URL}/api/ownvehicles`;
 
 const API_OPTIONS = {
-  timeout: 10000,
+  timeout: 60000,
 };
 
 const RECORDS_PER_PAGE = 4;

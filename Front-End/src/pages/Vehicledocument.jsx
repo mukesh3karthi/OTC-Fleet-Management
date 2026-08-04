@@ -32,11 +32,15 @@ import {
 
 import "../pagescss/vehicledocument.css";
 
-const OWN_VEHICLE_API =
-  "http://localhost:5000/api/ownvehicles";
+const API_BASE_URL = (
+  import.meta.env.VITE_API_URL ||
+  "http://localhost:5000"
+).replace(/\/+$/, "");
 
-const BACKEND_URL =
-  "http://localhost:5000";
+const OWN_VEHICLE_API =
+  `${API_BASE_URL}/api/ownvehicles`;
+
+const BACKEND_URL = API_BASE_URL;
 
 const CURRENT_YEAR =
   new Date().getFullYear();
@@ -560,7 +564,7 @@ const Vehicledocument = () => {
           await axios.get(
             OWN_VEHICLE_API,
             {
-              timeout: 10000,
+              timeout: 60000,
             }
           );
 
