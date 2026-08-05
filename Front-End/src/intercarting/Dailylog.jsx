@@ -240,7 +240,7 @@ const getVehicleForSelectedDate = (vehicle, dateValue) => {
 
   const previousDateKey = getPreviousDateKey(selectedDateKey);
 
-  const previousLoadIdle =
+  const previousDayLoadIdle =
     previousDateKey &&
     Object.prototype.hasOwnProperty.call(
       dailyLoadIdleLogs,
@@ -249,9 +249,26 @@ const getVehicleForSelectedDate = (vehicle, dateValue) => {
       ? String(dailyLoadIdleLogs[previousDateKey] || "")
       : "";
 
+  /*
+    When the selected date has no saved Load / Idle value:
+    1. Copy the exact previous day's saved value.
+    2. For older records that only have the top-level loadIdle field,
+       use that value when moving to a later date.
+    The copied value remains editable in the modal.
+  */
+  const fallbackLoadIdle =
+    previousDayLoadIdle ||
+    (
+      selectedDateKey &&
+      lastSavedDate &&
+      selectedDateKey > lastSavedDate
+        ? String(vehicle?.loadIdle || "")
+        : ""
+    );
+
   const selectedLoadIdle = hasSelectedLoadIdle
     ? String(dailyLoadIdleLogs[selectedDateKey] || "")
-    : previousLoadIdle;
+    : fallbackLoadIdle;
 
   let selectedStartingKm = Number(vehicle?.startingKm || 0);
   let selectedClosingKm = hasSelectedDateLog
