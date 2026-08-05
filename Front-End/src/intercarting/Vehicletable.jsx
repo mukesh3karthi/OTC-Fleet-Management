@@ -66,20 +66,20 @@ const Vehicletable = ({
   );
 
   const getVehicleId = (vehicle) => {
-    const vehicleId =
+    const rawId =
       vehicle?.id ??
       vehicle?.vehicleId ??
       null;
 
     if (
-      vehicleId === null ||
-      vehicleId === undefined ||
-      vehicleId === ""
+      rawId === null ||
+      rawId === undefined ||
+      rawId === ""
     ) {
       return null;
     }
 
-    const numericId = Number(vehicleId);
+    const numericId = Number(rawId);
 
     return Number.isInteger(numericId) &&
       numericId > 0
@@ -588,9 +588,9 @@ const Vehicletable = ({
                           }
                           type="button"
                           className={`menu-btn ${openMenuKey ===
-                              vehicleKey
-                              ? "menu-btn-active"
-                              : ""
+                            vehicleKey
+                            ? "menu-btn-active"
+                            : ""
                             }`}
                           aria-label={`Open actions for ${vehicle.vehicleNumber ||
                             "vehicle"

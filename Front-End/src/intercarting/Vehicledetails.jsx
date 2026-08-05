@@ -49,11 +49,27 @@ const API_OPTIONS = {
 
 const RECORDS_PER_PAGE = 10;
 
-const getVehicleId = (vehicle) =>
-  vehicle?._id ??
-  vehicle?.id ??
-  vehicle?.vehicleId ??
-  null;
+const getVehicleId = (vehicle) => {
+  const rawId =
+    vehicle?.id ??
+    vehicle?.vehicleId ??
+    null;
+
+  if (
+    rawId === null ||
+    rawId === undefined ||
+    rawId === ""
+  ) {
+    return null;
+  }
+
+  const numericId = Number(rawId);
+
+  return Number.isInteger(numericId) &&
+    numericId > 0
+    ? numericId
+    : null;
+};
 
 const getVehicleStatus = (
   vehicle
@@ -73,11 +89,11 @@ const getVehicleStatus = (
 
   if (
     storedStatus ===
-      "inactive" ||
+    "inactive" ||
     storedStatus ===
-      "off duty" ||
+    "off duty" ||
     storedStatus ===
-      "off-duty"
+    "off-duty"
   ) {
     return "Inactive";
   }
@@ -117,7 +133,7 @@ const VehicleModal = ({
   ) => {
     if (
       event.target ===
-        event.currentTarget &&
+      event.currentTarget &&
       !disabled
     ) {
       onClose();
@@ -207,12 +223,12 @@ const Vehicledetails = () => {
         )
           ? response.data.vehicles
           : Array.isArray(
-                response.data?.data
-              )
+            response.data?.data
+          )
             ? response.data.data
             : Array.isArray(
-                  response.data
-                )
+              response.data
+            )
               ? response.data
               : [];
 
@@ -221,7 +237,7 @@ const Vehicledetails = () => {
       console.error(
         "Fetch vehicles error:",
         error.response?.data ||
-          error.message
+        error.message
       );
 
       setVehicles([]);
@@ -229,8 +245,8 @@ const Vehicledetails = () => {
       setPageError(
         error.response?.data
           ?.message ||
-          error.message ||
-          "Unable to load vehicles."
+        error.message ||
+        "Unable to load vehicles."
       );
     } finally {
       setLoading(false);
@@ -373,7 +389,7 @@ const Vehicledetails = () => {
       console.error(
         "Save vehicle error:",
         error.response?.data ||
-          error.message
+        error.message
       );
 
       const message =
@@ -430,14 +446,14 @@ const Vehicledetails = () => {
         console.error(
           "Delete vehicle error:",
           error.response?.data ||
-            error.message
+          error.message
         );
 
         setPageError(
           error.response?.data
             ?.message ||
-            error.message ||
-            "Unable to delete vehicle."
+          error.message ||
+          "Unable to delete vehicle."
         );
       } finally {
         setDeletingVehicleId(
@@ -483,7 +499,7 @@ const Vehicledetails = () => {
 
           const matchesStatus =
             status ===
-              "All Status" ||
+            "All Status" ||
             getVehicleStatus(
               vehicle
             ) === status;
@@ -511,7 +527,7 @@ const Vehicledetails = () => {
     1,
     Math.ceil(
       totalRecords /
-        RECORDS_PER_PAGE
+      RECORDS_PER_PAGE
     )
   );
 
@@ -533,13 +549,13 @@ const Vehicledetails = () => {
     totalRecords === 0
       ? 0
       : (currentPage - 1) *
-          RECORDS_PER_PAGE +
-        1;
+      RECORDS_PER_PAGE +
+      1;
 
   const lastVisibleRecord =
     Math.min(
       currentPage *
-        RECORDS_PER_PAGE,
+      RECORDS_PER_PAGE,
       totalRecords
     );
 
@@ -869,7 +885,7 @@ const Vehicledetails = () => {
                   }
                   className={
                     currentPage ===
-                    pageNumber
+                      pageNumber
                       ? "active"
                       : ""
                   }
