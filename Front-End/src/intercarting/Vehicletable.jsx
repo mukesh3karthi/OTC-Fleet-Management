@@ -65,25 +65,38 @@ const Vehicletable = ({
     indexOfLast
   );
 
-  const getVehicleId = (vehicle) =>
-    vehicle?._id ?? vehicle?.id ?? null;
+  const getVehicleId = (vehicle) => {
+    const vehicleId =
+      vehicle?.id ??
+      vehicle?.vehicleId ??
+      null;
+
+    if (
+      vehicleId === null ||
+      vehicleId === undefined ||
+      vehicleId === ""
+    ) {
+      return null;
+    }
+
+    const numericId = Number(vehicleId);
+
+    return Number.isInteger(numericId) &&
+      numericId > 0
+      ? numericId
+      : null;
+  };
 
   const getVehicleKey = (
     vehicle,
     index
   ) => {
-    const vehicleId =
-      getVehicleId(vehicle);
-
-    if (vehicleId !== null) {
-      return String(vehicleId);
-    }
-
-    return [
-      vehicle?.vehicleNumber || "vehicle",
-      vehicle?.driverNumber || "driver",
-      indexOfFirst + index,
-    ].join("-");
+    return String(
+      vehicle?._id ??
+      vehicle?.id ??
+      vehicle?.vehicleId ??
+      `${vehicle?.vehicleNumber || "vehicle"}-${indexOfFirst + index}`
+    );
   };
 
   const getVehicleStatus = (vehicle) => {
@@ -209,7 +222,7 @@ const Vehicletable = ({
     if (
       left + ACTION_MENU_WIDTH >
       window.innerWidth -
-        SCREEN_PADDING
+      SCREEN_PADDING
     ) {
       left =
         window.innerWidth -
@@ -224,7 +237,7 @@ const Vehicletable = ({
     if (
       top + ACTION_MENU_HEIGHT >
       window.innerHeight -
-        SCREEN_PADDING
+      SCREEN_PADDING
     ) {
       top =
         buttonRect.top -
@@ -569,21 +582,19 @@ const Vehicletable = ({
                         <button
                           ref={
                             openMenuKey ===
-                            vehicleKey
+                              vehicleKey
                               ? menuButtonRef
                               : null
                           }
                           type="button"
-                          className={`menu-btn ${
-                            openMenuKey ===
-                            vehicleKey
+                          className={`menu-btn ${openMenuKey ===
+                              vehicleKey
                               ? "menu-btn-active"
                               : ""
-                          }`}
-                          aria-label={`Open actions for ${
-                            vehicle.vehicleNumber ||
+                            }`}
+                          aria-label={`Open actions for ${vehicle.vehicleNumber ||
                             "vehicle"
-                          }`}
+                            }`}
                           aria-haspopup="menu"
                           aria-expanded={
                             openMenuKey ===
@@ -634,10 +645,9 @@ const Vehicletable = ({
               left: `${menuPosition.left}px`,
             }}
             role="menu"
-            aria-label={`Actions for ${
-              selectedVehicle.vehicleNumber ||
+            aria-label={`Actions for ${selectedVehicle.vehicleNumber ||
               "vehicle"
-            }`}
+              }`}
             onMouseDown={(event) =>
               event.stopPropagation()
             }
