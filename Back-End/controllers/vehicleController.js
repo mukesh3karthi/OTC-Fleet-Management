@@ -10,31 +10,59 @@ const formatVehicleNumber = (value) =>
     .replace(/\s+/g, "")
     .toUpperCase();
 
-const toTrimmedString = (value, fallback = "") =>
+const toTrimmedString = (
+  value,
+  fallback = ""
+) =>
   String(value ?? fallback).trim();
 
-const toLowercaseString = (value, fallback = "") =>
-  toTrimmedString(value, fallback).toLowerCase();
+const toLowercaseString = (
+  value,
+  fallback = ""
+) =>
+  toTrimmedString(
+    value,
+    fallback
+  ).toLowerCase();
 
-const toFiniteNumber = (value, fallback = 0) => {
-  if (value === "" || value === null || value === undefined) {
+const toFiniteNumber = (
+  value,
+  fallback = 0
+) => {
+  if (
+    value === "" ||
+    value === null ||
+    value === undefined
+  ) {
     return fallback;
   }
 
   const number = Number(value);
-  return Number.isFinite(number) ? number : fallback;
+
+  return Number.isFinite(number)
+    ? number
+    : fallback;
 };
 
-const toBoolean = (value, fallback = true) => {
+const toBoolean = (
+  value,
+  fallback = true
+) => {
   if (typeof value === "boolean") {
     return value;
   }
 
   if (typeof value === "string") {
-    const normalized = value.trim().toLowerCase();
+    const normalized =
+      value.trim().toLowerCase();
 
-    if (normalized === "true") return true;
-    if (normalized === "false") return false;
+    if (normalized === "true") {
+      return true;
+    }
+
+    if (normalized === "false") {
+      return false;
+    }
   }
 
   return fallback;
@@ -46,48 +74,124 @@ const mapToObject = (value) => {
   }
 
   if (value instanceof Map) {
-    return Object.fromEntries(value.entries());
+    return Object.fromEntries(
+      value.entries()
+    );
   }
 
-  if (typeof value.toObject === "function") {
-    const converted = value.toObject();
+  if (
+    typeof value.toObject ===
+    "function"
+  ) {
+    const converted =
+      value.toObject();
 
-    if (converted && typeof converted === "object") {
-      return { ...converted };
+    if (
+      converted &&
+      typeof converted ===
+        "object"
+    ) {
+      return {
+        ...converted,
+      };
     }
   }
 
-  if (typeof value === "object" && !Array.isArray(value)) {
-    return { ...value };
+  if (
+    typeof value === "object" &&
+    !Array.isArray(value)
+  ) {
+    return {
+      ...value,
+    };
   }
 
   return {};
 };
 
-const isValidNumericId = (value) =>
-  Number.isInteger(value) && value > 0;
+const isValidNumericId = (
+  value
+) =>
+  Number.isInteger(value) &&
+  value > 0;
 
-const isValidDateKey = (value) =>
-  /^\d{4}-\d{2}-\d{2}$/.test(String(value ?? ""));
+const isValidDateKey = (
+  value
+) =>
+  /^\d{4}-\d{2}-\d{2}$/.test(
+    String(value ?? "")
+  );
+
+const getLatestPreviousText = (
+  logs,
+  selectedDate
+) => {
+  if (
+    !logs ||
+    typeof logs !== "object" ||
+    !selectedDate
+  ) {
+    return "";
+  }
+
+  const previousDates =
+    Object.keys(logs)
+      .map((date) =>
+        String(date).slice(0, 10)
+      )
+      .filter(
+        (date) =>
+          /^\d{4}-\d{2}-\d{2}$/.test(
+            date
+          ) &&
+          date < selectedDate &&
+          String(
+            logs[date] ?? ""
+          ).trim()
+      )
+      .sort((first, second) =>
+        second.localeCompare(first)
+      );
+
+  if (
+    previousDates.length === 0
+  ) {
+    return "";
+  }
+
+  return String(
+    logs[previousDates[0]] ?? ""
+  ).trim();
+};
 
 /* =========================================
    GET ALL VEHICLES
 ========================================= */
 
-const getVehicles = async (req, res) => {
+const getVehicles = async (
+  req,
+  res
+) => {
   try {
-    const vehicles = await Vehicle.find().sort({ id: 1 });
+    const vehicles =
+      await Vehicle.find().sort({
+        id: 1,
+      });
 
     return res.status(200).json({
       success: true,
       vehicles,
     });
   } catch (error) {
-    console.error("Get vehicles error:", error);
+    console.error(
+      "Get vehicles error:",
+      error
+    );
 
     return res.status(500).json({
       success: false,
-      message: "Unable to fetch vehicles.",
+      message:
+        "Unable to fetch vehicles.",
     });
   }
 };
@@ -96,25 +200,35 @@ const getVehicles = async (req, res) => {
    GET SINGLE VEHICLE
 ========================================= */
 
-const getVehicleById = async (req, res) => {
+const getVehicleById = async (
+  req,
+  res
+) => {
   try {
-    const vehicleId = Number(req.params.id);
+    const vehicleId = Number(
+      req.params.id
+    );
 
-    if (!isValidNumericId(vehicleId)) {
+    if (
+      !isValidNumericId(vehicleId)
+    ) {
       return res.status(400).json({
         success: false,
-        message: "Invalid vehicle ID.",
+        message:
+          "Invalid vehicle ID.",
       });
     }
 
-    const vehicle = await Vehicle.findOne({
-      id: vehicleId,
-    });
+    const vehicle =
+      await Vehicle.findOne({
+        id: vehicleId,
+      });
 
     if (!vehicle) {
       return res.status(404).json({
         success: false,
-        message: "Vehicle not found.",
+        message:
+          "Vehicle not found.",
       });
     }
 
@@ -123,11 +237,15 @@ const getVehicleById = async (req, res) => {
       vehicle,
     });
   } catch (error) {
-    console.error("Get vehicle error:", error);
+    console.error(
+      "Get vehicle error:",
+      error
+    );
 
     return res.status(500).json({
       success: false,
-      message: "Unable to fetch vehicle.",
+      message:
+        "Unable to fetch vehicle.",
     });
   }
 };
@@ -136,95 +254,139 @@ const getVehicleById = async (req, res) => {
    ADD VEHICLE
 ========================================= */
 
-const addVehicle = async (req, res) => {
+const addVehicle = async (
+  req,
+  res
+) => {
   try {
-    const vehicleNumber = formatVehicleNumber(
-      req.body.vehicleNumber
-    );
+    const vehicleNumber =
+      formatVehicleNumber(
+        req.body.vehicleNumber
+      );
 
     if (!vehicleNumber) {
       return res.status(400).json({
         success: false,
-        message: "Vehicle number is required.",
+        message:
+          "Vehicle number is required.",
       });
     }
 
-    const duplicateVehicle = await Vehicle.findOne({
-      vehicleNumber,
-    });
+    const duplicateVehicle =
+      await Vehicle.findOne({
+        vehicleNumber,
+      });
 
     if (duplicateVehicle) {
       return res.status(409).json({
         success: false,
-        message: "Vehicle number already exists.",
+        message:
+          "Vehicle number already exists.",
       });
     }
 
-    const lastVehicle = await Vehicle.findOne()
-      .sort({ id: -1 })
-      .select("id")
-      .lean();
+    const lastVehicle =
+      await Vehicle.findOne()
+        .sort({
+          id: -1,
+        })
+        .select("id")
+        .lean();
 
     const nextId = lastVehicle
       ? Number(lastVehicle.id) + 1
       : 1;
 
-    const newVehicle = await Vehicle.create({
-      id: nextId,
-      vehicleNumber,
-      status: toTrimmedString(
-        req.body.status,
-        "Active"
-      ),
-      manufacturingYear: toTrimmedString(
-        req.body.manufacturingYear
-      ),
-      siteName: toTrimmedString(
-        req.body.siteName
-      ),
-      vehicleType: toTrimmedString(
-        req.body.vehicleType
-      ),
-      transportProvider: toTrimmedString(
-        req.body.transportProvider
-      ),
-      dieselScope: toTrimmedString(
-        req.body.dieselScope
-      ),
-      hireAmount: toTrimmedString(
-        req.body.hireAmount
-      ),
-      vehicleInDate: toTrimmedString(
-        req.body.vehicleInDate
-      ),
-      vehicleOutDate: toTrimmedString(
-        req.body.vehicleOutDate
-      ),
-      driverName: toTrimmedString(
-        req.body.driverName
-      ),
-      driverNumber: toTrimmedString(
-        req.body.driverNumber
-      ),
-      vendorName: toTrimmedString(
-        req.body.vendorName
-      ),
-      vendorEmail: toLowercaseString(
-        req.body.vendorEmail
-      ),
-      activeStatus: toBoolean(
-        req.body.activeStatus,
-        true
-      ),
-    });
+    const newVehicle =
+      await Vehicle.create({
+        id: nextId,
+
+        vehicleNumber,
+
+        status: toTrimmedString(
+          req.body.status,
+          "Active"
+        ),
+
+        manufacturingYear:
+          toTrimmedString(
+            req.body
+              .manufacturingYear
+          ),
+
+        siteName:
+          toTrimmedString(
+            req.body.siteName
+          ),
+
+        vehicleType:
+          toTrimmedString(
+            req.body.vehicleType
+          ),
+
+        transportProvider:
+          toTrimmedString(
+            req.body
+              .transportProvider
+          ),
+
+        dieselScope:
+          toTrimmedString(
+            req.body.dieselScope
+          ),
+
+        hireAmount:
+          toTrimmedString(
+            req.body.hireAmount
+          ),
+
+        vehicleInDate:
+          toTrimmedString(
+            req.body.vehicleInDate
+          ),
+
+        vehicleOutDate:
+          toTrimmedString(
+            req.body.vehicleOutDate
+          ),
+
+        driverName:
+          toTrimmedString(
+            req.body.driverName
+          ),
+
+        driverNumber:
+          toTrimmedString(
+            req.body.driverNumber
+          ),
+
+        vendorName:
+          toTrimmedString(
+            req.body.vendorName
+          ),
+
+        vendorEmail:
+          toLowercaseString(
+            req.body.vendorEmail
+          ),
+
+        activeStatus: toBoolean(
+          req.body.activeStatus,
+          true
+        ),
+      });
 
     return res.status(201).json({
       success: true,
-      message: "Vehicle added successfully.",
+      message:
+        "Vehicle added successfully.",
       vehicle: newVehicle,
     });
   } catch (error) {
-    console.error("Add vehicle error:", error);
+    console.error(
+      "Add vehicle error:",
+      error
+    );
 
     if (error?.code === 11000) {
       return res.status(409).json({
@@ -237,7 +399,8 @@ const addVehicle = async (req, res) => {
     return res.status(500).json({
       success: false,
       message:
-        error.message || "Unable to add vehicle.",
+        error.message ||
+        "Unable to add vehicle.",
     });
   }
 };
@@ -246,49 +409,66 @@ const addVehicle = async (req, res) => {
    UPDATE VEHICLE
 ========================================= */
 
-const updateVehicle = async (req, res) => {
+const updateVehicle = async (
+  req,
+  res
+) => {
   try {
-    const vehicleId = Number(req.params.id);
+    const vehicleId = Number(
+      req.params.id
+    );
 
-    if (!isValidNumericId(vehicleId)) {
+    if (
+      !isValidNumericId(vehicleId)
+    ) {
       return res.status(400).json({
         success: false,
-        message: "Invalid vehicle ID.",
+        message:
+          "Invalid vehicle ID.",
       });
     }
 
-    const currentVehicle = await Vehicle.findOne({
-      id: vehicleId,
-    });
+    const currentVehicle =
+      await Vehicle.findOne({
+        id: vehicleId,
+      });
 
     if (!currentVehicle) {
       return res.status(404).json({
         success: false,
-        message: "Vehicle not found.",
+        message:
+          "Vehicle not found.",
       });
     }
 
-    const vehicleNumber = formatVehicleNumber(
-      req.body.vehicleNumber ??
-        currentVehicle.vehicleNumber
-    );
+    const vehicleNumber =
+      formatVehicleNumber(
+        req.body.vehicleNumber ??
+          currentVehicle
+            .vehicleNumber
+      );
 
     if (!vehicleNumber) {
       return res.status(400).json({
         success: false,
-        message: "Vehicle number is required.",
+        message:
+          "Vehicle number is required.",
       });
     }
 
-    const duplicateVehicle = await Vehicle.findOne({
-      vehicleNumber,
-      id: { $ne: vehicleId },
-    });
+    const duplicateVehicle =
+      await Vehicle.findOne({
+        vehicleNumber,
+        id: {
+          $ne: vehicleId,
+        },
+      });
 
     if (duplicateVehicle) {
       return res.status(409).json({
         success: false,
-        message: "Vehicle number already exists.",
+        message:
+          "Vehicle number already exists.",
       });
     }
 
@@ -297,68 +477,90 @@ const updateVehicle = async (req, res) => {
 
       status: toTrimmedString(
         req.body.status,
-        currentVehicle.status || "Active"
+        currentVehicle.status ||
+          "Active"
       ),
 
-      manufacturingYear: toTrimmedString(
-        req.body.manufacturingYear,
-        currentVehicle.manufacturingYear
-      ),
+      manufacturingYear:
+        toTrimmedString(
+          req.body
+            .manufacturingYear,
+          currentVehicle
+            .manufacturingYear
+        ),
 
-      siteName: toTrimmedString(
-        req.body.siteName,
-        currentVehicle.siteName
-      ),
+      siteName:
+        toTrimmedString(
+          req.body.siteName,
+          currentVehicle.siteName
+        ),
 
-      vehicleType: toTrimmedString(
-        req.body.vehicleType,
-        currentVehicle.vehicleType
-      ),
+      vehicleType:
+        toTrimmedString(
+          req.body.vehicleType,
+          currentVehicle
+            .vehicleType
+        ),
 
-      transportProvider: toTrimmedString(
-        req.body.transportProvider,
-        currentVehicle.transportProvider
-      ),
+      transportProvider:
+        toTrimmedString(
+          req.body
+            .transportProvider,
+          currentVehicle
+            .transportProvider
+        ),
 
-      dieselScope: toTrimmedString(
-        req.body.dieselScope,
-        currentVehicle.dieselScope
-      ),
+      dieselScope:
+        toTrimmedString(
+          req.body.dieselScope,
+          currentVehicle
+            .dieselScope
+        ),
 
-      hireAmount: toTrimmedString(
-        req.body.hireAmount,
-        currentVehicle.hireAmount
-      ),
+      hireAmount:
+        toTrimmedString(
+          req.body.hireAmount,
+          currentVehicle.hireAmount
+        ),
 
-      vehicleInDate: toTrimmedString(
-        req.body.vehicleInDate,
-        currentVehicle.vehicleInDate
-      ),
+      vehicleInDate:
+        toTrimmedString(
+          req.body.vehicleInDate,
+          currentVehicle
+            .vehicleInDate
+        ),
 
-      vehicleOutDate: toTrimmedString(
-        req.body.vehicleOutDate,
-        currentVehicle.vehicleOutDate
-      ),
+      vehicleOutDate:
+        toTrimmedString(
+          req.body.vehicleOutDate,
+          currentVehicle
+            .vehicleOutDate
+        ),
 
-      driverName: toTrimmedString(
-        req.body.driverName,
-        currentVehicle.driverName
-      ),
+      driverName:
+        toTrimmedString(
+          req.body.driverName,
+          currentVehicle.driverName
+        ),
 
-      driverNumber: toTrimmedString(
-        req.body.driverNumber,
-        currentVehicle.driverNumber
-      ),
+      driverNumber:
+        toTrimmedString(
+          req.body.driverNumber,
+          currentVehicle
+            .driverNumber
+        ),
 
-      vendorName: toTrimmedString(
-        req.body.vendorName,
-        currentVehicle.vendorName
-      ),
+      vendorName:
+        toTrimmedString(
+          req.body.vendorName,
+          currentVehicle.vendorName
+        ),
 
-      vendorEmail: toLowercaseString(
-        req.body.vendorEmail,
-        currentVehicle.vendorEmail
-      ),
+      vendorEmail:
+        toLowercaseString(
+          req.body.vendorEmail,
+          currentVehicle.vendorEmail
+        ),
 
       activeStatus: toBoolean(
         req.body.activeStatus,
@@ -368,7 +570,9 @@ const updateVehicle = async (req, res) => {
 
     const updatedVehicle =
       await Vehicle.findOneAndUpdate(
-        { id: vehicleId },
+        {
+          id: vehicleId,
+        },
         {
           $set: updatedData,
         },
@@ -380,16 +584,21 @@ const updateVehicle = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: "Vehicle updated successfully.",
+      message:
+        "Vehicle updated successfully.",
       vehicle: updatedVehicle,
     });
   } catch (error) {
-    console.error("Update vehicle error:", error);
+    console.error(
+      "Update vehicle error:",
+      error
+    );
 
     if (error?.code === 11000) {
       return res.status(409).json({
         success: false,
-        message: "Vehicle number already exists.",
+        message:
+          "Vehicle number already exists.",
       });
     }
 
@@ -406,14 +615,22 @@ const updateVehicle = async (req, res) => {
    DELETE VEHICLE
 ========================================= */
 
-const deleteVehicle = async (req, res) => {
+const deleteVehicle = async (
+  req,
+  res
+) => {
   try {
-    const vehicleId = Number(req.params.id);
+    const vehicleId = Number(
+      req.params.id
+    );
 
-    if (!isValidNumericId(vehicleId)) {
+    if (
+      !isValidNumericId(vehicleId)
+    ) {
       return res.status(400).json({
         success: false,
-        message: "Invalid vehicle ID.",
+        message:
+          "Invalid vehicle ID.",
       });
     }
 
@@ -425,17 +642,22 @@ const deleteVehicle = async (req, res) => {
     if (!deletedVehicle) {
       return res.status(404).json({
         success: false,
-        message: "Vehicle not found.",
+        message:
+          "Vehicle not found.",
       });
     }
 
     return res.status(200).json({
       success: true,
-      message: "Vehicle deleted successfully.",
+      message:
+        "Vehicle deleted successfully.",
       vehicle: deletedVehicle,
     });
   } catch (error) {
-    console.error("Delete vehicle error:", error);
+    console.error(
+      "Delete vehicle error:",
+      error
+    );
 
     return res.status(500).json({
       success: false,
@@ -451,14 +673,19 @@ const deleteVehicle = async (req, res) => {
    PUT /api/vehicles/daily-log/bulk
 ========================================= */
 
-const bulkUpdateDailyLog = async (req, res) => {
+const bulkUpdateDailyLog = async (
+  req,
+  res
+) => {
   try {
     const {
       selectedDate,
       vehicles: incomingRows,
     } = req.body;
 
-    if (!isValidDateKey(selectedDate)) {
+    if (
+      !isValidDateKey(selectedDate)
+    ) {
       return res.status(400).json({
         success: false,
         message:
@@ -467,7 +694,9 @@ const bulkUpdateDailyLog = async (req, res) => {
     }
 
     if (
-      !Array.isArray(incomingRows) ||
+      !Array.isArray(
+        incomingRows
+      ) ||
       incomingRows.length === 0
     ) {
       return res.status(400).json({
@@ -477,17 +706,28 @@ const bulkUpdateDailyLog = async (req, res) => {
       });
     }
 
-    const monthKey = selectedDate.slice(0, 7);
+    const monthKey =
+      selectedDate.slice(0, 7);
+
     const updatedVehicles = [];
     const skippedRows = [];
 
-    for (const row of incomingRows) {
-      const vehicleId = Number(row.id);
+    for (
+      const row of incomingRows
+    ) {
+      const vehicleId = Number(
+        row.id
+      );
 
-      if (!isValidNumericId(vehicleId)) {
+      if (
+        !isValidNumericId(
+          vehicleId
+        )
+      ) {
         skippedRows.push({
           id: row.id ?? null,
-          reason: "Invalid numeric vehicle ID.",
+          reason:
+            "Invalid numeric vehicle ID.",
         });
 
         continue;
@@ -501,40 +741,53 @@ const bulkUpdateDailyLog = async (req, res) => {
       if (!existingVehicle) {
         skippedRows.push({
           id: vehicleId,
-          reason: "Vehicle not found.",
+          reason:
+            "Vehicle not found.",
         });
 
         continue;
       }
 
-      const dailyKmLogs = mapToObject(
-        existingVehicle.dailyKmLogs
-      );
+      const dailyKmLogs =
+        mapToObject(
+          existingVehicle.dailyKmLogs
+        );
 
-      const dailyStartingKmLogs = mapToObject(
-        existingVehicle.dailyStartingKmLogs
-      );
+      const dailyStartingKmLogs =
+        mapToObject(
+          existingVehicle
+            .dailyStartingKmLogs
+        );
 
-      const dailyClosingKmLogs = mapToObject(
-        existingVehicle.dailyClosingKmLogs
-      );
+      const dailyClosingKmLogs =
+        mapToObject(
+          existingVehicle
+            .dailyClosingKmLogs
+        );
 
-      const dailyLoadIdleLogs = mapToObject(
-        existingVehicle.dailyLoadIdleLogs
-      );
+      const dailyLoadIdleLogs =
+        mapToObject(
+          existingVehicle
+            .dailyLoadIdleLogs
+        );
 
       const dailyVehicleStatusLogs =
         mapToObject(
-          existingVehicle.dailyVehicleStatusLogs
+          existingVehicle
+            .dailyVehicleStatusLogs
         );
 
-      const dailyAttendanceLogs = mapToObject(
-        existingVehicle.dailyAttendanceLogs
-      );
+      const dailyAttendanceLogs =
+        mapToObject(
+          existingVehicle
+            .dailyAttendanceLogs
+        );
 
-      const dailyDieselLogs = mapToObject(
-        existingVehicle.dailyDieselLogs
-      );
+      const dailyDieselLogs =
+        mapToObject(
+          existingVehicle
+            .dailyDieselLogs
+        );
 
       const dailyDieselConsumptionLogs =
         mapToObject(
@@ -542,26 +795,32 @@ const bulkUpdateDailyLog = async (req, res) => {
             .dailyDieselConsumptionLogs
         );
 
-      const monthlyOpenKmLogs = mapToObject(
-        existingVehicle.monthlyOpenKmLogs
-      );
+      const monthlyOpenKmLogs =
+        mapToObject(
+          existingVehicle
+            .monthlyOpenKmLogs
+        );
 
-      const todayKm = toFiniteNumber(
-        row.todayKm,
-        0
-      );
+      const todayKm =
+        toFiniteNumber(
+          row.todayKm,
+          0
+        );
 
-      const startingKm = toFiniteNumber(
-        row.startingKm,
-        0
-      );
+      const startingKm =
+        toFiniteNumber(
+          row.startingKm,
+          0
+        );
 
-      const closingKm = startingKm + todayKm;
+      const closingKm =
+        startingKm + todayKm;
 
-      const diesel = toFiniteNumber(
-        row.diesel,
-        0
-      );
+      const diesel =
+        toFiniteNumber(
+          row.diesel,
+          0
+        );
 
       const dieselConsumption =
         toFiniteNumber(
@@ -569,38 +828,63 @@ const bulkUpdateDailyLog = async (req, res) => {
           0
         );
 
-      const loadIdle = toTrimmedString(
-        row.loadIdle
-      );
+      const enteredLoadIdle =
+        toTrimmedString(
+          row.loadIdle
+        );
 
-      const attendance = toTrimmedString(
-        row.attendance,
-        "Present"
-      );
+      const previousLoadIdle =
+        getLatestPreviousText(
+          dailyLoadIdleLogs,
+          selectedDate
+        );
 
-      const vehicleStatus = toTrimmedString(
-        row.vehicleStatus,
-        "Active"
-      );
+      const loadIdle =
+        enteredLoadIdle ||
+        previousLoadIdle ||
+        toTrimmedString(
+          existingVehicle.loadIdle
+        );
 
-      dailyKmLogs[selectedDate] = todayKm;
+      const attendance =
+        toTrimmedString(
+          row.attendance,
+          "Present"
+        );
 
-      dailyStartingKmLogs[selectedDate] =
-        startingKm;
+      const vehicleStatus =
+        toTrimmedString(
+          row.vehicleStatus,
+          "Active"
+        );
 
-      dailyClosingKmLogs[selectedDate] =
-        closingKm;
+      dailyKmLogs[
+        selectedDate
+      ] = todayKm;
 
-      dailyLoadIdleLogs[selectedDate] =
-        loadIdle;
+      dailyStartingKmLogs[
+        selectedDate
+      ] = startingKm;
 
-      dailyVehicleStatusLogs[selectedDate] =
-        vehicleStatus;
+      dailyClosingKmLogs[
+        selectedDate
+      ] = closingKm;
 
-      dailyAttendanceLogs[selectedDate] =
-        attendance;
+      dailyLoadIdleLogs[
+        selectedDate
+      ] = loadIdle;
 
-      dailyDieselLogs[selectedDate] = diesel;
+      dailyVehicleStatusLogs[
+        selectedDate
+      ] = vehicleStatus;
+
+      dailyAttendanceLogs[
+        selectedDate
+      ] = attendance;
+
+      dailyDieselLogs[
+        selectedDate
+      ] = diesel;
 
       dailyDieselConsumptionLogs[
         selectedDate
@@ -609,29 +893,46 @@ const bulkUpdateDailyLog = async (req, res) => {
       if (
         row.monthOpenKm !== "" &&
         row.monthOpenKm !== null &&
-        row.monthOpenKm !== undefined
+        row.monthOpenKm !==
+          undefined
       ) {
-        monthlyOpenKmLogs[monthKey] =
-          toFiniteNumber(
-            row.monthOpenKm,
-            monthlyOpenKmLogs[monthKey] ?? 0
-          );
+        monthlyOpenKmLogs[
+          monthKey
+        ] = toFiniteNumber(
+          row.monthOpenKm,
+          monthlyOpenKmLogs[
+            monthKey
+          ] ?? 0
+        );
       }
 
-      const monthlyKm = Object.entries(
-        dailyKmLogs
-      ).reduce((total, [date, km]) => {
-        if (
-          String(date).slice(0, 7) !==
-          monthKey
-        ) {
-          return total;
-        }
+      const monthlyKm =
+        Object.entries(
+          dailyKmLogs
+        ).reduce(
+          (
+            total,
+            [date, km]
+          ) => {
+            if (
+              String(
+                date
+              ).slice(0, 7) !==
+              monthKey
+            ) {
+              return total;
+            }
 
-        return (
-          total + toFiniteNumber(km, 0)
+            return (
+              total +
+              toFiniteNumber(
+                km,
+                0
+              )
+            );
+          },
+          0
         );
-      }, 0);
 
       const updateData = {
         startingKm,
@@ -640,8 +941,11 @@ const bulkUpdateDailyLog = async (req, res) => {
         monthlyKm,
 
         monthOpenKm:
-          monthlyOpenKmLogs[monthKey] ??
-          existingVehicle.monthOpenKm ??
+          monthlyOpenKmLogs[
+            monthKey
+          ] ??
+          existingVehicle
+            .monthOpenKm ??
           "",
 
         loadIdle,
@@ -660,22 +964,34 @@ const bulkUpdateDailyLog = async (req, res) => {
         dailyDieselConsumptionLogs,
         monthlyOpenKmLogs,
 
-        dailyLogDate: selectedDate,
+        dailyLogDate:
+          selectedDate,
       };
 
-      if (row.vehicleNumber !== undefined) {
+      if (
+        row.vehicleNumber !==
+        undefined
+      ) {
         updateData.vehicleNumber =
           formatVehicleNumber(
             row.vehicleNumber
           );
       }
 
-      if (row.siteName !== undefined) {
+      if (
+        row.siteName !==
+        undefined
+      ) {
         updateData.siteName =
-          toTrimmedString(row.siteName);
+          toTrimmedString(
+            row.siteName
+          );
       }
 
-      if (row.driverNumber !== undefined) {
+      if (
+        row.driverNumber !==
+        undefined
+      ) {
         updateData.driverNumber =
           toTrimmedString(
             row.driverNumber
@@ -683,15 +999,20 @@ const bulkUpdateDailyLog = async (req, res) => {
       }
 
       if (
-        row.transportProvider !== undefined
+        row.transportProvider !==
+        undefined
       ) {
-        updateData.transportProvider =
+        updateData
+          .transportProvider =
           toTrimmedString(
             row.transportProvider
           );
       }
 
-      if (row.vehicleType !== undefined) {
+      if (
+        row.vehicleType !==
+        undefined
+      ) {
         updateData.vehicleType =
           toTrimmedString(
             row.vehicleType
@@ -719,7 +1040,9 @@ const bulkUpdateDailyLog = async (req, res) => {
       }
     }
 
-    if (updatedVehicles.length === 0) {
+    if (
+      updatedVehicles.length === 0
+    ) {
       return res.status(404).json({
         success: false,
         message:
@@ -732,9 +1055,12 @@ const bulkUpdateDailyLog = async (req, res) => {
       success: true,
       message:
         "Vehicle daily-log records saved successfully.",
-      updatedCount: updatedVehicles.length,
-      skippedCount: skippedRows.length,
-      vehicles: updatedVehicles,
+      updatedCount:
+        updatedVehicles.length,
+      skippedCount:
+        skippedRows.length,
+      vehicles:
+        updatedVehicles,
       skippedRows,
     });
   } catch (error) {
