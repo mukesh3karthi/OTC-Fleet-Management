@@ -54,6 +54,22 @@ const formatSelectedDate = (dateValue) => {
   });
 };
 
+const getPreviousDateKey = (dateValue) => {
+  if (!dateValue) {
+    return "";
+  }
+
+  const previousDate = new Date(`${dateValue}T00:00:00`);
+
+  previousDate.setDate(previousDate.getDate() - 1);
+
+  const year = previousDate.getFullYear();
+  const month = String(previousDate.getMonth() + 1).padStart(2, "0");
+  const day = String(previousDate.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+};
+
 const normalizeText = (value) =>
   String(value ?? "")
     .trim()
@@ -222,9 +238,20 @@ const getVehicleForSelectedDate = (vehicle, dateValue) => {
     ? Number(dailyKmLogs[selectedDateKey] || 0)
     : "";
 
+  const previousDateKey = getPreviousDateKey(selectedDateKey);
+
+  const previousLoadIdle =
+    previousDateKey &&
+    Object.prototype.hasOwnProperty.call(
+      dailyLoadIdleLogs,
+      previousDateKey
+    )
+      ? String(dailyLoadIdleLogs[previousDateKey] || "")
+      : "";
+
   const selectedLoadIdle = hasSelectedLoadIdle
     ? String(dailyLoadIdleLogs[selectedDateKey] || "")
-    : "";
+    : previousLoadIdle;
 
   let selectedStartingKm = Number(vehicle?.startingKm || 0);
   let selectedClosingKm = hasSelectedDateLog
@@ -1464,9 +1491,13 @@ const Dailylog = () => {
                 <h2 id="bulk-edit-title">Edit Site Vehicle Table</h2>
 
                 <p>
-                  Site: <strong>{selectedSite}</strong> ·{" "}
-                  {bulkRows.length} vehicles · Month Open KM can be entered
-                  only once per month
+                  Site: <strong>{selectedSite}</strong>
+                  {" · "}
+                  Date: <strong>{formatSelectedDate(selectedDate)}</strong>
+                  {" · "}
+                  {bulkRows.length} vehicles
+                  {" · "}
+                  Month Open KM can be entered only once per month
                 </p>
               </div>
 
