@@ -154,6 +154,36 @@ const normalizeDailyKmLogs = (vehicle) => {
   );
 };
 
+const getLatestPreviousLoadIdle = (logs, selectedDateKey) => {
+  if (
+    !selectedDateKey ||
+    !logs ||
+    typeof logs !== "object"
+  ) {
+    return "";
+  }
+
+  const previousDates = Object.keys(logs)
+    .map((date) => String(date).slice(0, 10))
+    .filter(
+      (date) =>
+        /^\d{4}-\d{2}-\d{2}$/.test(date) &&
+        date < selectedDateKey &&
+        String(logs[date] ?? "").trim()
+    )
+    .sort((first, second) =>
+      second.localeCompare(first)
+    );
+
+  if (previousDates.length === 0) {
+    return "";
+  }
+
+  return String(
+    logs[previousDates[0]] ?? ""
+  ).trim();
+};
+
 const normalizeDailyLoadIdleLogs = (vehicle) => {
   const rawLogs = vehicle?.dailyLoadIdleLogs;
 
@@ -238,26 +268,21 @@ const getVehicleForSelectedDate = (vehicle, dateValue) => {
     ? Number(dailyKmLogs[selectedDateKey] || 0)
     : "";
 
-  const previousDateKey = getPreviousDateKey(selectedDateKey);
-
-  const previousDayLoadIdle =
-    previousDateKey &&
-    Object.prototype.hasOwnProperty.call(
+  const latestPreviousLoadIdle =
+    getLatestPreviousLoadIdle(
       dailyLoadIdleLogs,
-      previousDateKey
-    )
-      ? String(dailyLoadIdleLogs[previousDateKey] || "")
-      : "";
+      selectedDateKey
+    );
 
   /*
-    When the selected date has no saved Load / Idle value:
-    1. Copy the exact previous day's saved value.
-    2. For older records that only have the top-level loadIdle field,
-       use that value when moving to a later date.
-    The copied value remains editable in the modal.
+    Carry-forward rule:
+    - Date 1 value appears on Date 2 when Date 2 has no saved value.
+    - After Date 2 is edited and saved, that saved Date 2 value appears on Date 3.
+    - A value already saved for the selected date always takes priority.
+    - Older records can still fall back to the top-level loadIdle field.
   */
   const fallbackLoadIdle =
-    previousDayLoadIdle ||
+    latestPreviousLoadIdle ||
     (
       selectedDateKey &&
       lastSavedDate &&
