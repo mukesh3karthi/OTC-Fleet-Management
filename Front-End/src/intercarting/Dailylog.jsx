@@ -75,7 +75,8 @@ const normalizeText = (value) =>
     .trim()
     .toLowerCase();
 
-const getVehicleId = (vehicle) => vehicle?._id ?? vehicle?.id;
+const getVehicleId = (vehicle) =>
+  vehicle?.id ?? vehicle?._id ?? null;
 
 const normalizeMonthlyOpenKmLogs = (vehicle) => {
   const rawLogs = vehicle?.monthlyOpenKmLogs;
@@ -275,21 +276,16 @@ const getVehicleForSelectedDate = (vehicle, dateValue) => {
     );
 
   /*
-    Carry-forward rule:
-    - Date 1 value appears on Date 2 when Date 2 has no saved value.
-    - After Date 2 is edited and saved, that saved Date 2 value appears on Date 3.
-    - A value already saved for the selected date always takes priority.
-    - Older records can still fall back to the top-level loadIdle field.
+    Carry forward Load / Idle:
+    - A value saved for the selected date has first priority.
+    - Otherwise use the latest earlier date from dailyLoadIdleLogs.
+    - For older database records without dailyLoadIdleLogs, use the
+      existing top-level loadIdle value.
+    - The copied value is only initial form data and stays editable.
   */
   const fallbackLoadIdle =
     latestPreviousLoadIdle ||
-    (
-      selectedDateKey &&
-      lastSavedDate &&
-      selectedDateKey > lastSavedDate
-        ? String(vehicle?.loadIdle || "")
-        : ""
-    );
+    String(vehicle?.loadIdle || "").trim();
 
   const selectedLoadIdle = hasSelectedLoadIdle
     ? String(dailyLoadIdleLogs[selectedDateKey] || "")
@@ -924,7 +920,7 @@ const Dailylog = () => {
   }
 
   for (const row of bulkRows) {
-    const vehicleId = row._id || row.id;
+    const vehicleId = row.id ?? row._id;
 
     if (!vehicleId) {
       setBulkError(
@@ -1094,7 +1090,7 @@ const Dailylog = () => {
 
     updatedVehicles.forEach((vehicle) => {
       const vehicleId =
-        vehicle._id || vehicle.id;
+        vehicle.id ?? vehicle._id;
 
       if (vehicleId) {
         updatedById.set(
@@ -1107,7 +1103,7 @@ const Dailylog = () => {
     setVehicles((previousVehicles) =>
       previousVehicles.map((vehicle) => {
         const currentId =
-          vehicle._id || vehicle.id;
+          vehicle.id ?? vehicle._id;
 
         const updatedVehicle =
           updatedById.get(
