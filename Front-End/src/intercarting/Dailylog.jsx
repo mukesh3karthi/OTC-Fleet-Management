@@ -267,7 +267,7 @@ const getVehicleForSelectedDate = (vehicle, dateValue) => {
 
   const selectedTodayKm = hasSelectedDateLog
     ? Number(dailyKmLogs[selectedDateKey] || 0)
-    : "";
+    : 0;
 
   const latestPreviousLoadIdle =
     getLatestPreviousLoadIdle(
@@ -438,6 +438,14 @@ const displayKm = (value) => {
   }
 
   return value;
+};
+
+const displayTodayKm = (value) => {
+  const numericValue = Number(value);
+
+  return Number.isFinite(numericValue)
+    ? numericValue
+    : 0;
 };
 
 const Dailylog = () => {
@@ -682,7 +690,7 @@ const Dailylog = () => {
     "Month Open KM": displayKm(vehicle.monthOpenKm),
     "Starting KM": displayKm(vehicle.startingKm),
     "Closing KM": displayKm(vehicle.closingKm),
-    "Today KM": displayKm(vehicle.todayKm),
+    "Today KM": displayTodayKm(vehicle.todayKm),
     "Monthly KM": displayKm(vehicle.monthlyKm),
     "Load / Idle": vehicle.loadIdle || "-",
     "Vehicle Status": getVehicleStatus(vehicle),
@@ -809,7 +817,12 @@ const Dailylog = () => {
         monthOpenKm: zeroToEmpty(vehicle.monthOpenKm),
         startingKm: zeroToEmpty(vehicle.startingKm),
         closingKm: zeroToEmpty(vehicle.closingKm),
-        todayKm: zeroToEmpty(vehicle.todayKm),
+        todayKm:
+          vehicle.todayKm === "" ||
+          vehicle.todayKm === null ||
+          vehicle.todayKm === undefined
+            ? 0
+            : Number(vehicle.todayKm),
         monthlyKm: zeroToEmpty(vehicle.monthlyKm),
         loadIdle: vehicle.loadIdle ?? "",
         vehicleStatus: getVehicleStatus(vehicle),
@@ -878,16 +891,13 @@ const Dailylog = () => {
             ...(updatedRow._dailyKmLogs || {}),
           };
 
-          if (updatedRow.todayKm === "") {
-            delete updatedLogs[selectedDate];
-
-            // No Today KM yet: Closing KM remains equal to Starting KM.
-            updatedRow.closingKm = startingKm;
-          } else {
-            updatedLogs[selectedDate] = todayKm;
-            updatedRow.closingKm = closingKm;
-          }
-
+          /*
+            Today KM defaults to zero for every selected date.
+            If the field is temporarily cleared, save zero until
+            the user enters another number.
+          */
+          updatedLogs[selectedDate] = todayKm;
+          updatedRow.closingKm = closingKm;
           updatedRow._dailyKmLogs = updatedLogs;
 
           updatedRow.monthlyKm = Object.entries(updatedLogs).reduce(
@@ -1031,12 +1041,7 @@ const Dailylog = () => {
             ? ""
             : Number(row.closingKm),
 
-        todayKm:
-          row.todayKm === "" ||
-          row.todayKm === null ||
-          row.todayKm === undefined
-            ? ""
-            : Number(row.todayKm),
+        todayKm: Number(row.todayKm || 0),
 
         monthlyKm:
           row.monthlyKm === "" ||
@@ -1440,7 +1445,7 @@ const Dailylog = () => {
                   <td>{displayKm(vehicle.monthOpenKm)}</td>
                   <td>{displayKm(vehicle.startingKm)}</td>
                   <td>{displayKm(vehicle.closingKm)}</td>
-                  <td>{displayKm(vehicle.todayKm)}</td>
+                  <td>{displayTodayKm(vehicle.todayKm)}</td>
                   <td>{displayKm(vehicle.monthlyKm)}</td>
 
                   <td className="load-idle-description">

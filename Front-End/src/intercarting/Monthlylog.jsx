@@ -186,20 +186,34 @@ const normalizeMonthlyOpenKmLogs = (vehicle) => {
   return {};
 };
 
-const getDailyKmForDate = (vehicle, dateValue) => {
-  const logs = normalizeDailyKmLogs(vehicle);
-  const dateKey = String(dateValue || "").slice(0, 10);
+const getDailyKmForDate = (
+  vehicle,
+  dateValue
+) => {
+  const logs =
+    normalizeDailyKmLogs(vehicle);
+
+  const dateKey = String(
+    dateValue || ""
+  ).slice(0, 10);
+
   const value = logs[dateKey];
 
   if (
     value === undefined ||
-    value === null ||
-    Number(value) === 0
+    value === null
   ) {
-    return "";
+    return "0";
   }
 
-  return String(value);
+  const numericValue =
+    Number(value);
+
+  return Number.isFinite(
+    numericValue
+  )
+    ? String(numericValue)
+    : "0";
 };
 
 const getLoadIdleForDate = (vehicle, dateValue) => {

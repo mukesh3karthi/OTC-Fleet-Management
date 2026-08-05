@@ -848,7 +848,7 @@ const Vehicledetails = () => {
             vehicles
           </p>
 
-          <div className="vehicle-pagination-controls">
+          <div className="vehicle-page-buttons">
             <button
               type="button"
               onClick={() =>
