@@ -50,9 +50,9 @@ const API_OPTIONS = {
 const RECORDS_PER_PAGE = 10;
 
 const getVehicleId = (vehicle) =>
+  vehicle?._id ??
   vehicle?.id ??
   vehicle?.vehicleId ??
-  vehicle?._id ??
   null;
 
 const getVehicleStatus = (
