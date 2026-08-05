@@ -123,7 +123,7 @@ const Addvehicles = ({
 
         hireAmount:
           vehicle.hireAmount === undefined ||
-          vehicle.hireAmount === null
+            vehicle.hireAmount === null
             ? ""
             : String(vehicle.hireAmount),
 
@@ -296,7 +296,7 @@ const Addvehicles = ({
       formData.vehicleNumber.trim();
 
     const vehicleNumberPattern =
-      /^[A-Z]{2}[0-9]{2}[A-Z]{1,3}[0-9]{4}$/;
+      /^[A-Z]{2}[0-9]{2}(?:[A-Z]{1,3})?[0-9]{4}$/;
 
     if (!vehicleNumber) {
       newErrors.vehicleNumber =
@@ -307,7 +307,7 @@ const Addvehicles = ({
       )
     ) {
       newErrors.vehicleNumber =
-        "Enter a valid vehicle number such as TN74Y0524 or TN01AB1234.";
+        "Enter a valid vehicle number such as TN884651, TN74Y0524 or TN01AB1234.";
     }
 
     if (
@@ -332,8 +332,7 @@ const Addvehicles = ({
         year > currentYear + 1
       ) {
         newErrors.manufacturingYear =
-          `Enter a year between 1900 and ${
-            currentYear + 1
+          `Enter a year between 1900 and ${currentYear + 1
           }.`;
       }
     }
@@ -372,7 +371,7 @@ const Addvehicles = ({
       formData.vehicleInDate &&
       formData.vehicleOutDate &&
       formData.vehicleOutDate <
-        formData.vehicleInDate
+      formData.vehicleInDate
     ) {
       newErrors.vehicleOutDate =
         "Vehicle out date cannot be before vehicle in date.";
@@ -474,8 +473,8 @@ const Addvehicles = ({
 
       setFormError(
         error.response?.data?.message ||
-          error.message ||
-          "Unable to save vehicle."
+        error.message ||
+        "Unable to save vehicle."
       );
     }
   };
@@ -559,8 +558,7 @@ const Addvehicles = ({
               />
 
               <p className="field-help">
-                Format: state, district,
-                series and four digits.
+                Examples: TN884651, TN74Y0524 or TN01AB1234.
               </p>
 
               {errors.vehicleNumber && (
