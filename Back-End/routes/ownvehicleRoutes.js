@@ -8,148 +8,197 @@ const {
   addOwnVehicle,
   updateOwnVehicle,
   saveVehicleDocuments,
+  getOwnVehicleAssets,
+  saveOwnVehicleAssets,
   deleteOwnVehicle,
-} = require("../controllers/ownvehicleController");
+} = require(
+  "../controllers/ownvehicleController"
+);
 
 const {
   uploadVehicleDocuments,
   handleUploadErrors,
-} = require("../middleware/ownvehicleUpload");
+} = require(
+  "../middleware/ownvehicleUpload"
+);
 
-const router = express.Router();
+const router =
+  express.Router();
 
-console.log("✅ ownvehicleRoutes.js loaded");
+console.log(
+  "✅ ownvehicleRoutes.js loaded"
+);
 
 /* ==========================================
    Test download route
-
-   GET /api/ownvehicles/download-test
 ========================================== */
 
-router.get("/download-test", (req, res) => {
-  return res.status(200).json({
-    success: true,
-    message: "Own vehicle download route is working.",
-  });
-});
+router.get(
+  "/download-test",
+  (req, res) => {
+    return res
+      .status(200)
+      .json({
+        success: true,
+
+        message:
+          "Own vehicle download route is working.",
+      });
+  }
+);
 
 /* ==========================================
    Download document
 
-   GET /api/ownvehicles/download/:fileName
-
-   This must remain above /:id.
+   Keep above /:id
 ========================================== */
 
-router.get("/download/:fileName", (req, res) => {
-  try {
-    const decodedFileName = decodeURIComponent(
-      req.params.fileName
-    );
+router.get(
+  "/download/:fileName",
+  (req, res) => {
+    try {
+      const decodedFileName =
+        decodeURIComponent(
+          req.params.fileName
+        );
 
-    // Prevent ../../../ path traversal
-    const safeFileName = path.basename(decodedFileName);
+      const safeFileName =
+        path.basename(
+          decodedFileName
+        );
 
-    const uploadDirectory = path.resolve(
-      __dirname,
-      "..",
-      "uploads",
-      "ownvehicles"
-    );
+      const uploadDirectory =
+        path.resolve(
+          __dirname,
+          "..",
+          "uploads",
+          "ownvehicles"
+        );
 
-    const filePath = path.resolve(
-      uploadDirectory,
-      safeFileName
-    );
+      const filePath =
+        path.resolve(
+          uploadDirectory,
+          safeFileName
+        );
 
-    console.log("==========================================");
-    console.log("Download route called");
-    console.log("Requested file:", safeFileName);
-    console.log("Upload directory:", uploadDirectory);
-    console.log("Resolved file path:", filePath);
-    console.log("==========================================");
+      if (
+        filePath !==
+          uploadDirectory &&
+        !filePath.startsWith(
+          `${uploadDirectory}${path.sep}`
+        )
+      ) {
+        return res
+          .status(400)
+          .json({
+            success: false,
+            message:
+              "Invalid document file path.",
+          });
+      }
 
-    /*
-      Make sure the requested file remains inside:
-      Back-End/uploads/ownvehicles
-    */
-    if (
-      filePath !== uploadDirectory &&
-      !filePath.startsWith(`${uploadDirectory}${path.sep}`)
-    ) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid document file path.",
-      });
-    }
+      if (
+        !fs.existsSync(
+          filePath
+        )
+      ) {
+        return res
+          .status(404)
+          .json({
+            success: false,
 
-    if (!fs.existsSync(filePath)) {
-      return res.status(404).json({
-        success: false,
-        message: "Document file not found.",
-        fileName: safeFileName,
-        checkedPath: filePath,
-      });
-    }
+            message:
+              "Document file not found.",
 
-    const fileStats = fs.statSync(filePath);
+            fileName:
+              safeFileName,
+          });
+      }
 
-    if (!fileStats.isFile()) {
-      return res.status(400).json({
-        success: false,
-        message: "The requested document is not a valid file.",
-      });
-    }
+      const fileStats =
+        fs.statSync(
+          filePath
+        );
 
-    const originalName = req.query.name
-      ? path.basename(String(req.query.name))
-      : safeFileName;
+      if (
+        !fileStats.isFile()
+      ) {
+        return res
+          .status(400)
+          .json({
+            success: false,
 
-    return res.download(
-      filePath,
-      originalName,
-      (error) => {
-        if (!error) {
-          console.log(
-            `✅ Document downloaded successfully: ${safeFileName}`
+            message:
+              "The requested document is not a valid file.",
+          });
+      }
+
+      const originalName =
+        req.query.name
+          ? path.basename(
+              String(
+                req.query.name
+              )
+            )
+          : safeFileName;
+
+      return res.download(
+        filePath,
+        originalName,
+        (error) => {
+          if (!error) {
+            return;
+          }
+
+          console.error(
+            "Document download error:",
+            error
           );
 
-          return;
+          if (
+            !res.headersSent
+          ) {
+            return res
+              .status(500)
+              .json({
+                success: false,
+
+                message:
+                  "Unable to download the document.",
+              });
+          }
         }
+      );
+    } catch (error) {
+      console.error(
+        "Download route error:",
+        error
+      );
 
-        console.error("Document download error:", error);
+      return res
+        .status(500)
+        .json({
+          success: false,
 
-        if (!res.headersSent) {
-          return res.status(500).json({
-            success: false,
-            message: "Unable to download the document.",
-          });
-        }
-      }
-    );
-  } catch (error) {
-    console.error("Download route error:", error);
-
-    return res.status(500).json({
-      success: false,
-      message:
-        error.message || "Unable to download the document.",
-    });
+          message:
+            error.message ||
+            "Unable to download the document.",
+        });
+    }
   }
-});
+);
 
 /* ==========================================
-   Get all own vehicles
-
-   GET /api/ownvehicles
+   Get all Own Vehicles
 ========================================== */
 
-router.get("/", getOwnVehicles);
+router.get(
+  "/",
+  getOwnVehicles
+);
 
 /* ==========================================
-   Add own vehicle
-
-   POST /api/ownvehicles
+   Add Own Vehicle
 ========================================== */
 
 router.post(
@@ -159,9 +208,29 @@ router.post(
 );
 
 /* ==========================================
-   Save document dates and files
+   Get vehicle Assets
 
-   PUT /api/ownvehicles/:id/documents
+   GET /api/ownvehicles/:id/assets
+========================================== */
+
+router.get(
+  "/:id/assets",
+  getOwnVehicleAssets
+);
+
+/* ==========================================
+   Save vehicle Assets
+
+   PUT /api/ownvehicles/:id/assets
+========================================== */
+
+router.put(
+  "/:id/assets",
+  saveOwnVehicleAssets
+);
+
+/* ==========================================
+   Save vehicle documents
 ========================================== */
 
 router.put(
@@ -171,9 +240,7 @@ router.put(
 );
 
 /* ==========================================
-   Update own vehicle
-
-   PUT /api/ownvehicles/:id
+   Update Own Vehicle
 ========================================== */
 
 router.put(
@@ -183,9 +250,7 @@ router.put(
 );
 
 /* ==========================================
-   Delete own vehicle
-
-   DELETE /api/ownvehicles/:id
+   Delete Own Vehicle
 ========================================== */
 
 router.delete(
@@ -194,13 +259,10 @@ router.delete(
 );
 
 /* ==========================================
-   Get one own vehicle
+   Get one Own Vehicle
 
-   GET /api/ownvehicles/:id
-
-   Keep this below all fixed routes such as:
-   /download-test
-   /download/:fileName
+   Keep below /:id/assets and
+   /:id/documents
 ========================================== */
 
 router.get(
@@ -209,9 +271,11 @@ router.get(
 );
 
 /* ==========================================
-   Multer upload error handler
+   Multer error handler
 ========================================== */
 
-router.use(handleUploadErrors);
+router.use(
+  handleUploadErrors
+);
 
 module.exports = router;

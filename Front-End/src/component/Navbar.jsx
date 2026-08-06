@@ -8,7 +8,7 @@ import {
 } from "react-icons/fa";
 
 import "../css/navbar.css";
-import OTClogo from "../assets/otclogo.jpg"
+import OTClogo from "../asset/otclogo.jpg"
 
 const Navbar = ({ collapsed, toggleSidebar }) => {
   const [searchText, setSearchText] = useState("");

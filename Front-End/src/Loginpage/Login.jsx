@@ -6,7 +6,7 @@ import {
 } from "react-router-dom";
 
 import "./Login.css";
-import OTClogo from "../assets/otclogo.jpg"
+import OTClogo from "../asset/otclogo.jpg"
 
 const API_BASE_URL =
   import.meta.env.VITE_API_URL ||

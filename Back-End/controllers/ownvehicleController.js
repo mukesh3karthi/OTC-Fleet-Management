@@ -1641,11 +1641,367 @@ const deleteOwnVehicle =
     }
   };
 
-module.exports = {
+
+/* ==========================================
+   Asset helpers
+========================================== */
+
+const allowedAssetStatuses =
+  new Set([
+    "Available",
+    "Missing",
+    "Damaged",
+    "Under Repair",
+    "Not Required",
+  ]);
+
+const normalizeReplacementHistory = (
+  history = []
+) => {
+  if (!Array.isArray(history)) {
+    return [];
+  }
+
+  return history.map(
+    (entry) => ({
+      id:
+        entry?.id ??
+        Date.now(),
+
+      date:
+        cleanText(
+          entry?.date
+        ),
+
+      note:
+        cleanText(
+          entry?.note
+        ),
+    })
+  );
+};
+
+const normalizeAssetItems = (
+  items = []
+) => {
+  if (!Array.isArray(items)) {
+    return [];
+  }
+
+  return items
+    .map((item, index) => {
+      const status =
+        allowedAssetStatuses.has(
+          item?.status
+        )
+          ? item.status
+          : "Missing";
+
+      return {
+        id:
+          cleanText(
+            item?.id
+          ) ||
+          `asset-${index + 1}`,
+
+        itemName:
+          cleanText(
+            item?.itemName
+          ),
+
+        quantity:
+          Math.max(
+            0,
+            Number(
+              item?.quantity
+            ) || 0
+          ),
+
+        status,
+
+        remarks:
+          cleanText(
+            item?.remarks
+          ),
+
+        image:
+          typeof item?.image ===
+          "string"
+            ? item.image
+            : "",
+
+        replacementHistory:
+          normalizeReplacementHistory(
+            item?.replacementHistory
+          ),
+      };
+    })
+    .filter(
+      (item) =>
+        Boolean(
+          item.itemName
+        )
+    );
+};
+
+const createDefaultAssets =
+  () => ({
+    inspectionDate: "",
+    inspectedBy: "",
+    tools: [],
+    safety: [],
+    lashing: [],
+    cooking: [],
+    updatedAt: "",
+  });
+
+const normalizeAssets = (
+  assets = {}
+) => {
+  const source =
+    toPlainObject(
+      assets
+    );
+
+  return {
+    inspectionDate:
+      cleanText(
+        source.inspectionDate
+      ),
+
+    inspectedBy:
+      cleanText(
+        source.inspectedBy
+      ),
+
+    tools:
+      normalizeAssetItems(
+        source.tools
+      ),
+
+    safety:
+      normalizeAssetItems(
+        source.safety
+      ),
+
+    lashing:
+      normalizeAssetItems(
+        source.lashing
+      ),
+
+    cooking:
+      normalizeAssetItems(
+        source.cooking
+      ),
+
+    updatedAt:
+      cleanText(
+        source.updatedAt
+      ),
+  };
+};
+
+/* ==========================================
+   GET own vehicle assets
+
+   GET /api/ownvehicles/:id/assets
+========================================== */
+
+const getOwnVehicleAssets =
+  async (
+    req,
+    res
+  ) => {
+    try {
+      const vehicleId =
+        Number(
+          req.params.id
+        );
+
+      if (
+        !isValidVehicleId(
+          vehicleId
+        )
+      ) {
+        return res
+          .status(400)
+          .json({
+            success: false,
+            message:
+              "Invalid vehicle ID.",
+          });
+      }
+
+      const vehicle =
+        await OwnVehicle.findOne({
+          id: vehicleId,
+        })
+          .select({
+            id: 1,
+            vehicleNo: 1,
+            assets: 1,
+          })
+          .lean();
+
+      if (!vehicle) {
+        return res
+          .status(404)
+          .json({
+            success: false,
+            message:
+              "Vehicle not found.",
+          });
+      }
+
+      return res
+        .status(200)
+        .json({
+          success: true,
+
+          vehicleId:
+            vehicle.id,
+
+          vehicleNumber:
+            vehicle.vehicleNo,
+
+          assets:
+            normalizeAssets(
+              vehicle.assets ||
+                createDefaultAssets()
+            ),
+        });
+    } catch (error) {
+      console.error(
+        "Get own vehicle assets error:",
+        error
+      );
+
+      return res
+        .status(500)
+        .json({
+          success: false,
+
+          message:
+            error.message ||
+            "Unable to fetch vehicle assets.",
+        });
+    }
+  };
+
+/* ==========================================
+   SAVE own vehicle assets
+
+   PUT /api/ownvehicles/:id/assets
+========================================== */
+
+const saveOwnVehicleAssets =
+  async (
+    req,
+    res
+  ) => {
+    try {
+      const vehicleId =
+        Number(
+          req.params.id
+        );
+
+      if (
+        !isValidVehicleId(
+          vehicleId
+        )
+      ) {
+        return res
+          .status(400)
+          .json({
+            success: false,
+            message:
+              "Invalid vehicle ID.",
+          });
+      }
+
+      const vehicle =
+        await OwnVehicle.findOne({
+          id: vehicleId,
+        });
+
+      if (!vehicle) {
+        return res
+          .status(404)
+          .json({
+            success: false,
+            message:
+              "Vehicle not found.",
+          });
+      }
+
+      const normalizedAssets =
+        normalizeAssets({
+          ...req.body,
+
+          updatedAt:
+            new Date()
+              .toISOString(),
+        });
+
+      vehicle.assets =
+        normalizedAssets;
+
+      /*
+        Ensures nested arrays, images and
+        history changes are detected.
+      */
+      vehicle.markModified(
+        "assets"
+      );
+
+      const updatedVehicle =
+        await vehicle.save();
+
+      return res
+        .status(200)
+        .json({
+          success: true,
+
+          message:
+            "Vehicle assets saved successfully.",
+
+          vehicleId:
+            updatedVehicle.id,
+
+          vehicleNumber:
+            updatedVehicle.vehicleNo,
+
+          assets:
+            normalizeAssets(
+              updatedVehicle.assets
+            ),
+        });
+    } catch (error) {
+      console.error(
+        "Save own vehicle assets error:",
+        error
+      );
+
+      return res
+        .status(500)
+        .json({
+          success: false,
+
+          message:
+            error.message ||
+            "Unable to save vehicle assets.",
+        });
+    }
+  };
+
+
+  module.exports = {
   getOwnVehicles,
   getOwnVehicleById,
   addOwnVehicle,
   updateOwnVehicle,
   saveVehicleDocuments,
+  getOwnVehicleAssets,
+  saveOwnVehicleAssets,
   deleteOwnVehicle,
 };
