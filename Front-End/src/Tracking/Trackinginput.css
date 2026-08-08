@@ -1,22 +1,557 @@
-/* =========================================
+/* =========================================================
+   TRACKING INPUT / CREATE TRIP
+   PROFESSIONAL COMPLETE CSS
+========================================================= */
+
+
+/* =========================================================
+   RESET
+========================================================= */
+
+.tracking-input-page,
+.tracking-input-page * {
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   PAGE
+========================================================= */
+
+.tracking-input-page {
+  width: 100%;
+  min-width: 0;
+
+  min-height: calc(100vh - 80px);
+
+  padding: 24px 28px 40px;
+
+  color: #1f3658;
+
+  background:
+    linear-gradient(
+      180deg,
+      #f7f9fc 0%,
+      #f4f7fb 100%
+    );
+
+  font-family:
+    Inter,
+    "Segoe UI",
+    Roboto,
+    Arial,
+    sans-serif;
+}
+
+
+/* =========================================================
+   PAGE HEADER
+========================================================= */
+
+.tracking-input-page-header {
+  width: 100%;
+
+  margin-bottom: 20px;
+
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 20px;
+}
+
+
+.tracking-input-page-header > div {
+  min-width: 0;
+}
+
+
+.tracking-input-eyebrow {
+  display: block;
+
+  margin-bottom: 6px;
+
+  color: #2457b2;
+
+  font-size: 9px;
+  font-weight: 800;
+
+  line-height: 1;
+
+  letter-spacing: 1.2px;
+
+  text-transform: uppercase;
+}
+
+
+.tracking-input-page-header h1 {
+  margin: 0;
+
+  color: #17345f;
+
+  font-size: 30px;
+  font-weight: 750;
+
+  line-height: 1.2;
+
+  letter-spacing: -0.5px;
+}
+
+
+.tracking-input-page-header p {
+  max-width: 650px;
+
+  margin: 7px 0 0;
+
+  color: #76859b;
+
+  font-size: 11px;
+  font-weight: 450;
+
+  line-height: 1.55;
+}
+
+
+/* =========================================================
+   BACK BUTTON
+========================================================= */
+
+.tracking-input-back {
+  min-height: 40px;
+
+  padding: 0 14px;
+
+  flex: 0 0 auto;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 7px;
+
+  border: 1px solid #d7e0eb;
+
+  border-radius: 9px;
+
+  color: #526a88;
+
+  background: #ffffff;
+
+  font: inherit;
+
+  font-size: 9.5px;
+  font-weight: 650;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 2px 8px
+    rgba(20, 45, 80, 0.045);
+
+  transition:
+    color 150ms ease,
+    border-color 150ms ease,
+    background 150ms ease,
+    box-shadow 150ms ease,
+    transform 150ms ease;
+}
+
+
+.tracking-input-back:hover {
+  color: #2457b2;
+
+  border-color: #b9cae5;
+
+  background: #f8fbff;
+
+  box-shadow:
+    0 5px 12px
+    rgba(36, 87, 178, 0.08);
+
+  transform: translateY(-1px);
+}
+
+
+/* =========================================================
+   MASTER FORM
+========================================================= */
+
+.tracking-master-form {
+  width: 100%;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 16px;
+}
+
+
+/* =========================================================
+   FORM CARD
+========================================================= */
+
+.tracking-form-card {
+  width: 100%;
+
+  overflow: hidden;
+
+  border: 1px solid #dde6f0;
+
+  border-radius: 14px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 5px 18px
+    rgba(20, 45, 78, 0.045);
+
+  transition:
+    border-color 170ms ease,
+    box-shadow 170ms ease;
+}
+
+
+.tracking-form-card:hover {
+  border-color: #cedaea;
+
+  box-shadow:
+    0 7px 22px
+    rgba(20, 45, 78, 0.06);
+}
+
+
+/* =========================================================
+   CARD HEADER
+========================================================= */
+
+.tracking-form-card-header {
+  position: relative;
+
+  min-height: 66px;
+
+  padding: 13px 15px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+
+  border-bottom: 1px solid #e8edf4;
+
+  background:
+    linear-gradient(
+      180deg,
+      #fcfdff 0%,
+      #f8fbff 100%
+    );
+}
+
+
+.tracking-form-card-header > div:not(
+  .tracking-form-card-icon
+) {
+  min-width: 0;
+}
+
+
+.tracking-form-card-header h2 {
+  margin: 0;
+
+  color: #19385f;
+
+  font-size: 14px;
+  font-weight: 720;
+
+  line-height: 1.25;
+}
+
+
+.tracking-form-card-header p {
+  margin: 3px 0 0;
+
+  color: #8794a6;
+
+  font-size: 8.8px;
+  font-weight: 450;
+
+  line-height: 1.4;
+}
+
+
+/* =========================================================
+   CARD ICONS
+========================================================= */
+
+.tracking-form-card-icon {
+  width: 36px;
+  height: 36px;
+
+  flex: 0 0 36px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 9px;
+}
+
+
+.tracking-form-card-icon.blue {
+  color: #2457b2;
+
+  background: #eaf2ff;
+}
+
+
+.tracking-form-card-icon.indigo {
+  color: #5667c7;
+
+  background: #eef0ff;
+}
+
+
+.tracking-form-card-icon.loading {
+  color: #178653;
+
+  background: #eaf8f1;
+}
+
+
+.tracking-form-card-icon.unloading {
+  color: #9c6815;
+
+  background: #fff5e1;
+}
+
+
+.tracking-form-card-icon.purple {
+  color: #7654b8;
+
+  background: #f3eeff;
+}
+
+
+/* =========================================================
+   CARD BODY
+========================================================= */
+
+.tracking-form-card-body {
+  width: 100%;
+
+  padding: 16px;
+}
+
+
+/* =========================================================
+   GENERAL FORM GRID
+========================================================= */
+
+.tracking-form-grid {
+  width: 100%;
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      4,
+      minmax(0, 1fr)
+    );
+
+  gap:
+    14px 15px;
+}
+
+
+/* =========================================================
+   FIELD
+========================================================= */
+
+.tracking-form-field {
+  min-width: 0;
+}
+
+
+.tracking-form-field label {
+  display: flex;
+  align-items: center;
+
+  gap: 3px;
+
+  margin-bottom: 6px;
+
+  color: #536984;
+
+  font-size: 9.5px;
+  font-weight: 650;
+
+  line-height: 1.3;
+}
+
+
+.tracking-form-field label > span {
+  color: #d34b53;
+}
+
+
+/* =========================================================
+   CONTROL
+========================================================= */
+
+.tracking-form-control {
+  position: relative;
+
+  width: 100%;
+  height: 43px;
+
+  padding: 0 11px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+
+  border: 1px solid #dce5ef;
+
+  border-radius: 8px;
+
+  background: #fafbfd;
+
+  transition:
+    border-color 150ms ease,
+    background 150ms ease,
+    box-shadow 150ms ease;
+}
+
+
+.tracking-form-control:hover {
+  border-color: #c7d4e4;
+
+  background: #ffffff;
+}
+
+
+.tracking-form-control:focus-within {
+  border-color: #638bcf;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(36, 87, 178, 0.075);
+}
+
+
+.tracking-form-control > svg {
+  width: 15px;
+  height: 15px;
+
+  flex: 0 0 15px;
+
+  color: #7b8da5;
+
+  transition:
+    color 150ms ease;
+}
+
+
+.tracking-form-control:focus-within > svg {
+  color: #2457b2;
+}
+
+
+/* =========================================================
+   INPUT / SELECT
+========================================================= */
+
+.tracking-form-control input,
+.tracking-form-control select {
+  width: 100%;
+  min-width: 0;
+
+  height: 41px;
+
+  padding: 0;
+
+  border: 0;
+
+  outline: none;
+
+  color: #294264;
+
+  background: transparent;
+
+  font-family: inherit;
+
+  font-size: 10.5px;
+  font-weight: 500;
+}
+
+
+.tracking-form-control input::placeholder {
+  color: #a0acbc;
+
+  font-weight: 400;
+}
+
+
+.tracking-form-control select {
+  cursor: pointer;
+}
+
+
+/* =========================================================
+   DATE INPUT
+========================================================= */
+
+.tracking-form-control
+input[type="date"] {
+  color: #506784;
+
+  cursor: pointer;
+}
+
+
+/* =========================================================
+   NUMBER INPUT
+========================================================= */
+
+.tracking-form-control
+input[type="number"] {
+  appearance: textfield;
+
+  -moz-appearance: textfield;
+}
+
+
+.tracking-form-control
+input[type="number"]::-webkit-inner-spin-button,
+.tracking-form-control
+input[type="number"]::-webkit-outer-spin-button {
+  margin: 0;
+
+  -webkit-appearance: none;
+}
+
+
+/* =========================================================
    AUTO TRIP ID
-========================================= */
+========================================================= */
 
 .tracking-trip-id-badge {
   margin-left: auto;
 
-  padding:
-    5px 10px;
+  padding: 5px 10px;
 
-  border:
-    1px solid #cbdcf5;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid #cbdcf5;
 
   border-radius: 999px;
 
   color: #2457b2;
 
-  background:
-    #edf4ff;
+  background: #edf4ff;
 
   font-size: 9px;
   font-weight: 700;
@@ -25,45 +560,74 @@
 }
 
 
+/* =========================================================
+   READ ONLY CONTROL
+========================================================= */
+
 .tracking-readonly-control {
-  border-color:
-    #dce4ef;
+  border-color: #dce4ef;
 
   background:
-    #f2f5f9;
+    linear-gradient(
+      180deg,
+      #f4f7fb,
+      #f1f5fa
+    );
+}
+
+
+.tracking-readonly-control:hover {
+  border-color: #dce4ef;
+
+  background:
+    linear-gradient(
+      180deg,
+      #f4f7fb,
+      #f1f5fa
+    );
+}
+
+
+.tracking-readonly-control:focus-within {
+  border-color: #dce4ef;
+
+  box-shadow: none;
+}
+
+
+.tracking-readonly-control > svg {
+  color: #6680a3;
 }
 
 
 .tracking-readonly-control input {
-  color:
-    #62748d;
+  color: #31527d;
 
-  cursor:
-    default;
+  font-weight: 700;
+
+  cursor: default;
 }
 
 
-/* =========================================
+/* =========================================================
    VEHICLE SECTION HEADER
-========================================= */
+========================================================= */
 
 .tracking-vehicle-section-header {
-  padding-right:
-    14px;
+  padding-right: 14px;
 }
 
 
-/* =========================================
+/* =========================================================
    ADD VEHICLE BUTTON
-========================================= */
+========================================================= */
 
 .tracking-add-vehicle-btn {
   min-height: 35px;
 
   margin-left: auto;
 
-  padding:
-    0 12px;
+  padding: 0 12px;
 
   display: inline-flex;
   align-items: center;
@@ -71,19 +635,17 @@
 
   gap: 6px;
 
-  border:
-    1px solid #2457b2;
+  border: 1px solid #bcd0ee;
 
   border-radius: 8px;
 
   color: #2457b2;
 
-  background:
-    #edf4ff;
+  background: #edf4ff;
 
   font: inherit;
 
-  font-size: 9px;
+  font-size: 8.8px;
   font-weight: 700;
 
   white-space: nowrap;
@@ -91,31 +653,32 @@
   cursor: pointer;
 
   transition:
-    background 150ms ease,
     color 150ms ease,
+    background 150ms ease,
     border-color 150ms ease,
-    box-shadow 150ms ease;
+    box-shadow 150ms ease,
+    transform 150ms ease;
 }
 
 
 .tracking-add-vehicle-btn:hover {
   color: #ffffff;
 
-  border-color:
-    #2457b2;
+  border-color: #2457b2;
 
-  background:
-    #2457b2;
+  background: #2457b2;
 
   box-shadow:
-    0 5px 12px
-    rgba(36, 87, 178, 0.16);
+    0 5px 13px
+    rgba(36, 87, 178, 0.18);
+
+  transform: translateY(-1px);
 }
 
 
-/* =========================================
+/* =========================================================
    VEHICLE LIST
-========================================= */
+========================================================= */
 
 .tracking-vehicle-list {
   width: 100%;
@@ -127,22 +690,24 @@
 }
 
 
-/* =========================================
+/* =========================================================
    VEHICLE ENTRY CARD
-========================================= */
+========================================================= */
 
 .tracking-vehicle-entry-card {
   width: 100%;
 
   overflow: hidden;
 
-  border:
-    1px solid #dde5ef;
+  border: 1px solid #dde5ef;
 
-  border-radius: 10px;
+  border-radius: 11px;
 
-  background:
-    #fbfcfe;
+  background: #fbfcfe;
+
+  box-shadow:
+    0 2px 7px
+    rgba(25, 50, 85, 0.025);
 
   transition:
     border-color 150ms ease,
@@ -151,24 +716,22 @@
 
 
 .tracking-vehicle-entry-card:hover {
-  border-color:
-    #cbd9ea;
+  border-color: #cbd9ea;
 
   box-shadow:
-    0 4px 12px
-    rgba(25, 54, 95, 0.045);
+    0 5px 14px
+    rgba(25, 54, 95, 0.05);
 }
 
 
-/* =========================================
-   VEHICLE ENTRY HEADER
-========================================= */
+/* =========================================================
+   VEHICLE HEADER
+========================================================= */
 
 .tracking-vehicle-entry-header {
   min-height: 51px;
 
-  padding:
-    9px 11px;
+  padding: 9px 11px;
 
   display: flex;
   align-items: center;
@@ -176,8 +739,7 @@
 
   gap: 10px;
 
-  border-bottom:
-    1px solid #e8edf4;
+  border-bottom: 1px solid #e8edf4;
 
   background:
     linear-gradient(
@@ -202,8 +764,7 @@
   width: 31px;
   height: 31px;
 
-  flex:
-    0 0 31px;
+  flex: 0 0 31px;
 
   display: grid;
   place-items: center;
@@ -212,8 +773,7 @@
 
   color: #2457b2;
 
-  background:
-    #eaf2ff;
+  background: #eaf2ff;
 }
 
 
@@ -239,15 +799,14 @@
 }
 
 
-/* =========================================
+/* =========================================================
    REMOVE VEHICLE
-========================================= */
+========================================================= */
 
 .tracking-remove-vehicle-btn {
   min-height: 30px;
 
-  padding:
-    0 9px;
+  padding: 0 9px;
 
   display: inline-flex;
   align-items: center;
@@ -255,15 +814,13 @@
 
   gap: 5px;
 
-  border:
-    1px solid #efdbdd;
+  border: 1px solid #efdbdd;
 
   border-radius: 7px;
 
   color: #bd4650;
 
-  background:
-    #fff6f7;
+  background: #fff6f7;
 
   font: inherit;
 
@@ -282,17 +839,15 @@
 .tracking-remove-vehicle-btn:hover {
   color: #ffffff;
 
-  border-color:
-    #c94b55;
+  border-color: #c94b55;
 
-  background:
-    #c94b55;
+  background: #c94b55;
 }
 
 
-/* =========================================
+/* =========================================================
    VEHICLE INPUT GRID
-========================================= */
+========================================================= */
 
 .tracking-vehicle-entry-grid {
   width: 100%;
@@ -312,15 +867,197 @@
 }
 
 
-/* =========================================
-   FOOTER SUMMARY
-========================================= */
+/* =========================================================
+   OPERATION CARDS
+========================================================= */
 
-.tracking-form-footer {
-  justify-content:
-    space-between;
+.operation-form-card.loading {
+  border-color: #d9e9e1;
 }
 
+
+.operation-form-card.loading
+.tracking-form-card-header {
+  background:
+    linear-gradient(
+      180deg,
+      #fcfffd,
+      #f7fcf9
+    );
+}
+
+
+.operation-form-card.unloading {
+  border-color: #e9e1d3;
+}
+
+
+.operation-form-card.unloading
+.tracking-form-card-header {
+  background:
+    linear-gradient(
+      180deg,
+      #fffefd,
+      #fffbf4
+    );
+}
+
+
+/* =========================================================
+   BADGES
+========================================================= */
+
+.tracking-form-badge {
+  margin-left: auto;
+
+  padding: 4px 9px;
+
+  border-radius: 999px;
+
+  font-size: 8px;
+  font-weight: 700;
+
+  white-space: nowrap;
+}
+
+
+.tracking-form-badge.loading {
+  color: #168250;
+
+  border: 1px solid #cbe8d8;
+
+  background: #edf9f3;
+}
+
+
+.tracking-form-badge.unloading {
+  color: #976516;
+
+  border: 1px solid #f0dfb9;
+
+  background: #fff8e9;
+}
+
+
+/* =========================================================
+   LOADING / UNLOADING PRIMARY ROW
+========================================================= */
+
+.tracking-operation-primary {
+  width: 100%;
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      3,
+      minmax(0, 1fr)
+    );
+
+  gap: 14px;
+}
+
+
+/* =========================================================
+   HALTING + REMARKS
+========================================================= */
+
+.tracking-operation-secondary {
+  width: 100%;
+
+  margin-top: 13px;
+
+  display: grid;
+
+  grid-template-columns:
+    minmax(130px, 0.35fr)
+    minmax(0, 2.2fr);
+
+  gap: 14px;
+}
+
+
+.tracking-halting-field {
+  width: 100%;
+
+  max-width: 210px;
+}
+
+
+.tracking-operation-remark {
+  width: 100%;
+
+  min-width: 0;
+}
+
+
+/* =========================================================
+   LR / POD
+========================================================= */
+
+.tracking-document-grid {
+  width: 100%;
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      2,
+      minmax(0, 1fr)
+    );
+
+  gap: 14px;
+}
+
+
+/* =========================================================
+   FOOTER
+========================================================= */
+
+.tracking-form-footer {
+  position: sticky;
+
+  bottom: 12px;
+
+  z-index: 40;
+
+  width: 100%;
+
+  min-height: 62px;
+
+  padding: 10px 13px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 14px;
+
+  border: 1px solid #dce5ef;
+
+  border-radius: 11px;
+
+  background:
+    rgba(
+      255,
+      255,
+      255,
+      0.96
+    );
+
+  box-shadow:
+    0 10px 28px
+    rgba(20, 46, 82, 0.10);
+
+  backdrop-filter: blur(10px);
+
+  -webkit-backdrop-filter: blur(10px);
+}
+
+
+/* =========================================================
+   FOOTER SUMMARY
+========================================================= */
 
 .tracking-create-summary {
   min-width: 0;
@@ -328,9 +1065,9 @@
   display: flex;
   align-items: center;
 
-  gap: 6px;
+  gap: 7px;
 
-  color: #78879c;
+  color: #76869c;
 
   font-size: 9px;
   font-weight: 500;
@@ -338,27 +1075,31 @@
 
 
 .tracking-create-summary strong {
-  min-width: 25px;
-  height: 25px;
+  min-width: 27px;
+  height: 27px;
 
-  padding:
-    0 7px;
+  padding: 0 7px;
 
   display: inline-flex;
   align-items: center;
   justify-content: center;
 
+  border: 1px solid #d3e0f3;
+
   border-radius: 7px;
 
   color: #2457b2;
 
-  background:
-    #eaf2ff;
+  background: #eaf2ff;
 
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 750;
 }
 
+
+/* =========================================================
+   FOOTER ACTIONS
+========================================================= */
 
 .tracking-form-footer-actions {
   display: flex;
@@ -368,11 +1109,127 @@
 }
 
 
-/* =========================================
-   TABLET
-========================================= */
+/* =========================================================
+   CANCEL BUTTON
+========================================================= */
 
-@media (max-width: 1050px) {
+.tracking-form-cancel {
+  min-height: 40px;
+
+  padding: 0 16px;
+
+  border: 1px solid #d4deea;
+
+  border-radius: 8px;
+
+  color: #687a91;
+
+  background: #ffffff;
+
+  font: inherit;
+
+  font-size: 9.5px;
+  font-weight: 620;
+
+  cursor: pointer;
+
+  transition:
+    color 150ms ease,
+    border-color 150ms ease,
+    background 150ms ease;
+}
+
+
+.tracking-form-cancel:hover {
+  color: #465d79;
+
+  border-color: #c3d0de;
+
+  background: #f7f9fc;
+}
+
+
+/* =========================================================
+   CREATE TRIP BUTTON
+========================================================= */
+
+.tracking-form-save {
+  min-height: 40px;
+
+  padding: 0 18px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 6px;
+
+  border: 1px solid #2457b2;
+
+  border-radius: 8px;
+
+  color: #ffffff;
+
+  background:
+    linear-gradient(
+      135deg,
+      #3169c8,
+      #2457b2
+    );
+
+  font: inherit;
+
+  font-size: 9.5px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 5px 14px
+    rgba(36, 87, 178, 0.17);
+
+  transition:
+    background 150ms ease,
+    box-shadow 150ms ease,
+    transform 150ms ease;
+}
+
+
+.tracking-form-save:hover {
+  background:
+    linear-gradient(
+      135deg,
+      #285db5,
+      #1b4793
+    );
+
+  box-shadow:
+    0 8px 18px
+    rgba(36, 87, 178, 0.22);
+
+  transform: translateY(-1px);
+}
+
+
+.tracking-form-save:active {
+  transform: translateY(0);
+}
+
+
+/* =========================================================
+   LARGE TABLET
+========================================================= */
+
+@media (max-width: 1200px) {
+
+  .tracking-form-grid {
+    grid-template-columns:
+      repeat(
+        3,
+        minmax(0, 1fr)
+      );
+  }
+
 
   .tracking-vehicle-entry-grid {
     grid-template-columns:
@@ -385,42 +1242,141 @@
 }
 
 
-/* =========================================
-   MOBILE
-========================================= */
+/* =========================================================
+   TABLET
+========================================================= */
 
-@media (max-width: 650px) {
+@media (max-width: 900px) {
 
-  .tracking-vehicle-section-header {
-    flex-wrap:
-      wrap;
+  .tracking-input-page {
+    padding:
+      20px 18px 32px;
   }
 
 
-  .tracking-add-vehicle-btn {
-    margin-left:
-      auto;
+  .tracking-form-grid {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+  }
+
+
+  .tracking-operation-primary {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+  }
+
+
+  .tracking-operation-secondary {
+    grid-template-columns:
+      160px
+      minmax(0, 1fr);
+  }
+
+
+  .tracking-document-grid {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+  }
+
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 650px) {
+
+  .tracking-input-page {
+    padding:
+      15px 10px 28px;
+  }
+
+
+  .tracking-input-page-header {
+    align-items: flex-start;
+
+    gap: 10px;
+  }
+
+
+  .tracking-input-page-header h1 {
+    font-size: 23px;
+  }
+
+
+  .tracking-input-page-header p {
+    font-size: 9.5px;
+  }
+
+
+  .tracking-input-back {
+    width: 38px;
+    height: 38px;
+
+    min-height: 38px;
+
+    padding: 0;
+  }
+
+
+  .tracking-input-back span {
+    display: none;
+  }
+
+
+  .tracking-form-grid,
+  .tracking-vehicle-entry-grid,
+  .tracking-operation-primary,
+  .tracking-operation-secondary,
+  .tracking-document-grid {
+    grid-template-columns: 1fr;
+  }
+
+
+  .tracking-halting-field {
+    max-width: none;
+  }
+
+
+  .tracking-form-card-body {
+    padding: 12px;
   }
 
 
   .tracking-vehicle-entry-grid {
-    grid-template-columns:
-      1fr;
+    padding: 10px;
+  }
 
-    padding:
-      10px;
+
+  .tracking-vehicle-section-header {
+    flex-wrap: wrap;
+  }
+
+
+  .tracking-add-vehicle-btn {
+    margin-left: auto;
   }
 
 
   .tracking-create-summary {
-    display:
-      none;
+    display: none;
   }
 
 
   .tracking-form-footer {
-    justify-content:
-      stretch;
+    bottom: 7px;
+
+    padding: 9px;
   }
 
 
@@ -429,9 +1385,7 @@
   }
 
 
-  .tracking-form-footer-actions
   .tracking-form-cancel,
-  .tracking-form-footer-actions
   .tracking-form-save {
     flex: 1;
   }
@@ -439,12 +1393,54 @@
 }
 
 
-/* =========================================
+/* =========================================================
    SMALL MOBILE
-========================================= */
+========================================================= */
 
 @media (max-width: 430px) {
 
+  .tracking-input-page {
+    padding:
+      13px 8px 24px;
+  }
+
+
+  .tracking-input-page-header h1 {
+    font-size: 21px;
+  }
+
+
+  .tracking-form-card {
+    border-radius: 10px;
+  }
+
+
+  .tracking-form-card-header {
+    min-height: 58px;
+
+    padding: 10px 11px;
+  }
+
+
+  .tracking-form-card-header h2 {
+    font-size: 12.5px;
+  }
+
+
+  .tracking-form-card-header p {
+    font-size: 8px;
+  }
+
+
+  .tracking-form-card-icon {
+    width: 32px;
+    height: 32px;
+
+    flex-basis: 32px;
+  }
+
+
+  .tracking-form-badge,
   .tracking-trip-id-badge {
     display: none;
   }
@@ -460,19 +1456,18 @@
   .tracking-remove-vehicle-btn {
     width: 32px;
 
+    min-width: 32px;
+
     padding: 0;
   }
 
 
   .tracking-form-footer-actions {
-    flex-direction:
-      column-reverse;
+    flex-direction: column-reverse;
   }
 
 
-  .tracking-form-footer-actions
   .tracking-form-cancel,
-  .tracking-form-footer-actions
   .tracking-form-save {
     width: 100%;
   }
