@@ -1,0 +1,1082 @@
+/* =========================================
+   1. MAIN
+========================================= */
+
+.tracking-map-column {
+  width: 100%;
+  min-width: 0;
+
+  overflow: hidden;
+
+  border: 1px solid #dfe7f1;
+  border-radius: 14px;
+
+  background: #ffffff;
+
+  font-family:
+    Inter,
+    "Segoe UI",
+    Roboto,
+    Arial,
+    sans-serif;
+
+  color: #17345f;
+
+  box-shadow:
+    0 5px 16px
+    rgba(17, 40, 83, 0.045);
+}
+
+
+.tracking-map-column,
+.tracking-map-column * {
+  box-sizing: border-box;
+}
+
+
+/* =========================================
+   2. HEADER
+========================================= */
+
+.tracking-map-header {
+  min-height: 60px;
+
+  padding: 12px 14px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 12px;
+
+  border-bottom:
+    1px solid #e8edf4;
+
+  background: #f9fbfe;
+}
+
+
+.tracking-map-header > div {
+  min-width: 0;
+}
+
+
+.tracking-map-header strong {
+  display: block;
+
+  color: #17345f;
+
+  font-size: 15px;
+  font-weight: 700;
+
+  line-height: 1.2;
+}
+
+
+.tracking-map-header p {
+  margin: 4px 0 0;
+
+  color: #8492a6;
+
+  font-size: 10px;
+  font-weight: 500;
+
+  line-height: 1.3;
+}
+
+
+.tracking-map-header > svg {
+  flex: 0 0 auto;
+
+  color: #2457b2;
+}
+
+
+/* =========================================
+   3. ROUTE SUMMARY
+========================================= */
+
+.map-route-summary {
+  margin:
+    12px
+    12px
+    10px;
+
+  padding:
+    11px
+    13px;
+
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    120px
+    minmax(0, 1fr);
+
+  align-items: center;
+
+  gap: 10px;
+
+  border:
+    1px solid
+    #dce5f0;
+
+  border-radius: 10px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #fbfdff 0%,
+      #f5f8fd 100%
+    );
+}
+
+
+.map-route-place {
+  min-width: 0;
+}
+
+
+.map-route-place.destination {
+  text-align: right;
+}
+
+
+.map-route-place span {
+  display: block;
+
+  color: #8492a6;
+
+  font-size: 10px;
+  font-weight: 500;
+}
+
+
+.map-route-place strong {
+  display: block;
+
+  margin-top: 4px;
+
+  overflow: hidden;
+
+  color: #17345f;
+
+  font-size: 13px;
+  font-weight: 700;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+
+/* =========================================
+   4. ROUTE CONNECTOR
+========================================= */
+
+.map-route-line {
+  min-width: 0;
+
+  display: flex;
+  align-items: center;
+}
+
+
+.map-route-line > span {
+  height: 2px;
+
+  flex: 1;
+
+  background: #a9c4ef;
+}
+
+
+.map-route-line > div {
+  width: 30px;
+  height: 30px;
+
+  flex: 0 0 30px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 50%;
+
+  color: #ffffff;
+
+  background: #2457b2;
+
+  box-shadow:
+    0 3px 8px
+    rgba(36, 87, 178, 0.18);
+}
+
+
+/* =========================================
+   5. MAP WRAPPER
+========================================= */
+
+.tracking-map-wrapper {
+  position: relative;
+
+  width:
+    calc(100% - 24px);
+
+  height: 480px;
+
+  margin:
+    0
+    12px
+    10px;
+
+  overflow: hidden;
+
+  border:
+    1px solid
+    #dce5f0;
+
+  border-radius: 12px;
+
+  background: #eef3f8;
+}
+
+
+/* =========================================
+   6. LEAFLET MAP
+========================================= */
+
+.tracking-leaflet-map {
+  width: 100%;
+  height: 100%;
+
+  z-index: 1;
+
+  background: #eef3f8;
+}
+
+
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+
+  font-family:
+    Inter,
+    "Segoe UI",
+    Roboto,
+    Arial,
+    sans-serif;
+}
+
+
+/* =========================================
+   7. LEAFLET CONTROLS
+========================================= */
+
+.tracking-map-column
+.leaflet-control-zoom {
+  overflow: hidden;
+
+  border: 0;
+
+  border-radius: 8px;
+
+  box-shadow:
+    0 4px 12px
+    rgba(31, 54, 87, 0.14);
+}
+
+
+.tracking-map-column
+.leaflet-control-zoom a {
+  width: 30px;
+  height: 30px;
+
+  line-height: 30px;
+
+  border: 0;
+
+  color: #17345f;
+
+  background: #ffffff;
+
+  font-size: 16px;
+}
+
+
+.tracking-map-column
+.leaflet-control-zoom a:hover {
+  color: #2457b2;
+
+  background: #f4f7fc;
+}
+
+
+/* =========================================
+   8. ATTRIBUTION
+========================================= */
+
+.tracking-map-column
+.leaflet-control-attribution {
+  padding: 2px 5px;
+
+  border-radius: 4px 0 0 0;
+
+  color: #7d8a9c;
+
+  background:
+    rgba(
+      255,
+      255,
+      255,
+      0.9
+    );
+
+  font-size: 8px;
+}
+
+
+/* =========================================
+   9. POPUP
+========================================= */
+
+.leaflet-popup-content-wrapper {
+  border-radius: 9px;
+
+  box-shadow:
+    0 7px 22px
+    rgba(23, 52, 95, 0.15);
+}
+
+
+.leaflet-popup-content {
+  margin:
+    10px
+    11px;
+}
+
+
+.map-popup {
+  min-width: 145px;
+}
+
+
+.map-popup strong {
+  display: block;
+
+  color: #17345f;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  line-height: 1.25;
+}
+
+
+.map-popup > span {
+  display: block;
+
+  margin-top: 4px;
+
+  color: #74839a;
+
+  font-size: 10px;
+  font-weight: 500;
+}
+
+
+/* =========================================
+   10. VEHICLE POPUP
+========================================= */
+
+.vehicle-popup {
+  min-width: 170px;
+}
+
+
+.vehicle-popup-heading {
+  display: flex;
+  align-items: center;
+
+  gap: 6px;
+}
+
+
+.vehicle-popup-icon {
+  width: 24px;
+  height: 24px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 6px;
+
+  color: #2457b2;
+
+  background: #ebf2ff;
+}
+
+
+.vehicle-popup-heading strong {
+  color: #17345f;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+
+.vehicle-popup-location {
+  display: block;
+
+  margin-top: 7px !important;
+
+  color: #667994 !important;
+
+  font-size: 10px !important;
+
+  line-height: 1.35;
+}
+
+
+.vehicle-popup-bottom {
+  margin-top: 8px;
+
+  padding-top: 7px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 8px;
+
+  border-top:
+    1px solid
+    #edf1f5;
+}
+
+
+.vehicle-popup-bottom small {
+  color: #8190a4;
+
+  font-size: 9px;
+
+  white-space: nowrap;
+}
+
+
+/* =========================================
+   11. POPUP STATUS
+========================================= */
+
+.vehicle-popup-status {
+  padding:
+    3px
+    6px;
+
+  border-radius: 999px;
+
+  font-size: 8px;
+  font-weight: 700;
+}
+
+
+.vehicle-popup-status.moving {
+  color: #168548;
+
+  background: #e9f8f0;
+}
+
+
+.vehicle-popup-status.idle {
+  color: #a66a13;
+
+  background: #fff5e6;
+}
+
+
+.vehicle-popup-status.stopped {
+  color: #c83e47;
+
+  background: #fff0f1;
+}
+
+
+.vehicle-popup-status.reached {
+  color: #2457b2;
+
+  background: #edf3ff;
+}
+
+
+.vehicle-popup-status.default {
+  color: #667994;
+
+  background: #eef2f6;
+}
+
+
+/* =========================================
+   12. CUSTOM VEHICLE MARKER
+========================================= */
+
+.vehicle-map-marker-wrapper {
+  background: transparent;
+
+  border: 0;
+}
+
+
+.vehicle-map-marker {
+  width: 38px;
+  height: 38px;
+
+  display: grid;
+  place-items: center;
+
+  border:
+    3px solid
+    #ffffff;
+
+  border-radius: 50%;
+
+  box-shadow:
+    0 4px 12px
+    rgba(22, 47, 83, 0.24);
+
+  transition:
+    transform
+    160ms ease,
+    box-shadow
+    160ms ease;
+}
+
+
+.vehicle-map-marker:hover {
+  transform:
+    scale(1.08);
+}
+
+
+.vehicle-map-marker.selected {
+  transform:
+    scale(1.13);
+
+  box-shadow:
+    0 0 0 4px
+    rgba(36, 87, 178, 0.17),
+    0 5px 15px
+    rgba(22, 47, 83, 0.25);
+}
+
+
+.vehicle-map-marker-icon {
+  font-size: 16px;
+
+  line-height: 1;
+}
+
+
+/* Status colors */
+
+.vehicle-map-marker.moving {
+  background: #18a05a;
+}
+
+
+.vehicle-map-marker.idle {
+  background: #e0a022;
+}
+
+
+.vehicle-map-marker.stopped {
+  background: #d94a52;
+}
+
+
+.vehicle-map-marker.reached {
+  background: #2457b2;
+}
+
+
+.vehicle-map-marker.default {
+  background: #74849b;
+}
+
+
+/* =========================================
+   13. ORIGIN / DESTINATION MARKERS
+========================================= */
+
+.route-location-marker-wrapper {
+  background: transparent;
+
+  border: 0;
+}
+
+
+.route-location-marker {
+  width: 24px;
+  height: 24px;
+
+  display: grid;
+  place-items: center;
+
+  border:
+    3px solid
+    #ffffff;
+
+  border-radius: 50%;
+
+  box-shadow:
+    0 3px 9px
+    rgba(17, 42, 78, 0.22);
+}
+
+
+.route-location-marker span {
+  width: 7px;
+  height: 7px;
+
+  display: block;
+
+  border-radius: 50%;
+
+  background: #ffffff;
+}
+
+
+.route-location-marker.origin {
+  background: #2457b2;
+}
+
+
+.route-location-marker.destination {
+  background: #19a05b;
+}
+
+
+/* =========================================
+   14. ROUTE LOADING BADGE
+========================================= */
+
+.route-loading-badge {
+  position: absolute;
+
+  top: 12px;
+  right: 12px;
+
+  z-index: 500;
+
+  min-height: 28px;
+
+  padding:
+    5px
+    9px;
+
+  display: inline-flex;
+  align-items: center;
+
+  gap: 6px;
+
+  border:
+    1px solid
+    #d7e2f1;
+
+  border-radius: 7px;
+
+  color: #526987;
+
+  background:
+    rgba(
+      255,
+      255,
+      255,
+      0.95
+    );
+
+  box-shadow:
+    0 3px 10px
+    rgba(22, 47, 83, 0.1);
+
+  font-size: 9px;
+  font-weight: 600;
+}
+
+
+.route-loading-spinner {
+  width: 12px;
+  height: 12px;
+
+  border:
+    2px solid
+    #d6e1f1;
+
+  border-top-color:
+    #2457b2;
+
+  border-radius: 50%;
+
+  animation:
+    routeLoadingSpin
+    0.7s
+    linear
+    infinite;
+}
+
+
+@keyframes routeLoadingSpin {
+
+  to {
+    transform:
+      rotate(360deg);
+  }
+
+}
+
+
+/* =========================================
+   15. ROUTE ERROR
+========================================= */
+
+.route-error-badge {
+  position: absolute;
+
+  top: 12px;
+  right: 12px;
+
+  z-index: 500;
+
+  min-height: 28px;
+
+  padding:
+    5px
+    8px;
+
+  display: inline-flex;
+  align-items: center;
+
+  gap: 5px;
+
+  border:
+    1px solid
+    #f0d3d6;
+
+  border-radius: 7px;
+
+  color: #b84048;
+
+  background:
+    rgba(
+      255,
+      247,
+      248,
+      0.96
+    );
+
+  box-shadow:
+    0 3px 10px
+    rgba(22, 47, 83, 0.08);
+
+  font-size: 9px;
+  font-weight: 600;
+}
+
+
+/* =========================================
+   16. SELECTED VEHICLE
+========================================= */
+
+.map-selected-info {
+  margin:
+    0
+    12px
+    10px;
+
+  padding:
+    10px
+    11px;
+
+  display: grid;
+
+  grid-template-columns:
+    auto
+    auto
+    minmax(0, 1fr)
+    auto;
+
+  align-items: center;
+
+  gap: 10px;
+
+  border:
+    1px solid
+    #cbdcf7;
+
+  border-radius: 9px;
+
+  background: #f3f7ff;
+}
+
+
+.map-selected-label {
+  color: #718198;
+
+  font-size: 10px;
+  font-weight: 500;
+
+  white-space: nowrap;
+}
+
+
+.map-selected-info strong {
+  color: #2457b2;
+
+  font-size: 13px;
+  font-weight: 700;
+
+  white-space: nowrap;
+}
+
+
+.map-selected-location {
+  min-width: 0;
+
+  overflow: hidden;
+
+  color: #536b8e;
+
+  font-size: 11px;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+
+.map-selected-info small {
+  color: #718198;
+
+  font-size: 10px;
+
+  white-space: nowrap;
+}
+
+
+/* =========================================
+   17. LEGEND
+========================================= */
+
+.tracking-map-legend {
+  margin:
+    0
+    12px
+    12px;
+
+  padding:
+    9px
+    12px;
+
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+
+  gap: 16px;
+
+  border:
+    1px solid
+    #e3e9f1;
+
+  border-radius: 9px;
+
+  background: #fafbfd;
+}
+
+
+.tracking-map-legend span {
+  display: inline-flex;
+  align-items: center;
+
+  gap: 6px;
+
+  color: #62748f;
+
+  font-size: 10px;
+  font-weight: 500;
+}
+
+
+.tracking-map-legend i {
+  width: 8px;
+  height: 8px;
+
+  display: block;
+
+  border-radius: 50%;
+}
+
+
+.tracking-map-legend i.moving {
+  background: #18a05a;
+}
+
+
+.tracking-map-legend i.idle {
+  background: #e0a022;
+}
+
+
+.tracking-map-legend i.stopped {
+  background: #d94a52;
+}
+
+
+.tracking-map-legend i.reached {
+  background: #2457b2;
+}
+
+
+/* =========================================
+   18. EMPTY STATE
+========================================= */
+
+.tracking-map-empty {
+  min-height: 380px;
+
+  padding: 30px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  gap: 7px;
+
+  color: #8795a8;
+
+  text-align: center;
+}
+
+
+.tracking-map-empty svg {
+  color: #7d96bd;
+}
+
+
+.tracking-map-empty strong {
+  margin-top: 4px;
+
+  color: #344d72;
+
+  font-size: 14px;
+  font-weight: 700;
+}
+
+
+.tracking-map-empty span {
+  max-width: 260px;
+
+  color: #8795a8;
+
+  font-size: 10px;
+
+  line-height: 1.5;
+}
+
+
+/* =========================================
+   19. TABLET
+========================================= */
+
+@media (max-width: 900px) {
+
+  .tracking-map-wrapper {
+    height: 420px;
+  }
+
+
+  .map-selected-info {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+  }
+
+
+  .map-selected-label,
+  .map-selected-info strong,
+  .map-selected-info small {
+    white-space: normal;
+  }
+
+}
+
+
+/* =========================================
+   20. MOBILE
+========================================= */
+
+@media (max-width: 650px) {
+
+  .tracking-map-header {
+    min-height: 55px;
+
+    padding:
+      10px
+      11px;
+  }
+
+
+  .map-route-summary {
+    grid-template-columns:
+      1fr;
+
+    gap: 10px;
+  }
+
+
+  .map-route-place.destination {
+    text-align: left;
+  }
+
+
+  .map-route-line {
+    width: 100%;
+  }
+
+
+  .tracking-map-wrapper {
+    width:
+      calc(100% - 20px);
+
+    height: 360px;
+
+    margin:
+      0
+      10px
+      10px;
+  }
+
+
+  .map-selected-info {
+    margin:
+      0
+      10px
+      10px;
+
+    grid-template-columns:
+      1fr;
+
+    gap: 6px;
+  }
+
+
+  .tracking-map-legend {
+    margin:
+      0
+      10px
+      10px;
+
+    gap:
+      10px
+      14px;
+  }
+
+}

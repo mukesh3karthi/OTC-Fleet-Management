@@ -5,6 +5,7 @@ import {
 } from "react-router-dom";
 
 import Login from "./Loginpage/Login";
+
 import Dashboard from "./component/Dashboard";
 
 import ProtectedRoute from "./Protectedroute/ProtectedRoute";
@@ -21,6 +22,8 @@ import Assets from "./pages/Assets";
 import Vehiclemaintenance from "./pages/Vehiclemaintenance";
 import Ownvehicledetails from "./pages/Ownvehicledetails";
 
+import Trackinginput from "./Tracking/Trackinginput";
+
 import Ownvehicledash from "./Ownvehicledetails/Ownvehicledash";
 
 import Intercarting from "./intercarting/Intercarting";
@@ -28,63 +31,47 @@ import Vehicledetails from "./intercarting/Vehicledetails";
 import Dailylog from "./intercarting/Dailylog";
 import Monthlylog from "./intercarting/Monthlylog";
 
+
 function App() {
+
   return (
+
     <Routes>
-      {/* Login */}
+
+      {/* =====================================
+          LOGIN
+      ===================================== */}
+
       <Route
         path="/"
-        element={<Login />}
+        element={
+          <Login />
+        }
       />
 
-      {/* Main dashboard routes */}
+
+      {/* =====================================
+          DASHBOARD
+      ===================================== */}
+
       <Route
         path="/dashboard"
         element={
           <ProtectedRoute>
+
             <Dashboard />
+
           </ProtectedRoute>
         }
       >
+
         <Route
           index
-          element={<DashContent />}
+          element={
+            <DashContent />
+          }
         />
 
-        <Route
-          path="vehicle-maintenance"
-          element={<Vehiclemaintenance />}
-        />
-
-        <Route
-          path="assets"
-          element={<Assets />}
-        />
-
-        <Route
-          path="inbound-outbound"
-          element={<InAndOutBound />}
-        />
-
-        <Route
-          path="tracking"
-          element={<Tracking />}
-        />
-
-        <Route
-          path="warehouse"
-          element={<Warehouse />}
-        />
-
-        <Route
-          path="driver-management"
-          element={<DriverManagement />}
-        />
-
-        <Route
-          path="vehicle-documents"
-          element={<VehicleDocuments />}
-        />
 
         <Route
           path="*"
@@ -95,26 +82,243 @@ function App() {
             />
           }
         />
+
       </Route>
 
-      {/* Own Vehicle routes */}
+
+      {/* =====================================
+          ASSETS
+      ===================================== */}
+
+      <Route
+        path="/assets"
+        element={
+          <ProtectedRoute>
+
+            <Dashboard />
+
+          </ProtectedRoute>
+        }
+      >
+
+        <Route
+          index
+          element={
+            <Assets />
+          }
+        />
+
+      </Route>
+
+
+      {/* =====================================
+          TRACKING
+      ===================================== */}
+
+      <Route
+        path="/tracking"
+        element={
+          <ProtectedRoute>
+
+            <Dashboard />
+
+          </ProtectedRoute>
+        }
+      >
+
+        <Route
+          index
+          element={
+            <Tracking />
+          }
+        />
+
+      </Route>
+
+
+      {/* =====================================
+          TRACKING INPUT
+
+          IMPORTANT:
+          Dashboard stays visible.
+      ===================================== */}
+
+      <Route
+        path="/tracking-input"
+        element={
+          <ProtectedRoute>
+
+            <Dashboard />
+
+          </ProtectedRoute>
+        }
+      >
+
+        <Route
+          index
+          element={
+            <Trackinginput />
+          }
+        />
+
+      </Route>
+
+
+      {/* =====================================
+          INBOUND & OUTBOUND
+      ===================================== */}
+
+      <Route
+        path="/inbound-outbound"
+        element={
+          <ProtectedRoute>
+
+            <Dashboard />
+
+          </ProtectedRoute>
+        }
+      >
+
+        <Route
+          index
+          element={
+            <InAndOutBound />
+          }
+        />
+
+      </Route>
+
+
+      {/* =====================================
+          VEHICLE MAINTENANCE
+      ===================================== */}
+
+      <Route
+        path="/vehicle-maintenance"
+        element={
+          <ProtectedRoute>
+
+            <Dashboard />
+
+          </ProtectedRoute>
+        }
+      >
+
+        <Route
+          index
+          element={
+            <Vehiclemaintenance />
+          }
+        />
+
+      </Route>
+
+
+      {/* =====================================
+          WAREHOUSE
+      ===================================== */}
+
+      <Route
+        path="/warehouse"
+        element={
+          <ProtectedRoute>
+
+            <Dashboard />
+
+          </ProtectedRoute>
+        }
+      >
+
+        <Route
+          index
+          element={
+            <Warehouse />
+          }
+        />
+
+      </Route>
+
+
+      {/* =====================================
+          DRIVER MANAGEMENT
+      ===================================== */}
+
+      <Route
+        path="/driver-management"
+        element={
+          <ProtectedRoute>
+
+            <Dashboard />
+
+          </ProtectedRoute>
+        }
+      >
+
+        <Route
+          index
+          element={
+            <DriverManagement />
+          }
+        />
+
+      </Route>
+
+
+      {/* =====================================
+          VEHICLE DOCUMENTS
+      ===================================== */}
+
+      <Route
+        path="/vehicle-documents"
+        element={
+          <ProtectedRoute>
+
+            <Dashboard />
+
+          </ProtectedRoute>
+        }
+      >
+
+        <Route
+          index
+          element={
+            <VehicleDocuments />
+          }
+        />
+
+      </Route>
+
+
+      {/* =====================================
+          OWN VEHICLE
+      ===================================== */}
+
       <Route
         path="/ownvehicledetaildash"
         element={
           <ProtectedRoute>
+
             <Dashboard />
+
           </ProtectedRoute>
         }
       >
+
         <Route
           index
-          element={<Ownvehicledash />}
+          element={
+            <Ownvehicledash />
+          }
         />
+
 
         <Route
           path="ownvehicledetails"
-          element={<Ownvehicledetails />}
+          element={
+            <Ownvehicledetails />
+          }
         />
+
 
         <Route
           path="*"
@@ -125,57 +329,80 @@ function App() {
             />
           }
         />
+
       </Route>
 
-      {/* Intercarting routes */}
+
+      {/* =====================================
+          INTERCARTING
+      ===================================== */}
+
       <Route
         path="/intercartingdash"
         element={
           <ProtectedRoute>
+
             <Dashboard />
+
           </ProtectedRoute>
         }
       >
+
         <Route
           index
-          element={<Intercartingdash />}
+          element={
+            <Intercartingdash />
+          }
         />
+
 
         <Route
           path="intercarting"
           element={
             <Intercartingprotected>
+
               <Intercarting />
+
             </Intercartingprotected>
           }
         />
+
 
         <Route
           path="intercarting/vehicle-details"
           element={
             <Intercartingprotected>
+
               <Vehicledetails />
+
             </Intercartingprotected>
           }
         />
+
 
         <Route
           path="intercarting/daily-logs"
           element={
             <Intercartingprotected>
+
               <Dailylog />
+
             </Intercartingprotected>
           }
         />
+
 
         <Route
           path="intercarting/monthly-logs"
           element={
             <Intercartingprotected>
+
               <Monthlylog />
+
             </Intercartingprotected>
           }
         />
+
 
         <Route
           path="*"
@@ -186,9 +413,14 @@ function App() {
             />
           }
         />
+
       </Route>
 
-      {/* Unknown routes */}
+
+      {/* =====================================
+          UNKNOWN ROUTE
+      ===================================== */}
+
       <Route
         path="*"
         element={
@@ -198,8 +430,12 @@ function App() {
           />
         }
       />
+
     </Routes>
+
   );
+
 }
+
 
 export default App;

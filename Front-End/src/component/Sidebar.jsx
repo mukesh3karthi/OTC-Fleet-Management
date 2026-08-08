@@ -11,11 +11,13 @@ import {
   FaCar,
   FaExchangeAlt,
   FaFileAlt,
+  FaMapMarkerAlt,
   FaSignOutAlt,
   FaTachometerAlt,
   FaTools,
   FaTruck,
   FaUsers,
+  FaWarehouse,
 } from "react-icons/fa";
 
 import "../css/sidebar.css";
@@ -43,27 +45,37 @@ const Sidebar = ({ collapsed }) => {
     {
       title: "Vehicle Documents",
       icon: <FaFileAlt />,
-      path: "/dashboard/vehicle-documents",
+      path: "/vehicle-documents",
     },
     {
       title: "Assets",
       icon: <FaBoxOpen />,
-      path: "/dashboard/assets",
+      path: "/assets",
+    },
+    {
+      title: "Tracking",
+      icon: <FaMapMarkerAlt />,
+      path: "/tracking",
     },
     {
       title: "Inbound & Outbound",
       icon: <FaTruck />,
-      path: "/dashboard/inbound-outbound",
+      path: "/inbound-outbound",
+    },
+    {
+      title: "Warehouse",
+      icon: <FaWarehouse />,
+      path: "/warehouse",
     },
     {
       title: "Vehicle Maintenance",
       icon: <FaTools />,
-      path: "/dashboard/vehicle-maintenance",
+      path: "/vehicle-maintenance",
     },
     {
       title: "Driver Management",
       icon: <FaUsers />,
-      path: "/dashboard/driver-management",
+      path: "/driver-management",
     },
   ];
 
@@ -84,36 +96,10 @@ const Sidebar = ({ collapsed }) => {
       item.path
     );
 
-    // Dashboard active only on exact /dashboard.
     if (itemPath === "/dashboard") {
       return currentPath === "/dashboard";
     }
 
-    // Intercarting stays active on all its child routes.
-    if (itemPath === "/intercartingdash") {
-      return (
-        currentPath === "/intercartingdash" ||
-        currentPath.startsWith(
-          "/intercartingdash/"
-        )
-      );
-    }
-
-    // Own Vehicle stays active on dashboard and details pages.
-    if (
-      itemPath ===
-      "/ownvehicledetaildash"
-    ) {
-      return (
-        currentPath ===
-          "/ownvehicledetaildash" ||
-        currentPath.startsWith(
-          "/ownvehicledetaildash/"
-        )
-      );
-    }
-
-    // Other dashboard routes.
     return (
       currentPath === itemPath ||
       currentPath.startsWith(
