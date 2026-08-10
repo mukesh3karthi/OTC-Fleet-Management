@@ -1,4 +1,5 @@
 import React, {
+  useCallback,
   useEffect,
   useMemo,
   useState,
@@ -24,246 +25,11 @@ import "../pagescss/tracking.css";
 
 
 /* =========================================
-   SAMPLE TRIP DATA
+   API
 ========================================= */
 
-const tripData = [
-  {
-    id: 1,
-
-    tripId: "2026-1",
-
-    customer: "Hydraulic Transport",
-
-    materialType: "Steel Coil",
-
-    origin: "Bangalore",
-
-    destination: "Chennai",
-
-    tripDate: "2026-08-07",
-
-    vehicles: [
-      {
-        id: 1,
-
-        vehicleNumber: "GJ06AX5788",
-
-        status: "Moving",
-
-        currentLocation: "Vellore",
-
-        speed: 52,
-
-        lastUpdated: "2 min ago",
-
-        latitude: 12.9165,
-
-        longitude: 79.1325,
-      },
-
-      {
-        id: 2,
-
-        vehicleNumber: "MH46DC6140",
-
-        status: "Moving",
-
-        currentLocation: "Krishnagiri",
-
-        speed: 48,
-
-        lastUpdated: "3 min ago",
-
-        latitude: 12.5266,
-
-        longitude: 78.2149,
-      },
-
-      {
-        id: 3,
-
-        vehicleNumber: "GJ12BT1765",
-
-        status: "Idle",
-
-        currentLocation: "Hosur",
-
-        speed: 0,
-
-        lastUpdated: "5 min ago",
-
-        latitude: 12.7409,
-
-        longitude: 77.8253,
-      },
-
-      {
-        id: 4,
-
-        vehicleNumber: "RJ09GB7010",
-
-        status: "Moving",
-
-        currentLocation: "Sriperumbudur",
-
-        speed: 44,
-
-        lastUpdated: "1 min ago",
-
-        latitude: 12.9675,
-
-        longitude: 79.9419,
-      },
-
-      {
-        id: 5,
-
-        vehicleNumber: "RJ09GC0253",
-
-        status: "Stopped",
-
-        currentLocation: "Bangalore Warehouse",
-
-        speed: 0,
-
-        lastUpdated: "8 min ago",
-
-        latitude: 12.9716,
-
-        longitude: 77.5946,
-      },
-    ],
-  },
-
-
-  {
-    id: 2,
-
-    tripId: "2026-2",
-
-    customer: "OTC Logistics",
-
-    materialType: "Heavy Machinery",
-
-    origin: "Hosur",
-
-    destination: "Hyderabad",
-
-    tripDate: "2026-08-07",
-
-    vehicles: [
-      {
-        id: 1,
-
-        vehicleNumber: "TN88AB1023",
-
-        status: "Moving",
-
-        currentLocation: "Anantapur",
-
-        speed: 51,
-
-        lastUpdated: "2 min ago",
-
-        latitude: 14.6819,
-
-        longitude: 77.6006,
-      },
-
-      {
-        id: 2,
-
-        vehicleNumber: "KA01MN8812",
-
-        status: "Idle",
-
-        currentLocation: "Chikkaballapur",
-
-        speed: 0,
-
-        lastUpdated: "6 min ago",
-
-        latitude: 13.4355,
-
-        longitude: 77.7315,
-      },
-
-      {
-        id: 3,
-
-        vehicleNumber: "TN22CD4521",
-
-        status: "Moving",
-
-        currentLocation: "Kurnool",
-
-        speed: 46,
-
-        lastUpdated: "1 min ago",
-
-        latitude: 15.8281,
-
-        longitude: 78.0373,
-      },
-    ],
-  },
-
-
-  {
-    id: 3,
-
-    tripId: "2026-3",
-
-    customer: "National Engineering",
-
-    materialType: "Fabrication Material",
-
-    origin: "Chennai",
-
-    destination: "Coimbatore",
-
-    tripDate: "2026-08-07",
-
-    vehicles: [
-      {
-        id: 1,
-
-        vehicleNumber: "TN09GT5512",
-
-        status: "Reached",
-
-        currentLocation: "Coimbatore",
-
-        speed: 0,
-
-        lastUpdated: "10 min ago",
-
-        latitude: 11.0168,
-
-        longitude: 76.9558,
-      },
-
-      {
-        id: 2,
-
-        vehicleNumber: "TN11BK7712",
-
-        status: "Moving",
-
-        currentLocation: "Avinashi",
-
-        speed: 42,
-
-        lastUpdated: "2 min ago",
-
-        latitude: 11.1926,
-
-        longitude: 77.268,
-      },
-    ],
-  },
-];
+const API_URL =
+  "http://localhost:5000/api/triptracking";
 
 
 /* =========================================
@@ -280,10 +46,161 @@ const statusOptions = [
 
 
 /* =========================================
+   NORMALIZE VEHICLE
+========================================= */
+
+const normalizeVehicle = (
+  vehicle,
+  index
+) => {
+
+  return {
+    ...vehicle,
+
+    /*
+      MongoDB uses _id.
+      Existing frontend components use id.
+    */
+
+    id:
+      vehicle._id ||
+      vehicle.id ||
+      vehicle.vehicleSubId ||
+      `vehicle-${index}`,
+
+
+    /*
+      Create Trip uses currentPosition.
+
+      Existing VehicleColumn and Map
+      use currentLocation.
+
+      Keep both so all components work.
+    */
+
+    currentLocation:
+      vehicle.currentLocation ||
+      vehicle.currentPosition ||
+      "",
+
+    currentPosition:
+      vehicle.currentPosition ||
+      vehicle.currentLocation ||
+      "",
+
+
+    status:
+      vehicle.status ||
+      "Moving",
+
+
+    speed:
+      vehicle.speed ??
+      0,
+
+
+    lastUpdated:
+      vehicle.lastUpdated ||
+      "-",
+
+
+    latitude:
+      vehicle.latitude ??
+      null,
+
+    longitude:
+      vehicle.longitude ??
+      null,
+  };
+};
+
+
+/* =========================================
+   NORMALIZE TRIP
+========================================= */
+
+const normalizeTrip = (
+  trip,
+  index
+) => {
+
+  const vehicles =
+    Array.isArray(
+      trip.vehicles
+    )
+      ? trip.vehicles.map(
+          normalizeVehicle
+        )
+      : [];
+
+
+  return {
+    ...trip,
+
+    /*
+      MongoDB _id -> frontend id
+    */
+
+    id:
+      trip._id ||
+      trip.id ||
+      trip.tripId ||
+      `trip-${index}`,
+
+    vehicles,
+
+
+    /*
+      Support different possible
+      date fields from backend.
+    */
+
+    tripDate:
+      trip.tripDate ||
+      trip.createdAt?.slice(
+        0,
+        10
+      ) ||
+      "",
+  };
+};
+
+
+/* =========================================
    TRACKING COMPONENT
 ========================================= */
 
 const Tracking = () => {
+
+  /* =========================================
+     DATABASE TRIPS
+  ========================================= */
+
+  const [
+    trips,
+    setTrips,
+  ] = useState([]);
+
+
+  /* =========================================
+     LOADING
+  ========================================= */
+
+  const [
+    loading,
+    setLoading,
+  ] = useState(true);
+
+
+  /* =========================================
+     API ERROR
+  ========================================= */
+
+  const [
+    apiError,
+    setApiError,
+  ] = useState("");
+
 
   /* =========================================
      SEARCH
@@ -312,9 +229,7 @@ const Tracking = () => {
   const [
     selectedDate,
     setSelectedDate,
-  ] = useState(
-    "2026-08-07"
-  );
+  ] = useState("");
 
 
   /* =========================================
@@ -324,9 +239,7 @@ const Tracking = () => {
   const [
     selectedTripId,
     setSelectedTripId,
-  ] = useState(
-    tripData[0].id
-  );
+  ] = useState(null);
 
 
   /* =========================================
@@ -336,10 +249,7 @@ const Tracking = () => {
   const [
     selectedVehicleId,
     setSelectedVehicleId,
-  ] = useState(
-    tripData[0]
-      .vehicles[0].id
-  );
+  ] = useState(null);
 
 
   /* =========================================
@@ -350,6 +260,242 @@ const Tracking = () => {
     showTrackingLogin,
     setShowTrackingLogin,
   ] = useState(false);
+
+
+  /* =========================================
+     FETCH TRIPS FROM DATABASE
+  ========================================= */
+
+  const fetchTrips =
+    useCallback(
+      async () => {
+
+        try {
+
+          setLoading(true);
+
+          setApiError("");
+
+
+          const response =
+            await fetch(
+              API_URL,
+              {
+                method: "GET",
+
+                headers: {
+                  Accept:
+                    "application/json",
+                },
+              }
+            );
+
+
+          if (!response.ok) {
+
+            const errorData =
+              await response
+                .json()
+                .catch(
+                  () => ({})
+                );
+
+
+            throw new Error(
+              errorData.message ||
+              `Unable to load trips (${response.status})`
+            );
+          }
+
+
+          const result =
+            await response.json();
+
+
+          console.log(
+            "Trip API Response:",
+            result
+          );
+
+
+          /*
+            Supports backend responses like:
+
+            [ ... ]
+
+            OR
+
+            {
+              success: true,
+              data: [...]
+            }
+
+            OR
+
+            {
+              success: true,
+              trips: [...]
+            }
+          */
+
+          let databaseTrips = [];
+
+
+          if (
+            Array.isArray(
+              result
+            )
+          ) {
+
+            databaseTrips =
+              result;
+
+          } else if (
+            Array.isArray(
+              result.data
+            )
+          ) {
+
+            databaseTrips =
+              result.data;
+
+          } else if (
+            Array.isArray(
+              result.trips
+            )
+          ) {
+
+            databaseTrips =
+              result.trips;
+
+          }
+
+
+          const normalizedTrips =
+            databaseTrips.map(
+              normalizeTrip
+            );
+
+
+          console.log(
+            "Normalized Trips:",
+            normalizedTrips
+          );
+
+
+          setTrips(
+            normalizedTrips
+          );
+
+
+          /*
+            Select first trip automatically.
+          */
+
+          setSelectedTripId(
+            (previousId) => {
+
+              if (
+                normalizedTrips.length ===
+                0
+              ) {
+
+                return null;
+              }
+
+
+              const exists =
+                normalizedTrips.some(
+                  (trip) =>
+                    trip.id ===
+                    previousId
+                );
+
+
+              if (exists) {
+
+                return previousId;
+              }
+
+
+              return normalizedTrips[0]
+                .id;
+            }
+          );
+
+
+        } catch (error) {
+
+          console.error(
+            "Fetch Trips Error:",
+            error
+          );
+
+
+          setTrips([]);
+
+
+          setApiError(
+            error.message ||
+            "Unable to load trips."
+          );
+
+        } finally {
+
+          setLoading(false);
+
+        }
+
+      },
+      []
+    );
+
+
+  /* =========================================
+     LOAD DATABASE DATA
+  ========================================= */
+
+  useEffect(() => {
+
+    fetchTrips();
+
+  }, [
+    fetchTrips,
+  ]);
+
+
+  /* =========================================
+     REFRESH WHEN PAGE GETS FOCUS
+  ========================================= */
+
+  useEffect(() => {
+
+    const handleFocus =
+      () => {
+
+        fetchTrips();
+
+      };
+
+
+    window.addEventListener(
+      "focus",
+      handleFocus
+    );
+
+
+    return () => {
+
+      window.removeEventListener(
+        "focus",
+        handleFocus
+      );
+
+    };
+
+  }, [
+    fetchTrips,
+  ]);
 
 
   /* =========================================
@@ -365,8 +511,16 @@ const Tracking = () => {
           .toLowerCase();
 
 
-      return tripData.filter(
+      return trips.filter(
         (trip) => {
+
+          const vehicles =
+            Array.isArray(
+              trip.vehicles
+            )
+              ? trip.vehicles
+              : [];
+
 
           const searchFields = [
             trip.tripId,
@@ -374,15 +528,19 @@ const Tracking = () => {
             trip.materialType,
             trip.origin,
             trip.destination,
+            trip.lsp,
+            trip.lrNo,
 
-            ...trip.vehicles.map(
+            ...vehicles.map(
               (vehicle) =>
                 vehicle.vehicleNumber
             ),
           ];
 
 
-          /* SEARCH */
+          /* =============================
+             SEARCH
+          ============================= */
 
           const matchesSearch =
             !search ||
@@ -398,7 +556,9 @@ const Tracking = () => {
             );
 
 
-          /* DATE */
+          /* =============================
+             DATE
+          ============================= */
 
           const matchesDate =
             !selectedDate ||
@@ -406,12 +566,14 @@ const Tracking = () => {
               selectedDate;
 
 
-          /* STATUS */
+          /* =============================
+             STATUS
+          ============================= */
 
           const matchesStatus =
             movementFilter ===
               "All" ||
-            trip.vehicles.some(
+            vehicles.some(
               (vehicle) =>
                 vehicle.status ===
                 movementFilter
@@ -428,6 +590,7 @@ const Tracking = () => {
       );
 
     }, [
+      trips,
       searchTerm,
       selectedDate,
       movementFilter,
@@ -449,6 +612,47 @@ const Tracking = () => {
 
 
   /* =========================================
+     KEEP SELECTED TRIP VALID
+  ========================================= */
+
+  useEffect(() => {
+
+    if (
+      filteredTrips.length ===
+      0
+    ) {
+
+      setSelectedTripId(
+        null
+      );
+
+      return;
+    }
+
+
+    const exists =
+      filteredTrips.some(
+        (trip) =>
+          trip.id ===
+          selectedTripId
+      );
+
+
+    if (!exists) {
+
+      setSelectedTripId(
+        filteredTrips[0].id
+      );
+
+    }
+
+  }, [
+    filteredTrips,
+    selectedTripId,
+  ]);
+
+
+  /* =========================================
      KEEP SELECTED VEHICLE VALID
   ========================================= */
 
@@ -456,7 +660,8 @@ const Tracking = () => {
 
     if (
       !selectedTrip ||
-      !selectedTrip.vehicles?.length
+      !selectedTrip
+        .vehicles?.length
     ) {
 
       setSelectedVehicleId(
@@ -468,18 +673,21 @@ const Tracking = () => {
 
 
     const vehicleExists =
-      selectedTrip.vehicles.some(
-        (vehicle) =>
-          vehicle.id ===
-          selectedVehicleId
-      );
+      selectedTrip
+        .vehicles
+        .some(
+          (vehicle) =>
+            vehicle.id ===
+            selectedVehicleId
+        );
 
 
     if (!vehicleExists) {
 
       setSelectedVehicleId(
         selectedTrip
-          .vehicles[0].id
+          .vehicles[0]
+          .id
       );
 
     }
@@ -495,12 +703,15 @@ const Tracking = () => {
   ========================================= */
 
   const selectedVehicle =
-    selectedTrip?.vehicles?.find(
-      (vehicle) =>
-        vehicle.id ===
-        selectedVehicleId
-    ) ||
-    selectedTrip?.vehicles?.[0] ||
+    selectedTrip
+      ?.vehicles
+      ?.find(
+        (vehicle) =>
+          vehicle.id ===
+          selectedVehicleId
+      ) ||
+    selectedTrip
+      ?.vehicles?.[0] ||
     null;
 
 
@@ -533,7 +744,8 @@ const Tracking = () => {
   ) => {
 
     if (
-      status === "Moving"
+      status ===
+      "Moving"
     ) {
 
       return (
@@ -546,7 +758,8 @@ const Tracking = () => {
 
 
     if (
-      status === "Reached"
+      status ===
+      "Reached"
     ) {
 
       return (
@@ -559,7 +772,8 @@ const Tracking = () => {
 
 
     if (
-      status === "Idle"
+      status ===
+      "Idle"
     ) {
 
       return (
@@ -598,7 +812,8 @@ const Tracking = () => {
     ) {
 
       setSelectedVehicleId(
-        trip.vehicles[0].id
+        trip.vehicles[0]
+          .id
       );
 
     } else {
@@ -616,18 +831,14 @@ const Tracking = () => {
      DATA ENTRY BUTTON
   ========================================= */
 
-  const handleDataEntry = () => {
+  const handleDataEntry =
+    () => {
 
-    /*
-      Data Entry first opens
-      the Tracking Login popup.
-    */
+      setShowTrackingLogin(
+        true
+      );
 
-    setShowTrackingLogin(
-      true
-    );
-
-  };
+    };
 
 
   /* =========================================
@@ -650,13 +861,6 @@ const Tracking = () => {
 
   const handleTrackingLoginSuccess =
     () => {
-
-      /*
-        Trackinglogin.jsx will navigate
-        to /tracking-input.
-
-        Here we only close the modal.
-      */
 
       setShowTrackingLogin(
         false
@@ -712,7 +916,6 @@ const Tracking = () => {
             size={16}
           />
 
-
           <span>
             Data Entry
           </span>
@@ -723,14 +926,53 @@ const Tracking = () => {
 
 
       {/* =====================================
+          API ERROR
+      ===================================== */}
+
+      {apiError && (
+
+        <div
+          style={{
+            marginBottom:
+              "12px",
+
+            padding:
+              "10px 14px",
+
+            border:
+              "1px solid #fecaca",
+
+            borderRadius:
+              "8px",
+
+            background:
+              "#fef2f2",
+
+            color:
+              "#b91c1c",
+
+            fontSize:
+              "12px",
+
+            fontWeight:
+              600,
+          }}
+        >
+
+          {apiError}
+
+        </div>
+
+      )}
+
+
+      {/* =====================================
           TOOLBAR
       ===================================== */}
 
       <section className="tracking-toolbar">
 
-        {/* =================================
-            SEARCH
-        ================================= */}
+        {/* SEARCH */}
 
         <div className="tracking-search">
 
@@ -777,9 +1019,7 @@ const Tracking = () => {
         </div>
 
 
-        {/* =================================
-            STATUS FILTER
-        ================================= */}
+        {/* STATUS FILTER */}
 
         <div className="tracking-status-filter">
 
@@ -823,9 +1063,7 @@ const Tracking = () => {
         </div>
 
 
-        {/* =================================
-            DATE
-        ================================= */}
+        {/* DATE */}
 
         <label className="tracking-date">
 
@@ -854,71 +1092,98 @@ const Tracking = () => {
 
 
       {/* =====================================
-          MAIN TRACKING LAYOUT
+          LOADING
       ===================================== */}
 
-      <section className="tracking-layout">
+      {loading ? (
 
-        {/* =================================
-            TRIP LIST
-        ================================= */}
+        <div
+          style={{
+            padding:
+              "40px",
 
-        <TripListColumn
-          trips={
-            filteredTrips
-          }
-          selectedTrip={
-            selectedTrip
-          }
-          onSelectTrip={
-            handleTripSelect
-          }
-        />
+            textAlign:
+              "center",
+
+            color:
+              "#64748b",
+
+            fontSize:
+              "13px",
+
+            fontWeight:
+              600,
+          }}
+        >
+
+          Loading trips...
+
+        </div>
+
+      ) : (
+
+        /* =====================================
+           MAIN TRACKING LAYOUT
+        ===================================== */
+
+        <section className="tracking-layout">
+
+          {/* TRIP LIST */}
+
+          <TripListColumn
+            trips={
+              filteredTrips
+            }
+            selectedTrip={
+              selectedTrip
+            }
+            onSelectTrip={
+              handleTripSelect
+            }
+          />
 
 
-        {/* =================================
-            VEHICLE DETAILS
-        ================================= */}
+          {/* VEHICLE DETAILS */}
 
-        <VehicleColumn
-          trip={
-            selectedTrip
-          }
-          selectedVehicle={
-            selectedVehicle
-          }
-          onSelectVehicle={
-            setSelectedVehicleId
-          }
-          getStatusClass={
-            getStatusClass
-          }
-          getStatusIcon={
-            getStatusIcon
-          }
-        />
+          <VehicleColumn
+            trip={
+              selectedTrip
+            }
+            selectedVehicle={
+              selectedVehicle
+            }
+            onSelectVehicle={
+              setSelectedVehicleId
+            }
+            getStatusClass={
+              getStatusClass
+            }
+            getStatusIcon={
+              getStatusIcon
+            }
+          />
 
 
-        {/* =================================
-            VEHICLE MAP
-        ================================= */}
+          {/* VEHICLE MAP */}
 
-        <TrackingMapColumn
-          trip={
-            selectedTrip
-          }
-          selectedVehicle={
-            selectedVehicle
-          }
-          onSelectVehicle={
-            setSelectedVehicleId
-          }
-          getStatusClass={
-            getStatusClass
-          }
-        />
+          <TrackingMapColumn
+            trip={
+              selectedTrip
+            }
+            selectedVehicle={
+              selectedVehicle
+            }
+            onSelectVehicle={
+              setSelectedVehicleId
+            }
+            getStatusClass={
+              getStatusClass
+            }
+          />
 
-      </section>
+        </section>
+
+      )}
 
 
       {/* =====================================

@@ -1473,3 +1473,208 @@ input[type="number"]::-webkit-outer-spin-button {
   }
 
 }
+
+.tracking-form-save:disabled {
+  opacity: 0.65;
+
+  cursor: not-allowed;
+
+  transform: none;
+
+  box-shadow: none;
+}
+
+/* =========================================
+   DISABLED ACTIONS
+========================================= */
+
+.tracking-form-save:disabled,
+.tracking-form-cancel:disabled,
+.tracking-add-vehicle-btn:disabled,
+.tracking-remove-vehicle-btn:disabled,
+.tracking-input-back:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+  transform: none;
+}
+
+.tracking-form-save:disabled {
+  box-shadow: none;
+}
+
+/* =========================================
+   EXPANDED VEHICLE CARD
+========================================= */
+
+.tracking-vehicle-expanded-card {
+  background: #ffffff;
+
+  border:
+    1px solid #dbe4ef;
+
+  border-radius: 12px;
+
+  overflow: hidden;
+}
+
+
+/* =========================================
+   VEHICLE SUBSECTION
+========================================= */
+
+.tracking-vehicle-subsection-title {
+  min-height: 40px;
+
+  padding:
+    0 12px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 7px;
+
+  border-top:
+    1px solid #e8edf4;
+
+  border-bottom:
+    1px solid #e8edf4;
+
+  color: #405a7b;
+
+  background:
+    #f8fafc;
+
+  font-size: 9px;
+  font-weight: 700;
+
+  letter-spacing:
+    0.2px;
+
+  text-transform:
+    uppercase;
+}
+
+
+.tracking-vehicle-subsection-title span {
+  width: 26px;
+  height: 26px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 7px;
+}
+
+
+/* TRACKING */
+
+.tracking-vehicle-subsection-title.tracking span {
+  color: #2457b2;
+
+  background:
+    #eaf2ff;
+}
+
+
+/* LOADING */
+
+.tracking-vehicle-subsection-title.loading {
+  color: #18764c;
+
+  background:
+    #f8fcfa;
+}
+
+
+.tracking-vehicle-subsection-title.loading span {
+  color: #168551;
+
+  background:
+    #eaf8f1;
+}
+
+
+/* UNLOADING */
+
+.tracking-vehicle-subsection-title.unloading {
+  color: #8d621a;
+
+  background:
+    #fffdf8;
+}
+
+
+.tracking-vehicle-subsection-title.unloading span {
+  color: #996616;
+
+  background:
+    #fff5df;
+}
+
+
+/* DOCUMENT */
+
+.tracking-vehicle-subsection-title.document {
+  color: #67489c;
+
+  background:
+    #fcfaff;
+}
+
+
+.tracking-vehicle-subsection-title.document span {
+  color: #7552bb;
+
+  background:
+    #f3eeff;
+}
+
+
+/* =========================================
+   VEHICLE GRID
+========================================= */
+
+.tracking-vehicle-expanded-card
+.tracking-vehicle-entry-grid {
+  padding:
+    13px 12px 15px;
+
+  grid-template-columns:
+    repeat(
+      3,
+      minmax(0, 1fr)
+    );
+
+  gap:
+    12px 13px;
+}
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (
+  max-width: 1100px
+) {
+  .tracking-vehicle-expanded-card
+  .tracking-vehicle-entry-grid {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+  }
+}
+
+
+@media (
+  max-width: 650px
+) {
+  .tracking-vehicle-expanded-card
+  .tracking-vehicle-entry-grid {
+    grid-template-columns:
+      1fr;
+  }
+}

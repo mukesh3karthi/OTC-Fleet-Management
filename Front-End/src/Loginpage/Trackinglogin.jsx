@@ -20,8 +20,8 @@ import "./Trackinglogin.css";
 
 const Trackinglogin = ({
   onClose,
+  onLoginSuccess,
 }) => {
-
   const navigate =
     useNavigate();
 
@@ -50,6 +50,12 @@ const Trackinglogin = ({
   ] = useState("");
 
 
+  const [
+    isLoggingIn,
+    setIsLoggingIn,
+  ] = useState(false);
+
+
   /* =========================================
      LOGIN
   ========================================= */
@@ -57,7 +63,6 @@ const Trackinglogin = ({
   const handleSubmit = (
     event
   ) => {
-
     event.preventDefault();
 
     setError("");
@@ -66,14 +71,14 @@ const Trackinglogin = ({
     const cleanUsername =
       username.trim();
 
+    const cleanPassword =
+      password.trim();
 
-    /* Both empty */
 
     if (
       !cleanUsername &&
-      !password.trim()
+      !cleanPassword
     ) {
-
       setError(
         "Please enter username and password."
       );
@@ -82,10 +87,7 @@ const Trackinglogin = ({
     }
 
 
-    /* Username empty */
-
     if (!cleanUsername) {
-
       setError(
         "Please enter username."
       );
@@ -94,10 +96,7 @@ const Trackinglogin = ({
     }
 
 
-    /* Password empty */
-
-    if (!password.trim()) {
-
+    if (!cleanPassword) {
       setError(
         "Please enter password."
       );
@@ -106,20 +105,25 @@ const Trackinglogin = ({
     }
 
 
+    setIsLoggingIn(
+      true
+    );
+
+
     /* =========================================
-       TEMPORARY LOGIN CHECK
+       TEMP LOGIN
     ========================================= */
 
     if (
-      cleanUsername === "admin" &&
-      password === "admin@2026"
+      cleanUsername ===
+        "admin" &&
+      password ===
+        "admin@2026"
     ) {
-
       sessionStorage.setItem(
         "trackingLoggedIn",
         "true"
       );
-
 
       sessionStorage.setItem(
         "trackingUsername",
@@ -127,17 +131,17 @@ const Trackinglogin = ({
       );
 
 
-      /* Close login */
+      onLoginSuccess?.();
 
       onClose?.();
 
 
-      /* =========================================
-         OPEN TRACKING INPUT PAGE
-      ========================================= */
+      /* =====================================
+         OPEN TRIP DETAILS
+      ===================================== */
 
       navigate(
-        "/tracking-input"
+        "/trip-details"
       );
 
 
@@ -145,10 +149,13 @@ const Trackinglogin = ({
     }
 
 
+    setIsLoggingIn(
+      false
+    );
+
     setError(
       "Invalid username or password."
     );
-
   };
 
 
@@ -159,21 +166,16 @@ const Trackinglogin = ({
   const handleOverlayClick = (
     event
   ) => {
-
     if (
       event.target ===
       event.currentTarget
     ) {
-
       onClose?.();
-
     }
-
   };
 
 
   return (
-
     <div
       className="tracking-login-overlay"
       onMouseDown={
@@ -183,7 +185,6 @@ const Trackinglogin = ({
       aria-modal="true"
       aria-labelledby="tracking-login-title"
     >
-
       <div
         className="tracking-login-modal"
         onMouseDown={(
@@ -193,8 +194,6 @@ const Trackinglogin = ({
         }
       >
 
-        {/* CLOSE */}
-
         <button
           type="button"
           className="tracking-login-close"
@@ -203,33 +202,23 @@ const Trackinglogin = ({
           }
           aria-label="Close login"
         >
-
           <X
             size={17}
           />
-
         </button>
 
 
-        {/* ICON */}
-
         <div className="tracking-login-icon">
-
           <LockKeyhole
             size={25}
           />
-
         </div>
 
 
-        {/* HEADING */}
-
         <div className="tracking-login-heading">
-
           <span>
             SECURE ACCESS
           </span>
-
 
           <h2
             id="tracking-login-title"
@@ -237,16 +226,12 @@ const Trackinglogin = ({
             Tracking Login
           </h2>
 
-
           <p>
             Sign in to continue with
-            tracking data entry.
+            trip management.
           </p>
-
         </div>
 
-
-        {/* FORM */}
 
         <form
           className="tracking-login-form"
@@ -255,23 +240,17 @@ const Trackinglogin = ({
           }
         >
 
-          {/* USERNAME */}
-
           <div className="tracking-login-field">
-
             <label
               htmlFor="trackingUsername"
             >
               Username
             </label>
 
-
             <div className="tracking-login-input">
-
               <User
                 size={17}
               />
-
 
               <input
                 id="trackingUsername"
@@ -283,40 +262,30 @@ const Trackinglogin = ({
                 onChange={(
                   event
                 ) => {
-
                   setUsername(
                     event.target.value
                   );
 
                   setError("");
-
                 }}
                 autoComplete="username"
                 autoFocus
               />
-
             </div>
-
           </div>
 
 
-          {/* PASSWORD */}
-
           <div className="tracking-login-field">
-
             <label
               htmlFor="trackingPassword"
             >
               Password
             </label>
 
-
             <div className="tracking-login-input">
-
               <LockKeyhole
                 size={17}
               />
-
 
               <input
                 id="trackingPassword"
@@ -332,17 +301,14 @@ const Trackinglogin = ({
                 onChange={(
                   event
                 ) => {
-
                   setPassword(
                     event.target.value
                   );
 
                   setError("");
-
                 }}
                 autoComplete="current-password"
               />
-
 
               <button
                 type="button"
@@ -359,84 +325,64 @@ const Trackinglogin = ({
                     : "Show password"
                 }
               >
-
                 {showPassword ? (
-
                   <EyeOff
                     size={17}
                   />
-
                 ) : (
-
                   <Eye
                     size={17}
                   />
-
                 )}
-
               </button>
-
             </div>
-
           </div>
 
 
-          {/* ERROR */}
-
           {error && (
-
             <div
               className="tracking-login-error"
               role="alert"
             >
               {error}
             </div>
-
           )}
 
-
-          {/* LOGIN */}
 
           <button
             type="submit"
             className="tracking-login-submit"
+            disabled={
+              isLoggingIn
+            }
           >
-
             <ShieldCheck
               size={16}
             />
 
-
             <span>
-              Login
+              {isLoggingIn
+                ? "Opening..."
+                : "Login"}
             </span>
-
           </button>
 
         </form>
 
 
-        {/* FOOTER */}
-
         <div className="tracking-login-footer">
-
           <LockKeyhole
             size={12}
           />
 
-
           <span>
             Authorized personnel only
           </span>
-
         </div>
 
       </div>
-
     </div>
-
   );
-
 };
 
 
