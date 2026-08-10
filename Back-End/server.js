@@ -62,66 +62,91 @@ const PORT =
   process.env.PORT ||
   5000;
 
-
 /* ==========================================
    CORS
 ========================================== */
 
 const allowedOrigins = [
-  process.env.FRONTEND_URL,
   "http://localhost:5173",
-]
-  .filter(Boolean);
+
+  "https://otc-fleet-management-git-main-mukesh3karthis-projects.vercel.app",
+
+  "https://otc-fleet-management-gamma.vercel.app",
+];
 
 
 app.use(
   cors({
-    origin:
-      function (
-        origin,
-        callback
+    origin: function (
+      origin,
+      callback
+    ) {
+      /*
+        Allow requests without Origin
+        such as Postman / Render health check.
+      */
+
+      if (!origin) {
+        return callback(
+          null,
+          true
+        );
+      }
+
+
+      /*
+        Exact allowed domains.
+      */
+
+      if (
+        allowedOrigins.includes(
+          origin
+        )
       ) {
-
-        /*
-          Allow requests without an Origin,
-          e.g. Postman/browser direct API.
-        */
-
-        if (!origin) {
-          return callback(
-            null,
-            true
-          );
-        }
+        return callback(
+          null,
+          true
+        );
+      }
 
 
-        if (
-          allowedOrigins.includes(
-            origin
-          )
-        ) {
-          return callback(
-            null,
-            true
-          );
-        }
+      /*
+        Allow your Vercel preview
+        deployments too.
+      */
 
-
-        console.log(
-          "Blocked CORS Origin:",
+      const isVercelPreview =
+        /^https:\/\/otc-fleet-management-[a-zA-Z0-9-]+-mukesh3karthis-projects\.vercel\.app$/.test(
           origin
         );
 
 
+      if (
+        isVercelPreview
+      ) {
         return callback(
-          new Error(
-            "Not allowed by CORS."
-          )
+          null,
+          true
         );
-      },
+      }
 
-    credentials:
-      true,
+
+      console.log(
+        "Blocked CORS Origin:",
+        origin
+      );
+
+
+      return callback(
+        new Error(
+          "Not allowed by CORS."
+        )
+      );
+    },
+
+
+    credentials: true,
+
 
     methods: [
       "GET",
@@ -131,6 +156,7 @@ app.use(
       "DELETE",
       "OPTIONS",
     ],
+
 
     allowedHeaders: [
       "Content-Type",
@@ -232,7 +258,7 @@ app.get(
         database:
           mongoose.connection
             .readyState ===
-          1
+            1
             ? "Connected"
             : "Disconnected",
 
@@ -469,10 +495,9 @@ const startServer =
           );
 
           console.log(
-            `Environment : ${
-              process.env
-                .NODE_ENV ||
-              "development"
+            `Environment : ${process.env
+              .NODE_ENV ||
+            "development"
             }`
           );
 
