@@ -1,12 +1,18 @@
 import React, { useState } from "react";
 import axios from "axios";
+
 import {
   useLocation,
   useNavigate,
 } from "react-router-dom";
 
 import "./Login.css";
-import OTClogo from "../asset/otclogo.jpg"
+import OTClogo from "../asset/otclogo.jpg";
+
+
+/* =========================================
+   API CONFIGURATION
+========================================= */
 
 const API_BASE_URL =
   import.meta.env.VITE_API_URL ||
@@ -14,6 +20,11 @@ const API_BASE_URL =
 
 const LOGIN_API =
   `${API_BASE_URL}/api/auth/login`;
+
+
+/* =========================================
+   LOGIN COMPONENT
+========================================= */
 
 const Login = () => {
   const [username, setUsername] =
@@ -43,27 +54,53 @@ const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+
+  /* =========================================
+     CLEAR ERRORS
+  ========================================= */
+
   const clearErrors = () => {
     setUsernameError("");
     setPasswordError("");
     setGeneralError("");
   };
 
+
+  /* =========================================
+     USERNAME CHANGE
+  ========================================= */
+
   const handleUsernameChange = (
     event
   ) => {
-    setUsername(event.target.value);
+    setUsername(
+      event.target.value
+    );
+
     setUsernameError("");
     setGeneralError("");
   };
 
+
+  /* =========================================
+     PASSWORD CHANGE
+  ========================================= */
+
   const handlePasswordChange = (
     event
   ) => {
-    setPassword(event.target.value);
+    setPassword(
+      event.target.value
+    );
+
     setPasswordError("");
     setGeneralError("");
   };
+
+
+  /* =========================================
+     FORM VALIDATION
+  ========================================= */
 
   const validateForm = () => {
     const cleanUsername =
@@ -73,6 +110,9 @@ const Login = () => {
       password.trim();
 
     clearErrors();
+
+
+    /* BOTH EMPTY */
 
     if (
       !cleanUsername &&
@@ -85,6 +125,9 @@ const Login = () => {
       return false;
     }
 
+
+    /* USERNAME EMPTY */
+
     if (!cleanUsername) {
       setUsernameError(
         "Please enter username."
@@ -92,6 +135,9 @@ const Login = () => {
 
       return false;
     }
+
+
+    /* PASSWORD EMPTY */
 
     if (!cleanPassword) {
       setPasswordError(
@@ -101,38 +147,65 @@ const Login = () => {
       return false;
     }
 
+
     return true;
   };
+
+
+  /* =========================================
+     LOGIN
+  ========================================= */
 
   const handleLogin = async (
     event
   ) => {
     event.preventDefault();
 
+
+    /* VALIDATE */
+
     if (!validateForm()) {
       return;
     }
+
 
     try {
       setLoading(true);
       setGeneralError("");
 
-      const response = await axios.post(
-        LOGIN_API,
-        {
-          username: username.trim(),
-          password,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
+
+      /* =====================================
+         LOGIN API CALL
+      ===================================== */
+
+      const response =
+        await axios.post(
+          LOGIN_API,
+          {
+            username:
+              username.trim(),
+
+            password:
+              password,
           },
-          timeout: 60000,
-        }
-      );
+          {
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+
+            timeout: 60000,
+          }
+        );
+
+
+      /* =====================================
+         GET TOKEN
+      ===================================== */
 
       const token =
         response.data?.token;
+
 
       if (!token) {
         setGeneralError(
@@ -142,35 +215,62 @@ const Login = () => {
         return;
       }
 
+
+      /* =====================================
+         GET USERNAME
+      ===================================== */
+
       const loggedInUsername =
         response.data?.user
           ?.username ||
         response.data?.username ||
         username.trim();
 
+
+      /* =====================================
+         SAVE LOGIN
+      ===================================== */
+
       localStorage.setItem(
         "token",
         token
       );
+
 
       localStorage.setItem(
         "username",
         loggedInUsername
       );
 
+
+      /* =====================================
+         REDIRECT
+      ===================================== */
+
       const redirectPath =
         location.state?.from
           ?.pathname ||
         "/dashboard";
 
-      navigate(redirectPath, {
-        replace: true,
-      });
+
+      navigate(
+        redirectPath,
+        {
+          replace: true,
+        }
+      );
+
     } catch (loginError) {
+
       console.error(
         "Login error:",
         loginError
       );
+
+
+      /* =====================================
+         TIMEOUT
+      ===================================== */
 
       if (
         loginError.code ===
@@ -183,20 +283,34 @@ const Login = () => {
         return;
       }
 
+
+      /* =====================================
+         NETWORK / CORS ERROR
+      ===================================== */
+
       if (!loginError.response) {
         setGeneralError(
-          "Unable to connect to the server. Make sure the backend is running."
+          "Unable to connect to the server. Please try again."
         );
 
         return;
       }
 
+
+      /* =====================================
+         SERVER RESPONSE
+      ===================================== */
+
       const status =
         loginError.response.status;
+
 
       const serverMessage =
         loginError.response?.data
           ?.message;
+
+
+      /* INVALID LOGIN */
 
       if (
         status === 400 ||
@@ -210,61 +324,117 @@ const Login = () => {
         return;
       }
 
+
+      /* SERVER ERROR */
+
       setGeneralError(
         serverMessage ||
         "Login failed. Please try again."
       );
+
     } finally {
+
       setLoading(false);
+
     }
   };
 
+
+  /* =========================================
+     UI
+  ========================================= */
+
   return (
     <main className="login-page">
+
       <section className="login-card">
+
+
+        {/* =====================================
+            LEFT PANEL
+        ===================================== */}
+
         <div className="login-left-panel">
+
           <div className="login-left-content">
+
             <img
               src={OTClogo}
               alt="OTC Groups logo"
               className="login-logo"
             />
 
-            <h1>OTC Groups</h1>
+
+            <h1>
+              OTC Groups
+            </h1>
+
 
             <p>
-              Thinking the way
-              forward...
+              Thinking the way forward...
             </p>
 
+
             <div className="login-decoration">
+
               <span />
               <span />
               <span />
+
             </div>
+
           </div>
+
         </div>
 
+
+        {/* =====================================
+            RIGHT PANEL
+        ===================================== */}
+
         <div className="login-right-panel">
+
           <div className="login-form-wrapper">
+
+
+            {/* HEADING */}
+
             <div className="login-heading">
-              <h2>Welcome Back</h2>
+
+              <h2>
+                Welcome Back
+              </h2>
+
 
               <p>
                 Sign in to continue to
                 your dashboard.
               </p>
+
             </div>
+
+
+            {/* =================================
+                FORM
+            ================================= */}
 
             <form
               className="login-form"
               onSubmit={handleLogin}
               noValidate
             >
+
+
+              {/* USERNAME */}
+
               <div className="login-field">
-                <label htmlFor="username">
+
+                <label
+                  htmlFor="username"
+                >
                   Username
                 </label>
+
 
                 <input
                   id="username"
@@ -283,9 +453,11 @@ const Login = () => {
                       ? "input-error"
                       : ""
                   }
-                  aria-invalid={Boolean(
-                    usernameError
-                  )}
+                  aria-invalid={
+                    Boolean(
+                      usernameError
+                    )
+                  }
                   aria-describedby={
                     usernameError
                       ? "username-error"
@@ -293,20 +465,31 @@ const Login = () => {
                   }
                 />
 
+
                 {usernameError && (
+
                   <p
                     id="username-error"
                     className="field-error"
                   >
                     {usernameError}
                   </p>
+
                 )}
+
               </div>
 
+
+              {/* PASSWORD */}
+
               <div className="login-field">
-                <label htmlFor="password">
+
+                <label
+                  htmlFor="password"
+                >
                   Password
                 </label>
+
 
                 <input
                   id="password"
@@ -324,9 +507,11 @@ const Login = () => {
                       ? "input-error"
                       : ""
                   }
-                  aria-invalid={Boolean(
-                    passwordError
-                  )}
+                  aria-invalid={
+                    Boolean(
+                      passwordError
+                    )
+                  }
                   aria-describedby={
                     passwordError
                       ? "password-error"
@@ -334,38 +519,61 @@ const Login = () => {
                   }
                 />
 
+
                 {passwordError && (
+
                   <p
                     id="password-error"
                     className="field-error"
                   >
                     {passwordError}
                   </p>
+
                 )}
+
               </div>
 
+
+              {/* =================================
+                  GENERAL ERROR
+              ================================= */}
+
               {generalError && (
+
                 <div
                   className="login-error-message"
                   role="alert"
                 >
                   {generalError}
                 </div>
+
               )}
+
+
+              {/* =================================
+                  LOGIN BUTTON
+              ================================= */}
 
               <button
                 type="submit"
                 className="login-button"
                 disabled={loading}
               >
+
                 {loading
                   ? "Logging in..."
                   : "Login"}
+
               </button>
+
             </form>
+
           </div>
+
         </div>
+
       </section>
+
     </main>
   );
 };
