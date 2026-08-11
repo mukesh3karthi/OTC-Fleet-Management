@@ -63,108 +63,149 @@ const PORT =
   5000;
 
 /* ==========================================
+   /* ==========================================
    CORS
 ========================================== */
 
 const allowedOrigins = [
-  "http://localhost:5173",
+  /* Production */
+
+  "https://otc-fleet-management.vercel.app",
+
+  /* Existing Vercel deployment */
 
   "https://otc-fleet-management-git-main-mukesh3karthis-projects.vercel.app",
 
   "https://otc-fleet-management-gamma.vercel.app",
+
+  /* Custom domain */
+
+  "https://fleet.otcgroups.in",
 ];
 
 
-app.use(
-  cors({
-    origin: function (
-      origin,
-      callback
-    ) {
-      /*
-        Allow requests without Origin
-        such as Postman / Render health check.
-      */
+const corsOptions = {
+  origin: (
+    origin,
+    callback
+  ) => {
 
-      if (!origin) {
-        return callback(
-          null,
-          true
-        );
-      }
+    /*
+      Allow requests without an Origin:
+      Postman, Render health checks,
+      server-to-server requests.
+    */
 
-
-      /*
-        Exact allowed domains.
-      */
-
-      if (
-        allowedOrigins.includes(
-          origin
-        )
-      ) {
-        return callback(
-          null,
-          true
-        );
-      }
+    if (!origin) {
+      return callback(
+        null,
+        true
+      );
+    }
 
 
-      /*
-        Allow your Vercel preview
-        deployments too.
-      */
+    /* =====================================
+       LOCAL DEVELOPMENT
+    ===================================== */
 
-      const isVercelPreview =
-        /^https:\/\/otc-fleet-management-[a-zA-Z0-9-]+-mukesh3karthis-projects\.vercel\.app$/.test(
-          origin
-        );
+    const isLocalhost =
+      /^http:\/\/localhost:\d+$/.test(
+        origin
+      );
 
-
-      if (
-        isVercelPreview
-      ) {
-        return callback(
-          null,
-          true
-        );
-      }
-
-
-      console.log(
-        "Blocked CORS Origin:",
+    const isLocalIp =
+      /^http:\/\/127\.0\.0\.1:\d+$/.test(
         origin
       );
 
 
+    if (
+      isLocalhost ||
+      isLocalIp
+    ) {
       return callback(
-        new Error(
-          "Not allowed by CORS."
-        )
+        null,
+        true
       );
-    },
+    }
 
 
-    credentials: true,
+    /* =====================================
+       EXACT PRODUCTION DOMAINS
+    ===================================== */
+
+    if (
+      allowedOrigins.includes(
+        origin
+      )
+    ) {
+      return callback(
+        null,
+        true
+      );
+    }
 
 
-    methods: [
-      "GET",
-      "POST",
-      "PUT",
-      "PATCH",
-      "DELETE",
-      "OPTIONS",
-    ],
+    /* =====================================
+       VERCEL PREVIEW DOMAINS
+    ===================================== */
+
+    const isVercelPreview =
+      /^https:\/\/otc-fleet-management-[a-zA-Z0-9-]+-mukesh3karthis-projects\.vercel\.app$/.test(
+        origin
+      );
 
 
-    allowedHeaders: [
-      "Content-Type",
-      "Authorization",
-    ],
-  })
+    if (isVercelPreview) {
+      return callback(
+        null,
+        true
+      );
+    }
+
+
+    console.log(
+      "❌ Blocked CORS Origin:",
+      origin
+    );
+
+
+    return callback(
+      new Error(
+        "Not allowed by CORS."
+      )
+    );
+  },
+
+
+  credentials: true,
+
+
+  methods: [
+    "GET",
+    "POST",
+    "PUT",
+    "PATCH",
+    "DELETE",
+    "OPTIONS",
+  ],
+
+
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+  ],
+
+
+  optionsSuccessStatus: 204,
+};
+
+
+app.use(
+  cors(
+    corsOptions
+  )
 );
-
 
 /* ==========================================
    BODY PARSER
