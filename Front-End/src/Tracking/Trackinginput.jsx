@@ -8,6 +8,11 @@ import {
   ArrowLeft,
   Building2,
   CalendarDays,
+  CheckCircle2,
+  ChevronDown,
+  ChevronRight,
+  CircleAlert,
+  ClipboardList,
   Clock3,
   FileSignature,
   FileText,
@@ -23,6 +28,7 @@ import {
   Trash2,
   Truck,
   UserRound,
+  X,
 } from "lucide-react";
 
 import {
@@ -253,6 +259,8 @@ const createVehicle = (
 
   lrNo: "",
 
+  lrStatus: "",
+
   lrRemarks: "",
 
   lrSignature: "",
@@ -263,11 +271,23 @@ const createVehicle = (
   podStatus:
     "Pending",
 
+  courierName: "",
+
+  trackingId: "",
+
   podCourierDate:
     "",
 
   podRemarks:
     "",
+
+
+  /* DRIVER */
+
+  driverName: "",
+
+  driverNumber: "",
+
 });
 
 
@@ -295,6 +315,7 @@ const normalizeVehicleForForm = (
     vehicleSubId:
       vehicle.vehicleSubId ||
       `${tripId}-V${index + 1}`,
+
 
     vehicleNumber:
       vehicle.vehicleNumber ||
@@ -388,6 +409,10 @@ const normalizeVehicleForForm = (
       vehicle.lrNo ||
       "",
 
+    lrStatus:
+      vehicle.lrStatus ||
+      "",
+
     lrRemarks:
       vehicle.lrRemarks ||
       "",
@@ -403,6 +428,16 @@ const normalizeVehicleForForm = (
       vehicle.podStatus ||
       "Pending",
 
+    courierName:
+      vehicle.courierName ||
+      vehicle.podCourierName ||
+      "",
+
+    trackingId:
+      vehicle.trackingId ||
+      vehicle.podTrackingId ||
+      "",
+
     podCourierDate:
       formatDateForInput(
         vehicle.podCourierDate
@@ -411,6 +446,19 @@ const normalizeVehicleForForm = (
     podRemarks:
       vehicle.podRemarks ||
       "",
+
+
+    /* DRIVER */
+
+    driverName:
+      vehicle.driverName ||
+      "",
+
+    driverNumber:
+      vehicle.driverNumber ||
+      vehicle.driverPhone ||
+      "",
+
   };
 };
 
@@ -482,13 +530,33 @@ const Trackinginput = () => {
 
       customer: "",
 
+      clientContactPerson: "",
+
+      clientPhone: "",
+
       materialType: "",
 
       lsp: "",
 
+      transporterContactPerson: "",
+
+      transporterPhone: "",
+
       origin: "",
 
       destination: "",
+
+      routeLocations: [],
+
+      escortVehicleNumber: "",
+
+      escortName: "",
+
+      escortContactNumber: "",
+
+      supervisorName: "",
+
+      supervisorContact: "",
 
       estimatedTransitDays:
         "",
@@ -553,6 +621,18 @@ const Trackinginput = () => {
         editTrip.customer ||
         "",
 
+      clientContactPerson:
+        editTrip.clientContactPerson ||
+        editTrip.customerContactPerson ||
+        editTrip.contactPerson ||
+        "",
+
+      clientPhone:
+        editTrip.clientPhone ||
+        editTrip.customerPhone ||
+        editTrip.contactNumber ||
+        "",
+
       materialType:
         editTrip.materialType ||
         "",
@@ -561,12 +641,72 @@ const Trackinginput = () => {
         editTrip.lsp ||
         "",
 
+      transporterContactPerson:
+        editTrip.transporterContactPerson ||
+        editTrip.lspContactPerson ||
+        "",
+
+      transporterPhone:
+        editTrip.transporterPhone ||
+        editTrip.lspPhone ||
+        "",
+
       origin:
         editTrip.origin ||
         "",
 
       destination:
         editTrip.destination ||
+        "",
+
+      routeLocations:
+        (
+          editTrip.routeLocations ||
+          editTrip.routeStops ||
+          editTrip.checkpoints ||
+          editTrip.waypoints ||
+          []
+        ).map(
+          (routeLocation, routeIndex) => ({
+            id:
+              routeLocation?.id ||
+              routeLocation?._id ||
+              `trip-route-${routeIndex}`,
+
+            name:
+              typeof routeLocation === "string"
+                ? routeLocation
+                : (
+                    routeLocation?.name ||
+                    routeLocation?.location ||
+                    routeLocation?.city ||
+                    routeLocation?.place ||
+                    routeLocation?.label ||
+                    ""
+                  ),
+          })
+        ),
+
+      escortVehicleNumber:
+        editTrip.escortVehicleNumber ||
+        "",
+
+      escortName:
+        editTrip.escortName ||
+        "",
+
+      escortContactNumber:
+        editTrip.escortContactNumber ||
+        editTrip.escortPhone ||
+        "",
+
+      supervisorName:
+        editTrip.supervisorName ||
+        "",
+
+      supervisorContact:
+        editTrip.supervisorContact ||
+        editTrip.supervisorPhone ||
         "",
 
       estimatedTransitDays:
@@ -658,6 +798,67 @@ const Trackinginput = () => {
 
               return updatedVehicle;
             }
+          ),
+      })
+    );
+  };
+
+
+
+  const handleAddRouteLocation = () => {
+    setFormData(
+      (previous) => ({
+        ...previous,
+
+        routeLocations: [
+          ...(previous.routeLocations || []),
+
+          {
+            id:
+              `trip-route-${Date.now()}-${Math.random()}`,
+
+            name: "",
+          },
+        ],
+      })
+    );
+  };
+
+
+  const handleRouteLocationChange = (
+    locationId,
+    value
+  ) => {
+    setFormData(
+      (previous) => ({
+        ...previous,
+
+        routeLocations:
+          (previous.routeLocations || []).map(
+            (routeLocation) =>
+              routeLocation.id === locationId
+                ? {
+                    ...routeLocation,
+                    name: value,
+                  }
+                : routeLocation
+          ),
+      })
+    );
+  };
+
+
+  const handleRemoveRouteLocation = (
+    locationId
+  ) => {
+    setFormData(
+      (previous) => ({
+        ...previous,
+
+        routeLocations:
+          (previous.routeLocations || []).filter(
+            (routeLocation) =>
+              routeLocation.id !== locationId
           ),
       })
     );
@@ -792,6 +993,7 @@ const Trackinginput = () => {
                 .trim()
                 .toUpperCase(),
 
+
             currentPosition:
               vehicle
                 .currentPosition
@@ -886,6 +1088,10 @@ const Trackinginput = () => {
               vehicle.lrNo
                 .trim(),
 
+            lrStatus:
+              vehicle.lrStatus
+                .trim(),
+
             lrRemarks:
               vehicle.lrRemarks
                 .trim(),
@@ -900,6 +1106,14 @@ const Trackinginput = () => {
             podStatus:
               vehicle.podStatus,
 
+            courierName:
+              vehicle.courierName
+                .trim(),
+
+            trackingId:
+              vehicle.trackingId
+                .trim(),
+
             podCourierDate:
               vehicle.podCourierDate ||
               null,
@@ -907,6 +1121,18 @@ const Trackinginput = () => {
             podRemarks:
               vehicle.podRemarks
                 .trim(),
+
+
+            /* DRIVER */
+
+            driverName:
+              vehicle.driverName
+                .trim(),
+
+            driverNumber:
+              vehicle.driverNumber
+                .trim(),
+
           })
         );
 
@@ -919,6 +1145,14 @@ const Trackinginput = () => {
           formData.customer
             .trim(),
 
+        clientContactPerson:
+          formData.clientContactPerson
+            .trim(),
+
+        clientPhone:
+          formData.clientPhone
+            .trim(),
+
         materialType:
           formData.materialType
             .trim(),
@@ -927,12 +1161,51 @@ const Trackinginput = () => {
           formData.lsp
             .trim(),
 
+        transporterContactPerson:
+          formData.transporterContactPerson
+            .trim(),
+
+        transporterPhone:
+          formData.transporterPhone
+            .trim(),
+
         origin:
           formData.origin
             .trim(),
 
         destination:
           formData.destination
+            .trim(),
+
+        routeLocations:
+          (formData.routeLocations || [])
+            .map(
+              (routeLocation) =>
+                String(
+                  routeLocation?.name || ""
+                ).trim()
+            )
+            .filter(Boolean),
+
+        escortVehicleNumber:
+          formData.escortVehicleNumber
+            .trim()
+            .toUpperCase(),
+
+        escortName:
+          formData.escortName
+            .trim(),
+
+        escortContactNumber:
+          formData.escortContactNumber
+            .trim(),
+
+        supervisorName:
+          formData.supervisorName
+            .trim(),
+
+        supervisorContact:
+          formData.supervisorContact
             .trim(),
 
         estimatedTransitDays:
@@ -1195,6 +1468,48 @@ const Trackinginput = () => {
               />
 
 
+              <FormField
+                label="Client Contact Person"
+                icon={
+                  <UserRound
+                    size={15}
+                  />
+                }
+                name="clientContactPerson"
+                value={
+                  formData.clientContactPerson
+                }
+                onChange={
+                  handleChange
+                }
+                readOnly={
+                  isEditMode
+                }
+                placeholder="Client contact person"
+              />
+
+
+              <FormField
+                label="Client Phone No."
+                icon={
+                  <UserRound
+                    size={15}
+                  />
+                }
+                name="clientPhone"
+                value={
+                  formData.clientPhone
+                }
+                onChange={
+                  handleChange
+                }
+                readOnly={
+                  isEditMode
+                }
+                placeholder="Client phone number"
+              />
+
+
               {/* MATERIAL */}
 
               <FormField
@@ -1238,6 +1553,48 @@ const Trackinginput = () => {
                   isEditMode
                 }
                 placeholder="Logistics provider"
+              />
+
+
+              <FormField
+                label="Transporter Contact Person"
+                icon={
+                  <Building2
+                    size={15}
+                  />
+                }
+                name="transporterContactPerson"
+                value={
+                  formData.transporterContactPerson
+                }
+                onChange={
+                  handleChange
+                }
+                readOnly={
+                  isEditMode
+                }
+                placeholder="Transporter contact person"
+              />
+
+
+              <FormField
+                label="Transporter Phone No."
+                icon={
+                  <Building2
+                    size={15}
+                  />
+                }
+                name="transporterPhone"
+                value={
+                  formData.transporterPhone
+                }
+                onChange={
+                  handleChange
+                }
+                readOnly={
+                  isEditMode
+                }
+                placeholder="Transporter phone number"
               />
 
 
@@ -1336,6 +1693,244 @@ const Trackinginput = () => {
                 }
                 placeholder="Transit days"
               />
+
+            </div>
+
+
+            <div className="tracking-route-locations tracking-trip-route-locations">
+
+              <div className="tracking-route-locations-header">
+
+                <div>
+                  <strong>
+                    Trip Route Locations
+                  </strong>
+
+                  <span>
+                    Add intermediate locations once for this trip. These points will appear on the map for every vehicle.
+                  </span>
+                </div>
+
+
+                <button
+                  type="button"
+                  className="tracking-add-location-btn"
+                  disabled={isSaving}
+                  onClick={
+                    handleAddRouteLocation
+                  }
+                >
+                  <Plus size={14} />
+                  Add Location
+                </button>
+
+              </div>
+
+
+              <div className="tracking-route-location-flow">
+
+                <span className="tracking-route-fixed-point origin">
+                  <MapPin size={12} />
+                  {formData.origin || "Origin"}
+                </span>
+
+
+                {(formData.routeLocations || []).map(
+                  (
+                    routeLocation,
+                    routeIndex
+                  ) => (
+                    <React.Fragment key={routeLocation.id}>
+
+                      <ChevronRight
+                        size={13}
+                        className="tracking-route-flow-arrow"
+                      />
+
+                      <span className="tracking-route-location-chip">
+                        {routeLocation.name ||
+                          `Location ${routeIndex + 1}`}
+                      </span>
+
+                    </React.Fragment>
+                  )
+                )}
+
+
+                <ChevronRight
+                  size={13}
+                  className="tracking-route-flow-arrow"
+                />
+
+                <span className="tracking-route-fixed-point destination">
+                  <MapPin size={12} />
+                  {formData.destination || "Destination"}
+                </span>
+
+              </div>
+
+
+              {(formData.routeLocations || []).length > 0 ? (
+
+                <div className="tracking-route-location-list">
+
+                  {formData.routeLocations.map(
+                    (
+                      routeLocation,
+                      routeIndex
+                    ) => (
+                      <div
+                        className="tracking-route-location-row"
+                        key={routeLocation.id}
+                      >
+
+                        <span className="tracking-route-location-number">
+                          {routeIndex + 1}
+                        </span>
+
+
+                        <div className="tracking-route-location-input">
+                          <MapPin size={14} />
+
+                          <input
+                            type="text"
+                            value={routeLocation.name}
+                            placeholder={`Enter location ${routeIndex + 1}`}
+                            disabled={isSaving}
+                            onChange={(event) =>
+                              handleRouteLocationChange(
+                                routeLocation.id,
+                                event.target.value
+                              )
+                            }
+                          />
+                        </div>
+
+
+                        <button
+                          type="button"
+                          className="tracking-remove-location-btn"
+                          disabled={isSaving}
+                          onClick={() =>
+                            handleRemoveRouteLocation(
+                              routeLocation.id
+                            )
+                          }
+                          title="Remove location"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+
+                      </div>
+                    )
+                  )}
+
+                </div>
+
+              ) : (
+
+                <div className="tracking-route-location-empty">
+                  Click <strong>Add Location</strong> to add intermediate route points for this trip.
+                </div>
+
+              )}
+
+            </div>
+
+
+            <div className="tracking-trip-support-grid">
+
+              <div className="tracking-trip-support-card escort">
+
+                <div className="tracking-trip-support-heading">
+                  <Truck size={15} />
+
+                  <div>
+                    <strong>
+                      Escort Details
+                    </strong>
+
+                    <span>
+                      Common escort information for this trip
+                    </span>
+                  </div>
+                </div>
+
+
+                <div className="tracking-form-grid">
+
+                  <FormField
+                    label="Escort Vehicle Number"
+                    icon={<Truck size={15} />}
+                    name="escortVehicleNumber"
+                    value={formData.escortVehicleNumber}
+                    onChange={handleChange}
+                    placeholder="Escort vehicle number"
+                  />
+
+                  <FormField
+                    label="Escort Name"
+                    icon={<UserRound size={15} />}
+                    name="escortName"
+                    value={formData.escortName}
+                    onChange={handleChange}
+                    placeholder="Escort name"
+                  />
+
+                  <FormField
+                    label="Escort Contact Number"
+                    icon={<UserRound size={15} />}
+                    name="escortContactNumber"
+                    value={formData.escortContactNumber}
+                    onChange={handleChange}
+                    placeholder="Escort contact number"
+                  />
+
+                </div>
+
+              </div>
+
+
+              <div className="tracking-trip-support-card supervisor">
+
+                <div className="tracking-trip-support-heading">
+                  <UserRound size={15} />
+
+                  <div>
+                    <strong>
+                      Supervisor Details
+                    </strong>
+
+                    <span>
+                      Common supervisor information for this trip
+                    </span>
+                  </div>
+                </div>
+
+
+                <div className="tracking-form-grid">
+
+                  <FormField
+                    label="Supervisor Name"
+                    icon={<UserRound size={15} />}
+                    name="supervisorName"
+                    value={formData.supervisorName}
+                    onChange={handleChange}
+                    placeholder="Supervisor name"
+                  />
+
+                  <FormField
+                    label="Supervisor Contact"
+                    icon={<UserRound size={15} />}
+                    name="supervisorContact"
+                    value={formData.supervisorContact}
+                    onChange={handleChange}
+                    placeholder="Supervisor contact number"
+                  />
+
+                </div>
+
+              </div>
 
             </div>
 
@@ -1591,6 +2186,7 @@ const Trackinginput = () => {
                       />
 
                     </div>
+
 
 
                     {/* =================================
@@ -1881,73 +2477,47 @@ const Trackinginput = () => {
                     <div className="tracking-vehicle-entry-grid">
 
                       <VehicleField
-                        vehicle={
-                          vehicle
-                        }
+                        vehicle={vehicle}
                         label="LR No."
                         name="lrNo"
-                        icon={
-                          <FileText
-                            size={15}
-                          />
-                        }
-                        onChange={
-                          handleVehicleChange
-                        }
+                        icon={<FileText size={15} />}
+                        onChange={handleVehicleChange}
                         placeholder="LR number"
                       />
 
-
                       <VehicleField
-                        vehicle={
-                          vehicle
-                        }
-                        label="LR Remarks"
-                        name="lrRemarks"
-                        icon={
-                          <MessageSquareText
-                            size={15}
-                          />
-                        }
-                        onChange={
-                          handleVehicleChange
-                        }
-                        placeholder="LR remarks"
+                        vehicle={vehicle}
+                        label="LR Status"
+                        name="lrStatus"
+                        icon={<FileText size={15} />}
+                        onChange={handleVehicleChange}
+                        placeholder="LR status"
                       />
 
-
                       <VehicleField
-                        vehicle={
-                          vehicle
-                        }
+                        vehicle={vehicle}
                         label="LR Signature"
                         name="lrSignature"
-                        icon={
-                          <FileSignature
-                            size={15}
-                          />
-                        }
-                        onChange={
-                          handleVehicleChange
-                        }
+                        icon={<FileSignature size={15} />}
+                        onChange={handleVehicleChange}
                         placeholder="Received by"
                       />
 
+                      <VehicleField
+                        vehicle={vehicle}
+                        label="LR Remarks"
+                        name="lrRemarks"
+                        icon={<MessageSquareText size={15} />}
+                        onChange={handleVehicleChange}
+                        placeholder="LR remarks"
+                      />
 
                       <VehicleSelect
-                        vehicle={
-                          vehicle
-                        }
+                        vehicle={vehicle}
                         label="POD Status"
                         name="podStatus"
-                        icon={
-                          <PackageCheck
-                            size={15}
-                          />
-                        }
-                        onChange={
-                          handleVehicleChange
-                        }
+                        icon={<PackageCheck size={15} />}
+                        onChange={handleVehicleChange}
                         options={[
                           "Pending",
                           "Received",
@@ -1956,43 +2526,73 @@ const Trackinginput = () => {
                         ]}
                       />
 
+                      <VehicleField
+                        vehicle={vehicle}
+                        label="Courier Name"
+                        name="courierName"
+                        icon={<PackageCheck size={15} />}
+                        onChange={handleVehicleChange}
+                        placeholder="Courier name"
+                      />
 
                       <VehicleField
-                        vehicle={
-                          vehicle
-                        }
+                        vehicle={vehicle}
+                        label="Tracking ID"
+                        name="trackingId"
+                        icon={<Navigation size={15} />}
+                        onChange={handleVehicleChange}
+                        placeholder="Courier tracking ID"
+                      />
+
+                      <VehicleField
+                        vehicle={vehicle}
                         label="POD Courier Date"
                         name="podCourierDate"
                         type="date"
-                        icon={
-                          <CalendarDays
-                            size={15}
-                          />
-                        }
-                        onChange={
-                          handleVehicleChange
-                        }
+                        icon={<CalendarDays size={15} />}
+                        onChange={handleVehicleChange}
                       />
 
-
                       <VehicleField
-                        vehicle={
-                          vehicle
-                        }
+                        vehicle={vehicle}
                         label="POD Remarks"
                         name="podRemarks"
-                        icon={
-                          <MessageSquareText
-                            size={15}
-                          />
-                        }
-                        onChange={
-                          handleVehicleChange
-                        }
+                        icon={<MessageSquareText size={15} />}
+                        onChange={handleVehicleChange}
                         placeholder="POD remarks"
                       />
 
                     </div>
+
+
+                    <VehicleSectionTitle
+                      icon={<UserRound size={15} />}
+                      title="Driver Details"
+                      type="driver"
+                    />
+
+                    <div className="tracking-vehicle-entry-grid">
+
+                      <VehicleField
+                        vehicle={vehicle}
+                        label="Driver Name"
+                        name="driverName"
+                        icon={<UserRound size={15} />}
+                        onChange={handleVehicleChange}
+                        placeholder="Driver name"
+                      />
+
+                      <VehicleField
+                        vehicle={vehicle}
+                        label="Driver Number"
+                        name="driverNumber"
+                        icon={<UserRound size={15} />}
+                        onChange={handleVehicleChange}
+                        placeholder="Driver contact number"
+                      />
+
+                    </div>
+
 
                   </article>
                 )

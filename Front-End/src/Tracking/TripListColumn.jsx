@@ -8,6 +8,7 @@ import {
 
 import "../Tracking/TripListColumn.css";
 
+
 const TripListColumn = ({
   trips = [],
   selectedTrip,
@@ -21,6 +22,7 @@ const TripListColumn = ({
       ===================================== */}
 
       <div className="tracking-column-heading">
+
         <div>
           <h2>
             Trip List
@@ -34,9 +36,11 @@ const TripListColumn = ({
           </p>
         </div>
 
+
         <div className="tracking-column-heading-icon">
-          <Truck size={18} />
+          <Truck size={17} />
         </div>
+
       </div>
 
 
@@ -49,13 +53,6 @@ const TripListColumn = ({
         {trips.length > 0 ? (
 
           trips.map((trip) => {
-
-            /*
-              MongoDB returns _id.
-              Static frontend data may use id.
-
-              This supports both.
-            */
 
             const tripKey =
               trip._id ||
@@ -98,109 +95,104 @@ const TripListColumn = ({
                 }
               >
 
-                {/* ==============================
-                    TOP
-                ============================== */}
+                {/* =================================
+                    TOP ROW
+                ================================= */}
 
-                <div className="trip-card-top">
+                <div className="trip-compact-top">
 
-                  <div className="trip-customer">
-                    <span>
-                      Customer
-                    </span>
+                  {/* CUSTOMER NAME ONLY */}
+
+                  <div className="trip-customer-info">
 
                     <strong>
                       {trip.customer ||
                         "-"}
                     </strong>
+
                   </div>
 
 
+                  {/* VEHICLE COUNT */}
+
                   <div className="trip-vehicle-count">
+
                     <Truck
-                      size={13}
+                      size={12}
                     />
 
                     <span>
                       {vehicleCount}
                     </span>
+
                   </div>
 
                 </div>
 
 
-                {/* ==============================
-                    MATERIAL
-                ============================== */}
+                {/* =================================
+                    MATERIAL NAME ONLY
+                ================================= */}
 
-                <div className="trip-material">
-                  <span>
-                    Type of Material
-                  </span>
+                <div className="trip-material-info">
 
                   <strong>
                     {trip.materialType ||
                       "-"}
                   </strong>
+
                 </div>
 
 
-                {/* ==============================
+                {/* =================================
                     ROUTE
-                ============================== */}
+                ================================= */}
 
                 <div className="trip-route">
 
                   <div className="trip-route-location">
+
                     <MapPin
-                      size={14}
+                      size={13}
                     />
 
                     <span>
                       {trip.origin ||
                         "-"}
                     </span>
+
                   </div>
 
 
                   <ChevronRight
-                    size={14}
+                    size={13}
                     className="trip-route-arrow"
                   />
 
 
                   <div className="trip-route-location destination">
+
                     <span>
                       {trip.destination ||
                         "-"}
                     </span>
+
                   </div>
-
-                </div>
-
-
-                {/* ==============================
-                    BOTTOM
-                ============================== */}
-
-                <div className="trip-card-bottom">
-
-                  <span className="trip-id">
-                    {trip.tripId ||
-                      "-"}
-                  </span>
 
 
                   <span className="trip-open-icon">
+
                     <ChevronRight
-                      size={16}
+                      size={15}
                     />
+
                   </span>
 
                 </div>
 
               </button>
             );
+
           })
 
         ) : (
@@ -208,9 +200,7 @@ const TripListColumn = ({
           <div className="tracking-column-empty">
 
             <div className="tracking-column-empty-icon">
-              <Truck
-                size={24}
-              />
+              <Truck size={24} />
             </div>
 
             <strong>
@@ -231,5 +221,6 @@ const TripListColumn = ({
     </aside>
   );
 };
+
 
 export default TripListColumn;

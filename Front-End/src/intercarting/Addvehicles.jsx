@@ -608,9 +608,7 @@ const Addvehicles = ({
               <select
                 id="siteName"
                 name="siteName"
-                value={
-                  formData.siteName
-                }
+                value={formData.siteName}
                 onChange={handleChange}
                 disabled={saving}
               >
@@ -618,16 +616,40 @@ const Addvehicles = ({
                   Select site
                 </option>
 
-                <option value="Kalikanagar">
-                  Kalikanagar
+                <option value="Cleanmax-Kalikanagar">
+                  Cleanmax-Kalikanagar
                 </option>
 
                 <option value="Heft-Mudgal">
                   Heft-Mudgal
                 </option>
 
-                <option value="Hyderabad">
-                  Hyderabad
+                <option value="Avada-Kaij">
+                  Avada-Kaij
+                </option>
+
+                <option value="Serentica-naregal">
+                  Serentica-naregal
+                </option>
+
+                <option value="Cleanmax-Theni">
+                  Cleanmax-Theni
+                </option>
+
+                <option value="Heft-Bidar">
+                  Heft-Bidar
+                </option>
+
+                <option value="Jsw-Kudligi">
+                  Jsw-Kudligi
+                </option>
+
+                <option value="Suzlon-Kurnool">
+                  Suzlon-Kurnool
+                </option>
+
+                <option value="FirstEnergy-Rajula">
+                  FirstEnergy-Rajula
                 </option>
               </select>
             </div>
@@ -670,8 +692,20 @@ const Addvehicles = ({
                   T5
                 </option>
 
+                <option value="SLBT">
+                  SLBT
+                </option>
+
                 <option value="LBT">
                   LBT
+                </option>
+
+                <option value="Blade">
+                  Blade
+                </option>
+
+                <option value="I crown">
+                  I crown
                 </option>
 
                 <option value="II crown">

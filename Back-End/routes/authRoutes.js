@@ -1,17 +1,22 @@
-const express = require("express");
+const express =
+  require("express");
 
 const {
   login,
-} = require(
-  "../controllers/authController"
-);
+} =
+  require(
+    "../controllers/authController"
+  );
 
-const router = express.Router();
+const router =
+  express.Router();
 
-/* Login route */
+
 router.post(
   "/login",
   login
 );
 
-module.exports = router;
+
+module.exports =
+  router;

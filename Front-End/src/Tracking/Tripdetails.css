@@ -1108,3 +1108,159 @@
   }
 
 }
+
+
+/* =========================================================
+   PROFESSIONAL TYPOGRAPHY REFINEMENT
+   Tripdetails.css
+========================================================= */
+
+.trip-list-page {
+  font-family:
+    Inter,
+    "Segoe UI",
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif;
+  color: #1d3559;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+.trip-page-eyebrow {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.9px;
+}
+
+.trip-page-header h1 {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.45px;
+}
+
+.trip-page-header p {
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.55;
+}
+
+.trip-back-button,
+.trip-create-button {
+  font-size: 10.5px;
+  font-weight: 600;
+}
+
+.trip-total-badge {
+  font-size: 9.5px;
+  font-weight: 700;
+}
+
+.trip-table-header h2 {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.trip-table-header p {
+  font-size: 9.5px;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+.trip-list-column-head {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.35px;
+}
+
+.trip-id-box strong {
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.trip-id-box small {
+  font-size: 8px;
+  font-weight: 500;
+}
+
+.trip-cell-with-icon strong,
+.trip-cell-with-icon span {
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.trip-row-route {
+  font-size: 9.5px;
+  font-weight: 600;
+}
+
+.trip-row-vehicle-count {
+  font-size: 9.5px;
+  font-weight: 700;
+}
+
+.trip-status-badge {
+  font-size: 8.5px;
+  font-weight: 700;
+}
+
+.trip-date-cell {
+  font-size: 9.5px;
+  font-weight: 500;
+}
+
+.trip-edit-button {
+  font-size: 9px;
+  font-weight: 650;
+}
+
+.trip-mobile-label {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.25px;
+}
+
+.trip-page-loading,
+.trip-empty-state {
+  font-size: 10px;
+}
+
+.trip-empty-state strong {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.trip-empty-state p {
+  font-size: 9.5px;
+  line-height: 1.5;
+}
+
+@media (max-width: 900px) {
+  .trip-page-header h1 {
+    font-size: 25px;
+  }
+}
+
+@media (max-width: 650px) {
+  .trip-page-header h1 {
+    font-size: 22px;
+  }
+
+  .trip-page-header p {
+    font-size: 10px;
+  }
+
+  .trip-cell-with-icon strong,
+  .trip-cell-with-icon span,
+  .trip-row-route,
+  .trip-date-cell {
+    font-size: 9.5px;
+  }
+
+  .trip-edit-button {
+    font-size: 9px;
+  }
+}

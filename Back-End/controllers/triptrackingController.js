@@ -13,31 +13,25 @@ const Triptracking =
 
 const cleanText = (
   value
-) => {
-  return String(
+) =>
+  String(
     value ?? ""
   ).trim();
-};
 
 
 const numberOrZero = (
   value
 ) => {
-  if (
-    value === "" ||
-    value === null ||
-    value === undefined
-  ) {
-    return 0;
-  }
-
-  const result =
+  const number =
     Number(value);
 
   return Number.isFinite(
-    result
+    number
   )
-    ? result
+    ? Math.max(
+        number,
+        0
+      )
     : 0;
 };
 
@@ -53,13 +47,13 @@ const nullableNumber = (
     return null;
   }
 
-  const result =
+  const number =
     Number(value);
 
   return Number.isFinite(
-    result
+    number
   )
-    ? result
+    ? number
     : null;
 };
 
@@ -74,204 +68,273 @@ const dateOrNull = (
   const date =
     new Date(value);
 
+  return Number.isNaN(
+    date.getTime()
+  )
+    ? null
+    : date;
+};
+
+
+const cleanRouteLocations = (
+  locations
+) => {
   if (
-    Number.isNaN(
-      date.getTime()
+    !Array.isArray(
+      locations
     )
   ) {
-    return null;
+    return [];
   }
 
-  return date;
+  const seen =
+    new Set();
+
+  return locations
+    .map(
+      (location) => {
+        if (
+          location &&
+          typeof location ===
+            "object"
+        ) {
+          return cleanText(
+            location.name ||
+            location.location ||
+            location.city ||
+            location.place ||
+            location.label
+          );
+        }
+
+        return cleanText(
+          location
+        );
+      }
+    )
+    .filter(Boolean)
+    .filter(
+      (location) => {
+        const key =
+          location.toLowerCase();
+
+        if (
+          seen.has(
+            key
+          )
+        ) {
+          return false;
+        }
+
+        seen.add(
+          key
+        );
+
+        return true;
+      }
+    );
 };
 
 
 /* =========================================
-   NORMALIZE ONE VEHICLE
+   NORMALIZE VEHICLE
 ========================================= */
 
 const normalizeVehicle = (
-  vehicle,
+  vehicle = {},
   tripId,
   index
-) => {
-  return {
-    /* =====================================
-       BASIC TRACKING
-    ===================================== */
+) => ({
+  vehicleSubId:
+    cleanText(
+      vehicle.vehicleSubId
+    ) ||
+    `${tripId}-V${index + 1}`,
 
-    vehicleSubId:
-      cleanText(
-        vehicle.vehicleSubId
-      ) ||
-      `${tripId}-V${index + 1}`,
+  vehicleNumber:
+    cleanText(
+      vehicle.vehicleNumber
+    ).toUpperCase(),
 
-    vehicleNumber:
-      cleanText(
-        vehicle.vehicleNumber
-      ).toUpperCase(),
+  currentPosition:
+    cleanText(
+      vehicle.currentPosition ??
+      vehicle.currentLocation
+    ),
 
-    currentPosition:
-      cleanText(
-        vehicle.currentPosition ??
-        vehicle.currentLocation
-      ),
+  yesterdayPosition:
+    cleanText(
+      vehicle.yesterdayPosition
+    ),
 
-    yesterdayPosition:
-      cleanText(
-        vehicle.yesterdayPosition
-      ),
+  runningKm:
+    numberOrZero(
+      vehicle.runningKm
+    ),
 
-    runningKm:
-      numberOrZero(
-        vehicle.runningKm
-      ),
+  status:
+    vehicle.status ||
+    "Moving",
 
-    status:
-      vehicle.status ||
-      "Moving",
+  currentDay:
+    nullableNumber(
+      vehicle.currentDay
+    ),
 
-    currentDay:
-      nullableNumber(
-        vehicle.currentDay
-      ),
+  latitude:
+    nullableNumber(
+      vehicle.latitude
+    ),
 
-    latitude:
-      nullableNumber(
-        vehicle.latitude
-      ),
+  longitude:
+    nullableNumber(
+      vehicle.longitude
+    ),
 
-    longitude:
-      nullableNumber(
-        vehicle.longitude
-      ),
+  speed:
+    numberOrZero(
+      vehicle.speed
+    ),
 
-    speed:
-      numberOrZero(
-        vehicle.speed
-      ),
-
-    lastUpdated:
-      vehicle.lastUpdated
-        ? dateOrNull(
-            vehicle.lastUpdated
-          ) ||
-          new Date()
-        : new Date(),
+  lastUpdated:
+    vehicle.lastUpdated
+      ? dateOrNull(
+          vehicle.lastUpdated
+        ) ||
+        new Date()
+      : new Date(),
 
 
-    /* =====================================
-       LOADING
-    ===================================== */
+  /* LOADING */
 
-    loadingStatus:
-      vehicle.loadingStatus ||
-      "Pending",
+  loadingStatus:
+    vehicle.loadingStatus ||
+    "Pending",
 
-    loadingPointInDate:
-      dateOrNull(
-        vehicle.loadingPointInDate
-      ),
+  loadingPointInDate:
+    dateOrNull(
+      vehicle.loadingPointInDate
+    ),
 
-    loadingDate:
-      dateOrNull(
-        vehicle.loadingDate
-      ),
+  loadingDate:
+    dateOrNull(
+      vehicle.loadingDate
+    ),
 
-    loadingPointOutDate:
-      dateOrNull(
-        vehicle.loadingPointOutDate
-      ),
+  loadingPointOutDate:
+    dateOrNull(
+      vehicle.loadingPointOutDate
+    ),
 
-    loadingHaltingDays:
-      numberOrZero(
-        vehicle.loadingHaltingDays
-      ),
+  loadingHaltingDays:
+    numberOrZero(
+      vehicle.loadingHaltingDays
+    ),
 
-    loadingRemarks:
-      cleanText(
-        vehicle.loadingRemarks
-      ),
+  loadingRemarks:
+    cleanText(
+      vehicle.loadingRemarks
+    ),
 
 
-    /* =====================================
-       UNLOADING
-    ===================================== */
+  /* UNLOADING */
 
-    unloadingStatus:
-      vehicle.unloadingStatus ||
-      "Pending",
+  unloadingStatus:
+    vehicle.unloadingStatus ||
+    "Pending",
 
-    unloadingPointInDate:
-      dateOrNull(
-        vehicle.unloadingPointInDate
-      ),
+  unloadingPointInDate:
+    dateOrNull(
+      vehicle.unloadingPointInDate
+    ),
 
-    unloadingDate:
-      dateOrNull(
-        vehicle.unloadingDate
-      ),
+  unloadingDate:
+    dateOrNull(
+      vehicle.unloadingDate
+    ),
 
-    unloadingPointOutDate:
-      dateOrNull(
-        vehicle.unloadingPointOutDate
-      ),
+  unloadingPointOutDate:
+    dateOrNull(
+      vehicle.unloadingPointOutDate
+    ),
 
-    unloadingHaltingDays:
-      numberOrZero(
-        vehicle.unloadingHaltingDays
-      ),
+  unloadingHaltingDays:
+    numberOrZero(
+      vehicle.unloadingHaltingDays
+    ),
 
-    unloadingRemarks:
-      cleanText(
-        vehicle.unloadingRemarks
-      ),
+  unloadingRemarks:
+    cleanText(
+      vehicle.unloadingRemarks
+    ),
 
 
-    /* =====================================
-       LR
-    ===================================== */
+  /* LR */
 
-    lrNo:
-      cleanText(
-        vehicle.lrNo
-      ),
+  lrNo:
+    cleanText(
+      vehicle.lrNo
+    ),
 
-    lrRemarks:
-      cleanText(
-        vehicle.lrRemarks
-      ),
+  lrStatus:
+    cleanText(
+      vehicle.lrStatus
+    ),
 
-    lrSignature:
-      cleanText(
-        vehicle.lrSignature
-      ),
+  lrRemarks:
+    cleanText(
+      vehicle.lrRemarks
+    ),
 
-
-    /* =====================================
-       POD
-    ===================================== */
-
-    podStatus:
-      vehicle.podStatus ||
-      "Pending",
-
-    podCourierDate:
-      dateOrNull(
-        vehicle.podCourierDate
-      ),
-
-    podRemarks:
-      cleanText(
-        vehicle.podRemarks
-      ),
-  };
-};
+  lrSignature:
+    cleanText(
+      vehicle.lrSignature
+    ),
 
 
-/* =========================================
-   NORMALIZE VEHICLES
-========================================= */
+  /* POD */
+
+  podStatus:
+    vehicle.podStatus ||
+    "Pending",
+
+  courierName:
+    cleanText(
+      vehicle.courierName ||
+      vehicle.podCourierName
+    ),
+
+  trackingId:
+    cleanText(
+      vehicle.trackingId ||
+      vehicle.podTrackingId
+    ),
+
+  podCourierDate:
+    dateOrNull(
+      vehicle.podCourierDate
+    ),
+
+  podRemarks:
+    cleanText(
+      vehicle.podRemarks
+    ),
+
+
+  /* DRIVER */
+
+  driverName:
+    cleanText(
+      vehicle.driverName
+    ),
+
+  driverNumber:
+    cleanText(
+      vehicle.driverNumber ||
+      vehicle.driverPhone
+    ),
+});
+
 
 const normalizeVehicles = (
   vehicles,
@@ -300,11 +363,11 @@ const normalizeVehicles = (
 
 
 /* =========================================
-   NORMALIZE TRIP
+   NORMALIZE COMPLETE TRIP
 ========================================= */
 
 const normalizeTripData = (
-  body
+  body = {}
 ) => {
   const tripId =
     cleanText(
@@ -319,6 +382,20 @@ const normalizeTripData = (
         body.customer
       ),
 
+    clientContactPerson:
+      cleanText(
+        body.clientContactPerson ||
+        body.customerContactPerson ||
+        body.contactPerson
+      ),
+
+    clientPhone:
+      cleanText(
+        body.clientPhone ||
+        body.customerPhone ||
+        body.contactNumber
+      ),
+
     materialType:
       cleanText(
         body.materialType
@@ -329,6 +406,18 @@ const normalizeTripData = (
         body.lsp
       ),
 
+    transporterContactPerson:
+      cleanText(
+        body.transporterContactPerson ||
+        body.lspContactPerson
+      ),
+
+    transporterPhone:
+      cleanText(
+        body.transporterPhone ||
+        body.lspPhone
+      ),
+
     origin:
       cleanText(
         body.origin
@@ -337,6 +426,47 @@ const normalizeTripData = (
     destination:
       cleanText(
         body.destination
+      ),
+
+    /* TRIP-LEVEL ROUTE */
+
+    routeLocations:
+      cleanRouteLocations(
+        body.routeLocations ||
+        body.routeStops ||
+        body.checkpoints ||
+        body.waypoints
+      ),
+
+    /* TRIP-LEVEL ESCORT */
+
+    escortVehicleNumber:
+      cleanText(
+        body.escortVehicleNumber
+      ).toUpperCase(),
+
+    escortName:
+      cleanText(
+        body.escortName
+      ),
+
+    escortContactNumber:
+      cleanText(
+        body.escortContactNumber ||
+        body.escortPhone
+      ),
+
+    /* TRIP-LEVEL SUPERVISOR */
+
+    supervisorName:
+      cleanText(
+        body.supervisorName
+      ),
+
+    supervisorContact:
+      cleanText(
+        body.supervisorContact ||
+        body.supervisorPhone
       ),
 
     estimatedTransitDays:
@@ -363,6 +493,41 @@ const normalizeTripData = (
 
 
 /* =========================================
+   VALIDATE
+========================================= */
+
+const validateTrip = (
+  payload
+) => {
+  if (!payload.tripId) {
+    return "Trip ID is required.";
+  }
+
+  if (
+    !Array.isArray(
+      payload.vehicles
+    ) ||
+    payload.vehicles.length ===
+      0
+  ) {
+    return "At least one vehicle is required.";
+  }
+
+  const invalidVehicle =
+    payload.vehicles.some(
+      (vehicle) =>
+        !vehicle.vehicleNumber
+    );
+
+  if (invalidVehicle) {
+    return "Vehicle number is required for all vehicles.";
+  }
+
+  return "";
+};
+
+
+/* =========================================
    CREATE TRIP
    POST /api/triptracking
 ========================================= */
@@ -373,103 +538,55 @@ const createTrip =
     res
   ) => {
     try {
-      const tripId =
-        cleanText(
-          req.body.tripId
+      const normalizedData =
+        normalizeTripData(
+          req.body
         );
 
-
-      if (!tripId) {
-        return res
-          .status(400)
-          .json({
-            success: false,
-
-            message:
-              "Trip ID is required.",
-          });
-      }
-
-
-      if (
-        !Array.isArray(
-          req.body.vehicles
-        ) ||
-        req.body.vehicles.length ===
-          0
-      ) {
-        return res
-          .status(400)
-          .json({
-            success: false,
-
-            message:
-              "At least one vehicle is required.",
-          });
-      }
-
-
-      const invalidVehicle =
-        req.body.vehicles.some(
-          (vehicle) =>
-            !cleanText(
-              vehicle.vehicleNumber
-            )
+      const validationError =
+        validateTrip(
+          normalizedData
         );
 
-
-      if (invalidVehicle) {
+      if (validationError) {
         return res
           .status(400)
           .json({
             success: false,
-
             message:
-              "Vehicle number is required for all vehicles.",
+              validationError,
           });
       }
-
 
       const existingTrip =
         await Triptracking
           .findOne({
-            tripId,
+            tripId:
+              normalizedData.tripId,
           })
           .lean();
-
 
       if (existingTrip) {
         return res
           .status(409)
           .json({
             success: false,
-
             message:
-              `Trip ${tripId} already exists.`,
+              `Trip ${normalizedData.tripId} already exists.`,
           });
       }
-
-
-      const normalizedData =
-        normalizeTripData(
-          req.body
-        );
-
 
       const createdTrip =
         await Triptracking.create(
           normalizedData
         );
 
-
       return res
         .status(201)
         .json({
           success: true,
-
           message:
             "Trip created successfully.",
-
           data:
             createdTrip,
         });
@@ -480,7 +597,6 @@ const createTrip =
         error
       );
 
-
       if (
         error.code ===
         11000
@@ -489,12 +605,10 @@ const createTrip =
           .status(409)
           .json({
             success: false,
-
             message:
               "Trip ID already exists.",
           });
       }
-
 
       if (
         error.name ===
@@ -504,18 +618,15 @@ const createTrip =
           .status(400)
           .json({
             success: false,
-
             message:
               error.message,
           });
       }
 
-
       return res
         .status(500)
         .json({
           success: false,
-
           message:
             error.message ||
             "Unable to create trip.",
@@ -526,6 +637,7 @@ const createTrip =
 
 /* =========================================
    GET ALL TRIPS
+   GET /api/triptracking
 ========================================= */
 
 const getAllTrips =
@@ -539,17 +651,15 @@ const getAllTrips =
           .find()
           .sort({
             createdAt: -1,
-          });
-
+          })
+          .lean();
 
       return res
         .status(200)
         .json({
           success: true,
-
           count:
             trips.length,
-
           data:
             trips,
         });
@@ -560,12 +670,10 @@ const getAllTrips =
         error
       );
 
-
       return res
         .status(500)
         .json({
           success: false,
-
           message:
             "Unable to fetch trips.",
         });
@@ -588,7 +696,6 @@ const getTripById =
       } =
         req.params;
 
-
       if (
         !mongoose.Types.ObjectId
           .isValid(id)
@@ -597,37 +704,32 @@ const getTripById =
           .status(400)
           .json({
             success: false,
-
             message:
               "Invalid MongoDB trip ID.",
           });
       }
 
-
       const trip =
         await Triptracking
           .findById(
             id
-          );
-
+          )
+          .lean();
 
       if (!trip) {
         return res
           .status(404)
           .json({
             success: false,
-
             message:
               "Trip not found.",
           });
       }
 
-
       return res
         .status(200)
         .json({
           success: true,
-
           data:
             trip,
         });
@@ -638,12 +740,10 @@ const getTripById =
         error
       );
 
-
       return res
         .status(500)
         .json({
           success: false,
-
           message:
             "Unable to fetch trip.",
         });
@@ -666,31 +766,27 @@ const getTripByTripId =
           req.params.tripId
         );
 
-
       const trip =
         await Triptracking
           .findOne({
             tripId,
-          });
-
+          })
+          .lean();
 
       if (!trip) {
         return res
           .status(404)
           .json({
             success: false,
-
             message:
               "Trip not found.",
           });
       }
 
-
       return res
         .status(200)
         .json({
           success: true,
-
           data:
             trip,
         });
@@ -701,12 +797,10 @@ const getTripByTripId =
         error
       );
 
-
       return res
         .status(500)
         .json({
           success: false,
-
           message:
             "Unable to fetch trip.",
         });
@@ -716,6 +810,7 @@ const getTripByTripId =
 
 /* =========================================
    UPDATE COMPLETE TRIP
+   PUT /api/triptracking/:id
 ========================================= */
 
 const updateTrip =
@@ -729,7 +824,6 @@ const updateTrip =
       } =
         req.params;
 
-
       if (
         !mongoose.Types.ObjectId
           .isValid(id)
@@ -738,12 +832,10 @@ const updateTrip =
           .status(400)
           .json({
             success: false,
-
             message:
               "Invalid MongoDB trip ID.",
           });
       }
-
 
       const existingTrip =
         await Triptracking
@@ -751,23 +843,18 @@ const updateTrip =
             id
           );
 
-
       if (!existingTrip) {
         return res
           .status(404)
           .json({
             success: false,
-
             message:
               "Trip not found.",
           });
       }
 
-
       const mergedData = {
-        ...existingTrip
-          .toObject(),
-
+        ...existingTrip.toObject(),
         ...req.body,
 
         tripId:
@@ -778,35 +865,47 @@ const updateTrip =
           existingTrip.vehicles,
       };
 
-
       const normalizedData =
         normalizeTripData(
           mergedData
         );
 
+      const validationError =
+        validateTrip(
+          normalizedData
+        );
+
+      if (validationError) {
+        return res
+          .status(400)
+          .json({
+            success: false,
+            message:
+              validationError,
+          });
+      }
 
       const updatedTrip =
         await Triptracking
           .findByIdAndUpdate(
             id,
-            normalizedData,
+            {
+              $set:
+                normalizedData,
+            },
             {
               new: true,
-
               runValidators:
                 true,
             }
           );
 
-
       return res
         .status(200)
         .json({
           success: true,
-
           message:
             "Trip updated successfully.",
-
           data:
             updatedTrip,
         });
@@ -817,7 +916,6 @@ const updateTrip =
         error
       );
 
-
       if (
         error.name ===
         "ValidationError"
@@ -826,18 +924,15 @@ const updateTrip =
           .status(400)
           .json({
             success: false,
-
             message:
               error.message,
           });
       }
 
-
       return res
         .status(500)
         .json({
           success: false,
-
           message:
             error.message ||
             "Unable to update trip.",
@@ -848,6 +943,7 @@ const updateTrip =
 
 /* =========================================
    UPDATE INDIVIDUAL VEHICLE
+   PUT /api/triptracking/:tripId/vehicles/:vehicleSubId
 ========================================= */
 
 const updateVehicle =
@@ -862,7 +958,6 @@ const updateVehicle =
       } =
         req.params;
 
-
       const trip =
         await Triptracking
           .findOne({
@@ -872,18 +967,15 @@ const updateVehicle =
               ),
           });
 
-
       if (!trip) {
         return res
           .status(404)
           .json({
             success: false,
-
             message:
               "Trip not found.",
           });
       }
-
 
       const vehicle =
         trip.vehicles.find(
@@ -892,22 +984,45 @@ const updateVehicle =
             vehicleSubId
         );
 
-
       if (!vehicle) {
         return res
           .status(404)
           .json({
             success: false,
-
             message:
               "Vehicle not found in this trip.",
           });
       }
 
+      const textFields = [
+        "currentPosition",
+        "yesterdayPosition",
+        "loadingRemarks",
+        "unloadingRemarks",
+        "lrNo",
+        "lrStatus",
+        "lrRemarks",
+        "lrSignature",
+        "courierName",
+        "trackingId",
+        "podRemarks",
+        "driverName",
+        "driverNumber",
+      ];
 
-      /* =====================================
-         BASIC TRACKING
-      ===================================== */
+      textFields.forEach(
+        (field) => {
+          if (
+            req.body[field] !==
+            undefined
+          ) {
+            vehicle[field] =
+              cleanText(
+                req.body[field]
+              );
+          }
+        }
+      );
 
       if (
         req.body.vehicleNumber !==
@@ -919,320 +1034,101 @@ const updateVehicle =
           ).toUpperCase();
       }
 
+      const plainFields = [
+        "status",
+        "loadingStatus",
+        "unloadingStatus",
+        "podStatus",
+      ];
 
-      if (
-        req.body.currentPosition !==
-        undefined
-      ) {
-        vehicle.currentPosition =
-          cleanText(
-            req.body.currentPosition
-          );
-      }
+      plainFields.forEach(
+        (field) => {
+          if (
+            req.body[field] !==
+            undefined
+          ) {
+            vehicle[field] =
+              req.body[field];
+          }
+        }
+      );
 
+      const numberFields = [
+        "runningKm",
+        "speed",
+        "loadingHaltingDays",
+        "unloadingHaltingDays",
+      ];
 
-      if (
-        req.body.yesterdayPosition !==
-        undefined
-      ) {
-        vehicle.yesterdayPosition =
-          cleanText(
-            req.body.yesterdayPosition
-          );
-      }
+      numberFields.forEach(
+        (field) => {
+          if (
+            req.body[field] !==
+            undefined
+          ) {
+            vehicle[field] =
+              numberOrZero(
+                req.body[field]
+              );
+          }
+        }
+      );
 
+      const nullableNumberFields = [
+        "currentDay",
+        "latitude",
+        "longitude",
+      ];
 
-      if (
-        req.body.runningKm !==
-        undefined
-      ) {
-        vehicle.runningKm =
-          numberOrZero(
-            req.body.runningKm
-          );
-      }
+      nullableNumberFields.forEach(
+        (field) => {
+          if (
+            req.body[field] !==
+            undefined
+          ) {
+            vehicle[field] =
+              nullableNumber(
+                req.body[field]
+              );
+          }
+        }
+      );
 
+      const dateFields = [
+        "loadingPointInDate",
+        "loadingDate",
+        "loadingPointOutDate",
+        "unloadingPointInDate",
+        "unloadingDate",
+        "unloadingPointOutDate",
+        "podCourierDate",
+      ];
 
-      if (
-        req.body.status !==
-        undefined
-      ) {
-        vehicle.status =
-          req.body.status;
-      }
-
-
-      if (
-        req.body.currentDay !==
-        undefined
-      ) {
-        vehicle.currentDay =
-          nullableNumber(
-            req.body.currentDay
-          );
-      }
-
-
-      if (
-        req.body.latitude !==
-        undefined
-      ) {
-        vehicle.latitude =
-          nullableNumber(
-            req.body.latitude
-          );
-      }
-
-
-      if (
-        req.body.longitude !==
-        undefined
-      ) {
-        vehicle.longitude =
-          nullableNumber(
-            req.body.longitude
-          );
-      }
-
-
-      if (
-        req.body.speed !==
-        undefined
-      ) {
-        vehicle.speed =
-          numberOrZero(
-            req.body.speed
-          );
-      }
-
-
-      /* =====================================
-         LOADING
-      ===================================== */
-
-      if (
-        req.body.loadingStatus !==
-        undefined
-      ) {
-        vehicle.loadingStatus =
-          req.body.loadingStatus;
-      }
-
-
-      if (
-        req.body.loadingPointInDate !==
-        undefined
-      ) {
-        vehicle.loadingPointInDate =
-          dateOrNull(
-            req.body.loadingPointInDate
-          );
-      }
-
-
-      if (
-        req.body.loadingDate !==
-        undefined
-      ) {
-        vehicle.loadingDate =
-          dateOrNull(
-            req.body.loadingDate
-          );
-      }
-
-
-      if (
-        req.body.loadingPointOutDate !==
-        undefined
-      ) {
-        vehicle.loadingPointOutDate =
-          dateOrNull(
-            req.body.loadingPointOutDate
-          );
-      }
-
-
-      if (
-        req.body.loadingHaltingDays !==
-        undefined
-      ) {
-        vehicle.loadingHaltingDays =
-          numberOrZero(
-            req.body.loadingHaltingDays
-          );
-      }
-
-
-      if (
-        req.body.loadingRemarks !==
-        undefined
-      ) {
-        vehicle.loadingRemarks =
-          cleanText(
-            req.body.loadingRemarks
-          );
-      }
-
-
-      /* =====================================
-         UNLOADING
-      ===================================== */
-
-      if (
-        req.body.unloadingStatus !==
-        undefined
-      ) {
-        vehicle.unloadingStatus =
-          req.body.unloadingStatus;
-      }
-
-
-      if (
-        req.body.unloadingPointInDate !==
-        undefined
-      ) {
-        vehicle.unloadingPointInDate =
-          dateOrNull(
-            req.body.unloadingPointInDate
-          );
-      }
-
-
-      if (
-        req.body.unloadingDate !==
-        undefined
-      ) {
-        vehicle.unloadingDate =
-          dateOrNull(
-            req.body.unloadingDate
-          );
-      }
-
-
-      if (
-        req.body.unloadingPointOutDate !==
-        undefined
-      ) {
-        vehicle.unloadingPointOutDate =
-          dateOrNull(
-            req.body.unloadingPointOutDate
-          );
-      }
-
-
-      if (
-        req.body.unloadingHaltingDays !==
-        undefined
-      ) {
-        vehicle.unloadingHaltingDays =
-          numberOrZero(
-            req.body.unloadingHaltingDays
-          );
-      }
-
-
-      if (
-        req.body.unloadingRemarks !==
-        undefined
-      ) {
-        vehicle.unloadingRemarks =
-          cleanText(
-            req.body.unloadingRemarks
-          );
-      }
-
-
-      /* =====================================
-         LR
-      ===================================== */
-
-      if (
-        req.body.lrNo !==
-        undefined
-      ) {
-        vehicle.lrNo =
-          cleanText(
-            req.body.lrNo
-          );
-      }
-
-
-      if (
-        req.body.lrRemarks !==
-        undefined
-      ) {
-        vehicle.lrRemarks =
-          cleanText(
-            req.body.lrRemarks
-          );
-      }
-
-
-      if (
-        req.body.lrSignature !==
-        undefined
-      ) {
-        vehicle.lrSignature =
-          cleanText(
-            req.body.lrSignature
-          );
-      }
-
-
-      /* =====================================
-         POD
-      ===================================== */
-
-      if (
-        req.body.podStatus !==
-        undefined
-      ) {
-        vehicle.podStatus =
-          req.body.podStatus;
-      }
-
-
-      if (
-        req.body.podCourierDate !==
-        undefined
-      ) {
-        vehicle.podCourierDate =
-          dateOrNull(
-            req.body.podCourierDate
-          );
-      }
-
-
-      if (
-        req.body.podRemarks !==
-        undefined
-      ) {
-        vehicle.podRemarks =
-          cleanText(
-            req.body.podRemarks
-          );
-      }
-
-
-      /* =====================================
-         LAST UPDATED
-      ===================================== */
+      dateFields.forEach(
+        (field) => {
+          if (
+            req.body[field] !==
+            undefined
+          ) {
+            vehicle[field] =
+              dateOrNull(
+                req.body[field]
+              );
+          }
+        }
+      );
 
       vehicle.lastUpdated =
         new Date();
 
-
       await trip.save();
-
 
       return res
         .status(200)
         .json({
           success: true,
-
           message:
             "Vehicle details updated successfully.",
-
           data:
             vehicle,
         });
@@ -1243,7 +1139,6 @@ const updateVehicle =
         error
       );
 
-
       if (
         error.name ===
         "ValidationError"
@@ -1252,18 +1147,15 @@ const updateVehicle =
           .status(400)
           .json({
             success: false,
-
             message:
               error.message,
           });
       }
 
-
       return res
         .status(500)
         .json({
           success: false,
-
           message:
             error.message ||
             "Unable to update vehicle.",
@@ -1287,7 +1179,6 @@ const deleteTrip =
       } =
         req.params;
 
-
       if (
         !mongoose.Types.ObjectId
           .isValid(id)
@@ -1296,12 +1187,10 @@ const deleteTrip =
           .status(400)
           .json({
             success: false,
-
             message:
               "Invalid MongoDB trip ID.",
           });
       }
-
 
       const deletedTrip =
         await Triptracking
@@ -1309,24 +1198,20 @@ const deleteTrip =
             id
           );
 
-
       if (!deletedTrip) {
         return res
           .status(404)
           .json({
             success: false,
-
             message:
               "Trip not found.",
           });
       }
 
-
       return res
         .status(200)
         .json({
           success: true,
-
           message:
             "Trip deleted successfully.",
         });
@@ -1337,22 +1222,16 @@ const deleteTrip =
         error
       );
 
-
       return res
         .status(500)
         .json({
           success: false,
-
           message:
             "Unable to delete trip.",
         });
     }
   };
 
-
-/* =========================================
-   EXPORTS
-========================================= */
 
 module.exports = {
   createTrip,

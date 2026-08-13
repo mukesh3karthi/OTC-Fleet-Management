@@ -20,11 +20,8 @@ const router =
   express.Router();
 
 
-/* =========================================
-   CREATE TRIP
-
-   POST /api/triptracking
-========================================= */
+/* CREATE TRIP
+   POST /api/triptracking */
 
 router.post(
   "/",
@@ -32,11 +29,8 @@ router.post(
 );
 
 
-/* =========================================
-   GET ALL TRIPS
-
-   GET /api/triptracking
-========================================= */
+/* GET ALL TRIPS
+   GET /api/triptracking */
 
 router.get(
   "/",
@@ -44,11 +38,8 @@ router.get(
 );
 
 
-/* =========================================
-   GET BY TRIP ID
-
-   GET /api/triptracking/trip/2026-1
-========================================= */
+/* GET BY BUSINESS TRIP ID
+   GET /api/triptracking/trip/2026-1 */
 
 router.get(
   "/trip/:tripId",
@@ -56,12 +47,8 @@ router.get(
 );
 
 
-/* =========================================
-   UPDATE ONE VEHICLE
-
-   PUT
-   /api/triptracking/2026-1/vehicles/2026-1-V1
-========================================= */
+/* UPDATE ONE VEHICLE
+   PUT /api/triptracking/2026-1/vehicles/2026-1-V1 */
 
 router.put(
   "/:tripId/vehicles/:vehicleSubId",
@@ -69,9 +56,7 @@ router.put(
 );
 
 
-/* =========================================
-   GET BY MONGODB ID
-========================================= */
+/* GET BY MONGODB ID */
 
 router.get(
   "/:id",
@@ -79,9 +64,7 @@ router.get(
 );
 
 
-/* =========================================
-   UPDATE COMPLETE TRIP
-========================================= */
+/* UPDATE COMPLETE TRIP */
 
 router.put(
   "/:id",
@@ -89,9 +72,7 @@ router.put(
 );
 
 
-/* =========================================
-   DELETE TRIP
-========================================= */
+/* DELETE TRIP */
 
 router.delete(
   "/:id",

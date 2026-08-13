@@ -9,10 +9,6 @@ const mongoose =
 const vehicleSchema =
   new mongoose.Schema(
     {
-      /* =====================================
-         BASIC VEHICLE DETAILS
-      ===================================== */
-
       vehicleSubId: {
         type: String,
         required: true,
@@ -65,9 +61,7 @@ const vehicleSchema =
       },
 
 
-      /* =====================================
-         MAP / TRACKING
-      ===================================== */
+      /* MAP / TRACKING */
 
       latitude: {
         type: Number,
@@ -91,9 +85,7 @@ const vehicleSchema =
       },
 
 
-      /* =====================================
-         LOADING DETAILS
-      ===================================== */
+      /* LOADING */
 
       loadingStatus: {
         type: String,
@@ -137,9 +129,7 @@ const vehicleSchema =
       },
 
 
-      /* =====================================
-         UNLOADING DETAILS
-      ===================================== */
+      /* UNLOADING */
 
       unloadingStatus: {
         type: String,
@@ -183,11 +173,15 @@ const vehicleSchema =
       },
 
 
-      /* =====================================
-         LR DETAILS
-      ===================================== */
+      /* LR */
 
       lrNo: {
+        type: String,
+        trim: true,
+        default: "",
+      },
+
+      lrStatus: {
         type: String,
         trim: true,
         default: "",
@@ -206,9 +200,7 @@ const vehicleSchema =
       },
 
 
-      /* =====================================
-         POD DETAILS
-      ===================================== */
+      /* POD */
 
       podStatus: {
         type: String,
@@ -223,12 +215,39 @@ const vehicleSchema =
         default: "Pending",
       },
 
+      courierName: {
+        type: String,
+        trim: true,
+        default: "",
+      },
+
+      trackingId: {
+        type: String,
+        trim: true,
+        default: "",
+      },
+
       podCourierDate: {
         type: Date,
         default: null,
       },
 
       podRemarks: {
+        type: String,
+        trim: true,
+        default: "",
+      },
+
+
+      /* DRIVER - PER VEHICLE */
+
+      driverName: {
+        type: String,
+        trim: true,
+        default: "",
+      },
+
+      driverNumber: {
         type: String,
         trim: true,
         default: "",
@@ -261,6 +280,18 @@ const tripTrackingSchema =
         default: "",
       },
 
+      clientContactPerson: {
+        type: String,
+        trim: true,
+        default: "",
+      },
+
+      clientPhone: {
+        type: String,
+        trim: true,
+        default: "",
+      },
+
       materialType: {
         type: String,
         trim: true,
@@ -268,6 +299,18 @@ const tripTrackingSchema =
       },
 
       lsp: {
+        type: String,
+        trim: true,
+        default: "",
+      },
+
+      transporterContactPerson: {
+        type: String,
+        trim: true,
+        default: "",
+      },
+
+      transporterPhone: {
         type: String,
         trim: true,
         default: "",
@@ -285,6 +328,52 @@ const tripTrackingSchema =
         default: "",
       },
 
+
+      /* ROUTE LOCATIONS - TRIP LEVEL */
+
+      routeLocations: {
+        type: [String],
+        default: [],
+      },
+
+
+      /* ESCORT - TRIP LEVEL */
+
+      escortVehicleNumber: {
+        type: String,
+        trim: true,
+        uppercase: true,
+        default: "",
+      },
+
+      escortName: {
+        type: String,
+        trim: true,
+        default: "",
+      },
+
+      escortContactNumber: {
+        type: String,
+        trim: true,
+        default: "",
+      },
+
+
+      /* SUPERVISOR - TRIP LEVEL */
+
+      supervisorName: {
+        type: String,
+        trim: true,
+        default: "",
+      },
+
+      supervisorContact: {
+        type: String,
+        trim: true,
+        default: "",
+      },
+
+
       estimatedTransitDays: {
         type: Number,
         min: 0,
@@ -298,9 +387,7 @@ const tripTrackingSchema =
       },
 
 
-      /* =====================================
-         VEHICLES
-      ===================================== */
+      /* VEHICLES */
 
       vehicles: {
         type: [
@@ -327,10 +414,6 @@ const tripTrackingSchema =
         },
       },
 
-
-      /* =====================================
-         TRIP STATUS
-      ===================================== */
 
       tripStatus: {
         type: String,
