@@ -23,6 +23,7 @@ import Vehiclemaintenance from "./pages/Vehiclemaintenance";
 import Ownvehicledetails from "./pages/Ownvehicledetails";
 
 import Trackinginput from "./Tracking/Trackinginput";
+import Tripdetails from "./Tracking/Tripdetails";
 
 import Ownvehicledash from "./Ownvehicledetails/Ownvehicledash";
 
@@ -33,9 +34,7 @@ import Monthlylog from "./intercarting/Monthlylog";
 
 
 function App() {
-
   return (
-
     <Routes>
 
       {/* =====================================
@@ -58,20 +57,16 @@ function App() {
         path="/dashboard"
         element={
           <ProtectedRoute>
-
             <Dashboard />
-
           </ProtectedRoute>
         }
       >
-
         <Route
           index
           element={
             <DashContent />
           }
         />
-
 
         <Route
           path="*"
@@ -82,7 +77,6 @@ function App() {
             />
           }
         />
-
       </Route>
 
 
@@ -94,20 +88,16 @@ function App() {
         path="/assets"
         element={
           <ProtectedRoute>
-
             <Dashboard />
-
           </ProtectedRoute>
         }
       >
-
         <Route
           index
           element={
             <Assets />
           }
         />
-
       </Route>
 
 
@@ -119,48 +109,58 @@ function App() {
         path="/tracking"
         element={
           <ProtectedRoute>
-
             <Dashboard />
-
           </ProtectedRoute>
         }
       >
-
         <Route
           index
           element={
             <Tracking />
           }
         />
-
       </Route>
 
 
       {/* =====================================
-          TRACKING INPUT
-
-          IMPORTANT:
-          Dashboard stays visible.
+          TRACKING INPUT / CREATE TRIP
       ===================================== */}
 
       <Route
         path="/tracking-input"
         element={
           <ProtectedRoute>
-
             <Dashboard />
-
           </ProtectedRoute>
         }
       >
-
         <Route
           index
           element={
             <Trackinginput />
           }
         />
+      </Route>
 
+
+      {/* =====================================
+          TRIP DETAILS
+      ===================================== */}
+
+      <Route
+        path="/trip-details"
+        element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        }
+      >
+        <Route
+          index
+          element={
+            <Tripdetails />
+          }
+        />
       </Route>
 
 
@@ -172,20 +172,16 @@ function App() {
         path="/inbound-outbound"
         element={
           <ProtectedRoute>
-
             <Dashboard />
-
           </ProtectedRoute>
         }
       >
-
         <Route
           index
           element={
             <InAndOutBound />
           }
         />
-
       </Route>
 
 
@@ -197,20 +193,16 @@ function App() {
         path="/vehicle-maintenance"
         element={
           <ProtectedRoute>
-
             <Dashboard />
-
           </ProtectedRoute>
         }
       >
-
         <Route
           index
           element={
             <Vehiclemaintenance />
           }
         />
-
       </Route>
 
 
@@ -222,20 +214,16 @@ function App() {
         path="/warehouse"
         element={
           <ProtectedRoute>
-
             <Dashboard />
-
           </ProtectedRoute>
         }
       >
-
         <Route
           index
           element={
             <Warehouse />
           }
         />
-
       </Route>
 
 
@@ -247,20 +235,16 @@ function App() {
         path="/driver-management"
         element={
           <ProtectedRoute>
-
             <Dashboard />
-
           </ProtectedRoute>
         }
       >
-
         <Route
           index
           element={
             <DriverManagement />
           }
         />
-
       </Route>
 
 
@@ -272,38 +256,31 @@ function App() {
         path="/vehicle-documents"
         element={
           <ProtectedRoute>
-
             <Dashboard />
-
           </ProtectedRoute>
         }
       >
-
         <Route
           index
           element={
             <VehicleDocuments />
           }
         />
-
       </Route>
 
 
       {/* =====================================
-          OWN VEHICLE
+          OWN VEHICLE DASHBOARD
       ===================================== */}
 
       <Route
         path="/ownvehicledetaildash"
         element={
           <ProtectedRoute>
-
             <Dashboard />
-
           </ProtectedRoute>
         }
       >
-
         <Route
           index
           element={
@@ -311,14 +288,12 @@ function App() {
           }
         />
 
-
         <Route
           path="ownvehicledetails"
           element={
             <Ownvehicledetails />
           }
         />
-
 
         <Route
           path="*"
@@ -329,25 +304,21 @@ function App() {
             />
           }
         />
-
       </Route>
 
 
       {/* =====================================
-          INTERCARTING
+          INTERCARTING DASHBOARD
       ===================================== */}
 
       <Route
         path="/intercartingdash"
         element={
           <ProtectedRoute>
-
             <Dashboard />
-
           </ProtectedRoute>
         }
       >
-
         <Route
           index
           element={
@@ -360,9 +331,7 @@ function App() {
           path="intercarting"
           element={
             <Intercartingprotected>
-
               <Intercarting />
-
             </Intercartingprotected>
           }
         />
@@ -372,9 +341,7 @@ function App() {
           path="intercarting/vehicle-details"
           element={
             <Intercartingprotected>
-
               <Vehicledetails />
-
             </Intercartingprotected>
           }
         />
@@ -384,9 +351,7 @@ function App() {
           path="intercarting/daily-logs"
           element={
             <Intercartingprotected>
-
               <Dailylog />
-
             </Intercartingprotected>
           }
         />
@@ -396,9 +361,7 @@ function App() {
           path="intercarting/monthly-logs"
           element={
             <Intercartingprotected>
-
               <Monthlylog />
-
             </Intercartingprotected>
           }
         />
@@ -413,7 +376,6 @@ function App() {
             />
           }
         />
-
       </Route>
 
 
@@ -432,9 +394,7 @@ function App() {
       />
 
     </Routes>
-
   );
-
 }
 
 

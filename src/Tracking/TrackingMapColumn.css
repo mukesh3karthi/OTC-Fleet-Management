@@ -1,262 +1,45 @@
-/* =========================================
-   1. MAIN
-========================================= */
+/* =========================================================
+   RESET
+========================================================= */
 
-.tracking-map-column {
-  width: 100%;
-  min-width: 0;
-
-  overflow: hidden;
-
-  border: 1px solid #dfe7f1;
-  border-radius: 14px;
-
-  background: #ffffff;
-
-  font-family:
-    Inter,
-    "Segoe UI",
-    Roboto,
-    Arial,
-    sans-serif;
-
-  color: #17345f;
-
-  box-shadow:
-    0 5px 16px
-    rgba(17, 40, 83, 0.045);
-}
-
-
-.tracking-map-column,
-.tracking-map-column * {
+.journey-column,
+.journey-column * {
   box-sizing: border-box;
 }
 
 
-/* =========================================
-   2. HEADER
-========================================= */
+/* =========================================================
+   MAIN RIGHT COLUMN
 
-.tracking-map-header {
-  min-height: 60px;
+   IMPORTANT:
+   Height 100% + flex column allows
+   the route box to use ALL remaining space.
+========================================================= */
 
-  padding: 12px 14px;
+.journey-column {
+  width: 100%;
+  min-width: 0;
+
+  height: 100%;
+  min-height: 0;
 
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  gap: 12px;
-
-  border-bottom:
-    1px solid #e8edf4;
-
-  background: #f9fbfe;
-}
-
-
-.tracking-map-header > div {
-  min-width: 0;
-}
-
-
-.tracking-map-header strong {
-  display: block;
-
-  color: #17345f;
-
-  font-size: 15px;
-  font-weight: 700;
-
-  line-height: 1.2;
-}
-
-
-.tracking-map-header p {
-  margin: 4px 0 0;
-
-  color: #8492a6;
-
-  font-size: 10px;
-  font-weight: 500;
-
-  line-height: 1.3;
-}
-
-
-.tracking-map-header > svg {
-  flex: 0 0 auto;
-
-  color: #2457b2;
-}
-
-
-/* =========================================
-   3. ROUTE SUMMARY
-========================================= */
-
-.map-route-summary {
-  margin:
-    12px
-    12px
-    10px;
-
-  padding:
-    11px
-    13px;
-
-  display: grid;
-
-  grid-template-columns:
-    minmax(0, 1fr)
-    120px
-    minmax(0, 1fr);
-
-  align-items: center;
-
-  gap: 10px;
-
-  border:
-    1px solid
-    #dce5f0;
-
-  border-radius: 10px;
-
-  background:
-    linear-gradient(
-      180deg,
-      #fbfdff 0%,
-      #f5f8fd 100%
-    );
-}
-
-
-.map-route-place {
-  min-width: 0;
-}
-
-
-.map-route-place.destination {
-  text-align: right;
-}
-
-
-.map-route-place span {
-  display: block;
-
-  color: #8492a6;
-
-  font-size: 10px;
-  font-weight: 500;
-}
-
-
-.map-route-place strong {
-  display: block;
-
-  margin-top: 4px;
+  flex-direction: column;
 
   overflow: hidden;
 
+  border:
+    1px solid #dfe7f1;
+
+  border-radius: 11px;
+
   color: #17345f;
 
-  font-size: 13px;
-  font-weight: 700;
-
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-
-/* =========================================
-   4. ROUTE CONNECTOR
-========================================= */
-
-.map-route-line {
-  min-width: 0;
-
-  display: flex;
-  align-items: center;
-}
-
-
-.map-route-line > span {
-  height: 2px;
-
-  flex: 1;
-
-  background: #a9c4ef;
-}
-
-
-.map-route-line > div {
-  width: 30px;
-  height: 30px;
-
-  flex: 0 0 30px;
-
-  display: grid;
-  place-items: center;
-
-  border-radius: 50%;
-
-  color: #ffffff;
-
-  background: #2457b2;
+  background: #ffffff;
 
   box-shadow:
-    0 3px 8px
-    rgba(36, 87, 178, 0.18);
-}
-
-
-/* =========================================
-   5. MAP WRAPPER
-========================================= */
-
-.tracking-map-wrapper {
-  position: relative;
-
-  width:
-    calc(100% - 24px);
-
-  height: 480px;
-
-  margin:
-    0
-    12px
-    10px;
-
-  overflow: hidden;
-
-  border:
-    1px solid
-    #dce5f0;
-
-  border-radius: 12px;
-
-  background: #eef3f8;
-}
-
-
-/* =========================================
-   6. LEAFLET MAP
-========================================= */
-
-.tracking-leaflet-map {
-  width: 100%;
-  height: 100%;
-
-  z-index: 1;
-
-  background: #eef3f8;
-}
-
-
-.leaflet-container {
-  width: 100%;
-  height: 100%;
+    0 4px 14px
+    rgba(17, 40, 83, 0.04);
 
   font-family:
     Inter,
@@ -267,179 +50,24 @@
 }
 
 
-/* =========================================
-   7. LEAFLET CONTROLS
-========================================= */
+/* =========================================================
+   VEHICLE SUMMARY
+========================================================= */
 
-.tracking-map-column
-.leaflet-control-zoom {
-  overflow: hidden;
+.journey-vehicle-summary {
+  width:
+    calc(100% - 16px);
 
-  border: 0;
+  min-height: 48px;
 
-  border-radius: 8px;
-
-  box-shadow:
-    0 4px 12px
-    rgba(31, 54, 87, 0.14);
-}
-
-
-.tracking-map-column
-.leaflet-control-zoom a {
-  width: 30px;
-  height: 30px;
-
-  line-height: 30px;
-
-  border: 0;
-
-  color: #17345f;
-
-  background: #ffffff;
-
-  font-size: 16px;
-}
-
-
-.tracking-map-column
-.leaflet-control-zoom a:hover {
-  color: #2457b2;
-
-  background: #f4f7fc;
-}
-
-
-/* =========================================
-   8. ATTRIBUTION
-========================================= */
-
-.tracking-map-column
-.leaflet-control-attribution {
-  padding: 2px 5px;
-
-  border-radius: 4px 0 0 0;
-
-  color: #7d8a9c;
-
-  background:
-    rgba(
-      255,
-      255,
-      255,
-      0.9
-    );
-
-  font-size: 8px;
-}
-
-
-/* =========================================
-   9. POPUP
-========================================= */
-
-.leaflet-popup-content-wrapper {
-  border-radius: 9px;
-
-  box-shadow:
-    0 7px 22px
-    rgba(23, 52, 95, 0.15);
-}
-
-
-.leaflet-popup-content {
   margin:
-    10px
-    11px;
-}
+    7px 8px 8px;
 
+  padding:
+    6px 8px;
 
-.map-popup {
-  min-width: 145px;
-}
-
-
-.map-popup strong {
-  display: block;
-
-  color: #17345f;
-
-  font-size: 12px;
-  font-weight: 700;
-
-  line-height: 1.25;
-}
-
-
-.map-popup > span {
-  display: block;
-
-  margin-top: 4px;
-
-  color: #74839a;
-
-  font-size: 10px;
-  font-weight: 500;
-}
-
-
-/* =========================================
-   10. VEHICLE POPUP
-========================================= */
-
-.vehicle-popup {
-  min-width: 170px;
-}
-
-
-.vehicle-popup-heading {
-  display: flex;
-  align-items: center;
-
-  gap: 6px;
-}
-
-
-.vehicle-popup-icon {
-  width: 24px;
-  height: 24px;
-
-  display: grid;
-  place-items: center;
-
-  border-radius: 6px;
-
-  color: #2457b2;
-
-  background: #ebf2ff;
-}
-
-
-.vehicle-popup-heading strong {
-  color: #17345f;
-
-  font-size: 12px;
-  font-weight: 700;
-}
-
-
-.vehicle-popup-location {
-  display: block;
-
-  margin-top: 7px !important;
-
-  color: #667994 !important;
-
-  font-size: 10px !important;
-
-  line-height: 1.35;
-}
-
-
-.vehicle-popup-bottom {
-  margin-top: 8px;
-
-  padding-top: 7px;
+  flex:
+    0 0 auto;
 
   display: flex;
   align-items: center;
@@ -447,244 +75,452 @@
 
   gap: 8px;
 
-  border-top:
-    1px solid
-    #edf1f5;
+  border:
+    1px solid #dde6f0;
+
+  border-radius: 9px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #ffffff 0%,
+      #fbfdff 100%
+    );
 }
 
 
-.vehicle-popup-bottom small {
-  color: #8190a4;
+/* =========================================================
+   VEHICLE MAIN
+========================================================= */
 
-  font-size: 9px;
+.journey-vehicle-main {
+  min-width: 0;
 
-  white-space: nowrap;
+  display: flex;
+  align-items: center;
+
+  gap: 7px;
 }
 
 
-/* =========================================
-   11. POPUP STATUS
-========================================= */
+.journey-vehicle-icon {
+  width: 28px;
+  height: 28px;
 
-.vehicle-popup-status {
-  padding:
-    3px
-    6px;
+  flex:
+    0 0 28px;
 
-  border-radius: 999px;
+  display: grid;
+  place-items: center;
 
-  font-size: 8px;
-  font-weight: 700;
+  border-radius: 7px;
 }
 
 
-.vehicle-popup-status.moving {
-  color: #168548;
+.journey-vehicle-icon.moving {
+  color: #169447;
 
-  background: #e9f8f0;
+  background: #e8f8ee;
 }
 
 
-.vehicle-popup-status.idle {
-  color: #a66a13;
+.journey-vehicle-icon.idle {
+  color: #a66d13;
 
-  background: #fff5e6;
+  background: #fff4e3;
 }
 
 
-.vehicle-popup-status.stopped {
-  color: #c83e47;
+.journey-vehicle-icon.stopped {
+  color: #ca444d;
 
   background: #fff0f1;
 }
 
 
-.vehicle-popup-status.reached {
-  color: #2457b2;
+.journey-vehicle-icon.reached {
+  color: #169447;
 
-  background: #edf3ff;
+  background: #e8f8ee;
 }
 
 
-.vehicle-popup-status.default {
-  color: #667994;
+.journey-vehicle-icon.default {
+  color: #718198;
 
   background: #eef2f6;
 }
 
 
-/* =========================================
-   12. CUSTOM VEHICLE MARKER
-========================================= */
-
-.vehicle-map-marker-wrapper {
-  background: transparent;
-
-  border: 0;
+.journey-vehicle-main
+> div {
+  min-width: 0;
 }
 
 
-.vehicle-map-marker {
-  width: 38px;
-  height: 38px;
-
-  display: grid;
-  place-items: center;
-
-  border:
-    3px solid
-    #ffffff;
-
-  border-radius: 50%;
-
-  box-shadow:
-    0 4px 12px
-    rgba(22, 47, 83, 0.24);
-
-  transition:
-    transform
-    160ms ease,
-    box-shadow
-    160ms ease;
-}
-
-
-.vehicle-map-marker:hover {
-  transform:
-    scale(1.08);
-}
-
-
-.vehicle-map-marker.selected {
-  transform:
-    scale(1.13);
-
-  box-shadow:
-    0 0 0 4px
-    rgba(36, 87, 178, 0.17),
-    0 5px 15px
-    rgba(22, 47, 83, 0.25);
-}
-
-
-.vehicle-map-marker-icon {
-  font-size: 16px;
-
-  line-height: 1;
-}
-
-
-/* Status colors */
-
-.vehicle-map-marker.moving {
-  background: #18a05a;
-}
-
-
-.vehicle-map-marker.idle {
-  background: #e0a022;
-}
-
-
-.vehicle-map-marker.stopped {
-  background: #d94a52;
-}
-
-
-.vehicle-map-marker.reached {
-  background: #2457b2;
-}
-
-
-.vehicle-map-marker.default {
-  background: #74849b;
-}
-
-
-/* =========================================
-   13. ORIGIN / DESTINATION MARKERS
-========================================= */
-
-.route-location-marker-wrapper {
-  background: transparent;
-
-  border: 0;
-}
-
-
-.route-location-marker {
-  width: 24px;
-  height: 24px;
-
-  display: grid;
-  place-items: center;
-
-  border:
-    3px solid
-    #ffffff;
-
-  border-radius: 50%;
-
-  box-shadow:
-    0 3px 9px
-    rgba(17, 42, 78, 0.22);
-}
-
-
-.route-location-marker span {
-  width: 7px;
-  height: 7px;
-
+.journey-vehicle-main
+> div
+> span {
   display: block;
 
-  border-radius: 50%;
+  color: #8996a8;
 
-  background: #ffffff;
+  font-size: 7px;
+  font-weight: 500;
+
+  line-height: 1.15;
 }
 
 
-.route-location-marker.origin {
-  background: #2457b2;
+.journey-vehicle-main
+> div
+> strong {
+  display: block;
+
+  margin-top: 2px;
+
+  overflow: hidden;
+
+  color: #142f58;
+
+  font-size: 10px;
+  font-weight: 750;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 
-.route-location-marker.destination {
-  background: #19a05b;
-}
+/* =========================================================
+   STATUS
+========================================================= */
 
-
-/* =========================================
-   14. ROUTE LOADING BADGE
-========================================= */
-
-.route-loading-badge {
-  position: absolute;
-
-  top: 12px;
-  right: 12px;
-
-  z-index: 500;
-
-  min-height: 28px;
+.journey-status {
+  min-height: 22px;
 
   padding:
-    5px
-    9px;
+    0 8px;
+
+  flex:
+    0 0 auto;
 
   display: inline-flex;
   align-items: center;
 
-  gap: 6px;
+  gap: 5px;
 
-  border:
-    1px solid
-    #d7e2f1;
+  border-radius: 999px;
 
-  border-radius: 7px;
+  font-size: 7px;
+  font-weight: 700;
 
-  color: #526987;
+  white-space: nowrap;
+}
+
+
+.journey-status > span {
+  width: 5px;
+  height: 5px;
+
+  flex:
+    0 0 5px;
+
+  border-radius: 50%;
 
   background:
+    currentColor;
+}
+
+
+.journey-status.moving {
+  color: #169447;
+
+  background: #e9f8ef;
+}
+
+
+.journey-status.idle {
+  color: #a66d13;
+
+  background: #fff4e3;
+}
+
+
+.journey-status.stopped {
+  color: #ca444d;
+
+  background: #fff0f1;
+}
+
+
+.journey-status.reached {
+  color: #169447;
+
+  background: #e9f8ef;
+}
+
+
+.journey-status.default {
+  color: #718198;
+
+  background: #eef2f6;
+}
+
+
+/* =========================================================
+   ROUTE BOX
+
+   IMPORTANT:
+   NO FIXED HEIGHT.
+
+   flex: 1 makes this fill ALL remaining
+   vertical space in the right column.
+========================================================= */
+
+.journey-route-wrapper {
+  position: relative;
+
+  width:
+    calc(100% - 16px);
+
+  flex: 1;
+
+  min-height: 0;
+
+  margin:
+    0 8px 8px;
+
+  overflow: hidden;
+
+  border:
+    1px solid #dcece2;
+
+  border-radius: 10px;
+
+  background:
+    radial-gradient(
+      circle at 50% 48%,
+      rgba(
+        226,
+        248,
+        234,
+        0.32
+      ),
+      transparent 60%
+    ),
+    linear-gradient(
+      180deg,
+      #fbfefc 0%,
+      #f8fcfa 100%
+    );
+}
+
+
+/* =========================================================
+   VERY SUBTLE BACKGROUND
+========================================================= */
+
+.journey-route-wrapper::before {
+  content: "";
+
+  position: absolute;
+
+  inset: 0;
+
+  z-index: 0;
+
+  pointer-events: none;
+
+  opacity: 0.18;
+
+  background-image:
+    radial-gradient(
+      circle,
+      rgba(
+        23,
+        163,
+        74,
+        0.1
+      )
+      1px,
+      transparent 1px
+    );
+
+  background-size:
+    28px 28px;
+}
+
+
+/* =========================================================
+   SVG
+
+   Fill the complete route container.
+========================================================= */
+
+.journey-route-svg {
+  position: absolute;
+
+  z-index: 1;
+
+  inset: 0;
+
+  width: 100%;
+  height: 100%;
+
+  overflow: visible;
+}
+
+
+/* =========================================================
+   UPCOMING ROUTE
+========================================================= */
+
+.journey-path-base {
+  fill: none;
+
+  stroke: #c7ccd4;
+
+  stroke-width: 5;
+
+  stroke-linecap: round;
+  stroke-linejoin: round;
+
+  stroke-dasharray:
+    8 9;
+}
+
+
+/* =========================================================
+   COVERED ROUTE
+
+   GREEN ONLY
+========================================================= */
+
+.journey-path-progress {
+  fill: none;
+
+  stroke: #17a34a;
+
+  stroke-width: 6;
+
+  stroke-linecap: round;
+  stroke-linejoin: round;
+
+  filter:
+    drop-shadow(
+      0 2px 3px
+      rgba(
+        23,
+        163,
+        74,
+        0.15
+      )
+    );
+
+  transition:
+    stroke-dasharray
+    350ms ease;
+}
+
+
+/* =========================================================
+   ROUTE STOPS
+========================================================= */
+
+.journey-stop-outer {
+  fill: #ffffff;
+
+  stroke: #bec8d3;
+
+  stroke-width: 3;
+}
+
+
+.journey-stop-inner {
+  fill: #bec8d3;
+}
+
+
+/* =========================================================
+   COVERED ROUTE STOP
+========================================================= */
+
+.journey-stop.completed
+.journey-stop-outer {
+  stroke: #17a34a;
+
+  filter:
+    drop-shadow(
+      0 2px 3px
+      rgba(
+        23,
+        163,
+        74,
+        0.2
+      )
+    );
+}
+
+
+.journey-stop.completed
+.journey-stop-inner {
+  fill: #17a34a;
+}
+
+
+/* =========================================================
+   LOCATION NAME
+========================================================= */
+
+.journey-stop-name {
+  fill: #17345f;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  dominant-baseline:
+    middle;
+}
+
+
+/* =========================================================
+   START / DESTINATION
+========================================================= */
+
+.journey-stop-type {
+  fill: #8996a8;
+
+  font-size: 7px;
+  font-weight: 500;
+}
+
+
+/* =========================================================
+   VEHICLE MARKER
+========================================================= */
+
+.journey-vehicle-marker {
+  pointer-events: none;
+
+  filter:
+    drop-shadow(
+      0 4px 7px
+      rgba(
+        18,
+        80,
+        42,
+        0.22
+      )
+    );
+}
+
+
+/* =========================================================
+   VEHICLE OUTER RING
+========================================================= */
+
+.journey-vehicle-marker-ring {
+  fill:
     rgba(
       255,
       255,
@@ -692,391 +528,521 @@
       0.95
     );
 
-  box-shadow:
-    0 3px 10px
-    rgba(22, 47, 83, 0.1);
-
-  font-size: 9px;
-  font-weight: 600;
+  stroke-width: 3;
 }
 
 
-.route-loading-spinner {
-  width: 12px;
-  height: 12px;
-
-  border:
-    2px solid
-    #d6e1f1;
-
-  border-top-color:
-    #2457b2;
-
-  border-radius: 50%;
-
-  animation:
-    routeLoadingSpin
-    0.7s
-    linear
-    infinite;
+.journey-vehicle-marker-ring.moving {
+  stroke: #17a34a;
 }
 
 
-@keyframes routeLoadingSpin {
-
-  to {
-    transform:
-      rotate(360deg);
-  }
-
+.journey-vehicle-marker-ring.idle {
+  stroke: #d89b25;
 }
 
 
-/* =========================================
-   15. ROUTE ERROR
-========================================= */
+.journey-vehicle-marker-ring.stopped {
+  stroke: #d04a53;
+}
 
-.route-error-badge {
+
+.journey-vehicle-marker-ring.reached {
+  stroke: #17a34a;
+}
+
+
+.journey-vehicle-marker-ring.default {
+  stroke: #8391a4;
+}
+
+
+/* =========================================================
+   VEHICLE INNER
+========================================================= */
+
+.journey-vehicle-marker-circle.moving {
+  fill: #17a34a;
+}
+
+
+.journey-vehicle-marker-circle.idle {
+  fill: #d89b25;
+}
+
+
+.journey-vehicle-marker-circle.stopped {
+  fill: #d04a53;
+}
+
+
+.journey-vehicle-marker-circle.reached {
+  fill: #17a34a;
+}
+
+
+.journey-vehicle-marker-circle.default {
+  fill: #8391a4;
+}
+
+
+/* =========================================================
+   TRUCK
+========================================================= */
+
+.journey-svg-truck {
+  width: 20px;
+  height: 20px;
+
+  display: grid;
+  place-items: center;
+
+  overflow: hidden;
+
+  font-size: 12px;
+
+  line-height: 20px;
+
+  text-align: center;
+}
+
+
+/* =========================================================
+   CURRENT VEHICLE INFORMATION CARD
+========================================================= */
+
+.journey-current-card {
   position: absolute;
 
-  top: 12px;
-  right: 12px;
+  z-index: 20;
 
-  z-index: 500;
-
-  min-height: 28px;
+  width: 105px;
 
   padding:
-    5px
-    8px;
-
-  display: inline-flex;
-  align-items: center;
-
-  gap: 5px;
+    6px 7px;
 
   border:
-    1px solid
-    #f0d3d6;
+    1px solid #dce5df;
 
-  border-radius: 7px;
-
-  color: #b84048;
+  border-radius: 8px;
 
   background:
     rgba(
       255,
-      247,
-      248,
-      0.96
+      255,
+      255,
+      0.97
     );
 
   box-shadow:
-    0 3px 10px
-    rgba(22, 47, 83, 0.08);
+    0 5px 14px
+    rgba(
+      27,
+      60,
+      44,
+      0.1
+    );
 
-  font-size: 9px;
-  font-weight: 600;
+  transform:
+    translate(
+      25px,
+      -50%
+    );
+
+  pointer-events: none;
 }
 
 
-/* =========================================
-   16. SELECTED VEHICLE
-========================================= */
+/* =========================================================
+   POINTER
+========================================================= */
 
-.map-selected-info {
-  margin:
-    0
-    12px
-    10px;
+.journey-current-card::before {
+  content: "";
 
-  padding:
-    10px
-    11px;
+  position: absolute;
 
-  display: grid;
+  top: 50%;
+  left: -6px;
 
-  grid-template-columns:
-    auto
-    auto
-    minmax(0, 1fr)
-    auto;
+  width: 11px;
+  height: 11px;
 
+  border-left:
+    1px solid #dce5df;
+
+  border-bottom:
+    1px solid #dce5df;
+
+  background: #ffffff;
+
+  transform:
+    translateY(-50%)
+    rotate(45deg);
+}
+
+
+/* =========================================================
+   CARD TITLE
+========================================================= */
+
+.journey-current-card-title {
+  position: relative;
+
+  z-index: 2;
+
+  min-width: 0;
+
+  display: flex;
   align-items: center;
 
-  gap: 10px;
-
-  border:
-    1px solid
-    #cbdcf7;
-
-  border-radius: 9px;
-
-  background: #f3f7ff;
+  gap: 4px;
 }
 
 
-.map-selected-label {
-  color: #718198;
+.journey-current-card-title
+> span {
+  width: 20px;
+  height: 20px;
 
-  font-size: 10px;
-  font-weight: 500;
+  flex:
+    0 0 20px;
 
-  white-space: nowrap;
+  display: grid;
+  place-items: center;
+
+  border-radius: 5px;
+
+  color: #169447;
+
+  background: #e9f8ef;
 }
 
 
-.map-selected-info strong {
-  color: #2457b2;
-
-  font-size: 13px;
-  font-weight: 700;
-
-  white-space: nowrap;
-}
-
-
-.map-selected-location {
+.journey-current-card-title
+strong {
   min-width: 0;
 
   overflow: hidden;
 
-  color: #536b8e;
+  color: #17345f;
 
-  font-size: 11px;
+  font-size: 8px;
+  font-weight: 750;
 
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 
-.map-selected-info small {
-  color: #718198;
+/* =========================================================
+   CURRENT POSITION
+========================================================= */
 
-  font-size: 10px;
+.journey-current-card
+> p {
+  margin:
+    4px 0 0 24px;
 
+  overflow: hidden;
+
+  color: #74839a;
+
+  font-size: 6.5px;
+  font-weight: 500;
+
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 
-/* =========================================
-   17. LEGEND
-========================================= */
+/* =========================================================
+   CURRENT STATUS
+========================================================= */
 
-.tracking-map-legend {
+.journey-current-card
+small {
   margin:
-    0
-    12px
-    12px;
+    5px 0 0 24px;
+
+  min-height: 17px;
 
   padding:
-    9px
-    12px;
+    0 6px;
 
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-
-  gap: 16px;
-
-  border:
-    1px solid
-    #e3e9f1;
-
-  border-radius: 9px;
-
-  background: #fafbfd;
-}
-
-
-.tracking-map-legend span {
   display: inline-flex;
   align-items: center;
 
-  gap: 6px;
+  gap: 4px;
 
-  color: #62748f;
+  border-radius: 999px;
 
-  font-size: 10px;
-  font-weight: 500;
+  font-size: 6.5px;
+  font-weight: 700;
 }
 
 
-.tracking-map-legend i {
-  width: 8px;
-  height: 8px;
-
-  display: block;
+.journey-current-card
+small i {
+  width: 5px;
+  height: 5px;
 
   border-radius: 50%;
+
+  background:
+    currentColor;
 }
 
 
-.tracking-map-legend i.moving {
-  background: #18a05a;
+.journey-current-card
+small.moving {
+  color: #169447;
+
+  background: #e9f8ef;
 }
 
 
-.tracking-map-legend i.idle {
-  background: #e0a022;
+.journey-current-card
+small.idle {
+  color: #a66d13;
+
+  background: #fff4e3;
 }
 
 
-.tracking-map-legend i.stopped {
-  background: #d94a52;
+.journey-current-card
+small.stopped {
+  color: #ca444d;
+
+  background: #fff0f1;
 }
 
 
-.tracking-map-legend i.reached {
-  background: #2457b2;
+.journey-current-card
+small.reached {
+  color: #169447;
+
+  background: #e9f8ef;
 }
 
 
-/* =========================================
-   18. EMPTY STATE
-========================================= */
+.journey-current-card
+small.default {
+  color: #718198;
 
-.tracking-map-empty {
-  min-height: 380px;
+  background: #eef2f6;
+}
 
-  padding: 30px;
+
+/* =========================================================
+   EMPTY
+========================================================= */
+
+.journey-empty {
+  width: 100%;
+  height: 100%;
+
+  min-height: 300px;
+
+  padding: 24px;
 
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
 
-  gap: 7px;
+  gap: 5px;
 
-  color: #8795a8;
+  color: #8492a6;
 
   text-align: center;
 }
 
 
-.tracking-map-empty svg {
-  color: #7d96bd;
+.journey-empty svg {
+  color: #17a34a;
 }
 
 
-.tracking-map-empty strong {
-  margin-top: 4px;
+.journey-empty strong {
+  margin-top: 3px;
 
-  color: #344d72;
+  color: #344f72;
 
-  font-size: 14px;
+  font-size: 10px;
   font-weight: 700;
 }
 
 
-.tracking-map-empty span {
-  max-width: 260px;
+.journey-empty span {
+  max-width: 190px;
 
-  color: #8795a8;
+  font-size: 7px;
 
-  font-size: 10px;
-
-  line-height: 1.5;
+  line-height: 1.45;
 }
 
 
-/* =========================================
-   19. TABLET
-========================================= */
+/* =========================================================
+   LAPTOP
+========================================================= */
 
-@media (max-width: 900px) {
+@media (
+  max-width: 1200px
+) {
 
-  .tracking-map-wrapper {
-    height: 420px;
-  }
+  .journey-current-card {
+    width: 100px;
 
-
-  .map-selected-info {
-    grid-template-columns:
-      repeat(
-        2,
-        minmax(0, 1fr)
+    transform:
+      translate(
+        22px,
+        -50%
       );
   }
 
 
-  .map-selected-label,
-  .map-selected-info strong,
-  .map-selected-info small {
-    white-space: normal;
+  .journey-stop-name {
+    font-size: 10px;
   }
 
 }
 
 
-/* =========================================
-   20. MOBILE
-========================================= */
+/* =========================================================
+   TABLET
+========================================================= */
 
-@media (max-width: 650px) {
+@media (
+  max-width: 900px
+) {
 
-  .tracking-map-header {
-    min-height: 55px;
+  .journey-stop-name {
+    font-size: 9.5px;
+  }
+
+
+  .journey-current-card {
+    width: 95px;
+
+    transform:
+      translate(
+        20px,
+        -50%
+      );
+  }
+
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (
+  max-width: 650px
+) {
+
+  .journey-column {
+    min-height: 520px;
+
+    border-radius: 9px;
+  }
+
+
+  .journey-vehicle-summary {
+    width:
+      calc(100% - 12px);
+
+    margin:
+      6px;
+  }
+
+
+  .journey-route-wrapper {
+    width:
+      calc(100% - 12px);
+
+    margin:
+      0 6px 6px;
+  }
+
+
+  .journey-current-card {
+    width: 90px;
 
     padding:
-      10px
-      11px;
+      5px 6px;
+
+    transform:
+      translate(
+        17px,
+        -50%
+      );
   }
 
 
-  .map-route-summary {
-    grid-template-columns:
-      1fr;
-
-    gap: 10px;
+  .journey-stop-name {
+    font-size: 9px;
   }
 
 
-  .map-route-place.destination {
-    text-align: left;
+  .journey-stop-type {
+    font-size: 6px;
+  }
+
+}
+
+
+/* =========================================================
+   SMALL MOBILE
+========================================================= */
+
+@media (
+  max-width: 430px
+) {
+
+  .journey-column {
+    min-height: 500px;
   }
 
 
-  .map-route-line {
-    width: 100%;
+  .journey-current-card {
+    width: 82px;
+
+    transform:
+      translate(
+        13px,
+        -50%
+      );
   }
 
 
-  .tracking-map-wrapper {
-    width:
-      calc(100% - 20px);
-
-    height: 360px;
-
-    margin:
-      0
-      10px
-      10px;
+  .journey-current-card-title
+  strong {
+    font-size: 7px;
   }
 
 
-  .map-selected-info {
-    margin:
-      0
-      10px
-      10px;
-
-    grid-template-columns:
-      1fr;
-
-    gap: 6px;
+  .journey-stop-name {
+    font-size: 8px;
   }
 
+}
 
-  .tracking-map-legend {
-    margin:
-      0
-      10px
-      10px;
+.journey-route-stop-count {
+  display: block;
+  margin-top: 2px;
+  color: #7b8da3;
+  font-size: 6.5px;
+  font-weight: 500;
+  line-height: 1.15;
+}
 
-    gap:
-      10px
-      14px;
-  }
+.journey-stop.completed .journey-stop-name {
+  fill: #126c3d;
+}
 
+.journey-stop:not(.completed) .journey-stop-name {
+  fill: #435976;
 }

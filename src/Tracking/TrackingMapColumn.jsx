@@ -1,139 +1,172 @@
 import React, {
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 
 import {
-  MapContainer,
-  TileLayer,
-  Marker,
-  Popup,
-  Polyline,
-  useMap,
-} from "react-leaflet";
-
-import L from "leaflet";
-
-import {
-  AlertCircle,
-  Navigation,
   Truck,
 } from "lucide-react";
 
-import "leaflet/dist/leaflet.css";
 import "./TrackingMapColumn.css";
 
 
 /* =========================================
-   DEFAULT LOCATIONS
+   SVG CONFIG
 ========================================= */
 
-const DEFAULT_ORIGIN = {
-  lat: 12.9716,
-  lng: 77.5946,
-};
+const ROUTE_VIEWBOX_WIDTH = 420;
+const ROUTE_VIEWBOX_HEIGHT = 650;
 
-const DEFAULT_DESTINATION = {
-  lat: 13.0827,
-  lng: 80.2707,
-};
+
+/*
+  Route starts from BOTTOM
+  and moves towards TOP.
+
+  Origin       = bottom
+  Destination  = top
+*/
+
+const ROUTE_PATH = `
+  M 92 610
+
+  C 115 570,
+    135 535,
+    125 490
+
+  C 112 440,
+    155 420,
+    165 375
+
+  C 177 325,
+    115 300,
+    135 245
+
+  C 155 190,
+    230 205,
+    255 155
+
+  C 282 105,
+    272 70,
+    250 38
+`;
 
 
 /* =========================================
-   SAFE COORDINATE PARSER
+   NORMALIZE TEXT
 ========================================= */
 
-const parseCoordinates = (
-  value,
-  fallback
+const normalizeText = (
+  value
+) =>
+  String(
+    value || ""
+  )
+    .trim()
+    .toLowerCase();
+
+
+/* =========================================
+   UNIQUE STRINGS
+========================================= */
+
+const uniqueStrings = (
+  values
 ) => {
+  const seen =
+    new Set();
 
-  if (!value) {
-    return fallback;
-  }
+  return values.filter(
+    (value) => {
+      const clean =
+        String(
+          value || ""
+        ).trim();
 
+      if (!clean) {
+        return false;
+      }
 
-  /* Array: [lat, lng] */
+      const key =
+        clean.toLowerCase();
 
-  if (
-    Array.isArray(value) &&
-    value.length >= 2
-  ) {
+      if (
+        seen.has(
+          key
+        )
+      ) {
+        return false;
+      }
 
-    const lat =
-      Number(value[0]);
-
-    const lng =
-      Number(value[1]);
-
-
-    if (
-      Number.isFinite(lat) &&
-      Number.isFinite(lng)
-    ) {
-
-      return {
-        lat,
-        lng,
-      };
-
-    }
-
-  }
-
-
-  /* Object */
-
-  if (
-    typeof value === "object"
-  ) {
-
-    const lat =
-      Number(
-        value.lat ??
-        value.latitude
+      seen.add(
+        key
       );
 
-    const lng =
-      Number(
-        value.lng ??
-        value.lon ??
-        value.longitude
-      );
-
-
-    if (
-      Number.isFinite(lat) &&
-      Number.isFinite(lng)
-    ) {
-
-      return {
-        lat,
-        lng,
-      };
-
+      return true;
     }
-
-  }
-
-
-  return fallback;
+  );
 };
 
 
 /* =========================================
-   VEHICLE STATUS CLASS
+   GET ROUTE STOP NAME
 ========================================= */
 
-const getVehicleStatusClass = (
+const getStopName = (
+  stop
+) => {
+  if (
+    typeof stop ===
+    "string"
+  ) {
+    return stop;
+  }
+
+  if (
+    stop &&
+    typeof stop ===
+    "object"
+  ) {
+    return (
+      stop.name ||
+      stop.location ||
+      stop.city ||
+      stop.place ||
+      stop.label ||
+      ""
+    );
+  }
+
+  return "";
+};
+
+
+/* =========================================
+   VEHICLE IDENTIFIER
+========================================= */
+
+const getVehicleIdentifier = (
+  vehicle
+) =>
+  vehicle?._id ||
+  vehicle?.id ||
+  vehicle?.vehicleSubId ||
+  vehicle?.vehicleNumber ||
+  "";
+
+
+/* =========================================
+   STATUS CLASS
+========================================= */
+
+const getStatusClass = (
   status
 ) => {
-
   const value =
-    String(status || "")
-      .toLowerCase();
-
+    normalizeText(
+      status
+    );
 
   if (
     value === "moving"
@@ -141,13 +174,11 @@ const getVehicleStatusClass = (
     return "moving";
   }
 
-
   if (
     value === "idle"
   ) {
     return "idle";
   }
-
 
   if (
     value === "reached"
@@ -155,351 +186,52 @@ const getVehicleStatusClass = (
     return "reached";
   }
 
-
   if (
-    value === "stopped" ||
-    value === "breakdown"
+    value === "breakdown" ||
+    value === "stopped"
   ) {
     return "stopped";
   }
-
 
   return "default";
 };
 
 
 /* =========================================
-   CUSTOM VEHICLE MARKER
-========================================= */
-
-const createVehicleIcon = (
-  vehicle,
-  selected = false
-) => {
-
-  const statusClass =
-    getVehicleStatusClass(
-      vehicle?.status
-    );
-
-
-  return L.divIcon({
-    className:
-      "vehicle-map-marker-wrapper",
-
-    html: `
-      <div
-        class="
-          vehicle-map-marker
-          ${statusClass}
-          ${selected ? "selected" : ""}
-        "
-      >
-        <div class="vehicle-map-marker-icon">
-          🚚
-        </div>
-      </div>
-    `,
-
-    iconSize: [38, 38],
-
-    iconAnchor: [
-      19,
-      19,
-    ],
-
-    popupAnchor: [
-      0,
-      -20,
-    ],
-  });
-};
-
-
-/* =========================================
-   ORIGIN MARKER
-========================================= */
-
-const originIcon =
-  L.divIcon({
-    className:
-      "route-location-marker-wrapper",
-
-    html: `
-      <div class="
-        route-location-marker
-        origin
-      ">
-        <span></span>
-      </div>
-    `,
-
-    iconSize: [24, 24],
-
-    iconAnchor: [
-      12,
-      12,
-    ],
-
-    popupAnchor: [
-      0,
-      -14,
-    ],
-  });
-
-
-/* =========================================
-   DESTINATION MARKER
-========================================= */
-
-const destinationIcon =
-  L.divIcon({
-    className:
-      "route-location-marker-wrapper",
-
-    html: `
-      <div class="
-        route-location-marker
-        destination
-      ">
-        <span></span>
-      </div>
-    `,
-
-    iconSize: [24, 24],
-
-    iconAnchor: [
-      12,
-      12,
-    ],
-
-    popupAnchor: [
-      0,
-      -14,
-    ],
-  });
-
-
-/* =========================================
-   AUTO FIT MAP
-========================================= */
-
-const FitMapBounds = ({
-  origin,
-  destination,
-  vehicles,
-  routeCoordinates,
-}) => {
-
-  const map =
-    useMap();
-
-
-  useEffect(() => {
-
-    const points = [];
-
-
-    if (origin) {
-
-      points.push([
-        origin.lat,
-        origin.lng,
-      ]);
-
-    }
-
-
-    if (destination) {
-
-      points.push([
-        destination.lat,
-        destination.lng,
-      ]);
-
-    }
-
-
-    vehicles.forEach(
-      (vehicle) => {
-
-        const lat =
-          Number(vehicle.latitude);
-
-        const lng =
-          Number(vehicle.longitude);
-
-
-        if (
-          Number.isFinite(lat) &&
-          Number.isFinite(lng)
-        ) {
-
-          points.push([
-            lat,
-            lng,
-          ]);
-
-        }
-
-      }
-    );
-
-
-    if (
-      routeCoordinates.length > 0
-    ) {
-
-      points.push(
-        ...routeCoordinates
-      );
-
-    }
-
-
-    if (
-      points.length === 0
-    ) {
-      return;
-    }
-
-
-    if (
-      points.length === 1
-    ) {
-
-      map.setView(
-        points[0],
-        10
-      );
-
-      return;
-    }
-
-
-    const bounds =
-      L.latLngBounds(
-        points
-      );
-
-
-    map.fitBounds(
-      bounds,
-      {
-        padding: [
-          45,
-          45,
-        ],
-
-        maxZoom: 11,
-      }
-    );
-
-  }, [
-    map,
-    origin,
-    destination,
-    vehicles,
-    routeCoordinates,
-  ]);
-
-
-  return null;
-};
-
-
-/* =========================================
-   SELECTED VEHICLE FOCUS
-========================================= */
-
-const SelectedVehicleFocus = ({
-  selectedVehicle,
-}) => {
-
-  const map =
-    useMap();
-
-
-  useEffect(() => {
-
-    if (!selectedVehicle) {
-      return;
-    }
-
-
-    const lat =
-      Number(
-        selectedVehicle.latitude
-      );
-
-    const lng =
-      Number(
-        selectedVehicle.longitude
-      );
-
-
-    if (
-      !Number.isFinite(lat) ||
-      !Number.isFinite(lng)
-    ) {
-      return;
-    }
-
-
-    map.flyTo(
-      [
-        lat,
-        lng,
-      ],
-      Math.max(
-        map.getZoom(),
-        10
-      ),
-      {
-        duration: 0.8,
-      }
-    );
-
-  }, [
-    map,
-    selectedVehicle,
-  ]);
-
-
-  return null;
-};
-
-
-/* =========================================
-   MAIN COMPONENT
+   COMPONENT
 ========================================= */
 
 const TrackingMapColumn = ({
   trip,
   selectedVehicle,
-  onSelectVehicle,
 }) => {
+  const routePathRef =
+    useRef(null);
+
 
   /* =========================================
-     ROUTE STATES
+     STATE
   ========================================= */
 
   const [
-    routeCoordinates,
-    setRouteCoordinates,
+    stopPoints,
+    setStopPoints,
   ] = useState([]);
 
 
   const [
-    routeLoading,
-    setRouteLoading,
-  ] = useState(false);
+    vehiclePoint,
+    setVehiclePoint,
+  ] = useState({
+    x: 0,
+    y: 0,
+  });
 
 
   const [
-    routeError,
-    setRouteError,
-  ] = useState("");
+    totalPathLength,
+    setTotalPathLength,
+  ] = useState(1);
 
 
   /* =========================================
@@ -508,12 +240,17 @@ const TrackingMapColumn = ({
 
   const vehicles =
     useMemo(
-      () =>
-        Array.isArray(
-          trip?.vehicles
-        )
-          ? trip.vehicles
-          : [],
+      () => {
+        if (
+          !Array.isArray(
+            trip?.vehicles
+          )
+        ) {
+          return [];
+        }
+
+        return trip.vehicles;
+      },
       [
         trip?.vehicles,
       ]
@@ -521,204 +258,439 @@ const TrackingMapColumn = ({
 
 
   /* =========================================
-     ORIGIN
+     ACTIVE VEHICLE
   ========================================= */
+
+const activeVehicle = useMemo(() => {
+  if (!vehicles.length) {
+    return null;
+  }
+
+  if (!selectedVehicle) {
+    return vehicles[0];
+  }
+
+  /*
+    Always try to get the newest vehicle
+    object from trip.vehicles.
+
+    This keeps the selected vehicle synced with
+    the latest vehicle object in the trip.
+  */
+
+  const selectedId =
+    typeof selectedVehicle === "object"
+      ? String(
+          getVehicleIdentifier(
+            selectedVehicle
+          )
+        )
+      : String(selectedVehicle);
+
+  const matchedVehicle =
+    vehicles.find(
+      (vehicle) =>
+        String(
+          getVehicleIdentifier(
+            vehicle
+          )
+        ) === selectedId
+    );
+
+  return (
+    matchedVehicle ||
+    (
+      typeof selectedVehicle === "object"
+        ? selectedVehicle
+        : vehicles[0]
+    )
+  );
+}, [
+  selectedVehicle,
+  vehicles,
+]);
+
+  /* =========================================
+   ROUTE STOPS
+========================================= */
+
+const routeStops = useMemo(() => {
+  if (!trip) {
+    return [];
+  }
 
   const origin =
-    useMemo(
-      () =>
-        parseCoordinates(
-          trip?.originCoordinates,
-          DEFAULT_ORIGIN
-        ),
-      [
-        trip?.originCoordinates,
-      ]
-    );
-
-
-  /* =========================================
-     DESTINATION
-  ========================================= */
+    String(
+      trip.origin || ""
+    ).trim();
 
   const destination =
-    useMemo(
-      () =>
-        parseCoordinates(
-          trip?.destinationCoordinates,
-          DEFAULT_DESTINATION
-        ),
-      [
-        trip?.destinationCoordinates,
-      ]
+    String(
+      trip.destination || ""
+    ).trim();
+
+  const rawTripLocations =
+    trip.routeLocations ||
+    trip.routeStops ||
+    trip.checkpoints ||
+    trip.waypoints ||
+    trip.routePoints ||
+    trip.stops ||
+    [];
+
+  let intermediateLocations = [];
+
+  if (
+    Array.isArray(
+      rawTripLocations
+    )
+  ) {
+    intermediateLocations =
+      rawTripLocations
+        .map((location) =>
+          String(
+            getStopName(location) || ""
+          ).trim()
+        )
+        .filter(Boolean);
+  }
+
+  intermediateLocations =
+    uniqueStrings(
+      intermediateLocations
     );
+
+  intermediateLocations =
+    intermediateLocations.filter(
+      (location) => {
+        const normalized =
+          normalizeText(location);
+
+        return (
+          normalized !==
+            normalizeText(origin) &&
+          normalized !==
+            normalizeText(destination)
+        );
+      }
+    );
+
+  const stops = [];
+
+  if (origin) {
+    stops.push(origin);
+  }
+
+  stops.push(
+    ...intermediateLocations
+  );
+
+  if (destination) {
+    stops.push(destination);
+  }
+
+  if (stops.length === 0) {
+    return [
+      "Origin",
+      "Destination",
+    ];
+  }
+
+  if (stops.length === 1) {
+    stops.push(
+      destination ||
+      "Destination"
+    );
+  }
+
+  return stops;
+
+}, [
+  trip,
+]);
 
 
   /* =========================================
-     FETCH ROAD ROUTE FROM OSRM
+     VEHICLE PROGRESS
   ========================================= */
 
-  useEffect(() => {
-
-    let active = true;
-
-
-    const getRoute =
-      async () => {
-
+  const vehicleProgress =
+    useMemo(
+      () => {
         if (
-          !origin ||
-          !destination
+          !activeVehicle ||
+          routeStops.length < 2
         ) {
-          return;
+          return 0;
         }
 
 
-        try {
+        /* =====================================
+           REACHED
+        ===================================== */
 
-          setRouteLoading(true);
-
-          setRouteError("");
-
-
-          /*
-            IMPORTANT:
-
-            OSRM uses:
-            longitude,latitude
-
-            NOT:
-            latitude,longitude
-          */
-
-          const url =
-            `https://router.project-osrm.org/route/v1/driving/` +
-            `${origin.lng},${origin.lat};` +
-            `${destination.lng},${destination.lat}` +
-            `?overview=full&geometries=geojson`;
+        if (
+          normalizeText(
+            activeVehicle.status
+          ) === "reached"
+        ) {
+          return 1;
+        }
 
 
-          const response =
-            await fetch(url);
+        const currentPosition =
+          normalizeText(
+            activeVehicle
+              ?.currentPosition ||
+            activeVehicle
+              ?.currentLocation
+          );
 
 
-          if (!response.ok) {
+        /* =====================================
+           EXACT LOCATION MATCH
+        ===================================== */
 
-            throw new Error(
-              "Unable to load road route."
+        if (
+          currentPosition
+        ) {
+          const currentIndex =
+            routeStops.findIndex(
+              (stop) =>
+                normalizeText(
+                  stop
+                ) ===
+                currentPosition
             );
-
-          }
-
-
-          const data =
-            await response.json();
-
-
-          if (!active) {
-            return;
-          }
 
 
           if (
-            data.code !== "Ok" ||
-            !data.routes?.length
+            currentIndex >= 0
           ) {
-
-            throw new Error(
-              "Route is not available."
+            return (
+              currentIndex /
+              Math.max(
+                routeStops.length -
+                  1,
+                1
+              )
             );
-
           }
-
-
-          const coordinates =
-            data.routes[0]
-              .geometry
-              .coordinates
-              .map(
-                ([lng, lat]) => [
-                  lat,
-                  lng,
-                ]
-              );
-
-
-          setRouteCoordinates(
-            coordinates
-          );
-
-
-        } catch (error) {
-
-          console.error(
-            "OSRM route error:",
-            error
-          );
-
-
-          if (!active) {
-            return;
-          }
-
-
-          /*
-            Map will continue working
-            even if OSRM route fails.
-          */
-
-          setRouteCoordinates([]);
-
-          setRouteError(
-            error?.message ||
-            "Route could not be loaded."
-          );
-
-
-        } finally {
-
-          if (active) {
-
-            setRouteLoading(
-              false
-            );
-
-          }
-
         }
 
-      };
+
+        /* =====================================
+           RUNNING KM
+        ===================================== */
+
+        const totalKm =
+          Number(
+            trip?.totalKm ??
+            trip?.totalDistance
+          );
 
 
-    getRoute();
+        const runningKm =
+          Number(
+            activeVehicle
+              ?.runningKm ??
+            activeVehicle
+              ?.kmCovered
+          );
 
 
-    return () => {
+        if (
+          Number.isFinite(
+            totalKm
+          ) &&
+          totalKm > 0 &&
+          Number.isFinite(
+            runningKm
+          )
+        ) {
+          return Math.min(
+            Math.max(
+              runningKm /
+                totalKm,
+              0
+            ),
+            1
+          );
+        }
 
-      active = false;
 
-    };
+        /* =====================================
+           CURRENT DAY
+        ===================================== */
 
-  }, [
-    origin.lat,
-    origin.lng,
-    destination.lat,
-    destination.lng,
-  ]);
+        const currentDay =
+          Number(
+            activeVehicle
+              ?.currentDay
+          );
+
+
+        const transitDays =
+          Number(
+            trip
+              ?.estimatedTransitDays ??
+            trip
+              ?.transitDays
+          );
+
+
+        if (
+          Number.isFinite(
+            currentDay
+          ) &&
+          Number.isFinite(
+            transitDays
+          ) &&
+          transitDays > 0
+        ) {
+          return Math.min(
+            Math.max(
+              currentDay /
+                transitDays,
+              0
+            ),
+            1
+          );
+        }
+
+
+        return 0;
+      },
+      [
+        activeVehicle,
+        routeStops,
+        trip,
+      ]
+    );
 
 
   /* =========================================
-     EMPTY TRIP
+     CALCULATE SVG POSITIONS
+  ========================================= */
+
+  useEffect(
+    () => {
+      const path =
+        routePathRef.current;
+
+
+      if (!path) {
+        return;
+      }
+
+
+      const length =
+        path.getTotalLength();
+
+
+      setTotalPathLength(
+        length
+      );
+
+
+      /* =====================================
+         ROUTE STOPS
+      ===================================== */
+
+      const points =
+        routeStops.map(
+          (
+            stop,
+            index
+          ) => {
+            const percentage =
+              routeStops.length <=
+                1
+                ? 0
+                : index /
+                  (
+                    routeStops.length -
+                    1
+                  );
+
+
+            const point =
+              path.getPointAtLength(
+                length *
+                  percentage
+              );
+
+
+            return {
+              name:
+                stop,
+
+              x:
+                point.x,
+
+              y:
+                point.y,
+
+              percentage,
+            };
+          }
+        );
+
+
+      setStopPoints(
+        points
+      );
+
+
+      /* =====================================
+         VEHICLE POSITION
+      ===================================== */
+
+      const safeProgress =
+        Math.min(
+          Math.max(
+            vehicleProgress,
+            0
+          ),
+          1
+        );
+
+
+      const currentPoint =
+        path.getPointAtLength(
+          length *
+            safeProgress
+        );
+
+
+      setVehiclePoint({
+        x:
+          currentPoint.x,
+
+        y:
+          currentPoint.y,
+      });
+    },
+    [
+      routeStops,
+      vehicleProgress,
+    ]
+  );
+
+
+  /* =========================================
+     EMPTY
   ========================================= */
 
   if (!trip) {
-
     return (
-      <section className="tracking-map-column">
+      <section className="journey-column">
 
-        <div className="tracking-map-empty">
+        <div className="journey-empty">
 
-          <Navigation size={30} />
+          <Truck
+            size={26}
+          />
 
           <strong>
             No Trip Selected
@@ -726,15 +698,64 @@ const TrackingMapColumn = ({
 
           <span>
             Select a trip to view
-            vehicle location and route.
+            vehicle progress.
           </span>
 
         </div>
 
       </section>
     );
-
   }
+
+
+  /* =========================================
+     VEHICLE VALUES
+  ========================================= */
+
+  const status =
+    activeVehicle
+      ?.status ||
+    "Unknown";
+
+
+  const statusClass =
+    getStatusClass(
+      status
+    );
+
+
+  const vehicleNumber =
+    activeVehicle
+      ?.vehicleNumber ||
+    "-";
+
+
+  const currentPosition =
+    activeVehicle
+      ?.currentPosition ||
+    activeVehicle
+      ?.currentLocation ||
+    "-";
+
+
+  /* =========================================
+     ROUTE PROGRESS
+  ========================================= */
+
+  const completedLength =
+    Math.max(
+      totalPathLength *
+        vehicleProgress,
+      0
+    );
+
+
+  const remainingLength =
+    Math.max(
+      totalPathLength -
+        completedLength,
+      0
+    );
 
 
   /* =========================================
@@ -742,507 +763,369 @@ const TrackingMapColumn = ({
   ========================================= */
 
   return (
-    <section className="tracking-map-column">
+    <section className="journey-column">
 
       {/* =====================================
-          HEADER
+          VEHICLE HEADER
       ===================================== */}
 
-      <div className="tracking-map-header">
+      <div className="journey-vehicle-summary">
 
-        <div>
+        <div className="journey-vehicle-main">
 
-          <strong>
-            Vehicle Map
-          </strong>
-
-          <p>
-            Live vehicle route and location
-          </p>
-
-        </div>
-
-
-        <Navigation
-          size={20}
-        />
-
-      </div>
-
-
-      {/* =====================================
-          ROUTE SUMMARY
-      ===================================== */}
-
-      <div className="map-route-summary">
-
-        {/* ORIGIN */}
-
-        <div className="map-route-place">
-
-          <span>
-            Origin
-          </span>
-
-          <strong>
-            {trip.origin ||
-              "Bangalore"}
-          </strong>
-
-        </div>
-
-
-        {/* CONNECTOR */}
-
-        <div className="map-route-line">
-
-          <span />
-
-          <div>
-            <Navigation
+          <span
+            className={`journey-vehicle-icon ${statusClass}`}
+          >
+            <Truck
               size={14}
             />
-          </div>
-
-          <span />
-
-        </div>
-
-
-        {/* DESTINATION */}
-
-        <div className="map-route-place destination">
-
-          <span>
-            Destination
           </span>
 
-          <strong>
-            {trip.destination ||
-              "Chennai"}
-          </strong>
+
+          <div>
+
+            <span>
+              Vehicle
+            </span>
+
+            <strong>
+              {vehicleNumber}
+            </strong>
+
+            <small className="journey-route-stop-count">
+              {Math.max(routeStops.length - 2, 0)}
+              {" "}
+              added location
+              {Math.max(routeStops.length - 2, 0) === 1
+                ? ""
+                : "s"}
+            </small>
+
+          </div>
 
         </div>
+
+
+        <span
+          className={`journey-status ${statusClass}`}
+        >
+          <span />
+
+          {status}
+        </span>
 
       </div>
 
 
       {/* =====================================
-          MAP
+          FULL HEIGHT ROUTE
       ===================================== */}
 
-      <div className="tracking-map-wrapper">
+      <div className="journey-route-wrapper">
 
-        <MapContainer
-          center={[
-            origin.lat,
-            origin.lng,
-          ]}
-          zoom={7}
-          scrollWheelZoom
-          className="tracking-leaflet-map"
+        <svg
+          className="journey-route-svg"
+          viewBox={`0 0 ${ROUTE_VIEWBOX_WIDTH} ${ROUTE_VIEWBOX_HEIGHT}`}
+          preserveAspectRatio="xMidYMid meet"
         >
 
-          {/* OPENSTREETMAP */}
+          {/* =================================
+              UPCOMING ROUTE
+          ================================= */}
 
-          <TileLayer
-            attribution='&copy; OpenStreetMap contributors'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          <path
+            ref={
+              routePathRef
+            }
+            d={
+              ROUTE_PATH
+            }
+            className="journey-path-base"
           />
 
 
-          {/* AUTO FIT */}
+          {/* =================================
+              COVERED ROUTE
+          ================================= */}
 
-          <FitMapBounds
-            origin={origin}
-            destination={
-              destination
+          <path
+            d={
+              ROUTE_PATH
             }
-            vehicles={vehicles}
-            routeCoordinates={
-              routeCoordinates
-            }
+            className="journey-path-progress"
+            style={{
+              strokeDasharray:
+                `${completedLength} ${remainingLength}`,
+            }}
           />
 
 
-          {/* SELECTED VEHICLE */}
+          {/* =================================
+              ROUTE STOPS
+          ================================= */}
 
-          <SelectedVehicleFocus
-            selectedVehicle={
-              selectedVehicle
-            }
-          />
-
-
-          {/* =====================================
-              ROAD ROUTE
-          ===================================== */}
-
-          {routeCoordinates.length >
-            0 && (
-
-              <Polyline
-                positions={
-                  routeCoordinates
-                }
-                pathOptions={{
-                  color:
-                    "#2f66c7",
-
-                  weight: 5,
-
-                  opacity: 0.9,
-                }}
-              />
-
-            )}
+          {stopPoints.map(
+            (
+              stop,
+              index
+            ) => {
+              const completed =
+                stop.percentage <=
+                vehicleProgress;
 
 
-          {/* =====================================
-              FALLBACK STRAIGHT LINE
-          ===================================== */}
-
-          {routeCoordinates.length ===
-            0 &&
-            !routeLoading && (
-
-              <Polyline
-                positions={[
-                  [
-                    origin.lat,
-                    origin.lng,
-                  ],
-
-                  [
-                    destination.lat,
-                    destination.lng,
-                  ],
-                ]}
-                pathOptions={{
-                  color:
-                    "#8ba9d8",
-
-                  weight: 3,
-
-                  opacity: 0.7,
-
-                  dashArray:
-                    "7 7",
-                }}
-              />
-
-            )}
+              const isOrigin =
+                index === 0;
 
 
-          {/* =====================================
-              ORIGIN MARKER
-          ===================================== */}
-
-          <Marker
-            position={[
-              origin.lat,
-              origin.lng,
-            ]}
-            icon={originIcon}
-          >
-
-            <Popup>
-
-              <div className="map-popup">
-
-                <strong>
-                  {trip.origin ||
-                    "Bangalore"}
-                </strong>
-
-                <span>
-                  Origin
-                </span>
-
-              </div>
-
-            </Popup>
-
-          </Marker>
+              const isDestination =
+                index ===
+                stopPoints.length -
+                  1;
 
 
-          {/* =====================================
-              DESTINATION MARKER
-          ===================================== */}
+              /*
+                Alternate labels.
+              */
 
-          <Marker
-            position={[
-              destination.lat,
-              destination.lng,
-            ]}
-            icon={
-              destinationIcon
-            }
-          >
-
-            <Popup>
-
-              <div className="map-popup">
-
-                <strong>
-                  {trip.destination ||
-                    "Chennai"}
-                </strong>
-
-                <span>
-                  Destination
-                </span>
-
-              </div>
-
-            </Popup>
-
-          </Marker>
-
-
-          {/* =====================================
-              VEHICLES
-          ===================================== */}
-
-          {vehicles.map(
-            (vehicle) => {
-
-              const latitude =
-                Number(
-                  vehicle.latitude
-                );
-
-              const longitude =
-                Number(
-                  vehicle.longitude
-                );
-
-
-              if (
-                !Number.isFinite(
-                  latitude
-                ) ||
-                !Number.isFinite(
-                  longitude
-                )
-              ) {
-
-                return null;
-
-              }
-
-
-              const selected =
-                selectedVehicle?.id ===
-                vehicle.id;
+              const labelRight =
+                index % 2 !== 0;
 
 
               return (
-                <Marker
-                  key={
-                    vehicle.id ??
-                    vehicle.vehicleNumber
-                  }
-                  position={[
-                    latitude,
-                    longitude,
-                  ]}
-                  icon={createVehicleIcon(
-                    vehicle,
-                    selected
-                  )}
-                  eventHandlers={{
-                    click: () => {
-
-                      onSelectVehicle?.(
-                        vehicle.id
-                      );
-
-                    },
-                  }}
+                <g
+                  key={`${stop.name}-${index}`}
+                  className={`journey-stop ${
+                    completed
+                      ? "completed"
+                      : ""
+                  }`}
                 >
 
-                  <Popup>
+                  {/* OUTER DOT */}
 
-                    <div className="map-popup vehicle-popup">
-
-                      <div className="vehicle-popup-heading">
-
-                        <span className="vehicle-popup-icon">
-                          <Truck
-                            size={13}
-                          />
-                        </span>
-
-                        <strong>
-                          {vehicle.vehicleNumber ||
-                            "-"}
-                        </strong>
-
-                      </div>
-
-
-                      <span className="vehicle-popup-location">
-
-                        {vehicle.currentLocation ||
-                          "Location unavailable"}
-
-                      </span>
+                  <circle
+                    cx={
+                      stop.x
+                    }
+                    cy={
+                      stop.y
+                    }
+                    r={
+                      isOrigin ||
+                      isDestination
+                        ? 7
+                        : 5.5
+                    }
+                    className="journey-stop-outer"
+                  />
 
 
-                      <div className="vehicle-popup-bottom">
+                  {/* INNER DOT */}
 
-                        <span
-                          className={`vehicle-popup-status ${getVehicleStatusClass(
-                            vehicle.status
-                          )}`}
-                        >
+                  <circle
+                    cx={
+                      stop.x
+                    }
+                    cy={
+                      stop.y
+                    }
+                    r={
+                      isOrigin ||
+                      isDestination
+                        ? 3
+                        : 2.5
+                    }
+                    className="journey-stop-inner"
+                  />
 
-                          {vehicle.status ||
-                            "Unknown"}
 
-                        </span>
+                  {/* LOCATION */}
+
+                  <text
+                    x={
+                      labelRight
+                        ? stop.x + 18
+                        : stop.x - 18
+                    }
+                    y={
+                      stop.y + 4
+                    }
+                    textAnchor={
+                      labelRight
+                        ? "start"
+                        : "end"
+                    }
+                    className="journey-stop-name"
+                  >
+                    {stop.name}
+                  </text>
 
 
-                        <small>
+                  {/* ORIGIN */}
 
-                          {vehicle.speed ??
-                            0}
+                  {isOrigin && (
 
-                          {" km/h"}
+                    <text
+                      x={
+                        labelRight
+                          ? stop.x + 18
+                          : stop.x - 18
+                      }
+                      y={
+                        stop.y + 17
+                      }
+                      textAnchor={
+                        labelRight
+                          ? "start"
+                          : "end"
+                      }
+                      className="journey-stop-type"
+                    >
+                      Start
+                    </text>
 
-                        </small>
+                  )}
 
-                      </div>
 
-                    </div>
+                  {/* DESTINATION */}
 
-                  </Popup>
+                  {isDestination && (
 
-                </Marker>
+                    <text
+                      x={
+                        labelRight
+                          ? stop.x + 18
+                          : stop.x - 18
+                      }
+                      y={
+                        stop.y + 17
+                      }
+                      textAnchor={
+                        labelRight
+                          ? "start"
+                          : "end"
+                      }
+                      className="journey-stop-type"
+                    >
+                      Destination
+                    </text>
+
+                  )}
+
+                </g>
               );
-
             }
           )}
 
-        </MapContainer>
+
+          {/* =================================
+              VEHICLE
+          ================================= */}
+
+          {activeVehicle && (
+
+            <g
+              className="journey-vehicle-marker"
+              transform={`translate(
+                ${vehiclePoint.x},
+                ${vehiclePoint.y}
+              )`}
+            >
+
+              <circle
+                cx="0"
+                cy="0"
+                r="19"
+                className={`journey-vehicle-marker-ring ${statusClass}`}
+              />
+
+
+              <circle
+                cx="0"
+                cy="0"
+                r="14"
+                className={`journey-vehicle-marker-circle ${statusClass}`}
+              />
+
+
+              <foreignObject
+                x="-10"
+                y="-10"
+                width="20"
+                height="20"
+              >
+
+                <div className="journey-svg-truck">
+                  🚚
+                </div>
+
+              </foreignObject>
+
+            </g>
+
+          )}
+
+        </svg>
 
 
         {/* =====================================
-            ROUTE LOADING
+            VEHICLE DETAILS CARD
         ===================================== */}
 
-        {routeLoading && (
+        {activeVehicle && (
 
-          <div className="route-loading-badge">
+          <div
+            className="journey-current-card"
+            style={{
+              left:
+                `${(
+                  vehiclePoint.x /
+                  ROUTE_VIEWBOX_WIDTH
+                ) * 100}%`,
 
-            <span className="route-loading-spinner" />
+              top:
+                `${(
+                  vehiclePoint.y /
+                  ROUTE_VIEWBOX_HEIGHT
+                ) * 100}%`,
+            }}
+          >
 
-            Loading route...
+            <div className="journey-current-card-title">
+
+              <span>
+                <Truck
+                  size={11}
+                />
+              </span>
+
+
+              <strong>
+                {vehicleNumber}
+              </strong>
+
+            </div>
+
+
+            <p>
+              {currentPosition}
+            </p>
+
+
+            <small
+              className={
+                statusClass
+              }
+            >
+              <i />
+
+              {status}
+            </small>
 
           </div>
 
         )}
-
-
-        {/* =====================================
-            ROUTE ERROR
-        ===================================== */}
-
-        {routeError && (
-
-          <div className="route-error-badge">
-
-            <AlertCircle
-              size={13}
-            />
-
-            <span>
-              Road route unavailable
-            </span>
-
-          </div>
-
-        )}
-
-      </div>
-
-
-      {/* =====================================
-          SELECTED VEHICLE
-      ===================================== */}
-
-      {selectedVehicle && (
-
-        <div className="map-selected-info">
-
-          <span className="map-selected-label">
-            Selected Vehicle
-          </span>
-
-
-          <strong>
-            {selectedVehicle
-              .vehicleNumber ||
-              "-"}
-          </strong>
-
-
-          <span className="map-selected-location">
-
-            {selectedVehicle
-              .currentLocation ||
-              "-"}
-
-          </span>
-
-
-          <small>
-
-            {selectedVehicle
-              .status ||
-              "-"}
-
-            {" · "}
-
-            {selectedVehicle
-              .speed ??
-              0}
-
-            {" km/h"}
-
-          </small>
-
-        </div>
-
-      )}
-
-
-      {/* =====================================
-          LEGEND
-      ===================================== */}
-
-      <div className="tracking-map-legend">
-
-        <span>
-          <i className="moving" />
-          Moving
-        </span>
-
-        <span>
-          <i className="idle" />
-          Idle
-        </span>
-
-        <span>
-          <i className="stopped" />
-          Stopped
-        </span>
-
-        <span>
-          <i className="reached" />
-          Reached
-        </span>
 
       </div>
 
