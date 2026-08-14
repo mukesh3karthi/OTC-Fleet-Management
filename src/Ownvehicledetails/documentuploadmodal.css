@@ -1,0 +1,769 @@
+/* =========================================================
+   DOCUMENT UPLOAD MODAL
+========================================================= */
+
+.document-upload-overlay,
+.document-upload-overlay * {
+  box-sizing: border-box;
+}
+
+html.ownvehicle-modal-open,
+body.ownvehicle-modal-open {
+  height: 100%;
+  overflow: hidden !important;
+}
+
+.document-upload-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 24px;
+  overflow: hidden;
+  background: rgba(15, 23, 42, 0.62);
+  overscroll-behavior: contain;
+}
+
+.document-upload-modal {
+  width: min(980px, 100%);
+  height: calc(100vh - 48px);
+  max-height: calc(100vh - 48px);
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid #d7dce6;
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: 0 12px 35px rgba(15, 23, 42, 0.22);
+}
+
+/* Header */
+
+.document-upload-header {
+  min-height: 76px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 17px 28px;
+  border-bottom: 1px solid #d7dce6;
+  background: #f3f5ff;
+}
+
+.document-upload-title {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.document-upload-title > svg {
+  flex-shrink: 0;
+  color: #0758bc;
+}
+
+.document-upload-title h2 {
+  margin: 0;
+  color: #0c1d3a;
+  font-size: 23px;
+  font-weight: 750;
+  line-height: 1.25;
+}
+
+.document-upload-title p {
+  margin: 4px 0 0;
+  color: #64748b;
+  font-size: 12px;
+}
+
+.document-upload-title p strong {
+  color: #334155;
+}
+
+.document-modal-close {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #364152;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.document-modal-close:hover:not(:disabled) {
+  background: #e2e7f2;
+  color: #0f172a;
+}
+
+.document-modal-close:focus-visible {
+  outline: 3px solid rgba(15, 87, 183, 0.18);
+  outline-offset: 2px;
+}
+
+/* Scrollable body */
+
+.document-upload-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 26px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.document-upload-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.document-upload-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.document-upload-body::-webkit-scrollbar-thumb {
+  border-radius: 20px;
+  background: #cbd5e1;
+}
+
+.document-upload-body::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Sections */
+
+.document-section {
+  width: 100%;
+}
+
+.document-section + .document-section {
+  margin-top: 34px;
+}
+
+.document-section-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.document-section-heading svg {
+  flex-shrink: 0;
+  color: #53637a;
+}
+
+.document-section-heading h3 {
+  margin: 0;
+  color: #102445;
+  font-size: 20px;
+  font-weight: 650;
+}
+
+/* Validity dates */
+
+.validity-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px 26px;
+}
+
+.validity-card {
+  min-width: 0;
+  padding: 17px 12px 12px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: #f7f8fd;
+}
+
+.validity-card h4 {
+  margin: 0 0 13px;
+  color: #0f4fa7;
+  font-size: 13px;
+  font-weight: 750;
+  letter-spacing: 0.4px;
+}
+
+.validity-input-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.document-input-group {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.document-input-group label {
+  color: #6b7280;
+  font-size: 10px;
+  font-weight: 750;
+  line-height: 1.3;
+}
+
+.document-input-group input {
+  width: 100%;
+  height: 41px;
+  padding: 0 10px;
+  border: 1px solid #8d96a6;
+  border-radius: 3px;
+  background: #ffffff;
+  color: #111827;
+  font-family: inherit;
+  font-size: 14px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.document-input-group input:hover:not(:disabled) {
+  border-color: #64748b;
+}
+
+.document-input-group input:focus {
+  outline: none;
+  border-color: #0f57b7;
+  box-shadow: 0 0 0 3px rgba(15, 87, 183, 0.12);
+}
+
+.document-input-group input:disabled {
+  background: #f1f5f9;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+/* Document cards */
+
+.document-upload-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.document-upload-section-heading .document-section-heading {
+  margin: 0;
+  border-bottom: none;
+}
+
+.document-upload-section-heading > span {
+  color: #475569;
+  font-size: 12px;
+  font-style: italic;
+  text-align: right;
+}
+
+.document-upload-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.document-upload-card {
+  position: relative;
+  min-width: 0;
+  min-height: 190px;
+  overflow: hidden;
+  border: 2px dashed #c8cfdd;
+  border-radius: 9px;
+  background: #ffffff;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.document-upload-card:hover {
+  transform: translateY(-2px);
+  border-color: #0f57b7;
+  background: #f4f8ff;
+  box-shadow: 0 8px 18px rgba(15, 87, 183, 0.1);
+}
+
+.document-upload-card:focus-visible {
+  outline: 3px solid rgba(15, 87, 183, 0.2);
+  outline-offset: 3px;
+}
+
+.document-upload-card.file-selected {
+  border-color: #16a34a;
+  background: #f0fdf4;
+}
+
+.document-upload-card.file-selected:hover {
+  border-color: #15803d;
+  background: #eafbee;
+}
+
+.document-upload-card.document-unavailable {
+  border-color: #f59e0b;
+  background: #fffbeb;
+}
+
+.document-hidden-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.document-card-content {
+  min-height: 186px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 9px;
+  padding: 20px 16px;
+  color: #56657a;
+  text-align: center;
+}
+
+.document-card-content svg {
+  flex-shrink: 0;
+  color: #59687d;
+}
+
+.document-upload-card.file-selected .document-card-content svg {
+  color: #15803d;
+}
+
+.document-card-content strong {
+  color: #13284b;
+  font-size: 15px;
+  font-weight: 750;
+}
+
+.document-card-content span {
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.document-card-content small {
+  display: block;
+  width: 100%;
+  margin-top: 3px;
+  padding: 7px 9px;
+  overflow: hidden;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.78);
+  color: #166534;
+  font-size: 11px;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Error */
+
+.document-modal-error {
+  margin-top: 18px;
+  padding: 11px 14px;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* Footer */
+
+.document-upload-footer {
+  min-height: 76px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 16px 27px;
+  border-top: 1px solid #d7dce6;
+  background: #ffffff;
+}
+
+.document-upload-summary {
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.document-footer-buttons {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.document-cancel-button,
+.document-save-button {
+  min-width: 112px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 22px;
+  border-radius: 5px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.document-cancel-button {
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #526078;
+}
+
+.document-cancel-button:hover:not(:disabled) {
+  border-color: #94a3b8;
+  background: #f8fafc;
+  color: #334155;
+}
+
+.document-save-button {
+  min-width: 190px;
+  border: 1px solid #0959d6;
+  background: #0959d6;
+  color: #ffffff;
+}
+
+.document-save-button:hover:not(:disabled) {
+  border-color: #074bb4;
+  background: #074bb4;
+}
+
+.document-cancel-button:focus-visible,
+.document-save-button:focus-visible {
+  outline: 3px solid rgba(15, 87, 183, 0.18);
+  outline-offset: 2px;
+}
+
+.document-cancel-button:disabled,
+.document-save-button:disabled,
+.document-modal-close:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.document-upload-overlay button,
+.document-upload-overlay input {
+  font-family: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Tablet */
+
+@media (max-width: 850px) {
+  .document-upload-overlay {
+    padding: 18px;
+  }
+
+  .document-upload-modal {
+    height: calc(100vh - 36px);
+    max-height: calc(100vh - 36px);
+  }
+
+  .validity-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .document-upload-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Mobile */
+
+@media (max-width: 600px) {
+  .document-upload-overlay {
+    padding: 0;
+  }
+
+  .document-upload-modal {
+    width: 100%;
+    height: 100vh;
+    max-height: 100vh;
+    border: none;
+    border-radius: 0;
+  }
+
+  .document-upload-header {
+    min-height: 68px;
+    padding: 14px 16px;
+  }
+
+  .document-upload-title {
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .document-upload-title h2 {
+    font-size: 18px;
+  }
+
+  .document-upload-title p {
+    font-size: 11px;
+  }
+
+  .document-modal-close {
+    width: 36px;
+    height: 36px;
+  }
+
+  .document-upload-body {
+    padding: 16px;
+  }
+
+  .document-section + .document-section {
+    margin-top: 26px;
+  }
+
+  .document-section-heading h3 {
+    font-size: 17px;
+  }
+
+  .validity-input-grid,
+  .document-upload-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .document-upload-section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .document-upload-section-heading > span {
+    text-align: left;
+  }
+
+  .document-upload-footer {
+    min-height: auto;
+    align-items: stretch;
+    flex-direction: column;
+    gap: 12px;
+    padding: 14px 16px;
+  }
+
+  .document-upload-summary {
+    text-align: center;
+  }
+
+  .document-footer-buttons {
+    flex-direction: column-reverse;
+    gap: 10px;
+  }
+
+  .document-cancel-button,
+  .document-save-button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 400px) {
+  .document-upload-header,
+  .document-upload-body,
+  .document-upload-footer {
+    padding-right: 12px;
+    padding-left: 12px;
+  }
+
+  .document-upload-title h2 {
+    font-size: 16px;
+  }
+
+  .validity-card {
+    padding: 14px 10px 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .document-upload-card,
+  .document-modal-close,
+  .document-cancel-button,
+  .document-save-button,
+  .document-input-group input {
+    transition: none;
+  }
+}
+
+@media print {
+  .document-upload-overlay {
+    display: none !important;
+  }
+}
+
+/* =========================================================
+   UPLOAD MODE CONTROLS
+========================================================= */
+
+.document-upload-mode-button {
+  min-width: 170px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 20px;
+  border: 1px solid #0f57b7;
+  border-radius: 5px;
+  background: #eff6ff;
+  color: #0f57b7;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.document-upload-mode-button:hover:not(:disabled) {
+  background: #dbeafe;
+  border-color: #0b4a9e;
+  color: #0b4a9e;
+}
+
+.document-upload-mode-button.active,
+.document-upload-mode-button:disabled.active {
+  border-color: #16a34a;
+  background: #ecfdf5;
+  color: #15803d;
+  opacity: 1;
+}
+
+.document-upload-mode-button:disabled:not(.active) {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.document-upload-card {
+  position: relative;
+  cursor: pointer;
+}
+
+.document-upload-card.upload-mode {
+  border-color: #60a5fa;
+  background: #f8fbff;
+}
+
+.document-upload-card.upload-mode:hover {
+  border-color: #2563eb;
+  background: #eff6ff;
+}
+
+.document-upload-card.upload-mode.file-selected {
+  border-color: #16a34a;
+  background: #f0fdf4;
+}
+
+.document-upload-card.replacement-required {
+  border-color: #f59e0b;
+  background: #fffbeb;
+}
+
+.document-card-cancel-corner {
+  position: absolute;
+  top: 9px;
+  right: 9px;
+  z-index: 4;
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid #fecaca;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #dc2626;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.12);
+  transition: background-color 0.2s ease, color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.document-card-cancel-corner:hover:not(:disabled) {
+  background: #dc2626;
+  color: #ffffff;
+  transform: scale(1.05);
+}
+
+.document-card-cancel-corner:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.document-hidden-input {
+  display: none;
+}
+
+.document-card-content {
+  min-height: 116px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 7px;
+  padding: 18px 14px;
+  text-align: center;
+}
+
+.document-card-content > svg {
+  color: #59687d;
+}
+
+.document-card-content > strong {
+  color: #13284b;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.document-card-content > span {
+  color: #6b7280;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.document-card-content > small {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  color: #166534;
+  font-size: 10px;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+  .document-footer-buttons {
+    width: 100%;
+  }
+
+  .document-upload-mode-button {
+    width: 100%;
+  }
+}

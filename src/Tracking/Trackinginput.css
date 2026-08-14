@@ -1,0 +1,480 @@
+/* =========================================
+   AUTO TRIP ID
+========================================= */
+
+.tracking-trip-id-badge {
+  margin-left: auto;
+
+  padding:
+    5px 10px;
+
+  border:
+    1px solid #cbdcf5;
+
+  border-radius: 999px;
+
+  color: #2457b2;
+
+  background:
+    #edf4ff;
+
+  font-size: 9px;
+  font-weight: 700;
+
+  white-space: nowrap;
+}
+
+
+.tracking-readonly-control {
+  border-color:
+    #dce4ef;
+
+  background:
+    #f2f5f9;
+}
+
+
+.tracking-readonly-control input {
+  color:
+    #62748d;
+
+  cursor:
+    default;
+}
+
+
+/* =========================================
+   VEHICLE SECTION HEADER
+========================================= */
+
+.tracking-vehicle-section-header {
+  padding-right:
+    14px;
+}
+
+
+/* =========================================
+   ADD VEHICLE BUTTON
+========================================= */
+
+.tracking-add-vehicle-btn {
+  min-height: 35px;
+
+  margin-left: auto;
+
+  padding:
+    0 12px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 6px;
+
+  border:
+    1px solid #2457b2;
+
+  border-radius: 8px;
+
+  color: #2457b2;
+
+  background:
+    #edf4ff;
+
+  font: inherit;
+
+  font-size: 9px;
+  font-weight: 700;
+
+  white-space: nowrap;
+
+  cursor: pointer;
+
+  transition:
+    background 150ms ease,
+    color 150ms ease,
+    border-color 150ms ease,
+    box-shadow 150ms ease;
+}
+
+
+.tracking-add-vehicle-btn:hover {
+  color: #ffffff;
+
+  border-color:
+    #2457b2;
+
+  background:
+    #2457b2;
+
+  box-shadow:
+    0 5px 12px
+    rgba(36, 87, 178, 0.16);
+}
+
+
+/* =========================================
+   VEHICLE LIST
+========================================= */
+
+.tracking-vehicle-list {
+  width: 100%;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 12px;
+}
+
+
+/* =========================================
+   VEHICLE ENTRY CARD
+========================================= */
+
+.tracking-vehicle-entry-card {
+  width: 100%;
+
+  overflow: hidden;
+
+  border:
+    1px solid #dde5ef;
+
+  border-radius: 10px;
+
+  background:
+    #fbfcfe;
+
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease;
+}
+
+
+.tracking-vehicle-entry-card:hover {
+  border-color:
+    #cbd9ea;
+
+  box-shadow:
+    0 4px 12px
+    rgba(25, 54, 95, 0.045);
+}
+
+
+/* =========================================
+   VEHICLE ENTRY HEADER
+========================================= */
+
+.tracking-vehicle-entry-header {
+  min-height: 51px;
+
+  padding:
+    9px 11px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 10px;
+
+  border-bottom:
+    1px solid #e8edf4;
+
+  background:
+    linear-gradient(
+      180deg,
+      #ffffff,
+      #f8faff
+    );
+}
+
+
+.tracking-vehicle-entry-title {
+  min-width: 0;
+
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+}
+
+
+.tracking-vehicle-number-icon {
+  width: 31px;
+  height: 31px;
+
+  flex:
+    0 0 31px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 8px;
+
+  color: #2457b2;
+
+  background:
+    #eaf2ff;
+}
+
+
+.tracking-vehicle-entry-title strong {
+  display: block;
+
+  color: #1d3a62;
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+
+.tracking-vehicle-entry-title small {
+  display: block;
+
+  margin-top: 2px;
+
+  color: #8492a6;
+
+  font-size: 8px;
+  font-weight: 600;
+}
+
+
+/* =========================================
+   REMOVE VEHICLE
+========================================= */
+
+.tracking-remove-vehicle-btn {
+  min-height: 30px;
+
+  padding:
+    0 9px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 5px;
+
+  border:
+    1px solid #efdbdd;
+
+  border-radius: 7px;
+
+  color: #bd4650;
+
+  background:
+    #fff6f7;
+
+  font: inherit;
+
+  font-size: 8px;
+  font-weight: 650;
+
+  cursor: pointer;
+
+  transition:
+    background 150ms ease,
+    color 150ms ease,
+    border-color 150ms ease;
+}
+
+
+.tracking-remove-vehicle-btn:hover {
+  color: #ffffff;
+
+  border-color:
+    #c94b55;
+
+  background:
+    #c94b55;
+}
+
+
+/* =========================================
+   VEHICLE INPUT GRID
+========================================= */
+
+.tracking-vehicle-entry-grid {
+  width: 100%;
+
+  padding: 12px;
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      3,
+      minmax(0, 1fr)
+    );
+
+  gap:
+    12px 13px;
+}
+
+
+/* =========================================
+   FOOTER SUMMARY
+========================================= */
+
+.tracking-form-footer {
+  justify-content:
+    space-between;
+}
+
+
+.tracking-create-summary {
+  min-width: 0;
+
+  display: flex;
+  align-items: center;
+
+  gap: 6px;
+
+  color: #78879c;
+
+  font-size: 9px;
+  font-weight: 500;
+}
+
+
+.tracking-create-summary strong {
+  min-width: 25px;
+  height: 25px;
+
+  padding:
+    0 7px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 7px;
+
+  color: #2457b2;
+
+  background:
+    #eaf2ff;
+
+  font-size: 10px;
+  font-weight: 700;
+}
+
+
+.tracking-form-footer-actions {
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+}
+
+
+/* =========================================
+   TABLET
+========================================= */
+
+@media (max-width: 1050px) {
+
+  .tracking-vehicle-entry-grid {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+  }
+
+}
+
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 650px) {
+
+  .tracking-vehicle-section-header {
+    flex-wrap:
+      wrap;
+  }
+
+
+  .tracking-add-vehicle-btn {
+    margin-left:
+      auto;
+  }
+
+
+  .tracking-vehicle-entry-grid {
+    grid-template-columns:
+      1fr;
+
+    padding:
+      10px;
+  }
+
+
+  .tracking-create-summary {
+    display:
+      none;
+  }
+
+
+  .tracking-form-footer {
+    justify-content:
+      stretch;
+  }
+
+
+  .tracking-form-footer-actions {
+    width: 100%;
+  }
+
+
+  .tracking-form-footer-actions
+  .tracking-form-cancel,
+  .tracking-form-footer-actions
+  .tracking-form-save {
+    flex: 1;
+  }
+
+}
+
+
+/* =========================================
+   SMALL MOBILE
+========================================= */
+
+@media (max-width: 430px) {
+
+  .tracking-trip-id-badge {
+    display: none;
+  }
+
+
+  .tracking-add-vehicle-btn span,
+  .tracking-remove-vehicle-btn span {
+    display: none;
+  }
+
+
+  .tracking-add-vehicle-btn,
+  .tracking-remove-vehicle-btn {
+    width: 32px;
+
+    padding: 0;
+  }
+
+
+  .tracking-form-footer-actions {
+    flex-direction:
+      column-reverse;
+  }
+
+
+  .tracking-form-footer-actions
+  .tracking-form-cancel,
+  .tracking-form-footer-actions
+  .tracking-form-save {
+    width: 100%;
+  }
+
+}

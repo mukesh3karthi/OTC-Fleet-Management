@@ -1,0 +1,156 @@
+/* =========================================================
+   Modal document state
+========================================================= */
+
+html.modal-open,
+body.modal-open {
+  overflow: hidden;
+}
+
+/* =========================================================
+   Modal overlay
+========================================================= */
+
+.vehicle-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 5000;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  background: rgba(15, 23, 42, 0.58);
+
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+
+  animation: vehicle-modal-overlay-enter 0.2s ease;
+}
+
+/* =========================================================
+   Modal container
+========================================================= */
+
+.vehicle-modal-container {
+  width: min(1200px, 100%);
+  max-height: calc(100vh - 40px);
+
+  overflow-x: hidden;
+  overflow-y: auto;
+
+  overscroll-behavior: contain;
+
+  background: #ffffff;
+
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  border-radius: 14px;
+
+  box-shadow:
+    0 25px 60px rgba(15, 23, 42, 0.28);
+
+  animation: vehicle-modal-container-enter 0.22s ease;
+
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+/* =========================================================
+   Modal scrollbar
+========================================================= */
+
+.vehicle-modal-container::-webkit-scrollbar {
+  width: 7px;
+}
+
+.vehicle-modal-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.vehicle-modal-container::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 999px;
+}
+
+.vehicle-modal-container::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* =========================================================
+   Modal animations
+========================================================= */
+
+@keyframes vehicle-modal-overlay-enter {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes vehicle-modal-container-enter {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* =========================================================
+   Tablet
+========================================================= */
+
+@media (max-width: 768px) {
+  .vehicle-modal-overlay {
+    align-items: flex-start;
+
+    padding: 10px;
+  }
+
+  .vehicle-modal-container {
+    width: 100%;
+    max-height: calc(100vh - 20px);
+
+    border-radius: 10px;
+  }
+}
+
+/* =========================================================
+   Mobile
+========================================================= */
+
+@media (max-width: 480px) {
+  .vehicle-modal-overlay {
+    padding: 0;
+  }
+
+  .vehicle-modal-container {
+    width: 100%;
+    min-height: 100vh;
+    max-height: 100vh;
+
+    border: none;
+    border-radius: 0;
+
+    box-shadow: none;
+  }
+}
+
+/* =========================================================
+   Reduced motion
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .vehicle-modal-overlay,
+  .vehicle-modal-container {
+    animation: none;
+  }
+}

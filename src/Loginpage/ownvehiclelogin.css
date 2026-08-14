@@ -1,0 +1,252 @@
+* {
+  box-sizing: border-box;
+}
+
+.own-login-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 12000;
+  padding: 20px;
+  overflow-y: auto;
+  background: rgba(15, 28, 49, 0.62);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: ownLoginFadeIn 0.2s ease;
+}
+
+.own-login-modal {
+  width: min(430px, 100%);
+  overflow: hidden;
+  border: 1px solid #dce3ed;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow:
+    0 28px 75px
+    rgba(7, 24, 54, 0.28);
+  animation:
+    ownLoginModalIn
+    0.24s ease;
+}
+
+.own-login-header {
+  padding: 21px 22px 18px;
+  border-bottom:
+    1px solid #e5eaf2;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.own-login-header > div {
+  min-width: 0;
+}
+
+.own-login-header h2 {
+  margin: 0;
+  color: #13284c;
+  font-size: 21px;
+  line-height: 1.3;
+  font-weight: 700;
+}
+
+.own-login-header p {
+  margin: 5px 0 0;
+  color: #71819b;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.own-login-close-button {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border:
+    1px solid #dfe5ee;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #687993;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.own-login-close-button:hover {
+  border-color: #f0bcc3;
+  background: #fff0f2;
+  color: #b52f3d;
+}
+
+.own-login-close-button:focus-visible {
+  outline:
+    3px solid
+    rgba(23, 71, 159, 0.16);
+  outline-offset: 2px;
+}
+
+.own-login-form {
+  padding: 22px;
+}
+
+.own-login-group {
+  margin-bottom: 17px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.own-login-group label {
+  color: #344b6f;
+  font-size: 12.5px;
+  line-height: 1.4;
+  font-weight: 600;
+}
+
+.own-login-group input {
+  width: 100%;
+  height: 43px;
+  padding: 0 13px;
+  border:
+    1px solid #d7dfeb;
+  border-radius: 8px;
+  outline: none;
+  background: #ffffff;
+  color: #20385d;
+  font: inherit;
+  font-size: 13px;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.own-login-group input::placeholder {
+  color: #9ba8ba;
+}
+
+.own-login-group input:hover {
+  border-color: #bec9d8;
+}
+
+.own-login-group input:focus {
+  border-color: #17479f;
+  box-shadow:
+    0 0 0 3px
+    rgba(23, 71, 159, 0.1);
+}
+
+.own-login-error {
+  margin:
+    -3px 0 15px;
+  padding: 10px 12px;
+  border:
+    1px solid #ffc4ca;
+  border-radius: 8px;
+  background: #fff0f2;
+  color: #a52734;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.own-login-submit-button {
+  width: 100%;
+  height: 43px;
+  padding: 0 18px;
+  border:
+    1px solid #17479f;
+  border-radius: 8px;
+  background: #17479f;
+  color: #ffffff;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow:
+    0 5px 13px
+    rgba(23, 71, 159, 0.2);
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.own-login-submit-button:hover {
+  border-color: #103b89;
+  background: #103b89;
+  transform: translateY(-1px);
+  box-shadow:
+    0 7px 17px
+    rgba(23, 71, 159, 0.26);
+}
+
+.own-login-submit-button:active {
+  transform: translateY(0);
+}
+
+.own-login-submit-button:focus-visible {
+  outline:
+    3px solid
+    rgba(23, 71, 159, 0.18);
+  outline-offset: 2px;
+}
+
+@keyframes ownLoginFadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes ownLoginModalIn {
+  from {
+    opacity: 0;
+    transform:
+      translateY(10px)
+      scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform:
+      translateY(0)
+      scale(1);
+  }
+}
+
+@media (max-width: 480px) {
+  .own-login-overlay {
+    padding: 10px;
+    align-items: flex-start;
+  }
+
+  .own-login-modal {
+    margin-top: 30px;
+    border-radius: 12px;
+  }
+
+  .own-login-header {
+    padding: 18px;
+  }
+
+  .own-login-header h2 {
+    font-size: 19px;
+  }
+
+  .own-login-form {
+    padding: 18px;
+  }
+}
