@@ -5,7 +5,7 @@ import {
   useLocation,
 } from "react-router-dom";
 
-const Intercartingprotected = ({
+const Ownvehicleprotected = ({
   children,
 }) => {
   const location = useLocation();
@@ -13,9 +13,9 @@ const Intercartingprotected = ({
   const token =
     localStorage.getItem("token");
 
-  const intercartingLoggedIn =
+  const ownVehicleLoggedIn =
     sessionStorage.getItem(
-      "intercartingLoggedIn"
+      "ownVehicleLoggedIn"
     ) === "true";
 
   if (!token || !token.trim()) {
@@ -30,13 +30,13 @@ const Intercartingprotected = ({
     );
   }
 
-  if (!intercartingLoggedIn) {
+  if (!ownVehicleLoggedIn) {
     return (
       <Navigate
-        to="/intercartingdash"
+        to="/ownvehicledetaildash"
         replace
         state={{
-          openIntercartingLogin: true,
+          openOwnVehicleLogin: true,
           from: location.pathname,
         }}
       />
@@ -46,4 +46,4 @@ const Intercartingprotected = ({
   return children;
 };
 
-export default Intercartingprotected;
+export default Ownvehicleprotected;

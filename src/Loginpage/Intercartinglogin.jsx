@@ -1,15 +1,25 @@
 import React, {
   useCallback,
   useEffect,
+  useRef,
   useState,
 } from "react";
+
+import {
+  Eye,
+  EyeOff,
+  LockKeyhole,
+  ShieldCheck,
+  User,
+  X,
+} from "lucide-react";
 
 import "./intercartinglogin.css";
 
 const VALID_USERNAME = "admin";
 const VALID_PASSWORD = "admin@2026";
 
-const Intercarttinglogin = ({
+const Intercartinglogin = ({
   open,
   onClose,
   onLogin,
@@ -20,33 +30,81 @@ const Intercarttinglogin = ({
   const [password, setPassword] =
     useState("");
 
+  const [
+    showPassword,
+    setShowPassword,
+  ] = useState(false);
+
   const [error, setError] =
     useState("");
+
+  const [
+    isLoggingIn,
+    setIsLoggingIn,
+  ] = useState(false);
+
+  const usernameInputRef =
+    useRef(null);
+
+  /* =========================================
+     CLEAR
+  ========================================= */
 
   const clearForm = useCallback(() => {
     setUsername("");
     setPassword("");
+    setShowPassword(false);
     setError("");
+    setIsLoggingIn(false);
   }, []);
+
+
+  /* =========================================
+     CLOSE
+  ========================================= */
 
   const handleClose = useCallback(() => {
     clearForm();
-    onClose();
-  }, [clearForm, onClose]);
+
+    if (
+      typeof onClose === "function"
+    ) {
+      onClose();
+    }
+  }, [
+    clearForm,
+    onClose,
+  ]);
+
+
+  /* =========================================
+     MODAL EFFECT
+  ========================================= */
 
   useEffect(() => {
     if (!open) {
       clearForm();
-    }
-  }, [open, clearForm]);
-
-  useEffect(() => {
-    if (!open) {
       return undefined;
     }
 
-    const handleEscape = (event) => {
-      if (event.key === "Escape") {
+    const previousOverflow =
+      document.body.style.overflow;
+
+    document.body.style.overflow =
+      "hidden";
+
+    const focusTimer =
+      window.setTimeout(() => {
+        usernameInputRef
+          .current?.focus();
+      }, 50);
+
+    const handleEscape = (
+      event
+    ) => {
+      if (
+        event.key === "Escape"
+      ) {
         handleClose();
       }
     };
@@ -57,79 +115,131 @@ const Intercarttinglogin = ({
     );
 
     return () => {
+      window.clearTimeout(
+        focusTimer
+      );
+
       window.removeEventListener(
         "keydown",
         handleEscape
       );
+
+      document.body.style.overflow =
+        previousOverflow;
     };
-  }, [open, handleClose]);
+  }, [
+    open,
+    clearForm,
+    handleClose,
+  ]);
+
 
   if (!open) {
     return null;
   }
 
-  const handleSubmit = (event) => {
+
+  /* =========================================
+     LOGIN
+  ========================================= */
+
+  const handleSubmit = (
+    event
+  ) => {
     event.preventDefault();
+
     setError("");
 
-    const trimmedUsername =
+    const cleanUsername =
       username.trim();
 
-    const trimmedPassword =
+    const cleanPassword =
       password.trim();
 
+
     if (
-      !trimmedUsername &&
-      !trimmedPassword
+      !cleanUsername &&
+      !cleanPassword
     ) {
       setError(
         "Please enter username and password."
       );
+
       return;
     }
 
-    if (!trimmedUsername) {
+
+    if (!cleanUsername) {
       setError(
         "Please enter username."
       );
+
       return;
     }
 
-    if (!trimmedPassword) {
+
+    if (!cleanPassword) {
       setError(
         "Please enter password."
       );
+
       return;
     }
+
+
+    setIsLoggingIn(true);
+
 
     if (
-      trimmedUsername !==
-        VALID_USERNAME ||
-      trimmedPassword !==
+      cleanUsername ===
+        VALID_USERNAME &&
+      cleanPassword ===
         VALID_PASSWORD
     ) {
-      setError(
-        "Invalid username or password."
+      sessionStorage.setItem(
+        "intercartingLoggedIn",
+        "true"
       );
+
+      sessionStorage.setItem(
+        "intercartingUsername",
+        cleanUsername
+      );
+
+      setIsLoggingIn(false);
+
+      if (
+        typeof onLogin ===
+        "function"
+      ) {
+        onLogin({
+          username:
+            cleanUsername,
+        });
+      }
+
       return;
     }
 
-    sessionStorage.setItem(
-      "intercartingLoggedIn",
-      "true"
+
+    setIsLoggingIn(false);
+
+    setError(
+      "Invalid username or password."
     );
-
-    clearForm();
-
-    onLogin({
-      username: trimmedUsername,
-    });
   };
+
+
+  /* =========================================
+     RENDER
+  ========================================= */
 
   return (
     <div
-      className="login-overlay"
-      onMouseDown={(event) => {
+      className="inter-secure-login-overlay"
+      onMouseDown={(
+        event
+      ) => {
         if (
           event.target ===
           event.currentTarget
@@ -139,93 +249,234 @@ const Intercarttinglogin = ({
       }}
     >
       <div
-        className="login-modal"
+        className="inter-secure-login-modal"
         role="dialog"
         aria-modal="true"
-        aria-labelledby="intercarting-login-title"
+        aria-labelledby="inter-secure-login-title"
+        onMouseDown={(
+          event
+        ) => {
+          event.stopPropagation();
+        }}
       >
-        <div className="login-header">
-          <h2 id="intercarting-login-title">
+
+        {/* CLOSE */}
+
+        <button
+          type="button"
+          className="inter-secure-login-close"
+          onClick={
+            handleClose
+          }
+          aria-label="Close login"
+        >
+          <X size={17} />
+        </button>
+
+
+        {/* LOCK */}
+
+        <div className="inter-secure-login-icon">
+          <LockKeyhole
+            size={25}
+          />
+        </div>
+
+
+        {/* HEADING */}
+
+        <div className="inter-secure-login-heading">
+
+          <span>
+            SECURE ACCESS
+          </span>
+
+          <h2
+            id="inter-secure-login-title"
+          >
             Intercarting Login
           </h2>
 
-          <button
-            type="button"
-            className="close-btn"
-            onClick={handleClose}
-            aria-label="Close login popup"
-          >
-            ×
-          </button>
+          <p>
+            Sign in to continue with
+            intercarting data entry.
+          </p>
+
         </div>
 
-        <form onSubmit={handleSubmit}>
-          <div className="login-group">
-            <label htmlFor="intercarting-username">
+
+        {/* FORM */}
+
+        <form
+          className="inter-secure-login-form"
+          onSubmit={
+            handleSubmit
+          }
+          noValidate
+        >
+
+          {/* USERNAME */}
+
+          <div className="inter-secure-login-field">
+
+            <label htmlFor="interUsername">
               Username
             </label>
 
-            <input
-              id="intercarting-username"
-              type="text"
-              placeholder="Enter username"
-              value={username}
-              autoComplete="username"
-              autoFocus
-              onChange={(event) => {
-                setUsername(
-                  event.target.value
-                );
+            <div className="inter-secure-login-input">
 
-                if (error) {
-                  setError("");
+              <User size={17} />
+
+              <input
+                ref={
+                  usernameInputRef
                 }
-              }}
-            />
+                id="interUsername"
+                type="text"
+                placeholder="Enter username"
+                value={
+                  username
+                }
+                autoComplete="username"
+                onChange={(
+                  event
+                ) => {
+                  setUsername(
+                    event.target.value
+                  );
+
+                  setError("");
+                }}
+              />
+
+            </div>
+
           </div>
 
-          <div className="login-group">
-            <label htmlFor="intercarting-password">
+
+          {/* PASSWORD */}
+
+          <div className="inter-secure-login-field">
+
+            <label htmlFor="interPassword">
               Password
             </label>
 
-            <input
-              id="intercarting-password"
-              type="password"
-              placeholder="Enter password"
-              value={password}
-              autoComplete="current-password"
-              onChange={(event) => {
-                setPassword(
-                  event.target.value
-                );
+            <div className="inter-secure-login-input">
 
-                if (error) {
-                  setError("");
+              <LockKeyhole
+                size={17}
+              />
+
+              <input
+                id="interPassword"
+                type={
+                  showPassword
+                    ? "text"
+                    : "password"
                 }
-              }}
-            />
+                placeholder="Enter password"
+                value={
+                  password
+                }
+                autoComplete="current-password"
+                onChange={(
+                  event
+                ) => {
+                  setPassword(
+                    event.target.value
+                  );
+
+                  setError("");
+                }}
+              />
+
+              <button
+                type="button"
+                className="inter-secure-password-toggle"
+                onClick={() =>
+                  setShowPassword(
+                    (
+                      previous
+                    ) =>
+                      !previous
+                  )
+                }
+                aria-label={
+                  showPassword
+                    ? "Hide password"
+                    : "Show password"
+                }
+              >
+                {showPassword ? (
+                  <EyeOff
+                    size={17}
+                  />
+                ) : (
+                  <Eye
+                    size={17}
+                  />
+                )}
+              </button>
+
+            </div>
+
           </div>
 
+
+          {/* ERROR */}
+
           {error && (
-            <p
-              className="login-error"
+            <div
+              className="inter-secure-login-error"
               role="alert"
             >
               {error}
-            </p>
+            </div>
           )}
+
+
+          {/* LOGIN */}
 
           <button
             type="submit"
-            className="login-btn"
+            className="inter-secure-login-submit"
+            disabled={
+              isLoggingIn
+            }
           >
-            Login
+            <ShieldCheck
+              size={16}
+            />
+
+            <span>
+              {isLoggingIn
+                ? "Opening..."
+                : "Login"}
+            </span>
           </button>
+
         </form>
+
+
+        {/* FOOTER */}
+
+        <div className="inter-secure-login-footer">
+
+          <LockKeyhole
+            size={12}
+          />
+
+          <span>
+            Authorized personnel only
+          </span>
+
+        </div>
+
       </div>
     </div>
   );
 };
 
-export default Intercarttinglogin;
+
+export default Intercartinglogin;

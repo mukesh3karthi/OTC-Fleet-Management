@@ -5,58 +5,79 @@ import React, {
   useState,
 } from "react";
 
+import {
+  Eye,
+  EyeOff,
+  LockKeyhole,
+  ShieldCheck,
+  User,
+  X,
+} from "lucide-react";
+
 import "./ownvehiclelogin.css";
 
-const VALID_USERNAME =
-  "admin";
-
-const VALID_PASSWORD =
-  "admin@2026";
+const VALID_USERNAME = "admin";
+const VALID_PASSWORD = "admin@2026";
 
 const Ownvehiclelogin = ({
   open,
   onClose,
   onLogin,
 }) => {
-  const [
-    username,
-    setUsername,
-  ] = useState("");
+  const [username, setUsername] =
+    useState("");
+
+  const [password, setPassword] =
+    useState("");
 
   const [
-    password,
-    setPassword,
-  ] = useState("");
+    showPassword,
+    setShowPassword,
+  ] = useState(false);
+
+  const [error, setError] =
+    useState("");
 
   const [
-    error,
-    setError,
-  ] = useState("");
+    isLoggingIn,
+    setIsLoggingIn,
+  ] = useState(false);
 
   const usernameInputRef =
     useRef(null);
 
-  const clearForm =
-    useCallback(() => {
-      setUsername("");
-      setPassword("");
-      setError("");
-    }, []);
+  /* =========================================
+     CLEAR FORM
+  ========================================= */
 
-  const handleClose =
-    useCallback(() => {
-      clearForm();
+  const clearForm = useCallback(() => {
+    setUsername("");
+    setPassword("");
+    setShowPassword(false);
+    setError("");
+    setIsLoggingIn(false);
+  }, []);
 
-      if (
-        typeof onClose ===
-        "function"
-      ) {
-        onClose();
-      }
-    }, [
-      clearForm,
-      onClose,
-    ]);
+  /* =========================================
+     CLOSE
+  ========================================= */
+
+  const handleClose = useCallback(() => {
+    clearForm();
+
+    if (
+      typeof onClose === "function"
+    ) {
+      onClose();
+    }
+  }, [
+    clearForm,
+    onClose,
+  ]);
+
+  /* =========================================
+     MODAL EFFECT
+  ========================================= */
 
   useEffect(() => {
     if (!open) {
@@ -65,27 +86,22 @@ const Ownvehiclelogin = ({
     }
 
     const previousOverflow =
-      document.body.style
-        .overflow;
+      document.body.style.overflow;
 
     document.body.style.overflow =
       "hidden";
 
     const focusTimer =
-      window.setTimeout(
-        () => {
-          usernameInputRef
-            .current?.focus();
-        },
-        50
-      );
+      window.setTimeout(() => {
+        usernameInputRef
+          .current?.focus();
+      }, 50);
 
     const handleEscape = (
       event
     ) => {
       if (
-        event.key ===
-        "Escape"
+        event.key === "Escape"
       ) {
         handleClose();
       }
@@ -119,6 +135,10 @@ const Ownvehiclelogin = ({
     return null;
   }
 
+  /* =========================================
+     LOGIN
+  ========================================= */
+
   const handleSubmit = (
     event
   ) => {
@@ -126,15 +146,15 @@ const Ownvehiclelogin = ({
 
     setError("");
 
-    const trimmedUsername =
+    const cleanUsername =
       username.trim();
 
-    const trimmedPassword =
+    const cleanPassword =
       password.trim();
 
     if (
-      !trimmedUsername &&
-      !trimmedPassword
+      !cleanUsername &&
+      !cleanPassword
     ) {
       setError(
         "Please enter username and password."
@@ -143,7 +163,7 @@ const Ownvehiclelogin = ({
       return;
     }
 
-    if (!trimmedUsername) {
+    if (!cleanUsername) {
       setError(
         "Please enter username."
       );
@@ -151,7 +171,7 @@ const Ownvehiclelogin = ({
       return;
     }
 
-    if (!trimmedPassword) {
+    if (!cleanPassword) {
       setError(
         "Please enter password."
       );
@@ -159,45 +179,53 @@ const Ownvehiclelogin = ({
       return;
     }
 
+    setIsLoggingIn(true);
+
     if (
-      trimmedUsername !==
-        VALID_USERNAME ||
-      trimmedPassword !==
+      cleanUsername ===
+        VALID_USERNAME &&
+      cleanPassword ===
         VALID_PASSWORD
     ) {
-      setError(
-        "Invalid username or password."
+      sessionStorage.setItem(
+        "ownVehicleLoggedIn",
+        "true"
       );
+
+      sessionStorage.setItem(
+        "ownVehicleUsername",
+        cleanUsername
+      );
+
+      setIsLoggingIn(false);
+
+      if (
+        typeof onLogin ===
+        "function"
+      ) {
+        onLogin({
+          username:
+            cleanUsername,
+        });
+      }
 
       return;
     }
 
-    sessionStorage.setItem(
-      "ownVehicleLoggedIn",
-      "true"
+    setIsLoggingIn(false);
+
+    setError(
+      "Invalid username or password."
     );
-
-    sessionStorage.setItem(
-      "ownVehicleUsername",
-      trimmedUsername
-    );
-
-    clearForm();
-
-    if (
-      typeof onLogin ===
-      "function"
-    ) {
-      onLogin({
-        username:
-          trimmedUsername,
-      });
-    }
   };
+
+  /* =========================================
+     RENDER
+  ========================================= */
 
   return (
     <div
-      className="own-login-overlay"
+      className="own-secure-login-overlay"
       onMouseDown={(
         event
       ) => {
@@ -210,113 +238,209 @@ const Ownvehiclelogin = ({
       }}
     >
       <div
-        className="own-login-modal"
+        className="own-secure-login-modal"
         role="dialog"
         aria-modal="true"
-        aria-labelledby="own-vehicle-login-title"
+        aria-labelledby="own-secure-login-title"
+        onMouseDown={(
+          event
+        ) => {
+          event.stopPropagation();
+        }}
       >
-        <div className="own-login-header">
-          <div>
-            <h2 id="own-vehicle-login-title">
-              Own Vehicle Login
-            </h2>
+        {/* CLOSE */}
 
-            <p>
-              Sign in to access
-              vehicle data entry.
-            </p>
-          </div>
+        <button
+          type="button"
+          className="own-secure-login-close"
+          onClick={
+            handleClose
+          }
+          aria-label="Close login"
+        >
+          <X size={17} />
+        </button>
 
-          <button
-            type="button"
-            className="own-login-close-button"
-            onClick={
-              handleClose
-            }
-            aria-label="Close login popup"
-          >
-            ×
-          </button>
+        {/* LOCK ICON */}
+
+        <div className="own-secure-login-icon">
+          <LockKeyhole
+            size={25}
+          />
         </div>
 
+        {/* HEADING */}
+
+        <div className="own-secure-login-heading">
+          <span>
+            SECURE ACCESS
+          </span>
+
+          <h2
+            id="own-secure-login-title"
+          >
+            Own Vehicle Login
+          </h2>
+
+          <p>
+            Sign in to access vehicle
+            data entry.
+          </p>
+        </div>
+
+        {/* FORM */}
+
         <form
-          className="own-login-form"
+          className="own-secure-login-form"
           onSubmit={
             handleSubmit
           }
           noValidate
         >
-          <div className="own-login-group">
-            <label htmlFor="own-login-username">
+          {/* USERNAME */}
+
+          <div className="own-secure-login-field">
+            <label htmlFor="ownVehicleUsername">
               Username
             </label>
 
-            <input
-              ref={
-                usernameInputRef
-              }
-              id="own-login-username"
-              type="text"
-              placeholder="Enter username"
-              value={username}
-              autoComplete="username"
-              onChange={(
-                event
-              ) => {
-                setUsername(
-                  event.target
-                    .value
-                );
+            <div className="own-secure-login-input">
+              <User
+                size={17}
+              />
 
-                if (error) {
-                  setError("");
+              <input
+                ref={
+                  usernameInputRef
                 }
-              }}
-            />
+                id="ownVehicleUsername"
+                type="text"
+                placeholder="Enter username"
+                value={
+                  username
+                }
+                autoComplete="username"
+                onChange={(
+                  event
+                ) => {
+                  setUsername(
+                    event.target.value
+                  );
+
+                  setError("");
+                }}
+              />
+            </div>
           </div>
 
-          <div className="own-login-group">
-            <label htmlFor="own-login-password">
+          {/* PASSWORD */}
+
+          <div className="own-secure-login-field">
+            <label htmlFor="ownVehiclePassword">
               Password
             </label>
 
-            <input
-              id="own-login-password"
-              type="password"
-              placeholder="Enter password"
-              value={password}
-              autoComplete="current-password"
-              onChange={(
-                event
-              ) => {
-                setPassword(
-                  event.target
-                    .value
-                );
+            <div className="own-secure-login-input">
+              <LockKeyhole
+                size={17}
+              />
 
-                if (error) {
-                  setError("");
+              <input
+                id="ownVehiclePassword"
+                type={
+                  showPassword
+                    ? "text"
+                    : "password"
                 }
-              }}
-            />
+                placeholder="Enter password"
+                value={
+                  password
+                }
+                autoComplete="current-password"
+                onChange={(
+                  event
+                ) => {
+                  setPassword(
+                    event.target.value
+                  );
+
+                  setError("");
+                }}
+              />
+
+              <button
+                type="button"
+                className="own-secure-password-toggle"
+                onClick={() =>
+                  setShowPassword(
+                    (
+                      previous
+                    ) =>
+                      !previous
+                  )
+                }
+                aria-label={
+                  showPassword
+                    ? "Hide password"
+                    : "Show password"
+                }
+              >
+                {showPassword ? (
+                  <EyeOff
+                    size={17}
+                  />
+                ) : (
+                  <Eye
+                    size={17}
+                  />
+                )}
+              </button>
+            </div>
           </div>
 
+          {/* ERROR */}
+
           {error && (
-            <p
-              className="own-login-error"
+            <div
+              className="own-secure-login-error"
               role="alert"
             >
               {error}
-            </p>
+            </div>
           )}
+
+          {/* LOGIN */}
 
           <button
             type="submit"
-            className="own-login-submit-button"
+            className="own-secure-login-submit"
+            disabled={
+              isLoggingIn
+            }
           >
-            Login
+            <ShieldCheck
+              size={16}
+            />
+
+            <span>
+              {isLoggingIn
+                ? "Opening..."
+                : "Login"}
+            </span>
           </button>
         </form>
+
+        {/* FOOTER */}
+
+        <div className="own-secure-login-footer">
+          <LockKeyhole
+            size={12}
+          />
+
+          <span>
+            Authorized personnel only
+          </span>
+        </div>
       </div>
     </div>
   );

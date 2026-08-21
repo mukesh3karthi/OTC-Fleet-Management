@@ -1,0 +1,1343 @@
+/* =========================================================
+   OWN VEHICLE / INTERCARTING
+   Compact Dashboard-Matched Design
+========================================================= */
+
+.ownvehicle-page,
+.ownvehicle-page * {
+  box-sizing: border-box;
+}
+
+.ownvehicle-page {
+  width: 100%;
+  min-height: 100%;
+
+  padding: 18px 22px 24px;
+
+  background: #f5f7fb;
+  color: #0b2942;
+
+  font-family: "Poppins", sans-serif;
+}
+
+
+/* =========================================================
+   COMMON BUTTONS
+========================================================= */
+
+.ownvehicle-page button {
+  font-family: inherit;
+}
+
+.ownvehicle-page .btn-primary,
+.ownvehicle-page .btn-success,
+.ownvehicle-page .upload-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 7px;
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+
+/* DATA ENTRY BUTTON */
+
+.ownvehicle-page .btn-primary {
+  min-height: 40px;
+
+  padding: 0 16px;
+
+  border: 0;
+  border-radius: 9px;
+
+  background: #1ca89d;
+  color: #ffffff;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  box-shadow:
+    0 6px 15px
+    rgba(28, 168, 157, 0.18);
+}
+
+.ownvehicle-page .btn-primary:hover {
+  background: #168f86;
+
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 8px 18px
+    rgba(28, 168, 157, 0.22);
+}
+
+.ownvehicle-page .btn-primary:active {
+  transform: translateY(0);
+}
+
+
+/* Success button */
+
+.ownvehicle-page .btn-success {
+  min-height: 38px;
+
+  padding: 0 14px;
+
+  border: 0;
+  border-radius: 8px;
+
+  background: #1ca89d;
+  color: #ffffff;
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.ownvehicle-page .btn-success:hover {
+  background: #168f86;
+}
+
+
+/* Focus */
+
+.ownvehicle-page .btn-primary:focus-visible,
+.ownvehicle-page .btn-success:focus-visible,
+.ownvehicle-page .upload-btn:focus-visible,
+.ownvehicle-page .page-btn:focus-visible {
+  outline: 3px solid rgba(28, 168, 157, 0.16);
+  outline-offset: 2px;
+}
+
+
+/* =========================================================
+   ERROR MESSAGE
+========================================================= */
+
+.ownvehicle-page .error-message {
+  margin: 0 0 14px;
+
+  padding: 10px 13px;
+
+  border: 1px solid #fecaca;
+  border-radius: 9px;
+
+  background: #fef2f2;
+  color: #b91c1c;
+
+  font-size: 11px;
+  font-weight: 600;
+
+  line-height: 1.45;
+}
+
+
+/* =========================================================
+   STATISTICS GRID
+========================================================= */
+
+.ownvehicle-page .stats-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+
+  gap: 12px;
+
+  margin: 0 0 14px;
+}
+
+
+/* STAT CARD */
+
+.ownvehicle-page .stat-card {
+  min-width: 0;
+  min-height: 92px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 12px;
+
+  padding: 14px 16px;
+
+  border: 1px solid #dfe6ef;
+  border-radius: 11px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 4px 12px
+    rgba(15, 23, 42, 0.035);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.ownvehicle-page .stat-card:hover {
+  border-color: #cbd5e1;
+
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 7px 18px
+    rgba(15, 23, 42, 0.06);
+}
+
+
+/* Stat details */
+
+.ownvehicle-page .stat-details {
+  min-width: 0;
+}
+
+.ownvehicle-page .stat-details h4 {
+  margin: 0;
+
+  color: #64748b;
+
+  font-size: 10px;
+  font-weight: 700;
+
+  line-height: 1.25;
+
+  text-transform: uppercase;
+}
+
+.ownvehicle-page .stat-details h2 {
+  margin: 4px 0 0;
+
+  color: #0b2942;
+
+  font-size: 23px;
+  font-weight: 700;
+
+  line-height: 1;
+}
+
+.ownvehicle-page .stat-details p,
+.ownvehicle-page .stat-details span {
+  display: block;
+
+  margin: 5px 0 0;
+
+  color: #8b9ab0;
+
+  font-size: 9px;
+  font-weight: 400;
+
+  line-height: 1.35;
+}
+
+
+/* =========================================================
+   STAT ICON
+========================================================= */
+
+.ownvehicle-page .stat-icon {
+  width: 42px;
+  height: 42px;
+
+  min-width: 42px;
+
+  padding: 0;
+
+  border-radius: 10px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #e8f7f5;
+  color: #0f9488;
+
+  font-size: 15px;
+  font-weight: 700;
+}
+
+
+/* Optional individual icon colors */
+
+.ownvehicle-page .stat-card:nth-child(1) .stat-icon {
+  background: #eaf2ff;
+  color: #2563eb;
+}
+
+.ownvehicle-page .stat-card:nth-child(2) .stat-icon {
+  background: #e8f7ef;
+  color: #169b62;
+}
+
+.ownvehicle-page .stat-card:nth-child(3) .stat-icon {
+  background: #fff4dd;
+  color: #e98a00;
+}
+
+.ownvehicle-page .stat-card:nth-child(4) .stat-icon {
+  background: #f1f4f7;
+  color: #718096;
+}
+
+
+/* =========================================================
+   OVERVIEW / CHART CARDS
+========================================================= */
+
+.ownvehicle-page .overview-grid,
+.ownvehicle-page .chart-grid,
+.ownvehicle-page .analytics-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 14px;
+
+  margin: 0 0 14px;
+}
+
+.ownvehicle-page .overview-card,
+.ownvehicle-page .chart-card,
+.ownvehicle-page .analytics-card {
+  min-width: 0;
+
+  padding: 16px;
+
+  border: 1px solid #dfe6ef;
+  border-radius: 12px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 5px 14px
+    rgba(15, 23, 42, 0.035);
+}
+
+
+/* Chart eyebrow */
+
+.ownvehicle-page .overview-card > span,
+.ownvehicle-page .chart-card > span,
+.ownvehicle-page .analytics-card > span {
+  display: block;
+
+  margin: 0 0 4px;
+
+  color: #7890ad;
+
+  font-size: 8px;
+  font-weight: 700;
+
+  letter-spacing: 0.08em;
+
+  text-transform: uppercase;
+}
+
+
+/* Chart heading */
+
+.ownvehicle-page .overview-card h3,
+.ownvehicle-page .chart-card h3,
+.ownvehicle-page .analytics-card h3 {
+  margin: 0;
+
+  color: #0b2942;
+
+  font-size: 16px;
+  font-weight: 700;
+
+  line-height: 1.25;
+}
+
+
+/* =========================================================
+   TOOLBAR / VEHICLE LIST
+========================================================= */
+
+.ownvehicle-page .toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 14px;
+
+  padding: 13px 16px;
+
+  border: 1px solid #dfe6ef;
+  border-bottom: 0;
+
+  border-radius: 11px 11px 0 0;
+
+  background: #ffffff;
+}
+
+.ownvehicle-page .toolbar-left {
+  min-width: 0;
+}
+
+.ownvehicle-page .toolbar-left h3 {
+  margin: 0;
+
+  color: #0b2942;
+
+  font-size: 16px;
+  font-weight: 700;
+
+  line-height: 1.25;
+}
+
+.ownvehicle-page .toolbar-left p {
+  margin: 3px 0 0;
+
+  color: #8190a5;
+
+  font-size: 9px;
+  font-weight: 400;
+
+  line-height: 1.4;
+}
+
+.ownvehicle-page .toolbar-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+
+  gap: 9px;
+
+  flex-shrink: 0;
+}
+
+
+/* =========================================================
+   SEARCH BOX
+========================================================= */
+
+.ownvehicle-page .search-box {
+  position: relative;
+
+  width: 280px;
+}
+
+.ownvehicle-page .search-box input {
+  width: 100%;
+  height: 36px;
+
+  padding: 0 12px 0 36px;
+
+  border: 1px solid #dbe2ea;
+  border-radius: 8px;
+
+  outline: none;
+
+  background: #ffffff;
+  color: #334155;
+
+  font-family: inherit;
+  font-size: 10px;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.ownvehicle-page .search-box input::placeholder {
+  color: #94a3b8;
+}
+
+.ownvehicle-page .search-box input:focus {
+  border-color: #1ca89d;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(28, 168, 157, 0.1);
+}
+
+.ownvehicle-page .search-box svg {
+  position: absolute;
+
+  top: 50%;
+  left: 12px;
+
+  transform: translateY(-50%);
+
+  color: #7890ad;
+
+  pointer-events: none;
+}
+
+
+/* =========================================================
+   FILTER
+========================================================= */
+
+.ownvehicle-page .filter-select {
+  min-width: 145px;
+  height: 36px;
+
+  padding: 0 12px;
+
+  border: 1px solid #dbe2ea;
+  border-radius: 8px;
+
+  outline: none;
+
+  background: #ffffff;
+  color: #334155;
+
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.ownvehicle-page .filter-select:focus {
+  border-color: #1ca89d;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(28, 168, 157, 0.1);
+}
+
+
+/* =========================================================
+   TABLE CONTAINER
+========================================================= */
+
+.ownvehicle-page .table-container {
+  position: relative;
+
+  width: 100%;
+
+  overflow-x: auto;
+  overflow-y: visible;
+
+  border: 1px solid #dfe6ef;
+
+  border-radius: 0 0 11px 11px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 5px 14px
+    rgba(15, 23, 42, 0.035);
+
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.ownvehicle-page
+  .table-container::-webkit-scrollbar {
+  height: 6px;
+}
+
+.ownvehicle-page
+  .table-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.ownvehicle-page
+  .table-container::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+
+  background: #cbd5e1;
+}
+
+.ownvehicle-page
+  .table-container::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+
+/* =========================================================
+   TABLE
+========================================================= */
+
+.ownvehicle-page .vehicle-table {
+  width: 100%;
+  min-width: 1450px;
+
+  border-collapse: collapse;
+}
+
+.ownvehicle-page .vehicle-table thead {
+  background: #f4f7fb;
+}
+
+.ownvehicle-page .vehicle-table th,
+.ownvehicle-page .vehicle-table td {
+  padding: 10px 12px;
+
+  border-bottom: 1px solid #e9eef5;
+
+  text-align: left;
+  vertical-align: middle;
+
+  white-space: nowrap;
+}
+
+
+/* TABLE HEADER */
+
+.ownvehicle-page .vehicle-table th {
+  color: #52627a;
+
+  font-size: 9px;
+  font-weight: 700;
+
+  line-height: 1.3;
+
+  letter-spacing: 0.04em;
+
+  text-transform: uppercase;
+}
+
+
+/* TABLE DATA */
+
+.ownvehicle-page .vehicle-table td {
+  color: #334155;
+
+  font-size: 10px;
+  font-weight: 500;
+
+  line-height: 1.4;
+}
+
+.ownvehicle-page .vehicle-table tbody tr {
+  transition: background-color 0.18s ease;
+}
+
+.ownvehicle-page .vehicle-table tbody tr:hover {
+  background: #f8fbfb;
+}
+
+.ownvehicle-page
+  .vehicle-table
+  tbody
+  tr:last-child
+  td {
+  border-bottom: none;
+}
+
+.ownvehicle-page .vehicle-table th:first-child,
+.ownvehicle-page .vehicle-table td:first-child {
+  padding-left: 15px;
+}
+
+.ownvehicle-page .vehicle-table th:last-child,
+.ownvehicle-page .vehicle-table td:last-child {
+  padding-right: 15px;
+
+  text-align: center;
+}
+
+
+/* =========================================================
+   VEHICLE NUMBER
+========================================================= */
+
+.ownvehicle-page .vehicle-number {
+  display: inline-block;
+
+  color: #0f9488;
+
+  font-size: 10px;
+  font-weight: 700;
+
+  letter-spacing: 0.25px;
+
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   STATUS BADGES
+========================================================= */
+
+.ownvehicle-page .status-badge {
+  min-width: 76px;
+  min-height: 24px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 3px 9px;
+
+  border: 1px solid transparent;
+  border-radius: 999px;
+
+  font-size: 9px;
+  font-weight: 700;
+
+  white-space: nowrap;
+}
+
+
+/* Active */
+
+.ownvehicle-page .status-active {
+  color: #0f766e;
+
+  background: #e5f7f4;
+
+  border-color: #bde8e2;
+}
+
+
+/* Inactive */
+
+.ownvehicle-page .status-inactive {
+  color: #b91c1c;
+
+  background: #fee2e2;
+
+  border-color: #fecaca;
+}
+
+
+/* Maintenance */
+
+.ownvehicle-page .status-maintenance {
+  color: #b45309;
+
+  background: #fef3c7;
+
+  border-color: #fde68a;
+}
+
+
+/* =========================================================
+   UPLOAD BUTTON
+========================================================= */
+
+.ownvehicle-page .upload-btn {
+  min-height: 29px;
+
+  padding: 0 10px;
+
+  border: 1px solid #bde8e2;
+  border-radius: 7px;
+
+  background: #eefaf8;
+  color: #0f9488;
+
+  font-size: 9px;
+  font-weight: 600;
+}
+
+.ownvehicle-page .upload-btn:hover {
+  border-color: #8ddbd1;
+
+  background: #ddf5f1;
+
+  color: #087f75;
+}
+
+
+/* =========================================================
+   EMPTY TABLE
+========================================================= */
+
+.ownvehicle-page .vehicle-table .no-data {
+  height: 140px;
+
+  padding: 25px;
+
+  color: #718096;
+
+  font-size: 11px;
+  font-weight: 600;
+
+  text-align: center;
+}
+
+
+/* =========================================================
+   PAGINATION
+========================================================= */
+
+.ownvehicle-page .pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 14px;
+
+  margin-top: 12px;
+
+  padding: 11px 14px;
+
+  border: 1px solid #dfe6ef;
+  border-radius: 10px;
+
+  background: #ffffff;
+}
+
+.ownvehicle-page .pagination-info {
+  color: #718096;
+
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.ownvehicle-page .pagination-buttons {
+  display: flex;
+  align-items: center;
+
+  gap: 6px;
+}
+
+.ownvehicle-page .page-btn {
+  width: 31px;
+  height: 31px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid #dbe2ea;
+  border-radius: 7px;
+
+  background: #ffffff;
+  color: #52627a;
+
+  font-size: 10px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.ownvehicle-page
+  .page-btn:hover:not(:disabled):not(.active) {
+  border-color: #9adfd7;
+
+  background: #eefaf8;
+
+  color: #0f9488;
+
+  transform: translateY(-1px);
+}
+
+.ownvehicle-page .page-btn.active {
+  border-color: #1ca89d;
+
+  background: #1ca89d;
+  color: #ffffff;
+}
+
+.ownvehicle-page .page-btn:disabled {
+  opacity: 0.4;
+
+  cursor: not-allowed;
+}
+
+
+/* =========================================================
+   ACTION BUTTON
+========================================================= */
+
+.vehicle-action-menu {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-btn {
+  width: 31px;
+  height: 31px;
+
+  padding: 0;
+
+  border: 0;
+  border-radius: 7px;
+
+  background: transparent;
+  color: #64748b;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.action-btn:hover,
+.action-btn:focus-visible {
+  background: #e8f7f5;
+  color: #0f9488;
+
+  outline: none;
+}
+
+
+/* =========================================================
+   ACTION DROPDOWN
+========================================================= */
+
+.action-dropdown-portal {
+  position: fixed;
+
+  width: 180px;
+
+  padding: 6px;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 15px 35px
+    rgba(15, 23, 42, 0.16);
+
+  z-index: 999999;
+
+  animation: actionMenuIn 0.16s ease-out;
+}
+
+.action-dropdown-portal button {
+  width: 100%;
+  min-height: 36px;
+
+  padding: 0 10px;
+
+  border: 0;
+  border-radius: 7px;
+
+  background: transparent;
+  color: #334155;
+
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+
+  font: inherit;
+
+  font-size: 10px;
+  font-weight: 600;
+
+  text-align: left;
+
+  white-space: nowrap;
+
+  cursor: pointer;
+}
+
+.action-dropdown-portal button:hover,
+.action-dropdown-portal button:focus-visible {
+  background: #eefaf8;
+  color: #0f9488;
+
+  outline: none;
+}
+
+.action-dropdown-portal .delete-action {
+  color: #dc2626;
+}
+
+.action-dropdown-portal
+  .delete-action:hover,
+.action-dropdown-portal
+  .delete-action:focus-visible {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.action-menu-divider {
+  height: 1px;
+
+  margin: 4px;
+
+  background: #e2e8f0;
+}
+
+
+@keyframes actionMenuIn {
+  from {
+    opacity: 0;
+
+    transform:
+      translateY(-4px)
+      scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+
+    transform:
+      translateY(0)
+      scale(1);
+  }
+}
+
+
+/* =========================================================
+   DELETE CONFIRMATION
+========================================================= */
+
+.delete-confirm-overlay {
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 1000000;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  background:
+    rgba(11, 41, 66, 0.52);
+
+  backdrop-filter: blur(3px);
+}
+
+.delete-confirm-modal {
+  width: 100%;
+  max-width: 390px;
+
+  padding: 22px;
+
+  border-radius: 14px;
+
+  background: #ffffff;
+
+  text-align: center;
+
+  box-shadow:
+    0 22px 55px
+    rgba(15, 23, 42, 0.24);
+}
+
+.delete-confirm-icon {
+  width: 50px;
+  height: 50px;
+
+  margin: 0 auto 13px;
+
+  border-radius: 50%;
+
+  background: #fee2e2;
+  color: #dc2626;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.delete-confirm-modal h2 {
+  margin: 0 0 7px;
+
+  color: #0b2942;
+
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.delete-confirm-modal p {
+  margin: 0;
+
+  color: #718096;
+
+  font-size: 11px;
+
+  line-height: 1.5;
+}
+
+.delete-confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+
+  gap: 8px;
+
+  margin-top: 18px;
+}
+
+.delete-cancel-button,
+.delete-submit-button {
+  min-height: 36px;
+
+  padding: 0 14px;
+
+  border-radius: 8px;
+
+  font-family: inherit;
+
+  font-size: 10px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.delete-cancel-button {
+  border: 1px solid #cbd5e1;
+
+  background: #ffffff;
+  color: #475569;
+}
+
+.delete-cancel-button:hover {
+  background: #f8fafc;
+}
+
+.delete-submit-button {
+  border: 0;
+
+  background: #dc2626;
+  color: #ffffff;
+}
+
+.delete-submit-button:hover:not(:disabled) {
+  background: #b91c1c;
+}
+
+.delete-cancel-button:disabled,
+.delete-submit-button:disabled {
+  opacity: 0.6;
+
+  cursor: not-allowed;
+}
+
+
+html.ownvehicle-modal-open,
+body.ownvehicle-modal-open {
+  overflow: hidden;
+}
+
+
+/* =========================================================
+   RESPONSIVE - 1200PX
+========================================================= */
+
+@media (max-width: 1200px) {
+  .ownvehicle-page .stats-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .ownvehicle-page .overview-grid,
+  .ownvehicle-page .chart-grid,
+  .ownvehicle-page .analytics-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* =========================================================
+   RESPONSIVE - TABLET
+========================================================= */
+
+@media (max-width: 768px) {
+  .ownvehicle-page {
+    padding: 15px;
+  }
+
+  .ownvehicle-page .btn-primary {
+    width: 100%;
+  }
+
+  .ownvehicle-page .stats-grid {
+    gap: 11px;
+  }
+
+  .ownvehicle-page .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+
+    gap: 11px;
+  }
+
+  .ownvehicle-page .toolbar-right {
+    width: 100%;
+
+    flex-wrap: wrap;
+  }
+
+  .ownvehicle-page .search-box {
+    width: 100%;
+  }
+
+  .ownvehicle-page .filter-select {
+    width: 100%;
+  }
+
+  .ownvehicle-page .pagination {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .ownvehicle-page .pagination-buttons {
+    width: 100%;
+
+    flex-wrap: wrap;
+  }
+}
+
+
+/* =========================================================
+   RESPONSIVE - MOBILE
+========================================================= */
+
+@media (max-width: 560px) {
+  .ownvehicle-page {
+    padding: 12px;
+  }
+
+  .ownvehicle-page .stats-grid {
+    grid-template-columns: 1fr;
+
+    gap: 10px;
+  }
+
+  .ownvehicle-page .stat-card {
+    min-height: 84px;
+
+    padding: 12px 14px;
+  }
+
+  .ownvehicle-page .stat-details h2 {
+    font-size: 21px;
+  }
+
+  .ownvehicle-page .stat-icon {
+    width: 39px;
+    height: 39px;
+
+    min-width: 39px;
+  }
+
+  .ownvehicle-page .toolbar {
+    padding: 12px;
+  }
+
+  .ownvehicle-page .vehicle-table th,
+  .ownvehicle-page .vehicle-table td {
+    padding-top: 9px;
+    padding-bottom: 9px;
+  }
+
+  .ownvehicle-page .pagination {
+    padding: 10px;
+  }
+
+  .delete-confirm-modal {
+    padding: 19px 16px;
+  }
+
+  .delete-confirm-actions {
+    flex-direction: column-reverse;
+  }
+
+  .delete-cancel-button,
+  .delete-submit-button {
+    width: 100%;
+  }
+}
+
+
+/* =========================================================
+   VERY SMALL MOBILE
+========================================================= */
+
+@media (max-width: 390px) {
+
+  .ownvehicle-page .btn-primary {
+    min-height: 37px;
+
+    padding: 0 13px;
+  }
+
+  .ownvehicle-page .stat-card {
+    padding: 12px;
+  }
+
+  .ownvehicle-page .toolbar-left h3 {
+    font-size: 15px;
+  }
+
+  .ownvehicle-page .pagination-buttons {
+    gap: 5px;
+  }
+
+  .ownvehicle-page .page-btn {
+    width: 29px;
+    height: 29px;
+
+    font-size: 9px;
+  }
+}
+
+
+/* =========================================================
+   REDUCED MOTION
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .ownvehicle-page .btn-primary,
+  .ownvehicle-page .btn-success,
+  .ownvehicle-page .upload-btn,
+  .ownvehicle-page .stat-card,
+  .ownvehicle-page .page-btn,
+  .ownvehicle-page .vehicle-table tbody tr {
+    transition: none;
+  }
+
+  .ownvehicle-page .btn-primary:hover,
+  .ownvehicle-page .btn-success:hover,
+  .ownvehicle-page .stat-card:hover,
+  .ownvehicle-page
+    .page-btn:hover:not(:disabled):not(.active) {
+    transform: none;
+  }
+}
+/* ===== PAGE HEADING + FONT ENHANCEMENT ===== */
+.ownvehicle-page .ownvehicle-page-header{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin:2px 0 18px}
+.ownvehicle-page .ownvehicle-page-eyebrow{display:inline-flex;align-items:center;gap:7px;margin-bottom:5px;color:#0f9488;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.ownvehicle-page .ownvehicle-page-eyebrow::before{content:"";width:24px;height:3px;border-radius:999px;background:#1ca89d}
+.ownvehicle-page .ownvehicle-page-header h1{margin:0;color:#0b2942;font-size:30px;font-weight:700;line-height:1.18;letter-spacing:-.025em}
+.ownvehicle-page .ownvehicle-page-header p{max-width:720px;margin:7px 0 0;color:#64748b;font-size:13px;line-height:1.55}
+.ownvehicle-page .stat-card{min-height:108px;padding:18px 20px;border-radius:13px}
+.ownvehicle-page .stat-details h4{font-size:11.5px;letter-spacing:.025em}
+.ownvehicle-page .stat-details h2{margin-top:7px;font-size:28px}
+.ownvehicle-page .stat-icon{width:48px;height:48px;min-width:48px;border-radius:12px;font-size:16px}
+.ownvehicle-page .toolbar{padding:16px 18px}
+.ownvehicle-page .toolbar-left h3{font-size:19px;letter-spacing:-.01em}
+.ownvehicle-page .toolbar-left p{margin-top:4px;font-size:11.5px}
+.ownvehicle-page .btn-success{min-height:42px;padding:0 17px;border-radius:9px;font-size:12px}
+.ownvehicle-page .vehicle-table th,.ownvehicle-page .vehicle-table td{padding:13px 14px}
+.ownvehicle-page .vehicle-table th{color:#40536b;font-size:10px}
+.ownvehicle-page .vehicle-table td{color:#263c52;font-size:11.5px}
+.ownvehicle-page .vehicle-number{font-size:11.5px}
+.ownvehicle-page .status-badge{min-width:82px;min-height:27px;padding:4px 10px;font-size:10px}
+.ownvehicle-page .upload-btn{min-height:32px;padding:0 11px;font-size:10.5px}
+.ownvehicle-page .pagination{margin-top:14px;padding:13px 16px}
+.ownvehicle-page .pagination-info{font-size:11.5px}
+.ownvehicle-page .page-btn{width:34px;height:34px;font-size:11px}
+@media(max-width:768px){.ownvehicle-page .ownvehicle-page-header h1{font-size:24px}.ownvehicle-page .ownvehicle-page-header p{font-size:12px}}
+@media(max-width:560px){.ownvehicle-page .ownvehicle-page-header h1{font-size:22px}.ownvehicle-page .stat-card{min-height:96px;padding:15px 16px}.ownvehicle-page .stat-details h2{font-size:25px}}

@@ -1,25 +1,49 @@
-/* =========================
-   Global reset
-========================= */
+/* =========================================================
+   GLOBAL VARIABLES
+========================================================= */
+
+:root {
+  --navbar-height: 80px;
+
+  --sidebar-width: 260px;
+  --sidebar-collapsed-width: 72px;
+
+  --page-bg: #f5f7fb;
+
+  --text-main: #1e293b;
+  --text-muted: #64748b;
+
+  --border-color: #e8ecf3;
+}
+
+
+/* =========================================================
+   GLOBAL RESET
+========================================================= */
 
 * {
   margin: 0;
   padding: 0;
+
   box-sizing: border-box;
 }
+
 
 html,
 body,
 #root {
   width: 100%;
+
   min-height: 100%;
 }
+
 
 body {
   min-width: 320px;
 
-  color: #1e293b;
-  background: #f5f7fb;
+  color: var(--text-main);
+
+  background: var(--page-bg);
 
   font-family:
     "Poppins",
@@ -29,6 +53,7 @@ body {
   overflow-x: hidden;
 }
 
+
 button,
 input,
 select,
@@ -36,52 +61,80 @@ textarea {
   font: inherit;
 }
 
-/* =========================
-   Dashboard layout
-========================= */
+
+/* =========================================================
+   DASHBOARD ROOT
+========================================================= */
 
 .dashboard-layout {
   width: 100%;
+
   min-height: 100vh;
 
-  background: #f5f7fb;
+  background: var(--page-bg);
 }
 
-/* Navbar occupies the first 80px */
+
+/* =========================================================
+   DASHBOARD BODY
+========================================================= */
+
 .dashboard-body {
   width: 100%;
+
   min-height: 100vh;
 
-  padding-top: 80px;
+  padding-top:
+    var(--navbar-height);
 }
 
-/* =========================
-   Main content
-========================= */
+
+/* =========================================================
+   MAIN CONTENT
+========================================================= */
 
 .dashboard-main-content {
-  width: calc(100% - 260px);
-  min-height: calc(100vh - 80px);
+  width:
+    calc(
+      100% - var(--sidebar-width)
+    );
 
-  margin-left: 260px;
-  padding: 24px;
+  min-height:
+    calc(
+      100vh - var(--navbar-height)
+    );
 
-  background: #f5f7fb;
+  margin-left:
+    var(--sidebar-width);
+
+  padding: 10px;
+
+  background: var(--page-bg);
 
   transition:
     margin-left 0.3s ease,
     width 0.3s ease;
 }
 
-/* Applied by Dashboard.jsx */
+
+/* =========================================================
+   MAIN CONTENT WHEN SIDEBAR COLLAPSED
+========================================================= */
+
 .dashboard-main-content.sidebar-collapsed {
-  width: calc(100% - 72px);
-  margin-left: 72px;
+  width:
+    calc(
+      100% - var(--sidebar-collapsed-width)
+    );
+
+  margin-left:
+    var(--sidebar-collapsed-width);
 }
 
-/* =========================
-   Shared page container
-========================= */
+
+/* =========================================================
+   SHARED PAGE CONTENT
+========================================================= */
 
 .content {
   width: 100%;
@@ -89,92 +142,146 @@ textarea {
   padding: 28px;
 
   background: #ffffff;
-  border: 1px solid #e8ecf3;
+
+  border:
+    1px solid var(--border-color);
+
   border-radius: 16px;
 
-  box-shadow: 0 4px 15px
+  box-shadow:
+    0 4px 15px
     rgba(15, 23, 42, 0.05);
 }
+
 
 .content h1 {
   margin-bottom: 10px;
 
-  color: #1e293b;
+  color: var(--text-main);
 
   font-size: 30px;
   font-weight: 700;
+
   line-height: 1.25;
 }
 
+
 .content p {
-  color: #64748b;
+  color: var(--text-muted);
 
   font-size: 15px;
+
   line-height: 1.6;
 }
 
-/* =========================
-   Responsive
-========================= */
+
+/* =========================================================
+   TABLET
+========================================================= */
 
 @media (max-width: 992px) {
-  .dashboard-main-content {
-    width: calc(100% - 72px);
-    margin-left: 72px;
-    padding: 20px;
+
+  :root {
+    --sidebar-width: 72px;
   }
 
-  .dashboard-main-content.sidebar-collapsed {
-    width: calc(100% - 72px);
-    margin-left: 72px;
-  }
-}
-
-@media (max-width: 768px) {
-  .dashboard-body {
-    padding-top: 70px;
-  }
 
   .dashboard-main-content {
-    width: calc(100% - 72px);
-    min-height: calc(100vh - 70px);
+    width:
+      calc(
+        100% - var(--sidebar-width)
+      );
 
-    margin-left: 72px;
+    margin-left:
+      var(--sidebar-width);
+
     padding: 16px;
   }
 
+
   .dashboard-main-content.sidebar-collapsed {
-    width: calc(100% - 72px);
-    margin-left: 72px;
+    width:
+      calc(
+        100% - var(--sidebar-width)
+      );
+
+    margin-left:
+      var(--sidebar-width);
   }
+
+}
+
+
+/* =========================================================
+   SMALL TABLET
+========================================================= */
+
+@media (max-width: 768px) {
+
+  :root {
+    --navbar-height: 70px;
+  }
+
+
+  .dashboard-body {
+    padding-top:
+      var(--navbar-height);
+  }
+
+
+  .dashboard-main-content {
+    min-height:
+      calc(
+        100vh - var(--navbar-height)
+      );
+
+    padding: 14px;
+  }
+
 
   .content {
     padding: 22px;
   }
 
+
   .content h1 {
     font-size: 26px;
   }
+
 }
 
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
 @media (max-width: 560px) {
+
   .dashboard-main-content {
     width: 100%;
+
     margin-left: 0;
-    padding: 14px;
+
+    padding: 12px;
   }
+
 
   .dashboard-main-content.sidebar-collapsed {
     width: 100%;
+
     margin-left: 0;
   }
 
+
   .content {
     padding: 18px;
+
     border-radius: 12px;
   }
+
 
   .content h1 {
     font-size: 23px;
   }
+
 }

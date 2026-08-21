@@ -5,10 +5,6 @@ import React, {
   useState,
 } from "react";
 
-import {
-  useNavigate,
-} from "react-router-dom";
-
 import axios from "axios";
 
 import {
@@ -19,7 +15,6 @@ import {
   PauseCircle,
   Search,
   Truck,
-  UserPlus,
   Wrench,
 } from "lucide-react";
 
@@ -33,8 +28,6 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-
-import Intercarttinglogin from "../Loginpage/Intercartinglogin";
 
 import "../pagescss/intercartingdash.css";
 
@@ -93,8 +86,6 @@ const formatDate = (value) => {
 };
 
 const Intercartingdash = () => {
-  const navigate = useNavigate();
-
   const [vehicles, setVehicles] =
     useState([]);
 
@@ -109,10 +100,6 @@ const Intercartingdash = () => {
 
   const [currentPage, setCurrentPage] =
     useState(1);
-
-  const [showLogin, setShowLogin] =
-    useState(false);
-
   // Remove the Intercarting login session whenever this dashboard opens.
   // After returning with the browser Back button, the user must log in again.
   useEffect(() => {
@@ -358,18 +345,6 @@ const Intercartingdash = () => {
       endIndex,
       filteredVehicles.length
     );
-
-  const handleLoginSuccess = () => {
-    setShowLogin(false);
-
-    navigate(
-      "/intercartingdash/intercarting",
-      {
-        replace: true,
-      }
-    );
-  };
-
   const goToPreviousPage = () => {
     setCurrentPage(
       (page) =>
@@ -392,52 +367,7 @@ const Intercartingdash = () => {
 
   return (
     <main className="intercarting-dashboard">
-      <header className="intercarting-dashboard-header">
-        <div>
-          <span className="intercarting-dashboard-eyebrow">
-            Fleet Management
-          </span>
-
-          <h1>
-            Vehicle Inventory
-          </h1>
-
-          <p>
-            View and monitor all
-            registered fleet vehicles
-            and operational status.
-          </p>
-        </div>
-
-        <button
-          type="button"
-          className="intercarting-data-entry-button"
-          onClick={() =>
-            setShowLogin(true)
-          }
-        >
-          <UserPlus
-            size={18}
-            aria-hidden="true"
-          />
-
-          <span>
-            Data Entry
-          </span>
-        </button>
-      </header>
-
-      <Intercarttinglogin
-        open={showLogin}
-        onClose={() =>
-          setShowLogin(false)
-        }
-        onLogin={
-          handleLoginSuccess
-        }
-      />
-
-      {error && (
+{error && (
         <div
           className="intercarting-dashboard-error"
           role="alert"

@@ -1,3 +1,4 @@
+/* Theme: Charcoal + Indigo + Lavender */
 /* =========================================================
    TRACKING PAGE
    FINAL SCROLLING BEHAVIOR
@@ -26,12 +27,12 @@
     calc(100vh - 80px);
 
   padding:
-    18px 20px 24px;
+    0px 10px 24px;
 
-  color: #1d3559;
+  color: #30364f;
 
   background:
-    #f5f7fb;
+    #f4f3f8;
 
   font-family:
     Inter,
@@ -69,7 +70,7 @@
 
   margin-bottom: 5px;
 
-  color: #2457b2;
+  color: #5548c8;
 
   font-size: 9px;
   font-weight: 700;
@@ -87,7 +88,7 @@
 .tracking-header-content h1 {
   margin: 0;
 
-  color: #162f57;
+  color: #252b45;
 
   font-size: 27px;
   font-weight: 700;
@@ -111,87 +112,6 @@
   font-weight: 400;
 
   line-height: 1.45;
-}
-
-
-/* =========================================================
-   DATA ENTRY BUTTON
-========================================================= */
-
-.tracking-data-entry-button {
-  min-width: 112px;
-  min-height: 39px;
-
-  padding:
-    0 15px;
-
-  flex:
-    0 0 auto;
-
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  gap: 7px;
-
-  border:
-    1px solid #2457b2;
-
-  border-radius: 9px;
-
-  color: #ffffff;
-
-  background:
-    linear-gradient(
-      135deg,
-      #316dcd,
-      #2457b2
-    );
-
-  font: inherit;
-
-  font-size: 10px;
-  font-weight: 700;
-
-  cursor: pointer;
-
-  box-shadow:
-    0 6px 14px
-    rgba(36, 87, 178, 0.16);
-
-  transition:
-    background 150ms ease,
-    box-shadow 150ms ease,
-    transform 150ms ease;
-}
-
-
-.tracking-data-entry-button:hover {
-  background:
-    linear-gradient(
-      135deg,
-      #285fb9,
-      #1c4997
-    );
-
-  box-shadow:
-    0 9px 20px
-    rgba(36, 87, 178, 0.22);
-
-  transform:
-    translateY(-1px);
-}
-
-
-.tracking-data-entry-button:active {
-  transform:
-    translateY(0);
-}
-
-
-.tracking-data-entry-button svg {
-  flex:
-    0 0 auto;
 }
 
 
@@ -220,7 +140,7 @@
   gap: 9px;
 
   border:
-    1px solid #dfe7f1;
+    1px solid #dddfea;
 
   border-radius: 11px;
 
@@ -252,12 +172,12 @@
   gap: 8px;
 
   border:
-    1px solid #dae3ee;
+    1px solid #dedbe9;
 
   border-radius: 9px;
 
   background:
-    #f8fafd;
+    #f7f6fb;
 
   transition:
     border-color 150ms ease,
@@ -268,13 +188,13 @@
 
 .tracking-search:hover {
   border-color:
-    #c7d4e4;
+    #c9c5dc;
 }
 
 
 .tracking-search:focus-within {
   border-color:
-    #638bcf;
+    #8074dd;
 
   background:
     #ffffff;
@@ -299,7 +219,7 @@
 
 .tracking-search:focus-within > svg {
   color:
-    #2457b2;
+    #5548c8;
 }
 
 
@@ -316,7 +236,7 @@
   outline: 0;
 
   color:
-    #263f62;
+    #3f4660;
 
   background:
     transparent;
@@ -330,7 +250,7 @@
 
 .tracking-search input::placeholder {
   color:
-    #9ba8b9;
+    #9c9fb0;
 
   font-weight: 400;
 }
@@ -405,7 +325,7 @@ input[type="search"]::-webkit-search-cancel-button {
   border-radius: 9px;
 
   background:
-    #f7f9fc;
+    #f6f5fa;
 }
 
 
@@ -451,19 +371,19 @@ input[type="search"]::-webkit-search-cancel-button {
 
 .tracking-status-filter button:hover {
   color:
-    #2457b2;
+    #5548c8;
 
   background:
-    #edf3fc;
+    #efedfb;
 }
 
 
 .tracking-status-filter button.active {
   color:
-    #2457b2;
+    #5548c8;
 
   border-color:
-    #d2e0f4;
+    #d8d5f2;
 
   background:
     #ffffff;
@@ -511,7 +431,7 @@ button:nth-child(4) svg {
 .tracking-status-filter
 button:nth-child(5) svg {
   color:
-    #2457b2;
+    #5548c8;
 }
 
 
@@ -537,12 +457,12 @@ button:nth-child(5) svg {
   gap: 7px;
 
   border:
-    1px solid #dae3ee;
+    1px solid #dedbe9;
 
   border-radius: 9px;
 
   background:
-    #f8fafd;
+    #f7f6fb;
 
   cursor: pointer;
 
@@ -555,13 +475,13 @@ button:nth-child(5) svg {
 
 .tracking-date:hover {
   border-color:
-    #c6d4e4;
+    #c9c5dc;
 }
 
 
 .tracking-date:focus-within {
   border-color:
-    #638bcf;
+    #8074dd;
 
   background:
     #ffffff;
@@ -580,7 +500,7 @@ button:nth-child(5) svg {
     0 0 16px;
 
   color:
-    #7187a5;
+    #7d8297;
 }
 
 
@@ -704,7 +624,7 @@ button:nth-child(5) svg {
     hidden !important;
 
   border:
-    1px solid #dfe7f1;
+    1px solid #dddfea;
 
   border-radius:
     14px;
@@ -776,7 +696,7 @@ button:nth-child(5) svg {
     thin;
 
   scrollbar-color:
-    #c7d1de
+    #c9c7d6
     transparent;
 }
 
@@ -809,7 +729,7 @@ button:nth-child(5) svg {
     thin;
 
   scrollbar-color:
-    #c7d1de
+    #c9c7d6
     transparent;
 }
 
@@ -842,7 +762,7 @@ button:nth-child(5) svg {
     thin;
 
   scrollbar-color:
-    #c7d1de
+    #c9c7d6
     transparent;
 }
 
@@ -868,13 +788,13 @@ button:nth-child(5) svg {
     999px;
 
   background:
-    #c7d1de;
+    #c9c7d6;
 }
 
 
 .tracking-trip-list::-webkit-scrollbar-thumb:hover {
   background:
-    #aebaca;
+    #aaa7bd;
 }
 
 
@@ -902,14 +822,14 @@ button:nth-child(5) svg {
     999px;
 
   background:
-    #c7d1de;
+    #c9c7d6;
 }
 
 
 .tracking-layout >
 :nth-child(2)::-webkit-scrollbar-thumb:hover {
   background:
-    #aebaca;
+    #aaa7bd;
 }
 
 
@@ -937,14 +857,14 @@ button:nth-child(5) svg {
     999px;
 
   background:
-    #c7d1de;
+    #c9c7d6;
 }
 
 
 .tracking-layout >
 :nth-child(3)::-webkit-scrollbar-thumb:hover {
   background:
-    #aebaca;
+    #aaa7bd;
 }
 
 
@@ -1229,30 +1149,6 @@ body {
   }
 
 
-  .tracking-data-entry-button {
-    width:
-      38px;
-
-    min-width:
-      38px;
-
-    height:
-      38px;
-
-    min-height:
-      38px;
-
-    padding:
-      0;
-  }
-
-
-  .tracking-data-entry-button span {
-    display:
-      none;
-  }
-
-
   .tracking-toolbar {
     padding:
       7px;
@@ -1351,3 +1247,90 @@ body {
   }
 
 } 
+
+/* =========================================================
+   CHARCOAL + INDIGO + LAVENDER THEME OVERRIDES
+   Visual-only: no layout/functionality changes
+========================================================= */
+
+:where(.tracking-page, .vehicle-column-panel, .journey-column) {
+  --theme-ink: #252b45;
+  --theme-muted: #858ba1;
+  --theme-indigo: #5548c8;
+  --theme-indigo-2: #7064da;
+  --theme-lavender: #f0efff;
+  --theme-lavender-2: #e9e7fa;
+  --theme-border: #dddfea;
+  --theme-surface: #ffffff;
+  --theme-page: #f4f3f8;
+}
+
+.tracking-data-entry-button,
+.vehicle-toggle-btn:hover,
+.vehicle-toggle-btn.open,
+.route-vehicle-icon {
+  background: linear-gradient(135deg, #5548c8, #7064da);
+  border-color: #5548c8;
+  color: #ffffff;
+}
+
+.tracking-data-entry-button:hover {
+  background: linear-gradient(135deg, #4b40b5, #6256ce);
+}
+
+.tracking-status-filter button.active,
+.vehicle-mini-row.active {
+  border-color: #c9c4ee;
+  background: #f0efff;
+  color: #4337ac;
+}
+
+.vehicle-mini-row.active {
+  box-shadow: inset 2px 0 0 #5548c8;
+}
+
+.journey-column,
+.vehicle-column-panel {
+  border-color: #dddfea;
+  color: #252b45;
+  background: #ffffff;
+  box-shadow: 0 5px 18px rgba(35, 38, 60, 0.06);
+}
+
+.journey-route-wrapper {
+  border-color: #dedbea;
+  background:
+    radial-gradient(circle at 50% 48%, rgba(112, 100, 218, 0.07), transparent 60%),
+    linear-gradient(180deg, #fdfcff 0%, #f7f6fb 100%);
+}
+
+.journey-route-wrapper::before {
+  opacity: 0.22;
+  background-image: radial-gradient(circle, rgba(85, 72, 200, 0.10) 1px, transparent 1px);
+}
+
+.journey-path-progress {
+  stroke: #6658d3;
+  filter: drop-shadow(0 2px 3px rgba(102, 88, 211, 0.18));
+}
+
+.journey-stop.completed .journey-stop-outer {
+  stroke: #6658d3;
+}
+
+.journey-stop.completed .journey-stop-inner {
+  fill: #6658d3;
+}
+
+.journey-stop-name {
+  fill: #252b45;
+}
+
+.journey-current-card-title > span {
+  color: #5548c8;
+  background: #f0efff;
+}
+
+.journey-current-card-title strong {
+  color: #252b45;
+}

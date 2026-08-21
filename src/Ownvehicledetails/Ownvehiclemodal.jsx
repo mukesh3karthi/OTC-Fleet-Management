@@ -4,13 +4,24 @@ import React, {
 } from "react";
 
 import {
+  Building2,
   CalendarDays,
+  Car,
+  Factory,
+  Gauge,
+  Hash,
+  Info,
   Save,
   Truck,
   X,
 } from "lucide-react";
 
 import "../Ownvehicledetails/ownvehiclemodal.css";
+
+
+/* =========================================================
+   INITIAL FORM
+========================================================= */
 
 const createInitialForm = () => ({
   vehicleNo: "",
@@ -26,38 +37,87 @@ const createInitialForm = () => ({
   purchasedFrom: "",
 });
 
-const getVehicleId = (vehicle) => vehicle?._id ?? vehicle?.id ?? null;
 
-const normalizeDateInput = (value) =>
-  value ? String(value).slice(0, 10) : "";
+/* =========================================================
+   HELPERS
+========================================================= */
 
-const getTodayInputValue = () =>
-  new Date().toISOString().slice(0, 10);
+const getVehicleId = (vehicle) =>
+  vehicle?._id ??
+  vehicle?.id ??
+  null;
 
-const getVehicleFormData = (vehicle) => {
+
+const normalizeDateInput = (
+  value
+) =>
+  value
+    ? String(value).slice(
+        0,
+        10
+      )
+    : "";
+
+
+const getTodayInputValue =
+  () =>
+    new Date()
+      .toISOString()
+      .slice(
+        0,
+        10
+      );
+
+
+const getVehicleFormData = (
+  vehicle
+) => {
   if (!vehicle) {
     return createInitialForm();
   }
 
   return {
-    vehicleNo: vehicle.vehicleNo || "",
-    type: vehicle.type || "",
-    vehicleMake: vehicle.vehicleMake || "",
+    vehicleNo:
+      vehicle.vehicleNo || "",
+
+    type:
+      vehicle.type || "",
+
+    vehicleMake:
+      vehicle.vehicleMake || "",
+
     manufacturingYear:
       vehicle.manufacturingYear || "",
+
     registrationDate:
-      normalizeDateInput(vehicle.registrationDate),
+      normalizeDateInput(
+        vehicle.registrationDate
+      ),
+
     transportOwner:
       vehicle.transportOwner || "",
-    engineNo: vehicle.engineNo || "",
-    chassisNo: vehicle.chassisNo || "",
-    gps: vehicle.gps !== false,
+
+    engineNo:
+      vehicle.engineNo || "",
+
+    chassisNo:
+      vehicle.chassisNo || "",
+
+    gps:
+      vehicle.gps !== false,
+
     purchaseYear:
       vehicle.purchaseYear || "",
+
     purchasedFrom:
       vehicle.purchasedFrom || "",
   };
 };
+
+
+/* =========================================================
+   COMPONENT
+========================================================= */
 
 const Ownvehiclemodal = ({
   open,
@@ -67,13 +127,29 @@ const Ownvehiclemodal = ({
   saving = false,
   apiError = "",
 }) => {
-  const [formData, setFormData] =
-    useState(createInitialForm);
+  const [
+    formData,
+    setFormData,
+  ] = useState(
+    createInitialForm
+  );
 
-  const [formError, setFormError] =
-    useState("");
+  const [
+    formError,
+    setFormError,
+  ] = useState("");
 
-  const isEditMode = Boolean(getVehicleId(vehicle));
+  const isEditMode =
+    Boolean(
+      getVehicleId(
+        vehicle
+      )
+    );
+
+
+  /* =======================================================
+     SET FORM DATA
+  ======================================================= */
 
   useEffect(() => {
     if (!open) {
@@ -81,29 +157,45 @@ const Ownvehiclemodal = ({
     }
 
     setFormData(
-      getVehicleFormData(vehicle)
+      getVehicleFormData(
+        vehicle
+      )
     );
 
     setFormError("");
-  }, [open, vehicle]);
+  }, [
+    open,
+    vehicle,
+  ]);
+
+
+  /* =======================================================
+     ESCAPE + BODY SCROLL
+  ======================================================= */
 
   useEffect(() => {
     if (!open) {
       return undefined;
     }
 
-    const handleEscapeKey = (event) => {
+    const previousBodyOverflow =
+      document.body.style
+        .overflow;
+
+    document.body.style.overflow =
+      "hidden";
+
+    const handleEscapeKey = (
+      event
+    ) => {
       if (
-        event.key === "Escape" &&
+        event.key ===
+          "Escape" &&
         !saving
       ) {
         onClose();
       }
     };
-
-    const previousBodyOverflow = document.body.style.overflow;
-
-    document.body.style.overflow = "hidden";
 
     document.addEventListener(
       "keydown",
@@ -111,16 +203,28 @@ const Ownvehiclemodal = ({
     );
 
     return () => {
-      document.body.style.overflow = previousBodyOverflow;
+      document.body.style.overflow =
+        previousBodyOverflow;
 
       document.removeEventListener(
         "keydown",
         handleEscapeKey
       );
     };
-  }, [open, saving, onClose]);
+  }, [
+    open,
+    saving,
+    onClose,
+  ]);
 
-  const handleChange = (event) => {
+
+  /* =======================================================
+     CHANGE
+  ======================================================= */
+
+  const handleChange = (
+    event
+  ) => {
     const {
       name,
       value,
@@ -133,246 +237,365 @@ const Ownvehiclemodal = ({
         ? checked
         : value;
 
+
+    /* uppercase fields */
+
     if (
       name === "vehicleNo" ||
       name === "engineNo" ||
       name === "chassisNo"
     ) {
-      updatedValue = String(
-        updatedValue
-      ).toUpperCase();
+      updatedValue =
+        String(
+          updatedValue
+        ).toUpperCase();
     }
+
+
+    /* year only */
 
     if (
-      name === "manufacturingYear" ||
+      name ===
+        "manufacturingYear" ||
       name === "purchaseYear"
     ) {
-      updatedValue = String(value)
-        .replace(/\D/g, "")
-        .slice(0, 4);
+      updatedValue =
+        String(
+          value
+        )
+          .replace(
+            /\D/g,
+            ""
+          )
+          .slice(
+            0,
+            4
+          );
     }
 
-    setFormData((previousData) => ({
-      ...previousData,
-      [name]: updatedValue,
-    }));
+
+    setFormData(
+      (
+        previousData
+      ) => ({
+        ...previousData,
+        [name]:
+          updatedValue,
+      })
+    );
 
     setFormError("");
   };
 
-  const validateForm = () => {
-    const requiredFields = [
-      {
-        name: "vehicleNo",
-        label: "Vehicle Number",
-      },
-      {
-        name: "type",
-        label: "Vehicle Type",
-      },
-      {
-        name: "vehicleMake",
-        label: "Vehicle Make",
-      },
-      {
-        name: "manufacturingYear",
-        label: "Manufacturing Year",
-      },
-      {
-        name: "registrationDate",
-        label: "Registration Date",
-      },
-      {
-        name: "transportOwner",
-        label: "Transport Owner",
-      },
-      {
-        name: "engineNo",
-        label: "Engine Number",
-      },
-      {
-        name: "chassisNo",
-        label: "Chassis Number",
-      },
-      {
-        name: "purchaseYear",
-        label: "Purchase Year",
-      },
-      {
-        name: "purchasedFrom",
-        label: "Purchased From",
-      },
-    ];
 
-    const emptyField =
-      requiredFields.find(
-        (field) =>
-          !String(
-            formData[field.name] || ""
-          ).trim()
-      );
+  /* =======================================================
+     VALIDATION
+  ======================================================= */
 
-    if (emptyField) {
-      setFormError(
-        `Please enter ${emptyField.label}.`
-      );
+  const validateForm =
+    () => {
+      const requiredFields = [
+        {
+          name:
+            "vehicleNo",
+          label:
+            "Vehicle Number",
+        },
+        {
+          name: "type",
+          label:
+            "Vehicle Type",
+        },
+        {
+          name:
+            "vehicleMake",
+          label:
+            "Vehicle Make",
+        },
+        {
+          name:
+            "manufacturingYear",
+          label:
+            "Manufacturing Year",
+        },
+        {
+          name:
+            "registrationDate",
+          label:
+            "Registration Date",
+        },
+        {
+          name:
+            "transportOwner",
+          label:
+            "Transport Owner",
+        },
+        {
+          name:
+            "engineNo",
+          label:
+            "Engine Number",
+        },
+        {
+          name:
+            "chassisNo",
+          label:
+            "Chassis Number",
+        },
+        {
+          name:
+            "purchaseYear",
+          label:
+            "Purchase Year",
+        },
+        {
+          name:
+            "purchasedFrom",
+          label:
+            "Purchased From",
+        },
+      ];
 
-      return false;
-    }
 
-    const vehicleNumber =
-      formData.vehicleNo
-        .replace(/\s/g, "")
-        .toUpperCase();
+      const emptyField =
+        requiredFields.find(
+          (field) =>
+            !String(
+              formData[
+                field.name
+              ] || ""
+            ).trim()
+        );
 
-    const vehicleNumberPattern =
-      /^[A-Z]{2}\d{1,2}[A-Z]{1,3}\d{1,4}$/;
 
-    if (
-      !vehicleNumberPattern.test(
-        vehicleNumber
-      )
-    ) {
-      setFormError(
-        "Please enter a valid vehicle number, for example TN74Y0524."
-      );
+      if (emptyField) {
+        setFormError(
+          `Please enter ${emptyField.label}.`
+        );
 
-      return false;
-    }
+        return false;
+      }
 
-    const currentYear =
-      new Date().getFullYear();
 
-    const manufacturingYear =
-      Number(formData.manufacturingYear);
-
-    if (
-      !/^\d{4}$/.test(
-        formData.manufacturingYear
-      ) ||
-      manufacturingYear < 1950 ||
-      manufacturingYear >
-        currentYear + 1
-    ) {
-      setFormError(
-        "Please enter a valid manufacturing year."
-      );
-
-      return false;
-    }
-
-    const purchaseYear = Number(
-      formData.purchaseYear
-    );
-
-    if (
-      !/^\d{4}$/.test(
-        formData.purchaseYear
-      ) ||
-      purchaseYear < manufacturingYear ||
-      purchaseYear > currentYear + 1
-    ) {
-      setFormError(
-        "Purchase year cannot be before the manufacturing year."
-      );
-
-      return false;
-    }
-
-    if (
-      new Date(
-        formData.registrationDate
-      ).getFullYear() <
-      manufacturingYear
-    ) {
-      setFormError(
-        "Registration date cannot be before the manufacturing year."
-      );
-
-      return false;
-    }
-
-    return true;
-  };
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-
-    if (!validateForm()) {
-      return;
-    }
-
-    const cleanedVehicleData = {
-      ...(getVehicleId(vehicle)
-        ? {
-            id: getVehicleId(vehicle),
-          }
-        : {}),
-
-      vehicleNo:
+      const vehicleNumber =
         formData.vehicleNo
-          .replace(/\s/g, "")
-          .toUpperCase(),
+          .replace(
+            /\s/g,
+            ""
+          )
+          .toUpperCase();
 
-      type: formData.type.trim(),
 
-      vehicleMake:
-        formData.vehicleMake.trim(),
+      const vehicleNumberPattern =
+        /^[A-Z]{2}\d{1,2}[A-Z]{1,3}\d{1,4}$/;
 
-      manufacturingYear:
-        formData.manufacturingYear,
 
-      registrationDate:
-        formData.registrationDate,
+      if (
+        !vehicleNumberPattern.test(
+          vehicleNumber
+        )
+      ) {
+        setFormError(
+          "Please enter a valid vehicle number, for example TN74Y0524."
+        );
 
-      transportOwner:
-        formData.transportOwner.trim(),
+        return false;
+      }
 
-      engineNo:
-        formData.engineNo
-          .trim()
-          .toUpperCase(),
 
-      chassisNo:
-        formData.chassisNo
-          .trim()
-          .toUpperCase(),
+      const currentYear =
+        new Date()
+          .getFullYear();
 
-      gps: Boolean(formData.gps),
 
-      purchaseYear:
-        formData.purchaseYear,
+      const manufacturingYear =
+        Number(
+          formData.manufacturingYear
+        );
 
-      purchasedFrom:
-        formData.purchasedFrom.trim(),
+
+      if (
+        !/^\d{4}$/.test(
+          formData.manufacturingYear
+        ) ||
+        manufacturingYear <
+          1950 ||
+        manufacturingYear >
+          currentYear + 1
+      ) {
+        setFormError(
+          "Please enter a valid manufacturing year."
+        );
+
+        return false;
+      }
+
+
+      const purchaseYear =
+        Number(
+          formData.purchaseYear
+        );
+
+
+      if (
+        !/^\d{4}$/.test(
+          formData.purchaseYear
+        ) ||
+        purchaseYear <
+          manufacturingYear ||
+        purchaseYear >
+          currentYear + 1
+      ) {
+        setFormError(
+          "Purchase year cannot be before the manufacturing year."
+        );
+
+        return false;
+      }
+
+
+      if (
+        new Date(
+          formData.registrationDate
+        ).getFullYear() <
+        manufacturingYear
+      ) {
+        setFormError(
+          "Registration date cannot be before the manufacturing year."
+        );
+
+        return false;
+      }
+
+
+      return true;
     };
 
-    try {
-      setFormError("");
 
-      await onSave(cleanedVehicleData);
-    } catch (error) {
-      setFormError(
-        error?.message ||
-          "Unable to save vehicle."
-      );
-    }
-  };
+  /* =======================================================
+     SUBMIT
+  ======================================================= */
 
-  const handleOverlayMouseDown = (event) => {
-    if (event.target === event.currentTarget && !saving) {
-      onClose();
-    }
-  };
+  const handleSubmit =
+    async (
+      event
+    ) => {
+      event.preventDefault();
+
+      if (
+        !validateForm()
+      ) {
+        return;
+      }
+
+
+      const cleanedVehicleData =
+        {
+          ...(getVehicleId(
+            vehicle
+          )
+            ? {
+                id:
+                  getVehicleId(
+                    vehicle
+                  ),
+              }
+            : {}),
+
+          vehicleNo:
+            formData.vehicleNo
+              .replace(
+                /\s/g,
+                ""
+              )
+              .toUpperCase(),
+
+          type:
+            formData.type.trim(),
+
+          vehicleMake:
+            formData.vehicleMake.trim(),
+
+          manufacturingYear:
+            formData.manufacturingYear,
+
+          registrationDate:
+            formData.registrationDate,
+
+          transportOwner:
+            formData.transportOwner.trim(),
+
+          engineNo:
+            formData.engineNo
+              .trim()
+              .toUpperCase(),
+
+          chassisNo:
+            formData.chassisNo
+              .trim()
+              .toUpperCase(),
+
+          gps:
+            Boolean(
+              formData.gps
+            ),
+
+          purchaseYear:
+            formData.purchaseYear,
+
+          purchasedFrom:
+            formData.purchasedFrom.trim(),
+        };
+
+
+      try {
+        setFormError("");
+
+        await onSave(
+          cleanedVehicleData
+        );
+      } catch (error) {
+        setFormError(
+          error?.message ||
+            "Unable to save vehicle."
+        );
+      }
+    };
+
+
+  /* =======================================================
+     OVERLAY
+  ======================================================= */
+
+  const handleOverlayMouseDown =
+    (
+      event
+    ) => {
+      if (
+        event.target ===
+          event.currentTarget &&
+        !saving
+      ) {
+        onClose();
+      }
+    };
+
 
   if (!open) {
     return null;
   }
 
+
+  /* =======================================================
+     RENDER
+  ======================================================= */
+
   return (
     <div
       className="ownvehicle-form-overlay"
-      onMouseDown={handleOverlayMouseDown}
+      onMouseDown={
+        handleOverlayMouseDown
+      }
     >
       <section
         className="ownvehicle-form-modal"
@@ -381,11 +604,21 @@ const Ownvehiclemodal = ({
         aria-labelledby="ownvehicle-modal-title"
         aria-describedby="ownvehicle-modal-description"
       >
+
+        {/* =====================================
+            HEADER
+        ===================================== */}
+
         <header className="ownvehicle-form-header">
+
           <div className="ownvehicle-form-heading">
+
             <span className="ownvehicle-form-heading-icon">
-              <Truck size={22} />
+              <Truck
+                size={24}
+              />
             </span>
+
 
             <div>
               <h2 id="ownvehicle-modal-title">
@@ -395,11 +628,14 @@ const Ownvehiclemodal = ({
               </h2>
 
               <p id="ownvehicle-modal-description">
-                Enter the company-owned
-                vehicle information.
+                {isEditMode
+                  ? "Update company-owned vehicle information."
+                  : "Enter the company-owned vehicle information."}
               </p>
             </div>
+
           </div>
+
 
           <button
             type="button"
@@ -408,55 +644,114 @@ const Ownvehiclemodal = ({
             disabled={saving}
             aria-label="Close vehicle form"
           >
-            <X size={21} />
+            <X size={22} />
           </button>
+
         </header>
+
+
+        {/* =====================================
+            FORM
+        ===================================== */}
 
         <form
           className="ownvehicle-entry-form"
-          onSubmit={handleSubmit}
+          onSubmit={
+            handleSubmit
+          }
           noValidate
         >
+
           <div className="ownvehicle-form-body">
+
+            {/* =================================
+                SECTION HEADER
+            ================================= */}
+
             <div className="ownvehicle-form-section-title">
-              <Truck size={18} />
+
+              <span className="ownvehicle-section-icon">
+                <Info
+                  size={18}
+                />
+              </span>
 
               <span>
                 Vehicle Information
               </span>
+
             </div>
 
+
+            <div className="ownvehicle-section-divider" />
+
+
+            {/* =================================
+                GRID
+            ================================= */}
+
             <div className="ownvehicle-form-grid">
+
               <FormInput
                 label="Vehicle Number"
                 name="vehicleNo"
-                value={formData.vehicleNo}
-                onChange={handleChange}
-                placeholder="TN74Y0524"
+                value={
+                  formData.vehicleNo
+                }
+                onChange={
+                  handleChange
+                }
+                placeholder="Ex: TN74Y0524"
+                icon={
+                  <Truck
+                    size={17}
+                  />
+                }
                 required
                 autoFocus
                 maxLength={15}
               />
 
+
               <FormInput
                 label="Vehicle Type"
                 name="type"
-                value={formData.type}
-                onChange={handleChange}
-                placeholder="Trailer"
+                value={
+                  formData.type
+                }
+                onChange={
+                  handleChange
+                }
+                placeholder="Ex: Trailer"
+                icon={
+                  <Truck
+                    size={17}
+                  />
+                }
                 maxLength={60}
                 required
               />
 
+
               <FormInput
                 label="Vehicle Make"
                 name="vehicleMake"
-                value={formData.vehicleMake}
-                onChange={handleChange}
-                placeholder="Eicher Motors"
+                value={
+                  formData.vehicleMake
+                }
+                onChange={
+                  handleChange
+                }
+                placeholder="Ex: Eicher Motors"
+                icon={
+                  <Car
+                    size={17}
+                  />
+                }
                 maxLength={80}
                 required
               />
+
 
               <FormInput
                 label="Manufacturing Year"
@@ -464,29 +759,42 @@ const Ownvehiclemodal = ({
                 value={
                   formData.manufacturingYear
                 }
-                onChange={handleChange}
-                placeholder="2024"
+                onChange={
+                  handleChange
+                }
+                placeholder="Ex: 2024"
+                icon={
+                  <CalendarDays
+                    size={17}
+                  />
+                }
                 inputMode="numeric"
                 maxLength={4}
                 required
               />
 
+
               <FormInput
                 label="Registration Date"
                 name="registrationDate"
                 type="date"
-                max={getTodayInputValue()}
+                max={
+                  getTodayInputValue()
+                }
                 value={
                   formData.registrationDate
                 }
-                onChange={handleChange}
+                onChange={
+                  handleChange
+                }
                 icon={
                   <CalendarDays
-                    size={16}
+                    size={17}
                   />
                 }
                 required
               />
+
 
               <FormInput
                 label="Transport Owner"
@@ -494,42 +802,80 @@ const Ownvehiclemodal = ({
                 value={
                   formData.transportOwner
                 }
-                onChange={handleChange}
-                placeholder="OTC Groups"
+                onChange={
+                  handleChange
+                }
+                placeholder="Ex: OTC Groups"
+                icon={
+                  <Building2
+                    size={17}
+                  />
+                }
                 maxLength={100}
                 required
               />
 
+
               <FormInput
                 label="Engine Number"
                 name="engineNo"
-                value={formData.engineNo}
-                onChange={handleChange}
-                placeholder="ENG-ECR-7452"
+                value={
+                  formData.engineNo
+                }
+                onChange={
+                  handleChange
+                }
+                placeholder="Ex: ENG-ECR-7452"
+                icon={
+                  <Gauge
+                    size={17}
+                  />
+                }
                 maxLength={40}
                 required
               />
 
+
               <FormInput
                 label="Chassis Number"
                 name="chassisNo"
-                value={formData.chassisNo}
-                onChange={handleChange}
-                placeholder="CHS-ECR-0015"
+                value={
+                  formData.chassisNo
+                }
+                onChange={
+                  handleChange
+                }
+                placeholder="Ex: CHS-ECR-0015"
+                icon={
+                  <Hash
+                    size={17}
+                  />
+                }
                 maxLength={50}
                 required
               />
 
+
               <FormInput
                 label="Purchase Year"
                 name="purchaseYear"
-                value={formData.purchaseYear}
-                onChange={handleChange}
-                placeholder="2024"
+                value={
+                  formData.purchaseYear
+                }
+                onChange={
+                  handleChange
+                }
+                placeholder="Ex: 2024"
+                icon={
+                  <CalendarDays
+                    size={17}
+                  />
+                }
                 inputMode="numeric"
                 maxLength={4}
                 required
               />
+
 
               <FormInput
                 label="Purchased From"
@@ -537,54 +883,95 @@ const Ownvehiclemodal = ({
                 value={
                   formData.purchasedFrom
                 }
-                onChange={handleChange}
-                placeholder="Eicher Motors"
+                onChange={
+                  handleChange
+                }
+                placeholder="Ex: Eicher Motors"
+                icon={
+                  <Factory
+                    size={17}
+                  />
+                }
                 maxLength={100}
                 required
               />
 
+
+              {/* =================================
+                  GPS
+              ================================= */}
+
               <label className="ownvehicle-gps-field">
+
                 <input
                   type="checkbox"
                   name="gps"
-                  checked={formData.gps}
-                  onChange={handleChange}
+                  checked={
+                    formData.gps
+                  }
+                  onChange={
+                    handleChange
+                  }
                 />
+
 
                 <span className="ownvehicle-gps-switch" />
 
+
                 <span className="ownvehicle-gps-text">
+
                   <strong>
-                    GPS Available
+                    GPS Installed
                   </strong>
 
                   <small>
-                    Enable when GPS is
-                    installed in this vehicle.
+                    Enable when GPS tracking device is installed in this vehicle.
                   </small>
+
                 </span>
+
               </label>
+
             </div>
 
-            {(formError || apiError) && (
+
+            {/* =================================
+                ERROR
+            ================================= */}
+
+            {(formError ||
+              apiError) && (
               <p
                 className="ownvehicle-form-error"
                 role="alert"
               >
-                {formError || apiError}
+                {formError ||
+                  apiError}
               </p>
             )}
+
           </div>
 
+
+          {/* =====================================
+              FOOTER
+          ===================================== */}
+
           <footer className="ownvehicle-form-footer">
+
             <button
               type="button"
               className="ownvehicle-form-cancel"
               onClick={onClose}
               disabled={saving}
             >
-              Cancel
+              <X size={16} />
+
+              <span>
+                Cancel
+              </span>
             </button>
+
 
             <button
               type="submit"
@@ -600,13 +987,22 @@ const Ownvehiclemodal = ({
                     ? "Update Vehicle"
                     : "Add Vehicle"}
               </span>
+
             </button>
+
           </footer>
+
         </form>
+
       </section>
     </div>
   );
 };
+
+
+/* =========================================================
+   REUSABLE INPUT
+========================================================= */
 
 const FormInput = ({
   label,
@@ -621,38 +1017,54 @@ const FormInput = ({
 }) => {
   return (
     <label className="ownvehicle-form-field">
+
       <span className="ownvehicle-field-label">
+
         {label}
 
         {required && (
-          <strong aria-hidden="true">
+          <strong
+            className="ownvehicle-required"
+            aria-hidden="true"
+          >
             *
           </strong>
         )}
+
       </span>
 
+
       <div className="ownvehicle-input-wrapper">
+
         {icon && (
           <span className="ownvehicle-input-icon">
             {icon}
           </span>
         )}
 
+
         <input
           type={type}
           name={name}
           value={value}
           onChange={onChange}
-          placeholder={placeholder}
+          placeholder={
+            placeholder
+          }
           required={required}
           className={
-            icon ? "has-icon" : ""
+            icon
+              ? "has-icon"
+              : ""
           }
           {...inputProperties}
         />
+
       </div>
+
     </label>
   );
 };
+
 
 export default Ownvehiclemodal;

@@ -17,16 +17,14 @@ const TripListColumn = ({
   return (
     <aside className="tracking-trip-panel">
 
-      {/* =====================================
+      {/* ================================
           HEADER
-      ===================================== */}
+      ================================= */}
 
       <div className="tracking-column-heading">
 
         <div>
-          <h2>
-            Trip List
-          </h2>
+          <h2>Trip List</h2>
 
           <p>
             {trips.length}{" "}
@@ -38,21 +36,25 @@ const TripListColumn = ({
 
 
         <div className="tracking-column-heading-icon">
-          <Truck size={17} />
+          <Truck size={16} />
         </div>
 
       </div>
 
 
-      {/* =====================================
+      {/* ================================
           TRIP LIST
-      ===================================== */}
+      ================================= */}
 
       <div className="tracking-trip-list">
 
         {trips.length > 0 ? (
 
           trips.map((trip) => {
+
+            /* --------------------------
+               TRIP KEY
+            -------------------------- */
 
             const tripKey =
               trip._id ||
@@ -67,47 +69,53 @@ const TripListColumn = ({
 
 
             const active =
-              selectedTripKey ===
-              tripKey;
+              selectedTripKey === tripKey;
 
+
+            /* --------------------------
+               VEHICLE COUNT
+            -------------------------- */
 
             const vehicleCount =
-              Array.isArray(
-                trip.vehicles
-              )
+              Array.isArray(trip.vehicles)
                 ? trip.vehicles.length
                 : 0;
 
 
             return (
+
               <button
                 type="button"
                 key={tripKey}
                 className={`tracking-trip-card ${
-                  active
-                    ? "active"
-                    : ""
+                  active ? "active" : ""
                 }`}
                 onClick={() =>
-                  onSelectTrip?.(
-                    trip
-                  )
+                  onSelectTrip?.(trip)
                 }
               >
 
-                {/* =================================
-                    TOP ROW
-                ================================= */}
+                {/* =========================
+                    CUSTOMER + MATERIAL
+                    + VEHICLE COUNT
+                ========================== */}
 
-                <div className="trip-compact-top">
+                <div className="trip-primary-row">
 
-                  {/* CUSTOMER NAME ONLY */}
+                  <div className="trip-primary-details">
 
-                  <div className="trip-customer-info">
+                    <strong className="trip-customer-name">
+                      {trip.customer || "-"}
+                    </strong>
 
-                    <strong>
-                      {trip.customer ||
-                        "-"}
+
+                    <span className="trip-primary-divider">
+                      •
+                    </span>
+
+
+                    <strong className="trip-material-name">
+                      {trip.materialType || "-"}
                     </strong>
 
                   </div>
@@ -115,11 +123,16 @@ const TripListColumn = ({
 
                   {/* VEHICLE COUNT */}
 
-                  <div className="trip-vehicle-count">
+                  <div
+                    className="trip-card-vehicle-count"
+                    title={`${vehicleCount} ${
+                      vehicleCount === 1
+                        ? "vehicle"
+                        : "vehicles"
+                    }`}
+                  >
 
-                    <Truck
-                      size={12}
-                    />
+                    <Truck size={11} />
 
                     <span>
                       {vehicleCount}
@@ -130,82 +143,75 @@ const TripListColumn = ({
                 </div>
 
 
-                {/* =================================
-                    MATERIAL NAME ONLY
-                ================================= */}
-
-                <div className="trip-material-info">
-
-                  <strong>
-                    {trip.materialType ||
-                      "-"}
-                  </strong>
-
-                </div>
-
-
-                {/* =================================
+                {/* =========================
                     ROUTE
-                ================================= */}
+                ========================== */}
 
                 <div className="trip-route">
 
+                  {/* ORIGIN */}
+
                   <div className="trip-route-location">
 
-                    <MapPin
-                      size={13}
-                    />
+                    <MapPin size={12} />
 
                     <span>
-                      {trip.origin ||
-                        "-"}
+                      {trip.origin || "-"}
                     </span>
 
                   </div>
 
 
                   <ChevronRight
-                    size={13}
+                    size={12}
                     className="trip-route-arrow"
                   />
 
 
+                  {/* DESTINATION */}
+
                   <div className="trip-route-location destination">
 
                     <span>
-                      {trip.destination ||
-                        "-"}
+                      {trip.destination || "-"}
                     </span>
 
                   </div>
 
 
+                  {/* OPEN */}
+
                   <span className="trip-open-icon">
 
-                    <ChevronRight
-                      size={15}
-                    />
+                    <ChevronRight size={14} />
 
                   </span>
 
                 </div>
 
               </button>
+
             );
 
           })
 
         ) : (
 
+          /* ================================
+             EMPTY STATE
+          ================================= */
+
           <div className="tracking-column-empty">
 
             <div className="tracking-column-empty-icon">
-              <Truck size={24} />
+              <Truck size={22} />
             </div>
+
 
             <strong>
               No Trips Found
             </strong>
+
 
             <p>
               Try changing your search,

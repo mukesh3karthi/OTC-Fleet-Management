@@ -8,10 +8,10 @@ import React, {
 import {
   CalendarDays,
   CheckCircle2,
+  CircleAlert,
   CirclePause,
   Clock3,
   Navigation,
-  Plus,
   Search,
   X,
 } from "lucide-react";
@@ -19,7 +19,6 @@ import {
 import TripListColumn from "../Tracking/TripListColumn";
 import VehicleColumn from "../Tracking/VehicleColumn";
 import TrackingMapColumn from "../Tracking/TrackingMapColumn";
-import Trackinglogin from "../Loginpage/Trackinglogin";
 
 import "../pagescss/tracking.css";
 
@@ -40,7 +39,7 @@ const statusOptions = [
   "All",
   "Moving",
   "Idle",
-  "Stopped",
+  "Breakdown",
   "Reached",
 ];
 
@@ -250,16 +249,6 @@ const Tracking = () => {
     selectedVehicleId,
     setSelectedVehicleId,
   ] = useState(null);
-
-
-  /* =========================================
-     TRACKING LOGIN POPUP
-  ========================================= */
-
-  const [
-    showTrackingLogin,
-    setShowTrackingLogin,
-  ] = useState(false);
 
 
   /* =========================================
@@ -496,6 +485,74 @@ const Tracking = () => {
   }, [
     fetchTrips,
   ]);
+
+
+  /* =========================================
+     STATUS COUNTS
+  ========================================= */
+
+  const statusCounts =
+    useMemo(() => {
+
+      const counts = {
+        All: trips.length,
+        Moving: 0,
+        Idle: 0,
+        Breakdown: 0,
+        Reached: 0,
+      };
+
+
+      trips.forEach(
+        (trip) => {
+
+          const vehicles =
+            Array.isArray(
+              trip.vehicles
+            )
+              ? trip.vehicles
+              : [];
+
+
+          const tripStatuses =
+            new Set(
+              vehicles.map(
+                (vehicle) =>
+                  vehicle.status
+              )
+            );
+
+
+          [
+            "Moving",
+            "Idle",
+            "Breakdown",
+            "Reached",
+          ].forEach(
+            (status) => {
+
+              if (
+                tripStatuses.has(
+                  status
+                )
+              ) {
+
+                counts[status] +=
+                  1;
+              }
+
+            }
+          );
+
+        }
+      );
+
+
+      return counts;
+
+    }, [
+      trips,
+    ]);
 
 
   /* =========================================
@@ -785,6 +842,20 @@ const Tracking = () => {
     }
 
 
+    if (
+      status ===
+      "Breakdown"
+    ) {
+
+      return (
+        <CircleAlert
+          size={13}
+        />
+      );
+
+    }
+
+
     return (
       <CirclePause
         size={13}
@@ -827,47 +898,6 @@ const Tracking = () => {
   };
 
 
-  /* =========================================
-     DATA ENTRY BUTTON
-  ========================================= */
-
-  const handleDataEntry =
-    () => {
-
-      setShowTrackingLogin(
-        true
-      );
-
-    };
-
-
-  /* =========================================
-     CLOSE LOGIN
-  ========================================= */
-
-  const handleTrackingLoginClose =
-    () => {
-
-      setShowTrackingLogin(
-        false
-      );
-
-    };
-
-
-  /* =========================================
-     LOGIN SUCCESS
-  ========================================= */
-
-  const handleTrackingLoginSuccess =
-    () => {
-
-      setShowTrackingLogin(
-        false
-      );
-
-    };
-
 
   /* =========================================
      RENDER
@@ -885,7 +915,7 @@ const Tracking = () => {
 
         <div className="tracking-header-content">
 
-          <span className="tracking-eyebrow">
+          {/* <span className="tracking-eyebrow">
             FLEET OPERATIONS
           </span>
 
@@ -899,30 +929,10 @@ const Tracking = () => {
             Track trips and multiple
             vehicles travelling under
             the same consignment.
-          </p>
+          </p> */}
 
         </div>
-
-
-        <button
-          type="button"
-          className="tracking-data-entry-button"
-          onClick={
-            handleDataEntry
-          }
-        >
-
-          <Plus
-            size={16}
-          />
-
-          <span>
-            Data Entry
-          </span>
-
-        </button>
-
-      </header>
+</header>
 
 
       {/* =====================================
@@ -1024,40 +1034,53 @@ const Tracking = () => {
         <div className="tracking-status-filter">
 
           {statusOptions.map(
-            (status) => (
+            (status) => {
 
-              <button
-                type="button"
-                key={
-                  status
-                }
-                className={
-                  movementFilter ===
-                  status
-                    ? "active"
-                    : ""
-                }
-                onClick={() =>
-                  setMovementFilter(
+              const active =
+                movementFilter ===
+                status;
+
+
+              return (
+                <button
+                  type="button"
+                  key={
                     status
-                  )
-                }
-              >
+                  }
+                  className={
+                    active
+                      ? "active"
+                      : ""
+                  }
+                  onClick={() =>
+                    setMovementFilter(
+                      status
+                    )
+                  }
+                >
 
-                {status !==
-                  "All" &&
-                  getStatusIcon(
-                    status
-                  )}
+                  {status !==
+                    "All" &&
+                    getStatusIcon(
+                      status
+                    )}
 
 
-                <span>
-                  {status}
-                </span>
+                  <span>
+                    {status}
+                  </span>
 
-              </button>
 
-            )
+                  <small className="tracking-status-count">
+                    {statusCounts[
+                      status
+                    ]}
+                  </small>
+
+                </button>
+              );
+
+            }
           )}
 
         </div>
@@ -1097,26 +1120,47 @@ const Tracking = () => {
 
       {loading ? (
 
-        <div
-          style={{
-            padding:
-              "40px",
-
-            textAlign:
-              "center",
-
-            color:
-              "#64748b",
-
-            fontSize:
-              "13px",
-
-            fontWeight:
-              600,
-          }}
-        >
-
+        <div className="tracking-loading-state">
           Loading trips...
+        </div>
+
+      ) : filteredTrips.length === 0 ? (
+
+        <div className="tracking-no-results">
+
+          <div className="tracking-no-results-icon">
+            {movementFilter === "Breakdown" ? (
+              <CircleAlert size={26} />
+            ) : (
+              <Search size={26} />
+            )}
+          </div>
+
+
+          <strong>
+            No {movementFilter === "All"
+              ? ""
+              : `${movementFilter} `}Trips Found
+          </strong>
+
+
+          <p>
+            {movementFilter === "Breakdown"
+              ? "There are currently no trips containing a vehicle with Breakdown status."
+              : "Try changing the status, search text or date filter."}
+          </p>
+
+
+          <button
+            type="button"
+            onClick={() => {
+              setMovementFilter("All");
+              setSearchTerm("");
+              setSelectedDate("");
+            }}
+          >
+            Show All Trips
+          </button>
 
         </div>
 
@@ -1182,24 +1226,6 @@ const Tracking = () => {
           />
 
         </section>
-
-      )}
-
-
-      {/* =====================================
-          TRACKING LOGIN POPUP
-      ===================================== */}
-
-      {showTrackingLogin && (
-
-        <Trackinglogin
-          onClose={
-            handleTrackingLoginClose
-          }
-          onLoginSuccess={
-            handleTrackingLoginSuccess
-          }
-        />
 
       )}
 

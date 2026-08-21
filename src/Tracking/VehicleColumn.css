@@ -1,3 +1,4 @@
+/* Theme: Charcoal + Indigo + Lavender */
 .vehicle-column-panel,
 .vehicle-column-panel * {
   box-sizing: border-box;
@@ -9,10 +10,10 @@
 
   overflow: hidden;
 
-  border: 1px solid #dfe6ef;
+  border: 1px solid #dddfea;
   border-radius: 11px;
 
-  color: #17345f;
+  color: #252b45;
   background: #ffffff;
 
   box-shadow:
@@ -54,7 +55,7 @@
 
   gap: 5px;
 
-  border: 1px solid #e2e8f0;
+  border: 1px solid #e5e3ed;
   border-radius: 8px;
 
   background:
@@ -145,7 +146,7 @@
 }
 
 .status-item.reached {
-  color: #2458b5;
+  color: #5548c8;
 }
 
 .vehicle-toggle-btn {
@@ -163,9 +164,9 @@
   border: 0;
   border-radius: 6px;
 
-  color: #2457b2;
+  color: #5548c8;
 
-  background: #edf3fc;
+  background: #efedfb;
 
   cursor: pointer;
 
@@ -179,7 +180,7 @@
 .vehicle-toggle-btn.open {
   color: #ffffff;
 
-  background: #2457b2;
+  background: #5548c8;
 }
 
 .vehicle-toggle-btn:active {
@@ -194,7 +195,7 @@
   overflow: hidden;
 
   border:
-    1px solid #e1e7ef;
+    1px solid #e3e1eb;
 
   border-radius: 8px;
 
@@ -238,13 +239,13 @@
   border-bottom:
     1px solid #e9eef4;
 
-  background: #f8fafd;
+  background: #f7f6fb;
 }
 
 .vehicle-list-heading strong {
   display: block;
 
-  color: #263f66;
+  color: #343a54;
 
   font-size: 10px;
   font-weight: 700;
@@ -256,7 +257,7 @@ div > span {
 
   margin-top: 1px;
 
-  color: #8996a9;
+  color: #858ba1;
 
   font-size: 7px;
 }
@@ -273,9 +274,9 @@ div > span {
 
   border-radius: 5px;
 
-  color: #2457b2;
+  color: #5548c8;
 
-  background: #e9f0fc;
+  background: #eceafb;
 
   font-size: 8px;
   font-weight: 700;
@@ -295,7 +296,7 @@ div > span {
   scrollbar-width: thin;
 
   scrollbar-color:
-    #c9d3e0
+    #cbc9d9
     transparent;
 }
 
@@ -306,7 +307,7 @@ div > span {
 .vehicle-mini-list::-webkit-scrollbar-thumb {
   border-radius: 999px;
 
-  background: #c9d3e0;
+  background: #cbc9d9;
 }
 
 .vehicle-mini-row {
@@ -349,11 +350,11 @@ div > span {
 }
 
 .vehicle-mini-row.active {
-  background: #eff5ff;
+  background: #f1effc;
 
   box-shadow:
     inset 2px 0 0
-    #2457b2;
+    #5548c8;
 }
 
 .vehicle-mini-main {
@@ -377,9 +378,9 @@ div > span {
 
   border-radius: 6px;
 
-  color: #2457b2;
+  color: #5548c8;
 
-  background: #eaf1fc;
+  background: #efedfb;
 }
 
 .vehicle-mini-info {
@@ -391,7 +392,7 @@ div > span {
 
   overflow: hidden;
 
-  color: #203b64;
+  color: #343a54;
 
   font-size: 9.5px;
   font-weight: 700;
@@ -409,7 +410,7 @@ div > span {
 
   overflow: hidden;
 
-  color: #8491a5;
+  color: #8a8fa3;
 
   font-size: 7px;
 
@@ -466,11 +467,11 @@ div > span {
 .vehicle-mini-status.reached {
   color: #2359b5;
 
-  background: #edf4ff;
+  background: #efedfb;
 }
 
 .vehicle-mini-right small {
-  color: #9aa6b7;
+  color: #9a9daf;
 
   font-size: 6.5px;
 
@@ -506,14 +507,14 @@ div > span {
   gap: 5px;
 
   border:
-    1px solid #dfe7f1;
+    1px solid #dddfea;
 
   border-radius: 8px;
 
   background:
     linear-gradient(
       180deg,
-      #fbfdff 0%,
+      #fbfaff 0%,
       #f5f8fd 100%
     );
 }
@@ -529,7 +530,7 @@ div > span {
 .trip-route-point span {
   display: block;
 
-  color: #8996a9;
+  color: #858ba1;
 
   font-size: 7px;
   font-weight: 500;
@@ -542,7 +543,7 @@ div > span {
 
   overflow: hidden;
 
-  color: #17345f;
+  color: #252b45;
 
   font-size: 10px;
   font-weight: 700;
@@ -568,7 +569,7 @@ div > span {
   min-width: 8px;
   flex: 1;
 
-  background: #bdd0ee;
+  background: #c8c4ea;
 }
 
 .route-center-content {
@@ -588,7 +589,7 @@ div > span {
 
   overflow: hidden;
 
-  color: #334155;
+  color: #4b5169;
 
   font-size: 1px;
   font-weight: 750;
@@ -613,7 +614,7 @@ div > span {
   border-radius: 50%;
 
   color: #ffffff;
-  background: #2457b2;
+  background: #5548c8;
 
   box-shadow:
     0 2px 6px
@@ -652,7 +653,7 @@ div > span {
     7px 8px;
 
   border:
-    1px solid #e1e7ef;
+    1px solid #e3e1eb;
 
   border-radius: 7px;
 
@@ -662,7 +663,7 @@ div > span {
 .distance-summary-item span {
   display: block;
 
-  color: #8290a5;
+  color: #83889d;
 
   font-size: 7px;
   font-weight: 500;
@@ -675,7 +676,7 @@ div > span {
 
   overflow: hidden;
 
-  color: #17345f;
+  color: #252b45;
 
   font-size: 10px;
   font-weight: 700;
@@ -686,7 +687,7 @@ div > span {
 
 .distance-summary-item.total {
   border-top:
-    2px solid #2457b2;
+    2px solid #5548c8;
 }
 
 .distance-summary-item.covered {
@@ -713,15 +714,15 @@ div > span {
 }
 
 .section-heading-icon.blue {
-  color: #2457b2;
+  color: #5548c8;
 
-  background: #eaf1fc;
+  background: #efedfb;
 }
 
 .section-heading-icon.purple {
-  color: #6c4bc4;
+  color: #7569dc;
 
-  background: #f0ecff;
+  background: #f0efff;
 }
 
 .movement-card-section {
@@ -765,7 +766,7 @@ div > span {
 
   margin: 0;
 
-  color: #17345f;
+  color: #252b45;
 
   font-size: 10.5px;
   font-weight: 700;
@@ -778,7 +779,7 @@ div > span {
 
   margin-top: 1px;
 
-  color: #7f8da3;
+  color: #7f8499;
 
   font-size: 7px;
   font-weight: 500;
@@ -801,13 +802,13 @@ div > span {
     0 1 auto;
 
   border:
-    1px solid #c9daf5;
+    1px solid #d8d5f2;
 
   border-radius: 6px;
 
-  color: #2457b2;
+  color: #5548c8;
 
-  background: #f4f8ff;
+  background: #f7f6fd;
 
   white-space: nowrap;
 }
@@ -821,7 +822,7 @@ div > span {
 }
 
 .movement-vehicle-badge > span {
-  color: #718198;
+  color: #7d8297;
 
   font-size: 7px;
   font-weight: 500;
@@ -832,7 +833,7 @@ div > span {
 
   overflow: hidden;
 
-  color: #173f82;
+  color: #4337ac;
 
   font-size: 8.5px;
   font-weight: 750;
@@ -868,7 +869,7 @@ div > span {
   justify-content: center;
 
   border:
-    1px solid #dce5f0;
+    1px solid #dfddea;
 
   border-radius: 7px;
 
@@ -882,7 +883,7 @@ div > span {
 .movement-info-card:hover {
   border-color: #cbd9e9;
 
-  background: #fbfdff;
+  background: #fbfaff;
 }
 
 .movement-info-card span {
@@ -890,7 +891,7 @@ div > span {
 
   overflow: hidden;
 
-  color: #7e8da3;
+  color: #7f8499;
 
   font-size: 7px;
   font-weight: 500;
@@ -906,7 +907,7 @@ div > span {
 
   overflow: hidden;
 
-  color: #102f5b;
+  color: #2e3655;
 
   font-size: 9.5px;
   font-weight: 700;
@@ -922,7 +923,7 @@ div > span {
   padding: 7px;
 
   border:
-    1px solid #dfe7f1;
+    1px solid #dddfea;
 
   border-radius: 8px;
 
@@ -940,11 +941,11 @@ div > span {
   border-bottom:
     1px solid #edf1f5;
 
-  color: #2457b2;
+  color: #5548c8;
 }
 
 .consignment-title strong {
-  color: #263f66;
+  color: #343a54;
 
   font-size: 9.5px;
   font-weight: 700;
@@ -958,7 +959,7 @@ div > span {
 
   overflow: hidden;
 
-  border: 1px solid #e3eaf2;
+  border: 1px solid #e5e3ed;
   border-radius: 7px;
 
   background:
@@ -983,11 +984,11 @@ div > span {
   border-bottom:
     1px solid #edf1f5;
 
-  background: #fafcff;
+  background: #faf9fd;
 }
 
 .trip-detail-group-title > strong {
-  color: #263f66;
+  color: #343a54;
 
   font-size: 8.5px;
   font-weight: 700;
@@ -1007,9 +1008,9 @@ div > span {
 }
 
 .trip-detail-group-icon.client {
-  color: #2457b2;
+  color: #5548c8;
 
-  background: #eaf1fc;
+  background: #efedfb;
 }
 
 .trip-detail-group-icon.transporter {
@@ -1051,7 +1052,7 @@ div > span {
 
   overflow: hidden;
 
-  color: #718198;
+  color: #7d8297;
 
   font-size: 7.5px;
   font-weight: 550;
@@ -1074,7 +1075,7 @@ div > span {
 
   overflow: hidden;
 
-  color: #17345f;
+  color: #252b45;
 
   font-size: 8.5px;
   font-weight: 700;
@@ -1085,7 +1086,7 @@ div > span {
 
 .client-group {
   border-left:
-    2px solid #2457b2;
+    2px solid #5548c8;
 }
 
 .transporter-group {
@@ -1107,7 +1108,7 @@ div > span {
 
   border-radius: 6px;
 
-  color: #2457b2;
+  color: #5548c8;
 
   background: #eef4ff;
 }
@@ -1127,7 +1128,7 @@ div > span {
 }
 
 .transit-day-row strong {
-  color: #2457b2;
+  color: #5548c8;
 
   font-size: 8.5px;
   font-weight: 700;
@@ -1165,7 +1166,7 @@ div > span {
   overflow: hidden;
 
   border:
-    1px solid #dfe7f1;
+    1px solid #dddfea;
 
   border-radius: 8px;
 
@@ -1227,7 +1228,7 @@ div > span {
     linear-gradient(
       180deg,
       #ffffff,
-      #fafcff
+      #faf9fd
     );
 }
 
@@ -1247,7 +1248,7 @@ div > span {
 .operation-card-title strong {
   display: block;
 
-  color: #17345f;
+  color: #252b45;
 
   font-size: 9.5px;
   font-weight: 700;
@@ -1280,9 +1281,9 @@ div > span {
 }
 
 .operation-card-icon.loading {
-  color: #2457b2;
+  color: #5548c8;
 
-  background: #eaf1fc;
+  background: #efedfb;
 }
 
 .operation-card-icon.unloading {
@@ -1318,7 +1319,7 @@ div > span {
   border:
     1px solid #d5e2f8;
 
-  color: #2457b2;
+  color: #5548c8;
 
   background: #eef4ff;
 }
@@ -1446,7 +1447,7 @@ div > span {
 
   overflow: hidden;
 
-  color: #17345f;
+  color: #252b45;
 
   font-size: 8.5px;
   font-weight: 700;
@@ -1503,7 +1504,7 @@ div > span {
     linear-gradient(
       180deg,
       #ffffff,
-      #fafcff
+      #faf9fd
     );
 }
 
@@ -1535,7 +1536,7 @@ div > span {
   overflow: hidden;
 
   border:
-    1px solid #dfe7f1;
+    1px solid #dddfea;
 
   border-radius: 8px;
 
@@ -1556,13 +1557,13 @@ div > span {
   border-bottom:
     1px solid #edf1f5;
 
-  color: #2457b2;
+  color: #5548c8;
 
-  background: #fafcff;
+  background: #faf9fd;
 }
 
 .document-details-heading strong {
-  color: #263f66;
+  color: #343a54;
 
   font-size: 9.5px;
   font-weight: 700;
@@ -1579,7 +1580,7 @@ div > span {
 
   border-radius: 999px;
 
-  color: #2457b2;
+  color: #5548c8;
 
   background: #eef4ff;
 
@@ -1659,7 +1660,7 @@ div > span {
 
   overflow: hidden;
 
-  color: #17345f;
+  color: #252b45;
 
   font-size: 8.5px;
   font-weight: 700;
@@ -1686,7 +1687,7 @@ div > span {
 
   gap: 5px;
 
-  color: #8996a8;
+  color: #858ba1;
 
   text-align: center;
 }
@@ -1700,9 +1701,9 @@ div > span {
 
   border-radius: 10px;
 
-  color: #2457b2;
+  color: #5548c8;
 
-  background: #edf3fc;
+  background: #efedfb;
 }
 
 .vehicle-column-empty strong {
@@ -1870,7 +1871,7 @@ div > span {
   position: relative;
   min-width: 0;
   overflow: hidden;
-  border: 1px solid #dfe7f1;
+  border: 1px solid #dddfea;
   border-radius: 8px;
   background: #ffffff;
   box-shadow: 0 2px 7px rgba(17, 40, 83, 0.025);
@@ -1886,7 +1887,7 @@ div > span {
 }
 
 .simple-operation-card.loading-card::before {
-  background: #2457b2;
+  background: #5548c8;
 }
 
 .simple-operation-card.unloading-card::before {
@@ -1901,7 +1902,7 @@ div > span {
   justify-content: space-between;
   gap: 7px;
   border-bottom: 1px solid #edf1f5;
-  background: linear-gradient(180deg, #ffffff 0%, #fafcff 100%);
+  background: linear-gradient(180deg, #ffffff 0%, #faf9fd 100%);
 }
 
 .simple-operation-title {
@@ -1917,7 +1918,7 @@ div > span {
 
 .simple-operation-title > div > strong {
   display: block;
-  color: #17345f;
+  color: #252b45;
   font-size: 9.5px;
   font-weight: 700;
   line-height: 1.15;
@@ -1941,8 +1942,8 @@ div > span {
 }
 
 .simple-operation-icon.loading {
-  color: #2457b2;
-  background: #eaf1fc;
+  color: #5548c8;
+  background: #efedfb;
 }
 
 .simple-operation-icon.unloading {
@@ -1967,7 +1968,7 @@ div > span {
 
 .simple-operation-status.loading {
   border: 1px solid #d5e2f8;
-  color: #2457b2;
+  color: #5548c8;
   background: #eef4ff;
 }
 
@@ -1997,7 +1998,7 @@ div > span {
 .simple-detail-label {
   min-width: 0;
   overflow: hidden;
-  color: #718198;
+  color: #7d8297;
   font-size: 7.5px;
   font-weight: 550;
   text-overflow: ellipsis;
@@ -2014,7 +2015,7 @@ div > span {
 .simple-detail-value {
   min-width: 0;
   overflow: hidden;
-  color: #17345f;
+  color: #252b45;
   font-size: 8.5px;
   font-weight: 700;
   text-overflow: ellipsis;
@@ -2036,13 +2037,13 @@ div > span {
   min-height: 48px;
   margin-top: 7px;
   padding: 7px 8px;
-  border: 1px solid #dfe7f1;
+  border: 1px solid #dddfea;
   border-radius: 7px;
   background: #f9fbfe;
 }
 
 .loading-card .simple-remarks-box {
-  border-left: 2px solid #2457b2;
+  border-left: 2px solid #5548c8;
 }
 
 .unloading-card .simple-remarks-box {
@@ -2069,7 +2070,7 @@ div > span {
   width: 100%;
   min-height: 18px;
   margin-top: 5px;
-  color: #17345f;
+  color: #252b45;
   font-size: 8.5px;
   font-weight: 650;
   line-height: 1.4;
@@ -2122,7 +2123,7 @@ div > span {
 
   overflow: hidden;
 
-  border: 1px solid #dfe7f1;
+  border: 1px solid #dddfea;
   border-radius: 8px;
 
   background: #ffffff;
@@ -2146,13 +2147,13 @@ div > span {
   border-bottom:
     1px solid #e8edf4;
 
-  color: #2457b2;
+  color: #5548c8;
 
   background:
     linear-gradient(
       180deg,
       #ffffff 0%,
-      #fafcff 100%
+      #faf9fd 100%
     );
 }
 
@@ -2161,7 +2162,7 @@ div > span {
 }
 
 .lr-pod-heading strong {
-  color: #17345f;
+  color: #252b45;
 
   font-size: 9.5px;
   font-weight: 700;
@@ -2211,7 +2212,7 @@ div > span {
 
   overflow: hidden;
 
-  color: #17345f;
+  color: #252b45;
 
   font-size: 8.7px;
   font-weight: 700;
@@ -2235,10 +2236,10 @@ div > span {
     7px 8px;
 
   border:
-    1px solid #dce5f0;
+    1px solid #dfddea;
 
   border-left:
-    2px solid #2457b2;
+    2px solid #5548c8;
 
   border-radius: 6px;
 
@@ -2272,7 +2273,7 @@ div > span {
 
   margin-top: 4px;
 
-  color: #17345f;
+  color: #252b45;
 
   font-size: 8.5px;
   font-weight: 650;
@@ -2336,7 +2337,7 @@ div > span {
 
   overflow: hidden;
 
-  color: #17345f;
+  color: #252b45;
 
   font-size: 8.5px;
   font-weight: 700;
@@ -2365,7 +2366,7 @@ div > span {
 
   gap: 5px;
 
-  color: #2457b2;
+  color: #5548c8;
 }
 
 .lr-person-heading svg {
@@ -2373,7 +2374,7 @@ div > span {
 }
 
 .lr-person-heading strong {
-  color: #263f66;
+  color: #343a54;
 
   font-size: 8.5px;
   font-weight: 700;
@@ -2386,7 +2387,7 @@ div > span {
 
 .supervisor-section
 .lr-person-heading {
-  color: #6c4bc4;
+  color: #7569dc;
 }
 
 .supervisor-section {
@@ -2435,7 +2436,7 @@ div > span {
 
   overflow: hidden;
 
-  color: #718198;
+  color: #7d8297;
 
   font-size: 7.5px;
   font-weight: 550;
@@ -2458,7 +2459,7 @@ div > span {
 
   overflow: hidden;
 
-  color: #17345f;
+  color: #252b45;
 
   font-size: 8.5px;
   font-weight: 700;
@@ -2480,7 +2481,7 @@ div > span {
     7px 8px;
 
   border:
-    1px solid #dce5f0;
+    1px solid #dfddea;
 
   border-left:
     2px solid #168653;
@@ -2517,7 +2518,7 @@ div > span {
 
   margin-top: 4px;
 
-  color: #17345f;
+  color: #252b45;
 
   font-size: 8.5px;
   font-weight: 650;
@@ -2598,7 +2599,7 @@ div > span {
     sans-serif;
   font-size: 11px;
   line-height: 1.45;
-  color: #17345f;
+  color: #252b45;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
@@ -2866,18 +2867,43 @@ div > span {
 }
 
 /* =========================================================
-   PROFESSIONAL COLOR + FONT SIZE OVERRIDE
-   ADD THIS AT THE END OF VehicleColumn.css
-========================================================= */
 
 /* =========================================================
-   GLOBAL FONT
+   FINAL PROFESSIONAL GREY THEME
+   VehicleColumn
+   Clean enterprise layout + readable sizing + grey surfaces
+========================================================= */
+
+
+/* =========================================================
+   GLOBAL PANEL
 ========================================================= */
 
 .vehicle-column-panel {
-  font-size: 12px;
-  line-height: 1.5;
-  color: #1e293b;
+  width: 100%;
+  min-width: 0;
+
+  overflow: hidden;
+
+  border: 1px solid #d7dce3;
+  border-radius: 12px;
+
+  color: #1f2937;
+  background: #ffffff;
+
+  box-shadow:
+    0 4px 14px rgba(31, 41, 55, 0.055);
+
+  font-family:
+    Inter,
+    "Segoe UI",
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif;
+
+  font-size: 10px;
+  line-height: 1.4;
 }
 
 
@@ -2886,67 +2912,102 @@ div > span {
 ========================================================= */
 
 .vehicle-status-strip {
-  min-height: 42px;
+  width: calc(100% - 16px);
+  min-height: 40px;
 
-  padding: 5px 7px;
+  margin: 8px 8px 8px;
+  padding: 5px 6px 5px 8px;
 
-  border: 1px solid #dbe4f0;
-  border-radius: 10px;
+  border: 1px solid #d7dce3;
+  border-radius: 9px;
 
   background:
     linear-gradient(
-      135deg,
-      #f8fbff 0%,
-      #f3f7fc 100%
+      180deg,
+      #f9fafb 0%,
+      #f3f4f6 100%
     );
 
   box-shadow:
-    0 2px 7px rgba(15, 23, 42, 0.04);
+    0 2px 6px rgba(31, 41, 55, 0.04);
 }
+
 
 .status-item {
   height: 28px;
-  gap: 5px;
+  padding: 0 5px;
+  gap: 4px;
 }
+
+
+.status-item:not(:last-child) {
+  border-right: 1px solid #d9dde3;
+}
+
 
 .status-item svg {
   width: 12px;
   height: 12px;
+  flex: 0 0 12px;
 }
+
 
 .status-item strong {
   font-size: 12px;
   font-weight: 750;
 }
 
+
 .status-item span {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 600;
 }
 
 
-/* MOVING */
+/* Meaningful status colors */
 
 .status-item.moving {
   color: #15803d;
 }
 
-/* BREAKDOWN */
-
 .status-item.breakdown {
   color: #dc2626;
 }
 
-/* IDLE */
-
 .status-item.idle {
-  color: #d97706;
+  color: #b76b08;
 }
 
-/* REACHED */
-
 .status-item.reached {
-  color: #2563eb;
+  color: #475569;
+}
+
+
+/* =========================================================
+   VEHICLE TOGGLE
+========================================================= */
+
+.vehicle-toggle-btn {
+  width: 27px;
+  height: 27px;
+  flex: 0 0 27px;
+
+  border: 1px solid #cdd3da;
+  border-radius: 7px;
+
+  color: #4b5563;
+  background: #ffffff;
+
+  box-shadow:
+    0 1px 3px rgba(31, 41, 55, 0.05);
+}
+
+
+.vehicle-toggle-btn:hover,
+.vehicle-toggle-btn.open {
+  color: #ffffff;
+  border-color: #4b5563;
+  background: #4b5563;
 }
 
 
@@ -2955,107 +3016,187 @@ div > span {
 ========================================================= */
 
 .vehicle-list-section {
-  border: 1px solid #dce5ef;
-  border-radius: 10px;
+  margin: 0 8px 10px;
+
+  border: 1px solid #d7dce3;
+  border-radius: 9px;
 
   background: #ffffff;
 
   box-shadow:
-    0 2px 8px rgba(15, 23, 42, 0.04);
+    0 2px 7px rgba(31, 41, 55, 0.04);
 }
+
 
 .vehicle-list-heading {
   min-height: 38px;
-
   padding: 6px 9px;
+
+  border-bottom: 1px solid #e2e5e9;
 
   background:
     linear-gradient(
-      135deg,
-      #eff6ff,
-      #f8fbff
+      180deg,
+      #f9fafb,
+      #f4f5f7
     );
 }
 
-.vehicle-list-heading strong {
-  color: #1e3a5f;
 
-  font-size: 12px;
+.vehicle-list-heading strong {
+  color: #1f2937;
+  font-size: 11px;
   font-weight: 750;
 }
 
+
 .vehicle-list-heading div > span {
-  font-size: 9px;
+  margin-top: 2px;
+
+  color: #6b7280;
+  font-size: 8px;
 }
+
 
 .vehicle-list-count {
   min-width: 24px;
   height: 24px;
 
-  color: #1d4ed8;
-  background: #dbeafe;
+  padding: 0 6px;
+
+  border: 1px solid #cbd1d8;
+  border-radius: 6px;
+
+  color: #374151;
+  background: #ffffff;
 
   font-size: 10px;
+  font-weight: 700;
 }
 
 
 /* =========================================================
-   VEHICLE MINI ROW
+   VEHICLE MINI LIST
 ========================================================= */
 
-.vehicle-mini-row {
-  min-height: 43px;
+.vehicle-mini-list {
+  max-height: 190px;
 
-  padding: 6px 9px;
+  scrollbar-color:
+    #c4c9d0
+    transparent;
 }
+
+
+.vehicle-mini-list::-webkit-scrollbar-thumb {
+  background: #c4c9d0;
+}
+
+
+.vehicle-mini-row {
+  min-height: 44px;
+
+  padding: 7px 9px;
+
+  border-bottom: 1px solid #e6e9ed;
+
+  background: #ffffff;
+}
+
 
 .vehicle-mini-row:hover {
-  background: #f0f7ff;
+  background: #f6f7f8;
 }
+
 
 .vehicle-mini-row.active {
   background:
     linear-gradient(
       90deg,
-      #eaf3ff,
-      #f6faff
+      #eceff2,
+      #f7f8f9
     );
 
   box-shadow:
-    inset 3px 0 0 #2563eb;
+    inset 3px 0 0 #4b5563;
 }
+
+
+.vehicle-mini-main {
+  gap: 7px;
+}
+
 
 .vehicle-mini-truck {
-  width: 28px;
-  height: 28px;
+  width: 27px;
+  height: 27px;
+  flex: 0 0 27px;
 
-  flex-basis: 28px;
-
-  color: #2563eb;
-
-  background: #dbeafe;
-
+  border: 1px solid #d2d7dd;
   border-radius: 7px;
+
+  color: #4b5563;
+  background: #f3f4f6;
 }
+
 
 .vehicle-mini-info strong {
-  color: #1e3a5f;
+  color: #1f2937;
 
-  font-size: 11px;
+  font-size: 10.5px;
+  font-weight: 700;
 }
+
 
 .vehicle-mini-info span {
-  color: #64748b;
+  margin-top: 2px;
 
-  font-size: 9px;
-}
-
-.vehicle-mini-status {
-  min-height: 20px;
-
-  padding: 2px 7px;
+  color: #737b87;
 
   font-size: 8.5px;
+}
+
+
+.vehicle-mini-status {
+  min-height: 19px;
+
+  padding: 0 6px;
+
+  border-radius: 5px;
+
+  font-size: 8px;
+  font-weight: 650;
+}
+
+
+.vehicle-mini-status.moving {
+  color: #137b43;
+  background: #eaf8f0;
+}
+
+
+.vehicle-mini-status.breakdown {
+  color: #c93440;
+  background: #fff0f1;
+}
+
+
+.vehicle-mini-status.idle {
+  color: #a7640c;
+  background: #fff5e6;
+}
+
+
+.vehicle-mini-status.reached {
+  color: #475569;
+  background: #eef0f3;
+}
+
+
+.vehicle-mini-right small {
+  color: #8b929c;
+
+  font-size: 7px;
 }
 
 
@@ -3064,277 +3205,333 @@ div > span {
 ========================================================= */
 
 .trip-route-card {
-  padding: 9px 10px;
+  margin: 0 8px 10px;
 
-  border: 1px solid #cddcf0;
-  border-radius: 10px;
+  padding: 8px 10px;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    74px
+    minmax(0, 1fr);
+
+  gap: 7px;
+
+  border: 1px solid #d3d8df;
+  border-radius: 9px;
 
   background:
     linear-gradient(
       135deg,
-      #eef6ff 0%,
-      #f8fbff 55%,
-      #eefbf8 100%
+      #f3f4f6 0%,
+      #e9ecef 100%
     );
 
   box-shadow:
-    0 3px 10px rgba(37, 99, 235, 0.06);
+    0 2px 7px rgba(31, 41, 55, 0.045);
 }
 
-.trip-route-point span {
-  color: #64748b;
 
-  font-size: 9px;
+.trip-route-point span {
+  color: #6b7280;
+
+  font-size: 8.5px;
   font-weight: 600;
 }
 
-.trip-route-point strong {
-  color: #17345f;
 
-  font-size: 12px;
-  font-weight: 750;
+.trip-route-point strong {
+  margin-top: 3px;
+
+  color: #1f2937;
+
+  font-size: 11px;
+  font-weight: 700;
 }
+
+
+.trip-route-direction .route-line {
+  height: 1px;
+
+  background: #9ca3af;
+}
+
+
+.route-center-content {
+  width: 56px;
+  min-width: 56px;
+
+  gap: 4px;
+}
+
 
 .route-material-name {
-  color: #475569;
+  color: #5f6773;
 
-  font-size: 9px;
+  font-size: 8px;
+  font-weight: 650;
 }
 
-.route-vehicle-icon {
-  width: 29px;
-  height: 29px;
 
-  background:
-    linear-gradient(
-      135deg,
-      #2563eb,
-      #1d4ed8
-    );
+.route-vehicle-icon {
+  width: 27px;
+  height: 27px;
+  flex: 0 0 27px;
+
+  border: 1px solid #4b5563;
+
+  color: #ffffff;
+  background: #4b5563;
 
   box-shadow:
-    0 3px 9px rgba(37, 99, 235, 0.25);
+    0 2px 6px rgba(31, 41, 55, 0.18);
 }
 
 
 /* =========================================================
-   DISTANCE BOXES
+   DISTANCE SUMMARY
 ========================================================= */
 
 .trip-distance-summary {
-  gap: 7px;
+  margin: 0 8px 11px;
+
+  gap: 8px;
 }
 
+
 .distance-summary-item {
-  min-height: 58px;
+  min-height: 56px;
 
   padding: 8px 10px;
 
-  border-radius: 9px;
+  border: 1px solid #d7dce3;
+  border-radius: 8px;
+
+  background: #ffffff;
 
   box-shadow:
-    0 2px 7px rgba(15, 23, 42, 0.035);
-}
-
-
-/* TOTAL KM - BLUE */
-
-.distance-summary-item.total {
-  border:
-    1px solid #bfdbfe;
-
-  border-top:
-    3px solid #2563eb;
-
-  background:
-    linear-gradient(
-      135deg,
-      #eff6ff,
-      #f8fbff
-    );
-}
-
-
-/* COVERED - GREEN */
-
-.distance-summary-item.covered {
-  border:
-    1px solid #bbf7d0;
-
-  border-top:
-    3px solid #16a34a;
-
-  background:
-    linear-gradient(
-      135deg,
-      #f0fdf4,
-      #f8fffa
-    );
-}
-
-
-/* BALANCE - ORANGE */
-
-.distance-summary-item.balance {
-  border:
-    1px solid #fde68a;
-
-  border-top:
-    3px solid #f59e0b;
-
-  background:
-    linear-gradient(
-      135deg,
-      #fffbeb,
-      #fffdf7
-    );
+    0 2px 6px rgba(31, 41, 55, 0.035);
 }
 
 
 .distance-summary-item span {
-  color: #64748b;
+  color: #6b7280;
 
-  font-size: 9px;
+  font-size: 8.5px;
   font-weight: 600;
 }
+
 
 .distance-summary-item strong {
   margin-top: 4px;
 
-  color: #172b4d;
+  color: #1f2937;
 
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 750;
+}
+
+
+.distance-summary-item.total {
+  border-top: 3px solid #4b5563;
+
+  background:
+    linear-gradient(
+      180deg,
+      #f4f5f6,
+      #ffffff
+    );
+}
+
+
+.distance-summary-item.covered {
+  border-top: 3px solid #15803d;
+
+  background:
+    linear-gradient(
+      180deg,
+      #f1f8f4,
+      #ffffff
+    );
+}
+
+
+.distance-summary-item.balance {
+  border-top: 3px solid #b76b08;
+
+  background:
+    linear-gradient(
+      180deg,
+      #fff8ed,
+      #ffffff
+    );
 }
 
 
 /* =========================================================
-   MOVEMENT DETAILS
+   SECTION ICONS
 ========================================================= */
 
+.section-heading-icon {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+
+  border: 1px solid #d1d5db;
+  border-radius: 7px;
+}
+
+
+.section-heading-icon.blue,
+.section-heading-icon.purple {
+  color: #4b5563;
+  background: #f3f4f6;
+}
+
+
+/* =========================================================
+   MOVEMENT STATUS
+========================================================= */
+
+.movement-card-section {
+  margin: 0 8px 11px;
+}
+
+
+.movement-heading-row {
+  min-height: 38px;
+
+  margin-bottom: 7px;
+
+  gap: 7px;
+}
+
+
 .movement-title-line > strong {
-  color: #172b4d;
+  color: #1f2937;
 
   font-size: 12px;
   font-weight: 750;
 }
+
 
 .movement-heading-subtitle {
   margin-top: 2px;
 
-  color: #64748b;
+  color: #6b7280;
 
-  font-size: 9px;
+  font-size: 8.5px;
 }
 
+
 .movement-vehicle-badge {
-  min-height: 26px;
+  min-height: 25px;
 
   padding: 3px 8px;
 
-  border: 1px solid #bfdbfe;
+  border: 1px solid #cbd1d8;
+  border-radius: 6px;
 
-  background: #eff6ff;
+  color: #374151;
+  background: #f7f8f9;
 }
+
 
 .movement-vehicle-badge > span {
-  font-size: 9px;
-}
+  color: #6b7280;
 
-.movement-vehicle-badge > strong {
-  color: #1d4ed8;
-
-  font-size: 10px;
+  font-size: 8px;
 }
 
 
-/* =========================================================
-   MOVEMENT INFORMATION CARDS
-========================================================= */
+.movement-vehicle-badge > strong,
+.movement-vehicle-badge {
+  font-size: 9.5px;
+  font-weight: 700;
+}
+
 
 .movement-card-grid {
-  gap: 7px;
+  gap: 8px;
 }
 
+
 .movement-info-card {
-  min-height: 58px;
+  min-height: 56px;
 
   padding: 8px 10px;
 
-  border-radius: 9px;
+  border: 1px solid #d7dce3;
+  border-radius: 8px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #ffffff,
+      #f7f8f9
+    );
 
   box-shadow:
-    0 2px 7px rgba(15, 23, 42, 0.035);
+    0 2px 6px rgba(31, 41, 55, 0.035);
 }
 
 
-/* CARD 1 - CURRENT POSITION */
+.movement-info-card:hover {
+  border-color: #b7bec7;
 
-.movement-info-card:nth-child(1) {
-  border: 1px solid #bfdbfe;
-
-  background:
-    linear-gradient(
-      135deg,
-      #eff6ff,
-      #f8fbff
-    );
-}
-
-
-/* CARD 2 - YESTERDAY POSITION */
-
-.movement-info-card:nth-child(2) {
-  border: 1px solid #c4b5fd;
-
-  background:
-    linear-gradient(
-      135deg,
-      #f5f3ff,
-      #faf9ff
-    );
-}
-
-
-/* CARD 3 - RUNNING KM */
-
-.movement-info-card:nth-child(3) {
-  border: 1px solid #a7f3d0;
-
-  background:
-    linear-gradient(
-      135deg,
-      #ecfdf5,
-      #f7fffb
-    );
-}
-
-
-/* CARD 4 - CURRENT DAY */
-
-.movement-info-card:nth-child(4) {
-  border: 1px solid #fde68a;
-
-  background:
-    linear-gradient(
-      135deg,
-      #fffbeb,
-      #fffdf5
-    );
+  background: #f4f5f6;
 }
 
 
 .movement-info-card span {
-  color: #64748b;
+  color: #6b7280;
 
-  font-size: 9px;
+  font-size: 8.5px;
   font-weight: 600;
 }
+
 
 .movement-info-card strong {
   margin-top: 4px;
 
-  color: #172b4d;
+  color: #1f2937;
+
+  font-size: 10.5px;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   TRIP DETAILS CARD
+========================================================= */
+
+.consignment-card {
+  margin: 0 8px 11px;
+
+  padding: 8px;
+
+  border: 1px solid #d7dce3;
+  border-radius: 9px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 2px 7px rgba(31, 41, 55, 0.04);
+}
+
+
+.consignment-title {
+  padding-bottom: 7px;
+
+  gap: 5px;
+
+  border-bottom: 1px solid #e4e7eb;
+
+  color: #4b5563;
+}
+
+
+.consignment-title strong {
+  color: #1f2937;
 
   font-size: 11px;
   font-weight: 750;
@@ -3342,113 +3539,147 @@ div > span {
 
 
 /* =========================================================
-   CONSIGNMENT CARD
+   CLIENT / TRANSPORTER GROUPS
 ========================================================= */
 
-.consignment-card {
-  padding: 9px;
+.trip-detail-group {
+  margin-top: 8px;
 
-  border: 1px solid #d8e2ee;
-  border-radius: 10px;
+  border: 1px solid #d9dde3;
+  border-radius: 8px;
 
   background:
     linear-gradient(
-      135deg,
+      180deg,
       #ffffff,
-      #f8fbff
+      #fafafa
     );
-
-  box-shadow:
-    0 3px 10px rgba(15, 23, 42, 0.04);
 }
 
-.consignment-title {
-  min-height: 30px;
 
-  color: #2563eb;
+.trip-detail-group-title {
+  min-height: 34px;
+
+  padding: 6px 8px;
+
+  gap: 7px;
+
+  border-bottom: 1px solid #e6e9ed;
+
+  background: #f5f6f7;
 }
 
-.consignment-title strong {
-  color: #172b4d;
 
-  font-size: 11px;
+.trip-detail-group-title > strong {
+  color: #1f2937;
+
+  font-size: 10px;
+  font-weight: 700;
+}
+
+
+.trip-detail-group-icon {
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+
+  border-radius: 6px;
+}
+
+
+.trip-detail-group-icon.client {
+  color: #4b5563;
+  background: #e9ecef;
+}
+
+
+.trip-detail-group-icon.transporter {
+  color: #15803d;
+  background: #e9f7ef;
+}
+
+
+.client-group {
+  border-left: 3px solid #6b7280;
+}
+
+
+.transporter-group {
+  border-left: 3px solid #15803d;
+}
+
+
+.trip-detail-row {
+  min-height: 31px;
+
+  grid-template-columns:
+    112px
+    10px
+    minmax(0, 1fr);
+
+  padding: 0 9px;
+
+  border-bottom: 1px dashed #e3e6ea;
+}
+
+
+.trip-detail-label {
+  color: #6b7280;
+
+  font-size: 9px;
+  font-weight: 500;
+}
+
+
+.trip-detail-colon {
+  color: #9ca3af;
+
+  font-size: 9px;
+}
+
+
+.trip-detail-value {
+  color: #1f2937;
+
+  font-size: 10px;
+  font-weight: 650;
 }
 
 
 /* =========================================================
-   CLIENT / TRANSPORTER BOX
+   TRANSIT
 ========================================================= */
 
-.trip-detail-group {
-  border-radius: 9px;
-}
+.transit-day-row {
+  margin-top: 8px;
 
-.client-group {
-  border:
-    1px solid #bfdbfe;
+  min-height: 32px;
 
-  border-left:
-    3px solid #2563eb;
+  padding: 6px 8px;
 
-  background:
-    linear-gradient(
-      135deg,
-      #f8fbff,
-      #eff6ff
-    );
-}
+  border: 1px solid #d5dae0;
+  border-radius: 7px;
 
-.transporter-group {
-  border:
-    1px solid #bbf7d0;
-
-  border-left:
-    3px solid #16a34a;
+  color: #4b5563;
 
   background:
     linear-gradient(
       135deg,
-      #f8fffa,
-      #f0fdf4
+      #f1f3f5,
+      #f9fafb
     );
 }
 
-.trip-detail-group-title {
-  min-height: 35px;
 
-  padding: 6px 9px;
+.transit-day-row span {
+  color: #6b7280;
+
+  font-size: 8.5px;
 }
 
-.client-group
-.trip-detail-group-title {
-  background: #eff6ff;
-}
 
-.transporter-group
-.trip-detail-group-title {
-  background: #f0fdf4;
-}
-
-.trip-detail-group-title > strong {
-  font-size: 10px;
-}
-
-.trip-detail-row {
-  min-height: 31px;
-}
-
-.trip-detail-label {
-  color: #64748b;
-
-  font-size: 9px;
-}
-
-.trip-detail-colon {
-  font-size: 9px;
-}
-
-.trip-detail-value {
-  color: #1e3a5f;
+.transit-day-row strong {
+  color: #374151;
 
   font-size: 10px;
   font-weight: 700;
@@ -3456,145 +3687,158 @@ div > span {
 
 
 /* =========================================================
-   TRANSIT DAY
+   OPERATIONS
 ========================================================= */
 
-.transit-day-row {
-  min-height: 32px;
-
-  padding: 6px 8px;
-
-  border: 1px solid #bfdbfe;
-
-  background:
-    linear-gradient(
-      90deg,
-      #eff6ff,
-      #f8fbff
-    );
-}
-
-.transit-day-row span {
-  font-size: 9px;
-}
-
-.transit-day-row strong {
-  font-size: 10px;
+.operation-details-section {
+  margin: 0 8px 11px;
 }
 
 
-/* =========================================================
-   LOADING / UNLOADING CARDS
-========================================================= */
+.operation-main-grid {
+  gap: 9px;
+}
 
-.simple-operation-card {
-  border-radius: 10px;
+
+.simple-operation-card,
+.operation-card {
+  border: 1px solid #d7dce3;
+  border-radius: 9px;
+
+  background: #ffffff;
 
   box-shadow:
-    0 3px 10px rgba(15, 23, 42, 0.05);
+    0 2px 7px rgba(31, 41, 55, 0.04);
 }
 
 
-/* LOADING */
-
-.simple-operation-card.loading-card {
-  border: 1px solid #bfdbfe;
-
-  background:
-    linear-gradient(
-      135deg,
-      #ffffff,
-      #f4f8ff
-    );
-}
-
-
-/* UNLOADING */
-
-.simple-operation-card.unloading-card {
-  border: 1px solid #bbf7d0;
-
-  background:
-    linear-gradient(
-      135deg,
-      #ffffff,
-      #f3fdf7
-    );
-}
-
-
-.simple-operation-card.loading-card::before {
+.simple-operation-card.loading-card::before,
+.operation-card.loading-card::before {
   height: 3px;
 
-  background: #2563eb;
+  background: #4b5563;
 }
 
-.simple-operation-card.unloading-card::before {
+
+.simple-operation-card.unloading-card::before,
+.operation-card.unloading-card::before {
   height: 3px;
 
-  background: #16a34a;
+  background: #15803d;
 }
 
 
-/* =========================================================
-   OPERATION HEADER
-========================================================= */
+.simple-operation-header,
+.operation-card-header {
+  min-height: 42px;
 
-.loading-card
-.simple-operation-header {
+  padding: 7px 9px;
+
+  border-bottom: 1px solid #e5e7eb;
+
   background:
     linear-gradient(
-      90deg,
-      #eff6ff,
+      180deg,
+      #f9fafb,
       #ffffff
     );
 }
 
-.unloading-card
-.simple-operation-header {
-  background:
-    linear-gradient(
-      90deg,
-      #f0fdf4,
-      #ffffff
-    );
-}
 
-.simple-operation-title > div > strong {
-  color: #172b4d;
+.simple-operation-title > div > strong,
+.operation-card-title strong {
+  color: #1f2937;
 
   font-size: 11px;
+  font-weight: 700;
 }
 
-.simple-operation-title > div > span {
-  font-size: 8.5px;
+
+.simple-operation-title > div > span,
+.operation-card-title > div > span {
+  margin-top: 2px;
+
+  color: #737b87;
+
+  font-size: 8px;
+}
+
+
+.simple-operation-icon.loading,
+.operation-card-icon.loading {
+  color: #4b5563;
+  background: #e9ecef;
+}
+
+
+.simple-operation-icon.unloading,
+.operation-card-icon.unloading {
+  color: #15803d;
+  background: #e9f7ef;
+}
+
+
+.simple-operation-status.loading,
+.operation-status-badge.loading {
+  border: 1px solid #cbd1d8;
+
+  color: #374151;
+  background: #eef0f2;
+}
+
+
+.simple-operation-status.unloading,
+.operation-status-badge.unloading {
+  border: 1px solid #bfe1cc;
+
+  color: #13733a;
+  background: #eaf7ef;
+}
+
+
+.simple-operation-status,
+.operation-status-badge {
+  font-size: 8px;
+  font-weight: 700;
 }
 
 
 /* =========================================================
-   OPERATION DETAILS
+   OPERATION DETAIL ROWS
 ========================================================= */
 
 .simple-detail-row {
   min-height: 31px;
 }
 
+
 .simple-detail-label {
-  color: #64748b;
+  color: #6b7280;
 
   font-size: 9px;
-  font-weight: 550;
+  font-weight: 500;
 }
+
 
 .simple-detail-colon {
+  color: #9ca3af;
+
   font-size: 9px;
 }
 
+
 .simple-detail-value {
-  color: #1e3a5f;
+  color: #1f2937;
 
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 650;
+}
+
+
+.simple-detail-value.halting {
+  color: #9a5b08;
+
+  font-size: 9px;
 }
 
 
@@ -3602,124 +3846,128 @@ div > span {
    REMARKS
 ========================================================= */
 
-.simple-remarks-box {
-  min-height: 55px;
+.simple-remarks-box,
+.lr-remarks-box,
+.pod-remarks-box {
+  min-height: 52px;
 
   padding: 8px 9px;
 
-  border-radius: 8px;
+  border: 1px solid #d9dde3;
+  border-radius: 7px;
 
-  background: #f8fafc;
+  background: #f7f8f9;
 }
 
-.loading-card
-.simple-remarks-box {
-  border:
-    1px solid #bfdbfe;
 
-  border-left:
-    3px solid #2563eb;
-
-  background: #f5f9ff;
+.loading-card .simple-remarks-box,
+.lr-remarks-box {
+  border-left: 3px solid #6b7280;
 }
 
-.unloading-card
-.simple-remarks-box {
-  border:
-    1px solid #bbf7d0;
 
-  border-left:
-    3px solid #16a34a;
-
-  background: #f3fcf6;
+.unloading-card .simple-remarks-box,
+.pod-remarks-box {
+  border-left: 3px solid #15803d;
 }
 
-.simple-remarks-heading span {
+
+.simple-remarks-heading,
+.lr-remarks-label,
+.pod-remarks-label {
+  color: #6b7280;
+}
+
+
+.simple-remarks-heading span,
+.lr-remarks-label span,
+.pod-remarks-label span {
   font-size: 9px;
+  font-weight: 600;
 }
 
-.simple-remarks-value {
-  color: #334155;
+
+.simple-remarks-value,
+.lr-remarks-value,
+.pod-remarks-value {
+  color: #374151;
 
   font-size: 10px;
+  font-weight: 500;
+
+  line-height: 1.45;
 }
 
 
 /* =========================================================
-   LR / POD CARD
+   LR / POD
 ========================================================= */
 
-.lr-pod-card {
-  border: 1px solid #ddd6fe;
-  border-radius: 10px;
+.lr-pod-card,
+.document-details-card {
+  border: 1px solid #d7dce3;
+  border-radius: 9px;
 
-  background:
-    linear-gradient(
-      135deg,
-      #ffffff,
-      #faf9ff
-    );
+  background: #ffffff;
 
   box-shadow:
-    0 3px 10px rgba(76, 29, 149, 0.05);
+    0 2px 7px rgba(31, 41, 55, 0.04);
 }
 
-.lr-pod-heading {
+
+.lr-pod-heading,
+.document-details-heading {
   min-height: 38px;
 
   padding: 7px 9px;
 
-  color: #7c3aed;
+  border-bottom: 1px solid #e4e7eb;
+
+  color: #4b5563;
 
   background:
     linear-gradient(
-      90deg,
-      #f5f3ff,
+      180deg,
+      #f5f6f7,
       #ffffff
     );
 }
 
-.lr-pod-heading strong {
-  color: #3b2c66;
+
+.lr-pod-heading strong,
+.document-details-heading strong {
+  color: #1f2937;
 
   font-size: 11px;
+  font-weight: 700;
 }
 
-
-/* =========================================================
-   LR DETAILS
-========================================================= */
 
 .lr-primary-item span,
-.pod-detail-item span {
-  color: #64748b;
+.pod-detail-item span,
+.document-info-label {
+  color: #6b7280;
 
   font-size: 9px;
-  font-weight: 550;
+  font-weight: 500;
 }
 
-.lr-primary-item strong,
-.pod-detail-item strong {
-  margin-top: 4px;
 
-  color: #1e3a5f;
+.lr-primary-item strong,
+.pod-detail-item strong,
+.document-info-item strong {
+  color: #1f2937;
 
   font-size: 10px;
   font-weight: 700;
 }
 
 
-/* =========================================================
-   POD DETAILS
-========================================================= */
-
 .pod-details-grid {
-  background:
-    linear-gradient(
-      135deg,
-      #f0fdf4,
-      #fbfffc
-    );
+  border-top-color: #e1e5e9;
+  border-bottom-color: #e1e5e9;
+
+  background: #f7f8f9;
 }
 
 
@@ -3727,265 +3975,1792 @@ div > span {
    DRIVER / ESCORT / SUPERVISOR
 ========================================================= */
 
+.lr-person-section {
+  border-bottom-color: #e3e6ea;
+}
+
+
 .lr-person-heading {
-  min-height: 28px;
-}
-
-.lr-person-heading strong {
-  font-size: 10px;
-}
-
-.lr-person-row {
   min-height: 30px;
 }
 
-.lr-person-row > span:first-child {
-  color: #64748b;
 
-  font-size: 9px;
-}
-
-.lr-person-colon {
-  font-size: 9px;
-}
-
-.lr-person-row strong {
-  color: #1e3a5f;
+.lr-person-heading strong {
+  color: #1f2937;
 
   font-size: 10px;
+  font-weight: 700;
 }
 
 
-/* Escort */
-
-.escort-section {
-  background:
-    linear-gradient(
-      135deg,
-      #f0fdf4,
-      #ffffff
-    );
+.escort-section .lr-person-heading {
+  color: #15803d;
 }
 
 
-/* Supervisor */
+.supervisor-section .lr-person-heading {
+  color: #4b5563;
+}
+
 
 .supervisor-section {
-  background:
-    linear-gradient(
-      135deg,
-      #f5f3ff,
-      #ffffff
-    );
+  background: #f9fafb;
+}
+
+
+.lr-person-row {
+  min-height: 31px;
+
+  border-bottom-color: #e6e9ed;
+}
+
+
+.lr-person-row > span:first-child {
+  color: #6b7280;
+
+  font-size: 9px;
+  font-weight: 500;
+}
+
+
+.lr-person-colon {
+  color: #9ca3af;
+
+  font-size: 9px;
+}
+
+
+.lr-person-row strong {
+  color: #1f2937;
+
+  font-size: 10px;
+  font-weight: 650;
 }
 
 
 /* =========================================================
-   LR REMARKS
+   EMPTY STATE
 ========================================================= */
+
+.vehicle-column-empty {
+  color: #6b7280;
+}
+
+
+.vehicle-column-empty-icon {
+  border: 1px solid #d1d5db;
+
+  color: #4b5563;
+  background: #f3f4f6;
+}
+
+
+.vehicle-column-empty strong {
+  color: #1f2937;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+
+.vehicle-column-empty p {
+  font-size: 9.5px;
+  line-height: 1.45;
+}
+
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 950px) {
+
+  .vehicle-status-strip {
+    min-height: 66px;
+  }
+
+
+  .status-strip-left {
+    row-gap: 4px;
+  }
+
+
+  .movement-card-grid {
+    gap: 7px;
+  }
+
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 650px) {
+
+  .vehicle-column-panel {
+    border-radius: 9px;
+
+    font-size: 9.5px;
+  }
+
+
+  .vehicle-status-strip {
+    width: calc(100% - 12px);
+
+    margin: 6px;
+
+    padding: 5px;
+  }
+
+
+  .vehicle-list-section,
+  .trip-route-card,
+  .trip-distance-summary,
+  .movement-card-section,
+  .consignment-card,
+  .operation-details-section {
+    margin-left: 6px;
+    margin-right: 6px;
+  }
+
+
+  .trip-route-card {
+    grid-template-columns: 1fr;
+
+    gap: 6px;
+
+    padding: 8px;
+  }
+
+
+  .trip-route-point.destination {
+    text-align: left;
+  }
+
+
+  .trip-route-direction {
+    width: 100%;
+  }
+
+
+  .trip-distance-summary,
+  .movement-card-grid {
+    gap: 6px;
+  }
+
+
+  .movement-title-line {
+    align-items: flex-start;
+
+    flex-direction: column;
+
+    gap: 4px;
+  }
+
+
+  .movement-vehicle-badge {
+    max-width: 100%;
+  }
+
+
+  .trip-detail-row {
+    grid-template-columns:
+      92px
+      8px
+      minmax(0, 1fr);
+
+    padding: 0 7px;
+  }
+
+
+  .simple-detail-row {
+    grid-template-columns:
+      84px
+      8px
+      minmax(0, 1fr);
+  }
+
+
+  .trip-route-point strong,
+  .distance-summary-item strong,
+  .movement-info-card strong,
+  .trip-detail-value,
+  .simple-detail-value,
+  .lr-primary-item strong,
+  .pod-detail-item strong,
+  .lr-person-row strong {
+    font-size: 9.5px;
+  }
+
+
+  .trip-route-point span,
+  .distance-summary-item span,
+  .movement-info-card span,
+  .trip-detail-label,
+  .simple-detail-label,
+  .lr-primary-item span,
+  .pod-detail-item span,
+  .lr-person-row > span:first-child {
+    font-size: 8.5px;
+  }
+
+}
+
+/* =========================================================
+   DIFFERENT PROFESSIONAL BACKGROUND FOR EACH SECTION
+========================================================= */
+
+
+/* 1. VEHICLE LIST - COOL GREY */
+
+.vehicle-list-section {
+  background: #f5f6f8;
+  border-color: #d9dde3;
+}
+
+.vehicle-list-heading {
+  background: #e9ecef;
+}
+
+
+/* 2. ROUTE - LIGHT BLUE GREY */
+
+.trip-route-card {
+  background: linear-gradient(
+    135deg,
+    #eef3f7 0%,
+    #e5ebf0 100%
+  );
+
+  border-color: #ccd6df;
+}
+
+
+/* 3. DISTANCE SUMMARY - SOFT SLATE */
+
+.trip-distance-summary {
+  background: #f8f9fa;
+}
+
+.distance-summary-item {
+  background: #f1f3f5;
+}
+
+
+/* Total KM */
+
+.distance-summary-item.total {
+  background: #e9ecef;
+}
+
+
+/* Covered KM */
+
+.distance-summary-item.covered {
+  background: #edf7f1;
+}
+
+
+/* Balance KM */
+
+.distance-summary-item.balance {
+  background: #fff6e8;
+}
+
+
+/* 4. MOVEMENT STATUS - LIGHT STEEL BLUE */
+
+.movement-card-section {
+  padding: 10px;
+
+  border: 1px solid #d4dde5;
+  border-radius: 10px;
+
+  background: #edf2f6;
+}
+
+
+.movement-info-card {
+  background: #ffffff;
+}
+
+
+/* 5. TRIP DETAILS - LIGHT WARM GREY */
+
+.consignment-card {
+  background: #f5f4f2;
+  border-color: #dedbd6;
+}
+
+
+.consignment-title {
+  background: #ebe9e5;
+
+  margin: -8px -8px 8px;
+  padding: 9px 10px;
+
+  border-radius: 8px 8px 0 0;
+}
+
+
+/* Client details */
+
+.client-group {
+  background: #fafafa;
+}
+
+
+/* Transporter details */
+
+.transporter-group {
+  background: #f1f6f3;
+}
+
+
+/* 6. TRANSIT DAY */
+
+.transit-day-row {
+  background: #e9edf1;
+  border-color: #d1d6dc;
+}
+
+
+/* =========================================================
+   7. OPERATION SECTION
+========================================================= */
+
+.operation-details-section {
+  padding: 10px;
+
+  border: 1px solid #d9dde2;
+  border-radius: 10px;
+
+  background: #f4f5f6;
+}
+
+
+/* LOADING CARD - LIGHT BLUE/GREY */
+
+.simple-operation-card.loading-card,
+.operation-card.loading-card {
+  background: #eef2f5;
+  border-color: #d3dbe2;
+}
+
+
+.loading-card .simple-operation-header,
+.loading-card .operation-card-header {
+  background: #e4e9ed;
+}
+
+
+/* UNLOADING CARD - LIGHT GREEN/GREY */
+
+.simple-operation-card.unloading-card,
+.operation-card.unloading-card {
+  background: #eef6f1;
+  border-color: #d1e1d7;
+}
+
+
+.unloading-card .simple-operation-header,
+.unloading-card .operation-card-header {
+  background: #e3efe7;
+}
+
+
+/* 8. LOADING REMARKS */
+
+.loading-card .simple-remarks-box {
+  background: #f8fafb;
+}
+
+
+/* 9. UNLOADING REMARKS */
+
+.unloading-card .simple-remarks-box {
+  background: #f6faf7;
+}
+
+
+/* =========================================================
+   10. LR / POD
+========================================================= */
+
+.lr-pod-card,
+.document-details-card {
+  background: #f3f4f6;
+  border-color: #d5d9df;
+}
+
+
+.lr-pod-heading,
+.document-details-heading {
+  background: #e7e9ed;
+}
+
+
+/* LR REMARKS */
 
 .lr-remarks-box {
-  min-height: 52px;
-
-  border: 1px solid #bfdbfe;
-  border-left: 3px solid #2563eb;
-
-  background: #f5f9ff;
-}
-
-.lr-remarks-label span {
-  font-size: 9px;
-}
-
-.lr-remarks-value {
-  font-size: 10px;
+  background: #f8f9fa;
 }
 
 
-/* =========================================================
-   POD REMARKS
-========================================================= */
+/* POD REMARKS */
 
 .pod-remarks-box {
-  min-height: 52px;
-
-  border: 1px solid #bbf7d0;
-  border-left: 3px solid #16a34a;
-
-  background: #f3fcf6;
-}
-
-.pod-remarks-label span {
-  font-size: 9px;
-}
-
-.pod-remarks-value {
-  font-size: 10px;
+  background: #eef5f1;
 }
 
 
 /* =========================================================
-   HOVER EFFECT FOR INFORMATION BOXES
+   11. ESCORT DETAILS
 ========================================================= */
 
-.movement-info-card,
-.distance-summary-item,
-.operation-info-item,
-.document-info-item {
+.escort-section {
+  background: #eef6f1;
+}
+
+
+/* =========================================================
+   12. SUPERVISOR DETAILS
+========================================================= */
+
+.supervisor-section {
+  background: #f0f2f5;
+}
+
+
+/* =========================================================
+   VEHICLE MINI ROW
+========================================================= */
+
+.vehicle-mini-row {
+  background: #ffffff;
+}
+
+
+.vehicle-mini-row:nth-child(even) {
+  background: #f7f8f9;
+}
+
+
+.vehicle-mini-row:hover {
+  background: #eceff2;
+}
+
+
+.vehicle-mini-row.active {
+  background: #e2e6ea;
+
+  box-shadow:
+    inset 3px 0 0 #4b5563;
+}
+
+/* =========================================================
+   ALTERNATE PREMIUM CARD STYLE
+   Client = Warm Mist
+   Transporter = Cool Sage
+   Flat, soft, professional — no heavy gradients
+========================================================= */
+
+/* Shared card */
+.trip-detail-group.client-group,
+.trip-detail-group.transporter-group {
+  width: 100%;
+  margin-top: 8px;
+  overflow: hidden;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.035);
   transition:
     transform 160ms ease,
     box-shadow 160ms ease,
     border-color 160ms ease;
 }
 
-.movement-info-card:hover,
-.distance-summary-item:hover,
-.operation-info-item:hover,
-.document-info-item:hover {
+.trip-detail-group.client-group:hover,
+.trip-detail-group.transporter-group:hover {
   transform: translateY(-1px);
-
-  box-shadow:
-    0 5px 12px rgba(15, 23, 42, 0.07);
+  box-shadow: 0 5px 14px rgba(15, 23, 42, 0.055);
 }
+
 
 /* =========================================================
-   BLADE MATERIAL NAME - FINAL OVERRIDE
+   CLIENT DETAILS
+   Warm mist / stone
 ========================================================= */
 
-.vehicle-column-panel .route-material-name {
-  width: auto !important;
-  max-width: 90px !important;
-
-  margin: 0 0 4px 0 !important;
-  padding: 2px 7px !important;
-
-  display: block !important;
-
-  overflow: visible !important;
-
-  color: #17345f !important;
-
-  font-size: 13px !important;
-  font-weight: 800 !important;
-  line-height: 1.2 !important;
-
-  letter-spacing: 0.2px !important;
-
-  text-align: center !important;
-
-  white-space: nowrap !important;
-  text-overflow: unset !important;
+.trip-detail-group.client-group {
+  background: #f7f5f2;
+  border: 1px solid #e2ddd7;
+  border-left: 4px solid #7c8796;
 }
 
-/* =========================================================
-   FINAL ROUTE MATERIAL + VEHICLE NUMBER PROFESSIONAL STYLE
-========================================================= */
+.client-group .trip-detail-group-title {
+  min-height: 36px;
+  padding: 7px 9px;
 
-.vehicle-column-panel .trip-route-card {
-  grid-template-columns:
-    minmax(0, 1fr)
-    86px
-    minmax(0, 1fr) !important;
-}
-
-.vehicle-column-panel .trip-route-direction {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 6px;
+  gap: 7px;
+
+  background: #ece8e3;
+  border-bottom: 1px solid #ded8d1;
 }
 
-.vehicle-column-panel .trip-route-direction .route-line {
-  height: 1px;
-  min-width: 10px;
-  flex: 1;
-  background: #b7cae8;
+.client-group .trip-detail-group-title > strong {
+  color: #2f3742;
+  font-size: 10.5px;
+  font-weight: 700;
 }
 
-.vehicle-column-panel .route-center-content {
-  width: 64px !important;
-  min-width: 64px !important;
+.client-group .trip-detail-group-icon,
+.client-group .trip-detail-group-icon.client {
+  width: 25px;
+  height: 25px;
+  flex: 0 0 25px;
+
+  display: grid;
+  place-items: center;
+
+  border: 1px solid #d4cec6;
+  border-radius: 7px;
+
+  color: #596575;
+  background: #f8f6f3;
+}
+
+.client-group .trip-detail-row {
+  min-height: 32px;
+  padding: 0 9px;
+
+  display: grid;
+  grid-template-columns: 112px 10px minmax(0, 1fr);
+  align-items: center;
+  gap: 4px;
+
+  background: #f7f5f2;
+  border-bottom: 1px solid #e7e2dc;
+}
+
+.client-group .trip-detail-row:last-child {
+  border-bottom: none;
+}
+
+.client-group .trip-detail-label {
+  color: #76716b;
+  font-size: 9px;
+  font-weight: 500;
+}
+
+.client-group .trip-detail-colon {
+  color: #aaa39b;
+  font-size: 9px;
+  text-align: center;
+}
+
+.client-group .trip-detail-value {
+  color: #242b34;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   TRANSPORTER DETAILS
+   Cool sage / grey green
+========================================================= */
+
+.trip-detail-group.transporter-group {
+  background: #f2f6f3;
+  border: 1px solid #d6e0d8;
+  border-left: 4px solid #4f7b61;
+}
+
+.transporter-group .trip-detail-group-title {
+  min-height: 36px;
+  padding: 7px 9px;
+
+  display: flex;
+  align-items: center;
+  gap: 7px;
+
+  background: #e4ece6;
+  border-bottom: 1px solid #d1ddd4;
+}
+
+.transporter-group .trip-detail-group-title > strong {
+  color: #2c4033;
+  font-size: 10.5px;
+  font-weight: 700;
+}
+
+.transporter-group .trip-detail-group-icon,
+.transporter-group .trip-detail-group-icon.transporter {
+  width: 25px;
+  height: 25px;
+  flex: 0 0 25px;
+
+  display: grid;
+  place-items: center;
+
+  border: 1px solid #cbd9cf;
+  border-radius: 7px;
+
+  color: #3f6f52;
+  background: #f7faf8;
+}
+
+.transporter-group .trip-detail-row {
+  min-height: 32px;
+  padding: 0 9px;
+
+  display: grid;
+  grid-template-columns: 112px 10px minmax(0, 1fr);
+  align-items: center;
+  gap: 4px;
+
+  background: #f2f6f3;
+  border-bottom: 1px solid #dfe7e1;
+}
+
+.transporter-group .trip-detail-row:last-child {
+  border-bottom: none;
+}
+
+.transporter-group .trip-detail-label {
+  color: #68766d;
+  font-size: 9px;
+  font-weight: 500;
+}
+
+.transporter-group .trip-detail-colon {
+  color: #9ba8a0;
+  font-size: 9px;
+  text-align: center;
+}
+
+.transporter-group .trip-detail-value {
+  color: #233128;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 650px) {
+  .client-group .trip-detail-row,
+  .transporter-group .trip-detail-row {
+    grid-template-columns: 90px 8px minmax(0, 1fr);
+    padding: 0 7px;
+  }
+
+  .client-group .trip-detail-group-title,
+  .transporter-group .trip-detail-group-title {
+    min-height: 34px;
+    padding: 6px 7px;
+  }
+
+  .client-group .trip-detail-label,
+  .transporter-group .trip-detail-label {
+    font-size: 8.5px;
+  }
+
+  .client-group .trip-detail-value,
+  .transporter-group .trip-detail-value {
+    font-size: 9.5px;
+  }
+}
+/* =========================================================
+   FINAL LR & POD DETAILS THEME
+   PROFESSIONAL LIGHT-DARK GREY
+   Matches Trip List styling
+========================================================= */
+
+.lr-pod-card {
+  width: 100%;
+  min-width: 0;
+  margin-top: 10px;
+  overflow: hidden;
+  box-sizing: border-box;
+  background: #e3e6ea;
+  border: 1px solid #c2c8d0;
+  border-radius: 10px;
+  box-shadow: 0 2px 7px rgba(31, 41, 55, 0.05);
+}
+
+.lr-pod-heading {
+  width: 100%;
+  min-height: 38px;
+  padding: 7px 10px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  box-sizing: border-box;
+  background: #cfd4da;
+  border-bottom: 1px solid #bcc3cb;
+}
+
+.lr-pod-heading svg {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 15px;
+  color: #485565;
+}
+
+.lr-pod-heading strong {
+  color: #222b36;
+  font-size: 10.5px;
+  font-weight: 750;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+}
+
+.lr-primary-grid {
+  width: 100%;
+  padding: 9px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 7px;
+  box-sizing: border-box;
+  background: #e3e6ea;
+}
+
+.lr-primary-item {
+  min-width: 0;
+  min-height: 48px;
+  padding: 7px 8px;
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
-  gap: 5px !important;
+  box-sizing: border-box;
+  background: #d3d7dc;
+  border: 1px solid #bbc1c9;
+  border-radius: 7px;
+  transition: background 0.16s ease, border-color 0.16s ease, transform 0.16s ease, box-shadow 0.16s ease;
 }
 
-.vehicle-column-panel .route-material-name {
-  width: auto !important;
-  max-width: 82px !important;
-  margin: 0 !important;
-  padding: 0 4px !important;
-  display: block !important;
-  overflow: visible !important;
-  color: #183760 !important;
-  font-size: 12px !important;
-  font-weight: 750 !important;
-  line-height: 1.15 !important;
-  letter-spacing: 0.1px;
-  text-align: center !important;
-  text-overflow: unset !important;
-  white-space: nowrap !important;
+.lr-primary-item:hover {
+  background: #cbd0d6;
+  border-color: #aeb5be;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 7px rgba(31, 41, 55, 0.06);
 }
 
-.vehicle-column-panel .route-vehicle-icon {
-  width: 30px !important;
-  height: 30px !important;
-  flex: 0 0 30px !important;
-  display: grid !important;
-  place-items: center !important;
-  border: 3px solid #ffffff !important;
-  border-radius: 50% !important;
-  color: #ffffff !important;
-  background: linear-gradient(135deg, #2f6fd7 0%, #1d55b0 100%) !important;
-  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.24) !important;
+.lr-primary-item span {
+  display: block;
+  color: #65707d;
+  font-size: 8px;
+  font-weight: 550;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.vehicle-column-panel .route-vehicle-icon svg {
-  width: 13px !important;
-  height: 13px !important;
-  stroke-width: 2 !important;
+.lr-primary-item strong {
+  display: block;
+  margin-top: 4px;
+  color: #202832;
+  font-size: 9.5px;
+  font-weight: 700;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.vehicle-column-panel .movement-vehicle-badge {
-  width: auto !important;
-  max-width: 155px !important;
-  min-height: 27px !important;
-  padding: 5px 11px !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  flex: 0 1 auto !important;
-  border: 1px solid #b9cdec !important;
-  border-radius: 7px !important;
-  color: #174986 !important;
-  background: linear-gradient(180deg, #ffffff 0%, #edf4ff 100%) !important;
-  box-shadow: 0 2px 5px rgba(30, 64, 120, 0.06) !important;
-  font-size: 10px !important;
-  font-weight: 750 !important;
-  line-height: 1 !important;
-  letter-spacing: 0.15px !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  white-space: nowrap !important;
+.lr-remarks-box {
+  width: calc(100% - 18px);
+  min-height: 48px;
+  margin: 0 9px 9px;
+  padding: 7px 8px;
+  box-sizing: border-box;
+  background: #d2d6dc;
+  border: 1px solid #b8bec6;
+  border-left: 3px solid #596675;
+  border-radius: 7px;
+}
+
+.lr-remarks-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #53606e;
+}
+
+.lr-remarks-label svg {
+  width: 13px;
+  height: 13px;
+  flex: 0 0 13px;
+  color: #53606e;
+}
+
+.lr-remarks-label span {
+  color: #53606e;
+  font-size: 7.5px;
+  font-weight: 650;
+}
+
+.lr-remarks-value {
+  width: 100%;
+  min-height: 17px;
+  margin-top: 4px;
+  color: #252d37;
+  font-size: 8.5px;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.pod-details-grid {
+  width: 100%;
+  padding: 9px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 7px;
+  box-sizing: border-box;
+  background: #d9dde2;
+  border-top: 1px solid #bec4cc;
+  border-bottom: 1px solid #bec4cc;
+}
+
+.pod-detail-item {
+  min-width: 0;
+  min-height: 48px;
+  padding: 7px 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-sizing: border-box;
+  background: #cbd0d6;
+  border: 1px solid #b4bbc4;
+  border-radius: 7px;
+  transition: background 0.16s ease, border-color 0.16s ease, transform 0.16s ease, box-shadow 0.16s ease;
+}
+
+.pod-detail-item:hover {
+  background: #c3c8cf;
+  border-color: #a7afb9;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 7px rgba(31, 41, 55, 0.06);
+}
+
+.pod-detail-item span {
+  display: block;
+  color: #606b78;
+  font-size: 8px;
+  font-weight: 550;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pod-detail-item strong {
+  display: block;
+  margin-top: 4px;
+  color: #202832;
+  font-size: 9.5px;
+  font-weight: 700;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pod-remarks-box {
+  width: calc(100% - 18px);
+  min-height: 48px;
+  margin: 9px;
+  padding: 7px 8px;
+  box-sizing: border-box;
+  background: #ccd1d7;
+  border: 1px solid #b4bbc4;
+  border-left: 3px solid #4f5d6d;
+  border-radius: 7px;
+}
+
+.pod-remarks-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #505c69;
+}
+
+.pod-remarks-label svg {
+  width: 13px;
+  height: 13px;
+  flex: 0 0 13px;
+  color: #4f5d6d;
+}
+
+.pod-remarks-label span {
+  color: #505c69;
+  font-size: 7.5px;
+  font-weight: 650;
+}
+
+.pod-remarks-value {
+  width: 100%;
+  min-height: 17px;
+  margin-top: 4px;
+  color: #252d37;
+  font-size: 8.5px;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.lr-person-section {
+  width: 100%;
+  padding: 8px 9px;
+  box-sizing: border-box;
+  border-bottom: 1px solid #bcc3cb;
+}
+
+.lr-person-section.escort-section,
+.lr-pod-card .escort-section {
+  background: #dfe2e6;
+}
+
+.lr-person-section.supervisor-section,
+.lr-pod-card .supervisor-section {
+  background: #d2d6dc;
+}
+
+.lr-person-heading {
+  width: 100%;
+  min-height: 27px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #4d5967;
+}
+
+.lr-person-heading svg {
+  width: 13px;
+  height: 13px;
+  flex: 0 0 13px;
+  color: #4d5967;
+}
+
+.lr-person-heading strong {
+  color: #252d37;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.lr-person-content {
+  width: 100%;
+  margin-top: 3px;
+  box-sizing: border-box;
+}
+
+.lr-person-row {
+  width: 100%;
+  min-height: 29px;
+  display: grid;
+  grid-template-columns: 110px 9px minmax(0, 1fr);
+  align-items: center;
+  gap: 4px;
+  box-sizing: border-box;
+  border-bottom: 1px dashed rgba(79, 93, 109, 0.22);
+}
+
+.lr-person-row:last-child {
+  border-bottom: none;
+}
+
+.lr-person-row > span:first-child {
+  min-width: 0;
+  color: #626d79;
+  font-size: 7.5px;
+  font-weight: 550;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lr-person-colon {
+  color: #8a949f;
+  font-size: 8px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.lr-person-row strong {
+  min-width: 0;
+  color: #252d37;
+  font-size: 8.5px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lr-pod-card .status-badge {
+  width: fit-content;
+  padding: 3px 7px;
+  border-radius: 5px;
+  font-size: 7.5px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.lr-pod-card .status-badge.received {
+  color: #17613b;
+  background: #bdd4c6;
+  border: 1px solid #a2c0ae;
+}
+
+.lr-pod-card .status-badge.pending {
+  color: #7b4b13;
+  background: #ded0b5;
+  border: 1px solid #c9b88f;
+}
+
+.lr-pod-card .status-badge.couriered {
+  color: #3e4956;
+  background: #bdc4cc;
+  border: 1px solid #a7afb9;
+}
+
+.lr-pod-card .status-badge.completed {
+  color: #185c3a;
+  background: #bfd5c8;
+  border: 1px solid #a5c2b1;
+}
+
+.lr-primary-item strong:empty::after,
+.pod-detail-item strong:empty::after,
+.lr-person-row strong:empty::after {
+  content: "-";
+  color: #89929d;
+  font-weight: 500;
+}
+
+@media (max-width: 950px) {
+  .lr-primary-grid,
+  .pod-details-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px;
+  }
+
+  .lr-person-row {
+    grid-template-columns: 100px 8px minmax(0, 1fr);
+  }
 }
 
 @media (max-width: 650px) {
-  .vehicle-column-panel .trip-route-card {
-    grid-template-columns: 1fr !important;
+  .lr-pod-card {
+    margin-top: 8px;
+    border-radius: 8px;
   }
 
-  .vehicle-column-panel .route-center-content {
-    width: 70px !important;
-    min-width: 70px !important;
+  .lr-pod-heading {
+    min-height: 35px;
+    padding: 6px 8px;
   }
 
-  .vehicle-column-panel .route-material-name {
-    font-size: 11px !important;
+  .lr-pod-heading strong {
+    font-size: 10px;
   }
 
-  .vehicle-column-panel .movement-vehicle-badge {
-    max-width: 100% !important;
+  .lr-primary-grid,
+  .pod-details-grid {
+    padding: 7px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 5px;
   }
+
+  .lr-primary-item,
+  .pod-detail-item {
+    min-height: 44px;
+    padding: 6px 7px;
+  }
+
+  .lr-primary-item span,
+  .pod-detail-item span {
+    font-size: 7.5px;
+  }
+
+  .lr-primary-item strong,
+  .pod-detail-item strong {
+    font-size: 9px;
+  }
+
+  .lr-person-section {
+    padding: 7px;
+  }
+
+  .lr-person-row {
+    min-height: 28px;
+    grid-template-columns: 88px 8px minmax(0, 1fr);
+  }
+
+  .lr-remarks-box,
+  .pod-remarks-box {
+    width: calc(100% - 14px);
+    margin-left: 7px;
+    margin-right: 7px;
+  }
+}
+
+@media (max-width: 430px) {
+  .lr-primary-grid,
+  .pod-details-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .lr-primary-item,
+  .pod-detail-item {
+    min-height: 43px;
+  }
+
+  .lr-person-row {
+    grid-template-columns: 82px 7px minmax(0, 1fr);
+  }
+}
+
+/* =========================================================
+   FINAL LR / POD LIGHT BOX + PERSON ROW STRIPING
+========================================================= */
+
+/* LR and POD outer section stays soft grey */
+.lr-pod-card {
+  background: #e5e7eb;
+  border-color: #c7cdd5;
+}
+
+.lr-pod-heading {
+  background: #d7dbe0;
+  border-bottom-color: #c3c9d1;
+}
+
+/* LR / POD individual boxes - light / near white */
+.lr-primary-grid,
+.pod-details-grid {
+  background: #e5e7eb;
+}
+
+.lr-primary-item,
+.pod-detail-item {
+  background: #ffffff;
+  border: 1px solid #d4d9df;
+  box-shadow: 0 1px 3px rgba(31, 41, 55, 0.035);
+}
+
+.lr-primary-item:hover,
+.pod-detail-item:hover {
+  background: #f8f9fa;
+  border-color: #bdc4cc;
+  box-shadow: 0 3px 7px rgba(31, 41, 55, 0.055);
+}
+
+.lr-primary-item span,
+.pod-detail-item span {
+  color: #6b7280;
+}
+
+.lr-primary-item strong,
+.pod-detail-item strong {
+  color: #1f2937;
+}
+
+/* Remarks also light */
+.lr-remarks-box,
+.pod-remarks-box {
+  background: #f8f9fa;
+  border-color: #d1d6dc;
+}
+
+/* =========================================================
+   DRIVER / ESCORT / SUPERVISOR
+   Light section + alternating rows
+========================================================= */
+
+.lr-person-section,
+.lr-person-section.escort-section,
+.lr-person-section.supervisor-section,
+.lr-pod-card .escort-section,
+.lr-pod-card .supervisor-section {
+  background: #f7f8fa;
+  border-bottom: 1px solid #d8dde3;
+}
+
+/* Person section heading */
+.lr-person-heading {
+  min-height: 29px;
+  padding: 0 2px;
+  color: #4b5563;
+}
+
+.lr-person-heading strong {
+  color: #1f2937;
+  font-size: 9.5px;
+  font-weight: 700;
+}
+
+.lr-person-heading svg {
+  color: #596675;
+}
+
+/* Rows */
+.lr-person-row {
+  min-height: 30px;
+  padding: 0 7px;
+  border-bottom: 1px solid #e1e5e9;
+  border-radius: 5px;
+}
+
+/* Odd row - very light grey */
+.lr-person-row:nth-child(odd) {
+  background: #eef0f3;
+}
+
+/* Even row - white */
+.lr-person-row:nth-child(even) {
+  background: #ffffff;
+}
+
+.lr-person-row:last-child {
+  border-bottom: none;
+}
+
+.lr-person-row > span:first-child {
+  color: #66717e;
+  font-size: 8px;
+  font-weight: 550;
+}
+
+.lr-person-colon {
+  color: #9099a4;
+}
+
+.lr-person-row strong {
+  color: #222b36;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+/* Small breathing room between striped rows */
+.lr-person-content {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 4px;
+}
+
+/* Mobile */
+@media (max-width: 650px) {
+  .lr-person-row {
+    padding: 0 6px;
+  }
+}
+
+
+/* =========================================================
+   FINAL THEME — MATCH SIDEBAR + TRIP LIST
+   Navy + Teal + Blue + Orange
+   No Pink / Purple / Beige
+   Layout and sizing are unchanged
+========================================================= */
+
+.vehicle-column-panel,
+.vehicle-column-panel * {
+  font-family: "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.vehicle-column-panel {
+  color: #102a43;
+  border-color: #d8e2ea;
+  background: #ffffff;
+  box-shadow: 0 4px 14px rgba(11, 41, 66, 0.05);
+}
+
+/* -------------------------
+   STATUS STRIP
+------------------------- */
+
+.vehicle-status-strip {
+  border-color: #d8e2ea;
+  background: #ffffff;
+}
+
+.status-item:not(:last-child) {
+  border-right-color: #e7edf2;
+}
+
+.status-item.moving {
+  color: #159a91;
+}
+
+.status-item.breakdown {
+  color: #d94b3d;
+}
+
+.status-item.idle {
+  color: #d98a22;
+}
+
+.status-item.reached {
+  color: #2f6fb3;
+}
+
+.vehicle-toggle-btn {
+  color: #159a91;
+  border-color: #bfe3df;
+  background: #e5f5f3;
+}
+
+.vehicle-toggle-btn:hover,
+.vehicle-toggle-btn.open {
+  color: #ffffff;
+  background: #159a91;
+}
+
+/* -------------------------
+   VEHICLE LIST
+------------------------- */
+
+.vehicle-list-section {
+  border-color: #d8e2ea;
+  background: #ffffff;
+}
+
+.vehicle-list-heading {
+  border-bottom-color: #e7edf2;
+  background: #f7fafb;
+}
+
+.vehicle-list-heading strong,
+.vehicle-mini-info strong {
+  color: #102a43;
+}
+
+.vehicle-list-heading div > span,
+.vehicle-mini-info span,
+.vehicle-mini-right small {
+  color: #71869a;
+}
+
+.vehicle-list-count {
+  color: #10847c;
+  background: #e5f5f3;
+}
+
+.vehicle-mini-row {
+  border-bottom-color: #e7edf2;
+  background: #ffffff;
+}
+
+.vehicle-mini-row:hover {
+  background: #f7fafb;
+}
+
+.vehicle-mini-row.active {
+  background: #e5f5f3;
+  box-shadow: inset 3px 0 0 #159a91;
+}
+
+.vehicle-mini-truck {
+  color: #159a91;
+  background: #e5f5f3;
+}
+
+.vehicle-mini-status.moving {
+  color: #10847c;
+  background: #e5f5f3;
+}
+
+.vehicle-mini-status.breakdown {
+  color: #d94b3d;
+  background: #fff0ed;
+}
+
+.vehicle-mini-status.idle {
+  color: #b97216;
+  background: #fff3e2;
+}
+
+.vehicle-mini-status.reached {
+  color: #245b96;
+  background: #eaf2fb;
+}
+
+/* -------------------------
+   ROUTE CARD
+------------------------- */
+
+.trip-route-card {
+  border-color: #d8e2ea;
+  background: #ffffff;
+}
+
+.trip-route-point span {
+  color: #71869a;
+}
+
+.trip-route-point strong,
+.distance-summary-item strong,
+.movement-info-card strong,
+.trip-detail-value,
+.simple-detail-value,
+.lr-primary-item strong,
+.pod-detail-item strong,
+.lr-person-row strong {
+  color: #102a43;
+}
+
+.trip-route-direction .route-line {
+  background: #b9c9d5;
+}
+
+.route-material-name {
+  color: #526b7f;
+}
+
+.route-vehicle-icon {
+  color: #ffffff;
+  border-color: #159a91;
+  background: #159a91;
+  box-shadow: 0 3px 8px rgba(21, 154, 145, 0.20);
+}
+
+/* -------------------------
+   KM CARDS
+------------------------- */
+
+.distance-summary-item {
+  border-color: #d8e2ea;
+  background: #ffffff;
+}
+
+.distance-summary-item.total {
+  border-top-color: #2f6fb3;
+  background: #eaf2fb;
+}
+
+.distance-summary-item.total span {
+  color: #2f6fb3;
+}
+
+.distance-summary-item.covered {
+  border-top-color: #159a91;
+  background: #e5f5f3;
+}
+
+.distance-summary-item.covered span,
+.distance-summary-item.covered strong {
+  color: #10847c;
+}
+
+.distance-summary-item.balance {
+  border-top-color: #d98a22;
+  background: #fff3e2;
+}
+
+.distance-summary-item.balance span {
+  color: #b97216;
+}
+
+/* -------------------------
+   SECTION ICONS
+------------------------- */
+
+.section-heading-icon.blue {
+  color: #159a91;
+  background: #e5f5f3;
+}
+
+.section-heading-icon.purple {
+  color: #2f6fb3;
+  background: #eaf2fb;
+}
+
+/* -------------------------
+   MOVEMENT STATUS
+------------------------- */
+
+.movement-card-section {
+  border-color: #d8e2ea;
+  background: #ffffff;
+}
+
+.movement-heading-row {
+  border-bottom-color: #e7edf2;
+  background: #ffffff;
+}
+
+.movement-title-line > strong,
+.consignment-title strong,
+.trip-detail-group-title > strong,
+.simple-operation-title > div > strong,
+.operation-card-title strong,
+.lr-pod-heading strong {
+  color: #102a43;
+}
+
+.movement-heading-subtitle,
+.movement-info-card span,
+.trip-detail-label,
+.simple-detail-label,
+.lr-primary-item span,
+.pod-detail-item span,
+.lr-person-row > span:first-child {
+  color: #71869a;
+}
+
+.movement-vehicle-badge {
+  border-color: #cbd8e2;
+  color: #0b2942;
+  background: #f4f8fa;
+}
+
+.movement-info-card {
+  border-color: #d8e2ea;
+  background: #ffffff;
+}
+
+.movement-info-card:hover {
+  background: #f7fafb;
+}
+
+.movement-info-card:nth-child(3) strong {
+  color: #159a91;
+}
+
+/* -------------------------
+   TRIP DETAILS
+------------------------- */
+
+.consignment-card {
+  border-color: #d8e2ea;
+  background: #ffffff;
+}
+
+.consignment-title {
+  border-bottom-color: #e7edf2;
+  color: #159a91;
+  background: #ffffff;
+}
+
+.trip-detail-group {
+  border-color: #d8e2ea;
+  background: #ffffff;
+}
+
+.trip-detail-group-title {
+  border-bottom-color: #e7edf2;
+}
+
+/* Client = Blue */
+
+.trip-detail-group.client-group,
+.client-group {
+  border-color: #cbdceb;
+  border-left-color: #2f6fb3;
+  background: #f7fbff;
+}
+
+.client-group .trip-detail-group-title {
+  border-bottom-color: #cbdceb;
+  background: #eaf2fb;
+}
+
+.client-group .trip-detail-group-title > strong {
+  color: #245b96;
+}
+
+.client-group .trip-detail-group-icon,
+.trip-detail-group-icon.client {
+  color: #2f6fb3;
+  border-color: #cbdceb;
+  background: #ffffff;
+}
+
+.client-group .trip-detail-row {
+  border-bottom-color: #e3ebf2;
+  background: #ffffff;
+}
+
+.client-group .trip-detail-label {
+  color: #71869a;
+}
+
+.client-group .trip-detail-value {
+  color: #102a43;
+}
+
+/* Transporter = Teal */
+
+.trip-detail-group.transporter-group,
+.transporter-group {
+  border-color: #bfe3df;
+  border-left-color: #159a91;
+  background: #f5fbfa;
+}
+
+.transporter-group .trip-detail-group-title {
+  border-bottom-color: #bfe3df;
+  background: #e5f5f3;
+}
+
+.transporter-group .trip-detail-group-title > strong {
+  color: #10847c;
+}
+
+.transporter-group .trip-detail-group-icon,
+.transporter-group .trip-detail-group-icon.transporter,
+.trip-detail-group-icon.transporter {
+  color: #159a91;
+  border-color: #bfe3df;
+  background: #ffffff;
+}
+
+.transporter-group .trip-detail-row {
+  border-bottom-color: #e0eeeb;
+  background: #ffffff;
+}
+
+.transporter-group .trip-detail-label {
+  color: #71869a;
+}
+
+.transporter-group .trip-detail-value {
+  color: #102a43;
+}
+
+.transit-day-row {
+  color: #10847c;
+  background: #e5f5f3;
+}
+
+/* -------------------------
+   LOADING / UNLOADING
+------------------------- */
+
+.simple-operation-card,
+.operation-card {
+  border-color: #d8e2ea;
+  background: #ffffff;
+}
+
+.simple-operation-header,
+.operation-card-header {
+  border-bottom-color: #e7edf2;
+  background: #f7fafb;
+}
+
+.simple-operation-icon.loading,
+.operation-card-icon.loading {
+  color: #2f6fb3;
+  background: #eaf2fb;
+}
+
+.simple-operation-icon.unloading,
+.operation-card-icon.unloading {
+  color: #159a91;
+  background: #e5f5f3;
+}
+
+.simple-operation-status.loading,
+.operation-status-badge.loading {
+  border-color: #cbdceb;
+  color: #245b96;
+  background: #eaf2fb;
+}
+
+.simple-operation-status.unloading,
+.operation-status-badge.unloading {
+  border-color: #bfe3df;
+  color: #10847c;
+  background: #e5f5f3;
+}
+
+.simple-remarks-box,
+.lr-remarks-box,
+.pod-remarks-box {
+  border-color: #d8e2ea;
+  background: #f8fbfd;
+}
+
+.loading-card .simple-remarks-box,
+.lr-remarks-box {
+  border-left-color: #2f6fb3;
+}
+
+.unloading-card .simple-remarks-box,
+.pod-remarks-box {
+  border-left-color: #159a91;
+}
+
+/* -------------------------
+   LR / POD
+------------------------- */
+
+.lr-pod-card {
+  border-color: #d8e2ea;
+  background: #ffffff;
+}
+
+.lr-pod-heading {
+  border-bottom-color: #d8e2ea;
+  color: #159a91;
+  background: #f7fafb;
+}
+
+.lr-primary-grid {
+  background: #ffffff;
+}
+
+.lr-primary-item,
+.pod-detail-item {
+  border-color: #d8e2ea;
+  background: #ffffff;
+}
+
+.pod-details-grid {
+  border-top-color: #d8e2ea;
+  border-bottom-color: #d8e2ea;
+  background: #f5f8fa;
+}
+
+.lr-person-section.escort-section,
+.lr-pod-card .escort-section {
+  background: #f7fbff;
+}
+
+.lr-person-section.supervisor-section,
+.lr-pod-card .supervisor-section {
+  background: #f5fbfa;
+}
+
+.lr-person-row:nth-child(odd) {
+  background: #ffffff;
+}
+
+.lr-person-row:nth-child(even) {
+  background: #f7fafb;
+}
+
+.lr-person-heading {
+  color: #2f6fb3;
+}
+
+.escort-section .lr-person-heading {
+  color: #159a91;
+}
+
+.lr-person-heading strong {
+  color: #102a43;
 }

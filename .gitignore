@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Dependencies
 node_modules/
 
@@ -12,44 +11,15 @@ node_modules/
 dist/
 build/
 
-# Uploaded files
+# Backend uploads
 Back-End/uploads/
 
 # Logs
-=======
-# Logs
-logs
->>>>>>> bfa9bfa (Frontend tracking UI completed)
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-<<<<<<< HEAD
 
-# Editor files
+# Editor / OS
 .vscode/
-.idea/
-
-# Operating-system files
 .DS_Store
-Thumbs.db
-=======
-pnpm-debug.log*
-lerna-debug.log*
-
-node_modules
-dist
-dist-ssr
-*.local
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
->>>>>>> bfa9bfa (Frontend tracking UI completed)
