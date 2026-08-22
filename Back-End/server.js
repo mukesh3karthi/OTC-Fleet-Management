@@ -242,6 +242,8 @@ app.use(
   )
 );
 
+app.options("*", cors(corsOptions));
+
 
 /* ==========================================
    BODY PARSER
