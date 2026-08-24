@@ -1,0 +1,306 @@
+/* =========================================================
+   COMMON COMING SOON PAGE
+========================================================= */
+
+.coming-page,
+.coming-page * {
+  box-sizing: border-box;
+}
+
+.coming-page {
+  width: 100%;
+  height: calc(100vh - 90px);
+  min-height: 500px;
+
+  padding: 24px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #f5f7fc;
+
+  font-family:
+    Inter,
+    "Segoe UI",
+    Roboto,
+    Arial,
+    sans-serif;
+}
+
+
+/* =========================================================
+   CARD
+========================================================= */
+
+.coming-card {
+  width: 420px;
+  max-width: 100%;
+
+  padding: 35px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  text-align: center;
+
+  background: #ffffff;
+
+  border-radius: 18px;
+
+  box-shadow:
+    0 10px 30px
+    rgba(0, 0, 0, 0.08);
+
+  animation:
+    comingCardEntry
+    0.5s ease;
+}
+
+
+/* =========================================================
+   ICON
+========================================================= */
+
+.coming-icon {
+  width: 80px;
+  height: 80px;
+
+  flex: 0 0 80px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 1px;
+
+  border-radius: 50%;
+
+  background:
+    linear-gradient(
+      135deg,
+      #ff9800,
+      #ff6f00
+    );
+
+  color: #ffffff;
+
+  box-shadow:
+    0 8px 20px
+    rgba(255, 111, 0, 0.18);
+
+  animation:
+    comingPulse
+    2s ease-in-out infinite;
+}
+
+.coming-icon svg {
+  flex-shrink: 0;
+}
+
+
+/* =========================================================
+   TITLE
+========================================================= */
+
+.coming-card h2 {
+  margin: 20px 0 12px;
+
+  color: #23335c;
+
+  font-size: 24px;
+  font-weight: 700;
+
+  line-height: 1.25;
+}
+
+
+/* =========================================================
+   BADGE
+========================================================= */
+
+.coming-badge {
+  padding: 8px 16px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 6px;
+
+  border-radius: 20px;
+
+  background: #fff4e5;
+
+  color: #e67e22;
+
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.coming-badge svg {
+  flex-shrink: 0;
+}
+
+
+/* =========================================================
+   DESCRIPTION
+========================================================= */
+
+.coming-card p {
+  max-width: 340px;
+
+  margin: 20px auto;
+
+  color: #666666;
+
+  font-size: 15px;
+  font-weight: 400;
+
+  line-height: 1.6;
+}
+
+
+/* =========================================================
+   OPTIONAL STATUS
+========================================================= */
+
+.coming-status {
+  margin: -4px 0 18px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 6px;
+
+  color: #858585;
+
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.coming-status svg {
+  color: #ff9800;
+}
+
+
+/* =========================================================
+   PROGRESS
+========================================================= */
+
+.coming-progress {
+  width: 100%;
+  height: 8px;
+
+  overflow: hidden;
+
+  border-radius: 30px;
+
+  background: #ececec;
+}
+
+.coming-progress-bar {
+  width: 35%;
+  height: 100%;
+
+  border-radius: 30px;
+
+  background:
+    linear-gradient(
+      90deg,
+      #ff9800,
+      #ffb74d
+    );
+
+  animation:
+    comingLoading
+    2s linear infinite;
+}
+
+
+/* =========================================================
+   ANIMATIONS
+========================================================= */
+
+@keyframes comingPulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.08);
+  }
+}
+
+@keyframes comingLoading {
+  from {
+    transform: translateX(-110%);
+  }
+
+  to {
+    transform: translateX(300%);
+  }
+}
+
+@keyframes comingCardEntry {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 480px) {
+  .coming-page {
+    height: calc(100vh - 70px);
+    min-height: 450px;
+
+    padding: 16px;
+  }
+
+  .coming-card {
+    padding: 30px 22px;
+
+    border-radius: 16px;
+  }
+
+  .coming-icon {
+    width: 72px;
+    height: 72px;
+
+    flex-basis: 72px;
+  }
+
+  .coming-card h2 {
+    font-size: 21px;
+  }
+
+  .coming-card p {
+    font-size: 14px;
+  }
+}
+
+
+/* =========================================================
+   REDUCED MOTION
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .coming-card,
+  .coming-icon,
+  .coming-progress-bar {
+    animation: none;
+  }
+}

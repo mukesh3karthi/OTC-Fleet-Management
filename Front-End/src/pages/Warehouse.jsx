@@ -1,66 +1,43 @@
 import React from "react";
 import {
-  FaWarehouse,
-  FaClock,
-} from "react-icons/fa";
+  Clock3,
+  Warehouse as WarehouseIcon,
+} from "lucide-react";
 
-import "../pagescss/warehouse.css";
-
+import "../pagescss/ComingSoon.css";
 
 const Warehouse = () => {
   return (
-    <div className="warehouse-coming-page">
+    <div className="coming-page">
 
-      <div className="warehouse-coming-card">
+      <div className="coming-card">
 
-
-        {/* ICON */}
-
-        <div className="warehouse-coming-icon">
-          <FaWarehouse />
+        <div className="coming-icon">
+          <WarehouseIcon size={40} />
         </div>
 
-
-        {/* TITLE */}
-
-        <h1>
+        <h2>
           Warehouse Management
-        </h1>
+        </h2>
 
-
-        {/* BADGE */}
-
-        <div className="warehouse-coming-badge">
-          <FaClock />
-
-          <span>
-            Coming Soon
-          </span>
+        <div className="coming-badge">
+          <Clock3 size={16} />
+          <span>Coming Soon</span>
         </div>
-
-
-        {/* DESCRIPTION */}
 
         <p>
           Warehouse and inventory management
           module is currently under development.
         </p>
 
-
-        {/* PROGRESS */}
-
-        <div className="warehouse-coming-progress">
-
-          <div className="warehouse-progress-fill" />
-
+        <div className="coming-progress">
+          <div className="coming-progress-bar" />
         </div>
-
 
       </div>
 
     </div>
   );
 };
-
 
 export default Warehouse;

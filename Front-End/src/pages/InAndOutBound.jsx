@@ -1,51 +1,32 @@
 import React from "react";
+
 import {
   ArrowDownToLine,
   ArrowUpFromLine,
   Clock3,
-  Truck,
 } from "lucide-react";
 
-import "../pagescss/inandoutbound.css";
+import "../pagescss/ComingSoon.css";
 
 const InAndOutBound = () => {
   return (
-    <div className="inout-page">
+    <div className="coming-page">
 
-      <div className="inout-card">
+      <div className="coming-card">
 
-        {/* MAIN ICON */}
-
-        <div className="inout-icon">
-
-          <ArrowDownToLine size={30} />
-
-          <ArrowUpFromLine size={30} />
-
+        <div className="coming-icon">
+          <ArrowDownToLine size={28} />
+          <ArrowUpFromLine size={28} />
         </div>
-
-
-        {/* TITLE */}
 
         <h2>
           Inbound & Outbound
         </h2>
 
-
-        {/* COMING SOON */}
-
-        <div className="inout-coming-soon">
-
+        <div className="coming-badge">
           <Clock3 size={16} />
-
-          <span>
-            Coming Soon
-          </span>
-
+          <span>Coming Soon</span>
         </div>
-
-
-        {/* DESCRIPTION */}
 
         <p>
           Inbound and outbound vehicle
@@ -53,26 +34,8 @@ const InAndOutBound = () => {
           currently under development.
         </p>
 
-
-        {/* SMALL TRUCK */}
-
-        <div className="inout-truck">
-
-          <Truck size={18} />
-
-          <span>
-            Preparing logistics workflow
-          </span>
-
-        </div>
-
-
-        {/* PROGRESS */}
-
-        <div className="inout-progress">
-
-          <div className="inout-progress-bar" />
-
+        <div className="coming-progress">
+          <div className="coming-progress-bar" />
         </div>
 
       </div>

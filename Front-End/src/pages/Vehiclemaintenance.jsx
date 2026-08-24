@@ -1,18 +1,26 @@
 import React from "react";
-import { Wrench, Clock3 } from "lucide-react";
-import "../pagescss/vehiclemaintenance.css";
+import {
+  Clock3,
+  Wrench,
+} from "lucide-react";
+
+import "../pagescss/ComingSoon.css";
 
 const Vehiclemaintenance = () => {
   return (
-    <div className="maintenance-page">
-      <div className="maintenance-card">
-        <div className="maintenance-icon">
+    <div className="coming-page">
+
+      <div className="coming-card">
+
+        <div className="coming-icon">
           <Wrench size={40} />
         </div>
 
-        <h2>Vehicle Maintenance</h2>
+        <h2>
+          Vehicle Maintenance
+        </h2>
 
-        <div className="coming-soon">
+        <div className="coming-badge">
           <Clock3 size={16} />
           <span>Coming Soon</span>
         </div>
@@ -23,10 +31,12 @@ const Vehiclemaintenance = () => {
           under development.
         </p>
 
-        <div className="progress">
-          <div className="progress-bar"></div>
+        <div className="coming-progress">
+          <div className="coming-progress-bar" />
         </div>
+
       </div>
+
     </div>
   );
 };
