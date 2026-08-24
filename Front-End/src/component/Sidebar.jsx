@@ -24,11 +24,19 @@ import {
   FaWarehouse,
 } from "react-icons/fa";
 
-import Intercarttinglogin from "../Loginpage/Intercartinglogin";
-import Ownvehiclelogin from "../Loginpage/Ownvehiclelogin";
-import Trackinglogin from "../Loginpage/Trackinglogin";
+import Intercarttinglogin
+  from "../Loginpage/Intercartinglogin";
+
+import Ownvehiclelogin
+  from "../Loginpage/Ownvehiclelogin";
+
+import Trackinglogin
+  from "../Loginpage/Trackinglogin";
 
 import "../css/sidebar.css";
+
+
+const MOBILE_BREAKPOINT = 560;
 
 
 const Sidebar = ({
@@ -36,23 +44,28 @@ const Sidebar = ({
   setCollapsed,
 }) => {
 
-  const navigate = useNavigate();
-  const location = useLocation();
+  const navigate =
+    useNavigate();
+
+  const location =
+    useLocation();
 
 
-  /* =========================================================
+  /* =========================================
      LOGIN POPUPS
-  ========================================================= */
+  ========================================= */
 
   const [
     showIntercartingLogin,
     setShowIntercartingLogin,
   ] = useState(false);
 
+
   const [
     showOwnVehicleLogin,
     setShowOwnVehicleLogin,
   ] = useState(false);
+
 
   const [
     showTrackingLogin,
@@ -60,34 +73,44 @@ const Sidebar = ({
   ] = useState(false);
 
 
-  /* =========================================================
-     CHECK MOBILE
-  ========================================================= */
+  /* =========================================
+     MOBILE CHECK
+  ========================================= */
 
   const isMobile = () => {
-    return window.innerWidth <= 560;
+
+    return (
+      window.innerWidth <=
+      MOBILE_BREAKPOINT
+    );
+
   };
 
 
-  /* =========================================================
+  /* =========================================
      CLOSE SIDEBAR ON MOBILE
-  ========================================================= */
+  ========================================= */
 
-  const closeMobileSidebar = () => {
+  const closeMobileSidebar =
+    () => {
 
-    if (
-      isMobile() &&
-      typeof setCollapsed === "function"
-    ) {
-      setCollapsed(true);
-    }
+      if (
+        isMobile() &&
+        typeof setCollapsed ===
+          "function"
+      ) {
 
-  };
+        setCollapsed(true);
+
+      }
+
+    };
 
 
-  /* =========================================================
-     OPEN POPUP FROM PROTECTED ROUTE
-  ========================================================= */
+  /* =========================================
+     OPEN LOGIN POPUPS
+     FROM ROUTE STATE
+  ========================================= */
 
   useEffect(() => {
 
@@ -99,7 +122,10 @@ const Sidebar = ({
       state.openOwnVehicleLogin
     ) {
 
-      setShowOwnVehicleLogin(true);
+      setShowOwnVehicleLogin(
+        true
+      );
+
 
       navigate(
         location.pathname,
@@ -109,7 +135,9 @@ const Sidebar = ({
         }
       );
 
+
       return;
+
     }
 
 
@@ -117,7 +145,10 @@ const Sidebar = ({
       state.openIntercartingLogin
     ) {
 
-      setShowIntercartingLogin(true);
+      setShowIntercartingLogin(
+        true
+      );
+
 
       navigate(
         location.pathname,
@@ -127,7 +158,9 @@ const Sidebar = ({
         }
       );
 
+
       return;
+
     }
 
 
@@ -135,7 +168,10 @@ const Sidebar = ({
       state.openTrackingLogin
     ) {
 
-      setShowTrackingLogin(true);
+      setShowTrackingLogin(
+        true
+      );
+
 
       navigate(
         location.pathname,
@@ -154,9 +190,9 @@ const Sidebar = ({
   ]);
 
 
-  /* =========================================================
-     CLEAR MODULE LOGIN ON DASHBOARD RETURN
-  ========================================================= */
+  /* =========================================
+     CLEAR LOGIN SESSION
+  ========================================= */
 
   useEffect(() => {
 
@@ -212,56 +248,66 @@ const Sidebar = ({
   ]);
 
 
-  /* =========================================================
+  /* =========================================
      OPERATIONS MENU
-  ========================================================= */
+  ========================================= */
 
   const operationsMenu = [
 
     {
       title: "Dashboard",
-      icon: <FaTachometerAlt />,
+      icon:
+        <FaTachometerAlt />,
       path: "/dashboard",
     },
 
     {
       title: "Intercarting",
-      icon: <FaExchangeAlt />,
-      path: "/intercartingdash",
+      icon:
+        <FaExchangeAlt />,
+      path:
+        "/intercartingdash",
       dataEntry: true,
     },
 
     {
       title: "Own Vehicle",
-      icon: <FaCar />,
-      path: "/ownvehicledetaildash",
+      icon:
+        <FaCar />,
+      path:
+        "/ownvehicledetaildash",
       dataEntry: true,
     },
 
     {
-      title: "Vehicle Documents",
-      icon: <FaFileAlt />,
-      path: "/vehicle-documents",
+      title:
+        "Vehicle Documents",
+      icon:
+        <FaFileAlt />,
+      path:
+        "/vehicle-documents",
     },
 
     {
       title: "Assets",
-      icon: <FaBoxOpen />,
+      icon:
+        <FaBoxOpen />,
       path: "/assets",
     },
 
   ];
 
 
-  /* =========================================================
+  /* =========================================
      LIVE MENU
-  ========================================================= */
+  ========================================= */
 
   const liveMenu = [
 
     {
       title: "Tracking",
-      icon: <FaMapMarkerAlt />,
+      icon:
+        <FaMapMarkerAlt />,
       path: "/tracking",
 
       dataEntry: true,
@@ -274,35 +320,46 @@ const Sidebar = ({
     },
 
     {
-      title: "Inbound & Outbound",
-      icon: <FaTruck />,
-      path: "/inbound-outbound",
+      title:
+        "Inbound & Outbound",
+      icon:
+        <FaTruck />,
+      path:
+        "/inbound-outbound",
     },
 
     {
       title: "Warehouse",
-      icon: <FaWarehouse />,
-      path: "/warehouse",
+      icon:
+        <FaWarehouse />,
+      path:
+        "/warehouse",
     },
 
     {
-      title: "Vehicle Maintenance",
-      icon: <FaTools />,
-      path: "/vehicle-maintenance",
+      title:
+        "Vehicle Maintenance",
+      icon:
+        <FaTools />,
+      path:
+        "/vehicle-maintenance",
     },
 
     {
-      title: "Driver Management",
-      icon: <FaUsers />,
-      path: "/driver-management",
+      title:
+        "Driver Management",
+      icon:
+        <FaUsers />,
+      path:
+        "/driver-management",
     },
 
   ];
 
 
-  /* =========================================================
+  /* =========================================
      NORMALIZE PATH
-  ========================================================= */
+  ========================================= */
 
   const normalizePath = (
     path
@@ -318,14 +375,17 @@ const Sidebar = ({
           ""
         );
 
-    return normalizedPath || "/";
+
+    return (
+      normalizedPath || "/"
+    );
 
   };
 
 
-  /* =========================================================
+  /* =========================================
      ACTIVE MENU CHECK
-  ========================================================= */
+  ========================================= */
 
   const isItemActive = (
     item
@@ -343,24 +403,27 @@ const Sidebar = ({
       )
     ) {
 
-      return item.relatedPaths.some(
-        (path) => {
+      return (
+        item.relatedPaths.some(
+          (path) => {
 
-          const relatedPath =
-            normalizePath(
-              path
+            const relatedPath =
+              normalizePath(
+                path
+              );
+
+
+            return (
+              currentPath ===
+                relatedPath ||
+
+              currentPath.startsWith(
+                `${relatedPath}/`
+              )
             );
 
-          return (
-            currentPath ===
-              relatedPath ||
-
-            currentPath.startsWith(
-              `${relatedPath}/`
-            )
-          );
-
-        }
+          }
+        )
       );
 
     }
@@ -397,14 +460,13 @@ const Sidebar = ({
   };
 
 
-  /* =========================================================
+  /* =========================================
      DATA ENTRY CLICK
-  ========================================================= */
+  ========================================= */
 
   const handleDataEntry = (
     section
   ) => {
-
 
     if (
       section ===
@@ -424,6 +486,7 @@ const Sidebar = ({
       );
 
       return;
+
     }
 
 
@@ -445,6 +508,7 @@ const Sidebar = ({
       );
 
       return;
+
     }
 
 
@@ -470,9 +534,9 @@ const Sidebar = ({
   };
 
 
-  /* =========================================================
+  /* =========================================
      LOGIN SUCCESS
-  ========================================================= */
+  ========================================= */
 
   const handleIntercartingLoginSuccess =
     () => {
@@ -481,12 +545,14 @@ const Sidebar = ({
         false
       );
 
+
       navigate(
         "/intercartingdash/intercarting",
         {
           replace: true,
         }
       );
+
 
       closeMobileSidebar();
 
@@ -500,12 +566,14 @@ const Sidebar = ({
         false
       );
 
+
       navigate(
         "/ownvehicledetaildash/ownvehicledetails",
         {
           replace: true,
         }
       );
+
 
       closeMobileSidebar();
 
@@ -519,6 +587,7 @@ const Sidebar = ({
         false
       );
 
+
       navigate(
         "/trip-details",
         {
@@ -526,14 +595,15 @@ const Sidebar = ({
         }
       );
 
+
       closeMobileSidebar();
 
     };
 
 
-  /* =========================================================
+  /* =========================================
      LOGOUT
-  ========================================================= */
+  ========================================= */
 
   const handleLogout = () => {
 
@@ -586,6 +656,9 @@ const Sidebar = ({
     );
 
 
+    setCollapsed(true);
+
+
     navigate(
       "/",
       {
@@ -596,28 +669,21 @@ const Sidebar = ({
   };
 
 
-  /* =========================================================
+  /* =========================================
      MENU CLICK
-  ========================================================= */
+  ========================================= */
 
-  const handleMenuClick = () => {
+  const handleMenuClick =
+    () => {
 
-    /*
-      Desktop:
-      Do nothing.
+      closeMobileSidebar();
 
-      Mobile:
-      Close sidebar after menu selection.
-    */
-
-    closeMobileSidebar();
-
-  };
+    };
 
 
-  /* =========================================================
+  /* =========================================
      RENDER MENU
-  ========================================================= */
+  ========================================= */
 
   const renderMenuItems = (
     items
@@ -641,26 +707,27 @@ const Sidebar = ({
         return (
 
           <div
+            key={
+              item.path
+            }
             className="sidebar-menu-group"
-            key={item.path}
           >
 
             <NavLink
-
-              to={item.path}
+              to={
+                item.path
+              }
 
               end={
                 item.path ===
                 "/dashboard"
               }
 
-              className={
-                `sidebar-link ${
-                  active
-                    ? "active"
-                    : ""
-                }`
-              }
+              className={`sidebar-link ${
+                active
+                  ? "active"
+                  : ""
+              }`}
 
               aria-current={
                 active
@@ -677,7 +744,6 @@ const Sidebar = ({
               onClick={
                 handleMenuClick
               }
-
             >
 
               <span
@@ -704,7 +770,6 @@ const Sidebar = ({
               >
 
                 <button
-
                   type="button"
 
                   className="sidebar-submenu-link"
@@ -714,7 +779,6 @@ const Sidebar = ({
                       item.title
                     )
                   }
-
                 >
 
                   <span
@@ -753,51 +817,44 @@ const Sidebar = ({
   };
 
 
-  /* =========================================================
+  /* =========================================
      RETURN
-  ========================================================= */
+  ========================================= */
 
   return (
 
     <>
 
-      {/* =====================================================
-          MOBILE BACKGROUND OVERLAY
 
-          Only appears when:
-          - screen is mobile
-          - sidebar is open
-
-          CSS handles desktop visibility.
-      ====================================================== */}
+      {/* =====================================
+          MOBILE OVERLAY
+      ===================================== */}
 
       {!collapsed && (
 
         <div
           className="sidebar-mobile-overlay"
+
           onClick={
             closeMobileSidebar
           }
+
           aria-hidden="true"
         />
 
       )}
 
 
-      {/* =====================================================
+      {/* =====================================
           SIDEBAR
-      ====================================================== */}
+      ===================================== */}
 
       <aside
-
-        className={
-          `sidebar ${
-            collapsed
-              ? "collapsed"
-              : ""
-          }`
-        }
-
+        className={`sidebar ${
+          collapsed
+            ? "collapsed"
+            : ""
+        }`}
       >
 
         <nav
@@ -867,16 +924,15 @@ const Sidebar = ({
         </nav>
 
 
-        {/* ===================================================
+        {/* =================================
             FOOTER
-        ==================================================== */}
+        ================================= */}
 
         <div
           className="sidebar-footer"
         >
 
           <button
-
             type="button"
 
             className="logout-button"
@@ -890,7 +946,6 @@ const Sidebar = ({
                 ? "Sign Out"
                 : undefined
             }
-
           >
 
             <span
@@ -914,12 +969,11 @@ const Sidebar = ({
       </aside>
 
 
-      {/* =====================================================
+      {/* =====================================
           LOGIN POPUPS
-      ====================================================== */}
+      ===================================== */}
 
       <Intercarttinglogin
-
         open={
           showIntercartingLogin
         }
@@ -933,12 +987,10 @@ const Sidebar = ({
         onLogin={
           handleIntercartingLoginSuccess
         }
-
       />
 
 
       <Ownvehiclelogin
-
         open={
           showOwnVehicleLogin
         }
@@ -952,12 +1004,10 @@ const Sidebar = ({
         onLogin={
           handleOwnVehicleLoginSuccess
         }
-
       />
 
 
       <Trackinglogin
-
         open={
           showTrackingLogin
         }
@@ -971,7 +1021,6 @@ const Sidebar = ({
         onLoginSuccess={
           handleTrackingLoginSuccess
         }
-
       />
 
     </>

@@ -76,7 +76,7 @@ textarea {
 
 
 /* =========================================================
-   DASHBOARD BODY
+   BODY
 ========================================================= */
 
 .dashboard-body {
@@ -118,13 +118,14 @@ textarea {
 
 
 /* =========================================================
-   MAIN CONTENT WHEN SIDEBAR COLLAPSED
+   COLLAPSED
 ========================================================= */
 
 .dashboard-main-content.sidebar-collapsed {
   width:
     calc(
-      100% - var(--sidebar-collapsed-width)
+      100% -
+      var(--sidebar-collapsed-width)
     );
 
   margin-left:
@@ -133,7 +134,7 @@ textarea {
 
 
 /* =========================================================
-   SHARED PAGE CONTENT
+   SHARED CONTENT
 ========================================================= */
 
 .content {
@@ -144,7 +145,8 @@ textarea {
   background: #ffffff;
 
   border:
-    1px solid var(--border-color);
+    1px solid
+    var(--border-color);
 
   border-radius: 16px;
 
@@ -189,7 +191,8 @@ textarea {
   .dashboard-main-content {
     width:
       calc(
-        100% - var(--sidebar-width)
+        100% -
+        var(--sidebar-width)
       );
 
     margin-left:
@@ -202,7 +205,8 @@ textarea {
   .dashboard-main-content.sidebar-collapsed {
     width:
       calc(
-        100% - var(--sidebar-width)
+        100% -
+        var(--sidebar-width)
       );
 
     margin-left:
@@ -232,7 +236,8 @@ textarea {
   .dashboard-main-content {
     min-height:
       calc(
-        100vh - var(--navbar-height)
+        100vh -
+        var(--navbar-height)
       );
 
     padding: 14px;
@@ -257,19 +262,13 @@ textarea {
 
 @media (max-width: 560px) {
 
-  .dashboard-main-content {
+  .dashboard-main-content,
+  .dashboard-main-content.sidebar-collapsed {
     width: 100%;
 
     margin-left: 0;
 
     padding: 12px;
-  }
-
-
-  .dashboard-main-content.sidebar-collapsed {
-    width: 100%;
-
-    margin-left: 0;
   }
 
 
