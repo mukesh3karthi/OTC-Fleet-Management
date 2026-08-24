@@ -27,8 +27,14 @@ import "../pagescss/tracking.css";
    API
 ========================================= */
 
+const API_BASE_URL =
+  (
+    import.meta.env.VITE_API_URL ||
+    "http://localhost:5000"
+  ).replace(/\/+$/, "");
+
 const API_URL =
-  "http://localhost:5000/api/triptracking";
+  `${API_BASE_URL}/api/triptracking`;
 
 
 /* =========================================
@@ -52,30 +58,14 @@ const normalizeVehicle = (
   vehicle,
   index
 ) => {
-
   return {
     ...vehicle,
-
-    /*
-      MongoDB uses _id.
-      Existing frontend components use id.
-    */
 
     id:
       vehicle._id ||
       vehicle.id ||
       vehicle.vehicleSubId ||
       `vehicle-${index}`,
-
-
-    /*
-      Create Trip uses currentPosition.
-
-      Existing VehicleColumn and Map
-      use currentLocation.
-
-      Keep both so all components work.
-    */
 
     currentLocation:
       vehicle.currentLocation ||
@@ -87,21 +77,17 @@ const normalizeVehicle = (
       vehicle.currentLocation ||
       "",
 
-
     status:
       vehicle.status ||
       "Moving",
-
 
     speed:
       vehicle.speed ??
       0,
 
-
     lastUpdated:
       vehicle.lastUpdated ||
       "-",
-
 
     latitude:
       vehicle.latitude ??
@@ -133,12 +119,41 @@ const normalizeTrip = (
       : [];
 
 
+  /*
+    IMPORTANT:
+
+    HTML date input returns:
+
+    2026-08-13
+
+    But backend/MongoDB may return:
+
+    2026-08-13T00:00:00.000Z
+
+    So we convert both tripDate / createdAt
+    to YYYY-MM-DD.
+  */
+
+  const normalizedTripDate =
+    trip.tripDate
+      ? String(
+          trip.tripDate
+        ).slice(
+          0,
+          10
+        )
+      : trip.createdAt
+        ? String(
+            trip.createdAt
+          ).slice(
+            0,
+            10
+          )
+        : "";
+
+
   return {
     ...trip,
-
-    /*
-      MongoDB _id -> frontend id
-    */
 
     id:
       trip._id ||
@@ -148,19 +163,8 @@ const normalizeTrip = (
 
     vehicles,
 
-
-    /*
-      Support different possible
-      date fields from backend.
-    */
-
     tripDate:
-      trip.tripDate ||
-      trip.createdAt?.slice(
-        0,
-        10
-      ) ||
-      "",
+      normalizedTripDate,
   };
 };
 
@@ -171,79 +175,40 @@ const normalizeTrip = (
 
 const Tracking = () => {
 
-  /* =========================================
-     DATABASE TRIPS
-  ========================================= */
-
   const [
     trips,
     setTrips,
   ] = useState([]);
-
-
-  /* =========================================
-     LOADING
-  ========================================= */
 
   const [
     loading,
     setLoading,
   ] = useState(true);
 
-
-  /* =========================================
-     API ERROR
-  ========================================= */
-
   const [
     apiError,
     setApiError,
   ] = useState("");
-
-
-  /* =========================================
-     SEARCH
-  ========================================= */
 
   const [
     searchTerm,
     setSearchTerm,
   ] = useState("");
 
-
-  /* =========================================
-     MOVEMENT FILTER
-  ========================================= */
-
   const [
     movementFilter,
     setMovementFilter,
   ] = useState("All");
-
-
-  /* =========================================
-     DATE FILTER
-  ========================================= */
 
   const [
     selectedDate,
     setSelectedDate,
   ] = useState("");
 
-
-  /* =========================================
-     SELECTED TRIP
-  ========================================= */
-
   const [
     selectedTripId,
     setSelectedTripId,
   ] = useState(null);
-
-
-  /* =========================================
-     SELECTED VEHICLE
-  ========================================= */
 
   const [
     selectedVehicleId,
@@ -252,7 +217,7 @@ const Tracking = () => {
 
 
   /* =========================================
-     FETCH TRIPS FROM DATABASE
+     FETCH TRIPS
   ========================================= */
 
   const fetchTrips =
@@ -292,7 +257,7 @@ const Tracking = () => {
 
             throw new Error(
               errorData.message ||
-              `Unable to load trips (${response.status})`
+                `Unable to load trips (${response.status})`
             );
           }
 
@@ -306,26 +271,6 @@ const Tracking = () => {
             result
           );
 
-
-          /*
-            Supports backend responses like:
-
-            [ ... ]
-
-            OR
-
-            {
-              success: true,
-              data: [...]
-            }
-
-            OR
-
-            {
-              success: true,
-              trips: [...]
-            }
-          */
 
           let databaseTrips = [];
 
@@ -356,7 +301,6 @@ const Tracking = () => {
 
             databaseTrips =
               result.trips;
-
           }
 
 
@@ -377,12 +321,10 @@ const Tracking = () => {
           );
 
 
-          /*
-            Select first trip automatically.
-          */
-
           setSelectedTripId(
-            (previousId) => {
+            (
+              previousId
+            ) => {
 
               if (
                 normalizedTrips.length ===
@@ -395,7 +337,9 @@ const Tracking = () => {
 
               const exists =
                 normalizedTrips.some(
-                  (trip) =>
+                  (
+                    trip
+                  ) =>
                     trip.id ===
                     previousId
                 );
@@ -412,7 +356,6 @@ const Tracking = () => {
             }
           );
 
-
         } catch (error) {
 
           console.error(
@@ -426,22 +369,20 @@ const Tracking = () => {
 
           setApiError(
             error.message ||
-            "Unable to load trips."
+              "Unable to load trips."
           );
 
         } finally {
 
           setLoading(false);
-
         }
-
       },
       []
     );
 
 
   /* =========================================
-     LOAD DATABASE DATA
+     INITIAL LOAD
   ========================================= */
 
   useEffect(() => {
@@ -454,7 +395,7 @@ const Tracking = () => {
 
 
   /* =========================================
-     REFRESH WHEN PAGE GETS FOCUS
+     REFRESH ON WINDOW FOCUS
   ========================================= */
 
   useEffect(() => {
@@ -463,7 +404,6 @@ const Tracking = () => {
       () => {
 
         fetchTrips();
-
       };
 
 
@@ -479,7 +419,6 @@ const Tracking = () => {
         "focus",
         handleFocus
       );
-
     };
 
   }, [
@@ -495,16 +434,28 @@ const Tracking = () => {
     useMemo(() => {
 
       const counts = {
-        All: trips.length,
-        Moving: 0,
-        Idle: 0,
-        Breakdown: 0,
-        Reached: 0,
+
+        All:
+          trips.length,
+
+        Moving:
+          0,
+
+        Idle:
+          0,
+
+        Breakdown:
+          0,
+
+        Reached:
+          0,
       };
 
 
       trips.forEach(
-        (trip) => {
+        (
+          trip
+        ) => {
 
           const vehicles =
             Array.isArray(
@@ -517,7 +468,9 @@ const Tracking = () => {
           const tripStatuses =
             new Set(
               vehicles.map(
-                (vehicle) =>
+                (
+                  vehicle
+                ) =>
                   vehicle.status
               )
             );
@@ -529,7 +482,9 @@ const Tracking = () => {
             "Breakdown",
             "Reached",
           ].forEach(
-            (status) => {
+            (
+              status
+            ) => {
 
               if (
                 tripStatuses.has(
@@ -540,10 +495,8 @@ const Tracking = () => {
                 counts[status] +=
                   1;
               }
-
             }
           );
-
         }
       );
 
@@ -569,7 +522,9 @@ const Tracking = () => {
 
 
       return trips.filter(
-        (trip) => {
+        (
+          trip
+        ) => {
 
           const vehicles =
             Array.isArray(
@@ -580,31 +535,39 @@ const Tracking = () => {
 
 
           const searchFields = [
+
             trip.tripId,
+
             trip.customer,
+
             trip.materialType,
+
             trip.origin,
+
             trip.destination,
+
             trip.lsp,
+
             trip.lrNo,
 
             ...vehicles.map(
-              (vehicle) =>
+              (
+                vehicle
+              ) =>
                 vehicle.vehicleNumber
             ),
           ];
 
 
-          /* =============================
-             SEARCH
-          ============================= */
-
           const matchesSearch =
             !search ||
             searchFields.some(
-              (value) =>
+              (
+                value
+              ) =>
                 String(
-                  value || ""
+                  value ||
+                    ""
                 )
                   .toLowerCase()
                   .includes(
@@ -613,9 +576,15 @@ const Tracking = () => {
             );
 
 
-          /* =============================
-             DATE
-          ============================= */
+          /*
+            DATE FILTER
+
+            selectedDate:
+            2026-08-13
+
+            trip.tripDate:
+            already normalized to 2026-08-13
+          */
 
           const matchesDate =
             !selectedDate ||
@@ -623,15 +592,13 @@ const Tracking = () => {
               selectedDate;
 
 
-          /* =============================
-             STATUS
-          ============================= */
-
           const matchesStatus =
             movementFilter ===
               "All" ||
             vehicles.some(
-              (vehicle) =>
+              (
+                vehicle
+              ) =>
                 vehicle.status ===
                 movementFilter
             );
@@ -642,7 +609,6 @@ const Tracking = () => {
             matchesDate &&
             matchesStatus
           );
-
         }
       );
 
@@ -655,12 +621,14 @@ const Tracking = () => {
 
 
   /* =========================================
-     GET SELECTED TRIP
+     SELECTED TRIP
   ========================================= */
 
   const selectedTrip =
     filteredTrips.find(
-      (trip) =>
+      (
+        trip
+      ) =>
         trip.id ===
         selectedTripId
     ) ||
@@ -669,7 +637,7 @@ const Tracking = () => {
 
 
   /* =========================================
-     KEEP SELECTED TRIP VALID
+     KEEP TRIP VALID
   ========================================= */
 
   useEffect(() => {
@@ -689,7 +657,9 @@ const Tracking = () => {
 
     const exists =
       filteredTrips.some(
-        (trip) =>
+        (
+          trip
+        ) =>
           trip.id ===
           selectedTripId
       );
@@ -698,9 +668,9 @@ const Tracking = () => {
     if (!exists) {
 
       setSelectedTripId(
-        filteredTrips[0].id
+        filteredTrips[0]
+          .id
       );
-
     }
 
   }, [
@@ -710,7 +680,7 @@ const Tracking = () => {
 
 
   /* =========================================
-     KEEP SELECTED VEHICLE VALID
+     KEEP VEHICLE VALID
   ========================================= */
 
   useEffect(() => {
@@ -733,20 +703,23 @@ const Tracking = () => {
       selectedTrip
         .vehicles
         .some(
-          (vehicle) =>
+          (
+            vehicle
+          ) =>
             vehicle.id ===
             selectedVehicleId
         );
 
 
-    if (!vehicleExists) {
+    if (
+      !vehicleExists
+    ) {
 
       setSelectedVehicleId(
         selectedTrip
           .vehicles[0]
           .id
       );
-
     }
 
   }, [
@@ -756,14 +729,16 @@ const Tracking = () => {
 
 
   /* =========================================
-     GET SELECTED VEHICLE
+     SELECTED VEHICLE
   ========================================= */
 
   const selectedVehicle =
     selectedTrip
       ?.vehicles
       ?.find(
-        (vehicle) =>
+        (
+          vehicle
+        ) =>
           vehicle.id ===
           selectedVehicleId
       ) ||
@@ -788,7 +763,6 @@ const Tracking = () => {
         " ",
         "-"
       );
-
   };
 
 
@@ -810,7 +784,6 @@ const Tracking = () => {
           size={13}
         />
       );
-
     }
 
 
@@ -824,7 +797,6 @@ const Tracking = () => {
           size={13}
         />
       );
-
     }
 
 
@@ -838,7 +810,6 @@ const Tracking = () => {
           size={13}
         />
       );
-
     }
 
 
@@ -852,7 +823,6 @@ const Tracking = () => {
           size={13}
         />
       );
-
     }
 
 
@@ -861,7 +831,6 @@ const Tracking = () => {
         size={13}
       />
     );
-
   };
 
 
@@ -892,11 +861,25 @@ const Tracking = () => {
       setSelectedVehicleId(
         null
       );
-
     }
-
   };
 
+
+  /* =========================================
+     CLEAR FILTERS
+  ========================================= */
+
+  const clearAllFilters =
+    () => {
+
+      setSearchTerm("");
+
+      setMovementFilter(
+        "All"
+      );
+
+      setSelectedDate("");
+    };
 
 
   /* =========================================
@@ -907,32 +890,18 @@ const Tracking = () => {
 
     <main className="tracking-page">
 
+
       {/* =====================================
-          PAGE HEADER
+          HEADER
       ===================================== */}
 
       <header className="tracking-header">
 
         <div className="tracking-header-content">
 
-          {/* <span className="tracking-eyebrow">
-            FLEET OPERATIONS
-          </span>
-
-
-          <h1>
-            Vehicle Tracking
-          </h1>
-
-
-          <p>
-            Track trips and multiple
-            vehicles travelling under
-            the same consignment.
-          </p> */}
-
         </div>
-</header>
+
+      </header>
 
 
       {/* =====================================
@@ -941,38 +910,11 @@ const Tracking = () => {
 
       {apiError && (
 
-        <div
-          style={{
-            marginBottom:
-              "12px",
-
-            padding:
-              "10px 14px",
-
-            border:
-              "1px solid #fecaca",
-
-            borderRadius:
-              "8px",
-
-            background:
-              "#fef2f2",
-
-            color:
-              "#b91c1c",
-
-            fontSize:
-              "12px",
-
-            fontWeight:
-              600,
-          }}
-        >
+        <div className="tracking-api-error">
 
           {apiError}
 
         </div>
-
       )}
 
 
@@ -981,6 +923,7 @@ const Tracking = () => {
       ===================================== */}
 
       <section className="tracking-toolbar">
+
 
         {/* SEARCH */}
 
@@ -1001,7 +944,8 @@ const Tracking = () => {
               event
             ) =>
               setSearchTerm(
-                event.target.value
+                event.target
+                  .value
               )
             }
           />
@@ -1023,18 +967,21 @@ const Tracking = () => {
               />
 
             </button>
-
           )}
 
         </div>
 
 
-        {/* STATUS FILTER */}
+        {/* =====================================
+            STATUS FILTER
+        ===================================== */}
 
         <div className="tracking-status-filter">
 
           {statusOptions.map(
-            (status) => {
+            (
+              status
+            ) => {
 
               const active =
                 movementFilter ===
@@ -1042,11 +989,10 @@ const Tracking = () => {
 
 
               return (
+
                 <button
                   type="button"
-                  key={
-                    status
-                  }
+                  key={status}
                   className={
                     active
                       ? "active"
@@ -1067,26 +1013,33 @@ const Tracking = () => {
 
 
                   <span>
+
                     {status}
+
                   </span>
 
 
                   <small className="tracking-status-count">
-                    {statusCounts[
-                      status
-                    ]}
+
+                    {
+                      statusCounts[
+                        status
+                      ]
+                    }
+
                   </small>
 
                 </button>
               );
-
             }
           )}
 
         </div>
 
 
-        {/* DATE */}
+        {/* =====================================
+            DATE FILTER
+        ===================================== */}
 
         <label className="tracking-date">
 
@@ -1102,12 +1055,40 @@ const Tracking = () => {
             }
             onChange={(
               event
-            ) =>
+            ) => {
+
               setSelectedDate(
-                event.target.value
-              )
-            }
+                event.target
+                  .value
+              );
+            }}
           />
+
+
+          {selectedDate && (
+
+            <button
+              type="button"
+              className="tracking-date-clear"
+              onClick={(
+                event
+              ) => {
+
+                event.preventDefault();
+
+                event.stopPropagation();
+
+                setSelectedDate("");
+              }}
+              aria-label="Clear selected date"
+            >
+
+              <X
+                size={14}
+              />
+
+            </button>
+          )}
 
         </label>
 
@@ -1121,45 +1102,73 @@ const Tracking = () => {
       {loading ? (
 
         <div className="tracking-loading-state">
+
           Loading trips...
+
         </div>
 
-      ) : filteredTrips.length === 0 ? (
+      ) : filteredTrips.length ===
+        0 ? (
+
+        /* =====================================
+           EMPTY STATE
+        ===================================== */
 
         <div className="tracking-no-results">
 
+
           <div className="tracking-no-results-icon">
-            {movementFilter === "Breakdown" ? (
-              <CircleAlert size={26} />
+
+            {movementFilter ===
+            "Breakdown" ? (
+
+              <CircleAlert
+                size={26}
+              />
+
             ) : (
-              <Search size={26} />
+
+              <Search
+                size={26}
+              />
             )}
+
           </div>
 
 
           <strong>
-            No {movementFilter === "All"
-              ? ""
-              : `${movementFilter} `}Trips Found
+
+            {selectedDate
+              ? "No Trips Found On This Date"
+              : movementFilter !==
+                  "All"
+                ? `No ${movementFilter} Trips Found`
+                : "No Trips Found"}
+
           </strong>
 
 
           <p>
-            {movementFilter === "Breakdown"
-              ? "There are currently no trips containing a vehicle with Breakdown status."
-              : "Try changing the status, search text or date filter."}
+
+            {selectedDate
+              ? `No trip records are available for ${selectedDate}.`
+              : movementFilter ===
+                  "Breakdown"
+                ? "There are currently no trips containing a vehicle with Breakdown status."
+                : "Try changing the status, search text or date filter."}
+
           </p>
 
 
           <button
             type="button"
-            onClick={() => {
-              setMovementFilter("All");
-              setSearchTerm("");
-              setSelectedDate("");
-            }}
+            onClick={
+              clearAllFilters
+            }
           >
+
             Show All Trips
+
           </button>
 
         </div>
@@ -1167,10 +1176,11 @@ const Tracking = () => {
       ) : (
 
         /* =====================================
-           MAIN TRACKING LAYOUT
+           TRACKING COLUMNS
         ===================================== */
 
         <section className="tracking-layout">
+
 
           {/* TRIP LIST */}
 
@@ -1187,7 +1197,7 @@ const Tracking = () => {
           />
 
 
-          {/* VEHICLE DETAILS */}
+          {/* VEHICLE COLUMN */}
 
           <VehicleColumn
             trip={
@@ -1208,7 +1218,7 @@ const Tracking = () => {
           />
 
 
-          {/* VEHICLE MAP */}
+          {/* MAP COLUMN */}
 
           <TrackingMapColumn
             trip={
@@ -1226,13 +1236,10 @@ const Tracking = () => {
           />
 
         </section>
-
       )}
 
     </main>
-
   );
-
 };
 
 

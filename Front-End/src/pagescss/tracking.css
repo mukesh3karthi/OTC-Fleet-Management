@@ -1334,3 +1334,859 @@ body {
 .journey-current-card-title strong {
   color: #252b45;
 }
+
+
+/* =========================================================
+   MOBILE TRACKING FIX
+========================================================= */
+
+@media (max-width: 768px) {
+
+  .tracking-page {
+    width: 100%;
+    min-width: 0;
+    min-height: 100vh;
+
+    padding: 0 8px 20px;
+
+    overflow-x: hidden;
+    overflow-y: visible;
+  }
+
+  /* HEADER */
+
+  .tracking-header {
+    width: 100%;
+
+    flex-direction: column;
+    align-items: flex-start;
+
+    gap: 8px;
+
+    margin-bottom: 10px;
+  }
+
+  .tracking-header-content {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .tracking-header-content h1 {
+    font-size: 21px;
+  }
+
+  .tracking-header-content p {
+    width: 100%;
+    max-width: none;
+
+    font-size: 10px;
+  }
+
+
+  /* ===============================
+     TOOLBAR
+  =============================== */
+
+  .tracking-toolbar {
+    width: 100%;
+
+    flex-direction: column;
+    align-items: stretch;
+
+    gap: 8px;
+
+    padding: 8px;
+
+    height: auto;
+    min-height: auto;
+
+    overflow: visible;
+  }
+
+  .tracking-search {
+    width: 100%;
+    max-width: none;
+  }
+
+  .tracking-status-filter {
+    width: 100%;
+
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    justify-content: flex-start;
+
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .tracking-status-filter button {
+    flex: 0 0 auto;
+  }
+
+
+  /* ===============================
+     MAIN TRACKING COLUMNS
+  =============================== */
+
+  .tracking-content,
+  .tracking-columns,
+  .tracking-main-grid,
+  .tracking-workspace,
+  .tracking-body {
+    width: 100% !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+
+    grid-template-columns: 1fr !important;
+
+    height: auto !important;
+    min-height: 0 !important;
+
+    overflow: visible !important;
+
+    gap: 12px;
+  }
+
+
+  /* TRIP COLUMN */
+
+  .tracking-trip-panel {
+    width: 100% !important;
+
+    height: auto !important;
+    min-height: 250px !important;
+    max-height: 400px;
+
+    flex: none !important;
+
+    overflow: hidden;
+  }
+
+  .tracking-trip-list {
+    width: 100%;
+
+    min-height: 180px;
+    max-height: 320px;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    -webkit-overflow-scrolling: touch;
+  }
+
+
+  /* VEHICLE DETAILS COLUMN */
+
+  .vehicle-column-panel {
+    width: 100% !important;
+
+    height: auto !important;
+    min-height: auto !important;
+
+    overflow: visible !important;
+
+    flex: none !important;
+  }
+
+
+  /* ROUTE / MAP COLUMN */
+
+  .journey-column {
+    width: 100% !important;
+
+    height: auto !important;
+    min-height: 550px !important;
+
+    overflow: visible !important;
+
+    flex: none !important;
+  }
+
+  .journey-route-wrapper {
+    width: calc(100% - 16px);
+
+    height: 500px !important;
+    min-height: 500px !important;
+
+    flex: none !important;
+
+    overflow: hidden;
+  }
+}
+
+/* =========================================================
+   API ERROR
+========================================================= */
+
+.tracking-api-error {
+  width: 100%;
+
+  margin-bottom: 12px;
+
+  padding: 10px 14px;
+
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+
+  color: #b91c1c;
+
+  background: #fef2f2;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  line-height: 1.45;
+}
+
+
+/* =========================================================
+   TABLET / MOBILE TRACKING FIX
+========================================================= */
+
+@media (max-width: 850px) {
+
+  /* =====================================
+     PAGE
+  ===================================== */
+
+  .tracking-page {
+    width: 100%;
+
+    min-width: 0;
+
+    min-height:
+      calc(100vh - 70px);
+
+    padding:
+      12px 10px 24px;
+
+    overflow-x: hidden;
+    overflow-y: visible;
+  }
+
+
+  /* =====================================
+     HEADER
+  ===================================== */
+
+  .tracking-header {
+    width: 100%;
+
+    margin-bottom: 10px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: flex-start;
+
+    gap: 8px;
+  }
+
+
+  .tracking-header-content {
+    width: 100%;
+
+    min-width: 0;
+  }
+
+
+  .tracking-header-content h1 {
+    font-size: 22px;
+  }
+
+
+  .tracking-header-content p {
+    width: 100%;
+
+    max-width: none;
+
+    font-size: 10px;
+  }
+
+
+  /* =====================================
+     TOOLBAR
+  ===================================== */
+
+  .tracking-toolbar {
+    position: relative;
+
+    width: 100%;
+
+    min-height: auto;
+
+    margin-bottom: 10px;
+
+    padding: 8px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: stretch;
+
+    gap: 8px;
+
+    overflow: visible;
+  }
+
+
+  /* SEARCH */
+
+  .tracking-search {
+    width: 100%;
+
+    max-width: none;
+
+    flex: none;
+  }
+
+
+  /* =====================================
+     STATUS
+  ===================================== */
+
+  .tracking-status-filter {
+    width: 100%;
+
+    max-width: 100%;
+
+    flex: none;
+
+    display: flex;
+
+    justify-content: flex-start;
+
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    scrollbar-width: none;
+
+    -webkit-overflow-scrolling:
+      touch;
+  }
+
+
+  .tracking-status-filter::-webkit-scrollbar {
+    display: none;
+  }
+
+
+  .tracking-status-filter button {
+    flex: 0 0 auto;
+
+    min-width: fit-content;
+  }
+
+
+  /* =====================================
+     DATE
+  ===================================== */
+
+  .tracking-date {
+    width: 100%;
+
+    margin-left: 0;
+
+    flex: none;
+  }
+
+
+  .tracking-date input {
+    width: 100%;
+
+    min-width: 0;
+  }
+
+
+  /* =====================================
+     MAIN LAYOUT
+  ===================================== */
+
+  .tracking-layout {
+    position: relative !important;
+
+    top: auto !important;
+
+    width: 100% !important;
+
+    min-width: 0 !important;
+
+    height: auto !important;
+
+    min-height: 0 !important;
+
+    display: flex !important;
+
+    flex-direction: column !important;
+
+    grid-template-columns:
+      none !important;
+
+    align-items: stretch;
+
+    gap: 12px;
+
+    overflow: visible !important;
+  }
+
+
+  /* =====================================
+     ALL 3 COLUMNS
+  ===================================== */
+
+  .tracking-layout > * {
+    width: 100% !important;
+
+    min-width: 0 !important;
+
+    height: auto !important;
+
+    max-height: none !important;
+
+    min-height: 0 !important;
+
+    overflow: visible;
+  }
+
+
+  /* =====================================
+     TRIP PANEL
+  ===================================== */
+
+  .tracking-layout
+  .tracking-trip-panel {
+    width: 100% !important;
+
+    height: auto !important;
+
+    min-height: 260px !important;
+
+    max-height: 400px !important;
+
+    flex: none;
+
+    overflow: hidden !important;
+
+    border-radius: 12px;
+  }
+
+
+  .tracking-trip-panel
+  .tracking-column-heading {
+    min-height: 62px;
+
+    flex:
+      0 0 auto;
+  }
+
+
+  .tracking-trip-panel
+  .tracking-trip-list {
+    width: 100%;
+
+    min-height: 190px;
+
+    max-height: 330px !important;
+
+    flex: none;
+
+    overflow-y: auto !important;
+    overflow-x: hidden;
+
+    -webkit-overflow-scrolling:
+      touch;
+  }
+
+
+  /* =====================================
+     VEHICLE COLUMN
+  ===================================== */
+
+  .tracking-layout >
+  :nth-child(2) {
+    width: 100% !important;
+
+    height: auto !important;
+
+    min-height: 0 !important;
+
+    max-height: none !important;
+
+    overflow: visible !important;
+  }
+
+
+  .vehicle-column-panel {
+    width: 100% !important;
+
+    min-width: 0 !important;
+
+    height: auto !important;
+
+    min-height: 0 !important;
+
+    max-height: none !important;
+
+    overflow: visible !important;
+  }
+
+
+  /* =====================================
+     VEHICLE STATUS STRIP
+  ===================================== */
+
+  .vehicle-status-strip {
+    width:
+      calc(100% - 16px);
+
+    min-height: auto;
+
+    align-items: stretch;
+
+    gap: 7px;
+  }
+
+
+  .status-strip-left {
+    min-width: 0;
+
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(
+          0,
+          1fr
+        )
+      );
+
+    row-gap: 5px;
+  }
+
+
+  .status-item {
+    justify-content:
+      flex-start;
+
+    padding: 0 5px;
+  }
+
+
+  .status-item:nth-child(2) {
+    border-right: 0;
+  }
+
+
+  /* =====================================
+     VEHICLE LIST
+  ===================================== */
+
+  .vehicle-mini-list {
+    max-height: 250px;
+  }
+
+
+  /* =====================================
+     MAP COLUMN
+  ===================================== */
+
+  .tracking-layout >
+  :nth-child(3) {
+    width: 100% !important;
+
+    height: auto !important;
+
+    min-height: 560px !important;
+
+    max-height: none !important;
+
+    grid-column: auto !important;
+
+    overflow: visible !important;
+  }
+
+
+  .journey-column {
+    width: 100% !important;
+
+    min-width: 0 !important;
+
+    height: auto !important;
+
+    min-height: 560px !important;
+
+    max-height: none !important;
+
+    overflow: visible !important;
+  }
+
+
+  /* =====================================
+     MAP ROUTE
+  ===================================== */
+
+  .journey-route-wrapper {
+    width:
+      calc(100% - 16px) !important;
+
+    height: 500px !important;
+
+    min-height: 500px !important;
+
+    max-height: none !important;
+
+    flex: none !important;
+
+    overflow: hidden !important;
+  }
+
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 650px) {
+
+  .tracking-page {
+    padding:
+      10px 8px 22px;
+  }
+
+
+  /* =====================================
+     TOOLBAR
+  ===================================== */
+
+  .tracking-toolbar {
+    padding: 7px;
+
+    gap: 7px;
+
+    border-radius: 10px;
+  }
+
+
+  .tracking-search {
+    height: 40px;
+  }
+
+
+  .tracking-search input {
+    font-size: 11px;
+  }
+
+
+  /* =====================================
+     STATUS FILTER
+  ===================================== */
+
+  .tracking-status-filter {
+    padding: 3px;
+
+    gap: 3px;
+  }
+
+
+  .tracking-status-filter button {
+    min-height: 32px;
+
+    padding:
+      0 8px;
+
+    font-size: 8.5px;
+  }
+
+
+  /* =====================================
+     DATE
+  ===================================== */
+
+  .tracking-date {
+    min-height: 40px;
+  }
+
+
+  /* =====================================
+     TRIP LIST
+  ===================================== */
+
+  .tracking-layout
+  .tracking-trip-panel {
+    min-height:
+      250px !important;
+
+    max-height:
+      380px !important;
+  }
+
+
+  .tracking-trip-panel
+  .tracking-trip-list {
+    min-height: 180px;
+
+    max-height:
+      305px !important;
+  }
+
+
+  /* =====================================
+     TRIP CARD
+  ===================================== */
+
+  .tracking-trip-card {
+    min-height: 68px;
+
+    padding:
+      10px;
+  }
+
+
+  .trip-customer-name {
+    max-width: 55%;
+
+    font-size: 11.5px;
+  }
+
+
+  .trip-material-name {
+    font-size: 9.5px;
+  }
+
+
+  /* =====================================
+     STATUS
+  ===================================== */
+
+  .status-strip-left {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(
+          0,
+          1fr
+        )
+      );
+  }
+
+
+  /* =====================================
+     MAP
+  ===================================== */
+
+  .tracking-layout >
+  :nth-child(3),
+  .journey-column {
+    min-height:
+      520px !important;
+  }
+
+
+  .journey-route-wrapper {
+    height:
+      460px !important;
+
+    min-height:
+      460px !important;
+  }
+
+}
+
+
+/* =========================================================
+   SMALL MOBILE
+========================================================= */
+
+@media (max-width: 430px) {
+
+  .tracking-page {
+    padding:
+      9px 7px 20px;
+  }
+
+
+  .tracking-toolbar {
+    padding: 6px;
+  }
+
+
+  /* =====================================
+     STATUS BUTTON SCROLL
+  ===================================== */
+
+  .tracking-status-filter {
+    justify-content:
+      flex-start;
+  }
+
+
+  .tracking-status-filter button {
+    padding:
+      0 7px;
+  }
+
+
+  /* =====================================
+     TRIP PANEL
+  ===================================== */
+
+  .tracking-layout
+  .tracking-trip-panel {
+    min-height:
+      235px !important;
+
+    max-height:
+      350px !important;
+  }
+
+
+  .tracking-trip-panel
+  .tracking-trip-list {
+    min-height:
+      165px;
+
+    max-height:
+      280px !important;
+  }
+
+
+  /* =====================================
+     STATUS GRID
+  ===================================== */
+
+  .status-strip-left {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(
+          0,
+          1fr
+        )
+      );
+  }
+
+
+  /* =====================================
+     MAP
+  ===================================== */
+
+  .tracking-layout >
+  :nth-child(3),
+  .journey-column {
+    min-height:
+      490px !important;
+  }
+
+
+  .journey-route-wrapper {
+    height:
+      430px !important;
+
+    min-height:
+      430px !important;
+  }
+
+}

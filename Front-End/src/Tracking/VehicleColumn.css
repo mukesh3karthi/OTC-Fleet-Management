@@ -5764,3 +5764,1754 @@ div > span {
 .lr-person-heading strong {
   color: #102a43;
 }
+
+/* =========================================================
+   LR / POD REFERENCE IMAGE THEME
+   Deep Navy + Soft Blue Grey + White
+========================================================= */
+
+.vehicle-column-panel .lr-pod-card {
+  overflow: hidden;
+
+  border: 1px solid #d7e0e8;
+  border-radius: 10px;
+
+  background: #f3f6f9;
+
+  box-shadow:
+    0 4px 14px rgba(32, 62, 92, 0.08);
+}
+
+
+/* =========================================================
+   LR & POD HEADER
+========================================================= */
+
+.vehicle-column-panel .lr-pod-heading {
+  min-height: 38px;
+
+  padding: 8px 11px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 6px;
+
+  border: 0;
+  border-bottom: 1px solid #315c85;
+
+  border-radius: 9px 9px 0 0;
+
+  color: #ffffff;
+
+  background:
+    linear-gradient(135deg, #3e5872 0%, #2c4f71 55%, #0f253c 100%);
+
+  box-shadow:
+    0 2px 7px rgba(24, 58, 92, 0.18);
+}
+
+.vehicle-column-panel .lr-pod-heading svg {
+  color: #eef6fc;
+}
+
+.vehicle-column-panel .lr-pod-heading strong {
+  color: #ffffff;
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   LR PRIMARY SECTION
+========================================================= */
+
+.vehicle-column-panel .lr-primary-grid {
+  padding: 10px;
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+
+  gap: 8px;
+
+  background: #eef3f7;
+}
+
+.vehicle-column-panel .lr-primary-item {
+  min-width: 0;
+  min-height: 52px;
+
+  padding: 8px 9px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  border: 1px solid #dce4eb;
+  border-radius: 7px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 2px 7px rgba(48, 74, 100, 0.06);
+}
+
+.vehicle-column-panel .lr-primary-item span {
+  color: #6f8192;
+
+  font-size: 8px;
+  font-weight: 500;
+}
+
+.vehicle-column-panel .lr-primary-item strong {
+  margin-top: 3px;
+
+  color: #19324a;
+
+  font-size: 10px;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   LR REMARKS
+========================================================= */
+
+.vehicle-column-panel .lr-remarks-box {
+  width: calc(100% - 20px);
+
+  min-height: 57px;
+
+  margin:
+    0 10px 10px;
+
+  padding: 8px 9px;
+
+  border: 1px solid #dce4eb;
+  border-radius: 7px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 2px 7px rgba(48, 74, 100, 0.05);
+}
+
+.vehicle-column-panel .lr-remarks-label {
+  display: flex;
+  align-items: center;
+
+  gap: 5px;
+
+  color: #5e7184;
+}
+
+.vehicle-column-panel .lr-remarks-label svg {
+  color: #46647e;
+}
+
+.vehicle-column-panel .lr-remarks-label span {
+  font-size: 8px;
+  font-weight: 600;
+}
+
+.vehicle-column-panel .lr-remarks-value {
+  margin-top: 5px;
+
+  color: #2b4053;
+
+  font-size: 9.5px;
+  font-weight: 500;
+}
+
+
+/* =========================================================
+   POD DETAILS
+========================================================= */
+
+.vehicle-column-panel .pod-details-grid {
+  padding: 10px;
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+
+  gap: 8px;
+
+  border-top: 1px solid #dfe7ee;
+
+  background: #edf2f6;
+}
+
+.vehicle-column-panel .pod-detail-item {
+  min-height: 52px;
+
+  padding: 8px 9px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  border: 1px solid #dce4eb;
+  border-radius: 7px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 2px 7px rgba(48, 74, 100, 0.06);
+}
+
+.vehicle-column-panel .pod-detail-item span {
+  color: #6f8192;
+
+  font-size: 8px;
+  font-weight: 500;
+}
+
+.vehicle-column-panel .pod-detail-item strong {
+  margin-top: 3px;
+
+  color: #19324a;
+
+  font-size: 10px;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   DRIVER / ESCORT / SUPERVISOR SECTION
+========================================================= */
+
+.vehicle-column-panel .lr-person-section,
+.vehicle-column-panel .escort-section,
+.vehicle-column-panel .supervisor-section {
+  padding: 9px 10px;
+
+  border-top: 1px solid #dbe4eb;
+
+  background:
+    linear-gradient(
+      180deg,
+      #f6f8fa 0%,
+      #eef3f6 100%
+    );
+}
+
+
+/* =========================================================
+   PERSON HEADING
+========================================================= */
+
+.vehicle-column-panel .lr-person-heading {
+  min-height: 29px;
+
+  padding:
+    0 2px 6px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 6px;
+
+  color: #365c78;
+}
+
+.vehicle-column-panel .lr-person-heading svg {
+  color: #3e6682;
+}
+
+.vehicle-column-panel .lr-person-heading strong {
+  color: #263f56;
+
+  font-size: 10px;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   DRIVER / ESCORT ROW BOX
+========================================================= */
+
+.vehicle-column-panel .lr-person-content {
+  overflow: hidden;
+
+  border: 1px solid #dde5eb;
+  border-radius: 7px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 2px 6px rgba(49, 74, 99, 0.04);
+}
+
+.vehicle-column-panel .lr-person-row {
+  min-height: 32px;
+
+  padding: 0 9px;
+
+  display: grid;
+
+  grid-template-columns:
+    110px
+    12px
+    minmax(0, 1fr);
+
+  align-items: center;
+
+  gap: 3px;
+
+  border-bottom: 1px solid #e5ebf0;
+
+  background: #ffffff;
+}
+
+.vehicle-column-panel .lr-person-row:nth-child(even) {
+  background: #f8fafb;
+}
+
+.vehicle-column-panel .lr-person-row:last-child {
+  border-bottom: 0;
+}
+
+.vehicle-column-panel
+.lr-person-row
+> span:first-child {
+  color: #6d7c8b;
+
+  font-size: 8.5px;
+  font-weight: 500;
+}
+
+.vehicle-column-panel .lr-person-colon {
+  color: #9aa7b3;
+
+  font-size: 8.5px;
+
+  text-align: center;
+}
+
+.vehicle-column-panel .lr-person-row strong {
+  min-width: 0;
+
+  overflow: hidden;
+
+  color: #253a4d;
+
+  font-size: 9.5px;
+  font-weight: 600;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   ESCORT SECTION
+========================================================= */
+
+.vehicle-column-panel .escort-section {
+  background:
+    linear-gradient(
+      180deg,
+      #f5f8fa 0%,
+      #eef3f6 100%
+    );
+}
+
+
+/* =========================================================
+   SUPERVISOR SECTION
+========================================================= */
+
+.vehicle-column-panel .supervisor-section {
+  background:
+    linear-gradient(
+      180deg,
+      #f5f7f9 0%,
+      #edf2f5 100%
+    );
+}
+
+
+/* =========================================================
+   POD REMARKS
+========================================================= */
+
+.vehicle-column-panel .pod-remarks-box {
+  width: calc(100% - 20px);
+
+  min-height: 55px;
+
+  margin:
+    10px;
+
+  padding: 8px 9px;
+
+  border: 1px solid #dce4eb;
+  border-radius: 7px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 2px 7px rgba(48, 74, 100, 0.05);
+}
+
+.vehicle-column-panel .pod-remarks-label {
+  display: flex;
+  align-items: center;
+
+  gap: 5px;
+
+  color: #5e7184;
+}
+
+.vehicle-column-panel .pod-remarks-label svg {
+  color: #46647e;
+}
+
+.vehicle-column-panel .pod-remarks-label span {
+  font-size: 8px;
+  font-weight: 600;
+}
+
+.vehicle-column-panel .pod-remarks-value {
+  margin-top: 5px;
+
+  color: #2b4053;
+
+  font-size: 9.5px;
+  font-weight: 500;
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 950px) {
+
+  .vehicle-column-panel .lr-primary-grid,
+  .vehicle-column-panel .pod-details-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+}
+
+
+@media (max-width: 650px) {
+
+  .vehicle-column-panel .lr-primary-grid,
+  .vehicle-column-panel .pod-details-grid {
+    padding: 8px;
+
+    gap: 6px;
+  }
+
+  .vehicle-column-panel .lr-person-section,
+  .vehicle-column-panel .escort-section,
+  .vehicle-column-panel .supervisor-section {
+    padding: 8px;
+  }
+
+  .vehicle-column-panel .lr-person-row {
+    grid-template-columns:
+      92px
+      8px
+      minmax(0, 1fr);
+  }
+
+  .vehicle-column-panel .lr-remarks-box,
+  .vehicle-column-panel .pod-remarks-box {
+    width: calc(100% - 16px);
+
+    margin-left: 8px;
+    margin-right: 8px;
+  }
+}
+
+/* =========================================================
+   TRIP DETAILS — SAME THEME AS LR & POD
+   Navy Blue + Soft Blue Grey + White
+========================================================= */
+
+
+/* =========================
+   MAIN TRIP DETAILS CARD
+========================= */
+
+.vehicle-column-panel .consignment-card {
+  overflow: hidden;
+
+  border: 1px solid #d7e0e8;
+  border-radius: 10px;
+
+  background: #f3f6f9;
+
+  box-shadow:
+    0 4px 14px rgba(32, 62, 92, 0.08);
+}
+
+
+/* =========================
+   TRIP DETAILS TITLE
+========================= */
+
+.vehicle-column-panel .consignment-title {
+  min-height: 38px;
+
+  padding: 8px 11px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 6px;
+
+  border: 0;
+  border-bottom: 1px solid #315c85;
+
+  color: #ffffff;
+
+  background:
+    linear-gradient(135deg, #3e5872 0%, #2c4f71 55%, #0f253c 100%
+    );
+
+    
+}
+
+.vehicle-column-panel .consignment-title svg {
+  color: #eef6fc;
+}
+
+.vehicle-column-panel .consignment-title strong {
+  color: #ffffff;
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   CLIENT + TRANSPORTER GROUP
+========================================================= */
+
+.vehicle-column-panel .trip-detail-group {
+  margin-top: 9px;
+
+  overflow: hidden;
+
+  border: 1px solid #d7e0e8;
+  border-radius: 8px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 2px 7px rgba(48, 74, 100, 0.05);
+}
+
+
+/* REMOVE OLD BLUE/GREEN SIDE BORDER */
+
+.vehicle-column-panel .client-group,
+.vehicle-column-panel .transporter-group {
+  border-left: 1px solid #d7e0e8;
+}
+
+
+/* =========================
+   GROUP HEADER
+========================= */
+
+.vehicle-column-panel .trip-detail-group-title {
+  min-height: 37px;
+
+  padding: 6px 9px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 7px;
+
+  border-bottom: 1px solid #dce5ec;
+
+  background:
+    linear-gradient(
+      180deg,
+      #edf3f7 0%,
+      #e5edf3 100%
+    );
+}
+
+.vehicle-column-panel
+.trip-detail-group-title
+> strong {
+  color: #294760;
+
+  font-size: 10px;
+  font-weight: 700;
+}
+
+
+/* =========================
+   CLIENT ICON
+========================= */
+
+.vehicle-column-panel
+.trip-detail-group-icon.client {
+  width: 25px;
+  height: 25px;
+
+  display: grid;
+  place-items: center;
+
+  border: 1px solid #d1dce5;
+  border-radius: 6px;
+
+  color: #3d627e;
+
+  background: #ffffff;
+}
+
+
+/* =========================
+   TRANSPORTER ICON
+========================= */
+
+.vehicle-column-panel
+.trip-detail-group-icon.transporter {
+  width: 25px;
+  height: 25px;
+
+  display: grid;
+  place-items: center;
+
+  border: 1px solid #d1dce5;
+  border-radius: 6px;
+
+  color: #3d627e;
+
+  background: #ffffff;
+}
+
+
+/* =========================================================
+   CLIENT / TRANSPORTER ROWS
+========================================================= */
+
+.vehicle-column-panel .trip-detail-row {
+  min-height: 32px;
+
+  padding: 0 10px;
+
+  display: grid;
+
+  grid-template-columns:
+    115px
+    12px
+    minmax(0, 1fr);
+
+  align-items: center;
+
+  gap: 4px;
+
+  border-bottom: 1px solid #e5ebf0;
+
+  background: #ffffff;
+}
+
+.vehicle-column-panel
+.trip-detail-row:nth-child(even) {
+  background: #f8fafb;
+}
+
+.vehicle-column-panel
+.trip-detail-row:last-child {
+  border-bottom: 0;
+}
+
+
+/* LABEL */
+
+.vehicle-column-panel .trip-detail-label {
+  color: #6d7f90;
+
+  font-size: 8px;
+  font-weight: 500;
+}
+
+
+/* COLON */
+
+.vehicle-column-panel .trip-detail-colon {
+  color: #9aa8b5;
+
+  font-size: 8px;
+  font-weight: 600;
+
+  text-align: center;
+}
+
+
+/* VALUE */
+
+.vehicle-column-panel .trip-detail-value {
+  color: #223b51;
+
+  font-size: 9.5px;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   ESTIMATED TRANSIT
+========================================================= */
+
+.vehicle-column-panel .transit-day-row {
+  min-height: 34px;
+
+  margin-top: 9px;
+
+  padding: 6px 10px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  border: 1px solid #d6e0e8;
+  border-radius: 7px;
+
+  color: #3c617d;
+
+  background:
+    linear-gradient(
+      180deg,
+      #edf3f7 0%,
+      #e5edf3 100%
+    );
+}
+
+.vehicle-column-panel
+.transit-day-row > div {
+  display: flex;
+  align-items: center;
+
+  gap: 5px;
+}
+
+.vehicle-column-panel
+.transit-day-row svg {
+  color: #3c617d;
+}
+
+.vehicle-column-panel
+.transit-day-row span {
+  color: #61788c;
+
+  font-size: 8px;
+  font-weight: 500;
+}
+
+.vehicle-column-panel
+.transit-day-row strong {
+  color: #213d54;
+
+  font-size: 9.5px;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   LOADING / UNLOADING WRAPPER
+========================================================= */
+
+.vehicle-column-panel .operation-details-section {
+  padding: 9px;
+
+  border: 1px solid #d7e0e8;
+  border-radius: 10px;
+
+  background: #f1f5f8;
+
+  box-shadow:
+    0 3px 12px rgba(32, 62, 92, 0.06);
+}
+
+.vehicle-column-panel .operation-main-grid {
+  gap: 8px;
+}
+
+
+/* =========================================================
+   LOADING + UNLOADING CARD
+========================================================= */
+
+.vehicle-column-panel .operation-card,
+.vehicle-column-panel .simple-operation-card {
+  overflow: hidden;
+
+  border: 1px solid #d7e0e8;
+  border-radius: 8px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 2px 7px rgba(48, 74, 100, 0.05);
+}
+
+
+/* REMOVE OLD GREEN / BLUE TOP LINES */
+
+.vehicle-column-panel
+.operation-card.loading-card::before,
+.vehicle-column-panel
+.operation-card.unloading-card::before,
+.vehicle-column-panel
+.simple-operation-card.loading-card::before,
+.vehicle-column-panel
+.simple-operation-card.unloading-card::before {
+  background: #315b84;
+}
+
+
+/* =========================================================
+   LOADING / UNLOADING HEADER
+========================================================= */
+
+.vehicle-column-panel .operation-card-header,
+.vehicle-column-panel .simple-operation-header {
+  min-height: 42px;
+
+  padding: 7px 9px;
+
+  border-bottom: 1px solid #dce5ec;
+
+  background:
+    linear-gradient(
+      180deg,
+      #edf3f7 0%,
+      #e4edf3 100%
+    );
+}
+
+
+/* =========================================================
+   LOADING / UNLOADING ICONS
+========================================================= */
+
+.vehicle-column-panel
+.operation-card-icon.loading,
+.vehicle-column-panel
+.operation-card-icon.unloading,
+.vehicle-column-panel
+.simple-operation-icon.loading,
+.vehicle-column-panel
+.simple-operation-icon.unloading {
+  width: 25px;
+  height: 25px;
+
+  display: grid;
+  place-items: center;
+
+  border: 1px solid #d1dce5;
+  border-radius: 6px;
+
+  color: #3d627e;
+
+  background: #ffffff;
+}
+
+
+/* =========================================================
+   LOADING / UNLOADING TITLES
+========================================================= */
+
+.vehicle-column-panel
+.operation-card-title strong,
+.vehicle-column-panel
+.simple-operation-title > div > strong {
+  color: #223b51;
+
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.vehicle-column-panel
+.operation-card-title > div > span,
+.vehicle-column-panel
+.simple-operation-title > div > span {
+  color: #718496;
+
+  font-size: 7px;
+  font-weight: 500;
+}
+
+
+/* =========================================================
+   STATUS BADGES
+========================================================= */
+
+.vehicle-column-panel
+.operation-status-badge.loading,
+.vehicle-column-panel
+.operation-status-badge.unloading,
+.vehicle-column-panel
+.simple-operation-status.loading,
+.vehicle-column-panel
+.simple-operation-status.unloading {
+  border: 1px solid #cbd9e4;
+
+  color: #315b84;
+
+  background: #f2f6f9;
+
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   OPERATION BODY
+========================================================= */
+
+.vehicle-column-panel .simple-operation-details {
+  padding: 7px 10px;
+
+  background: #f7f9fb;
+}
+
+
+/* =========================================================
+   OPERATION ROWS
+========================================================= */
+
+.vehicle-column-panel .simple-detail-row {
+  min-height: 31px;
+
+  grid-template-columns:
+    105px
+    12px
+    minmax(0, 1fr);
+
+  border-bottom: 1px solid #e3eaf0;
+
+  background: transparent;
+}
+
+.vehicle-column-panel
+.simple-detail-row:last-child {
+  border-bottom: 0;
+}
+
+
+/* LABEL */
+
+.vehicle-column-panel
+.simple-detail-label {
+  color: #6d7f90;
+
+  font-size: 8px;
+  font-weight: 500;
+}
+
+
+/* COLON */
+
+.vehicle-column-panel
+.simple-detail-colon {
+  color: #9aa8b5;
+
+  font-size: 8px;
+}
+
+
+/* VALUE */
+
+.vehicle-column-panel
+.simple-detail-value {
+  color: #223b51;
+
+  font-size: 9px;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   HALTING DAYS
+========================================================= */
+
+.vehicle-column-panel
+.simple-detail-value.halting {
+  padding: 2px 6px;
+
+  border: 1px solid #d3dde6;
+  border-radius: 5px;
+
+  color: #315b84;
+
+  background: #eef3f7;
+
+  font-size: 8px;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   REMARKS BOX
+========================================================= */
+
+.vehicle-column-panel
+.simple-remarks-box {
+  min-height: 52px;
+
+  margin-top: 7px;
+
+  padding: 8px 9px;
+
+  border: 1px solid #dce4eb;
+  border-left: 2px solid #315b84;
+  border-radius: 7px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 2px 6px rgba(48, 74, 100, 0.04);
+}
+
+
+/* REMOVE OLD GREEN REMARK BORDER */
+
+.vehicle-column-panel
+.loading-card
+.simple-remarks-box,
+.vehicle-column-panel
+.unloading-card
+.simple-remarks-box {
+  border-left-color: #315b84;
+}
+
+
+.vehicle-column-panel
+.simple-remarks-heading {
+  color: #5f7487;
+}
+
+.vehicle-column-panel
+.simple-remarks-heading svg {
+  color: #46647e;
+}
+
+.vehicle-column-panel
+.simple-remarks-heading span {
+  font-size: 8px;
+  font-weight: 600;
+}
+
+.vehicle-column-panel
+.simple-remarks-value {
+  color: #253c50;
+
+  font-size: 9px;
+  font-weight: 600;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 900px) {
+
+  .vehicle-column-panel
+  .operation-main-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+@media (max-width: 650px) {
+
+  .vehicle-column-panel
+  .trip-detail-row {
+    grid-template-columns:
+      90px
+      8px
+      minmax(0, 1fr);
+
+    padding: 0 8px;
+  }
+
+
+  .vehicle-column-panel
+  .simple-detail-row {
+    grid-template-columns:
+      90px
+      8px
+      minmax(0, 1fr);
+  }
+
+
+  .vehicle-column-panel
+  .operation-details-section {
+    padding: 7px;
+  }
+}
+
+/* =========================================================
+   MOVEMENT STATUS
+   SAME NAVY BLUE + SOFT BLUE GREY THEME
+========================================================= */
+
+
+/* =========================
+   MAIN MOVEMENT CARD
+========================= */
+
+.vehicle-column-panel .movement-card-section {
+  margin: 0 8px 7px;
+
+  overflow: hidden;
+
+  border: 1px solid #d7e0e8;
+  border-radius: 9px;
+
+  background: #f3f6f9;
+
+  box-shadow:
+    0 3px 10px rgba(32, 62, 92, 0.06);
+}
+
+
+/* =========================
+   MOVEMENT HEADER
+========================= */
+
+.vehicle-column-panel .movement-heading-row {
+  width: 100%;
+  min-height: 40px;
+
+  margin: 0;
+  padding: 7px 9px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 7px;
+
+  border-bottom: 1px solid #dce5ec;
+
+  background:
+    linear-gradient(
+      180deg,
+      #edf3f7 0%,
+      #e4edf3 100%
+    );
+}
+
+
+/* =========================
+   HEADER ICON
+========================= */
+
+.vehicle-column-panel
+.movement-heading-row
+.section-heading-icon {
+  width: 26px;
+  height: 26px;
+
+  flex: 0 0 26px;
+
+  display: grid;
+  place-items: center;
+
+  border: 1px solid #d1dce5;
+  border-radius: 6px;
+
+  color: #3d627e;
+
+  background: #ffffff;
+}
+
+
+/* Override old blue/purple icon */
+
+.vehicle-column-panel
+.movement-heading-row
+.section-heading-icon.blue,
+.vehicle-column-panel
+.movement-heading-row
+.section-heading-icon.purple {
+  color: #3d627e;
+  background: #ffffff;
+}
+
+
+/* =========================
+   TITLE AREA
+========================= */
+
+.vehicle-column-panel
+.movement-heading-content {
+  min-width: 0;
+  flex: 1;
+}
+
+
+.vehicle-column-panel
+.movement-title-line {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 8px;
+}
+
+
+.vehicle-column-panel
+.movement-title-line > strong {
+  color: #223b51;
+
+  font-size: 10.5px;
+  font-weight: 700;
+
+  line-height: 1.2;
+}
+
+
+/* =========================
+   SUBTITLE
+========================= */
+
+.vehicle-column-panel
+.movement-heading-subtitle {
+  display: block;
+
+  margin-top: 2px;
+
+  color: #718496;
+
+  font-size: 7.5px;
+  font-weight: 500;
+}
+
+
+/* =========================
+   VEHICLE NUMBER BADGE
+========================= */
+
+.vehicle-column-panel
+.movement-vehicle-badge {
+  min-height: 24px;
+  max-width: 180px;
+
+  padding: 3px 7px;
+
+  display: inline-flex;
+  align-items: center;
+
+  gap: 4px;
+
+  border: 1px solid #cbd9e4;
+  border-radius: 6px;
+
+  color: #315b84;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 1px 3px rgba(32, 62, 92, 0.04);
+}
+
+
+.vehicle-column-panel
+.movement-vehicle-badge svg {
+  color: #3d627e;
+}
+
+
+.vehicle-column-panel
+.movement-vehicle-badge > span {
+  color: #718496;
+
+  font-size: 7px;
+}
+
+
+.vehicle-column-panel
+.movement-vehicle-badge > strong {
+  color: #294760;
+
+  font-size: 8.5px;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   MOVEMENT DETAILS AREA
+========================================================= */
+
+.vehicle-column-panel
+.movement-card-grid {
+  width: 100%;
+
+  padding: 8px;
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+
+  gap: 6px;
+
+  background: #f7f9fb;
+}
+
+
+/* =========================
+   INFO CARDS
+========================= */
+
+.vehicle-column-panel
+.movement-info-card {
+  min-width: 0;
+  min-height: 48px;
+
+  padding: 7px 8px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  border: 1px solid #dce4eb;
+  border-radius: 7px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 1px 4px rgba(32, 62, 92, 0.035);
+
+  transition:
+    border-color 150ms ease,
+    background 150ms ease,
+    box-shadow 150ms ease;
+}
+
+
+/* =========================
+   CARD HOVER
+========================= */
+
+.vehicle-column-panel
+.movement-info-card:hover {
+  border-color: #c5d4df;
+
+  background: #fbfcfd;
+
+  box-shadow:
+    0 2px 6px rgba(32, 62, 92, 0.06);
+}
+
+
+/* =========================
+   CARD LABEL
+========================= */
+
+.vehicle-column-panel
+.movement-info-card span {
+  display: block;
+
+  overflow: hidden;
+
+  color: #6d7f90;
+
+  font-size: 7.5px;
+  font-weight: 500;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+
+/* =========================
+   CARD VALUE
+========================= */
+
+.vehicle-column-panel
+.movement-info-card strong {
+  display: block;
+
+  margin-top: 4px;
+
+  overflow: hidden;
+
+  color: #223b51;
+
+  font-size: 9.5px;
+  font-weight: 700;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   RUNNING KM - SMALL HIGHLIGHT
+========================================================= */
+
+.vehicle-column-panel
+.movement-info-card:nth-child(3) strong {
+  color: #315b84;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 950px) {
+
+  .vehicle-column-panel
+  .movement-card-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+}
+
+
+@media (max-width: 650px) {
+
+  .vehicle-column-panel
+  .movement-card-section {
+    margin-left: 6px;
+    margin-right: 6px;
+  }
+
+
+  .vehicle-column-panel
+  .movement-heading-row {
+    padding: 7px 8px;
+  }
+
+
+  .vehicle-column-panel
+  .movement-title-line {
+    align-items: flex-start;
+    flex-direction: column;
+
+    gap: 4px;
+  }
+
+
+  .vehicle-column-panel
+  .movement-vehicle-badge {
+    max-width: 100%;
+  }
+
+
+  .vehicle-column-panel
+  .movement-card-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+
+    padding: 7px;
+
+    gap: 5px;
+  }
+}
+
+/* =========================================================
+   FINAL MOVEMENT STATUS THEME
+   Navy Blue + Soft Blue Grey + White
+   IMPORTANT: Keep this block at the END of VehicleColumn.css
+========================================================= */
+
+.vehicle-column-panel .movement-card-section {
+  width: auto;
+  min-width: 0;
+  margin: 0 8px 10px;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid #d5e0e8;
+  border-radius: 9px;
+  background: #ffffff;
+  box-shadow: 0 2px 7px rgba(20, 45, 70, 0.045);
+}
+
+.vehicle-column-panel .movement-heading-row {
+  width: 100%;
+  min-height: 42px;
+  margin: 0;
+  padding: 7px 9px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border-bottom: 1px solid #d9e3ea;
+  background: linear-gradient(
+    90deg,
+    #e8eef3 0%,
+    #edf3f6 55%,
+    #f5f8fa 100%
+  );
+}
+
+.vehicle-column-panel .movement-heading-row .section-heading-icon {
+  width: 27px;
+  height: 27px;
+  flex: 0 0 27px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #cbd8e2;
+  border-radius: 6px;
+  color: #315d7b;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(20, 45, 70, 0.04);
+}
+
+.vehicle-column-panel .movement-heading-row .section-heading-icon.blue,
+.vehicle-column-panel .movement-heading-row .section-heading-icon.purple {
+  color: #315d7b;
+  background: #ffffff;
+}
+
+.vehicle-column-panel .movement-heading-row .section-heading-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.vehicle-column-panel .movement-heading-content {
+  min-width: 0;
+  flex: 1;
+}
+
+.vehicle-column-panel .movement-title-line {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.vehicle-column-panel .movement-title-line > strong {
+  flex: 0 0 auto;
+  margin: 0;
+  color: #173a56;
+  font-size: 11px;
+  font-weight: 750;
+  line-height: 1.2;
+}
+
+.vehicle-column-panel .movement-heading-subtitle {
+  display: block;
+  margin-top: 2px;
+  color: #74899a;
+  font-size: 8px;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.vehicle-column-panel .movement-vehicle-badge {
+  min-height: 25px;
+  max-width: 180px;
+  padding: 3px 7px;
+  flex: 0 1 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  overflow: hidden;
+  border: 1px solid #c8d7e2;
+  border-radius: 6px;
+  color: #315d7b;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(20, 45, 70, 0.04);
+  white-space: nowrap;
+}
+
+.vehicle-column-panel .movement-vehicle-badge > svg {
+  width: 11px;
+  height: 11px;
+  flex: 0 0 11px;
+  color: #315d7b;
+}
+
+.vehicle-column-panel .movement-vehicle-badge > span {
+  color: #778a99;
+  font-size: 7.5px;
+  font-weight: 500;
+}
+
+.vehicle-column-panel .movement-vehicle-badge > strong {
+  min-width: 0;
+  overflow: hidden;
+  color: #173a56;
+  font-size: 9px;
+  font-weight: 750;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vehicle-column-panel .movement-card-grid {
+  width: 100%;
+  min-width: 0;
+  padding: 8px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  background: linear-gradient(
+    180deg,
+    #f8fafb 0%,
+    #f3f6f8 100%
+  );
+}
+
+.vehicle-column-panel .movement-info-card {
+  min-width: 0;
+  min-height: 52px;
+  padding: 7px 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid #d8e2e9;
+  border-radius: 7px;
+  background: #ffffff;
+  box-shadow: 0 1px 4px rgba(25, 50, 75, 0.035);
+  transition:
+    border-color 150ms ease,
+    background 150ms ease,
+    box-shadow 150ms ease,
+    transform 150ms ease;
+}
+
+.vehicle-column-panel .movement-info-card:hover {
+  border-color: #bdceda;
+  background: #fbfcfd;
+  box-shadow: 0 3px 7px rgba(25, 50, 75, 0.06);
+  transform: translateY(-1px);
+}
+
+.vehicle-column-panel .movement-info-card span {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  color: #708697;
+  font-size: 8px;
+  font-weight: 500;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vehicle-column-panel .movement-info-card strong {
+  display: block;
+  min-width: 0;
+  margin-top: 4px;
+  overflow: hidden;
+  color: #173a56;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vehicle-column-panel .movement-info-card:nth-child(1) {
+  border-top: 2px solid #315d7b;
+}
+
+.vehicle-column-panel .movement-info-card:nth-child(2) {
+  border-top: 2px solid #69889d;
+}
+
+.vehicle-column-panel .movement-info-card:nth-child(3) {
+  border-top: 2px solid #159a91;
+  background: linear-gradient(
+    180deg,
+    #f3fbfa 0%,
+    #ffffff 100%
+  );
+}
+
+.vehicle-column-panel .movement-info-card:nth-child(3) span {
+  color: #477f7b;
+}
+
+.vehicle-column-panel .movement-info-card:nth-child(3) strong {
+  color: #10847c;
+}
+
+.vehicle-column-panel .movement-info-card:nth-child(4) {
+  border-top: 2px solid #456b86;
+}
+
+@media (max-width: 950px) {
+  .vehicle-column-panel .movement-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+}
+
+@media (max-width: 650px) {
+  .vehicle-column-panel .movement-card-section {
+    margin-left: 6px;
+    margin-right: 6px;
+    border-radius: 8px;
+  }
+
+  .vehicle-column-panel .movement-heading-row {
+    min-height: 40px;
+    padding: 7px 8px;
+  }
+
+  .vehicle-column-panel .movement-title-line {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .vehicle-column-panel .movement-vehicle-badge {
+    max-width: 100%;
+  }
+
+  .vehicle-column-panel .movement-card-grid {
+    padding: 7px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 5px;
+  }
+
+  .vehicle-column-panel .movement-info-card {
+    min-height: 50px;
+    padding: 7px;
+  }
+
+  .vehicle-column-panel .movement-info-card span {
+    font-size: 8px;
+  }
+
+  .vehicle-column-panel .movement-info-card strong {
+    font-size: 9.5px;
+  }
+}
+
+@media (max-width: 420px) {
+  .vehicle-column-panel .movement-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .vehicle-column-panel .movement-heading-row {
+    gap: 6px;
+  }
+
+  .vehicle-column-panel .movement-title-line > strong {
+    font-size: 10.5px;
+  }
+
+  .vehicle-column-panel .movement-heading-subtitle {
+    font-size: 7.5px;
+  }
+}
+
+
+
