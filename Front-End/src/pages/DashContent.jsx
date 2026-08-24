@@ -15,8 +15,8 @@ import {
 } from "react-icons/fa";
 
 import DashChart from "../Charts/DashChart";
+import FleetStatusChart from "../Charts/FleetStatusChart";
 
-// import "./pagecss/dashcontent.css";
 import "../pagescss/dashcontent.css";
 
 
@@ -24,6 +24,11 @@ const API_BASE_URL = (
   import.meta.env.VITE_API_URL ||
   "http://localhost:5000"
 ).replace(/\/+$/, "");
+
+
+/* =========================================================
+   DASHBOARD STATS
+========================================================= */
 
 const dashboardCards = [
   {
@@ -33,6 +38,7 @@ const dashboardCards = [
     icon: FaTruck,
     className: "blue",
   },
+
   {
     title: "Active Vehicles",
     value: "98",
@@ -40,6 +46,7 @@ const dashboardCards = [
     icon: FaCheckCircle,
     className: "green",
   },
+
   {
     title: "Total Drivers",
     value: "86",
@@ -47,6 +54,7 @@ const dashboardCards = [
     icon: FaUsers,
     className: "purple",
   },
+
   {
     title: "Warehouses",
     value: "12",
@@ -56,24 +64,10 @@ const dashboardCards = [
   },
 ];
 
-const recentActivities = [
-  {
-    title: "Vehicle TN 38 AB 2456 added",
-    time: "10 minutes ago",
-  },
-  {
-    title: "Driver information updated",
-    time: "35 minutes ago",
-  },
-  {
-    title: "Vehicle document uploaded",
-    time: "1 hour ago",
-  },
-  {
-    title: "Maintenance record created",
-    time: "2 hours ago",
-  },
-];
+
+/* =========================================================
+   COMPONENT
+========================================================= */
 
 const DashContent = () => {
   const [
@@ -91,63 +85,63 @@ const DashContent = () => {
     setLoading,
   ] = useState(true);
 
+
+  /* =========================================================
+     CHECK BACKEND
+  ========================================================= */
+
   useEffect(() => {
     let isMounted = true;
 
-    const fetchServerStatus =
-      async () => {
-        try {
-          setLoading(true);
+    const fetchServerStatus = async () => {
+      try {
+        setLoading(true);
 
-          const response =
-            await axios.get(
-              API_BASE_URL,
-              {
-                timeout: 60000,
-              }
-            );
-
-          if (!isMounted) {
-            return;
+        const response = await axios.get(
+          API_BASE_URL,
+          {
+            timeout: 60000,
           }
+        );
 
-          const message =
-            typeof response.data ===
-            "string"
-              ? response.data
-              : response.data
-                  ?.message;
-
-          setServerMessage(
-            message ||
-              "Backend server connected."
-          );
-
-          setServerError("");
-        } catch (error) {
-          if (!isMounted) {
-            return;
-          }
-
-          console.error(
-            "Dashboard API error:",
-            error.response?.data ||
-              error.message
-          );
-
-          setServerMessage("");
-
-          setServerError(
-            error.response?.data
-              ?.message ||
-              "Unable to connect to the backend server."
-          );
-        } finally {
-          if (isMounted) {
-            setLoading(false);
-          }
+        if (!isMounted) {
+          return;
         }
-      };
+
+        const message =
+          typeof response.data === "string"
+            ? response.data
+            : response.data?.message;
+
+        setServerMessage(
+          message ||
+            "Backend server connected."
+        );
+
+        setServerError("");
+      } catch (error) {
+        if (!isMounted) {
+          return;
+        }
+
+        console.error(
+          "Dashboard API error:",
+          error.response?.data ||
+            error.message
+        );
+
+        setServerMessage("");
+
+        setServerError(
+          error.response?.data?.message ||
+            "Unable to connect to the backend server."
+        );
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
 
     fetchServerStatus();
 
@@ -156,15 +150,28 @@ const DashContent = () => {
     };
   }, []);
 
+
+  /* =========================================================
+     RETURN
+  ========================================================= */
+
   return (
     <main className="premium-dashboard">
+
+      {/* =====================================================
+          HEADER
+      ====================================================== */}
+
       <header className="premium-dashboard-header">
+
         <div>
           <span className="dashboard-eyebrow">
             Fleet Management
           </span>
 
-          <h1>Dashboard Overview</h1>
+          <h1>
+            Dashboard Overview
+          </h1>
 
           <p>
             Monitor fleet operations,
@@ -172,6 +179,7 @@ const DashContent = () => {
             performance.
           </p>
         </div>
+
 
         <div
           className={`server-status ${
@@ -183,7 +191,9 @@ const DashContent = () => {
           <FaServer />
 
           <div>
-            <span>Server Status</span>
+            <span>
+              Server Status
+            </span>
 
             <strong>
               {loading
@@ -194,7 +204,13 @@ const DashContent = () => {
             </strong>
           </div>
         </div>
+
       </header>
+
+
+      {/* =====================================================
+          SERVER SUCCESS MESSAGE
+      ====================================================== */}
 
       {serverMessage && (
         <div
@@ -203,9 +219,16 @@ const DashContent = () => {
         >
           <FaCheckCircle />
 
-          <span>{serverMessage}</span>
+          <span>
+            {serverMessage}
+          </span>
         </div>
       )}
+
+
+      {/* =====================================================
+          SERVER ERROR MESSAGE
+      ====================================================== */}
 
       {serverError && (
         <div
@@ -214,59 +237,82 @@ const DashContent = () => {
         >
           <FaExclamationTriangle />
 
-          <span>{serverError}</span>
+          <span>
+            {serverError}
+          </span>
         </div>
       )}
 
+
+      {/* =====================================================
+          STAT CARDS
+      ====================================================== */}
+
       <section className="dashboard-stat-grid">
-        {dashboardCards.map(
-          (card) => {
-            const Icon = card.icon;
 
-            return (
-              <article
-                className="dashboard-stat-card"
-                key={card.title}
+        {dashboardCards.map((card) => {
+          const Icon = card.icon;
+
+          return (
+            <article
+              className="dashboard-stat-card"
+              key={card.title}
+            >
+              <div>
+                <p>
+                  {card.title}
+                </p>
+
+                <h2>
+                  {card.value}
+                </h2>
+
+                <span>
+                  {card.description}
+                </span>
+              </div>
+
+              <div
+                className={`dashboard-stat-icon ${card.className}`}
               >
-                <div>
-                  <p>{card.title}</p>
+                <Icon />
+              </div>
+            </article>
+          );
+        })}
 
-                  <h2>{card.value}</h2>
-
-                  <span>
-                    {card.description}
-                  </span>
-                </div>
-
-                <div
-                  className={`dashboard-stat-icon ${card.className}`}
-                >
-                  <Icon />
-                </div>
-              </article>
-            );
-          }
-        )}
       </section>
 
+
+      {/* =====================================================
+          MAIN ANALYTICS
+      ====================================================== */}
+
       <section className="dashboard-main-grid">
+
+        {/* ===================================================
+            FLEET PERFORMANCE
+        ==================================================== */}
+
         <article className="dashboard-chart-card">
+
           <div className="dashboard-card-header">
+
             <div>
               <span>
                 Operations Analytics
               </span>
 
               <h2>
-                Fleet Activity Overview
+                Fleet Performance
               </h2>
 
               <p>
-                Monthly operational
-                performance and fleet
-                activity.
+                Monthly trip activity and
+                fleet utilization.
               </p>
             </div>
+
 
             <select
               className="dashboard-period-select"
@@ -285,73 +331,78 @@ const DashContent = () => {
                 This Year
               </option>
             </select>
+
           </div>
+
 
           <div className="dashboard-chart-wrapper">
             <DashChart />
           </div>
+
         </article>
 
-        <article className="dashboard-activity-card">
-          <div className="dashboard-card-header">
-            <div>
-              <span>Latest Updates</span>
 
-              <h2>Recent Activity</h2>
+        {/* ===================================================
+            FLEET STATUS CIRCLE CHART
+        ==================================================== */}
+
+        <article className="dashboard-circle-card">
+
+          <div className="dashboard-card-header">
+
+            <div>
+              <span>
+                Fleet Overview
+              </span>
+
+              <h2>
+                Vehicle Status
+              </h2>
 
               <p>
-                Latest fleet management
-                actions.
+                Current vehicle availability
+                and operational status.
               </p>
             </div>
+
           </div>
 
-          <div className="dashboard-activity-list">
-            {recentActivities.map(
-              (activity, index) => (
-                <div
-                  className="dashboard-activity-item"
-                  key={`${activity.title}-${index}`}
-                >
-                  <div className="activity-marker">
-                    <span />
-                  </div>
 
-                  <div>
-                    <strong>
-                      {activity.title}
-                    </strong>
-
-                    <p>{activity.time}</p>
-                  </div>
-                </div>
-              )
-            )}
+          <div className="dashboard-circle-wrapper">
+            <FleetStatusChart />
           </div>
 
-          <button
-            type="button"
-            className="dashboard-view-button"
-          >
-            View all activity
-          </button>
         </article>
+
       </section>
 
+
+      {/* =====================================================
+          BOTTOM SUMMARY
+      ====================================================== */}
+
       <section className="dashboard-bottom-grid">
+
+
+        {/* VEHICLE AVAILABILITY */}
+
         <article className="dashboard-small-card">
+
           <div>
             <span>
               Vehicle Availability
             </span>
 
-            <h2>79%</h2>
+            <h2>
+              79%
+            </h2>
 
             <p>
               98 of 124 vehicles are
               currently operational.
             </p>
           </div>
+
 
           <div className="dashboard-progress">
             <span
@@ -360,21 +411,29 @@ const DashContent = () => {
               }}
             />
           </div>
+
         </article>
 
+
+        {/* MAINTENANCE */}
+
         <article className="dashboard-small-card">
+
           <div>
             <span>
               Maintenance Status
             </span>
 
-            <h2>14</h2>
+            <h2>
+              14
+            </h2>
 
             <p>
               Vehicles currently scheduled
               or under maintenance.
             </p>
           </div>
+
 
           <div className="dashboard-progress orange">
             <span
@@ -383,21 +442,29 @@ const DashContent = () => {
               }}
             />
           </div>
+
         </article>
 
+
+        {/* DOCUMENT COMPLIANCE */}
+
         <article className="dashboard-small-card">
+
           <div>
             <span>
               Document Compliance
             </span>
 
-            <h2>92%</h2>
+            <h2>
+              92%
+            </h2>
 
             <p>
               Vehicles with valid and
               updated documents.
             </p>
           </div>
+
 
           <div className="dashboard-progress green">
             <span
@@ -406,10 +473,14 @@ const DashContent = () => {
               }}
             />
           </div>
+
         </article>
+
       </section>
+
     </main>
   );
 };
+
 
 export default DashContent;

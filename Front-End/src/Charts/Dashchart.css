@@ -1,0 +1,225 @@
+/* =========================================================
+   FLEET DASHBOARD CHART
+========================================================= */
+
+.fleet-chart-container {
+  width: 100%;
+  height: 100%;
+
+  min-width: 0;
+  min-height: 0;
+
+  display: flex;
+  flex-direction: column;
+}
+
+
+/* =========================================================
+   LEGEND
+========================================================= */
+
+.fleet-chart-legend {
+  width: 100%;
+
+  min-height: 32px;
+
+  padding:
+    0 6px 6px;
+
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+
+  gap: 18px;
+
+  flex-shrink: 0;
+}
+
+
+.fleet-legend-item {
+  display: inline-flex;
+  align-items: center;
+
+  gap: 6px;
+
+  color: #617485;
+
+  font-size: 9px;
+  font-weight: 600;
+
+  white-space: nowrap;
+}
+
+
+.fleet-legend-dot {
+  width: 8px;
+  height: 8px;
+
+  flex: 0 0 8px;
+
+  border-radius: 999px;
+}
+
+
+.fleet-legend-dot.trips {
+  background: #0f9488;
+}
+
+
+.fleet-legend-dot.utilization {
+  background: #3b82f6;
+}
+
+
+/* =========================================================
+   CHART BODY
+========================================================= */
+
+.fleet-chart-body {
+  width: 100%;
+
+  min-width: 0;
+  min-height: 0;
+
+  flex: 1;
+}
+
+
+/* =========================================================
+   AXIS TEXT
+========================================================= */
+
+.fleet-chart-body
+.recharts-cartesian-axis-tick-value {
+  fill: #718096;
+
+  font-family:
+    Inter,
+    "Segoe UI",
+    Roboto,
+    Arial,
+    sans-serif;
+
+  font-size: 9px;
+}
+
+
+/* =========================================================
+   TOOLTIP
+========================================================= */
+
+.fleet-chart-tooltip {
+  min-width: 165px;
+
+  padding: 10px 12px;
+
+  border:
+    1px solid #dce5e9;
+
+  border-radius: 9px;
+
+  background:
+    rgba(
+      255,
+      255,
+      255,
+      0.98
+    );
+
+  box-shadow:
+    0 8px 24px
+    rgba(
+      11,
+      34,
+      57,
+      0.12
+    );
+}
+
+
+.fleet-tooltip-header {
+  margin-bottom: 8px;
+
+  color: #0b2239;
+
+  font-size: 10px;
+  font-weight: 700;
+}
+
+
+.fleet-tooltip-row {
+  display: grid;
+
+  grid-template-columns:
+    8px
+    1fr
+    auto;
+
+  align-items: center;
+
+  gap: 7px;
+
+  margin-top: 6px;
+}
+
+
+.fleet-tooltip-dot {
+  width: 7px;
+  height: 7px;
+
+  border-radius: 999px;
+}
+
+
+.fleet-tooltip-label {
+  color: #718096;
+
+  font-size: 9px;
+  font-weight: 500;
+}
+
+
+.fleet-tooltip-row strong {
+  color: #294158;
+
+  font-size: 9px;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 768px) {
+
+  .fleet-chart-legend {
+    justify-content:
+      flex-start;
+
+    gap: 10px 16px;
+
+    flex-wrap: wrap;
+  }
+
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 480px) {
+
+  .fleet-chart-legend {
+    min-height: 42px;
+
+    padding-bottom: 8px;
+  }
+
+
+  .fleet-legend-item {
+    font-size: 8px;
+  }
+
+}

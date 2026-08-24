@@ -1,117 +1,417 @@
-import { BarChart } from '@mui/x-charts/BarChart';
+import React from "react";
 
-const otherSetting = {
-  height: 300,
-  yAxis: [{ label: 'rainfall (mm)', width: 60 }],
-  grid: { horizontal: true },
-};
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 
-const dataset = [
+import "./DashChart.css";
+
+
+const chartData = [
   {
-    london: 59,
-    paris: 57,
-    newYork: 86,
-    seoul: 21,
-    month: 'January',
+    month: "Jan",
+    trips: 42,
+    utilization: 68,
   },
   {
-    london: 50,
-    paris: 52,
-    newYork: 78,
-    seoul: 28,
-    month: 'February',
+    month: "Feb",
+    trips: 48,
+    utilization: 71,
   },
   {
-    london: 47,
-    paris: 53,
-    newYork: 106,
-    seoul: 41,
-    month: 'March',
+    month: "Mar",
+    trips: 55,
+    utilization: 74,
   },
   {
-    london: 54,
-    paris: 56,
-    newYork: 92,
-    seoul: 73,
-    month: 'April',
+    month: "Apr",
+    trips: 51,
+    utilization: 72,
   },
   {
-    london: 57,
-    paris: 69,
-    newYork: 92,
-    seoul: 99,
-    month: 'May',
+    month: "May",
+    trips: 64,
+    utilization: 78,
   },
   {
-    london: 60,
-    paris: 63,
-    newYork: 103,
-    seoul: 144,
-    month: 'June',
+    month: "Jun",
+    trips: 72,
+    utilization: 82,
   },
   {
-    london: 59,
-    paris: 60,
-    newYork: 105,
-    seoul: 319,
-    month: 'July',
+    month: "Jul",
+    trips: 68,
+    utilization: 80,
   },
   {
-    london: 65,
-    paris: 60,
-    newYork: 106,
-    seoul: 249,
-    month: 'August',
+    month: "Aug",
+    trips: 79,
+    utilization: 86,
   },
   {
-    london: 51,
-    paris: 51,
-    newYork: 95,
-    seoul: 131,
-    month: 'September',
+    month: "Sep",
+    trips: 75,
+    utilization: 84,
   },
   {
-    london: 60,
-    paris: 65,
-    newYork: 97,
-    seoul: 55,
-    month: 'October',
+    month: "Oct",
+    trips: 84,
+    utilization: 89,
   },
   {
-    london: 67,
-    paris: 64,
-    newYork: 76,
-    seoul: 48,
-    month: 'November',
+    month: "Nov",
+    trips: 88,
+    utilization: 91,
   },
   {
-    london: 61,
-    paris: 70,
-    newYork: 103,
-    seoul: 25,
-    month: 'December',
+    month: "Dec",
+    trips: 92,
+    utilization: 93,
   },
 ];
 
-const valueFormatter = (value) => `${value} mm`;
 
-export default function FormatterDemo() {
+const CustomTooltip = ({
+  active,
+  payload,
+  label,
+}) => {
+
+  if (
+    !active ||
+    !payload ||
+    !payload.length
+  ) {
+    return null;
+  }
+
+
   return (
-    <BarChart
-      dataset={dataset}
-      xAxis={[
-        {
-          scaleType: 'band',
-          dataKey: 'month',
-          valueFormatter: (month, context) =>
-            context.location === 'tick'
-              ? `${month.slice(0, 3)} \n2023`
-              : `${month} 2023`,
-          height: 40,
-        },
-      ]}
-      series={[{ dataKey: 'seoul', label: 'Seoul rainfall', valueFormatter }]}
-      {...otherSetting}
-    />
+
+    <div className="fleet-chart-tooltip">
+
+      <div className="fleet-tooltip-header">
+        {label}
+      </div>
+
+
+      {payload.map(
+        (item) => {
+
+          const isTrips =
+            item.dataKey === "trips";
+
+
+          return (
+
+            <div
+              className="fleet-tooltip-row"
+              key={item.dataKey}
+            >
+
+              <span
+                className="fleet-tooltip-dot"
+                style={{
+                  background:
+                    item.color,
+                }}
+              />
+
+
+              <span className="fleet-tooltip-label">
+
+                {isTrips
+                  ? "Trips Completed"
+                  : "Fleet Utilization"}
+
+              </span>
+
+
+              <strong>
+
+                {item.value}
+
+                {!isTrips && "%"}
+
+              </strong>
+
+            </div>
+
+          );
+
+        }
+      )}
+
+    </div>
+
   );
-}
+
+};
+
+
+const DashChart = () => {
+
+  return (
+
+    <div className="fleet-chart-container">
+
+
+      {/* =====================================
+          LEGEND
+      ===================================== */}
+
+      <div className="fleet-chart-legend">
+
+        <div className="fleet-legend-item">
+
+          <span className="fleet-legend-dot trips" />
+
+          <span>
+            Trips Completed
+          </span>
+
+        </div>
+
+
+        <div className="fleet-legend-item">
+
+          <span className="fleet-legend-dot utilization" />
+
+          <span>
+            Fleet Utilization
+          </span>
+
+        </div>
+
+      </div>
+
+
+      {/* =====================================
+          CHART
+      ===================================== */}
+
+      <div className="fleet-chart-body">
+
+        <ResponsiveContainer
+          width="100%"
+          height="100%"
+        >
+
+          <AreaChart
+            data={chartData}
+
+            margin={{
+              top: 10,
+              right: 15,
+              left: -10,
+              bottom: 5,
+            }}
+          >
+
+            {/* ===============================
+                GRADIENTS
+            =============================== */}
+
+            <defs>
+
+              <linearGradient
+                id="tripsGradient"
+                x1="0"
+                y1="0"
+                x2="0"
+                y2="1"
+              >
+
+                <stop
+                  offset="0%"
+                  stopColor="#0f9488"
+                  stopOpacity={0.28}
+                />
+
+                <stop
+                  offset="100%"
+                  stopColor="#0f9488"
+                  stopOpacity={0.02}
+                />
+
+              </linearGradient>
+
+
+              <linearGradient
+                id="utilizationGradient"
+                x1="0"
+                y1="0"
+                x2="0"
+                y2="1"
+              >
+
+                <stop
+                  offset="0%"
+                  stopColor="#3b82f6"
+                  stopOpacity={0.17}
+                />
+
+                <stop
+                  offset="100%"
+                  stopColor="#3b82f6"
+                  stopOpacity={0.01}
+                />
+
+              </linearGradient>
+
+            </defs>
+
+
+            {/* ===============================
+                GRID
+            =============================== */}
+
+            <CartesianGrid
+              vertical={false}
+              stroke="#e5ecef"
+              strokeDasharray="4 4"
+            />
+
+
+            {/* ===============================
+                X AXIS
+            =============================== */}
+
+            <XAxis
+              dataKey="month"
+
+              axisLine={false}
+
+              tickLine={false}
+
+              tick={{
+                fill: "#718096",
+                fontSize: 10,
+              }}
+
+              dy={8}
+            />
+
+
+            {/* ===============================
+                Y AXIS
+            =============================== */}
+
+            <YAxis
+              axisLine={false}
+
+              tickLine={false}
+
+              width={38}
+
+              tick={{
+                fill: "#718096",
+                fontSize: 10,
+              }}
+
+              domain={[
+                0,
+                100,
+              ]}
+            />
+
+
+            {/* ===============================
+                TOOLTIP
+            =============================== */}
+
+            <Tooltip
+
+              content={
+                <CustomTooltip />
+              }
+
+              cursor={{
+                stroke: "#b9c9cf",
+                strokeWidth: 1,
+                strokeDasharray:
+                  "4 4",
+              }}
+
+            />
+
+
+            {/* ===============================
+                TRIPS
+            =============================== */}
+
+            <Area
+              type="monotone"
+
+              dataKey="trips"
+
+              name="Trips Completed"
+
+              stroke="#0f9488"
+
+              strokeWidth={2.6}
+
+              fill="url(#tripsGradient)"
+
+              dot={false}
+
+              activeDot={{
+                r: 5,
+                fill: "#0f9488",
+                stroke: "#ffffff",
+                strokeWidth: 2,
+              }}
+
+              animationDuration={700}
+            />
+
+
+            {/* ===============================
+                UTILIZATION
+            =============================== */}
+
+            <Area
+              type="monotone"
+
+              dataKey="utilization"
+
+              name="Fleet Utilization"
+
+              stroke="#3b82f6"
+
+              strokeWidth={2.2}
+
+              fill="url(#utilizationGradient)"
+
+              dot={false}
+
+              activeDot={{
+                r: 4,
+                fill: "#3b82f6",
+                stroke: "#ffffff",
+                strokeWidth: 2,
+              }}
+
+              animationDuration={850}
+            />
+
+          </AreaChart>
+
+        </ResponsiveContainer>
+
+      </div>
+
+    </div>
+
+  );
+
+};
+
+
+export default DashChart;

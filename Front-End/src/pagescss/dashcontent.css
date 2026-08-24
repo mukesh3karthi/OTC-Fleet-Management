@@ -1,6 +1,6 @@
 /* =========================================================
    DASHBOARD
-   SIDEBAR MATCHED NAVY + TEAL THEME
+   NAVY + TEAL PROFESSIONAL THEME
 ========================================================= */
 
 * {
@@ -46,10 +46,6 @@
 }
 
 
-/* =========================================================
-   EYEBROW
-========================================================= */
-
 .dashboard-eyebrow {
   display: block;
 
@@ -68,10 +64,6 @@
 }
 
 
-/* =========================================================
-   PAGE TITLE
-========================================================= */
-
 .premium-dashboard-header h1 {
   margin: 0;
 
@@ -86,17 +78,12 @@
 }
 
 
-/* =========================================================
-   PAGE DESCRIPTION
-========================================================= */
-
 .premium-dashboard-header p {
   margin: 5px 0 0;
 
   color: #718096;
 
   font-size: 11px;
-  font-weight: 400;
 
   line-height: 1.45;
 }
@@ -116,7 +103,9 @@
 
   gap: 10px;
 
-  border: 1px solid #cfe2df;
+  border:
+    1px solid #cfe2df;
+
   border-radius: 10px;
 
   background: #f3faf9;
@@ -127,8 +116,6 @@
 }
 
 
-/* ICON */
-
 .server-status > svg {
   width: 17px;
   height: 17px;
@@ -136,8 +123,6 @@
   flex-shrink: 0;
 }
 
-
-/* CONNECTED */
 
 .server-status.connected {
   border-color: #c8e3df;
@@ -156,8 +141,6 @@
 }
 
 
-/* ERROR */
-
 .server-status.error {
   border-color: #f3c4c4;
 
@@ -170,8 +153,6 @@
 }
 
 
-/* SERVER LABEL */
-
 .server-status span {
   display: block;
 
@@ -182,23 +163,17 @@
   font-size: 8px;
   font-weight: 700;
 
-  line-height: 1.2;
-
   letter-spacing: 0.05em;
 
   text-transform: uppercase;
 }
 
 
-/* STATUS VALUE */
-
 .server-status strong {
   color: #0b2239;
 
   font-size: 11px;
   font-weight: 700;
-
-  line-height: 1.2;
 }
 
 
@@ -220,13 +195,12 @@
 
   font-size: 10px;
   font-weight: 500;
-
-  line-height: 1.4;
 }
 
 
 .dashboard-message.success {
-  border: 1px solid #b9ddd8;
+  border:
+    1px solid #b9ddd8;
 
   background: #eaf7f5;
 
@@ -234,13 +208,9 @@
 }
 
 
-.dashboard-message.success svg {
-  color: #0f9488;
-}
-
-
 .dashboard-message.error {
-  border: 1px solid #f3c4c4;
+  border:
+    1px solid #f3c4c4;
 
   background: #fff1f1;
 
@@ -256,17 +226,16 @@
   display: grid;
 
   grid-template-columns:
-    repeat(4, minmax(0, 1fr));
+    repeat(
+      4,
+      minmax(0, 1fr)
+    );
 
   gap: 12px;
 
   margin-bottom: 14px;
 }
 
-
-/* =========================================================
-   STAT CARD
-========================================================= */
 
 .dashboard-stat-card {
   min-width: 0;
@@ -280,7 +249,9 @@
 
   gap: 10px;
 
-  border: 1px solid #dce4e9;
+  border:
+    1px solid #dce4e9;
+
   border-radius: 11px;
 
   background: #ffffff;
@@ -297,9 +268,11 @@
 
 
 .dashboard-stat-card:hover {
-  transform: translateY(-1px);
+  transform:
+    translateY(-1px);
 
-  border-color: #b9d4d1;
+  border-color:
+    #b9d4d1;
 
   box-shadow:
     0 5px 14px
@@ -307,25 +280,16 @@
 }
 
 
-/* =========================================================
-   STAT LABEL
-========================================================= */
-
 .dashboard-stat-card p {
-  margin: 0 0 5px;
+  margin:
+    0 0 5px;
 
   color: #718096;
 
   font-size: 10px;
   font-weight: 600;
-
-  line-height: 1.25;
 }
 
-
-/* =========================================================
-   STAT VALUE
-========================================================= */
 
 .dashboard-stat-card h2 {
   margin: 0;
@@ -339,10 +303,6 @@
 }
 
 
-/* =========================================================
-   STAT DESCRIPTION
-========================================================= */
-
 .dashboard-stat-card span {
   display: block;
 
@@ -351,8 +311,6 @@
   color: #96a4b0;
 
   font-size: 8.5px;
-
-  line-height: 1.35;
 }
 
 
@@ -376,38 +334,26 @@
 }
 
 
-/* TOTAL VEHICLE */
-
 .dashboard-stat-icon.blue {
   color: #0f9488;
-
   background: #e6f5f3;
 }
 
 
-/* ACTIVE */
-
 .dashboard-stat-icon.green {
   color: #15945a;
-
   background: #e7f5ed;
 }
 
 
-/* DRIVER */
-
 .dashboard-stat-icon.purple {
   color: #0c7f76;
-
   background: #e7f3f2;
 }
 
 
-/* WAREHOUSE */
-
 .dashboard-stat-icon.orange {
   color: #c67a12;
-
   background: #fff3df;
 }
 
@@ -417,13 +363,17 @@
 ========================================================= */
 
 .dashboard-main-grid {
+  width: 100%;
+
   display: grid;
 
   grid-template-columns:
-    minmax(0, 2fr)
-    minmax(260px, 0.76fr);
+    minmax(0, 2.4fr)
+    minmax(270px, 0.9fr);
 
   gap: 14px;
+
+  align-items: stretch;
 
   margin-bottom: 14px;
 }
@@ -434,9 +384,10 @@
 ========================================================= */
 
 .dashboard-chart-card,
-.dashboard-activity-card,
+.dashboard-circle-card,
 .dashboard-small-card {
-  border: 1px solid #dce4e9;
+  border:
+    1px solid #dce4e9;
 
   border-radius: 11px;
 
@@ -449,24 +400,38 @@
 
 
 /* =========================================================
-   CHART CARD
+   MAIN CHART CARD
 ========================================================= */
 
 .dashboard-chart-card {
   min-width: 0;
 
-  padding: 16px;
+  height: 350px;
+
+  padding: 16px 18px;
+
+  display: flex;
+  flex-direction: column;
+
+  overflow: hidden;
 }
 
 
 /* =========================================================
-   ACTIVITY CARD
+   CIRCLE CHART CARD
 ========================================================= */
 
-.dashboard-activity-card {
+.dashboard-circle-card {
   min-width: 0;
 
+  height: 350px;
+
   padding: 16px;
+
+  display: flex;
+  flex-direction: column;
+
+  overflow: hidden;
 }
 
 
@@ -475,19 +440,17 @@
 ========================================================= */
 
 .dashboard-card-header {
+  flex-shrink: 0;
+
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
 
   gap: 12px;
 
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
-
-/* =========================================================
-   CARD EYEBROW
-========================================================= */
 
 .dashboard-card-header span {
   display: block;
@@ -499,17 +462,11 @@
   font-size: 8px;
   font-weight: 700;
 
-  line-height: 1;
-
   letter-spacing: 0.07em;
 
   text-transform: uppercase;
 }
 
-
-/* =========================================================
-   CARD TITLE
-========================================================= */
 
 .dashboard-card-header h2 {
   margin: 0;
@@ -518,17 +475,12 @@
 
   font-size: 17px;
   font-weight: 700;
-
-  line-height: 1.25;
 }
 
 
-/* =========================================================
-   CARD DESCRIPTION
-========================================================= */
-
 .dashboard-card-header p {
-  margin: 4px 0 0;
+  margin:
+    4px 0 0;
 
   color: #81909d;
 
@@ -539,15 +491,18 @@
 
 
 /* =========================================================
-   SELECT
+   PERIOD SELECT
 ========================================================= */
 
 .dashboard-period-select {
   height: 32px;
 
-  padding: 0 10px;
+  padding:
+    0 10px;
 
-  border: 1px solid #d6e0e6;
+  border:
+    1px solid #d6e0e6;
+
   border-radius: 8px;
 
   outline: none;
@@ -555,8 +510,6 @@
   background: #ffffff;
 
   color: #4d6375;
-
-  font-family: inherit;
 
   font-size: 9.5px;
   font-weight: 500;
@@ -566,11 +519,17 @@
 
 
 .dashboard-period-select:focus {
-  border-color: #0f9488;
+  border-color:
+    #0f9488;
 
   box-shadow:
     0 0 0 3px
-    rgba(15, 148, 136, 0.08);
+    rgba(
+      15,
+      148,
+      136,
+      0.08
+    );
 }
 
 
@@ -580,187 +539,30 @@
 
 .dashboard-chart-wrapper {
   width: 100%;
-  height: 225px;
+
+  min-width: 0;
+  min-height: 0;
+
+  flex: 1;
+
+  overflow: hidden;
 }
 
 
 /* =========================================================
-   OPTIONAL CHART COLOR HELPERS
-   These work only if DashChart uses className/currentColor.
+   CIRCLE WRAPPER
 ========================================================= */
 
-.dashboard-chart-wrapper {
-  color: #0f9488;
-}
+.dashboard-circle-wrapper {
+  width: 100%;
 
+  min-width: 0;
+  min-height: 0;
 
-/* SVG axis / text styling */
+  flex: 1;
 
-.dashboard-chart-wrapper svg text {
-  fill: #536879;
-}
-
-
-/* Grid lines */
-
-.dashboard-chart-wrapper svg line {
-  stroke: #dce5e8;
-}
-
-
-/* =========================================================
-   ACTIVITY LIST
-========================================================= */
-
-.dashboard-activity-list {
   display: flex;
   flex-direction: column;
-}
-
-
-/* =========================================================
-   ACTIVITY ITEM
-========================================================= */
-
-.dashboard-activity-item {
-  position: relative;
-
-  min-height: 48px;
-
-  padding-bottom: 10px;
-
-  display: flex;
-  align-items: flex-start;
-
-  gap: 10px;
-}
-
-
-.dashboard-activity-item:last-child {
-  min-height: auto;
-
-  padding-bottom: 0;
-}
-
-
-/* =========================================================
-   ACTIVITY MARKER
-========================================================= */
-
-.activity-marker {
-  position: relative;
-
-  width: 14px;
-  min-width: 14px;
-
-  display: flex;
-  justify-content: center;
-}
-
-
-.activity-marker::after {
-  content: "";
-
-  position: absolute;
-
-  top: 11px;
-  bottom: -38px;
-
-  width: 1px;
-
-  background: #cde2df;
-}
-
-
-.dashboard-activity-item:last-child
-.activity-marker::after {
-  display: none;
-}
-
-
-.activity-marker span {
-  position: relative;
-
-  z-index: 1;
-
-  width: 8px;
-  height: 8px;
-
-  margin-top: 4px;
-
-  border: 2px solid #ffffff;
-  border-radius: 50%;
-
-  background: #0f9488;
-
-  box-shadow:
-    0 0 0 3px
-    rgba(15, 148, 136, 0.12);
-}
-
-
-/* =========================================================
-   ACTIVITY TEXT
-========================================================= */
-
-.dashboard-activity-item strong {
-  display: block;
-
-  color: #294158;
-
-  font-size: 10px;
-  font-weight: 600;
-
-  line-height: 1.4;
-}
-
-
-.dashboard-activity-item p {
-  margin: 3px 0 0;
-
-  color: #95a3af;
-
-  font-size: 8.5px;
-}
-
-
-/* =========================================================
-   VIEW BUTTON
-========================================================= */
-
-.dashboard-view-button {
-  width: 100%;
-  height: 32px;
-
-  margin-top: 12px;
-
-  border: 1px solid #cfe0de;
-  border-radius: 8px;
-
-  background: #f3f9f8;
-
-  color: #0f9488;
-
-  font-family: inherit;
-
-  font-size: 9.5px;
-  font-weight: 600;
-
-  cursor: pointer;
-
-  transition:
-    background 0.18s ease,
-    border-color 0.18s ease,
-    color 0.18s ease;
-}
-
-
-.dashboard-view-button:hover {
-  border-color: #9fc9c4;
-
-  background: #e7f5f3;
-
-  color: #0b7f76;
 }
 
 
@@ -769,17 +571,22 @@
 ========================================================= */
 
 .dashboard-bottom-grid {
+  width: 100%;
+
   display: grid;
 
   grid-template-columns:
-    repeat(3, minmax(0, 1fr));
+    repeat(
+      3,
+      minmax(0, 1fr)
+    );
 
   gap: 12px;
 }
 
 
 /* =========================================================
-   SMALL CARD
+   SMALL CARDS
 ========================================================= */
 
 .dashboard-small-card {
@@ -798,7 +605,8 @@
 
 
 .dashboard-small-card h2 {
-  margin: 6px 0 4px;
+  margin:
+    6px 0 4px;
 
   color: #0b2239;
 
@@ -836,7 +644,8 @@
 
   border-radius: 999px;
 
-  background: #e7edf1;
+  background:
+    #e7edf1;
 }
 
 
@@ -847,40 +656,60 @@
 
   border-radius: inherit;
 
-  background: #0f9488;
+  background:
+    #0f9488;
 }
 
 
 .dashboard-progress.orange span {
-  background: #c67a12;
+  background:
+    #c67a12;
 }
 
 
 .dashboard-progress.green span {
-  background: #15945a;
+  background:
+    #15945a;
 }
 
 
 /* =========================================================
-   RESPONSIVE
+   RESPONSIVE - LAPTOP
 ========================================================= */
 
 @media (max-width: 1200px) {
 
   .dashboard-stat-grid {
     grid-template-columns:
-      repeat(2, minmax(0, 1fr));
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
   }
 
 
   .dashboard-main-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns:
+      1fr;
+  }
+
+
+  .dashboard-chart-card {
+    height: 350px;
+  }
+
+
+  .dashboard-circle-card {
+    height: 390px;
   }
 
 
   .dashboard-bottom-grid {
     grid-template-columns:
-      repeat(2, minmax(0, 1fr));
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
   }
 
 }
@@ -893,12 +722,14 @@
 @media (max-width: 768px) {
 
   .premium-dashboard {
-    padding: 14px 12px;
+    padding:
+      14px 12px;
   }
 
 
   .premium-dashboard-header {
-    flex-direction: column;
+    flex-direction:
+      column;
 
     gap: 10px;
   }
@@ -921,12 +752,14 @@
 
   .dashboard-stat-grid,
   .dashboard-bottom-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns:
+      1fr;
   }
 
 
   .dashboard-card-header {
-    flex-direction: column;
+    flex-direction:
+      column;
 
     gap: 8px;
   }
@@ -937,14 +770,17 @@
   }
 
 
-  .dashboard-chart-card,
-  .dashboard-activity-card {
+  .dashboard-chart-card {
+    height: 320px;
+
     padding: 14px;
   }
 
 
-  .dashboard-chart-wrapper {
-    height: 210px;
+  .dashboard-circle-card {
+    height: 390px;
+
+    padding: 14px;
   }
 
 }
@@ -957,7 +793,8 @@
 @media (max-width: 480px) {
 
   .premium-dashboard {
-    padding: 12px 9px;
+    padding:
+      12px 9px;
   }
 
 
@@ -969,7 +806,8 @@
   .dashboard-stat-card {
     min-height: 88px;
 
-    padding: 12px 14px;
+    padding:
+      12px 14px;
   }
 
 
@@ -988,8 +826,13 @@
   }
 
 
-  .dashboard-chart-wrapper {
-    height: 190px;
+  .dashboard-chart-card {
+    height: 300px;
+  }
+
+
+  .dashboard-circle-card {
+    height: 370px;
   }
 
 }
