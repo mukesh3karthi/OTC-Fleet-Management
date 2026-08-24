@@ -41,8 +41,12 @@ const API_OPTIONS = {
 
 const RECORDS_PER_PAGE = 4;
 
+/*
+ * IMPORTANT:
+ * The backend own-vehicle routes use the numeric `id` field,
+ * not MongoDB `_id`.
+ */
 const getVehicleId = (vehicle) =>
-  vehicle?._id ??
   vehicle?.id ??
   vehicle?.vehicleId ??
   vehicle?.ownVehicleId ??
@@ -485,11 +489,30 @@ const Ownvehicledetails = () => {
     setApiError("");
 
     const vehicleId =
-      selectedDocumentVehicle?._id ??
-      selectedDocumentVehicle?.id;
+      getVehicleId(
+        selectedDocumentVehicle
+      );
 
-    if (!vehicleId) {
-      throw new Error("Vehicle ID is missing.");
+    const numericVehicleId =
+      Number(vehicleId);
+
+    if (
+      !Number.isInteger(
+        numericVehicleId
+      ) ||
+      numericVehicleId <= 0
+    ) {
+      console.error(
+        "Invalid own vehicle ID:",
+        {
+          vehicleId,
+          selectedDocumentVehicle,
+        }
+      );
+
+      throw new Error(
+        "Vehicle ID is missing or invalid."
+      );
     }
 
     const formData = new FormData();
@@ -537,7 +560,7 @@ const Ownvehicledetails = () => {
     });
 
     const response = await axios.put(
-      `${OWN_VEHICLE_API}/${vehicleId}/documents`,
+      `${OWN_VEHICLE_API}/${numericVehicleId}/documents`,
       formData,
       {
         timeout: 30000,

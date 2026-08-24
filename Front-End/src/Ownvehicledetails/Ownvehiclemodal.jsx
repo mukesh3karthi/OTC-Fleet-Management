@@ -42,9 +42,15 @@ const createInitialForm = () => ({
    HELPERS
 ========================================================= */
 
+/*
+ * IMPORTANT:
+ * The backend own-vehicle routes use the numeric `id` field,
+ * not MongoDB `_id`.
+ */
 const getVehicleId = (vehicle) =>
-  vehicle?._id ??
   vehicle?.id ??
+  vehicle?.vehicleId ??
+  vehicle?.ownVehicleId ??
   null;
 
 
