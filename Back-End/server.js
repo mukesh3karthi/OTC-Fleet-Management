@@ -68,84 +68,79 @@ const PORT =
 ========================================== */
 
 const allowedOrigins = [
-  /* ======================================
-     LOCAL DEVELOPMENT
-  ====================================== */
+
+  /* LOCAL */
 
   "http://localhost:5173",
+
   "http://127.0.0.1:5173",
 
 
-  /* ======================================
-     VERCEL PRODUCTION
-  ====================================== */
+  /* VERCEL */
 
   "https://otc-fleet-management.vercel.app",
-
-
-  /* ======================================
-     EXISTING VERCEL DEPLOYMENTS
-  ====================================== */
 
   "https://otc-fleet-management-git-main-mukesh3karthis-projects.vercel.app",
 
   "https://otc-fleet-management-gamma.vercel.app",
 
 
-  /* ======================================
-     CUSTOM DOMAIN
-  ====================================== */
+  /* CUSTOM DOMAIN */
 
   "https://fleet.otcgroups.in",
+
 ];
 
 
 const corsOptions = {
+
   origin: (
     origin,
     callback
   ) => {
 
-    /* =====================================
-       NO ORIGIN
-       Postman / Render / Server requests
-    ===================================== */
+    /*
+      Requests from Postman,
+      server-to-server, etc.
+    */
 
     if (!origin) {
+
       return callback(
         null,
         true
       );
+
     }
 
 
-    /* =====================================
-       EXACT ALLOWED ORIGINS
-    ===================================== */
+    /* Exact allowed URLs */
 
     if (
       allowedOrigins.includes(
         origin
       )
     ) {
+
       return callback(
         null,
         true
       );
+
     }
 
 
-    /* =====================================
-       ANY LOCALHOST PORT
-    ===================================== */
+    /* Any localhost port */
 
     const isLocalhost =
+
       /^http:\/\/localhost:\d+$/.test(
         origin
       );
 
 
     const isLocalIp =
+
       /^http:\/\/127\.0\.0\.1:\d+$/.test(
         origin
       );
@@ -155,18 +150,19 @@ const corsOptions = {
       isLocalhost ||
       isLocalIp
     ) {
+
       return callback(
         null,
         true
       );
+
     }
 
 
-    /* =====================================
-       VERCEL PREVIEW DEPLOYMENTS
-    ===================================== */
+    /* Vercel previews */
 
     const isVercelPreview =
+
       /^https:\/\/otc-fleet-management-[a-zA-Z0-9-]+-mukesh3karthis-projects\.vercel\.app$/.test(
         origin
       );
@@ -175,16 +171,14 @@ const corsOptions = {
     if (
       isVercelPreview
     ) {
+
       return callback(
         null,
         true
       );
+
     }
 
-
-    /* =====================================
-       BLOCK UNKNOWN ORIGINS
-    ===================================== */
 
     console.log(
       "❌ Blocked CORS Origin:",
@@ -193,10 +187,13 @@ const corsOptions = {
 
 
     return callback(
+
       new Error(
         "Not allowed by CORS."
       )
+
     );
+
   },
 
 
@@ -205,35 +202,58 @@ const corsOptions = {
 
 
   methods: [
+
     "GET",
+
     "POST",
+
     "PUT",
+
     "PATCH",
+
     "DELETE",
+
     "OPTIONS",
+
   ],
 
 
   allowedHeaders: [
+
     "Content-Type",
+
     "Authorization",
+
     "Accept",
+
   ],
 
 
+  /*
+    Frontend needs these
+    when fetching documents.
+  */
+
   exposedHeaders: [
+
     "Content-Disposition",
+
+    "Content-Type",
+
+    "Content-Length",
+
   ],
 
 
   optionsSuccessStatus:
     204,
+
 };
 
 
 /* ==========================================
    APPLY CORS
-   MUST BE BEFORE API ROUTES
+   MUST BE BEFORE ROUTES
 ========================================== */
 
 app.use(
@@ -243,26 +263,34 @@ app.use(
 );
 
 
-
 /* ==========================================
    BODY PARSER
 ========================================== */
 
+/*
+  Increased because your
+  asset images are Base64.
+*/
+
 app.use(
   express.json({
+
     limit:
-      "20mb",
+      "50mb",
+
   })
 );
 
 
 app.use(
   express.urlencoded({
+
     extended:
       true,
 
     limit:
-      "20mb",
+      "50mb",
+
   })
 );
 
@@ -271,14 +299,56 @@ app.use(
    STATIC UPLOADS
 ========================================== */
 
+const uploadsDirectory =
+  path.resolve(
+    __dirname,
+    "uploads"
+  );
+
+
+console.log(
+  "📁 Static uploads directory:"
+);
+
+console.log(
+  uploadsDirectory
+);
+
+
 app.use(
+
   "/uploads",
+
   express.static(
-    path.join(
-      __dirname,
-      "uploads"
-    )
+
+    uploadsDirectory,
+
+    {
+
+      fallthrough:
+        true,
+
+      etag:
+        true,
+
+      maxAge:
+        0,
+
+      setHeaders: (
+        res
+      ) => {
+
+        res.setHeader(
+          "Cache-Control",
+          "no-store"
+        );
+
+      },
+
+    }
+
   )
+
 );
 
 
@@ -287,26 +357,38 @@ app.use(
 ========================================== */
 
 app.use(
+
   "/api/auth",
+
   authRoutes
+
 );
 
 
 app.use(
+
   "/api/vehicles",
+
   vehicleRoutes
+
 );
 
 
 app.use(
+
   "/api/ownvehicles",
+
   ownvehicleRoutes
+
 );
 
 
 app.use(
+
   "/api/triptracking",
+
   triptrackingRoutes
+
 );
 
 
@@ -316,78 +398,160 @@ app.use(
 
 app.get(
   "/",
+
   (
     req,
     res
   ) => {
 
-    res
+    return res
       .status(200)
       .json({
+
         success:
           true,
+
 
         message:
           "Fleet Management Backend API is running successfully.",
 
+
         serverTime:
-          new Date(),
+          new Date()
+            .toISOString(),
+
 
         database:
+
           mongoose.connection
             .readyState ===
-            1
+          1
+
             ? "Connected"
+
             : "Disconnected",
+
 
         version:
           "1.0.0",
 
-        frontend: {
-          vercel:
-            "https://otc-fleet-management.vercel.app",
-
-          customDomain:
-            "https://fleet.otcgroups.in",
-        },
 
         routes: {
+
           auth:
             "/api/auth",
+
 
           vehicles:
             "/api/vehicles",
 
+
           ownVehicles:
             "/api/ownvehicles",
+
 
           tripTracking:
             "/api/triptracking",
 
-          tripByTripId:
-            "/api/triptracking/trip/:tripId",
-
-          updateVehicleTracking:
-            "/api/triptracking/:tripId/vehicles/:vehicleSubId",
 
           ownVehicleAssets: {
+
             get:
               "/api/ownvehicles/:id/assets",
 
             save:
               "/api/ownvehicles/:id/assets",
+
           },
+
 
           ownVehicleDocuments:
             "/api/ownvehicles/:id/documents",
 
+
           ownVehicleDownloadTest:
             "/api/ownvehicles/download-test",
 
+
           ownVehicleDownload:
             "/api/ownvehicles/download/:fileName",
+
         },
+
       });
+
+  }
+);
+
+
+/* ==========================================
+   DEBUG - UPLOAD DIRECTORY
+========================================== */
+
+/*
+  Useful for checking that
+  local upload folder exists.
+*/
+
+app.get(
+  "/api/debug/uploads",
+
+  (
+    req,
+    res
+  ) => {
+
+    const ownVehicleFolder =
+      path.resolve(
+        __dirname,
+        "uploads",
+        "ownvehicles"
+      );
+
+
+    const fs =
+      require("fs");
+
+
+    const exists =
+      fs.existsSync(
+        ownVehicleFolder
+      );
+
+
+    let files = [];
+
+
+    if (
+      exists
+    ) {
+
+      files =
+        fs.readdirSync(
+          ownVehicleFolder
+        );
+
+    }
+
+
+    return res
+      .status(200)
+      .json({
+
+        success: true,
+
+        folder:
+          ownVehicleFolder,
+
+        exists,
+
+        count:
+          files.length,
+
+        files,
+
+      });
+
   }
 );
 
@@ -402,18 +566,23 @@ app.use(
     res
   ) => {
 
-    res
+    return res
       .status(404)
       .json({
+
         success:
           false,
+
 
         message:
           "API route not found.",
 
+
         requestedUrl:
           req.originalUrl,
+
       });
+
   }
 );
 
@@ -424,7 +593,7 @@ app.use(
 
 app.use(
   (
-    err,
+    error,
     req,
     res,
     next
@@ -432,47 +601,52 @@ app.use(
 
     console.error(
       "Server Error:",
-      err
+      error
     );
 
 
-    /* =====================================
-       CORS ERROR
-    ===================================== */
+    /* CORS */
 
     if (
-      err.message ===
+      error.message ===
       "Not allowed by CORS."
     ) {
+
       return res
         .status(403)
         .json({
+
           success:
             false,
 
+
           message:
             "Frontend origin is not allowed by CORS.",
+
         });
+
     }
 
 
-    /* =====================================
-       GENERAL ERROR
-    ===================================== */
+    /* General */
 
     return res
       .status(
-        err.status ||
+        error.status ||
         500
       )
       .json({
+
         success:
           false,
 
+
         message:
-          err.message ||
-          "Internal Server Error",
+          error.message ||
+          "Internal Server Error.",
+
       });
+
   }
 );
 
@@ -490,19 +664,26 @@ const connectDatabase =
         !process.env
           .MONGODB_URI
       ) {
+
         throw new Error(
-          "MONGODB_URI is missing in the environment variables."
+          "MONGODB_URI is missing in environment variables."
         );
+
       }
 
 
       await mongoose.connect(
+
         process.env
           .MONGODB_URI,
+
         {
+
           autoIndex:
             true,
+
         }
+
       );
 
 
@@ -510,9 +691,11 @@ const connectDatabase =
         "=========================================="
       );
 
+
       console.log(
         "✅ MongoDB Connected Successfully"
       );
+
 
       console.log(
         "Database:",
@@ -520,11 +703,13 @@ const connectDatabase =
           .name
       );
 
+
       console.log(
         "Host:",
         mongoose.connection
           .host
       );
+
 
       console.log(
         "=========================================="
@@ -536,12 +721,16 @@ const connectDatabase =
         "❌ MongoDB Connection Error"
       );
 
+
       console.error(
         error
       );
 
+
       throw error;
+
     }
+
   };
 
 
@@ -559,6 +748,7 @@ const startServer =
 
       app.listen(
         PORT,
+
         () => {
 
           console.log("");
@@ -567,17 +757,26 @@ const startServer =
             "=========================================="
           );
 
+
           console.log(
             "🚀 OTC Fleet Management Backend Started"
           );
+
 
           console.log(
             "=========================================="
           );
 
+
+          console.log(
+            `Server URL  : http://localhost:${PORT}`
+          );
+
+
           console.log(
             `Server Port : ${PORT}`
           );
+
 
           console.log(
             `Environment : ${
@@ -587,76 +786,51 @@ const startServer =
             }`
           );
 
+
           console.log("");
 
+
           console.log(
-            "Allowed Frontend Origins"
+            "Important APIs"
           );
+
 
           console.log(
             "------------------------------------------"
           );
 
-          allowedOrigins.forEach(
-            (
-              origin
-            ) => {
-              console.log(
-                origin
-              );
-            }
-          );
-
-          console.log("");
 
           console.log(
-            "Available APIs"
+            `Health Test        : http://localhost:${PORT}/`
           );
 
-          console.log(
-            "------------------------------------------"
-          );
 
           console.log(
-            "Auth API               : /api/auth"
+            `Own Vehicles       : http://localhost:${PORT}/api/ownvehicles`
           );
 
-          console.log(
-            "Vehicle API            : /api/vehicles"
-          );
 
           console.log(
-            "Own Vehicle API        : /api/ownvehicles"
+            `Download Test      : http://localhost:${PORT}/api/ownvehicles/download-test`
           );
 
-          console.log(
-            "Trip Tracking API      : /api/triptracking"
-          );
 
           console.log(
-            "Trip By Trip ID        : /api/triptracking/trip/:tripId"
+            `Uploads Debug      : http://localhost:${PORT}/api/debug/uploads`
           );
 
-          console.log(
-            "Vehicle Tracking PUT   : /api/triptracking/:tripId/vehicles/:vehicleSubId"
-          );
 
           console.log(
-            "Vehicle Assets GET     : /api/ownvehicles/:id/assets"
+            `Static Uploads     : http://localhost:${PORT}/uploads/ownvehicles/FILE_NAME`
           );
 
-          console.log(
-            "Vehicle Assets SAVE    : /api/ownvehicles/:id/assets"
-          );
-
-          console.log(
-            "Vehicle Documents API  : /api/ownvehicles/:id/documents"
-          );
 
           console.log(
             "=========================================="
           );
+
         }
+
       );
 
     } catch (error) {
@@ -665,12 +839,16 @@ const startServer =
         "Unable to start server."
       );
 
+
       console.error(
         error
       );
 
+
       process.exit(1);
+
     }
+
   };
 
 
@@ -715,18 +893,22 @@ const gracefulShutdown =
         "Error while closing MongoDB:"
       );
 
+
       console.error(
         error
       );
 
 
       process.exit(1);
+
     }
+
   };
 
 
 process.on(
   "SIGINT",
+
   () =>
     gracefulShutdown(
       "SIGINT"
@@ -736,6 +918,7 @@ process.on(
 
 process.on(
   "SIGTERM",
+
   () =>
     gracefulShutdown(
       "SIGTERM"

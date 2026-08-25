@@ -6,7 +6,8 @@ import React, {
 } from "react";
 
 import axios from "axios";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
+import { saveAs } from "file-saver";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
@@ -17,12 +18,10 @@ import {
   CheckCircle2,
   ChefHat,
   ChevronRight,
-  Download,
   FileSpreadsheet,
   FileText,
   History,
   Package,
-  Printer,
   Save,
   Search,
   ShieldCheck,
@@ -413,6 +412,9 @@ const Assets = () => {
   ] = useState(null);
 
   const [saving, setSaving] =
+    useState(false);
+
+  const [exporting, setExporting] =
     useState(false);
 
   const [message, setMessage] =
@@ -1048,8 +1050,10 @@ const Assets = () => {
   }
 };
 
-  const createExportRows = () => {
-    if (!currentRecord) {
+  const createExportRowsForRecord = (
+    record
+  ) => {
+    if (!record) {
       return [];
     }
 
@@ -1060,21 +1064,25 @@ const Assets = () => {
         categoryKey,
         category,
       ]) =>
-        currentRecord[
-          categoryKey
-        ].map(
+        (
+          record[categoryKey] ||
+          []
+        ).map(
           (item, index) => ({
             Category:
               category.label,
-            "S.No": index + 1,
+            "S.No":
+              index + 1,
             "Item Name":
               item.itemName,
+            Image:
+              item.image || "",
             Quantity:
               Number(
                 item.quantity || 0
               ),
             Status:
-              item.status,
+              item.status || "-",
             Remarks:
               item.remarks || "",
             "Replacement Records":
@@ -1086,7 +1094,8 @@ const Assets = () => {
                   (history) =>
                     `${formatDate(
                       history.date
-                    )}: ${history.note
+                    )}: ${
+                      history.note
                     }`
                 )
                 .join(" | "),
@@ -1095,141 +1104,1413 @@ const Assets = () => {
     );
   };
 
-  const exportExcel = () => {
-    const exportRows =
-      createExportRows();
 
-    const worksheet =
-      XLSX.utils.json_to_sheet(
-        exportRows
+  const getVehicleAssetRecord =
+    async (vehicle) => {
+
+      if (
+        vehicle?.assets &&
+        typeof vehicle.assets ===
+          "object"
+      ) {
+        return mergeAssetRecord(
+          vehicle.assets
+        );
+      }
+
+      const vehicleId =
+        Number(vehicle?.id);
+
+      if (!vehicleId) {
+        return createDefaultAssetRecord();
+      }
+
+      try {
+        const response =
+          await axios.get(
+            `${OWN_VEHICLE_API_URL}/${vehicleId}/assets`,
+            API_OPTIONS
+          );
+
+        return mergeAssetRecord(
+          response.data?.assets
+        );
+      } catch (exportError) {
+        console.error(
+          `Unable to load assets for ${
+            vehicle?.vehicleNumber ||
+            "vehicle"
+          }:`,
+          exportError
+        );
+
+        return createDefaultAssetRecord();
+      }
+    };
+
+
+  const getImageAsDataUrl =
+    async (imageSource) => {
+
+      if (
+        !imageSource ||
+        typeof imageSource !==
+          "string"
+      ) {
+        return "";
+      }
+
+      if (
+        imageSource.startsWith(
+          "data:image/"
+        )
+      ) {
+        return imageSource;
+      }
+
+      try {
+        const response =
+          await fetch(
+            imageSource
+          );
+
+        if (!response.ok) {
+          throw new Error(
+            `Image request failed: ${
+              response.status
+            }`
+          );
+        }
+
+        const blob =
+          await response.blob();
+
+        return await new Promise(
+          (
+            resolve,
+            reject
+          ) => {
+            const reader =
+              new FileReader();
+
+            reader.onloadend =
+              () =>
+                resolve(
+                  String(
+                    reader.result ||
+                    ""
+                  )
+                );
+
+            reader.onerror =
+              reject;
+
+            reader.readAsDataURL(
+              blob
+            );
+          }
+        );
+      } catch (imageError) {
+        console.warn(
+          "Unable to load export image:",
+          imageSource,
+          imageError
+        );
+
+        return "";
+      }
+    };
+
+
+  const getImageExtension = (
+    dataUrl
+  ) => {
+
+    const normalized =
+      String(
+        dataUrl || ""
+      ).toLowerCase();
+
+    if (
+      normalized.startsWith(
+        "data:image/jpeg"
+      ) ||
+      normalized.startsWith(
+        "data:image/jpg"
+      )
+    ) {
+      return "jpeg";
+    }
+
+    if (
+      normalized.startsWith(
+        "data:image/gif"
+      )
+    ) {
+      return "gif";
+    }
+
+    return "png";
+  };
+
+
+  const sanitizeSheetName = (
+    value
+  ) => {
+
+    return String(
+      value ||
+      "Vehicle"
+    )
+      .replace(
+        /[\\/*?:[\]]/g,
+        "-"
+      )
+      .slice(
+        0,
+        31
       );
+  };
 
-    worksheet["!cols"] = [
-      { wch: 22 },
-      { wch: 8 },
-      { wch: 28 },
-      { wch: 12 },
-      { wch: 15 },
-      { wch: 35 },
-      { wch: 50 },
-    ];
 
-    const workbook =
-      XLSX.utils.book_new();
+  const styleExcelHeader = (
+    row
+  ) => {
 
-    XLSX.utils.book_append_sheet(
-      workbook,
-      worksheet,
-      "Vehicle Assets"
-    );
+    row.height = 24;
 
-    XLSX.writeFile(
-      workbook,
-      `vehicle-assets-${selectedVehicle
-        ?.vehicleNumber ||
-      "vehicle"
-      }.xlsx`
+    row.eachCell(
+      (cell) => {
+        cell.font = {
+          bold: true,
+          color: {
+            argb:
+              "FFFFFFFF",
+          },
+          size: 11,
+        };
+
+        cell.fill = {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: {
+            argb:
+              "FF123B5D",
+          },
+        };
+
+        cell.alignment = {
+          vertical:
+            "middle",
+          horizontal:
+            "center",
+        };
+
+        cell.border = {
+          top: {
+            style: "thin",
+            color: {
+              argb:
+                "FFD8E2E8",
+            },
+          },
+          left: {
+            style: "thin",
+            color: {
+              argb:
+                "FFD8E2E8",
+            },
+          },
+          bottom: {
+            style: "thin",
+            color: {
+              argb:
+                "FFD8E2E8",
+            },
+          },
+          right: {
+            style: "thin",
+            color: {
+              argb:
+                "FFD8E2E8",
+            },
+          },
+        };
+      }
     );
   };
 
-  const exportPdf = () => {
-    const document =
-      new jsPDF({
-        orientation:
-          "landscape",
-        unit: "mm",
-        format: "a4",
-      });
 
-    document.setFontSize(16);
+  const addVehicleSheetToWorkbook =
+    async (
+      workbook,
+      vehicle,
+      record,
+      sheetName
+    ) => {
 
-    document.text(
-      "Vehicle Assets Register",
-      14,
-      15
-    );
+      const worksheet =
+        workbook.addWorksheet(
+          sanitizeSheetName(
+            sheetName ||
+            vehicle?.vehicleNumber ||
+            "Vehicle"
+          )
+        );
 
-    document.setFontSize(9);
+      worksheet.properties.defaultRowHeight =
+        20;
 
-    document.text(
-      `Vehicle: ${selectedVehicle
-        ?.vehicleNumber || "-"
-      }`,
-      14,
-      22
-    );
+      worksheet.mergeCells(
+        "A1:H1"
+      );
 
-    document.text(
-      `Make: ${selectedVehicle
-        ?.vehicleMake || "-"
-      }`,
-      75,
-      22
-    );
+      const titleCell =
+        worksheet.getCell(
+          "A1"
+        );
 
-    document.text(
-      `Inspection Date: ${formatDate(
-        currentRecord
-          ?.inspectionDate
-      )}`,
-      135,
-      22
-    );
+      titleCell.value =
+        `Vehicle Assets - ${
+          vehicle?.vehicleNumber ||
+          "-"
+        }`;
 
-    document.text(
-      `Inspected By: ${currentRecord
-        ?.inspectedBy || "-"
-      }`,
-      215,
-      22
-    );
+      titleCell.font = {
+        size: 16,
+        bold: true,
+        color: {
+          argb:
+            "FF123B5D",
+        },
+      };
 
-    autoTable(document, {
-      startY: 28,
-      head: [
+      titleCell.alignment = {
+        vertical:
+          "middle",
+        horizontal:
+          "left",
+      };
+
+      worksheet.getRow(
+        1
+      ).height = 28;
+
+      const summary =
+        calculateVehicleSummary(
+          record
+        );
+
+      const vehicleDetails = [
         [
+          "Vehicle Number",
+          vehicle?.vehicleNumber ||
+            "-",
+          "Vehicle Type",
+          vehicle?.vehicleType ||
+            "-",
+        ],
+        [
+          "Vehicle Make",
+          vehicle?.vehicleMake ||
+            "-",
+          "Transport Owner",
+          vehicle?.transportOwner ||
+            vehicle?.transportProvider ||
+            "-",
+        ],
+        [
+          "Site",
+          vehicle?.siteName ||
+            "-",
+          "Completion",
+          `${summary.completion}%`,
+        ],
+        [
+          "Inspection Date",
+          formatDate(
+            record?.inspectionDate
+          ),
+          "Inspected By",
+          record?.inspectedBy ||
+            "-",
+        ],
+      ];
+
+      vehicleDetails.forEach(
+        (values) => {
+          const row =
+            worksheet.addRow(
+              values
+            );
+
+          row.height = 22;
+
+          [
+            1,
+            3,
+          ].forEach(
+            (columnIndex) => {
+              const cell =
+                row.getCell(
+                  columnIndex
+                );
+
+              cell.font = {
+                bold: true,
+                color: {
+                  argb:
+                    "FF5C7083",
+                },
+              };
+
+              cell.fill = {
+                type:
+                  "pattern",
+                pattern:
+                  "solid",
+                fgColor: {
+                  argb:
+                    "FFF4F7F9",
+                },
+              };
+            }
+          );
+
+          row.eachCell(
+            (cell) => {
+              cell.alignment = {
+                vertical:
+                  "middle",
+              };
+
+              cell.border = {
+                bottom: {
+                  style:
+                    "thin",
+                  color: {
+                    argb:
+                      "FFE4EAEF",
+                  },
+                },
+              };
+            }
+          );
+        }
+      );
+
+      worksheet.addRow(
+        []
+      );
+
+      const headerRow =
+        worksheet.addRow([
           "Category",
           "S.No",
           "Item Name",
+          "Image",
           "Quantity",
           "Status",
           "Remarks",
-        ],
-      ],
-      body: createExportRows().map(
-        (row) => [
-          row.Category,
-          row["S.No"],
-          row["Item Name"],
-          row.Quantity,
-          row.Status,
-          row.Remarks,
-        ]
-      ),
-      styles: {
-        fontSize: 7,
-        cellPadding: 2,
-      },
-      headStyles: {
-        fillColor: [
-          22,
-          87,
-          216,
-        ],
-      },
-    });
+          "Replacement Records",
+        ]);
 
-    document.save(
-      `vehicle-assets-${selectedVehicle
-        ?.vehicleNumber ||
-      "vehicle"
-      }.pdf`
-    );
-  };
+      styleExcelHeader(
+        headerRow
+      );
 
-  const printAssets = () => {
-    window.print();
-  };
+      const rows =
+        createExportRowsForRecord(
+          record
+        );
+
+      for (
+        const rowData
+        of rows
+      ) {
+        const row =
+          worksheet.addRow([
+            rowData.Category,
+            rowData["S.No"],
+            rowData[
+              "Item Name"
+            ],
+            "",
+            rowData.Quantity,
+            rowData.Status,
+            rowData.Remarks,
+            rowData[
+              "Replacement Records"
+            ],
+          ]);
+
+        row.height = 50;
+
+        row.eachCell(
+          (cell) => {
+            cell.alignment = {
+              vertical:
+                "middle",
+              wrapText:
+                true,
+            };
+
+            cell.border = {
+              bottom: {
+                style:
+                  "thin",
+                color: {
+                  argb:
+                    "FFE7ECEF",
+                },
+              },
+            };
+          }
+        );
+
+        if (
+          rowData.Image
+        ) {
+          const dataUrl =
+            await getImageAsDataUrl(
+              rowData.Image
+            );
+
+          if (dataUrl) {
+            try {
+              const imageId =
+                workbook.addImage({
+                  base64:
+                    dataUrl,
+                  extension:
+                    getImageExtension(
+                      dataUrl
+                    ),
+                });
+
+              worksheet.addImage(
+                imageId,
+                {
+                  tl: {
+                    col: 3.12,
+                    row:
+                      row.number -
+                      0.88,
+                  },
+                  ext: {
+                    width: 58,
+                    height: 58,
+                  },
+                  editAs:
+                    "oneCell",
+                }
+              );
+            } catch (
+              imageError
+            ) {
+              console.warn(
+                "Excel image insert error:",
+                imageError
+              );
+            }
+          }
+        }
+      }
+
+      worksheet.columns = [
+        {
+          width: 21,
+        },
+        {
+          width: 8,
+        },
+        {
+          width: 30,
+        },
+        {
+          width: 12,
+        },
+        {
+          width: 12,
+        },
+        {
+          width: 17,
+        },
+        {
+          width: 32,
+        },
+        {
+          width: 48,
+        },
+      ];
+
+      worksheet.views = [
+        {
+          state:
+            "frozen",
+          ySplit: 7,
+        },
+      ];
+
+      return worksheet;
+    };
+
+
+  const exportVehicleExcel =
+    async (
+      vehicle,
+      record
+    ) => {
+
+      const workbook =
+        new ExcelJS.Workbook();
+
+      workbook.creator =
+        "OTC Groups";
+
+      workbook.created =
+        new Date();
+
+      await addVehicleSheetToWorkbook(
+        workbook,
+        vehicle,
+        record,
+        "Asset Checklist"
+      );
+
+      const buffer =
+        await workbook.xlsx.writeBuffer();
+
+      const blob =
+        new Blob(
+          [buffer],
+          {
+            type:
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          }
+        );
+
+      saveAs(
+        blob,
+        `vehicle-assets-${
+          vehicle?.vehicleNumber ||
+          "vehicle"
+        }.xlsx`
+      );
+    };
+
+
+  const buildPdfRowsWithImages =
+    async (record) => {
+
+      const rows =
+        createExportRowsForRecord(
+          record
+        );
+
+      return await Promise.all(
+        rows.map(
+          async (row) => ({
+            ...row,
+            Image:
+              row.Image
+                ? await getImageAsDataUrl(
+                    row.Image
+                  )
+                : "",
+          })
+        )
+      );
+    };
+
+
+  const drawVehiclePdfSection =
+    async (
+      document,
+      vehicle,
+      record,
+      {
+        firstSection =
+          false,
+      } = {}
+    ) => {
+
+      if (!firstSection) {
+        document.addPage();
+      }
+
+      const summary =
+        calculateVehicleSummary(
+          record
+        );
+
+      document.setFontSize(
+        16
+      );
+
+      document.setTextColor(
+        18,
+        59,
+        93
+      );
+
+      document.text(
+        "Vehicle Assets Register",
+        14,
+        15
+      );
+
+      document.setFontSize(
+        9
+      );
+
+      document.setTextColor(
+        55,
+        75,
+        92
+      );
+
+      document.text(
+        `Vehicle: ${
+          vehicle?.vehicleNumber ||
+          "-"
+        }`,
+        14,
+        22
+      );
+
+      document.text(
+        `Type: ${
+          vehicle?.vehicleType ||
+          "-"
+        }`,
+        70,
+        22
+      );
+
+      document.text(
+        `Make: ${
+          vehicle?.vehicleMake ||
+          "-"
+        }`,
+        120,
+        22
+      );
+
+      document.text(
+        `Owner: ${
+          vehicle?.transportOwner ||
+          vehicle?.transportProvider ||
+          "-"
+        }`,
+        170,
+        22
+      );
+
+      document.text(
+        `Completion: ${
+          summary.completion
+        }%`,
+        240,
+        22
+      );
+
+      document.text(
+        `Inspection: ${formatDate(
+          record?.inspectionDate
+        )}`,
+        14,
+        28
+      );
+
+      document.text(
+        `Inspected By: ${
+          record?.inspectedBy ||
+          "-"
+        }`,
+        85,
+        28
+      );
+
+      const rows =
+        await buildPdfRowsWithImages(
+          record
+        );
+
+      autoTable(
+        document,
+        {
+          startY: 34,
+
+          head: [[
+            "Category",
+            "S.No",
+            "Item Name",
+            "Image",
+            "Qty",
+            "Status",
+            "Remarks",
+            "Replacement Records",
+          ]],
+
+          body:
+            rows.map(
+              (row) => [
+                row.Category,
+                row["S.No"],
+                row[
+                  "Item Name"
+                ],
+                "",
+                row.Quantity,
+                row.Status,
+                row.Remarks,
+                row[
+                  "Replacement Records"
+                ],
+              ]
+            ),
+
+          styles: {
+            fontSize: 7.2,
+            cellPadding: 2,
+            valign:
+              "middle",
+            textColor: [
+              49,
+              73,
+              94,
+            ],
+            minCellHeight: 17,
+          },
+
+          headStyles: {
+            fillColor: [
+              18,
+              59,
+              93,
+            ],
+            textColor: [
+              255,
+              255,
+              255,
+            ],
+          },
+
+          alternateRowStyles: {
+            fillColor: [
+              247,
+              250,
+              251,
+            ],
+          },
+
+          columnStyles: {
+            0: {
+              cellWidth: 27,
+            },
+            1: {
+              cellWidth: 11,
+            },
+            2: {
+              cellWidth: 40,
+            },
+            3: {
+              cellWidth: 22,
+            },
+            4: {
+              cellWidth: 14,
+            },
+            5: {
+              cellWidth: 24,
+            },
+            6: {
+              cellWidth: 47,
+            },
+            7: {
+              cellWidth: 66,
+            },
+          },
+
+          didDrawCell: (
+            data
+          ) => {
+
+            if (
+              data.section !==
+                "body" ||
+              data.column.index !==
+                3
+            ) {
+              return;
+            }
+
+            const row =
+              rows[
+                data.row.index
+              ];
+
+            if (
+              !row?.Image
+            ) {
+              return;
+            }
+
+            try {
+              const format =
+                getImageExtension(
+                  row.Image
+                ) ===
+                "jpeg"
+                  ? "JPEG"
+                  : "PNG";
+
+              const padding = 1.5;
+
+              const maxWidth =
+                data.cell.width -
+                padding * 2;
+
+              const maxHeight =
+                data.cell.height -
+                padding * 2;
+
+              const imageSize =
+                Math.max(
+                  1,
+                  Math.min(
+                    14,
+                    maxWidth,
+                    maxHeight
+                  )
+                );
+
+              const x =
+                data.cell.x +
+                (
+                  data.cell.width -
+                  imageSize
+                ) /
+                2;
+
+              const y =
+                data.cell.y +
+                (
+                  data.cell.height -
+                  imageSize
+                ) /
+                2;
+
+              document.addImage(
+                row.Image,
+                format,
+                x,
+                y,
+                imageSize,
+                imageSize
+              );
+            } catch (
+              imageError
+            ) {
+              console.warn(
+                "PDF image insert error:",
+                imageError
+              );
+            }
+          },
+        }
+      );
+    };
+
+
+  const exportVehiclePdf =
+    async (
+      vehicle,
+      record
+    ) => {
+
+      const document =
+        new jsPDF({
+          orientation:
+            "landscape",
+          unit: "mm",
+          format: "a4",
+        });
+
+      await drawVehiclePdfSection(
+        document,
+        vehicle,
+        record,
+        {
+          firstSection:
+            true,
+        }
+      );
+
+      document.save(
+        `vehicle-assets-${
+          vehicle?.vehicleNumber ||
+          "vehicle"
+        }.pdf`
+      );
+    };
+
+
+  const handleVehicleExcel =
+    async (vehicle) => {
+
+      try {
+        setExporting(
+          true
+        );
+
+        const record =
+          await getVehicleAssetRecord(
+            vehicle
+          );
+
+        await exportVehicleExcel(
+          vehicle,
+          record
+        );
+      } catch (
+        exportError
+      ) {
+        console.error(
+          "Vehicle Excel export error:",
+          exportError
+        );
+
+        setError(
+          "Unable to export vehicle Excel."
+        );
+      } finally {
+        setExporting(
+          false
+        );
+      }
+    };
+
+
+  const handleVehiclePdf =
+    async (vehicle) => {
+
+      try {
+        setExporting(
+          true
+        );
+
+        const record =
+          await getVehicleAssetRecord(
+            vehicle
+          );
+
+        await exportVehiclePdf(
+          vehicle,
+          record
+        );
+      } catch (
+        exportError
+      ) {
+        console.error(
+          "Vehicle PDF export error:",
+          exportError
+        );
+
+        setError(
+          "Unable to export vehicle PDF."
+        );
+      } finally {
+        setExporting(
+          false
+        );
+      }
+    };
+
+
+  const getAllVehicleExportData =
+    async () => {
+
+      return await Promise.all(
+        vehicles.map(
+          async (
+            vehicle,
+            index
+          ) => {
+            const record =
+              await getVehicleAssetRecord(
+                vehicle
+              );
+
+            const summary =
+              calculateVehicleSummary(
+                record
+              );
+
+            return {
+              index,
+              vehicle,
+              record,
+              summary,
+            };
+          }
+        )
+      );
+    };
+
+
+  const exportAllVehiclesExcel =
+    async () => {
+
+      try {
+        setExporting(true);
+        setError("");
+
+        const vehicleData =
+          await getAllVehicleExportData();
+
+        const workbook =
+          new ExcelJS.Workbook();
+
+        workbook.creator =
+          "OTC Groups";
+
+        workbook.created =
+          new Date();
+
+        const summarySheet =
+          workbook.addWorksheet(
+            "All Vehicles"
+          );
+
+        const headerRow =
+          summarySheet.addRow([
+            "S.No",
+            "Vehicle Number",
+            "Vehicle Type",
+            "Vehicle Make",
+            "Transport Owner",
+            "Site",
+            "Total Items",
+            "Available",
+            "Missing",
+            "Damaged",
+            "Completion",
+            "Last Inspection",
+            "Inspected By",
+          ]);
+
+        styleExcelHeader(
+          headerRow
+        );
+
+        vehicleData.forEach(
+          ({
+            index,
+            vehicle,
+            record,
+            summary,
+          }) => {
+            summarySheet.addRow([
+              index + 1,
+              vehicle.vehicleNumber ||
+                "-",
+              vehicle.vehicleType ||
+                "-",
+              vehicle.vehicleMake ||
+                "-",
+              vehicle.transportOwner ||
+                vehicle.transportProvider ||
+                "-",
+              vehicle.siteName ||
+                "-",
+              summary.total,
+              summary.available,
+              summary.missing,
+              summary.damaged,
+              `${summary.completion}%`,
+              formatDate(
+                record.inspectionDate
+              ),
+              record.inspectedBy ||
+                "-",
+            ]);
+          }
+        );
+
+        summarySheet.columns = [
+          {
+            width: 8,
+          },
+          {
+            width: 20,
+          },
+          {
+            width: 18,
+          },
+          {
+            width: 20,
+          },
+          {
+            width: 26,
+          },
+          {
+            width: 20,
+          },
+          {
+            width: 12,
+          },
+          {
+            width: 12,
+          },
+          {
+            width: 12,
+          },
+          {
+            width: 12,
+          },
+          {
+            width: 14,
+          },
+          {
+            width: 20,
+          },
+          {
+            width: 22,
+          },
+        ];
+
+        summarySheet.views = [
+          {
+            state:
+              "frozen",
+            ySplit: 1,
+          },
+        ];
+
+        for (
+          let dataIndex = 0;
+          dataIndex <
+          vehicleData.length;
+          dataIndex++
+        ) {
+          const {
+            vehicle,
+            record,
+          } =
+            vehicleData[
+              dataIndex
+            ];
+
+          await addVehicleSheetToWorkbook(
+            workbook,
+            vehicle,
+            record,
+            `${
+              dataIndex + 1
+            }-${
+              vehicle.vehicleNumber ||
+              "Vehicle"
+            }`
+          );
+        }
+
+        const buffer =
+          await workbook.xlsx.writeBuffer();
+
+        const blob =
+          new Blob(
+            [buffer],
+            {
+              type:
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            }
+          );
+
+        saveAs(
+          blob,
+          "all-vehicle-assets-with-images.xlsx"
+        );
+      } catch (
+        exportError
+      ) {
+        console.error(
+          "All vehicle Excel export error:",
+          exportError
+        );
+
+        setError(
+          "Unable to export all vehicle data."
+        );
+      } finally {
+        setExporting(false);
+      }
+    };
+
+
+  const exportAllVehiclesPdf =
+    async () => {
+
+      try {
+        setExporting(true);
+        setError("");
+
+        const vehicleData =
+          await getAllVehicleExportData();
+
+        const document =
+          new jsPDF({
+            orientation:
+              "landscape",
+            unit: "mm",
+            format: "a4",
+          });
+
+        document.setFontSize(
+          16
+        );
+
+        document.setTextColor(
+          18,
+          59,
+          93
+        );
+
+        document.text(
+          "All Vehicle Assets Summary",
+          14,
+          15
+        );
+
+        document.setFontSize(
+          9
+        );
+
+        document.setTextColor(
+          90,
+          108,
+          124
+        );
+
+        document.text(
+          `Total Vehicles: ${
+            vehicleData.length
+          }`,
+          14,
+          22
+        );
+
+        autoTable(
+          document,
+          {
+            startY: 28,
+            head: [[
+              "S.No",
+              "Vehicle No.",
+              "Type",
+              "Make",
+              "Transport Owner",
+              "Available",
+              "Missing",
+              "Damaged",
+              "Completion",
+              "Last Inspection",
+            ]],
+            body:
+              vehicleData.map(
+                ({
+                  index,
+                  vehicle,
+                  record,
+                  summary,
+                }) => [
+                  index + 1,
+                  vehicle.vehicleNumber ||
+                    "-",
+                  vehicle.vehicleType ||
+                    "-",
+                  vehicle.vehicleMake ||
+                    "-",
+                  vehicle.transportOwner ||
+                    vehicle.transportProvider ||
+                    "-",
+                  summary.available,
+                  summary.missing,
+                  summary.damaged,
+                  `${summary.completion}%`,
+                  formatDate(
+                    record.inspectionDate
+                  ),
+                ]
+              ),
+            styles: {
+              fontSize: 7.5,
+              cellPadding: 2.2,
+              textColor: [
+                49,
+                73,
+                94,
+              ],
+            },
+            headStyles: {
+              fillColor: [
+                18,
+                59,
+                93,
+              ],
+              textColor: [
+                255,
+                255,
+                255,
+              ],
+            },
+            alternateRowStyles: {
+              fillColor: [
+                247,
+                250,
+                251,
+              ],
+            },
+          }
+        );
+
+        for (
+          const {
+            vehicle,
+            record,
+          }
+          of vehicleData
+        ) {
+          await drawVehiclePdfSection(
+            document,
+            vehicle,
+            record,
+            {
+              firstSection:
+                false,
+            }
+          );
+        }
+
+        document.save(
+          "all-vehicle-assets-with-images.pdf"
+        );
+      } catch (
+        exportError
+      ) {
+        console.error(
+          "All vehicle PDF export error:",
+          exportError
+        );
+
+        setError(
+          "Unable to export all vehicle data."
+        );
+      } finally {
+        setExporting(false);
+      }
+    };
+
 
   return (
     <div className="assets-page">
@@ -1325,6 +2606,48 @@ const Assets = () => {
                   to manage its assets.
                 </p>
               </div>
+
+              <div className="assets-table-export-actions">
+                <button
+                  type="button"
+                  className="assets-export-button excel"
+                  onClick={
+                    exportAllVehiclesExcel
+                  }
+                  disabled={
+                    exporting ||
+                    vehicles.length === 0
+                  }
+                >
+                  <FileSpreadsheet
+                    size={17}
+                  />
+
+                  {exporting
+                    ? "Preparing..."
+                    : "All Excel"}
+                </button>
+
+                <button
+                  type="button"
+                  className="assets-export-button pdf"
+                  onClick={
+                    exportAllVehiclesPdf
+                  }
+                  disabled={
+                    exporting ||
+                    vehicles.length === 0
+                  }
+                >
+                  <FileText
+                    size={17}
+                  />
+
+                  {exporting
+                    ? "Preparing..."
+                    : "All PDF"}
+                </button>
+              </div>
             </div>
 
             <div className="assets-table-wrapper">
@@ -1351,6 +2674,8 @@ const Assets = () => {
                       Last Inspection
                     </th>
                     <th>Action</th>
+                    <th>Excel</th>
+                    <th>PDF</th>
                   </tr>
                 </thead>
 
@@ -1462,11 +2787,46 @@ const Assets = () => {
                                 }
                               >
                                 Manage
+
                                 <ChevronRight
-                                  size={
-                                    16
-                                  }
+                                  size={15}
                                 />
+                              </button>
+                            </td>
+
+                            <td>
+                              <button
+                                type="button"
+                                className="vehicle-export-button excel"
+                                onClick={() =>
+                                  handleVehicleExcel(
+                                    vehicle
+                                  )
+                                }
+                              >
+                                <FileSpreadsheet
+                                  size={15}
+                                />
+
+                                Excel
+                              </button>
+                            </td>
+
+                            <td>
+                              <button
+                                type="button"
+                                className="vehicle-export-button pdf"
+                                onClick={() =>
+                                  handleVehiclePdf(
+                                    vehicle
+                                  )
+                                }
+                              >
+                                <FileText
+                                  size={15}
+                                />
+
+                                PDF
                               </button>
                             </td>
                           </tr>
@@ -1476,7 +2836,7 @@ const Assets = () => {
                   ) : (
                     <tr>
                       <td
-                        colSpan={8}
+                        colSpan={10}
                         className="assets-empty-row"
                       >
                         No vehicles
@@ -1511,9 +2871,6 @@ const Assets = () => {
         setReplacementDate={setReplacementDate}
         setReplacementNote={setReplacementNote}
         message={message}
-        printAssets={printAssets}
-        exportExcel={exportExcel}
-        exportPdf={exportPdf}
         saveAssets={saveAssets}
         replacementItem={replacementItem}
         replacementDate={replacementDate}

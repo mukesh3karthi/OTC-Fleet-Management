@@ -1,133 +1,304 @@
-const fs = require("fs");
-const path = require("path");
-const multer = require("multer");
+const fs =
+  require("fs");
 
-const uploadsFolder = path.join(
-  __dirname,
-  "../uploads/ownvehicles"
-);
+const path =
+  require("path");
 
-if (!fs.existsSync(uploadsFolder)) {
-  fs.mkdirSync(uploadsFolder, {
-    recursive: true,
-  });
+const multer =
+  require("multer");
+
+
+/* ==========================================
+   UPLOAD FOLDER
+========================================== */
+
+const uploadsFolder =
+  path.join(
+    __dirname,
+    "../uploads/ownvehicles"
+  );
+
+
+if (
+  !fs.existsSync(
+    uploadsFolder
+  )
+) {
+
+  fs.mkdirSync(
+    uploadsFolder,
+    {
+      recursive: true,
+    }
+  );
+
 }
 
-const storage = multer.diskStorage({
-  destination: (
-    req,
-    file,
-    callback
-  ) => {
-    callback(
-      null,
-      uploadsFolder
-    );
-  },
 
-  filename: (
-    req,
-    file,
-    callback
-  ) => {
-    const extension =
-      path.extname(
-        file.originalname
+/* ==========================================
+   SAFE FILE NAME
+========================================== */
+
+const createSafeFileName = (
+  originalName
+) => {
+
+  const extension =
+    path
+      .extname(
+        originalName
+      )
+      .toLowerCase();
+
+
+  const baseName =
+    path
+      .basename(
+        originalName,
+        extension
+      )
+      .replace(
+        /[^a-zA-Z0-9_-]/g,
+        "-"
+      )
+      .replace(
+        /-+/g,
+        "-"
+      )
+      .replace(
+        /^-|-$/g,
+        ""
       );
 
-    const baseName =
-      path
-        .basename(
-          file.originalname,
-          extension
-        )
-        .replace(
-          /[^a-zA-Z0-9_-]/g,
-          "-"
+
+  const uniquePart =
+    `${Date.now()}-${Math.round(
+      Math.random() * 1e9
+    )}`;
+
+
+  return (
+    `${baseName || "document"}-${uniquePart}${extension}`
+  );
+
+};
+
+
+/* ==========================================
+   STORAGE
+========================================== */
+
+const storage =
+  multer.diskStorage({
+
+    destination: (
+      req,
+      file,
+      callback
+    ) => {
+
+      callback(
+        null,
+        uploadsFolder
+      );
+
+    },
+
+
+    filename: (
+      req,
+      file,
+      callback
+    ) => {
+
+      const fileName =
+        createSafeFileName(
+          file.originalname
         );
 
-    const uniqueFileName =
-      `${Date.now()}-${Math.round(
-        Math.random() * 1e9
-      )}-${baseName}${extension.toLowerCase()}`;
 
-    callback(
-      null,
-      uniqueFileName
-    );
-  },
-});
+      callback(
+        null,
+        fileName
+      );
+
+    },
+
+  });
+
+
+/* ==========================================
+   ALLOWED FILES
+========================================== */
+
+const allowedMimeTypes = [
+
+  "application/pdf",
+
+  "image/jpeg",
+
+  "image/jpg",
+
+  "image/png",
+
+];
+
+
+const allowedExtensions = [
+
+  ".pdf",
+
+  ".jpg",
+
+  ".jpeg",
+
+  ".png",
+
+];
+
+
+/* ==========================================
+   FILE FILTER
+========================================== */
 
 const fileFilter = (
   req,
   file,
   callback
 ) => {
-  const allowedTypes = [
-    "application/pdf",
-    "image/jpeg",
-    "image/png",
-  ];
+
+  const extension =
+    path
+      .extname(
+        file.originalname
+      )
+      .toLowerCase();
+
+
+  const validMimeType =
+    allowedMimeTypes.includes(
+      file.mimetype
+    );
+
+
+  const validExtension =
+    allowedExtensions.includes(
+      extension
+    );
+
 
   if (
-    !allowedTypes.includes(
-      file.mimetype
-    )
+    validMimeType &&
+    validExtension
   ) {
+
     return callback(
-      new Error(
-        "Only PDF, JPG and PNG files are allowed."
-      )
+      null,
+      true
     );
+
   }
 
-  callback(null, true);
+
+  return callback(
+
+    new Error(
+      "Only PDF, JPG, JPEG and PNG files are allowed."
+    ),
+
+    false
+
+  );
+
 };
 
-const upload = multer({
-  storage,
 
-  fileFilter,
+/* ==========================================
+   MULTER
+========================================== */
 
-  limits: {
-    fileSize:
-      5 * 1024 * 1024,
+const upload =
+  multer({
 
-    files: 7,
-  },
-});
+    storage,
+
+    fileFilter,
+
+
+    limits: {
+
+      fileSize:
+        10 * 1024 * 1024,
+
+      files: 7,
+
+    },
+
+  });
+
+
+/* ==========================================
+   VEHICLE DOCUMENT FIELDS
+========================================== */
 
 const uploadVehicleDocuments =
   upload.fields([
+
     {
-      name: "insuranceFile",
+      name:
+        "insuranceFile",
+
       maxCount: 1,
     },
+
     {
-      name: "fitnessFile",
+      name:
+        "fitnessFile",
+
       maxCount: 1,
     },
+
     {
-      name: "nationalPermitFile",
+      name:
+        "nationalPermitFile",
+
       maxCount: 1,
     },
+
     {
-      name: "permitFile",
+      name:
+        "permitFile",
+
       maxCount: 1,
     },
+
     {
-      name: "taxFile",
+      name:
+        "taxFile",
+
       maxCount: 1,
     },
+
     {
-      name: "pucFile",
+      name:
+        "pucFile",
+
       maxCount: 1,
     },
+
     {
-      name: "rcBookFile",
+      name:
+        "rcBookFile",
+
       maxCount: 1,
     },
+
   ]);
+
+
+/* ==========================================
+   ERROR HANDLER
+========================================== */
 
 const handleUploadErrors = (
   error,
@@ -135,60 +306,114 @@ const handleUploadErrors = (
   res,
   next
 ) => {
+
   if (!error) {
+
     return next();
+
   }
+
 
   if (
     error instanceof
     multer.MulterError
   ) {
+
+
     if (
       error.code ===
       "LIMIT_FILE_SIZE"
     ) {
+
       return res
         .status(400)
         .json({
+
           success: false,
+
           message:
-            "Each file must be 5 MB or smaller.",
+            "Each document must be 10 MB or smaller.",
+
         });
+
     }
+
+
+    if (
+      error.code ===
+      "LIMIT_FILE_COUNT"
+    ) {
+
+      return res
+        .status(400)
+        .json({
+
+          success: false,
+
+          message:
+            "You can upload a maximum of 7 documents.",
+
+        });
+
+    }
+
 
     if (
       error.code ===
       "LIMIT_UNEXPECTED_FILE"
     ) {
+
       return res
         .status(400)
         .json({
+
           success: false,
+
           message:
-            `Unexpected upload field: ${error.field}`,
+            `Unexpected document field: ${
+              error.field ||
+              "unknown"
+            }`,
+
         });
+
     }
+
 
     return res
       .status(400)
       .json({
+
         success: false,
+
         message:
-          error.message,
+          error.message ||
+          "Document upload failed.",
+
       });
+
   }
+
 
   return res
     .status(400)
     .json({
+
       success: false,
+
       message:
         error.message ||
-        "Document upload failed.",
+        "Invalid document file.",
+
     });
+
 };
 
+
 module.exports = {
+
   uploadVehicleDocuments,
+
   handleUploadErrors,
+
 };

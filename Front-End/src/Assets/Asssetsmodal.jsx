@@ -4,11 +4,8 @@ import {
   CalendarDays,
   Camera,
   CheckCircle2,
-  FileSpreadsheet,
-  FileText,
   History,
   Package,
-  Printer,
   Save,
   Trash2,
   Truck,
@@ -39,9 +36,6 @@ const Assetsmodal = ({
   setReplacementDate,
   setReplacementNote,
   message,
-  printAssets,
-  exportExcel,
-  exportPdf,
   saveAssets,
   replacementItem,
   replacementDate,
@@ -60,34 +54,6 @@ const Assetsmodal = ({
     CATEGORY_CONFIG?.[
       selectedCategory
     ]?.icon || Package;
-
-  /*
-    Keep mouse-wheel scrolling inside the asset table.
-    The parent modal will not scroll while the pointer
-    is over this table.
-  */
-  const handleAssetTableWheel = (
-    event
-  ) => {
-    const tableContainer =
-      event.currentTarget;
-
-    const canScrollVertically =
-      tableContainer.scrollHeight >
-      tableContainer.clientHeight;
-
-    if (!canScrollVertically) {
-      event.preventDefault();
-      event.stopPropagation();
-      return;
-    }
-
-    event.preventDefault();
-    event.stopPropagation();
-
-    tableContainer.scrollTop +=
-      event.deltaY;
-  };
 
   return (
     <>
@@ -381,9 +347,6 @@ const Assetsmodal = ({
 
                 <div
                   className="asset-items-table-wrapper"
-                  onWheel={
-                    handleAssetTableWheel
-                  }
                   tabIndex={0}
                   aria-label="Vehicle asset items table"
                 >
@@ -644,46 +607,7 @@ const Assetsmodal = ({
               </div>
 
               <footer className="vehicle-assets-modal-footer">
-                <div className="vehicle-assets-export-actions">
-                  <button
-                    type="button"
-                    onClick={
-                      printAssets
-                    }
-                    title="Print checklist"
-                  >
-                    <Printer
-                      size={17}
-                    />
-                    Print
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={
-                      exportExcel
-                    }
-                  >
-                    <FileSpreadsheet
-                      size={17}
-                    />
-                    Excel
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={
-                      exportPdf
-                    }
-                  >
-                    <FileText
-                      size={17}
-                    />
-                    PDF
-                  </button>
-                </div>
-
-                <div className="vehicle-assets-save-actions">
+<div className="vehicle-assets-save-actions">
                   <button
                     type="button"
                     className="assets-cancel-button"

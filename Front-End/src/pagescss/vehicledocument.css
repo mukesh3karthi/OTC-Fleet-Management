@@ -263,48 +263,24 @@
   box-shadow: 0 0 0 3px rgba(31, 168, 157, 0.09);
 }
 
-/* Summary horizontal cards */
+/* Summary cards */
 
 .document-summary-grid {
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 11px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
   width: 100%;
-  padding: 2px 2px 9px;
-  overflow-x: auto;
-  overflow-y: hidden;
-  scroll-behavior: smooth;
-  scrollbar-width: thin;
-  scrollbar-color: #bcc9d2 #edf2f5;
-}
-
-.document-summary-grid::-webkit-scrollbar {
-  height: 6px;
-}
-
-.document-summary-grid::-webkit-scrollbar-track {
-  border-radius: 999px;
-  background: #edf2f5;
-}
-
-.document-summary-grid::-webkit-scrollbar-thumb {
-  border-radius: 999px;
-  background: #bcc9d2;
-}
-
-.document-summary-grid::-webkit-scrollbar-thumb:hover {
-  background: #94a6b2;
+  padding: 2px 2px 10px;
 }
 
 .document-summary-card {
-  flex: 0 0 290px;
-  min-width: 290px;
-  min-height: 150px;
-  padding: 12px;
+  min-width: 0;
+  min-height: 186px;
+  padding: 14px;
   border: 1px solid #dce4e9;
-  border-radius: 10px;
+  border-radius: 12px;
   background: #ffffff;
-  box-shadow: 0 4px 12px rgba(11, 41, 66, 0.04);
+  box-shadow: 0 3px 10px rgba(11, 41, 66, 0.045);
   transition:
     transform 0.18s ease,
     border-color 0.18s ease,
@@ -318,34 +294,43 @@
 }
 
 .document-summary-card-header {
+  width: 100%;
+  min-height: 42px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 7px;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.document-summary-heading {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 11px;
 }
 
 .document-summary-icon {
-  width: 36px;
-  height: 36px;
-  flex: 0 0 36px;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
   display: grid;
   place-items: center;
-  border-radius: 8px;
+  border-radius: 9px;
   background: #e7f5f3;
   color: #0f9488;
 }
 
 .document-summary-icon svg {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
 }
 
 .document-summary-card h3 {
-  margin: -35px 70px 8px 46px;
+  margin: 0;
   overflow: hidden;
   color: #0b2942;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   line-height: 1.25;
   text-overflow: ellipsis;
@@ -353,41 +338,44 @@
 }
 
 .document-expiry-count {
-  min-height: 22px;
-  padding: 3px 7px;
+  min-height: 25px;
+  flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  padding: 4px 9px;
   border-radius: 999px;
-  background: #eef2f5;
+  background: #eef3f5;
   color: #637386;
-  font-size: 8px;
+  font-size: 8.5px;
   font-weight: 700;
   white-space: nowrap;
 }
 
 .document-expiry-count.urgent {
-  background: #ffe9e9;
-  color: #d23434;
+  background: #ffeaea;
+  color: #dc2626;
 }
 
 .document-summary-list {
+  width: 100%;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 6px;
 }
 
 .document-summary-row {
+  width: 100%;
   min-width: 0;
-  min-height: 36px;
+  min-height: 44px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  padding: 6px 8px;
+  gap: 10px;
+  padding: 8px 10px;
   border: 1px solid #e1e7eb;
-  border-radius: 6px;
+  border-radius: 7px;
   background: #f7f9fa;
 }
 
@@ -395,26 +383,27 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
+  gap: 2px;
 }
 
 .document-summary-row span {
   overflow: hidden;
   color: #0b2942;
-  font-size: 9.5px;
+  font-size: 10px;
   font-weight: 700;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .document-summary-row small {
-  margin-top: 2px;
+  margin-top: 0;
   color: #8b98a8;
-  font-size: 7.5px;
+  font-size: 8px;
 }
 
 .document-summary-row strong {
-  flex-shrink: 0;
-  max-width: 120px;
+  flex: 0 0 auto;
+  max-width: 130px;
   overflow: hidden;
   font-size: 8px;
   font-weight: 700;
@@ -424,15 +413,15 @@
 }
 
 .document-summary-empty {
-  min-height: 76px;
+  min-height: 90px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  gap: 5px;
-  padding: 10px;
+  gap: 7px;
+  padding: 12px;
   border: 1px dashed #ccd8df;
-  border-radius: 7px;
+  border-radius: 8px;
   color: #8795a7;
   font-size: 9px;
   line-height: 1.4;
@@ -1109,9 +1098,8 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .document-summary-card {
-    flex-basis: 275px;
-    min-width: 275px;
+  .document-summary-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
@@ -1122,6 +1110,10 @@
 
   .vehicle-document-header h1 {
     font-size: 21px;
+  }
+
+  .document-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .document-summary-toolbar {
@@ -1186,10 +1178,12 @@
     flex-direction: column;
   }
 
+  .document-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
   .document-summary-card {
-    flex-basis: 255px;
-    min-width: 255px;
-    min-height: 140px;
+    min-height: auto;
   }
 
   .export-format-overlay {

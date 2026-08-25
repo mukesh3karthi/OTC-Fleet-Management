@@ -10,6 +10,11 @@ import axios from "axios";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import {
+  PDFDocument,
+  StandardFonts,
+  rgb,
+} from "pdf-lib";
 
 import {
   AlertTriangle,
@@ -1185,6 +1190,115 @@ const Vehicledocument = () => {
 
 
 
+  const getImageMimeType = (
+    documentData,
+    blob
+  ) => {
+
+    const blobType =
+      String(
+        blob?.type || ""
+      ).toLowerCase();
+
+    if (
+      blobType.startsWith(
+        "image/"
+      )
+    ) {
+      return blobType;
+    }
+
+    const declaredType =
+      String(
+        documentData?.mimeType ||
+        documentData?.mimetype ||
+        documentData?.contentType ||
+        ""
+      ).toLowerCase();
+
+    if (
+      declaredType.startsWith(
+        "image/"
+      )
+    ) {
+      return declaredType;
+    }
+
+    const fileName =
+      String(
+        documentData?.originalName ||
+        documentData?.fileName ||
+        documentData?.filename ||
+        documentData?.filePath ||
+        documentData?.fileUrl ||
+        documentData?.url ||
+        ""
+      ).toLowerCase();
+
+    if (
+      /\.(jpe?g)$/i.test(
+        fileName
+      )
+    ) {
+      return "image/jpeg";
+    }
+
+    if (
+      /\.png$/i.test(
+        fileName
+      )
+    ) {
+      return "image/png";
+    }
+
+    if (
+      /\.webp$/i.test(
+        fileName
+      )
+    ) {
+      return "image/webp";
+    }
+
+    if (
+      /\.gif$/i.test(
+        fileName
+      )
+    ) {
+      return "image/gif";
+    }
+
+    return "";
+  };
+
+
+  const normalizeImageBlob = (
+    blob,
+    mimeType
+  ) => {
+
+    if (
+      !blob ||
+      !mimeType
+    ) {
+      return blob;
+    }
+
+    if (
+      blob.type ===
+      mimeType
+    ) {
+      return blob;
+    }
+
+    return new Blob(
+      [blob],
+      {
+        type: mimeType,
+      }
+    );
+  };
+
+
   const blobToDataUrl = (blob) =>
     new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -1226,42 +1340,1140 @@ const Vehicledocument = () => {
       image.src = dataUrl;
     });
 
+  const fetchUploadedDocument =
+    async (
+      vehicle,
+      documentKey
+    ) => {
+
+      const downloadUrl =
+        getDocumentDownloadUrl(
+          vehicle,
+          documentKey
+        );
+
+      if (!downloadUrl) {
+        return null;
+      }
+
+      console.log(
+        "Fetching document:",
+        {
+          documentKey,
+          downloadUrl,
+        }
+      );
+
+      const response =
+        await fetch(
+          downloadUrl,
+          {
+            method: "GET",
+            cache: "no-store",
+          }
+        );
+
+      if (!response.ok) {
+        throw new Error(
+          `Document request failed: HTTP ${response.status}`
+        );
+      }
+
+      const arrayBuffer =
+        await response.arrayBuffer();
+
+      const documentData =
+        getDocumentData(
+          vehicle,
+          documentKey
+        );
+
+      const responseMimeType =
+        String(
+          response.headers.get(
+            "content-type"
+          ) || ""
+        )
+          .split(";")[0]
+          .trim()
+          .toLowerCase();
+
+      const databaseMimeType =
+        String(
+          documentData?.mimeType ||
+          documentData?.mimetype ||
+          documentData?.contentType ||
+          ""
+        )
+          .split(";")[0]
+          .trim()
+          .toLowerCase();
+
+      const mimeType =
+        responseMimeType ||
+        databaseMimeType;
+
+      const fileName =
+        String(
+          documentData?.originalName ||
+          documentData?.fileName ||
+          documentData?.filename ||
+          ""
+        );
+
+      console.log(
+        "Fetched document:",
+        {
+          vehicle:
+            getVehicleNumber(
+              vehicle
+            ),
+          documentKey,
+          fileName,
+          responseMimeType,
+          databaseMimeType,
+          byteLength:
+            arrayBuffer.byteLength,
+        }
+      );
+
+      return {
+        arrayBuffer,
+        mimeType,
+        fileName,
+        documentData,
+      };
+    };
+
+
+  const getUploadedDocumentType = ({
+    mimeType,
+    fileName,
+  }) => {
+
+    const normalizedMime =
+      String(
+        mimeType || ""
+      ).toLowerCase();
+
+    const normalizedName =
+      String(
+        fileName || ""
+      ).toLowerCase();
+
+    if (
+      normalizedMime.includes(
+        "application/pdf"
+      ) ||
+      normalizedName.endsWith(
+        ".pdf"
+      )
+    ) {
+      return "pdf";
+    }
+
+    if (
+      normalizedMime.includes(
+        "image/png"
+      ) ||
+      normalizedName.endsWith(
+        ".png"
+      )
+    ) {
+      return "png";
+    }
+
+    if (
+      normalizedMime.includes(
+        "image/jpeg"
+      ) ||
+      normalizedMime.includes(
+        "image/jpg"
+      ) ||
+      normalizedName.endsWith(
+        ".jpg"
+      ) ||
+      normalizedName.endsWith(
+        ".jpeg"
+      )
+    ) {
+      return "jpg";
+    }
+
+    return "unknown";
+  };
+
+
+  const downloadPdfBytes = (
+    pdfBytes,
+    fileName
+  ) => {
+
+    const blob =
+      new Blob(
+        [pdfBytes],
+        {
+          type:
+            "application/pdf",
+        }
+      );
+
+    const url =
+      URL.createObjectURL(
+        blob
+      );
+
+    const link =
+      document.createElement(
+        "a"
+      );
+
+    link.href = url;
+    link.download =
+      fileName;
+
+    document.body.appendChild(
+      link
+    );
+
+    link.click();
+    link.remove();
+
+    window.setTimeout(
+      () =>
+        URL.revokeObjectURL(
+          url
+        ),
+      1000
+    );
+  };
+
+
+  const addImageDocumentPage =
+    async ({
+      finalPdf,
+      imageType,
+      arrayBuffer,
+      label,
+      vehicleNumber,
+      regularFont,
+      boldFont,
+      fileName,
+    }) => {
+
+      const embeddedImage =
+        imageType === "png"
+          ? await finalPdf.embedPng(
+              arrayBuffer
+            )
+          : await finalPdf.embedJpg(
+              arrayBuffer
+            );
+
+      const page =
+        finalPdf.addPage([
+          595.28,
+          841.89,
+        ]);
+
+      const {
+        width,
+        height,
+      } =
+        page.getSize();
+
+      page.drawRectangle({
+        x: 0,
+        y: height - 78,
+        width,
+        height: 78,
+        color:
+          rgb(
+            0.07,
+            0.23,
+            0.36
+          ),
+      });
+
+      page.drawText(
+        label,
+        {
+          x: 36,
+          y: height - 32,
+          size: 16,
+          font: boldFont,
+          color:
+            rgb(
+              1,
+              1,
+              1
+            ),
+        }
+      );
+
+      page.drawText(
+        `Vehicle: ${vehicleNumber}`,
+        {
+          x: 36,
+          y: height - 52,
+          size: 9,
+          font: regularFont,
+          color:
+            rgb(
+              0.82,
+              0.89,
+              0.94
+            ),
+        }
+      );
+
+      if (fileName) {
+        page.drawText(
+          String(
+            fileName
+          ).slice(
+            0,
+            75
+          ),
+          {
+            x: 36,
+            y: height - 66,
+            size: 7.5,
+            font: regularFont,
+            color:
+              rgb(
+                0.82,
+                0.89,
+                0.94
+              ),
+          }
+        );
+      }
+
+      const imageSize =
+        embeddedImage.scale(
+          1
+        );
+
+      const margin = 34;
+
+      const availableWidth =
+        width -
+        margin * 2;
+
+      const availableHeight =
+        height - 130;
+
+      const scale =
+        Math.min(
+          availableWidth /
+            imageSize.width,
+
+          availableHeight /
+            imageSize.height,
+
+          1
+        );
+
+      const imageWidth =
+        imageSize.width *
+        scale;
+
+      const imageHeight =
+        imageSize.height *
+        scale;
+
+      page.drawImage(
+        embeddedImage,
+        {
+          x:
+            (
+              width -
+              imageWidth
+            ) / 2,
+
+          y:
+            26 +
+            (
+              availableHeight -
+              imageHeight
+            ) / 2,
+
+          width:
+            imageWidth,
+
+          height:
+            imageHeight,
+        }
+      );
+    };
+
+
+  const addUploadedDocumentToPdf =
+    async ({
+      finalPdf,
+      vehicle,
+      documentKey,
+      label,
+      regularFont,
+      boldFont,
+    }) => {
+
+      const result =
+        await fetchUploadedDocument(
+          vehicle,
+          documentKey
+        );
+
+      if (!result) {
+        return false;
+      }
+
+      /*
+        Convert ArrayBuffer to Uint8Array.
+        pdf-lib works reliably with Uint8Array.
+      */
+      const bytes =
+        new Uint8Array(
+          result.arrayBuffer
+        );
+
+      const fileName =
+        String(
+          result.fileName || ""
+        ).toLowerCase();
+
+      const mimeType =
+        String(
+          result.mimeType || ""
+        ).toLowerCase();
+
+      /*
+        Detect a real PDF by its binary signature:
+
+        %PDF
+        25 50 44 46
+      */
+      const isPdfSignature =
+        bytes.length >= 4 &&
+        bytes[0] === 0x25 &&
+        bytes[1] === 0x50 &&
+        bytes[2] === 0x44 &&
+        bytes[3] === 0x46;
+
+      /*
+        PNG signature:
+        89 50 4E 47
+      */
+      const isPngSignature =
+        bytes.length >= 4 &&
+        bytes[0] === 0x89 &&
+        bytes[1] === 0x50 &&
+        bytes[2] === 0x4e &&
+        bytes[3] === 0x47;
+
+      /*
+        JPG/JPEG signature:
+        FF D8 FF
+      */
+      const isJpgSignature =
+        bytes.length >= 3 &&
+        bytes[0] === 0xff &&
+        bytes[1] === 0xd8 &&
+        bytes[2] === 0xff;
+
+      const isPdf =
+        isPdfSignature ||
+        mimeType.includes(
+          "application/pdf"
+        ) ||
+        fileName.endsWith(
+          ".pdf"
+        );
+
+      const isPng =
+        isPngSignature ||
+        mimeType.includes(
+          "image/png"
+        ) ||
+        fileName.endsWith(
+          ".png"
+        );
+
+      const isJpg =
+        isJpgSignature ||
+        mimeType.includes(
+          "image/jpeg"
+        ) ||
+        mimeType.includes(
+          "image/jpg"
+        ) ||
+        fileName.endsWith(
+          ".jpg"
+        ) ||
+        fileName.endsWith(
+          ".jpeg"
+        );
+
+      console.log(
+        "DOCUMENT EXPORT:",
+        {
+          vehicle:
+            getVehicleNumber(
+              vehicle
+            ),
+          documentKey,
+          label,
+          fileName,
+          mimeType,
+          byteLength:
+            bytes.length,
+          isPdfSignature,
+          isPngSignature,
+          isJpgSignature,
+          isPdf,
+          isPng,
+          isJpg,
+        }
+      );
+
+
+      /* =====================================
+         PDF -> COPY ORIGINAL PDF PAGES
+      ===================================== */
+
+      if (isPdf) {
+        try {
+          const uploadedPdf =
+            await PDFDocument.load(
+              bytes,
+              {
+                ignoreEncryption:
+                  true,
+                updateMetadata:
+                  false,
+              }
+            );
+
+          const totalPages =
+            uploadedPdf.getPageCount();
+
+          if (
+            totalPages === 0
+          ) {
+            throw new Error(
+              `${label} PDF contains no pages.`
+            );
+          }
+
+          const pageIndexes =
+            Array.from(
+              {
+                length:
+                  totalPages,
+              },
+              (
+                _,
+                index
+              ) => index
+            );
+
+          const copiedPages =
+            await finalPdf.copyPages(
+              uploadedPdf,
+              pageIndexes
+            );
+
+          copiedPages.forEach(
+            (page) => {
+              finalPdf.addPage(
+                page
+              );
+            }
+          );
+
+          console.log(
+            `✅ ${label}: ${copiedPages.length} PDF page(s) added`
+          );
+
+          return true;
+
+        } catch (
+          pdfError
+        ) {
+          console.error(
+            `❌ PDF MERGE FAILED: ${label}`,
+            {
+              error:
+                pdfError,
+              fileName,
+              mimeType,
+              byteLength:
+                bytes.length,
+              firstBytes:
+                Array.from(
+                  bytes.slice(
+                    0,
+                    12
+                  )
+                ),
+            }
+          );
+
+          /*
+            Add a visible diagnostic page
+            instead of silently skipping the file.
+          */
+          const errorPage =
+            finalPdf.addPage([
+              595.28,
+              841.89,
+            ]);
+
+          const {
+            width,
+            height,
+          } =
+            errorPage.getSize();
+
+          errorPage.drawRectangle({
+            x: 0,
+            y:
+              height - 78,
+            width,
+            height: 78,
+            color:
+              rgb(
+                0.07,
+                0.23,
+                0.36
+              ),
+          });
+
+          errorPage.drawText(
+            label,
+            {
+              x: 36,
+              y:
+                height - 32,
+              size: 16,
+              font:
+                boldFont,
+              color:
+                rgb(
+                  1,
+                  1,
+                  1
+                ),
+            }
+          );
+
+          errorPage.drawText(
+            `Vehicle: ${getVehicleNumber(
+              vehicle
+            )}`,
+            {
+              x: 36,
+              y:
+                height - 53,
+              size: 9,
+              font:
+                regularFont,
+              color:
+                rgb(
+                  0.82,
+                  0.89,
+                  0.94
+                ),
+            }
+          );
+
+          errorPage.drawText(
+            "The uploaded PDF could not be merged.",
+            {
+              x: 40,
+              y:
+                height - 130,
+              size: 12,
+              font:
+                boldFont,
+              color:
+                rgb(
+                  0.75,
+                  0.15,
+                  0.15
+                ),
+            }
+          );
+
+          errorPage.drawText(
+            `File: ${fileName || "-"}`,
+            {
+              x: 40,
+              y:
+                height - 155,
+              size: 9,
+              font:
+                regularFont,
+              color:
+                rgb(
+                  0.30,
+                  0.36,
+                  0.42
+                ),
+            }
+          );
+
+          errorPage.drawText(
+            `MIME: ${mimeType || "-"}`,
+            {
+              x: 40,
+              y:
+                height - 175,
+              size: 9,
+              font:
+                regularFont,
+              color:
+                rgb(
+                  0.30,
+                  0.36,
+                  0.42
+                ),
+            }
+          );
+
+          errorPage.drawText(
+            String(
+              pdfError?.message ||
+              "Unknown PDF error"
+            ).slice(
+              0,
+              180
+            ),
+            {
+              x: 40,
+              y:
+                height - 205,
+              size: 9,
+              font:
+                regularFont,
+              color:
+                rgb(
+                  0.40,
+                  0.45,
+                  0.50
+                ),
+              maxWidth:
+                width - 80,
+            }
+          );
+
+          return true;
+        }
+      }
+
+
+      /* =====================================
+         PNG
+      ===================================== */
+
+      if (isPng) {
+        try {
+          await addImageDocumentPage({
+            finalPdf,
+            imageType:
+              "png",
+            arrayBuffer:
+              bytes,
+            label,
+            vehicleNumber:
+              getVehicleNumber(
+                vehicle
+              ),
+            regularFont,
+            boldFont,
+            fileName,
+          });
+
+          console.log(
+            `✅ ${label}: PNG image added`
+          );
+
+          return true;
+        } catch (
+          imageError
+        ) {
+          console.error(
+            `PNG ERROR ${label}:`,
+            imageError
+          );
+
+          return false;
+        }
+      }
+
+
+      /* =====================================
+         JPG / JPEG
+      ===================================== */
+
+      if (isJpg) {
+        try {
+          await addImageDocumentPage({
+            finalPdf,
+            imageType:
+              "jpg",
+            arrayBuffer:
+              bytes,
+            label,
+            vehicleNumber:
+              getVehicleNumber(
+                vehicle
+              ),
+            regularFont,
+            boldFont,
+            fileName,
+          });
+
+          console.log(
+            `✅ ${label}: JPG image added`
+          );
+
+          return true;
+        } catch (
+          imageError
+        ) {
+          console.error(
+            `JPG ERROR ${label}:`,
+            imageError
+          );
+
+          return false;
+        }
+      }
+
+
+      console.error(
+        "❌ Unsupported uploaded document:",
+        {
+          vehicle:
+            getVehicleNumber(
+              vehicle
+            ),
+          documentKey,
+          label,
+          fileName,
+          mimeType,
+          byteLength:
+            bytes.length,
+          firstBytes:
+            Array.from(
+              bytes.slice(
+                0,
+                12
+              )
+            ),
+        }
+      );
+
+      return false;
+    };
+
+
+  const addVehicleSummaryPage =
+    async ({
+      finalPdf,
+      vehicle,
+      regularFont,
+      boldFont,
+      title,
+    }) => {
+
+      const page =
+        finalPdf.addPage([
+          595.28,
+          841.89,
+        ]);
+
+      const {
+        width,
+        height,
+      } =
+        page.getSize();
+
+      page.drawRectangle({
+        x: 0,
+        y: height - 90,
+        width,
+        height: 90,
+        color:
+          rgb(
+            0.07,
+            0.23,
+            0.36
+          ),
+      });
+
+      page.drawText(
+        title,
+        {
+          x: 36,
+          y: height - 42,
+          size: 18,
+          font: boldFont,
+          color:
+            rgb(
+              1,
+              1,
+              1
+            ),
+        }
+      );
+
+      page.drawText(
+        `Vehicle: ${getVehicleNumber(
+          vehicle
+        )}`,
+        {
+          x: 36,
+          y: height - 64,
+          size: 10,
+          font: regularFont,
+          color:
+            rgb(
+              0.82,
+              0.89,
+              0.94
+            ),
+        }
+      );
+
+      let y =
+        height - 128;
+
+      const vehicleInfo = [
+        [
+          "Transport Owner",
+          getTransportName(
+            vehicle
+          ),
+        ],
+        [
+          "Vehicle Type",
+          getVehicleType(
+            vehicle
+          ),
+        ],
+        [
+          "Overall Status",
+          getVehicleOverallStatus(
+            vehicle
+          ).label,
+        ],
+      ];
+
+      vehicleInfo.forEach(
+        ([
+          label,
+          value,
+        ]) => {
+
+          page.drawText(
+            `${label}:`,
+            {
+              x: 40,
+              y,
+              size: 10,
+              font: boldFont,
+              color:
+                rgb(
+                  0.22,
+                  0.31,
+                  0.39
+                ),
+            }
+          );
+
+          page.drawText(
+            String(
+              value || "-"
+            ),
+            {
+              x: 160,
+              y,
+              size: 10,
+              font: regularFont,
+              color:
+                rgb(
+                  0.12,
+                  0.20,
+                  0.27
+                ),
+            }
+          );
+
+          y -= 22;
+        }
+      );
+
+      y -= 14;
+
+      page.drawText(
+        "Uploaded Documents",
+        {
+          x: 40,
+          y,
+          size: 13,
+          font: boldFont,
+          color:
+            rgb(
+              0.07,
+              0.23,
+              0.36
+            ),
+        }
+      );
+
+      y -= 28;
+
+      TABLE_DOCUMENT_COLUMNS.forEach(
+        ({
+          key,
+          label,
+        }) => {
+
+          const documentData =
+            getDocumentData(
+              vehicle,
+              key
+            );
+
+          const hasDocument =
+            Boolean(
+              getDocumentDownloadUrl(
+                vehicle,
+                key
+              )
+            );
+
+          page.drawText(
+            label,
+            {
+              x: 45,
+              y,
+              size: 10,
+              font: boldFont,
+              color:
+                rgb(
+                  0.20,
+                  0.29,
+                  0.36
+                ),
+            }
+          );
+
+          page.drawText(
+            hasDocument
+              ? "Uploaded"
+              : "Not Uploaded",
+            {
+              x: 190,
+              y,
+              size: 10,
+              font: regularFont,
+              color:
+                hasDocument
+                  ? rgb(
+                      0.05,
+                      0.55,
+                      0.45
+                    )
+                  : rgb(
+                      0.60,
+                      0.65,
+                      0.70
+                    ),
+            }
+          );
+
+          const displayedFileName =
+            documentData?.originalName ||
+            documentData?.fileName ||
+            documentData?.filename ||
+            "";
+
+          if (
+            displayedFileName
+          ) {
+            page.drawText(
+              String(
+                displayedFileName
+              ).slice(
+                0,
+                50
+              ),
+              {
+                x: 285,
+                y,
+                size: 8,
+                font: regularFont,
+                color:
+                  rgb(
+                    0.42,
+                    0.49,
+                    0.56
+                  ),
+              }
+            );
+          }
+
+          y -= 22;
+        }
+      );
+
+      return page;
+    };
+
+
   const downloadAllDocumentsAsPdf =
     async (vehicle) => {
+
       const vehicleId =
-        getVehicleId(vehicle);
+        getVehicleId(
+          vehicle
+        );
 
       const availableDocuments =
         TABLE_DOCUMENT_COLUMNS
-          .map(({ key, label }) => {
-            const documentData =
-              getDocumentData(
-                vehicle,
-                key
-              );
-
-            return {
+          .map(
+            ({
               key,
               label,
-              documentData,
+            }) => ({
+              key,
+              label,
               url:
                 getDocumentDownloadUrl(
                   vehicle,
                   key
                 ),
-            };
-          })
+            })
+          )
           .filter(
             (documentItem) =>
-              Boolean(documentItem.url)
+              Boolean(
+                documentItem.url
+              )
           );
 
       if (
-        availableDocuments.length === 0
+        availableDocuments.length ===
+        0
       ) {
         window.alert(
           "No uploaded documents are available for this vehicle."
         );
+
         return;
       }
 
@@ -1270,378 +2482,89 @@ const Vehicledocument = () => {
           vehicleId
         );
 
-        const pdf = new jsPDF({
-          orientation: "portrait",
-          unit: "pt",
-          format: "a4",
+        const finalPdf =
+          await PDFDocument.create();
+
+        const regularFont =
+          await finalPdf.embedFont(
+            StandardFonts.Helvetica
+          );
+
+        const boldFont =
+          await finalPdf.embedFont(
+            StandardFonts.HelveticaBold
+          );
+
+        const vehicleNumber =
+          getVehicleNumber(
+            vehicle
+          );
+
+        await addVehicleSummaryPage({
+          finalPdf,
+          vehicle,
+          regularFont,
+          boldFont,
+          title:
+            "Vehicle Document Report",
         });
 
-        const pageWidth =
-          pdf.internal.pageSize.getWidth();
+        let addedDocumentCount =
+          0;
 
-        const pageHeight =
-          pdf.internal.pageSize.getHeight();
-
-        const margin = 36;
-
-        /*
-         * First page: vehicle and document summary.
-         */
-        pdf.setFillColor(
-          18,
-          62,
-          145
-        );
-
-        pdf.rect(
-          0,
-          0,
-          pageWidth,
-          82,
-          "F"
-        );
-
-        pdf.setTextColor(
-          255,
-          255,
-          255
-        );
-
-        pdf.setFontSize(18);
-
-        pdf.text(
-          "Vehicle Document Report",
-          margin,
-          34
-        );
-
-        pdf.setFontSize(10);
-
-        pdf.text(
-          `Vehicle: ${getVehicleNumber(
-            vehicle
-          )}`,
-          margin,
-          55
-        );
-
-        pdf.text(
-          `Generated: ${new Date().toLocaleString(
-            "en-IN"
-          )}`,
-          margin,
-          70
-        );
-
-        pdf.setTextColor(
-          23,
-          43,
-          77
-        );
-
-        pdf.setFontSize(11);
-
-        pdf.text(
-          `Transport Owner: ${getTransportName(
-            vehicle
-          )}`,
-          margin,
-          112
-        );
-
-        pdf.text(
-          `Vehicle Type: ${getVehicleType(
-            vehicle
-          )}`,
-          margin,
-          130
-        );
-
-        autoTable(pdf, {
-          startY: 154,
-          head: [
-            [
-              "Document",
-              "Start Date",
-              "Expiry Date",
-              "Status",
-              "File",
-            ],
-          ],
-          body:
-            availableDocuments.map(
-              ({
-                label,
-                documentData,
-              }) => {
-                const expiryState =
-                  getExpiryState(
-                    documentData
-                      ?.expiryDate
-                  );
-
-                return [
-                  label,
-                  formatDate(
-                    documentData
-                      ?.startDate
-                  ),
-                  formatDate(
-                    documentData
-                      ?.expiryDate
-                  ),
-                  expiryState.text,
-                  documentData
-                    ?.originalName ||
-                    documentData
-                      ?.fileName ||
-                    documentData
-                      ?.filename ||
-                    "-",
-                ];
-              }
-            ),
-          theme: "grid",
-          styles: {
-            fontSize: 8,
-            cellPadding: 5,
-          },
-          headStyles: {
-            fillColor: [
-              18,
-              62,
-              145,
-            ],
-            textColor: [
-              255,
-              255,
-              255,
-            ],
-          },
-          alternateRowStyles: {
-            fillColor: [
-              247,
-              249,
-              252,
-            ],
-          },
-          margin: {
-            left: margin,
-            right: margin,
-          },
-        });
-
-        /*
-         * Following pages: one uploaded image per page.
-         */
         for (
-          const documentItem of
-          availableDocuments
+          const documentItem
+          of availableDocuments
         ) {
-          pdf.addPage();
-
-          pdf.setFillColor(
-            18,
-            62,
-            145
-          );
-
-          pdf.rect(
-            0,
-            0,
-            pageWidth,
-            68,
-            "F"
-          );
-
-          pdf.setTextColor(
-            255,
-            255,
-            255
-          );
-
-          pdf.setFontSize(16);
-
-          pdf.text(
-            documentItem.label,
-            margin,
-            31
-          );
-
-          pdf.setFontSize(9);
-
-          pdf.text(
-            getVehicleNumber(
-              vehicle
-            ),
-            margin,
-            49
-          );
-
           try {
-            const response =
-              await fetch(
-                documentItem.url
-              );
+            const added =
+              await addUploadedDocumentToPdf({
+                finalPdf,
+                vehicle,
+                documentKey:
+                  documentItem.key,
+                label:
+                  documentItem.label,
+                regularFont,
+                boldFont,
+              });
 
-            if (!response.ok) {
-              throw new Error(
-                `HTTP ${response.status}`
-              );
+            if (added) {
+              addedDocumentCount +=
+                1;
             }
-
-            const blob =
-              await response.blob();
-
-            const mimeType =
-              blob.type ||
-              documentItem
-                .documentData
-                ?.mimeType ||
-              "";
-
-            if (
-              !mimeType.startsWith(
-                "image/"
-              )
-            ) {
-              pdf.setTextColor(
-                71,
-                85,
-                105
-              );
-
-              pdf.setFontSize(12);
-
-              pdf.text(
-                "This uploaded document is not an image and cannot be embedded as a photo.",
-                margin,
-                112,
-                {
-                  maxWidth:
-                    pageWidth -
-                    margin * 2,
-                }
-              );
-
-              pdf.setFontSize(10);
-
-              pdf.text(
-                `File: ${
-                  documentItem
-                    .documentData
-                    ?.originalName ||
-                  documentItem
-                    .documentData
-                    ?.fileName ||
-                  documentItem
-                    .documentData
-                    ?.filename ||
-                  "-"
-                }`,
-                margin,
-                148,
-                {
-                  maxWidth:
-                    pageWidth -
-                    margin * 2,
-                }
-              );
-
-              continue;
-            }
-
-            const dataUrl =
-              await blobToDataUrl(
-                blob
-              );
-
-            const dimensions =
-              await loadImageDimensions(
-                dataUrl
-              );
-
-            const availableWidth =
-              pageWidth -
-              margin * 2;
-
-            const availableHeight =
-              pageHeight -
-              118;
-
-            const scale = Math.min(
-              availableWidth /
-                dimensions.width,
-              availableHeight /
-                dimensions.height
-            );
-
-            const imageWidth =
-              dimensions.width *
-              scale;
-
-            const imageHeight =
-              dimensions.height *
-              scale;
-
-            const imageX =
-              (pageWidth -
-                imageWidth) /
-              2;
-
-            const imageY =
-              88 +
-              (availableHeight -
-                imageHeight) /
-                2;
-
-            const imageFormat =
-              mimeType.includes(
-                "png"
-              )
-                ? "PNG"
-                : "JPEG";
-
-            pdf.addImage(
-              dataUrl,
-              imageFormat,
-              imageX,
-              imageY,
-              imageWidth,
-              imageHeight,
-              undefined,
-              "FAST"
-            );
-          } catch (documentError) {
+          } catch (
+            documentError
+          ) {
             console.error(
-              `Unable to add ${documentItem.label}:`,
+              `Unable to add ${
+                documentItem.label
+              }:`,
               documentError
-            );
-
-            pdf.setTextColor(
-              185,
-              28,
-              28
-            );
-
-            pdf.setFontSize(12);
-
-            pdf.text(
-              "Unable to load this uploaded image.",
-              margin,
-              112
             );
           }
         }
 
-        const safeVehicleNumber =
-          getVehicleNumber(vehicle)
-            .replace(
-              /[^a-zA-Z0-9-_]/g,
-              "-"
-            );
+        if (
+          addedDocumentCount ===
+          0
+        ) {
+          window.alert(
+            "The summary PDF was created, but none of the uploaded documents could be added. Check the browser console for the document error."
+          );
+        }
 
-        pdf.save(
+        const pdfBytes =
+          await finalPdf.save();
+
+        const safeVehicleNumber =
+          vehicleNumber.replace(
+            /[^a-zA-Z0-9-_]/g,
+            "-"
+          );
+
+        downloadPdfBytes(
+          pdfBytes,
           `${safeVehicleNumber}-all-documents.pdf`
         );
       } catch (error) {
@@ -1651,7 +2574,7 @@ const Vehicledocument = () => {
         );
 
         window.alert(
-          "Unable to create the document PDF. Make sure the backend allows document files to be fetched from the frontend."
+          "Unable to create the All Documents PDF."
         );
       } finally {
         setDownloadingDocumentsId(
@@ -1659,6 +2582,7 @@ const Vehicledocument = () => {
         );
       }
     };
+
 
   const openExportPopup = (
     mode,
@@ -1925,7 +2849,8 @@ const Vehicledocument = () => {
     closeExportPopup();
   };
 
-  const exportAsPdf = () => {
+  const exportAsPdf = async () => {
+
     const exportData =
       getSelectedExportData();
 
@@ -1933,20 +2858,172 @@ const Vehicledocument = () => {
       return;
     }
 
-    const isWide =
-      exportData.headers.length > 8;
+    /*
+      ALL VEHICLES:
+      create one final PDF containing:
+      1) summary page for each vehicle
+      2) original pages from uploaded PDFs
+      3) image pages for JPG/JPEG/PNG uploads
+    */
+    if (
+      exportPopup.mode ===
+      "allVehicles"
+    ) {
+      try {
+        const finalPdf =
+          await PDFDocument.create();
 
-    const pdf = new jsPDF({
-      orientation:
-        isWide
-          ? "landscape"
-          : "portrait",
-      unit: "pt",
-      format: "a4",
-    });
+        const regularFont =
+          await finalPdf.embedFont(
+            StandardFonts.Helvetica
+          );
+
+        const boldFont =
+          await finalPdf.embedFont(
+            StandardFonts.HelveticaBold
+          );
+
+        let totalAddedDocuments =
+          0;
+
+        for (
+          const vehicle
+          of filteredVehicles
+        ) {
+          await addVehicleSummaryPage({
+            finalPdf,
+            vehicle,
+            regularFont,
+            boldFont,
+            title:
+              "Vehicle Document Report",
+          });
+
+          for (
+            const {
+              key,
+              label,
+            }
+            of TABLE_DOCUMENT_COLUMNS
+          ) {
+            const downloadUrl =
+              getDocumentDownloadUrl(
+                vehicle,
+                key
+              );
+
+            if (!downloadUrl) {
+              continue;
+            }
+
+            try {
+              const added =
+                await addUploadedDocumentToPdf({
+                  finalPdf,
+                  vehicle,
+                  documentKey:
+                    key,
+                  label,
+                  regularFont,
+                  boldFont,
+                });
+
+              if (added) {
+                totalAddedDocuments +=
+                  1;
+              }
+            } catch (
+              documentError
+            ) {
+              console.error(
+                `Unable to add ${
+                  label
+                } for ${
+                  getVehicleNumber(
+                    vehicle
+                  )
+                }:`,
+                documentError
+              );
+            }
+          }
+        }
+
+        if (
+          filteredVehicles.length ===
+          0
+        ) {
+          window.alert(
+            "No vehicles are available to export."
+          );
+
+          return;
+        }
+
+        if (
+          totalAddedDocuments ===
+          0
+        ) {
+          window.alert(
+            "Vehicle summary pages were created, but no uploaded PDF/image documents could be added."
+          );
+        }
+
+        const pdfBytes =
+          await finalPdf.save();
+
+        downloadPdfBytes(
+          pdfBytes,
+          "all-vehicle-documents.pdf"
+        );
+
+        closeExportPopup();
+
+        return;
+      } catch (error) {
+        console.error(
+          "All vehicle PDF export error:",
+          error
+        );
+
+        window.alert(
+          "Unable to create the All Vehicle Documents PDF."
+        );
+
+        return;
+      }
+    }
+
+
+    /*
+      SINGLE EXPORT POPUP PDF:
+      keep the existing clean table export
+      for vehicle-details/documents-only data.
+    */
+
+    const isWide =
+      exportData.headers.length >
+      8;
+
+    const pdf =
+      new jsPDF({
+        orientation:
+          isWide
+            ? "landscape"
+            : "portrait",
+
+        unit: "pt",
+        format: "a4",
+      });
 
     pdf.setFontSize(16);
-    pdf.setTextColor(20, 44, 78);
+
+    pdf.setTextColor(
+      20,
+      44,
+      78
+    );
+
     pdf.text(
       exportData.title,
       40,
@@ -1954,7 +3031,13 @@ const Vehicledocument = () => {
     );
 
     pdf.setFontSize(9);
-    pdf.setTextColor(100, 116, 139);
+
+    pdf.setTextColor(
+      100,
+      116,
+      139
+    );
+
     pdf.text(
       `Generated: ${new Date().toLocaleString(
         "en-IN"
@@ -1963,29 +3046,67 @@ const Vehicledocument = () => {
       59
     );
 
-    autoTable(pdf, {
-      startY: 75,
-      head: [exportData.headers],
-      body: exportData.rows,
-      theme: "grid",
-      styles: {
-        fontSize: isWide ? 6 : 8,
-        cellPadding: isWide ? 3 : 5,
-        overflow: "linebreak",
-      },
-      headStyles: {
-        fillColor: [18, 62, 145],
-        textColor: [255, 255, 255],
-        fontStyle: "bold",
-      },
-      alternateRowStyles: {
-        fillColor: [247, 249, 252],
-      },
-      margin: {
-        left: 30,
-        right: 30,
-      },
-    });
+    autoTable(
+      pdf,
+      {
+        startY: 75,
+
+        head: [
+          exportData.headers,
+        ],
+
+        body:
+          exportData.rows,
+
+        theme:
+          "grid",
+
+        styles: {
+          fontSize:
+            isWide
+              ? 6
+              : 8,
+
+          cellPadding:
+            isWide
+              ? 3
+              : 5,
+
+          overflow:
+            "linebreak",
+        },
+
+        headStyles: {
+          fillColor: [
+            18,
+            62,
+            145,
+          ],
+
+          textColor: [
+            255,
+            255,
+            255,
+          ],
+
+          fontStyle:
+            "bold",
+        },
+
+        alternateRowStyles: {
+          fillColor: [
+            247,
+            249,
+            252,
+          ],
+        },
+
+        margin: {
+          left: 30,
+          right: 30,
+        },
+      }
+    );
 
     pdf.save(
       `${exportData.fileName}.pdf`
@@ -1993,6 +3114,7 @@ const Vehicledocument = () => {
 
     closeExportPopup();
   };
+
 
   return (
     <section className="vehicle-document-page">
@@ -2217,8 +3339,12 @@ const Vehicledocument = () => {
                   className="document-summary-card"
                 >
                   <div className="document-summary-card-header">
-                    <div className="document-summary-icon">
-                      <Icon size={21} />
+                    <div className="document-summary-heading">
+                      <div className="document-summary-icon">
+                        <Icon size={18} />
+                      </div>
+
+                      <h3>{title}</h3>
                     </div>
 
                     <span
@@ -2233,8 +3359,6 @@ const Vehicledocument = () => {
                         : "records"}
                     </span>
                   </div>
-
-                  <h3>{title}</h3>
 
                   <div className="document-summary-list">
                     {entries.length > 0 ? (

@@ -1,10 +1,10 @@
 @import url(
-  "https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+  "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
 );
 
 
 /* =========================================================
-   RESET
+   ASSETS PAGE - PROFESSIONAL FLEET DESIGN
 ========================================================= */
 
 .assets-page,
@@ -13,30 +13,36 @@
 }
 
 
-/* =========================================================
-   PAGE
-========================================================= */
-
 .assets-page {
+  --assets-navy: #123b5d;
+  --assets-navy-dark: #0b2942;
+
+  --assets-teal: #159a91;
+  --assets-teal-dark: #117d76;
+  --assets-teal-soft: #e7f5f3;
+
+  --assets-bg: #f4f7f9;
+  --assets-card: #ffffff;
+
+  --assets-border: #d9e3e9;
+  --assets-border-light: #e8edf1;
+
+  --assets-text: #1d354a;
+  --assets-muted: #718397;
+
   width: 100%;
-
   min-width: 0;
+  min-height: calc(100vh - 80px);
 
-  min-height:
-    calc(100vh - 80px);
+  padding: 20px 22px 28px;
 
-  padding:
-    18px 20px 24px;
-
-  color: #0b2942;
-
-  background: #f4f7f9;
+  background: var(--assets-bg);
+  color: var(--assets-text);
 
   font-family:
-    "Poppins",
-    -apple-system,
-    BlinkMacSystemFont,
+    "Inter",
     "Segoe UI",
+    Arial,
     sans-serif;
 }
 
@@ -49,244 +55,209 @@
   width: 100%;
 
   display: flex;
-
-  align-items: flex-start;
-
+  align-items: center;
   justify-content: space-between;
 
-  gap: 18px;
+  gap: 20px;
 
-  margin-bottom: 14px;
+  margin-bottom: 18px;
 }
 
 
-/* =========================================================
-   EYEBROW
-========================================================= */
+.assets-header > div:first-child {
+  min-width: 0;
+}
+
 
 .assets-eyebrow {
-  display: block;
+  display: inline-flex;
+  align-items: center;
 
-  margin-bottom: 5px;
+  margin-bottom: 6px;
 
-  color: #0f9488;
+  color: var(--assets-teal);
 
-  font-size: 9px;
-
+  font-size: 11px;
   font-weight: 700;
 
-  line-height: 1;
-
-  letter-spacing: 0.09em;
-
+  letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 
 
-/* =========================================================
-   MAIN HEADING
-========================================================= */
-
 .assets-header h1 {
   margin: 0;
 
-  color: #0b2942;
+  color: var(--assets-navy-dark);
 
-  font-size: 23px;
-
+  font-size: 24px;
   font-weight: 700;
 
-  line-height: 1.15;
+  line-height: 1.2;
 
-  letter-spacing: -0.35px;
+  letter-spacing: -0.4px;
 }
 
-
-/* =========================================================
-   HEADER DESCRIPTION
-========================================================= */
 
 .assets-header p {
-  max-width: 680px;
+  max-width: 650px;
 
-  margin: 5px 0 0;
+  margin: 6px 0 0;
 
-  color: #718096;
+  color: var(--assets-muted);
 
-  font-size: 10.5px;
+  font-size: 12px;
 
-  font-weight: 400;
-
-  line-height: 1.45;
+  line-height: 1.55;
 }
 
 
-/* =========================================================
-   HEADER ICON
-========================================================= */
+/* Header icon */
 
 .assets-header-icon {
-  width: 42px;
+  width: 46px;
+  height: 46px;
 
-  height: 42px;
-
-  flex: 0 0 42px;
+  flex: 0 0 46px;
 
   display: grid;
-
   place-items: center;
 
-  border: 1px solid #cce7e3;
+  border: 1px solid #c7e5e1;
+  border-radius: 11px;
 
-  border-radius: 10px;
+  color: var(--assets-teal);
 
-  color: #0f9488;
+  background:
+    linear-gradient(
+      145deg,
+      #effaf8,
+      #e1f3f1
+    );
 
-  background: #e7f5f3;
+  box-shadow:
+    0 4px 12px
+    rgba(15, 148, 136, 0.08);
 }
 
 
 .assets-header-icon svg {
-  width: 18px;
-
-  height: 18px;
+  width: 20px;
+  height: 20px;
 }
 
 
 /* =========================================================
-   TOOLBAR CARD
+   TOOLBAR
 ========================================================= */
 
 .assets-toolbar-card {
   width: 100%;
+  min-height: 62px;
 
-  min-height: 58px;
+  margin-bottom: 14px;
 
-  padding: 9px 11px;
+  padding: 11px 13px;
 
   display: flex;
-
   align-items: center;
-
   justify-content: space-between;
 
-  gap: 12px;
+  gap: 14px;
 
-  margin-bottom: 13px;
-
-  border: 1px solid #dce4e9;
-
+  border: 1px solid var(--assets-border);
   border-radius: 11px;
 
   background: #ffffff;
 
   box-shadow:
-    0 4px 12px
-    rgba(11, 41, 66, 0.04);
+    0 3px 10px
+    rgba(11, 41, 66, 0.035);
 }
 
 
 /* =========================================================
-   SEARCH BOX
+   SEARCH
 ========================================================= */
 
 .assets-search-box {
-  width:
-    min(
-      360px,
-      100%
-    );
+  width: min(400px, 100%);
+  height: 40px;
 
-  height: 37px;
-
-  padding:
-    0 11px;
+  padding: 0 12px;
 
   display: flex;
-
   align-items: center;
 
-  gap: 8px;
+  gap: 9px;
 
-  border: 1px solid #d6e0e6;
-
+  border: 1px solid #d4dfe6;
   border-radius: 8px;
 
-  color: #718096;
+  color: #7c8da0;
 
   background: #f8fafb;
 
   transition:
-    border-color 150ms ease,
-    background 150ms ease,
-    box-shadow 150ms ease;
+    border-color 0.18s ease,
+    background-color 0.18s ease,
+    box-shadow 0.18s ease;
 }
 
 
 .assets-search-box:hover {
-  border-color: #c2ced6;
+  border-color: #bdcbd4;
 }
 
 
 .assets-search-box:focus-within {
-  border-color: #1fa89d;
+  border-color: var(--assets-teal);
 
   background: #ffffff;
 
   box-shadow:
     0 0 0 3px
-    rgba(31, 168, 157, 0.09);
+    rgba(21, 154, 145, 0.08);
 }
 
 
 .assets-search-box > svg {
   width: 16px;
-
   height: 16px;
 
   flex: 0 0 16px;
-
-  color: #75869a;
 }
 
 
 .assets-search-box:focus-within > svg {
-  color: #0f9488;
+  color: var(--assets-teal);
 }
 
 
-/* =========================================================
-   SEARCH INPUT
-========================================================= */
-
 .assets-search-box input {
   width: 100%;
-
   min-width: 0;
 
-  height: 35px;
+  height: 38px;
 
   padding: 0;
 
   border: 0;
-
   outline: 0;
 
-  color: #334b5f;
+  color: var(--assets-text);
 
   background: transparent;
 
   font: inherit;
 
-  font-size: 10px;
-
+  font-size: 12px;
   font-weight: 500;
 }
 
 
 .assets-search-box input::placeholder {
-  color: #96a3b3;
-
+  color: #97a5b4;
   font-weight: 400;
 }
 
@@ -297,43 +268,32 @@ input[type="search"]::-webkit-search-cancel-button {
 }
 
 
-/* =========================================================
-   SEARCH CLEAR BUTTON
-========================================================= */
+/* Search clear */
 
 .assets-search-box button {
-  width: 26px;
+  width: 27px;
+  height: 27px;
 
-  height: 26px;
+  flex: 0 0 27px;
 
-  flex: 0 0 26px;
+  display: grid;
+  place-items: center;
 
   padding: 0;
 
-  display: grid;
-
-  place-items: center;
-
   border: 0;
-
   border-radius: 6px;
 
-  color: #75869a;
-
+  color: #8192a4;
   background: transparent;
 
   cursor: pointer;
-
-  transition:
-    color 150ms ease,
-    background 150ms ease;
 }
 
 
 .assets-search-box button:hover {
   color: #dc3f3f;
-
-  background: #fff0f0;
+  background: #fff1f1;
 }
 
 
@@ -342,27 +302,23 @@ input[type="search"]::-webkit-search-cancel-button {
 ========================================================= */
 
 .assets-total-count {
-  min-height: 35px;
+  min-height: 37px;
 
-  padding:
-    0 12px;
+  padding: 0 12px;
 
   display: inline-flex;
-
   align-items: center;
 
   gap: 7px;
 
-  border: 1px solid #cce7e3;
-
+  border: 1px solid #c5e2df;
   border-radius: 8px;
 
-  color: #147b73;
+  color: var(--assets-teal-dark);
 
-  background: #e7f5f3;
+  background: var(--assets-teal-soft);
 
-  font-size: 10px;
-
+  font-size: 11.5px;
   font-weight: 700;
 
   white-space: nowrap;
@@ -371,64 +327,56 @@ input[type="search"]::-webkit-search-cancel-button {
 
 .assets-total-count svg {
   width: 15px;
-
   height: 15px;
 
-  color: #0f9488;
+  color: var(--assets-teal);
 }
 
 
 /* =========================================================
-   MESSAGE
+   LOADING / ERROR
 ========================================================= */
 
 .assets-message,
 .assets-error {
-  padding:
-    9px 12px;
+  margin-bottom: 13px;
 
-  margin-bottom: 12px;
+  padding: 10px 12px;
 
   border-radius: 8px;
 
-  font-size: 10px;
-
+  font-size: 12px;
   font-weight: 500;
 
   line-height: 1.45;
 }
 
 
-/* LOADING */
-
 .assets-message {
   border: 1px solid #b9ddd8;
 
   color: #147b73;
 
-  background: #eaf7f5;
+  background: #edf9f7;
 }
 
 
-/* ERROR */
-
 .assets-error {
   display: flex;
-
   align-items: center;
 
-  gap: 7px;
+  gap: 8px;
 
   border: 1px solid #fecaca;
 
-  color: #c53030;
+  color: #b91c1c;
 
-  background: #fff1f1;
+  background: #fff2f2;
 }
 
 
 /* =========================================================
-   VEHICLE CARD
+   VEHICLE LIST CARD
 ========================================================= */
 
 .assets-vehicle-card {
@@ -436,62 +384,63 @@ input[type="search"]::-webkit-search-cancel-button {
 
   overflow: hidden;
 
-  border: 1px solid #dce4e9;
-
-  border-radius: 11px;
+  border: 1px solid var(--assets-border);
+  border-radius: 12px;
 
   background: #ffffff;
 
   box-shadow:
-    0 4px 13px
+    0 4px 14px
     rgba(11, 41, 66, 0.045);
 }
 
 
 /* =========================================================
-   VEHICLE LIST HEADING
+   CARD HEADING
 ========================================================= */
 
 .assets-table-heading {
-  min-height: 60px;
+  min-height: 66px;
 
-  padding:
-    11px 14px;
+  padding: 13px 16px;
 
   display: flex;
-
   align-items: center;
+  justify-content: space-between;
 
-  border-bottom: 1px solid #e1e7eb;
+  gap: 16px;
 
-  background: #ffffff;
+  border-bottom:
+    1px solid
+    var(--assets-border-light);
+
+  background:
+    linear-gradient(
+      180deg,
+      #ffffff 0%,
+      #fbfcfd 100%
+    );
 }
 
 
 .assets-table-heading h2 {
   margin: 0;
 
-  color: #0b2942;
+  color: var(--assets-navy-dark);
 
-  font-size: 16px;
-
+  font-size: 17px;
   font-weight: 700;
-
-  line-height: 1.25;
 
   letter-spacing: -0.15px;
 }
 
 
 .assets-table-heading p {
-  margin:
-    3px 0 0;
+  margin: 4px 0 0;
 
-  color: #8190a2;
+  color: #8291a2;
 
-  font-size: 9px;
-
-  font-weight: 400;
+  font-size: 11.5px;
 
   line-height: 1.4;
 }
@@ -505,13 +454,12 @@ input[type="search"]::-webkit-search-cancel-button {
   width: 100%;
 
   overflow-x: auto;
-
   overflow-y: hidden;
 
   scrollbar-width: thin;
 
   scrollbar-color:
-    #bcc9d2
+    #b8c6cf
     #edf2f5;
 }
 
@@ -522,19 +470,14 @@ input[type="search"]::-webkit-search-cancel-button {
 
 
 .assets-table-wrapper::-webkit-scrollbar-track {
-  background: #edf2f5;
+  background: #eef2f5;
 }
 
 
 .assets-table-wrapper::-webkit-scrollbar-thumb {
   border-radius: 999px;
 
-  background: #bcc9d2;
-}
-
-
-.assets-table-wrapper::-webkit-scrollbar-thumb:hover {
-  background: #94a6b2;
+  background: #bcc8d0;
 }
 
 
@@ -551,20 +494,17 @@ input[type="search"]::-webkit-search-cancel-button {
 }
 
 
-/* =========================================================
-   TABLE CELLS
-========================================================= */
+/* Table cells */
 
 .assets-vehicle-table th,
 .assets-vehicle-table td {
-  padding:
-    10px 12px;
+  padding: 11px 13px;
 
   border-bottom:
-    1px solid #e4e9ed;
+    1px solid
+    #e7ecef;
 
   text-align: left;
-
   vertical-align: middle;
 
   white-space: nowrap;
@@ -575,19 +515,19 @@ input[type="search"]::-webkit-search-cancel-button {
    TABLE HEADER
 ========================================================= */
 
-.assets-vehicle-table th {
-  color: #59697a;
+.assets-vehicle-table thead th {
+  height: 42px;
 
-  background: #f4f6f8;
+  color: #5c6f81;
 
-  font-size: 8.5px;
+  background: #f5f7f9;
 
+  font-size: 11px;
   font-weight: 700;
 
-  line-height: 1.3;
+  line-height: 1.25;
 
-  letter-spacing:
-    0.04em;
+  letter-spacing: 0.055em;
 
   text-transform: uppercase;
 }
@@ -597,16 +537,15 @@ input[type="search"]::-webkit-search-cancel-button {
    TABLE BODY
 ========================================================= */
 
-.assets-vehicle-table td {
-  color: #334b5f;
+.assets-vehicle-table tbody td {
+  height: 50px;
+
+  color: #344b5e;
 
   background: #ffffff;
 
-  font-size: 10.5px;
-
+  font-size: 12.5px;
   font-weight: 500;
-
-  line-height: 1.4;
 }
 
 
@@ -616,18 +555,21 @@ tbody tr:last-child td {
 }
 
 
-@media (hover: hover) {
+.assets-vehicle-table
+tbody tr {
+  transition:
+    background-color 0.16s ease;
+}
 
-  .assets-vehicle-table
-  tbody tr:hover td {
-    background: #f6faf9;
-  }
 
+.assets-vehicle-table
+tbody tr:hover td {
+  background: #f7faf9;
 }
 
 
 /* =========================================================
-   VEHICLE NUMBER LINK
+   VEHICLE NUMBER
 ========================================================= */
 
 .vehicle-number-link {
@@ -635,72 +577,65 @@ tbody tr:last-child td {
 
   border: 0;
 
-  outline: 0;
-
-  color: #0b2942;
+  color: var(--assets-navy-dark);
 
   background: transparent;
 
   font: inherit;
 
-  font-size: 10.5px;
-
+  font-size: 12.5px;
   font-weight: 700;
 
   cursor: pointer;
 
   transition:
-    color 150ms ease;
+    color 0.16s ease;
 }
 
 
 .vehicle-number-link:hover {
-  color: #0f9488;
+  color: var(--assets-teal);
 
   text-decoration: underline;
 
-  text-underline-offset: 2px;
+  text-underline-offset: 3px;
 }
 
 
 .vehicle-number-link:focus-visible {
+  outline: none;
+
   border-radius: 4px;
 
   box-shadow:
     0 0 0 3px
-    rgba(31, 168, 157, 0.12);
+    rgba(21, 154, 145, 0.12);
 }
 
 
 /* =========================================================
-   COMPLETION CELL
+   PROGRESS
 ========================================================= */
 
 .assets-progress-cell {
-  min-width: 130px;
+  min-width: 135px;
 
   display: flex;
-
   align-items: center;
 
-  gap: 8px;
+  gap: 9px;
 }
 
 
-/* =========================================================
-   PROGRESS TRACK
-========================================================= */
-
 .assets-progress-track {
-  width: 92px;
-
-  height: 7px;
+  width: 90px;
+  height: 6px;
 
   overflow: hidden;
 
   border-radius: 999px;
 
-  background: #e7ecef;
+  background: #e5ebef;
 }
 
 
@@ -714,26 +649,21 @@ tbody tr:last-child td {
   background:
     linear-gradient(
       90deg,
-      #0f9488,
-      #25b6aa
+      #168f86,
+      #22afa5
     );
 
   transition:
-    width 250ms ease;
+    width 0.25s ease;
 }
 
 
-/* =========================================================
-   PROGRESS VALUE
-========================================================= */
-
 .assets-progress-cell strong {
-  min-width: 30px;
+  min-width: 32px;
 
-  color: #147b73;
+  color: var(--assets-teal-dark);
 
-  font-size: 9px;
-
+  font-size: 11px;
   font-weight: 700;
 }
 
@@ -745,76 +675,60 @@ tbody tr:last-child td {
 .manage-assets-button {
   min-height: 32px;
 
-  padding:
-    0 10px;
+  padding: 0 11px;
 
   display: inline-flex;
-
   align-items: center;
-
   justify-content: center;
 
-  gap: 5px;
+  gap: 6px;
 
-  border: 1px solid #b9ddd8;
-
+  border: 1px solid #b8ddd8;
   border-radius: 7px;
 
-  color: #147b73;
+  color: var(--assets-teal-dark);
 
-  background: #e7f5f3;
+  background: #eef9f7;
 
   font: inherit;
 
-  font-size: 9px;
-
+  font-size: 11px;
   font-weight: 700;
 
   cursor: pointer;
 
   transition:
-    color 150ms ease,
-    background 150ms ease,
-    border-color 150ms ease,
-    transform 150ms ease,
-    box-shadow 150ms ease;
+    color 0.16s ease,
+    background-color 0.16s ease,
+    border-color 0.16s ease,
+    transform 0.16s ease,
+    box-shadow 0.16s ease;
 }
 
 
 .manage-assets-button svg {
   width: 13px;
-
   height: 13px;
 }
 
 
 .manage-assets-button:hover {
-  border-color: #0f9488;
+  border-color: var(--assets-teal);
 
   color: #ffffff;
 
-  background: #0f9488;
+  background: var(--assets-teal);
 
-  transform:
-    translateY(-1px);
+  transform: translateY(-1px);
 
   box-shadow:
     0 5px 11px
-    rgba(15, 148, 136, 0.16);
+    rgba(21, 154, 145, 0.16);
 }
 
 
 .manage-assets-button:active {
   transform: translateY(0);
-}
-
-
-.manage-assets-button:focus-visible {
-  outline: none;
-
-  box-shadow:
-    0 0 0 3px
-    rgba(31, 168, 157, 0.12);
 }
 
 
@@ -824,10 +738,10 @@ tbody tr:last-child td {
 
 .assets-empty-row {
   padding:
-    30px 18px !important;
+    38px 18px !important;
 
   color:
-    #8190a8 !important;
+    #8393a5 !important;
 
   text-align:
     center !important;
@@ -841,32 +755,15 @@ tbody tr:last-child td {
 
 
 /* =========================================================
-   LARGE DESKTOP
-========================================================= */
-
-@media (min-width: 1500px) {
-
-  .assets-page {
-    padding:
-      18px 24px 24px;
-  }
-
-  .assets-vehicle-table {
-    min-width: 100%;
-  }
-
-}
-
-
-/* =========================================================
-   MEDIUM / LAPTOP
+   RESPONSIVE
 ========================================================= */
 
 @media (max-width: 1100px) {
 
   .assets-page {
     padding:
-      17px 16px 24px;
+      18px 16px
+      24px;
   }
 
 
@@ -874,45 +771,20 @@ tbody tr:last-child td {
     font-size: 22px;
   }
 
-
-  .assets-toolbar-card {
-    gap: 10px;
-  }
-
 }
 
-
-/* =========================================================
-   TABLET
-========================================================= */
 
 @media (max-width: 700px) {
 
   .assets-page {
     padding:
-      14px 11px 22px;
+      14px 11px
+      22px;
   }
 
 
   .assets-header {
     align-items: flex-start;
-
-    margin-bottom: 13px;
-  }
-
-
-  .assets-eyebrow {
-    font-size: 8px;
-  }
-
-
-  .assets-header h1 {
-    font-size: 21px;
-  }
-
-
-  .assets-header p {
-    font-size: 10px;
   }
 
 
@@ -921,29 +793,23 @@ tbody tr:last-child td {
   }
 
 
-  /* Toolbar */
+  .assets-header h1 {
+    font-size: 20px;
+  }
+
 
   .assets-toolbar-card {
     min-height: auto;
 
-    padding: 9px;
+    padding: 10px;
 
     align-items: stretch;
-
     flex-direction: column;
-
-    gap: 8px;
-
-    margin-bottom: 12px;
-
-    border-radius: 10px;
   }
 
 
   .assets-search-box {
     width: 100%;
-
-    height: 37px;
   }
 
 
@@ -952,48 +818,27 @@ tbody tr:last-child td {
   }
 
 
-  /* Table title */
-
   .assets-table-heading {
-    min-height: auto;
+    min-height: 58px;
 
     padding: 11px 12px;
   }
 
 
-  .assets-table-heading h2 {
-    font-size: 15px;
-  }
-
-
-  .assets-table-heading p {
-    font-size: 8.5px;
-  }
-
-
-  .assets-vehicle-card {
-    border-radius: 10px;
-  }
-
-
   .assets-vehicle-table th,
   .assets-vehicle-table td {
-    padding:
-      9px 10px;
+    padding: 10px;
   }
 
 }
 
 
-/* =========================================================
-   MOBILE
-========================================================= */
-
 @media (max-width: 430px) {
 
   .assets-page {
     padding:
-      12px 8px 20px;
+      12px 8px
+      18px;
   }
 
 
@@ -1007,14 +852,242 @@ tbody tr:last-child td {
     border-radius: 9px;
   }
 
+}
 
-  .assets-search-box input {
-    font-size: 9.5px;
+/* =========================================================
+   VEHICLE LIST EXPORT ACTIONS
+========================================================= */
+
+.assets-table-export-actions {
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+
+  flex: 0 0 auto;
+}
+
+
+.assets-export-button {
+  min-height: 38px;
+
+  padding: 0 13px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 7px;
+
+  border-radius: 8px;
+
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.16s ease,
+    border-color 0.16s ease,
+    color 0.16s ease,
+    background-color 0.16s ease,
+    box-shadow 0.16s ease;
+}
+
+
+.assets-export-button.excel {
+  border: 1px solid #b7ddd6;
+
+  color: #117d76;
+  background: #eef9f7;
+}
+
+
+.assets-export-button.excel:hover:not(:disabled) {
+  border-color: #159a91;
+
+  color: #ffffff;
+  background: #159a91;
+
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 5px 12px
+    rgba(21, 154, 145, 0.16);
+}
+
+
+.assets-export-button.pdf {
+  border: 1px solid #efc3c3;
+
+  color: #bd3636;
+  background: #fff4f4;
+}
+
+
+.assets-export-button.pdf:hover:not(:disabled) {
+  border-color: #d94a4a;
+
+  color: #ffffff;
+  background: #d94a4a;
+
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 5px 12px
+    rgba(217, 74, 74, 0.14);
+}
+
+
+.assets-export-button:disabled {
+  opacity: 0.55;
+
+  cursor: not-allowed;
+}
+
+
+@media (max-width: 700px) {
+
+  .assets-table-heading {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
 
-  .assets-total-count {
-    font-size: 9px;
+  .assets-table-export-actions {
+    width: 100%;
   }
 
+
+  .assets-export-button {
+    flex: 1;
+  }
+
+}
+
+/* =========================================================
+   SEPARATE ACTION / EXCEL / PDF COLUMNS
+========================================================= */
+
+.vehicle-export-button {
+  min-height: 36px;
+
+  padding: 0 12px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 6px;
+
+  border-radius: 8px;
+
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 700;
+
+  white-space: nowrap;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.16s ease,
+    border-color 0.16s ease,
+    background-color 0.16s ease,
+    color 0.16s ease,
+    box-shadow 0.16s ease;
+}
+
+
+.vehicle-export-button.excel {
+  border: 1px solid #b7ddd6;
+
+  color: #117d76;
+  background: #eef9f7;
+}
+
+
+.vehicle-export-button.excel:hover {
+  border-color: #159a91;
+
+  color: #ffffff;
+  background: #159a91;
+
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 4px 10px
+    rgba(21, 154, 145, 0.14);
+}
+
+
+.vehicle-export-button.pdf {
+  border: 1px solid #efc5c5;
+
+  color: #c43b3b;
+  background: #fff4f4;
+}
+
+
+.vehicle-export-button.pdf:hover {
+  border-color: #d94a4a;
+
+  color: #ffffff;
+  background: #d94a4a;
+
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 4px 10px
+    rgba(217, 74, 74, 0.12);
+}
+
+
+/* Center action/export columns */
+
+.assets-vehicle-table th:nth-last-child(3),
+.assets-vehicle-table th:nth-last-child(2),
+.assets-vehicle-table th:last-child,
+.assets-vehicle-table td:nth-last-child(3),
+.assets-vehicle-table td:nth-last-child(2),
+.assets-vehicle-table td:last-child {
+  text-align: center;
+}
+
+
+/* Keep enough width for buttons */
+
+.assets-vehicle-table th:nth-last-child(3),
+.assets-vehicle-table td:nth-last-child(3) {
+  min-width: 105px;
+}
+
+
+.assets-vehicle-table th:nth-last-child(2),
+.assets-vehicle-table td:nth-last-child(2),
+.assets-vehicle-table th:last-child,
+.assets-vehicle-table td:last-child {
+  min-width: 92px;
+}
+
+
+@media (max-width: 700px) {
+
+  .vehicle-export-button,
+  .manage-assets-button {
+    min-height: 34px;
+
+    padding: 0 10px;
+
+    font-size: 11px;
+  }
+
+}
+
+
+.vehicle-export-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
 }

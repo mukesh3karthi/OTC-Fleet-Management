@@ -1,163 +1,302 @@
-const fs = require("fs");
-const path = require("path");
-const OwnVehicle = require("../models/ownvehicle");
+const fs =
+  require("fs");
+
+const path =
+  require("path");
+
+const OwnVehicle =
+  require(
+    "../models/ownvehicle"
+  );
+
 
 /* ==========================================
-   Upload path
+   UPLOAD PATH
 ========================================== */
 
-const uploadsFolder = path.join(
-  __dirname,
-  "../uploads/ownvehicles"
-);
+const uploadsFolder =
+  path.join(
+    __dirname,
+    "../uploads/ownvehicles"
+  );
 
-/* ==========================================
-   Document configuration
-========================================== */
 
-const documentConfiguration = {
-  insurance: {
-    fileField: "insuranceFile",
-    label: "Insurance",
-    requiresDates: true,
-  },
+if (
+  !fs.existsSync(
+    uploadsFolder
+  )
+) {
 
-  fitness: {
-    fileField: "fitnessFile",
-    label: "Fitness",
-    requiresDates: true,
-  },
-
-  nationalPermit: {
-    fileField: "nationalPermitFile",
-    label: "National Permit",
-    requiresDates: true,
-  },
-
-  permit: {
-    fileField: "permitFile",
-    label: "Permit",
-    requiresDates: true,
-  },
-
-  tax: {
-    fileField: "taxFile",
-    label: "Tax",
-    requiresDates: true,
-  },
-
-  puc: {
-    fileField: "pucFile",
-    label: "PUC",
-    requiresDates: true,
-  },
-
-  rcBook: {
-    fileField: "rcBookFile",
-    label: "RC Book",
-    requiresDates: false,
-  },
-};
-
-/* ==========================================
-   Default documents
-========================================== */
-
-const createDefaultDocument = () => ({
-  startDate: "",
-  expiryDate: "",
-  fileName: "",
-  originalName: "",
-  filePath: "",
-  mimeType: "",
-  size: 0,
-  uploadedAt: "",
-});
-
-const createDefaultDocuments = () => {
-  const documents = {};
-
-  Object.keys(documentConfiguration).forEach(
-    (key) => {
-      documents[key] =
-        createDefaultDocument();
+  fs.mkdirSync(
+    uploadsFolder,
+    {
+      recursive: true,
     }
   );
 
-  return documents;
-};
+}
+
 
 /* ==========================================
-   Ensure upload directory exists
+   DOCUMENT CONFIGURATION
 ========================================== */
 
-const ensureUploadsFolderExists = () => {
-  if (!fs.existsSync(uploadsFolder)) {
-    fs.mkdirSync(uploadsFolder, {
-      recursive: true,
-    });
-  }
+const documentConfiguration = {
+
+  insurance: {
+    fileField:
+      "insuranceFile",
+
+    label:
+      "Insurance",
+
+    requiresDates:
+      true,
+  },
+
+
+  fitness: {
+    fileField:
+      "fitnessFile",
+
+    label:
+      "Fitness",
+
+    requiresDates:
+      true,
+  },
+
+
+  nationalPermit: {
+    fileField:
+      "nationalPermitFile",
+
+    label:
+      "National Permit",
+
+    requiresDates:
+      true,
+  },
+
+
+  permit: {
+    fileField:
+      "permitFile",
+
+    label:
+      "Permit",
+
+    requiresDates:
+      true,
+  },
+
+
+  tax: {
+    fileField:
+      "taxFile",
+
+    label:
+      "Tax",
+
+    requiresDates:
+      true,
+  },
+
+
+  puc: {
+    fileField:
+      "pucFile",
+
+    label:
+      "PUC",
+
+    requiresDates:
+      true,
+  },
+
+
+  rcBook: {
+    fileField:
+      "rcBookFile",
+
+    label:
+      "RC Book",
+
+    requiresDates:
+      false,
+  },
+
 };
 
-ensureUploadsFolderExists();
 
 /* ==========================================
-   Helpers
+   DEFAULT DOCUMENT
 ========================================== */
 
-const cleanText = (value) =>
-  String(value ?? "").trim();
+const createDefaultDocument =
+  () => ({
 
-const uppercaseText = (value) =>
-  cleanText(value).toUpperCase();
+    startDate: "",
 
-const parseBoolean = (value) =>
-  value === true ||
-  value === "true" ||
-  value === 1 ||
-  value === "1";
+    expiryDate: "",
 
-const isValidDate = (value) => {
+    fileName: "",
+
+    originalName: "",
+
+    filePath: "",
+
+    mimeType: "",
+
+    size: 0,
+
+    uploadedAt: "",
+
+  });
+
+
+const createDefaultDocuments =
+  () => {
+
+    const documents = {};
+
+
+    Object.keys(
+      documentConfiguration
+    ).forEach(
+      (key) => {
+
+        documents[key] =
+          createDefaultDocument();
+
+      }
+    );
+
+
+    return documents;
+
+  };
+
+
+/* ==========================================
+   BASIC HELPERS
+========================================== */
+
+const cleanText = (
+  value
+) =>
+  String(
+    value ?? ""
+  ).trim();
+
+
+const uppercaseText = (
+  value
+) =>
+  cleanText(
+    value
+  ).toUpperCase();
+
+
+const parseBoolean = (
+  value
+) => {
+
+  return (
+    value === true ||
+    value === "true" ||
+    value === 1 ||
+    value === "1"
+  );
+
+};
+
+
+const isValidDate = (
+  value
+) => {
+
   if (!value) {
+
     return true;
+
   }
+
 
   return /^\d{4}-\d{2}-\d{2}$/.test(
     value
   );
+
 };
 
-const isValidVehicleId = (value) =>
-  Number.isInteger(value) &&
-  value > 0;
 
-const toPlainObject = (value) => {
+const isValidVehicleId = (
+  value
+) => {
+
+  return (
+    Number.isInteger(
+      value
+    ) &&
+    value > 0
+  );
+
+};
+
+
+/* ==========================================
+   OBJECT HELPER
+========================================== */
+
+const toPlainObject = (
+  value
+) => {
+
   if (!value) {
+
     return {};
+
   }
+
 
   if (
     typeof value.toObject ===
     "function"
   ) {
+
     return value.toObject();
+
   }
 
-  if (value instanceof Map) {
+
+  if (
+    value instanceof Map
+  ) {
+
     return Object.fromEntries(
       value
     );
+
   }
+
 
   return {
     ...value,
   };
+
 };
+
+
+/* ==========================================
+   NEXT VEHICLE ID
+========================================== */
 
 const getNextVehicleId =
   async () => {
+
     const lastVehicle =
-      await OwnVehicle.findOne()
+      await OwnVehicle
+        .findOne()
         .sort({
           id: -1,
         })
@@ -167,191 +306,386 @@ const getNextVehicleId =
         })
         .lean();
 
+
     return (
-      (Number(lastVehicle?.id) ||
-        0) + 1
+      (
+        Number(
+          lastVehicle?.id
+        ) || 0
+      ) + 1
     );
+
   };
 
-const getUploadedFiles = (req) =>
-  Object.values(req.files || {})
-    .flat()
-    .filter(Boolean);
 
-const deleteMulterFile = (file) => {
+/* ==========================================
+   MULTER FILE HELPERS
+========================================== */
+
+const getUploadedFiles = (
+  req
+) => {
+
+  return Object
+    .values(
+      req.files || {}
+    )
+    .flat()
+    .filter(
+      Boolean
+    );
+
+};
+
+
+const getUploadedFile = (
+  req,
+  fieldName
+) => {
+
+  return (
+    req.files?.[
+      fieldName
+    ]?.[0] ||
+    null
+  );
+
+};
+
+
+const deleteMulterFile = (
+  file
+) => {
+
   try {
+
     if (!file) {
+
       return;
+
     }
+
 
     const diskPath =
       file.path ||
-      (file.filename
-        ? path.join(
-            uploadsFolder,
-            file.filename
-          )
-        : "");
+
+      (
+        file.filename
+
+          ? path.join(
+              uploadsFolder,
+              file.filename
+            )
+
+          : ""
+      );
+
 
     if (
       diskPath &&
-      fs.existsSync(diskPath)
+      fs.existsSync(
+        diskPath
+      )
     ) {
-      fs.unlinkSync(diskPath);
+
+      fs.unlinkSync(
+        diskPath
+      );
+
     }
+
   } catch (error) {
+
     console.error(
-      "Unable to delete uploaded Multer file:",
+      "Unable to delete Multer file:",
       error
     );
+
   }
+
 };
 
-const deleteNewUploads = (req) => {
-  getUploadedFiles(req).forEach(
+
+const deleteNewUploads = (
+  req
+) => {
+
+  getUploadedFiles(
+    req
+  ).forEach(
     deleteMulterFile
   );
+
 };
 
+
 /* ==========================================
-   Vehicle validation
+   DELETE SAVED DOCUMENT
 ========================================== */
 
-const validateVehicle = (body) => {
+const deleteUploadedFile = (
+  publicFilePath
+) => {
+
+  try {
+
+    if (
+      !publicFilePath
+    ) {
+
+      return;
+
+    }
+
+
+    const fileName =
+      path.basename(
+        publicFilePath
+      );
+
+
+    const diskPath =
+      path.join(
+        uploadsFolder,
+        fileName
+      );
+
+
+    if (
+      fs.existsSync(
+        diskPath
+      )
+    ) {
+
+      fs.unlinkSync(
+        diskPath
+      );
+
+    }
+
+  } catch (error) {
+
+    console.error(
+      "Unable to delete stored document:",
+      error
+    );
+
+  }
+
+};
+
+
+/* ==========================================
+   VEHICLE VALIDATION
+========================================== */
+
+const validateVehicle = (
+  body
+) => {
+
   const requiredFields = [
+
     [
       "vehicleNo",
       "Vehicle Number",
     ],
+
     [
       "type",
       "Vehicle Type",
     ],
+
     [
       "vehicleMake",
       "Vehicle Make",
     ],
+
     [
       "manufacturingYear",
       "Manufacturing Year",
     ],
+
     [
       "registrationDate",
       "Registration Date",
     ],
+
     [
       "transportOwner",
       "Transport Owner",
     ],
+
     [
       "engineNo",
       "Engine Number",
     ],
+
     [
       "chassisNo",
       "Chassis Number",
     ],
+
     [
       "purchaseYear",
       "Purchase Year",
     ],
+
     [
       "purchasedFrom",
       "Purchased From",
     ],
+
   ];
+
 
   const missingField =
     requiredFields.find(
       ([fieldName]) =>
         !cleanText(
-          body[fieldName]
+          body[
+            fieldName
+          ]
         )
     );
 
-  if (missingField) {
+
+  if (
+    missingField
+  ) {
+
     return {
+
       valid: false,
+
       message:
         `Please enter ${missingField[1]}.`,
+
     };
+
   }
+
 
   const manufacturingYear =
     cleanText(
       body.manufacturingYear
     );
 
+
   const purchaseYear =
     cleanText(
       body.purchaseYear
     );
 
+
   const currentYear =
-    new Date().getFullYear();
+    new Date()
+      .getFullYear();
+
 
   if (
     !/^\d{4}$/.test(
       manufacturingYear
     )
   ) {
+
     return {
+
       valid: false,
+
       message:
         "Manufacturing Year must contain 4 digits.",
+
     };
+
   }
+
 
   if (
     !/^\d{4}$/.test(
       purchaseYear
     )
   ) {
+
     return {
+
       valid: false,
+
       message:
         "Purchase Year must contain 4 digits.",
+
     };
+
   }
 
-  if (
+
+  const manufacturingYearNumber =
     Number(
       manufacturingYear
-    ) < 1900 ||
+    );
+
+
+  const purchaseYearNumber =
     Number(
-      manufacturingYear
-    ) > currentYear + 1
-  ) {
-    return {
-      valid: false,
-      message:
-        "Please enter a valid Manufacturing Year.",
-    };
-  }
+      purchaseYear
+    );
+
 
   if (
-    Number(purchaseYear) <
+    manufacturingYearNumber <
       1900 ||
-    Number(purchaseYear) >
+
+    manufacturingYearNumber >
       currentYear + 1
   ) {
+
     return {
+
       valid: false,
+
       message:
-        "Please enter a valid Purchase Year.",
+        "Please enter a valid Manufacturing Year.",
+
     };
+
   }
 
+
   if (
-    Number(purchaseYear) <
-    Number(manufacturingYear)
+    purchaseYearNumber <
+      1900 ||
+
+    purchaseYearNumber >
+      currentYear + 1
   ) {
+
     return {
+
       valid: false,
+
+      message:
+        "Please enter a valid Purchase Year.",
+
+    };
+
+  }
+
+
+  if (
+    purchaseYearNumber <
+    manufacturingYearNumber
+  ) {
+
+    return {
+
+      valid: false,
+
       message:
         "Purchase Year cannot be earlier than Manufacturing Year.",
+
     };
+
   }
+
 
   if (
     !isValidDate(
@@ -360,253 +694,311 @@ const validateVehicle = (body) => {
       )
     )
   ) {
+
     return {
+
       valid: false,
+
       message:
         "Registration Date must use YYYY-MM-DD format.",
+
     };
+
   }
 
+
   return {
+
     valid: true,
+
     message: "",
+
   };
+
 };
 
+
 /* ==========================================
-   Document validation
+   DOCUMENT VALIDATION
 ========================================== */
 
 const validateDocuments = (
   documents
 ) => {
+
   for (
     const [
       documentKey,
       configuration,
-    ] of Object.entries(
+    ]
+    of Object.entries(
       documentConfiguration
     )
   ) {
+
     const documentData =
-      documents[documentKey];
+      documents[
+        documentKey
+      ];
+
 
     if (
       !documentData ||
-      !configuration.requiresDates
+      !configuration
+        .requiresDates
     ) {
+
       continue;
+
     }
 
+
     if (
-      documentData.startDate &&
+      documentData
+        .startDate &&
+
       !isValidDate(
-        documentData.startDate
+        documentData
+          .startDate
       )
     ) {
+
       return {
+
         valid: false,
+
         message:
           `${configuration.label} start date must use YYYY-MM-DD format.`,
+
       };
+
     }
 
+
     if (
-      documentData.expiryDate &&
+      documentData
+        .expiryDate &&
+
       !isValidDate(
-        documentData.expiryDate
+        documentData
+          .expiryDate
       )
     ) {
+
       return {
+
         valid: false,
+
         message:
           `${configuration.label} expiry date must use YYYY-MM-DD format.`,
+
       };
+
     }
 
+
     if (
-      documentData.startDate &&
-      documentData.expiryDate
+      documentData
+        .startDate &&
+
+      documentData
+        .expiryDate
     ) {
+
       const startDate =
         new Date(
           `${documentData.startDate}T00:00:00`
         );
+
 
       const expiryDate =
         new Date(
           `${documentData.expiryDate}T00:00:00`
         );
 
+
       if (
         expiryDate <
         startDate
       ) {
+
         return {
+
           valid: false,
+
           message:
             `${configuration.label} expiry date cannot be earlier than its start date.`,
+
         };
+
       }
+
     }
+
   }
+
 
   return {
+
     valid: true,
+
     message: "",
+
   };
+
 };
 
-/* ==========================================
-   Get uploaded Multer file
-========================================== */
-
-const getUploadedFile = (
-  req,
-  fieldName
-) =>
-  req.files?.[
-    fieldName
-  ]?.[0] || null;
 
 /* ==========================================
-   Delete stored uploaded file
-========================================== */
-
-const deleteUploadedFile = (
-  publicFilePath
-) => {
-  try {
-    if (!publicFilePath) {
-      return;
-    }
-
-    const fileName =
-      path.basename(
-        publicFilePath
-      );
-
-    const diskPath =
-      path.join(
-        uploadsFolder,
-        fileName
-      );
-
-    if (
-      fs.existsSync(diskPath)
-    ) {
-      fs.unlinkSync(diskPath);
-    }
-  } catch (error) {
-    console.error(
-      "Unable to delete stored file:",
-      error
-    );
-  }
-};
-
-/* ==========================================
-   Parse optional documents JSON
+   PARSE DOCUMENT JSON
 ========================================== */
 
 const parseDocumentsBody = (
   value
 ) => {
+
   if (!value) {
+
     return {};
+
   }
+
 
   if (
     typeof value ===
       "object" &&
-    !Array.isArray(value)
+
+    !Array.isArray(
+      value
+    )
   ) {
+
     return value;
+
   }
+
 
   if (
     typeof value ===
     "string"
   ) {
-    try {
-      const parsed =
-        JSON.parse(value);
 
-      return parsed &&
+    try {
+
+      const parsed =
+        JSON.parse(
+          value
+        );
+
+
+      if (
+        parsed &&
         typeof parsed ===
           "object" &&
-        !Array.isArray(parsed)
-        ? parsed
-        : {};
-    } catch {
+        !Array.isArray(
+          parsed
+        )
+      ) {
+
+        return parsed;
+
+      }
+
+
       return {};
+
+    } catch {
+
+      return {};
+
     }
+
   }
 
+
   return {};
+
 };
 
+
 /* ==========================================
-   Normalize existing documents
+   NORMALIZE DOCUMENTS
 ========================================== */
 
 const normalizeDocuments = (
   existingDocuments = {}
 ) => {
+
   const source =
     toPlainObject(
       existingDocuments
     );
 
+
   const defaults =
     createDefaultDocuments();
 
+
   const normalized = {};
+
 
   Object.keys(
     documentConfiguration
   ).forEach(
     (documentKey) => {
+
       normalized[
         documentKey
       ] = {
+
         ...defaults[
           documentKey
         ],
+
         ...toPlainObject(
           source[
             documentKey
           ]
         ),
+
       };
+
     }
   );
 
+
   return normalized;
+
 };
 
+
 /* ==========================================
-   Build document data
+   BUILD DOCUMENT DATA
 ========================================== */
 
 const buildDocuments = (
   req,
   existingDocuments = {}
 ) => {
+
   const defaults =
     createDefaultDocuments();
+
 
   const normalizedExisting =
     normalizeDocuments(
       existingDocuments
     );
 
+
   const nestedDocuments =
     parseDocumentsBody(
       req.body.documents
     );
 
+
   const updatedDocuments = {};
+
 
   Object.entries(
     documentConfiguration
@@ -615,216 +1007,573 @@ const buildDocuments = (
       documentKey,
       configuration,
     ]) => {
+
       const existingDocument = {
+
         ...defaults[
           documentKey
         ],
+
         ...normalizedExisting[
           documentKey
         ],
+
       };
+
 
       const nestedDocument =
         nestedDocuments[
           documentKey
         ] || {};
 
+
       const startField =
         `${documentKey}StartDate`;
+
 
       const expiryField =
         `${documentKey}ExpiryDate`;
 
+
       const removeField =
         `${documentKey}RemoveExisting`;
 
+
       const startDate =
+
         req.body[
           startField
         ] !== undefined
+
           ? cleanText(
               req.body[
                 startField
               ]
             )
+
           : nestedDocument
                 .startDate !==
               undefined
+
             ? cleanText(
                 nestedDocument
                   .startDate
               )
+
             : cleanText(
                 existingDocument
                   .startDate
               );
 
+
       const expiryDate =
+
         req.body[
           expiryField
         ] !== undefined
+
           ? cleanText(
               req.body[
                 expiryField
               ]
             )
+
           : nestedDocument
                 .expiryDate !==
               undefined
+
             ? cleanText(
                 nestedDocument
                   .expiryDate
               )
+
             : cleanText(
                 existingDocument
                   .expiryDate
               );
 
+
       const removeExisting =
+
         parseBoolean(
           req.body[
             removeField
           ]
         ) ||
+
         parseBoolean(
           nestedDocument
             .removeExisting
         ) ||
+
         parseBoolean(
           nestedDocument
             .replacementRequired
         );
 
+
       const uploadedFile =
         getUploadedFile(
           req,
+
           configuration
             .fileField
         );
 
+
       let documentResult = {
+
         ...existingDocument,
 
+
         startDate:
-          configuration.requiresDates
+
+          configuration
+            .requiresDates
+
             ? startDate
+
             : "",
 
+
         expiryDate:
-          configuration.requiresDates
+
+          configuration
+            .requiresDates
+
             ? expiryDate
+
             : "",
+
       };
+
+
+      /* REMOVE EXISTING DOCUMENT */
 
       if (
         removeExisting &&
         !uploadedFile
       ) {
+
         deleteUploadedFile(
           existingDocument
             .filePath
         );
 
+
         documentResult = {
+
           ...documentResult,
+
           fileName: "",
+
           originalName: "",
+
           filePath: "",
+
           mimeType: "",
+
           size: 0,
+
           uploadedAt: "",
+
         };
+
       }
 
-      if (uploadedFile) {
+
+      /* NEW FILE */
+
+      if (
+        uploadedFile
+      ) {
+
         if (
           existingDocument
             .filePath
         ) {
+
           deleteUploadedFile(
             existingDocument
               .filePath
           );
+
         }
 
+
         documentResult = {
+
           ...documentResult,
+
 
           fileName:
             uploadedFile
-              .filename || "",
+              .filename ||
+            "",
+
 
           originalName:
             uploadedFile
-              .originalname || "",
+              .originalname ||
+            "",
+
 
           filePath:
             `/uploads/ownvehicles/${uploadedFile.filename}`,
 
+
           mimeType:
             uploadedFile
-              .mimetype || "",
+              .mimetype ||
+            "",
+
 
           size:
             uploadedFile
-              .size || 0,
+              .size ||
+            0,
+
 
           uploadedAt:
             new Date()
               .toISOString(),
+
         };
+
       }
+
 
       updatedDocuments[
         documentKey
-      ] = documentResult;
+      ] =
+        documentResult;
+
     }
   );
 
+
   return updatedDocuments;
+
 };
 
+
 /* ==========================================
-   GET all own vehicles
+   DOWNLOAD VEHICLE DOCUMENT
+
+   GET
+   /api/ownvehicles/download/:fileName
 ========================================== */
 
-const getOwnVehicles = async (
+const downloadVehicleDocument = (
   req,
   res
 ) => {
-  try {
-    const vehicles =
-      await OwnVehicle.find()
-        .sort({
-          id: 1,
-        })
-        .lean();
 
-    return res
-      .status(200)
-      .json({
-        success: true,
-        ownVehicles:
-          vehicles,
-      });
+  try {
+
+    const decodedFileName =
+      decodeURIComponent(
+        String(
+          req.params
+            .fileName ||
+          ""
+        )
+      );
+
+
+    const safeFileName =
+      path.basename(
+        decodedFileName
+      );
+
+
+    if (
+      !safeFileName
+    ) {
+
+      return res
+        .status(400)
+        .json({
+
+          success: false,
+
+          message:
+            "Invalid document file name.",
+
+        });
+
+    }
+
+
+    const normalizedUploadFolder =
+      path.resolve(
+        uploadsFolder
+      );
+
+
+    const filePath =
+      path.resolve(
+        normalizedUploadFolder,
+        safeFileName
+      );
+
+
+    /* SECURITY */
+
+    if (
+      !filePath.startsWith(
+        `${normalizedUploadFolder}${path.sep}`
+      )
+    ) {
+
+      return res
+        .status(400)
+        .json({
+
+          success: false,
+
+          message:
+            "Invalid document file path.",
+
+        });
+
+    }
+
+
+    /* FILE EXISTS */
+
+    if (
+      !fs.existsSync(
+        filePath
+      )
+    ) {
+
+      return res
+        .status(404)
+        .json({
+
+          success: false,
+
+          message:
+            "Document file not found.",
+
+          fileName:
+            safeFileName,
+
+        });
+
+    }
+
+
+    const fileStats =
+      fs.statSync(
+        filePath
+      );
+
+
+    if (
+      !fileStats.isFile()
+    ) {
+
+      return res
+        .status(400)
+        .json({
+
+          success: false,
+
+          message:
+            "Requested document is not a valid file.",
+
+        });
+
+    }
+
+
+    /* MIME TYPE */
+
+    const extension =
+      path
+        .extname(
+          safeFileName
+        )
+        .toLowerCase();
+
+
+    const mimeTypes = {
+
+      ".jpg":
+        "image/jpeg",
+
+      ".jpeg":
+        "image/jpeg",
+
+      ".png":
+        "image/png",
+
+      ".pdf":
+        "application/pdf",
+
+    };
+
+
+    const contentType =
+      mimeTypes[
+        extension
+      ] ||
+      "application/octet-stream";
+
+
+    const requestedName =
+
+      req.query.name
+
+        ? path.basename(
+            String(
+              req.query.name
+            )
+          )
+
+        : safeFileName;
+
+
+    /*
+      IMPORTANT:
+
+      The browser must receive
+      image/jpeg or image/png
+      for PDF embedding.
+    */
+
+    res.setHeader(
+      "Content-Type",
+      contentType
+    );
+
+
+    res.setHeader(
+      "Content-Length",
+      fileStats.size
+    );
+
+
+    res.setHeader(
+      "Cache-Control",
+      "no-store"
+    );
+
+
+    /*
+      Use inline instead of res.download().
+
+      This allows fetch() from React
+      to read the image correctly.
+    */
+
+    res.setHeader(
+      "Content-Disposition",
+
+      `inline; filename="${encodeURIComponent(
+        requestedName
+      )}"`
+    );
+
+
+    return res.sendFile(
+      filePath
+    );
+
   } catch (error) {
+
     console.error(
-      "Get own vehicles error:",
+      "Vehicle document download error:",
       error
     );
+
+
+    if (
+      res.headersSent
+    ) {
+
+      return;
+
+    }
+
 
     return res
       .status(500)
       .json({
+
         success: false,
+
         message:
-          "Unable to fetch own vehicles.",
+          error.message ||
+          "Unable to download document.",
+
       });
+
   }
+
 };
 
+
 /* ==========================================
-   GET own vehicle by ID
+   GET ALL VEHICLES
+========================================== */
+
+const getOwnVehicles =
+  async (
+    req,
+    res
+  ) => {
+
+    try {
+
+      const vehicles =
+        await OwnVehicle
+          .find()
+          .sort({
+            id: 1,
+          })
+          .lean();
+
+
+      return res
+        .status(200)
+        .json({
+
+          success: true,
+
+          ownVehicles:
+            vehicles,
+
+        });
+
+    } catch (error) {
+
+      console.error(
+        "Get own vehicles error:",
+        error
+      );
+
+
+      return res
+        .status(500)
+        .json({
+
+          success: false,
+
+          message:
+            "Unable to fetch own vehicles.",
+
+        });
+
+    }
+
+  };
+
+
+/* ==========================================
+   GET VEHICLE BY ID
 ========================================== */
 
 const getOwnVehicleById =
@@ -832,66 +1581,99 @@ const getOwnVehicleById =
     req,
     res
   ) => {
+
     try {
+
       const vehicleId =
         Number(
           req.params.id
         );
+
 
       if (
         !isValidVehicleId(
           vehicleId
         )
       ) {
+
         return res
           .status(400)
           .json({
+
             success: false,
+
             message:
               "Invalid vehicle ID.",
+
           });
+
       }
 
-      const vehicle =
-        await OwnVehicle.findOne({
-          id: vehicleId,
-        }).lean();
 
-      if (!vehicle) {
+      const vehicle =
+        await OwnVehicle
+          .findOne({
+            id:
+              vehicleId,
+          })
+          .lean();
+
+
+      if (
+        !vehicle
+      ) {
+
         return res
           .status(404)
           .json({
+
             success: false,
+
             message:
               "Vehicle not found.",
+
           });
+
       }
+
 
       return res
         .status(200)
         .json({
+
           success: true,
+
           ownVehicle:
             vehicle,
+
         });
+
     } catch (error) {
+
       console.error(
         "Get own vehicle error:",
         error
       );
 
+
       return res
         .status(500)
         .json({
+
           success: false,
+
           message:
             "Unable to fetch vehicle.",
+
         });
+
     }
+
   };
 
+
 /* ==========================================
-   POST add own vehicle
+   ADD OWN VEHICLE
 ========================================== */
 
 const addOwnVehicle =
@@ -899,89 +1681,129 @@ const addOwnVehicle =
     req,
     res
   ) => {
+
     try {
+
       const validation =
         validateVehicle(
           req.body
         );
 
+
       if (
         !validation.valid
       ) {
+
         deleteNewUploads(
           req
         );
 
+
         return res
           .status(400)
           .json({
+
             success: false,
+
             message:
               validation.message,
+
           });
+
       }
+
 
       const vehicleNo =
         uppercaseText(
           req.body.vehicleNo
         );
 
+
       const duplicate =
         await OwnVehicle.exists({
           vehicleNo,
         });
 
-      if (duplicate) {
+
+      if (
+        duplicate
+      ) {
+
         deleteNewUploads(
           req
         );
 
+
         return res
           .status(400)
           .json({
+
             success: false,
+
             message:
               "Vehicle Number already exists.",
+
           });
+
       }
 
+
       const documents =
-        buildDocuments(req);
+        buildDocuments(
+          req
+        );
+
 
       const documentValidation =
         validateDocuments(
           documents
         );
 
+
       if (
-        !documentValidation.valid
+        !documentValidation
+          .valid
       ) {
+
         deleteNewUploads(
           req
         );
 
+
         return res
           .status(400)
           .json({
+
             success: false,
+
             message:
-              documentValidation.message,
+              documentValidation
+                .message,
+
           });
+
       }
+
 
       const vehicleId =
         await getNextVehicleId();
 
+
       const newVehicle =
         await OwnVehicle.create({
-          id: vehicleId,
+
+          id:
+            vehicleId,
+
 
           vehicleNo,
+
 
           type:
             cleanText(
               req.body.type
             ),
+
 
           vehicleMake:
             cleanText(
@@ -989,11 +1811,13 @@ const addOwnVehicle =
                 .vehicleMake
             ),
 
+
           manufacturingYear:
             cleanText(
               req.body
                 .manufacturingYear
             ),
+
 
           registrationDate:
             cleanText(
@@ -1001,11 +1825,13 @@ const addOwnVehicle =
                 .registrationDate
             ),
 
+
           transportOwner:
             cleanText(
               req.body
                 .transportOwner
             ),
+
 
           engineNo:
             cleanText(
@@ -1013,16 +1839,19 @@ const addOwnVehicle =
                 .engineNo
             ),
 
+
           chassisNo:
             cleanText(
               req.body
                 .chassisNo
             ),
 
+
           gps:
             parseBoolean(
               req.body.gps
             ),
+
 
           purchaseYear:
             cleanText(
@@ -1030,71 +1859,84 @@ const addOwnVehicle =
                 .purchaseYear
             ),
 
+
           purchasedFrom:
             cleanText(
               req.body
                 .purchasedFrom
             ),
 
+
           documents,
+
         });
+
 
       return res
         .status(201)
         .json({
+
           success: true,
+
           message:
             "Vehicle added successfully.",
+
           ownVehicle:
             newVehicle,
+
         });
+
     } catch (error) {
+
       deleteNewUploads(
         req
       );
+
 
       console.error(
         "Add own vehicle error:",
         error
       );
 
+
       if (
         error?.code ===
         11000
       ) {
-        const duplicateField =
-          Object.keys(
-            error.keyPattern ||
-              {}
-          )[0];
 
         return res
           .status(400)
           .json({
+
             success: false,
 
             message:
-              duplicateField ===
-              "vehicleNo"
-                ? "Vehicle Number already exists."
-                : "Vehicle ID already exists. Please try again.",
+              "Vehicle Number already exists.",
+
           });
+
       }
+
 
       return res
         .status(500)
         .json({
+
           success: false,
 
           message:
             error.message ||
             "Unable to add vehicle.",
+
         });
+
     }
+
   };
 
+
 /* ==========================================
-   PUT update own vehicle
+   UPDATE OWN VEHICLE
 ========================================== */
 
 const updateOwnVehicle =
@@ -1102,67 +1944,90 @@ const updateOwnVehicle =
     req,
     res
   ) => {
+
     try {
+
       const vehicleId =
         Number(
           req.params.id
         );
+
 
       if (
         !isValidVehicleId(
           vehicleId
         )
       ) {
+
         deleteNewUploads(
           req
         );
+
 
         return res
           .status(400)
           .json({
+
             success: false,
+
             message:
               "Invalid vehicle ID.",
+
           });
+
       }
 
+
       const existingVehicle =
-        await OwnVehicle.findOne({
-          id: vehicleId,
-        });
+        await OwnVehicle
+          .findOne({
+            id:
+              vehicleId,
+          });
+
 
       if (
         !existingVehicle
       ) {
+
         deleteNewUploads(
           req
         );
 
+
         return res
           .status(404)
           .json({
+
             success: false,
+
             message:
               "Vehicle not found.",
+
           });
+
       }
 
+
       const mergedBody = {
+
         vehicleNo:
-          req.body
-            .vehicleNo ??
+          req.body.vehicleNo ??
           existingVehicle
             .vehicleNo,
 
+
         type:
           req.body.type ??
-          existingVehicle.type,
+          existingVehicle
+            .type,
+
 
         vehicleMake:
-          req.body
-            .vehicleMake ??
+          req.body.vehicleMake ??
           existingVehicle
             .vehicleMake,
+
 
         manufacturingYear:
           req.body
@@ -1170,11 +2035,13 @@ const updateOwnVehicle =
           existingVehicle
             .manufacturingYear,
 
+
         registrationDate:
           req.body
             .registrationDate ??
           existingVehicle
             .registrationDate,
+
 
         transportOwner:
           req.body
@@ -1182,21 +2049,24 @@ const updateOwnVehicle =
           existingVehicle
             .transportOwner,
 
+
         engineNo:
-          req.body
-            .engineNo ??
+          req.body.engineNo ??
           existingVehicle
             .engineNo,
 
+
         chassisNo:
-          req.body
-            .chassisNo ??
+          req.body.chassisNo ??
           existingVehicle
             .chassisNo,
 
+
         gps:
           req.body.gps ??
-          existingVehicle.gps,
+          existingVehicle
+            .gps,
+
 
         purchaseYear:
           req.body
@@ -1204,181 +2074,269 @@ const updateOwnVehicle =
           existingVehicle
             .purchaseYear,
 
+
         purchasedFrom:
           req.body
             .purchasedFrom ??
           existingVehicle
             .purchasedFrom,
+
       };
+
 
       const validation =
         validateVehicle(
           mergedBody
         );
 
+
       if (
         !validation.valid
       ) {
+
         deleteNewUploads(
           req
         );
 
+
         return res
           .status(400)
           .json({
+
             success: false,
+
             message:
               validation.message,
+
           });
+
       }
+
 
       const vehicleNo =
         uppercaseText(
-          mergedBody.vehicleNo
+          mergedBody
+            .vehicleNo
         );
+
 
       const duplicate =
         await OwnVehicle.exists({
+
           vehicleNo,
+
           id: {
-            $ne: vehicleId,
+            $ne:
+              vehicleId,
           },
+
         });
 
-      if (duplicate) {
+
+      if (
+        duplicate
+      ) {
+
         deleteNewUploads(
           req
         );
 
+
         return res
           .status(400)
           .json({
+
             success: false,
+
             message:
               "Vehicle Number already exists.",
+
           });
+
       }
 
+
       const hasDocumentFields =
-        Object.keys(
-          req.body
-        ).some(
-          (key) =>
-            key ===
-              "documents" ||
-            key.endsWith(
-              "StartDate"
-            ) ||
-            key.endsWith(
-              "ExpiryDate"
-            ) ||
-            key.endsWith(
-              "RemoveExisting"
-            )
-        ) ||
+
+        Object
+          .keys(
+            req.body
+          )
+          .some(
+            (key) =>
+
+              key ===
+                "documents" ||
+
+              key.endsWith(
+                "StartDate"
+              ) ||
+
+              key.endsWith(
+                "ExpiryDate"
+              ) ||
+
+              key.endsWith(
+                "RemoveExisting"
+              )
+          )
+
+        ||
+
         Object.keys(
           req.files || {}
         ).length > 0;
 
+
       const documents =
+
         hasDocumentFields
+
           ? buildDocuments(
               req,
+
               existingVehicle
                 .documents
             )
+
           : normalizeDocuments(
               existingVehicle
                 .documents
             );
+
 
       const documentValidation =
         validateDocuments(
           documents
         );
 
+
       if (
-        !documentValidation.valid
+        !documentValidation
+          .valid
       ) {
+
         deleteNewUploads(
           req
         );
 
+
         return res
           .status(400)
           .json({
+
             success: false,
+
             message:
-              documentValidation.message,
+              documentValidation
+                .message,
+
           });
+
       }
 
-      existingVehicle.vehicleNo =
+
+      existingVehicle
+        .vehicleNo =
         vehicleNo;
+
 
       existingVehicle.type =
         cleanText(
           mergedBody.type
         );
 
-      existingVehicle.vehicleMake =
+
+      existingVehicle
+        .vehicleMake =
         cleanText(
-          mergedBody.vehicleMake
+          mergedBody
+            .vehicleMake
         );
 
-      existingVehicle.manufacturingYear =
+
+      existingVehicle
+        .manufacturingYear =
         cleanText(
           mergedBody
             .manufacturingYear
         );
 
-      existingVehicle.registrationDate =
+
+      existingVehicle
+        .registrationDate =
         cleanText(
           mergedBody
             .registrationDate
         );
 
-      existingVehicle.transportOwner =
+
+      existingVehicle
+        .transportOwner =
         cleanText(
           mergedBody
             .transportOwner
         );
 
-      existingVehicle.engineNo =
+
+      existingVehicle
+        .engineNo =
         cleanText(
-          mergedBody.engineNo
+          mergedBody
+            .engineNo
         );
 
-      existingVehicle.chassisNo =
+
+      existingVehicle
+        .chassisNo =
         cleanText(
-          mergedBody.chassisNo
+          mergedBody
+            .chassisNo
         );
+
 
       existingVehicle.gps =
         parseBoolean(
           mergedBody.gps
         );
 
-      existingVehicle.purchaseYear =
+
+      existingVehicle
+        .purchaseYear =
         cleanText(
-          mergedBody.purchaseYear
+          mergedBody
+            .purchaseYear
         );
 
-      existingVehicle.purchasedFrom =
+
+      existingVehicle
+        .purchasedFrom =
         cleanText(
           mergedBody
             .purchasedFrom
         );
 
-      existingVehicle.documents =
+
+      existingVehicle
+        .documents =
         documents;
 
+
+      existingVehicle
+        .markModified(
+          "documents"
+        );
+
+
       const updatedVehicle =
-        await existingVehicle.save();
+        await existingVehicle
+          .save();
+
 
       return res
         .status(200)
         .json({
+
           success: true,
 
           message:
@@ -1386,44 +2344,41 @@ const updateOwnVehicle =
 
           ownVehicle:
             updatedVehicle,
+
         });
+
     } catch (error) {
+
       deleteNewUploads(
         req
       );
+
 
       console.error(
         "Update own vehicle error:",
         error
       );
 
-      if (
-        error?.code ===
-        11000
-      ) {
-        return res
-          .status(400)
-          .json({
-            success: false,
-            message:
-              "Vehicle Number already exists.",
-          });
-      }
 
       return res
         .status(500)
         .json({
+
           success: false,
 
           message:
             error.message ||
             "Unable to update vehicle.",
+
         });
+
     }
+
   };
 
+
 /* ==========================================
-   PUT save document dates and files
+   SAVE VEHICLE DOCUMENTS
 ========================================== */
 
 const saveVehicleDocuments =
@@ -1431,126 +2386,174 @@ const saveVehicleDocuments =
     req,
     res
   ) => {
+
     try {
+
       const vehicleId =
         Number(
           req.params.id
         );
+
 
       if (
         !isValidVehicleId(
           vehicleId
         )
       ) {
+
         deleteNewUploads(
           req
         );
+
 
         return res
           .status(400)
           .json({
+
             success: false,
+
             message:
               "Invalid vehicle ID.",
+
           });
+
       }
 
-      const existingVehicle =
-        await OwnVehicle.findOne({
-          id: vehicleId,
-        });
+
+      const vehicle =
+        await OwnVehicle
+          .findOne({
+            id:
+              vehicleId,
+          });
+
 
       if (
-        !existingVehicle
+        !vehicle
       ) {
+
         deleteNewUploads(
           req
         );
 
+
         return res
           .status(404)
           .json({
+
             success: false,
+
             message:
               "Vehicle not found.",
+
           });
+
       }
+
 
       const documents =
         buildDocuments(
           req,
-          existingVehicle
-            .documents
+          vehicle.documents
         );
+
 
       const validation =
         validateDocuments(
           documents
         );
 
+
       if (
         !validation.valid
       ) {
+
         deleteNewUploads(
           req
         );
 
+
         return res
           .status(400)
           .json({
+
             success: false,
+
             message:
               validation.message,
+
           });
+
       }
 
-      existingVehicle.documents =
+
+      vehicle.documents =
         documents;
 
+
+      vehicle.markModified(
+        "documents"
+      );
+
+
       const updatedVehicle =
-        await existingVehicle.save();
+        await vehicle.save();
+
 
       return res
         .status(200)
         .json({
+
           success: true,
 
           message:
             "Vehicle document dates and files saved successfully.",
 
+
           ownVehicle:
             updatedVehicle,
+
 
           documents:
             normalizeDocuments(
               updatedVehicle
                 .documents
             ),
+
         });
+
     } catch (error) {
+
       deleteNewUploads(
         req
       );
 
+
       console.error(
-        "Save own vehicle documents error:",
+        "Save vehicle documents error:",
         error
       );
+
 
       return res
         .status(500)
         .json({
+
           success: false,
 
           message:
             error.message ||
             "Unable to save vehicle documents.",
+
         });
+
     }
+
   };
 
+
 /* ==========================================
-   DELETE own vehicle
+   DELETE OWN VEHICLE
 ========================================== */
 
 const deleteOwnVehicle =
@@ -1558,251 +2561,399 @@ const deleteOwnVehicle =
     req,
     res
   ) => {
+
     try {
+
       const vehicleId =
         Number(
           req.params.id
         );
+
 
       if (
         !isValidVehicleId(
           vehicleId
         )
       ) {
+
         return res
           .status(400)
           .json({
+
             success: false,
+
             message:
               "Invalid vehicle ID.",
+
           });
+
       }
 
-      const vehicle =
-        await OwnVehicle.findOne({
-          id: vehicleId,
-        });
 
-      if (!vehicle) {
+      const vehicle =
+        await OwnVehicle
+          .findOne({
+            id:
+              vehicleId,
+          });
+
+
+      if (
+        !vehicle
+      ) {
+
         return res
           .status(404)
           .json({
+
             success: false,
+
             message:
               "Vehicle not found.",
+
           });
+
       }
+
 
       const documents =
         normalizeDocuments(
           vehicle.documents
         );
 
-      await OwnVehicle.deleteOne({
-        _id: vehicle._id,
-      });
 
-      Object.values(
-        documents
-      ).forEach(
-        (documentData) => {
-          if (
+      await OwnVehicle
+        .deleteOne({
+          _id:
+            vehicle._id,
+        });
+
+
+      Object
+        .values(
+          documents
+        )
+        .forEach(
+          (
             documentData
-              ?.filePath
-          ) {
-            deleteUploadedFile(
+          ) => {
+
+            if (
               documentData
-                .filePath
-            );
+                ?.filePath
+            ) {
+
+              deleteUploadedFile(
+                documentData
+                  .filePath
+              );
+
+            }
+
           }
-        }
-      );
+        );
+
 
       return res
         .status(200)
         .json({
+
           success: true,
+
           message:
             "Vehicle deleted successfully.",
+
         });
+
     } catch (error) {
+
       console.error(
         "Delete own vehicle error:",
         error
       );
 
+
       return res
         .status(500)
         .json({
+
           success: false,
+
           message:
             "Unable to delete vehicle.",
+
         });
+
     }
+
   };
 
 
 /* ==========================================
-   Asset helpers
+   ASSET STATUS
 ========================================== */
 
 const allowedAssetStatuses =
   new Set([
+
     "Available",
+
     "Missing",
+
     "Damaged",
+
     "Under Repair",
+
     "Not Required",
+
   ]);
+
+
+/* ==========================================
+   REPLACEMENT HISTORY
+========================================== */
 
 const normalizeReplacementHistory = (
   history = []
 ) => {
-  if (!Array.isArray(history)) {
+
+  if (
+    !Array.isArray(
+      history
+    )
+  ) {
+
     return [];
+
   }
 
+
   return history.map(
-    (entry) => ({
+    (
+      entry,
+      index
+    ) => ({
+
       id:
         entry?.id ??
-        Date.now(),
+        `${Date.now()}-${index}`,
+
 
       date:
         cleanText(
           entry?.date
         ),
 
+
       note:
         cleanText(
           entry?.note
         ),
+
     })
   );
+
 };
+
+
+/* ==========================================
+   NORMALIZE ASSET ITEMS
+========================================== */
 
 const normalizeAssetItems = (
   items = []
 ) => {
-  if (!Array.isArray(items)) {
+
+  if (
+    !Array.isArray(
+      items
+    )
+  ) {
+
     return [];
+
   }
 
+
   return items
-    .map((item, index) => {
-      const status =
-        allowedAssetStatuses.has(
-          item?.status
-        )
-          ? item.status
-          : "Missing";
+    .map(
+      (
+        item,
+        index
+      ) => {
 
-      return {
-        id:
-          cleanText(
-            item?.id
-          ) ||
-          `asset-${index + 1}`,
+        const status =
 
-        itemName:
-          cleanText(
-            item?.itemName
-          ),
+          allowedAssetStatuses
+            .has(
+              item?.status
+            )
 
-        quantity:
-          Math.max(
-            0,
-            Number(
-              item?.quantity
-            ) || 0
-          ),
+            ? item.status
 
-        status,
+            : "Missing";
 
-        remarks:
-          cleanText(
-            item?.remarks
-          ),
 
-        image:
-          typeof item?.image ===
-          "string"
-            ? item.image
-            : "",
+        return {
 
-        replacementHistory:
-          normalizeReplacementHistory(
-            item?.replacementHistory
-          ),
-      };
-    })
+          id:
+            cleanText(
+              item?.id
+            ) ||
+
+            `asset-${index + 1}`,
+
+
+          itemName:
+            cleanText(
+              item?.itemName
+            ),
+
+
+          quantity:
+            Math.max(
+              0,
+
+              Number(
+                item?.quantity
+              ) || 0
+            ),
+
+
+          status,
+
+
+          remarks:
+            cleanText(
+              item?.remarks
+            ),
+
+
+          /*
+            Asset images are Base64
+            strings from frontend.
+          */
+
+          image:
+
+            typeof item?.image ===
+            "string"
+
+              ? item.image
+
+              : "",
+
+
+          replacementHistory:
+            normalizeReplacementHistory(
+              item
+                ?.replacementHistory
+            ),
+
+        };
+
+      }
+    )
     .filter(
       (item) =>
         Boolean(
           item.itemName
         )
     );
+
 };
+
+
+/* ==========================================
+   DEFAULT ASSETS
+========================================== */
 
 const createDefaultAssets =
   () => ({
+
     inspectionDate: "",
+
     inspectedBy: "",
+
     tools: [],
+
     safety: [],
+
     lashing: [],
+
     cooking: [],
+
     updatedAt: "",
+
   });
+
+
+/* ==========================================
+   NORMALIZE ASSETS
+========================================== */
 
 const normalizeAssets = (
   assets = {}
 ) => {
+
   const source =
     toPlainObject(
       assets
     );
 
+
   return {
+
     inspectionDate:
       cleanText(
-        source.inspectionDate
+        source
+          .inspectionDate
       ),
+
 
     inspectedBy:
       cleanText(
-        source.inspectedBy
+        source
+          .inspectedBy
       ),
+
 
     tools:
       normalizeAssetItems(
         source.tools
       ),
 
+
     safety:
       normalizeAssetItems(
         source.safety
       ),
+
 
     lashing:
       normalizeAssetItems(
         source.lashing
       ),
 
+
     cooking:
       normalizeAssetItems(
         source.cooking
       ),
 
+
     updatedAt:
       cleanText(
         source.updatedAt
       ),
+
   };
+
 };
 
+
 /* ==========================================
-   GET own vehicle assets
+   GET VEHICLE ASSETS
 
    GET /api/ownvehicles/:id/assets
 ========================================== */
@@ -1812,84 +2963,124 @@ const getOwnVehicleAssets =
     req,
     res
   ) => {
+
     try {
+
       const vehicleId =
         Number(
           req.params.id
         );
+
 
       if (
         !isValidVehicleId(
           vehicleId
         )
       ) {
+
         return res
           .status(400)
           .json({
+
             success: false,
+
             message:
               "Invalid vehicle ID.",
+
           });
+
       }
 
+
       const vehicle =
-        await OwnVehicle.findOne({
-          id: vehicleId,
-        })
+        await OwnVehicle
+          .findOne({
+            id:
+              vehicleId,
+          })
           .select({
+
             id: 1,
+
             vehicleNo: 1,
+
             assets: 1,
+
           })
           .lean();
 
-      if (!vehicle) {
+
+      if (
+        !vehicle
+      ) {
+
         return res
           .status(404)
           .json({
+
             success: false,
+
             message:
               "Vehicle not found.",
+
           });
+
       }
+
 
       return res
         .status(200)
         .json({
+
           success: true,
+
 
           vehicleId:
             vehicle.id,
 
+
           vehicleNumber:
             vehicle.vehicleNo,
 
+
           assets:
             normalizeAssets(
+
               vehicle.assets ||
-                createDefaultAssets()
+
+              createDefaultAssets()
+
             ),
+
         });
+
     } catch (error) {
+
       console.error(
-        "Get own vehicle assets error:",
+        "Get vehicle assets error:",
         error
       );
+
 
       return res
         .status(500)
         .json({
+
           success: false,
 
           message:
             error.message ||
             "Unable to fetch vehicle assets.",
+
         });
+
     }
+
   };
 
+
 /* ==========================================
-   SAVE own vehicle assets
+   SAVE VEHICLE ASSETS
 
    PUT /api/ownvehicles/:id/assets
 ========================================== */
@@ -1899,109 +3090,168 @@ const saveOwnVehicleAssets =
     req,
     res
   ) => {
+
     try {
+
       const vehicleId =
         Number(
           req.params.id
         );
+
 
       if (
         !isValidVehicleId(
           vehicleId
         )
       ) {
+
         return res
           .status(400)
           .json({
+
             success: false,
+
             message:
               "Invalid vehicle ID.",
+
           });
+
       }
 
-      const vehicle =
-        await OwnVehicle.findOne({
-          id: vehicleId,
-        });
 
-      if (!vehicle) {
+      const vehicle =
+        await OwnVehicle
+          .findOne({
+            id:
+              vehicleId,
+          });
+
+
+      if (
+        !vehicle
+      ) {
+
         return res
           .status(404)
           .json({
+
             success: false,
+
             message:
               "Vehicle not found.",
+
           });
+
       }
+
 
       const normalizedAssets =
         normalizeAssets({
+
           ...req.body,
+
 
           updatedAt:
             new Date()
               .toISOString(),
+
         });
+
 
       vehicle.assets =
         normalizedAssets;
 
+
       /*
-        Ensures nested arrays, images and
-        history changes are detected.
+        Important because assets contain
+        nested arrays, Base64 images and
+        replacement history.
       */
+
       vehicle.markModified(
         "assets"
       );
 
+
       const updatedVehicle =
         await vehicle.save();
+
 
       return res
         .status(200)
         .json({
+
           success: true,
+
 
           message:
             "Vehicle assets saved successfully.",
 
+
           vehicleId:
             updatedVehicle.id,
 
+
           vehicleNumber:
-            updatedVehicle.vehicleNo,
+            updatedVehicle
+              .vehicleNo,
+
 
           assets:
             normalizeAssets(
-              updatedVehicle.assets
+              updatedVehicle
+                .assets
             ),
+
         });
+
     } catch (error) {
+
       console.error(
-        "Save own vehicle assets error:",
+        "Save vehicle assets error:",
         error
       );
+
 
       return res
         .status(500)
         .json({
+
           success: false,
 
           message:
             error.message ||
             "Unable to save vehicle assets.",
+
         });
+
     }
+
   };
 
 
-  module.exports = {
+/* ==========================================
+   EXPORTS
+========================================== */
+
+module.exports = {
+
   getOwnVehicles,
+
   getOwnVehicleById,
+
   addOwnVehicle,
+
   updateOwnVehicle,
+
   saveVehicleDocuments,
+
   getOwnVehicleAssets,
+
   saveOwnVehicleAssets,
+
   deleteOwnVehicle,
+
+  downloadVehicleDocument,
+
 };
