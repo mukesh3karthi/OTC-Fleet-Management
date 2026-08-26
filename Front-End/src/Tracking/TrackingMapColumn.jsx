@@ -148,12 +148,22 @@ const getStopName = (
 
 const getVehicleIdentifier = (
   vehicle
-) =>
-  vehicle?._id ||
-  vehicle?.id ||
-  vehicle?.vehicleSubId ||
-  vehicle?.vehicleNumber ||
-  "";
+) => {
+
+  if (!vehicle) {
+    return "";
+  }
+
+  return (
+    vehicle.id ||
+    vehicle.vehicleSubId ||
+    vehicle.vehicleNumber ||
+    vehicle._id?.$oid ||
+    vehicle._id ||
+    ""
+  );
+
+};
 
 
 /* =========================================
@@ -261,153 +271,153 @@ const TrackingMapColumn = ({
      ACTIVE VEHICLE
   ========================================= */
 
-const activeVehicle = useMemo(() => {
-  if (!vehicles.length) {
-    return null;
-  }
+  const activeVehicle = useMemo(() => {
+    if (!vehicles.length) {
+      return null;
+    }
 
-  if (!selectedVehicle) {
-    return vehicles[0];
-  }
+    if (!selectedVehicle) {
+      return vehicles[0];
+    }
 
-  /*
-    Always try to get the newest vehicle
-    object from trip.vehicles.
+    /*
+      Always try to get the newest vehicle
+      object from trip.vehicles.
+  
+      This keeps the selected vehicle synced with
+      the latest vehicle object in the trip.
+    */
 
-    This keeps the selected vehicle synced with
-    the latest vehicle object in the trip.
-  */
-
-  const selectedId =
-    typeof selectedVehicle === "object"
-      ? String(
+    const selectedId =
+      typeof selectedVehicle === "object"
+        ? String(
           getVehicleIdentifier(
             selectedVehicle
           )
         )
-      : String(selectedVehicle);
+        : String(selectedVehicle);
 
-  const matchedVehicle =
-    vehicles.find(
-      (vehicle) =>
-        String(
-          getVehicleIdentifier(
-            vehicle
-          )
-        ) === selectedId
+    const matchedVehicle =
+      vehicles.find(
+        (vehicle) =>
+          String(
+            getVehicleIdentifier(
+              vehicle
+            )
+          ) === selectedId
+      );
+
+    return (
+      matchedVehicle ||
+      (
+        typeof selectedVehicle === "object"
+          ? selectedVehicle
+          : vehicles[0]
+      )
     );
-
-  return (
-    matchedVehicle ||
-    (
-      typeof selectedVehicle === "object"
-        ? selectedVehicle
-        : vehicles[0]
-    )
-  );
-}, [
-  selectedVehicle,
-  vehicles,
-]);
+  }, [
+    selectedVehicle,
+    vehicles,
+  ]);
 
   /* =========================================
    ROUTE STOPS
 ========================================= */
 
-const routeStops = useMemo(() => {
-  if (!trip) {
-    return [];
-  }
+  const routeStops = useMemo(() => {
+    if (!trip) {
+      return [];
+    }
 
-  const origin =
-    String(
-      trip.origin || ""
-    ).trim();
+    const origin =
+      String(
+        trip.origin || ""
+      ).trim();
 
-  const destination =
-    String(
-      trip.destination || ""
-    ).trim();
+    const destination =
+      String(
+        trip.destination || ""
+      ).trim();
 
-  const rawTripLocations =
-    trip.routeLocations ||
-    trip.routeStops ||
-    trip.checkpoints ||
-    trip.waypoints ||
-    trip.routePoints ||
-    trip.stops ||
-    [];
+    const rawTripLocations =
+      trip.routeLocations ||
+      trip.routeStops ||
+      trip.checkpoints ||
+      trip.waypoints ||
+      trip.routePoints ||
+      trip.stops ||
+      [];
 
-  let intermediateLocations = [];
+    let intermediateLocations = [];
 
-  if (
-    Array.isArray(
-      rawTripLocations
-    )
-  ) {
+    if (
+      Array.isArray(
+        rawTripLocations
+      )
+    ) {
+      intermediateLocations =
+        rawTripLocations
+          .map((location) =>
+            String(
+              getStopName(location) || ""
+            ).trim()
+          )
+          .filter(Boolean);
+    }
+
     intermediateLocations =
-      rawTripLocations
-        .map((location) =>
-          String(
-            getStopName(location) || ""
-          ).trim()
-        )
-        .filter(Boolean);
-  }
+      uniqueStrings(
+        intermediateLocations
+      );
 
-  intermediateLocations =
-    uniqueStrings(
-      intermediateLocations
-    );
+    intermediateLocations =
+      intermediateLocations.filter(
+        (location) => {
+          const normalized =
+            normalizeText(location);
 
-  intermediateLocations =
-    intermediateLocations.filter(
-      (location) => {
-        const normalized =
-          normalizeText(location);
-
-        return (
-          normalized !==
+          return (
+            normalized !==
             normalizeText(origin) &&
-          normalized !==
+            normalized !==
             normalizeText(destination)
-        );
-      }
-    );
+          );
+        }
+      );
 
-  const stops = [];
+    const stops = [];
 
-  if (origin) {
-    stops.push(origin);
-  }
+    if (origin) {
+      stops.push(origin);
+    }
 
-  stops.push(
-    ...intermediateLocations
-  );
-
-  if (destination) {
-    stops.push(destination);
-  }
-
-  if (stops.length === 0) {
-    return [
-      "Origin",
-      "Destination",
-    ];
-  }
-
-  if (stops.length === 1) {
     stops.push(
-      destination ||
-      "Destination"
+      ...intermediateLocations
     );
-  }
 
-  return stops;
+    if (destination) {
+      stops.push(destination);
+    }
 
-}, [
-  trip,
-]);
+    if (stops.length === 0) {
+      return [
+        "Origin",
+        "Destination",
+      ];
+    }
+
+    if (stops.length === 1) {
+      stops.push(
+        destination ||
+        "Destination"
+      );
+    }
+
+    return stops;
+
+  }, [
+    trip,
+  ]);
 
 
   /* =========================================
@@ -471,7 +481,7 @@ const routeStops = useMemo(() => {
               currentIndex /
               Math.max(
                 routeStops.length -
-                  1,
+                1,
                 1
               )
             );
@@ -511,7 +521,7 @@ const routeStops = useMemo(() => {
           return Math.min(
             Math.max(
               runningKm /
-                totalKm,
+              totalKm,
               0
             ),
             1
@@ -551,7 +561,7 @@ const routeStops = useMemo(() => {
           return Math.min(
             Math.max(
               currentDay /
-                transitDays,
+              transitDays,
               0
             ),
             1
@@ -608,16 +618,16 @@ const routeStops = useMemo(() => {
                 1
                 ? 0
                 : index /
-                  (
-                    routeStops.length -
-                    1
-                  );
+                (
+                  routeStops.length -
+                  1
+                );
 
 
             const point =
               path.getPointAtLength(
                 length *
-                  percentage
+                percentage
               );
 
 
@@ -659,7 +669,7 @@ const routeStops = useMemo(() => {
       const currentPoint =
         path.getPointAtLength(
           length *
-            safeProgress
+          safeProgress
         );
 
 
@@ -745,7 +755,7 @@ const routeStops = useMemo(() => {
   const completedLength =
     Math.max(
       totalPathLength *
-        vehicleProgress,
+      vehicleProgress,
       0
     );
 
@@ -753,7 +763,7 @@ const routeStops = useMemo(() => {
   const remainingLength =
     Math.max(
       totalPathLength -
-        completedLength,
+      completedLength,
       0
     );
 
@@ -881,7 +891,7 @@ const routeStops = useMemo(() => {
               const isDestination =
                 index ===
                 stopPoints.length -
-                  1;
+                1;
 
 
               /*
@@ -895,11 +905,10 @@ const routeStops = useMemo(() => {
               return (
                 <g
                   key={`${stop.name}-${index}`}
-                  className={`journey-stop ${
-                    completed
+                  className={`journey-stop ${completed
                       ? "completed"
                       : ""
-                  }`}
+                    }`}
                 >
 
                   {/* OUTER DOT */}
@@ -913,7 +922,7 @@ const routeStops = useMemo(() => {
                     }
                     r={
                       isOrigin ||
-                      isDestination
+                        isDestination
                         ? 7
                         : 5.5
                     }
@@ -932,7 +941,7 @@ const routeStops = useMemo(() => {
                     }
                     r={
                       isOrigin ||
-                      isDestination
+                        isDestination
                         ? 3
                         : 2.5
                     }

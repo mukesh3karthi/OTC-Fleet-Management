@@ -41,7 +41,6 @@ const API_BASE_URL =
     ""
   );
 
-
 const API_URL =
   `${API_BASE_URL}/api/triptracking`;
 
@@ -77,26 +76,16 @@ const normalizeDateValue = (
   }
 
 
-  /*
-    MongoDB Extended JSON
-
-    {
-      "$date":
-      "2026-08-01T09:00:00.000Z"
-    }
-  */
+  /* MongoDB Extended JSON */
 
   if (
-    typeof value ===
-      "object" &&
-    !Array.isArray(
-      value
-    )
+    typeof value === "object" &&
+    !Array.isArray(value) &&
+    !(value instanceof Date)
   ) {
 
     if (
-      value.$date !==
-      undefined
+      value.$date !== undefined
     ) {
 
       return normalizeDateValue(
@@ -105,16 +94,6 @@ const normalizeDateValue = (
 
     }
 
-
-    /*
-      Sometimes dates can contain:
-
-      {
-        "$date": {
-          "$numberLong": "..."
-        }
-      }
-    */
 
     if (
       value.$numberLong !==
@@ -126,16 +105,23 @@ const normalizeDateValue = (
           value.$numberLong
         );
 
-
       if (
         Number.isFinite(
           timestamp
         )
       ) {
 
-        return new Date(
-          timestamp
-        ).toISOString();
+        try {
+
+          return new Date(
+            timestamp
+          ).toISOString();
+
+        } catch {
+
+          return null;
+
+        }
 
       }
 
@@ -146,6 +132,8 @@ const normalizeDateValue = (
 
   }
 
+
+  /* JavaScript Date */
 
   if (
     value instanceof Date
@@ -159,23 +147,21 @@ const normalizeDateValue = (
       return null;
     }
 
-
-    return value
-      .toISOString();
+    return value.toISOString();
 
   }
 
 
+  /* Timestamp */
+
   if (
-    typeof value ===
-    "number"
+    typeof value === "number"
   ) {
 
     const date =
       new Date(
         value
       );
-
 
     return Number.isNaN(
       date.getTime()
@@ -186,26 +172,193 @@ const normalizeDateValue = (
   }
 
 
+  /* String */
+
   if (
-    typeof value ===
-    "string"
+    typeof value === "string"
   ) {
 
     const text =
       value.trim();
 
-
-    if (!text) {
-      return null;
-    }
-
-
-    return text;
+    return text || null;
 
   }
 
 
   return null;
+
+};
+
+
+/* =========================================
+   CLEAN ALL MONGODB VALUES
+========================================= */
+
+const cleanMongoValue = (
+  value
+) => {
+
+  if (
+    value === null ||
+    value === undefined
+  ) {
+    return value;
+  }
+
+
+  /* ARRAY */
+
+  if (
+    Array.isArray(value)
+  ) {
+
+    return value.map(
+      (item) =>
+        cleanMongoValue(item)
+    );
+
+  }
+
+
+  /* JAVASCRIPT DATE */
+
+  if (
+    value instanceof Date
+  ) {
+
+    return Number.isNaN(
+      value.getTime()
+    )
+      ? null
+      : value.toISOString();
+
+  }
+
+
+  /* OBJECT */
+
+  if (
+    typeof value === "object"
+  ) {
+
+    /* MongoDB ObjectId */
+
+    if (
+      value.$oid !== undefined
+    ) {
+
+      return String(
+        value.$oid
+      );
+
+    }
+
+
+    /* MongoDB Date */
+
+    if (
+      value.$date !== undefined
+    ) {
+
+      return cleanMongoValue(
+        value.$date
+      );
+
+    }
+
+
+    /* MongoDB NumberLong */
+
+    if (
+      value.$numberLong !==
+      undefined
+    ) {
+
+      const numericValue =
+        Number(
+          value.$numberLong
+        );
+
+      return Number.isFinite(
+        numericValue
+      )
+        ? numericValue
+        : String(
+            value.$numberLong
+          );
+
+    }
+
+
+    /* MongoDB NumberInt */
+
+    if (
+      value.$numberInt !==
+      undefined
+    ) {
+
+      const numericValue =
+        Number(
+          value.$numberInt
+        );
+
+      return Number.isFinite(
+        numericValue
+      )
+        ? numericValue
+        : 0;
+
+    }
+
+
+    /* MongoDB NumberDouble */
+
+    if (
+      value.$numberDouble !==
+      undefined
+    ) {
+
+      const numericValue =
+        Number(
+          value.$numberDouble
+        );
+
+      return Number.isFinite(
+        numericValue
+      )
+        ? numericValue
+        : 0;
+
+    }
+
+
+    /* NORMAL OBJECT */
+
+    const cleanedObject = {};
+
+    Object.entries(
+      value
+    ).forEach(
+      ([
+        key,
+        itemValue,
+      ]) => {
+
+        cleanedObject[key] =
+          cleanMongoValue(
+            itemValue
+          );
+
+      }
+    );
+
+    return cleanedObject;
+
+  }
+
+
+  return value;
 
 };
 
@@ -228,21 +381,47 @@ const normalizeTextValue = (
 
 
   if (
-    typeof value ===
-      "object" &&
-    !Array.isArray(
-      value
+    value instanceof Date
+  ) {
+
+    return Number.isNaN(
+      value.getTime()
     )
+      ? fallback
+      : value.toISOString();
+
+  }
+
+
+  if (
+    Array.isArray(value)
+  ) {
+
+    return value
+      .map(
+        (item) =>
+          normalizeTextValue(
+            item,
+            ""
+          )
+      )
+      .filter(Boolean)
+      .join(", ");
+
+  }
+
+
+  if (
+    typeof value === "object"
   ) {
 
     if (
-      value.$date !==
-      undefined
+      value.$date !== undefined
     ) {
 
       return (
         normalizeDateValue(
-          value
+          value.$date
         ) ||
         fallback
       );
@@ -251,12 +430,23 @@ const normalizeTextValue = (
 
 
     if (
-      value.$oid !==
-      undefined
+      value.$oid !== undefined
     ) {
 
       return String(
         value.$oid
+      );
+
+    }
+
+
+    if (
+      value.$numberLong !==
+      undefined
+    ) {
+
+      return String(
+        value.$numberLong
       );
 
     }
@@ -340,7 +530,7 @@ const normalizeNullableNumber = (
 
 
 /* =========================================
-   NORMALIZE OBJECT ID
+   NORMALIZE ID
 ========================================= */
 
 const normalizeId = (
@@ -357,42 +547,17 @@ const normalizeId = (
 
 
   if (
-    typeof value ===
-      "object" &&
-    !Array.isArray(
-      value
-    )
+    typeof value === "object" &&
+    !Array.isArray(value)
   ) {
 
     if (
-      value.$oid
+      value.$oid !== undefined
     ) {
 
       return String(
         value.$oid
       );
-
-    }
-
-
-    if (
-      value.toString &&
-      typeof value.toString ===
-        "function"
-    ) {
-
-      const result =
-        value.toString();
-
-
-      if (
-        result !==
-        "[object Object]"
-      ) {
-
-        return result;
-
-      }
 
     }
 
@@ -420,13 +585,16 @@ const normalizeVehicle = (
 
   const vehicleId =
     normalizeId(
-      vehicle._id
+      vehicle.id
     ) ||
     normalizeId(
-      vehicle.id
+      vehicle._id
     ) ||
     normalizeTextValue(
       vehicle.vehicleSubId
+    ) ||
+    normalizeTextValue(
+      vehicle.vehicleNumber
     ) ||
     `vehicle-${index}`;
 
@@ -435,20 +603,20 @@ const normalizeVehicle = (
 
     ...vehicle,
 
-
-    /* =====================================
-       ID
-    ===================================== */
+    /* ID */
 
     id:
       vehicleId,
 
+    _id:
+      normalizeId(
+        vehicle._id
+      ),
 
     vehicleSubId:
       normalizeTextValue(
         vehicle.vehicleSubId
       ),
-
 
     vehicleNumber:
       normalizeTextValue(
@@ -456,9 +624,7 @@ const normalizeVehicle = (
       ),
 
 
-    /* =====================================
-       POSITION
-    ===================================== */
+    /* POSITION */
 
     currentLocation:
       normalizeTextValue(
@@ -466,13 +632,11 @@ const normalizeVehicle = (
         vehicle.currentPosition
       ),
 
-
     currentPosition:
       normalizeTextValue(
         vehicle.currentPosition ||
         vehicle.currentLocation
       ),
-
 
     yesterdayPosition:
       normalizeTextValue(
@@ -480,15 +644,12 @@ const normalizeVehicle = (
       ),
 
 
-    /* =====================================
-       MOVEMENT
-    ===================================== */
+    /* MOVEMENT */
 
     runningKm:
       normalizeNumber(
         vehicle.runningKm
       ),
-
 
     status:
       normalizeTextValue(
@@ -497,12 +658,10 @@ const normalizeVehicle = (
       ) ||
       "Moving",
 
-
     currentDay:
       normalizeNullableNumber(
         vehicle.currentDay
       ),
-
 
     speed:
       normalizeNumber(
@@ -510,21 +669,17 @@ const normalizeVehicle = (
       ),
 
 
-    /* =====================================
-       MAP
-    ===================================== */
+    /* MAP */
 
     latitude:
       normalizeNullableNumber(
         vehicle.latitude
       ),
 
-
     longitude:
       normalizeNullableNumber(
         vehicle.longitude
       ),
-
 
     lastUpdated:
       normalizeDateValue(
@@ -532,9 +687,7 @@ const normalizeVehicle = (
       ),
 
 
-    /* =====================================
-       LOADING
-    ===================================== */
+    /* LOADING */
 
     loadingStatus:
       normalizeTextValue(
@@ -543,30 +696,25 @@ const normalizeVehicle = (
       ) ||
       "Pending",
 
-
     loadingPointInDate:
       normalizeDateValue(
         vehicle.loadingPointInDate
       ),
-
 
     loadingDate:
       normalizeDateValue(
         vehicle.loadingDate
       ),
 
-
     loadingPointOutDate:
       normalizeDateValue(
         vehicle.loadingPointOutDate
       ),
 
-
     loadingHaltingDays:
       normalizeNumber(
         vehicle.loadingHaltingDays
       ),
-
 
     loadingRemarks:
       normalizeTextValue(
@@ -574,9 +722,7 @@ const normalizeVehicle = (
       ),
 
 
-    /* =====================================
-       UNLOADING
-    ===================================== */
+    /* UNLOADING */
 
     unloadingStatus:
       normalizeTextValue(
@@ -585,30 +731,25 @@ const normalizeVehicle = (
       ) ||
       "Pending",
 
-
     unloadingPointInDate:
       normalizeDateValue(
         vehicle.unloadingPointInDate
       ),
-
 
     unloadingDate:
       normalizeDateValue(
         vehicle.unloadingDate
       ),
 
-
     unloadingPointOutDate:
       normalizeDateValue(
         vehicle.unloadingPointOutDate
       ),
 
-
     unloadingHaltingDays:
       normalizeNumber(
         vehicle.unloadingHaltingDays
       ),
-
 
     unloadingRemarks:
       normalizeTextValue(
@@ -616,27 +757,22 @@ const normalizeVehicle = (
       ),
 
 
-    /* =====================================
-       LR
-    ===================================== */
+    /* LR */
 
     lrNo:
       normalizeTextValue(
         vehicle.lrNo
       ),
 
-
     lrStatus:
       normalizeTextValue(
         vehicle.lrStatus
       ),
 
-
     lrRemarks:
       normalizeTextValue(
         vehicle.lrRemarks
       ),
-
 
     lrSignature:
       normalizeTextValue(
@@ -644,9 +780,7 @@ const normalizeVehicle = (
       ),
 
 
-    /* =====================================
-       POD
-    ===================================== */
+    /* POD */
 
     podStatus:
       normalizeTextValue(
@@ -655,24 +789,20 @@ const normalizeVehicle = (
       ) ||
       "Pending",
 
-
     courierName:
       normalizeTextValue(
         vehicle.courierName
       ),
-
 
     trackingId:
       normalizeTextValue(
         vehicle.trackingId
       ),
 
-
     podCourierDate:
       normalizeDateValue(
         vehicle.podCourierDate
       ),
-
 
     podRemarks:
       normalizeTextValue(
@@ -680,15 +810,12 @@ const normalizeVehicle = (
       ),
 
 
-    /* =====================================
-       DRIVER
-    ===================================== */
+    /* DRIVER */
 
     driverName:
       normalizeTextValue(
         vehicle.driverName
       ),
-
 
     driverNumber:
       normalizeTextValue(
@@ -726,10 +853,6 @@ const normalizeTrip = (
       : [];
 
 
-  /* =====================================
-     TRIP ID
-  ===================================== */
-
   const tripId =
     normalizeTextValue(
       trip.tripId
@@ -738,18 +861,14 @@ const normalizeTrip = (
 
   const id =
     normalizeId(
-      trip._id
+      trip.id
     ) ||
     normalizeId(
-      trip.id
+      trip._id
     ) ||
     tripId ||
     `trip-${index}`;
 
-
-  /* =====================================
-     DATES
-  ===================================== */
 
   const createdAt =
     normalizeDateValue(
@@ -786,26 +905,18 @@ const normalizeTrip = (
       : "";
 
 
-  /* =====================================
-     ROUTE LOCATIONS
-  ===================================== */
-
   const routeLocations =
     Array.isArray(
       trip.routeLocations
     )
       ? trip.routeLocations
           .map(
-            (
-              location
-            ) =>
+            (location) =>
               normalizeTextValue(
                 location
               )
           )
-          .filter(
-            Boolean
-          )
+          .filter(Boolean)
       : [];
 
 
@@ -813,27 +924,29 @@ const normalizeTrip = (
 
     ...trip,
 
+    /* ID */
 
     id,
+
+    _id:
+      normalizeId(
+        trip._id
+      ),
 
     tripId,
 
 
-    /* =====================================
-       CLIENT
-    ===================================== */
+    /* CLIENT */
 
     customer:
       normalizeTextValue(
         trip.customer
       ),
 
-
     clientContactPerson:
       normalizeTextValue(
         trip.clientContactPerson
       ),
-
 
     clientPhone:
       normalizeTextValue(
@@ -841,9 +954,7 @@ const normalizeTrip = (
       ),
 
 
-    /* =====================================
-       MATERIAL
-    ===================================== */
+    /* MATERIAL */
 
     materialType:
       normalizeTextValue(
@@ -851,21 +962,17 @@ const normalizeTrip = (
       ),
 
 
-    /* =====================================
-       TRANSPORTER
-    ===================================== */
+    /* TRANSPORTER */
 
     lsp:
       normalizeTextValue(
         trip.lsp
       ),
 
-
     transporterContactPerson:
       normalizeTextValue(
         trip.transporterContactPerson
       ),
-
 
     transporterPhone:
       normalizeTextValue(
@@ -873,40 +980,32 @@ const normalizeTrip = (
       ),
 
 
-    /* =====================================
-       ROUTE
-    ===================================== */
+    /* ROUTE */
 
     origin:
       normalizeTextValue(
         trip.origin
       ),
 
-
     destination:
       normalizeTextValue(
         trip.destination
       ),
 
-
     routeLocations,
 
 
-    /* =====================================
-       ESCORT
-    ===================================== */
+    /* ESCORT */
 
     escortVehicleNumber:
       normalizeTextValue(
         trip.escortVehicleNumber
       ),
 
-
     escortName:
       normalizeTextValue(
         trip.escortName
       ),
-
 
     escortContactNumber:
       normalizeTextValue(
@@ -914,15 +1013,12 @@ const normalizeTrip = (
       ),
 
 
-    /* =====================================
-       SUPERVISOR
-    ===================================== */
+    /* SUPERVISOR */
 
     supervisorName:
       normalizeTextValue(
         trip.supervisorName
       ),
-
 
     supervisorContact:
       normalizeTextValue(
@@ -930,21 +1026,17 @@ const normalizeTrip = (
       ),
 
 
-    /* =====================================
-       TRIP VALUES
-    ===================================== */
+    /* TRIP VALUES */
 
     estimatedTransitDays:
       normalizeNumber(
         trip.estimatedTransitDays
       ),
 
-
     totalKm:
       normalizeNumber(
         trip.totalKm
       ),
-
 
     tripStatus:
       normalizeTextValue(
@@ -954,16 +1046,12 @@ const normalizeTrip = (
       "Active",
 
 
-    /* =====================================
-       VEHICLES
-    ===================================== */
+    /* VEHICLES */
 
     vehicles,
 
 
-    /* =====================================
-       NORMALIZED DATES
-    ===================================== */
+    /* DATES */
 
     createdAt,
 
@@ -1054,7 +1142,6 @@ const Tracking = () => {
             true
           );
 
-
           setApiError(
             ""
           );
@@ -1124,7 +1211,7 @@ const Tracking = () => {
 
           } else if (
             Array.isArray(
-              result.data
+              result?.data
             )
           ) {
 
@@ -1133,7 +1220,7 @@ const Tracking = () => {
 
           } else if (
             Array.isArray(
-              result.trips
+              result?.trips
             )
           ) {
 
@@ -1143,16 +1230,30 @@ const Tracking = () => {
           }
 
 
+          /* =================================
+             IMPORTANT FIX:
+             CLEAN MONGODB OBJECTS FIRST
+          ================================= */
+
           const normalizedTrips =
             databaseTrips.map(
               (
                 trip,
                 index
-              ) =>
-                normalizeTrip(
-                  trip,
+              ) => {
+
+                const cleanedTrip =
+                  cleanMongoValue(
+                    trip
+                  );
+
+
+                return normalizeTrip(
+                  cleanedTrip,
                   index
-                )
+                );
+
+              }
             );
 
 
@@ -1167,9 +1268,7 @@ const Tracking = () => {
           );
 
 
-          /* =================================
-             KEEP SELECTED TRIP IF POSSIBLE
-          ================================= */
+          /* KEEP SELECTED TRIP */
 
           setSelectedTripId(
             (
@@ -1225,11 +1324,9 @@ const Tracking = () => {
             []
           );
 
-
           setSelectedTripId(
             null
           );
-
 
           setSelectedVehicleId(
             null
@@ -1237,7 +1334,7 @@ const Tracking = () => {
 
 
           setApiError(
-            error.message ||
+            error?.message ||
             "Unable to load trips."
           );
 
@@ -1271,7 +1368,7 @@ const Tracking = () => {
 
 
   /* =====================================
-     REFRESH ON WINDOW FOCUS
+     REFRESH WHEN WINDOW GETS FOCUS
   ===================================== */
 
   useEffect(
@@ -1428,9 +1525,7 @@ const Tracking = () => {
                 : [];
 
 
-            /* =============================
-               SEARCH
-            ============================= */
+            /* SEARCH */
 
             const searchFields = [
 
@@ -1503,9 +1598,7 @@ const Tracking = () => {
               );
 
 
-            /* =============================
-               DATE
-            ============================= */
+            /* DATE */
 
             const matchesDate =
               !selectedDate ||
@@ -1513,9 +1606,7 @@ const Tracking = () => {
               selectedDate;
 
 
-            /* =============================
-               STATUS
-            ============================= */
+            /* STATUS */
 
             const matchesStatus =
               movementFilter ===
@@ -1589,7 +1680,6 @@ const Tracking = () => {
           null
         );
 
-
         return;
 
       }
@@ -1643,7 +1733,6 @@ const Tracking = () => {
         setSelectedVehicleId(
           null
         );
-
 
         return;
 
@@ -1806,13 +1895,23 @@ const Tracking = () => {
     trip
   ) => {
 
+    if (
+      !trip
+    ) {
+      return;
+    }
+
+
     setSelectedTripId(
       trip.id
     );
 
 
     if (
-      trip.vehicles?.length
+      Array.isArray(
+        trip.vehicles
+      ) &&
+      trip.vehicles.length
     ) {
 
       setSelectedVehicleId(
@@ -1842,11 +1941,9 @@ const Tracking = () => {
         ""
       );
 
-
       setMovementFilter(
         "All"
       );
-
 
       setSelectedDate(
         ""
@@ -1907,9 +2004,7 @@ const Tracking = () => {
       >
 
 
-        {/* ===============================
-            SEARCH
-        =============================== */}
+        {/* SEARCH */}
 
         <div
           className="tracking-search"
@@ -1963,9 +2058,7 @@ const Tracking = () => {
         </div>
 
 
-        {/* ===============================
-            STATUS FILTER
-        =============================== */}
+        {/* STATUS FILTER */}
 
         <div
           className="tracking-status-filter"
@@ -2009,9 +2102,7 @@ const Tracking = () => {
 
 
                   <span>
-
                     {status}
-
                   </span>
 
 
@@ -2037,9 +2128,7 @@ const Tracking = () => {
         </div>
 
 
-        {/* ===============================
-            DATE FILTER
-        =============================== */}
+        {/* DATE FILTER */}
 
         <label
           className="tracking-date"
@@ -2119,10 +2208,6 @@ const Tracking = () => {
       ) : filteredTrips.length ===
         0 ? (
 
-        /* ===============================
-           EMPTY
-        =============================== */
-
         <div
           className="tracking-no-results"
         >
@@ -2197,18 +2282,12 @@ const Tracking = () => {
 
       ) : (
 
-        /* ===============================
-           TRACKING LAYOUT
-        =============================== */
-
         <section
           className="tracking-layout"
         >
 
 
-          {/* =============================
-              TRIP LIST
-          ============================= */}
+          {/* TRIP LIST */}
 
           <TripListColumn
             trips={
@@ -2223,9 +2302,7 @@ const Tracking = () => {
           />
 
 
-          {/* =============================
-              VEHICLES
-          ============================= */}
+          {/* VEHICLE DETAILS */}
 
           <VehicleColumn
             trip={
@@ -2246,9 +2323,7 @@ const Tracking = () => {
           />
 
 
-          {/* =============================
-              MAP
-          ============================= */}
+          {/* MAP */}
 
           <TrackingMapColumn
             trip={

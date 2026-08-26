@@ -57,15 +57,22 @@ const TripListColumn = ({
             -------------------------- */
 
             const tripKey =
-              trip._id ||
               trip.id ||
-              trip.tripId;
-
+              trip.tripId ||
+              String(
+                trip._id?.$oid ||
+                trip._id ||
+                ""
+              );
 
             const selectedTripKey =
-              selectedTrip?._id ||
               selectedTrip?.id ||
-              selectedTrip?.tripId;
+              selectedTrip?.tripId ||
+              String(
+                selectedTrip?._id?.$oid ||
+                selectedTrip?._id ||
+                ""
+              );
 
 
             const active =
@@ -87,9 +94,8 @@ const TripListColumn = ({
               <button
                 type="button"
                 key={tripKey}
-                className={`tracking-trip-card ${
-                  active ? "active" : ""
-                }`}
+                className={`tracking-trip-card ${active ? "active" : ""
+                  }`}
                 onClick={() =>
                   onSelectTrip?.(trip)
                 }
@@ -125,11 +131,10 @@ const TripListColumn = ({
 
                   <div
                     className="trip-card-vehicle-count"
-                    title={`${vehicleCount} ${
-                      vehicleCount === 1
+                    title={`${vehicleCount} ${vehicleCount === 1
                         ? "vehicle"
                         : "vehicles"
-                    }`}
+                      }`}
                   >
 
                     <Truck size={11} />
