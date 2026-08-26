@@ -16,9 +16,14 @@ import {
   X,
 } from "lucide-react";
 
-import TripListColumn from "../Tracking/TripListColumn";
-import VehicleColumn from "../Tracking/VehicleColumn";
-import TrackingMapColumn from "../Tracking/TrackingMapColumn";
+import TripListColumn
+  from "../Tracking/TripListColumn";
+
+import VehicleColumn
+  from "../Tracking/VehicleColumn";
+
+import TrackingMapColumn
+  from "../Tracking/TrackingMapColumn";
 
 import "../pagescss/tracking.css";
 
@@ -31,7 +36,11 @@ const API_BASE_URL =
   (
     import.meta.env.VITE_API_URL ||
     "http://localhost:5000"
-  ).replace(/\/+$/, "");
+  ).replace(
+    /\/+$/,
+    ""
+  );
+
 
 const API_URL =
   `${API_BASE_URL}/api/triptracking`;
@@ -45,9 +54,359 @@ const statusOptions = [
   "All",
   "Moving",
   "Idle",
+  "Stopped",
   "Breakdown",
   "Reached",
 ];
+
+
+/* =========================================
+   NORMALIZE MONGODB DATE
+========================================= */
+
+const normalizeDateValue = (
+  value
+) => {
+
+  if (
+    value === null ||
+    value === undefined ||
+    value === ""
+  ) {
+    return null;
+  }
+
+
+  /*
+    MongoDB Extended JSON
+
+    {
+      "$date":
+      "2026-08-01T09:00:00.000Z"
+    }
+  */
+
+  if (
+    typeof value ===
+      "object" &&
+    !Array.isArray(
+      value
+    )
+  ) {
+
+    if (
+      value.$date !==
+      undefined
+    ) {
+
+      return normalizeDateValue(
+        value.$date
+      );
+
+    }
+
+
+    /*
+      Sometimes dates can contain:
+
+      {
+        "$date": {
+          "$numberLong": "..."
+        }
+      }
+    */
+
+    if (
+      value.$numberLong !==
+      undefined
+    ) {
+
+      const timestamp =
+        Number(
+          value.$numberLong
+        );
+
+
+      if (
+        Number.isFinite(
+          timestamp
+        )
+      ) {
+
+        return new Date(
+          timestamp
+        ).toISOString();
+
+      }
+
+    }
+
+
+    return null;
+
+  }
+
+
+  if (
+    value instanceof Date
+  ) {
+
+    if (
+      Number.isNaN(
+        value.getTime()
+      )
+    ) {
+      return null;
+    }
+
+
+    return value
+      .toISOString();
+
+  }
+
+
+  if (
+    typeof value ===
+    "number"
+  ) {
+
+    const date =
+      new Date(
+        value
+      );
+
+
+    return Number.isNaN(
+      date.getTime()
+    )
+      ? null
+      : date.toISOString();
+
+  }
+
+
+  if (
+    typeof value ===
+    "string"
+  ) {
+
+    const text =
+      value.trim();
+
+
+    if (!text) {
+      return null;
+    }
+
+
+    return text;
+
+  }
+
+
+  return null;
+
+};
+
+
+/* =========================================
+   NORMALIZE TEXT
+========================================= */
+
+const normalizeTextValue = (
+  value,
+  fallback = ""
+) => {
+
+  if (
+    value === null ||
+    value === undefined
+  ) {
+    return fallback;
+  }
+
+
+  if (
+    typeof value ===
+      "object" &&
+    !Array.isArray(
+      value
+    )
+  ) {
+
+    if (
+      value.$date !==
+      undefined
+    ) {
+
+      return (
+        normalizeDateValue(
+          value
+        ) ||
+        fallback
+      );
+
+    }
+
+
+    if (
+      value.$oid !==
+      undefined
+    ) {
+
+      return String(
+        value.$oid
+      );
+
+    }
+
+
+    return fallback;
+
+  }
+
+
+  return String(
+    value
+  );
+
+};
+
+
+/* =========================================
+   NORMALIZE NUMBER
+========================================= */
+
+const normalizeNumber = (
+  value,
+  fallback = 0
+) => {
+
+  if (
+    value === null ||
+    value === undefined ||
+    value === ""
+  ) {
+    return fallback;
+  }
+
+
+  const number =
+    Number(
+      value
+    );
+
+
+  return Number.isFinite(
+    number
+  )
+    ? number
+    : fallback;
+
+};
+
+
+/* =========================================
+   NORMALIZE NULLABLE NUMBER
+========================================= */
+
+const normalizeNullableNumber = (
+  value
+) => {
+
+  if (
+    value === null ||
+    value === undefined ||
+    value === ""
+  ) {
+    return null;
+  }
+
+
+  const number =
+    Number(
+      value
+    );
+
+
+  return Number.isFinite(
+    number
+  )
+    ? number
+    : null;
+
+};
+
+
+/* =========================================
+   NORMALIZE OBJECT ID
+========================================= */
+
+const normalizeId = (
+  value,
+  fallback = ""
+) => {
+
+  if (
+    value === null ||
+    value === undefined
+  ) {
+    return fallback;
+  }
+
+
+  if (
+    typeof value ===
+      "object" &&
+    !Array.isArray(
+      value
+    )
+  ) {
+
+    if (
+      value.$oid
+    ) {
+
+      return String(
+        value.$oid
+      );
+
+    }
+
+
+    if (
+      value.toString &&
+      typeof value.toString ===
+        "function"
+    ) {
+
+      const result =
+        value.toString();
+
+
+      if (
+        result !==
+        "[object Object]"
+      ) {
+
+        return result;
+
+      }
+
+    }
+
+
+    return fallback;
+
+  }
+
+
+  return String(
+    value
+  );
+
+};
 
 
 /* =========================================
@@ -55,48 +414,289 @@ const statusOptions = [
 ========================================= */
 
 const normalizeVehicle = (
-  vehicle,
-  index
+  vehicle = {},
+  index = 0
 ) => {
+
+  const vehicleId =
+    normalizeId(
+      vehicle._id
+    ) ||
+    normalizeId(
+      vehicle.id
+    ) ||
+    normalizeTextValue(
+      vehicle.vehicleSubId
+    ) ||
+    `vehicle-${index}`;
+
+
   return {
+
     ...vehicle,
 
+
+    /* =====================================
+       ID
+    ===================================== */
+
     id:
-      vehicle._id ||
-      vehicle.id ||
-      vehicle.vehicleSubId ||
-      `vehicle-${index}`,
+      vehicleId,
+
+
+    vehicleSubId:
+      normalizeTextValue(
+        vehicle.vehicleSubId
+      ),
+
+
+    vehicleNumber:
+      normalizeTextValue(
+        vehicle.vehicleNumber
+      ),
+
+
+    /* =====================================
+       POSITION
+    ===================================== */
 
     currentLocation:
-      vehicle.currentLocation ||
-      vehicle.currentPosition ||
-      "",
+      normalizeTextValue(
+        vehicle.currentLocation ||
+        vehicle.currentPosition
+      ),
+
 
     currentPosition:
-      vehicle.currentPosition ||
-      vehicle.currentLocation ||
-      "",
+      normalizeTextValue(
+        vehicle.currentPosition ||
+        vehicle.currentLocation
+      ),
+
+
+    yesterdayPosition:
+      normalizeTextValue(
+        vehicle.yesterdayPosition
+      ),
+
+
+    /* =====================================
+       MOVEMENT
+    ===================================== */
+
+    runningKm:
+      normalizeNumber(
+        vehicle.runningKm
+      ),
+
 
     status:
-      vehicle.status ||
+      normalizeTextValue(
+        vehicle.status,
+        "Moving"
+      ) ||
       "Moving",
 
-    speed:
-      vehicle.speed ??
-      0,
 
-    lastUpdated:
-      vehicle.lastUpdated ||
-      "-",
+    currentDay:
+      normalizeNullableNumber(
+        vehicle.currentDay
+      ),
+
+
+    speed:
+      normalizeNumber(
+        vehicle.speed
+      ),
+
+
+    /* =====================================
+       MAP
+    ===================================== */
 
     latitude:
-      vehicle.latitude ??
-      null,
+      normalizeNullableNumber(
+        vehicle.latitude
+      ),
+
 
     longitude:
-      vehicle.longitude ??
-      null,
+      normalizeNullableNumber(
+        vehicle.longitude
+      ),
+
+
+    lastUpdated:
+      normalizeDateValue(
+        vehicle.lastUpdated
+      ),
+
+
+    /* =====================================
+       LOADING
+    ===================================== */
+
+    loadingStatus:
+      normalizeTextValue(
+        vehicle.loadingStatus,
+        "Pending"
+      ) ||
+      "Pending",
+
+
+    loadingPointInDate:
+      normalizeDateValue(
+        vehicle.loadingPointInDate
+      ),
+
+
+    loadingDate:
+      normalizeDateValue(
+        vehicle.loadingDate
+      ),
+
+
+    loadingPointOutDate:
+      normalizeDateValue(
+        vehicle.loadingPointOutDate
+      ),
+
+
+    loadingHaltingDays:
+      normalizeNumber(
+        vehicle.loadingHaltingDays
+      ),
+
+
+    loadingRemarks:
+      normalizeTextValue(
+        vehicle.loadingRemarks
+      ),
+
+
+    /* =====================================
+       UNLOADING
+    ===================================== */
+
+    unloadingStatus:
+      normalizeTextValue(
+        vehicle.unloadingStatus,
+        "Pending"
+      ) ||
+      "Pending",
+
+
+    unloadingPointInDate:
+      normalizeDateValue(
+        vehicle.unloadingPointInDate
+      ),
+
+
+    unloadingDate:
+      normalizeDateValue(
+        vehicle.unloadingDate
+      ),
+
+
+    unloadingPointOutDate:
+      normalizeDateValue(
+        vehicle.unloadingPointOutDate
+      ),
+
+
+    unloadingHaltingDays:
+      normalizeNumber(
+        vehicle.unloadingHaltingDays
+      ),
+
+
+    unloadingRemarks:
+      normalizeTextValue(
+        vehicle.unloadingRemarks
+      ),
+
+
+    /* =====================================
+       LR
+    ===================================== */
+
+    lrNo:
+      normalizeTextValue(
+        vehicle.lrNo
+      ),
+
+
+    lrStatus:
+      normalizeTextValue(
+        vehicle.lrStatus
+      ),
+
+
+    lrRemarks:
+      normalizeTextValue(
+        vehicle.lrRemarks
+      ),
+
+
+    lrSignature:
+      normalizeTextValue(
+        vehicle.lrSignature
+      ),
+
+
+    /* =====================================
+       POD
+    ===================================== */
+
+    podStatus:
+      normalizeTextValue(
+        vehicle.podStatus,
+        "Pending"
+      ) ||
+      "Pending",
+
+
+    courierName:
+      normalizeTextValue(
+        vehicle.courierName
+      ),
+
+
+    trackingId:
+      normalizeTextValue(
+        vehicle.trackingId
+      ),
+
+
+    podCourierDate:
+      normalizeDateValue(
+        vehicle.podCourierDate
+      ),
+
+
+    podRemarks:
+      normalizeTextValue(
+        vehicle.podRemarks
+      ),
+
+
+    /* =====================================
+       DRIVER
+    ===================================== */
+
+    driverName:
+      normalizeTextValue(
+        vehicle.driverName
+      ),
+
+
+    driverNumber:
+      normalizeTextValue(
+        vehicle.driverNumber
+      ),
+
   };
+
 };
 
 
@@ -105,8 +705,8 @@ const normalizeVehicle = (
 ========================================= */
 
 const normalizeTrip = (
-  trip,
-  index
+  trip = {},
+  index = 0
 ) => {
 
   const vehicles =
@@ -114,58 +714,265 @@ const normalizeTrip = (
       trip.vehicles
     )
       ? trip.vehicles.map(
-          normalizeVehicle
+          (
+            vehicle,
+            vehicleIndex
+          ) =>
+            normalizeVehicle(
+              vehicle,
+              vehicleIndex
+            )
         )
       : [];
 
 
-  /*
-    IMPORTANT:
+  /* =====================================
+     TRIP ID
+  ===================================== */
 
-    HTML date input returns:
+  const tripId =
+    normalizeTextValue(
+      trip.tripId
+    );
 
-    2026-08-13
 
-    But backend/MongoDB may return:
+  const id =
+    normalizeId(
+      trip._id
+    ) ||
+    normalizeId(
+      trip.id
+    ) ||
+    tripId ||
+    `trip-${index}`;
 
-    2026-08-13T00:00:00.000Z
 
-    So we convert both tripDate / createdAt
-    to YYYY-MM-DD.
-  */
+  /* =====================================
+     DATES
+  ===================================== */
 
-  const normalizedTripDate =
-    trip.tripDate
+  const createdAt =
+    normalizeDateValue(
+      trip.createdAt
+    );
+
+
+  const updatedAt =
+    normalizeDateValue(
+      trip.updatedAt
+    );
+
+
+  const providedTripDate =
+    normalizeDateValue(
+      trip.tripDate
+    );
+
+
+  const rawTripDate =
+    providedTripDate ||
+    createdAt ||
+    "";
+
+
+  const tripDate =
+    rawTripDate
       ? String(
-          trip.tripDate
+          rawTripDate
         ).slice(
           0,
           10
         )
-      : trip.createdAt
-        ? String(
-            trip.createdAt
-          ).slice(
-            0,
-            10
+      : "";
+
+
+  /* =====================================
+     ROUTE LOCATIONS
+  ===================================== */
+
+  const routeLocations =
+    Array.isArray(
+      trip.routeLocations
+    )
+      ? trip.routeLocations
+          .map(
+            (
+              location
+            ) =>
+              normalizeTextValue(
+                location
+              )
           )
-        : "";
+          .filter(
+            Boolean
+          )
+      : [];
 
 
   return {
+
     ...trip,
 
-    id:
-      trip._id ||
-      trip.id ||
-      trip.tripId ||
-      `trip-${index}`,
+
+    id,
+
+    tripId,
+
+
+    /* =====================================
+       CLIENT
+    ===================================== */
+
+    customer:
+      normalizeTextValue(
+        trip.customer
+      ),
+
+
+    clientContactPerson:
+      normalizeTextValue(
+        trip.clientContactPerson
+      ),
+
+
+    clientPhone:
+      normalizeTextValue(
+        trip.clientPhone
+      ),
+
+
+    /* =====================================
+       MATERIAL
+    ===================================== */
+
+    materialType:
+      normalizeTextValue(
+        trip.materialType
+      ),
+
+
+    /* =====================================
+       TRANSPORTER
+    ===================================== */
+
+    lsp:
+      normalizeTextValue(
+        trip.lsp
+      ),
+
+
+    transporterContactPerson:
+      normalizeTextValue(
+        trip.transporterContactPerson
+      ),
+
+
+    transporterPhone:
+      normalizeTextValue(
+        trip.transporterPhone
+      ),
+
+
+    /* =====================================
+       ROUTE
+    ===================================== */
+
+    origin:
+      normalizeTextValue(
+        trip.origin
+      ),
+
+
+    destination:
+      normalizeTextValue(
+        trip.destination
+      ),
+
+
+    routeLocations,
+
+
+    /* =====================================
+       ESCORT
+    ===================================== */
+
+    escortVehicleNumber:
+      normalizeTextValue(
+        trip.escortVehicleNumber
+      ),
+
+
+    escortName:
+      normalizeTextValue(
+        trip.escortName
+      ),
+
+
+    escortContactNumber:
+      normalizeTextValue(
+        trip.escortContactNumber
+      ),
+
+
+    /* =====================================
+       SUPERVISOR
+    ===================================== */
+
+    supervisorName:
+      normalizeTextValue(
+        trip.supervisorName
+      ),
+
+
+    supervisorContact:
+      normalizeTextValue(
+        trip.supervisorContact
+      ),
+
+
+    /* =====================================
+       TRIP VALUES
+    ===================================== */
+
+    estimatedTransitDays:
+      normalizeNumber(
+        trip.estimatedTransitDays
+      ),
+
+
+    totalKm:
+      normalizeNumber(
+        trip.totalKm
+      ),
+
+
+    tripStatus:
+      normalizeTextValue(
+        trip.tripStatus,
+        "Active"
+      ) ||
+      "Active",
+
+
+    /* =====================================
+       VEHICLES
+    ===================================== */
 
     vehicles,
 
-    tripDate:
-      normalizedTripDate,
+
+    /* =====================================
+       NORMALIZED DATES
+    ===================================== */
+
+    createdAt,
+
+    updatedAt,
+
+    tripDate,
+
   };
+
 };
 
 
@@ -175,50 +982,67 @@ const normalizeTrip = (
 
 const Tracking = () => {
 
+  /* =====================================
+     STATE
+  ===================================== */
+
   const [
     trips,
     setTrips,
   ] = useState([]);
+
 
   const [
     loading,
     setLoading,
   ] = useState(true);
 
+
   const [
     apiError,
     setApiError,
   ] = useState("");
+
 
   const [
     searchTerm,
     setSearchTerm,
   ] = useState("");
 
+
   const [
     movementFilter,
     setMovementFilter,
-  ] = useState("All");
+  ] = useState(
+    "All"
+  );
+
 
   const [
     selectedDate,
     setSelectedDate,
   ] = useState("");
 
+
   const [
     selectedTripId,
     setSelectedTripId,
-  ] = useState(null);
+  ] = useState(
+    null
+  );
+
 
   const [
     selectedVehicleId,
     setSelectedVehicleId,
-  ] = useState(null);
+  ] = useState(
+    null
+  );
 
 
-  /* =========================================
+  /* =====================================
      FETCH TRIPS
-  ========================================= */
+  ===================================== */
 
   const fetchTrips =
     useCallback(
@@ -226,26 +1050,38 @@ const Tracking = () => {
 
         try {
 
-          setLoading(true);
+          setLoading(
+            true
+          );
 
-          setApiError("");
+
+          setApiError(
+            ""
+          );
 
 
           const response =
             await fetch(
               API_URL,
               {
-                method: "GET",
+
+                method:
+                  "GET",
 
                 headers: {
+
                   Accept:
                     "application/json",
+
                 },
+
               }
             );
 
 
-          if (!response.ok) {
+          if (
+            !response.ok
+          ) {
 
             const errorData =
               await response
@@ -257,8 +1093,9 @@ const Tracking = () => {
 
             throw new Error(
               errorData.message ||
-                `Unable to load trips (${response.status})`
+              `Unable to load trips (${response.status})`
             );
+
           }
 
 
@@ -272,7 +1109,8 @@ const Tracking = () => {
           );
 
 
-          let databaseTrips = [];
+          let databaseTrips =
+            [];
 
 
           if (
@@ -301,12 +1139,20 @@ const Tracking = () => {
 
             databaseTrips =
               result.trips;
+
           }
 
 
           const normalizedTrips =
             databaseTrips.map(
-              normalizeTrip
+              (
+                trip,
+                index
+              ) =>
+                normalizeTrip(
+                  trip,
+                  index
+                )
             );
 
 
@@ -321,6 +1167,10 @@ const Tracking = () => {
           );
 
 
+          /* =================================
+             KEEP SELECTED TRIP IF POSSIBLE
+          ================================= */
+
           setSelectedTripId(
             (
               previousId
@@ -332,6 +1182,7 @@ const Tracking = () => {
               ) {
 
                 return null;
+
               }
 
 
@@ -345,18 +1196,24 @@ const Tracking = () => {
                 );
 
 
-              if (exists) {
+              if (
+                exists
+              ) {
 
                 return previousId;
+
               }
 
 
               return normalizedTrips[0]
                 .id;
+
             }
           );
 
-        } catch (error) {
+        } catch (
+          error
+        ) {
 
           console.error(
             "Fetch Trips Error:",
@@ -364,265 +1221,345 @@ const Tracking = () => {
           );
 
 
-          setTrips([]);
+          setTrips(
+            []
+          );
+
+
+          setSelectedTripId(
+            null
+          );
+
+
+          setSelectedVehicleId(
+            null
+          );
 
 
           setApiError(
             error.message ||
-              "Unable to load trips."
+            "Unable to load trips."
           );
 
         } finally {
 
-          setLoading(false);
+          setLoading(
+            false
+          );
+
         }
+
       },
       []
     );
 
 
-  /* =========================================
+  /* =====================================
      INITIAL LOAD
-  ========================================= */
+  ===================================== */
 
-  useEffect(() => {
+  useEffect(
+    () => {
 
-    fetchTrips();
+      fetchTrips();
 
-  }, [
-    fetchTrips,
-  ]);
+    },
+    [
+      fetchTrips,
+    ]
+  );
 
 
-  /* =========================================
+  /* =====================================
      REFRESH ON WINDOW FOCUS
-  ========================================= */
+  ===================================== */
 
-  useEffect(() => {
+  useEffect(
+    () => {
 
-    const handleFocus =
-      () => {
+      const handleFocus =
+        () => {
 
-        fetchTrips();
-      };
+          fetchTrips();
 
-
-    window.addEventListener(
-      "focus",
-      handleFocus
-    );
+        };
 
 
-    return () => {
-
-      window.removeEventListener(
+      window.addEventListener(
         "focus",
         handleFocus
       );
-    };
-
-  }, [
-    fetchTrips,
-  ]);
 
 
-  /* =========================================
-     STATUS COUNTS
-  ========================================= */
+      return () => {
 
-  const statusCounts =
-    useMemo(() => {
+        window.removeEventListener(
+          "focus",
+          handleFocus
+        );
 
-      const counts = {
-
-        All:
-          trips.length,
-
-        Moving:
-          0,
-
-        Idle:
-          0,
-
-        Breakdown:
-          0,
-
-        Reached:
-          0,
       };
 
-
-      trips.forEach(
-        (
-          trip
-        ) => {
-
-          const vehicles =
-            Array.isArray(
-              trip.vehicles
-            )
-              ? trip.vehicles
-              : [];
+    },
+    [
+      fetchTrips,
+    ]
+  );
 
 
-          const tripStatuses =
-            new Set(
-              vehicles.map(
+  /* =====================================
+     STATUS COUNTS
+  ===================================== */
+
+  const statusCounts =
+    useMemo(
+      () => {
+
+        const counts = {
+
+          All:
+            trips.length,
+
+          Moving:
+            0,
+
+          Idle:
+            0,
+
+          Stopped:
+            0,
+
+          Breakdown:
+            0,
+
+          Reached:
+            0,
+
+        };
+
+
+        trips.forEach(
+          (
+            trip
+          ) => {
+
+            const vehicles =
+              Array.isArray(
+                trip.vehicles
+              )
+                ? trip.vehicles
+                : [];
+
+
+            const tripStatuses =
+              new Set(
+                vehicles.map(
+                  (
+                    vehicle
+                  ) =>
+                    vehicle.status
+                )
+              );
+
+
+            [
+              "Moving",
+              "Idle",
+              "Stopped",
+              "Breakdown",
+              "Reached",
+            ].forEach(
+              (
+                status
+              ) => {
+
+                if (
+                  tripStatuses.has(
+                    status
+                  )
+                ) {
+
+                  counts[
+                    status
+                  ] += 1;
+
+                }
+
+              }
+            );
+
+          }
+        );
+
+
+        return counts;
+
+      },
+      [
+        trips,
+      ]
+    );
+
+
+  /* =====================================
+     FILTER TRIPS
+  ===================================== */
+
+  const filteredTrips =
+    useMemo(
+      () => {
+
+        const search =
+          searchTerm
+            .trim()
+            .toLowerCase();
+
+
+        return trips.filter(
+          (
+            trip
+          ) => {
+
+            const vehicles =
+              Array.isArray(
+                trip.vehicles
+              )
+                ? trip.vehicles
+                : [];
+
+
+            /* =============================
+               SEARCH
+            ============================= */
+
+            const searchFields = [
+
+              trip.tripId,
+
+              trip.customer,
+
+              trip.materialType,
+
+              trip.origin,
+
+              trip.destination,
+
+              trip.lsp,
+
+              trip.clientContactPerson,
+
+              trip.transporterContactPerson,
+
+              trip.supervisorName,
+
+              trip.escortName,
+
+              ...vehicles.map(
                 (
                   vehicle
                 ) =>
-                  vehicle.status
-              )
-            );
+                  vehicle.vehicleNumber
+              ),
+
+              ...vehicles.map(
+                (
+                  vehicle
+                ) =>
+                  vehicle.driverName
+              ),
+
+              ...vehicles.map(
+                (
+                  vehicle
+                ) =>
+                  vehicle.lrNo
+              ),
+
+              ...vehicles.map(
+                (
+                  vehicle
+                ) =>
+                  vehicle.currentPosition
+              ),
+
+            ];
 
 
-          [
-            "Moving",
-            "Idle",
-            "Breakdown",
-            "Reached",
-          ].forEach(
-            (
-              status
-            ) => {
+            const matchesSearch =
+              !search ||
+              searchFields.some(
+                (
+                  value
+                ) =>
 
-              if (
-                tripStatuses.has(
-                  status
-                )
-              ) {
-
-                counts[status] +=
-                  1;
-              }
-            }
-          );
-        }
-      );
-
-
-      return counts;
-
-    }, [
-      trips,
-    ]);
-
-
-  /* =========================================
-     FILTER TRIPS
-  ========================================= */
-
-  const filteredTrips =
-    useMemo(() => {
-
-      const search =
-        searchTerm
-          .trim()
-          .toLowerCase();
-
-
-      return trips.filter(
-        (
-          trip
-        ) => {
-
-          const vehicles =
-            Array.isArray(
-              trip.vehicles
-            )
-              ? trip.vehicles
-              : [];
-
-
-          const searchFields = [
-
-            trip.tripId,
-
-            trip.customer,
-
-            trip.materialType,
-
-            trip.origin,
-
-            trip.destination,
-
-            trip.lsp,
-
-            trip.lrNo,
-
-            ...vehicles.map(
-              (
-                vehicle
-              ) =>
-                vehicle.vehicleNumber
-            ),
-          ];
-
-
-          const matchesSearch =
-            !search ||
-            searchFields.some(
-              (
-                value
-              ) =>
-                String(
-                  value ||
+                  String(
+                    value ||
                     ""
-                )
-                  .toLowerCase()
-                  .includes(
-                    search
                   )
-            );
+                    .toLowerCase()
+                    .includes(
+                      search
+                    )
+              );
 
 
-          /*
-            DATE FILTER
+            /* =============================
+               DATE
+            ============================= */
 
-            selectedDate:
-            2026-08-13
-
-            trip.tripDate:
-            already normalized to 2026-08-13
-          */
-
-          const matchesDate =
-            !selectedDate ||
-            trip.tripDate ===
+            const matchesDate =
+              !selectedDate ||
+              trip.tripDate ===
               selectedDate;
 
 
-          const matchesStatus =
-            movementFilter ===
-              "All" ||
-            vehicles.some(
-              (
-                vehicle
-              ) =>
-                vehicle.status ===
-                movementFilter
+            /* =============================
+               STATUS
+            ============================= */
+
+            const matchesStatus =
+              movementFilter ===
+                "All" ||
+              vehicles.some(
+                (
+                  vehicle
+                ) =>
+                  vehicle.status ===
+                  movementFilter
+              );
+
+
+            return (
+
+              matchesSearch &&
+
+              matchesDate &&
+
+              matchesStatus
+
             );
 
+          }
+        );
 
-          return (
-            matchesSearch &&
-            matchesDate &&
-            matchesStatus
-          );
-        }
-      );
+      },
+      [
 
-    }, [
-      trips,
-      searchTerm,
-      selectedDate,
-      movementFilter,
-    ]);
+        trips,
+
+        searchTerm,
+
+        selectedDate,
+
+        movementFilter,
+
+      ]
+    );
 
 
-  /* =========================================
+  /* =====================================
      SELECTED TRIP
-  ========================================= */
+  ===================================== */
 
   const selectedTrip =
     filteredTrips.find(
@@ -636,101 +1573,121 @@ const Tracking = () => {
     null;
 
 
-  /* =========================================
-     KEEP TRIP VALID
-  ========================================= */
+  /* =====================================
+     KEEP SELECTED TRIP VALID
+  ===================================== */
 
-  useEffect(() => {
+  useEffect(
+    () => {
 
-    if (
-      filteredTrips.length ===
-      0
-    ) {
+      if (
+        filteredTrips.length ===
+        0
+      ) {
 
-      setSelectedTripId(
-        null
-      );
-
-      return;
-    }
-
-
-    const exists =
-      filteredTrips.some(
-        (
-          trip
-        ) =>
-          trip.id ===
-          selectedTripId
-      );
-
-
-    if (!exists) {
-
-      setSelectedTripId(
-        filteredTrips[0]
-          .id
-      );
-    }
-
-  }, [
-    filteredTrips,
-    selectedTripId,
-  ]);
-
-
-  /* =========================================
-     KEEP VEHICLE VALID
-  ========================================= */
-
-  useEffect(() => {
-
-    if (
-      !selectedTrip ||
-      !selectedTrip
-        .vehicles?.length
-    ) {
-
-      setSelectedVehicleId(
-        null
-      );
-
-      return;
-    }
-
-
-    const vehicleExists =
-      selectedTrip
-        .vehicles
-        .some(
-          (
-            vehicle
-          ) =>
-            vehicle.id ===
-            selectedVehicleId
+        setSelectedTripId(
+          null
         );
 
 
-    if (
-      !vehicleExists
-    ) {
+        return;
 
-      setSelectedVehicleId(
+      }
+
+
+      const exists =
+        filteredTrips.some(
+          (
+            trip
+          ) =>
+            trip.id ===
+            selectedTripId
+        );
+
+
+      if (
+        !exists
+      ) {
+
+        setSelectedTripId(
+          filteredTrips[0]
+            .id
+        );
+
+      }
+
+    },
+    [
+
+      filteredTrips,
+
+      selectedTripId,
+
+    ]
+  );
+
+
+  /* =====================================
+     KEEP VEHICLE VALID
+  ===================================== */
+
+  useEffect(
+    () => {
+
+      if (
+        !selectedTrip ||
+        !selectedTrip
+          .vehicles?.length
+      ) {
+
+        setSelectedVehicleId(
+          null
+        );
+
+
+        return;
+
+      }
+
+
+      const vehicleExists =
         selectedTrip
-          .vehicles[0]
-          .id
-      );
-    }
+          .vehicles
+          .some(
+            (
+              vehicle
+            ) =>
+              vehicle.id ===
+              selectedVehicleId
+          );
 
-  }, [
-    selectedTrip,
-    selectedVehicleId,
-  ]);
+
+      if (
+        !vehicleExists
+      ) {
+
+        setSelectedVehicleId(
+          selectedTrip
+            .vehicles[0]
+            .id
+        );
+
+      }
+
+    },
+    [
+
+      selectedTrip,
+
+      selectedVehicleId,
+
+    ]
+  );
 
 
-  /* =========================================
+  /* =====================================
      SELECTED VEHICLE
-  ========================================= */
+  ===================================== */
 
   const selectedVehicle =
     selectedTrip
@@ -747,28 +1704,30 @@ const Tracking = () => {
     null;
 
 
-  /* =========================================
+  /* =====================================
      STATUS CLASS
-  ========================================= */
+  ===================================== */
 
   const getStatusClass = (
     status
   ) => {
 
     return String(
-      status || ""
+      status ||
+      ""
     )
       .toLowerCase()
       .replaceAll(
         " ",
         "-"
       );
+
   };
 
 
-  /* =========================================
+  /* =====================================
      STATUS ICON
-  ========================================= */
+  ===================================== */
 
   const getStatusIcon = (
     status
@@ -784,6 +1743,7 @@ const Tracking = () => {
           size={13}
         />
       );
+
     }
 
 
@@ -797,6 +1757,7 @@ const Tracking = () => {
           size={13}
         />
       );
+
     }
 
 
@@ -810,6 +1771,7 @@ const Tracking = () => {
           size={13}
         />
       );
+
     }
 
 
@@ -823,6 +1785,7 @@ const Tracking = () => {
           size={13}
         />
       );
+
     }
 
 
@@ -831,12 +1794,13 @@ const Tracking = () => {
         size={13}
       />
     );
+
   };
 
 
-  /* =========================================
+  /* =====================================
      SELECT TRIP
-  ========================================= */
+  ===================================== */
 
   const handleTripSelect = (
     trip
@@ -861,73 +1825,95 @@ const Tracking = () => {
       setSelectedVehicleId(
         null
       );
+
     }
+
   };
 
 
-  /* =========================================
+  /* =====================================
      CLEAR FILTERS
-  ========================================= */
+  ===================================== */
 
   const clearAllFilters =
     () => {
 
-      setSearchTerm("");
+      setSearchTerm(
+        ""
+      );
+
 
       setMovementFilter(
         "All"
       );
 
-      setSelectedDate("");
+
+      setSelectedDate(
+        ""
+      );
+
     };
 
 
-  /* =========================================
+  /* =====================================
      RENDER
-  ========================================= */
+  ===================================== */
 
   return (
 
-    <main className="tracking-page">
+    <main
+      className="tracking-page"
+    >
 
 
-      {/* =====================================
+      {/* =================================
           HEADER
-      ===================================== */}
+      ================================= */}
 
-      <header className="tracking-header">
+      <header
+        className="tracking-header"
+      >
 
-        <div className="tracking-header-content">
-
-        </div>
+        <div
+          className="tracking-header-content"
+        />
 
       </header>
 
 
-      {/* =====================================
+      {/* =================================
           API ERROR
-      ===================================== */}
+      ================================= */}
 
       {apiError && (
 
-        <div className="tracking-api-error">
+        <div
+          className="tracking-api-error"
+        >
 
           {apiError}
 
         </div>
+
       )}
 
 
-      {/* =====================================
+      {/* =================================
           TOOLBAR
-      ===================================== */}
+      ================================= */}
 
-      <section className="tracking-toolbar">
+      <section
+        className="tracking-toolbar"
+      >
 
 
-        {/* SEARCH */}
+        {/* ===============================
+            SEARCH
+        =============================== */}
 
-        <div className="tracking-search">
+        <div
+          className="tracking-search"
+        >
 
           <Search
             size={18}
@@ -943,10 +1929,12 @@ const Tracking = () => {
             onChange={(
               event
             ) =>
+
               setSearchTerm(
                 event.target
                   .value
               )
+
             }
           />
 
@@ -957,7 +1945,9 @@ const Tracking = () => {
               type="button"
               className="tracking-search-clear"
               onClick={() =>
-                setSearchTerm("")
+                setSearchTerm(
+                  ""
+                )
               }
               aria-label="Clear search"
             >
@@ -967,16 +1957,19 @@ const Tracking = () => {
               />
 
             </button>
+
           )}
 
         </div>
 
 
-        {/* =====================================
+        {/* ===============================
             STATUS FILTER
-        ===================================== */}
+        =============================== */}
 
-        <div className="tracking-status-filter">
+        <div
+          className="tracking-status-filter"
+        >
 
           {statusOptions.map(
             (
@@ -992,7 +1985,9 @@ const Tracking = () => {
 
                 <button
                   type="button"
-                  key={status}
+                  key={
+                    status
+                  }
                   className={
                     active
                       ? "active"
@@ -1007,6 +2002,7 @@ const Tracking = () => {
 
                   {status !==
                     "All" &&
+
                     getStatusIcon(
                       status
                     )}
@@ -1019,7 +2015,9 @@ const Tracking = () => {
                   </span>
 
 
-                  <small className="tracking-status-count">
+                  <small
+                    className="tracking-status-count"
+                  >
 
                     {
                       statusCounts[
@@ -1030,18 +2028,22 @@ const Tracking = () => {
                   </small>
 
                 </button>
+
               );
+
             }
           )}
 
         </div>
 
 
-        {/* =====================================
+        {/* ===============================
             DATE FILTER
-        ===================================== */}
+        =============================== */}
 
-        <label className="tracking-date">
+        <label
+          className="tracking-date"
+        >
 
           <CalendarDays
             size={17}
@@ -1061,6 +2063,7 @@ const Tracking = () => {
                 event.target
                   .value
               );
+
             }}
           />
 
@@ -1078,7 +2081,10 @@ const Tracking = () => {
 
                 event.stopPropagation();
 
-                setSelectedDate("");
+                setSelectedDate(
+                  ""
+                );
+
               }}
               aria-label="Clear selected date"
             >
@@ -1088,6 +2094,7 @@ const Tracking = () => {
               />
 
             </button>
+
           )}
 
         </label>
@@ -1095,13 +2102,15 @@ const Tracking = () => {
       </section>
 
 
-      {/* =====================================
-          LOADING
-      ===================================== */}
+      {/* =================================
+          CONTENT
+      ================================= */}
 
       {loading ? (
 
-        <div className="tracking-loading-state">
+        <div
+          className="tracking-loading-state"
+        >
 
           Loading trips...
 
@@ -1110,14 +2119,18 @@ const Tracking = () => {
       ) : filteredTrips.length ===
         0 ? (
 
-        /* =====================================
-           EMPTY STATE
-        ===================================== */
+        /* ===============================
+           EMPTY
+        =============================== */
 
-        <div className="tracking-no-results">
+        <div
+          className="tracking-no-results"
+        >
 
 
-          <div className="tracking-no-results-icon">
+          <div
+            className="tracking-no-results-icon"
+          >
 
             {movementFilter ===
             "Breakdown" ? (
@@ -1131,6 +2144,7 @@ const Tracking = () => {
               <Search
                 size={26}
               />
+
             )}
 
           </div>
@@ -1139,10 +2153,14 @@ const Tracking = () => {
           <strong>
 
             {selectedDate
+
               ? "No Trips Found On This Date"
+
               : movementFilter !==
                   "All"
+
                 ? `No ${movementFilter} Trips Found`
+
                 : "No Trips Found"}
 
           </strong>
@@ -1151,10 +2169,14 @@ const Tracking = () => {
           <p>
 
             {selectedDate
+
               ? `No trip records are available for ${selectedDate}.`
+
               : movementFilter ===
                   "Breakdown"
+
                 ? "There are currently no trips containing a vehicle with Breakdown status."
+
                 : "Try changing the status, search text or date filter."}
 
           </p>
@@ -1175,14 +2197,18 @@ const Tracking = () => {
 
       ) : (
 
-        /* =====================================
-           TRACKING COLUMNS
-        ===================================== */
+        /* ===============================
+           TRACKING LAYOUT
+        =============================== */
 
-        <section className="tracking-layout">
+        <section
+          className="tracking-layout"
+        >
 
 
-          {/* TRIP LIST */}
+          {/* =============================
+              TRIP LIST
+          ============================= */}
 
           <TripListColumn
             trips={
@@ -1197,7 +2223,9 @@ const Tracking = () => {
           />
 
 
-          {/* VEHICLE COLUMN */}
+          {/* =============================
+              VEHICLES
+          ============================= */}
 
           <VehicleColumn
             trip={
@@ -1218,7 +2246,9 @@ const Tracking = () => {
           />
 
 
-          {/* MAP COLUMN */}
+          {/* =============================
+              MAP
+          ============================= */}
 
           <TrackingMapColumn
             trip={
@@ -1235,11 +2265,15 @@ const Tracking = () => {
             }
           />
 
+
         </section>
+
       )}
 
     </main>
+
   );
+
 };
 
 

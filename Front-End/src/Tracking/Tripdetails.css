@@ -14,25 +14,24 @@
 
 .trip-list-page {
   width: 100%;
+  min-height: calc(100vh - 80px);
 
-  min-height:
-    calc(100vh - 80px);
-
-  padding:
-    22px 28px 36px;
+  padding: 22px 28px 36px;
 
   color: #1d3559;
-
-  background:
-    #f4f7fb;
+  background: #f4f7fb;
 
   font-family:
-    "Poppins",
     Inter,
     "Segoe UI",
     Roboto,
+    Helvetica,
     Arial,
     sans-serif;
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 
@@ -60,8 +59,7 @@
 .trip-back-button {
   min-height: 39px;
 
-  padding:
-    0 14px;
+  padding: 0 14px;
 
   display: inline-flex;
   align-items: center;
@@ -69,18 +67,14 @@
 
   gap: 7px;
 
-  border:
-    1px solid #d7e1ed;
-
+  border: 1px solid #d7e1ed;
   border-radius: 9px;
 
   color: #536b89;
-
   background: #ffffff;
 
   font: inherit;
-
-  font-size: 10px;
+  font-size: 10.5px;
   font-weight: 600;
 
   cursor: pointer;
@@ -100,26 +94,22 @@
 .trip-back-button:hover {
   color: #2457b2;
 
-  border-color:
-    #bad0ef;
+  border-color: #bad0ef;
 
-  background:
-    #f6f9fe;
+  background: #f6f9fe;
 
-  transform:
-    translateY(-1px);
+  transform: translateY(-1px);
 }
 
 
 /* =========================================
-   CREATE TRIP
+   CREATE TRIP BUTTON
 ========================================= */
 
 .trip-create-button {
   min-height: 40px;
 
-  padding:
-    0 16px;
+  padding: 0 16px;
 
   display: inline-flex;
   align-items: center;
@@ -127,9 +117,7 @@
 
   gap: 7px;
 
-  border:
-    1px solid #2457b2;
-
+  border: 1px solid #2457b2;
   border-radius: 9px;
 
   color: #ffffff;
@@ -142,9 +130,8 @@
     );
 
   font: inherit;
-
-  font-size: 10px;
-  font-weight: 700;
+  font-size: 10.5px;
+  font-weight: 600;
 
   cursor: pointer;
 
@@ -171,8 +158,7 @@
     0 8px 19px
     rgba(36, 87, 178, 0.22);
 
-  transform:
-    translateY(-1px);
+  transform: translateY(-1px);
 }
 
 
@@ -201,13 +187,11 @@
   color: #2457b2;
 
   font-size: 9px;
-  font-weight: 800;
+  font-weight: 700;
 
-  letter-spacing:
-    1.1px;
+  letter-spacing: 0.9px;
 
-  text-transform:
-    uppercase;
+  text-transform: uppercase;
 }
 
 
@@ -216,24 +200,24 @@
 
   color: #182b56;
 
-  font-size: 27px;
-  font-weight: 750;
+  font-size: 28px;
+  font-weight: 700;
 
   line-height: 1.2;
 
-  letter-spacing:
-    -0.4px;
+  letter-spacing: -0.45px;
 }
 
 
 .trip-page-header p {
-  margin:
-    6px 0 0;
+  margin: 6px 0 0;
 
   color: #79889e;
 
-  font-size: 10.5px;
+  font-size: 11px;
   font-weight: 400;
+
+  line-height: 1.55;
 }
 
 
@@ -252,25 +236,21 @@
 .trip-total-badge {
   min-height: 34px;
 
-  padding:
-    0 11px;
+  padding: 0 11px;
 
   display: inline-flex;
   align-items: center;
 
   gap: 6px;
 
-  border:
-    1px solid #d8e4f4;
-
+  border: 1px solid #d8e4f4;
   border-radius: 8px;
 
   color: #2457b2;
 
-  background:
-    #edf4ff;
+  background: #edf4ff;
 
-  font-size: 9px;
+  font-size: 9.5px;
   font-weight: 700;
 }
 
@@ -284,27 +264,33 @@
   display: grid;
   place-items: center;
 
-  border:
-    1px solid #d8e1ec;
-
+  border: 1px solid #d8e1ec;
   border-radius: 8px;
 
   color: #627895;
-
   background: #ffffff;
 
   cursor: pointer;
+
+  transition:
+    background 150ms ease,
+    color 150ms ease,
+    border-color 150ms ease;
 }
 
 
 .trip-refresh-button:hover {
   color: #2457b2;
 
-  border-color:
-    #bfd0e9;
+  border-color: #bfd0e9;
 
-  background:
-    #f6f9fe;
+  background: #f6f9fe;
+}
+
+
+.trip-refresh-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
 }
 
 
@@ -315,18 +301,13 @@
 .trip-page-error {
   margin-bottom: 12px;
 
-  padding:
-    10px 13px;
+  padding: 10px 13px;
 
-  border:
-    1px solid #f0cfd2;
-
+  border: 1px solid #f0cfd2;
   border-radius: 9px;
 
   color: #b43b44;
-
-  background:
-    #fff5f5;
+  background: #fff5f5;
 
   font-size: 10px;
   font-weight: 600;
@@ -342,13 +323,10 @@
 
   overflow: hidden;
 
-  border:
-    1px solid #dfe7f1;
-
+  border: 1px solid #dfe7f1;
   border-radius: 14px;
 
-  background:
-    #ffffff;
+  background: #ffffff;
 
   box-shadow:
     0 5px 18px
@@ -363,15 +341,13 @@
 .trip-table-header {
   min-height: 61px;
 
-  padding:
-    11px 15px;
+  padding: 11px 15px;
 
   display: flex;
   align-items: center;
   justify-content: space-between;
 
-  border-bottom:
-    1px solid #e8edf4;
+  border-bottom: 1px solid #e8edf4;
 
   background:
     linear-gradient(
@@ -393,24 +369,25 @@
 
 
 .trip-table-header p {
-  margin:
-    3px 0 0;
+  margin: 3px 0 0;
 
   color: #8794a8;
 
-  font-size: 9px;
+  font-size: 9.5px;
+  font-weight: 400;
+
+  line-height: 1.4;
 }
 
 
 /* =========================================
-   COLUMN HEAD
+   COLUMN HEADER
 ========================================= */
 
 .trip-list-column-head {
   min-height: 43px;
 
-  padding:
-    0 14px;
+  padding: 0 14px;
 
   display: grid;
 
@@ -428,22 +405,17 @@
 
   gap: 10px;
 
-  border-bottom:
-    1px solid #e7edf4;
+  border-bottom: 1px solid #e7edf4;
 
   color: #76869d;
+  background: #f6f8fb;
 
-  background:
-    #f6f8fb;
-
-  font-size: 8.5px;
+  font-size: 9px;
   font-weight: 700;
 
-  text-transform:
-    uppercase;
+  text-transform: uppercase;
 
-  letter-spacing:
-    0.3px;
+  letter-spacing: 0.35px;
 }
 
 
@@ -468,8 +440,7 @@
 .trip-full-row {
   min-height: 76px;
 
-  padding:
-    11px 14px;
+  padding: 11px 14px;
 
   display: grid;
 
@@ -487,15 +458,34 @@
 
   gap: 10px;
 
-  border-bottom:
-    1px solid #edf1f5;
-
-  background:
-    #ffffff;
+  border-bottom: 1px solid #e7edf4;
 
   transition:
-    background 150ms ease,
+    background-color 150ms ease,
     box-shadow 150ms ease;
+}
+
+
+/* =========================================
+   ODD / EVEN ROW HIGHLIGHT
+========================================= */
+
+/*
+   Row 1 = White
+   Row 2 = Light Blue
+   Row 3 = White
+   Row 4 = Light Blue
+*/
+
+.trip-full-list
+.trip-full-row:nth-child(odd) {
+  background-color: #ffffff;
+}
+
+
+.trip-full-list
+.trip-full-row:nth-child(even) {
+  background-color: #f1f6fd;
 }
 
 
@@ -504,13 +494,16 @@
 }
 
 
+/* =========================================
+   ROW HOVER
+========================================= */
+
+.trip-full-list
 .trip-full-row:hover {
-  background:
-    #f9fbff;
+  background-color: #e4efff;
 
   box-shadow:
-    inset 3px 0 0
-    #2457b2;
+    inset 3px 0 0 #2457b2;
 }
 
 
@@ -532,8 +525,7 @@
   width: 31px;
   height: 31px;
 
-  flex:
-    0 0 31px;
+  flex: 0 0 31px;
 
   display: grid;
   place-items: center;
@@ -542,8 +534,7 @@
 
   color: #2457b2;
 
-  background:
-    #eaf2ff;
+  background: #eaf2ff;
 }
 
 
@@ -554,14 +545,12 @@
 
   color: #17345f;
 
-  font-size: 10.5px;
+  font-size: 11px;
   font-weight: 700;
 
-  text-overflow:
-    ellipsis;
+  text-overflow: ellipsis;
 
-  white-space:
-    nowrap;
+  white-space: nowrap;
 }
 
 
@@ -572,7 +561,8 @@
 
   color: #95a1b2;
 
-  font-size: 7.5px;
+  font-size: 8px;
+  font-weight: 500;
 }
 
 
@@ -614,14 +604,12 @@
 
   color: #2d4668;
 
-  font-size: 9.5px;
+  font-size: 10px;
   font-weight: 600;
 
-  text-overflow:
-    ellipsis;
+  text-overflow: ellipsis;
 
-  white-space:
-    nowrap;
+  white-space: nowrap;
 }
 
 
@@ -639,7 +627,7 @@
 
   color: #2457b2;
 
-  font-size: 9px;
+  font-size: 9.5px;
   font-weight: 600;
 }
 
@@ -654,11 +642,9 @@
 
   overflow: hidden;
 
-  text-overflow:
-    ellipsis;
+  text-overflow: ellipsis;
 
-  white-space:
-    nowrap;
+  white-space: nowrap;
 }
 
 
@@ -671,8 +657,7 @@
 
   min-height: 29px;
 
-  padding:
-    0 9px;
+  padding: 0 9px;
 
   display: inline-flex;
   align-items: center;
@@ -683,10 +668,9 @@
 
   color: #2457b2;
 
-  background:
-    #edf4ff;
+  background: #edf4ff;
 
-  font-size: 9px;
+  font-size: 9.5px;
   font-weight: 700;
 }
 
@@ -700,17 +684,15 @@
 
   min-height: 27px;
 
-  padding:
-    0 9px;
+  padding: 0 9px;
 
   display: inline-flex;
   align-items: center;
   justify-content: center;
 
-  border-radius:
-    999px;
+  border-radius: 999px;
 
-  font-size: 8px;
+  font-size: 8.5px;
   font-weight: 700;
 }
 
@@ -718,33 +700,27 @@
 .trip-status-badge.active {
   color: #168551;
 
-  border:
-    1px solid #ccebdc;
+  border: 1px solid #ccebdc;
 
-  background:
-    #edf9f3;
+  background: #edf9f3;
 }
 
 
 .trip-status-badge.completed {
   color: #2457b2;
 
-  border:
-    1px solid #cbdcf5;
+  border: 1px solid #cbdcf5;
 
-  background:
-    #edf4ff;
+  background: #edf4ff;
 }
 
 
 .trip-status-badge.cancelled {
   color: #bd4650;
 
-  border:
-    1px solid #efd4d7;
+  border: 1px solid #efd4d7;
 
-  background:
-    #fff4f5;
+  background: #fff4f5;
 }
 
 
@@ -760,7 +736,7 @@
 
   color: #657a96;
 
-  font-size: 8.5px;
+  font-size: 9.5px;
   font-weight: 500;
 }
 
@@ -773,7 +749,7 @@
 
 
 /* =========================================
-   EDIT
+   EDIT BUTTON
 ========================================= */
 
 .trip-row-actions {
@@ -785,8 +761,7 @@
 .trip-edit-button {
   min-height: 31px;
 
-  padding:
-    0 10px;
+  padding: 0 10px;
 
   display: inline-flex;
   align-items: center;
@@ -794,38 +769,36 @@
 
   gap: 5px;
 
-  border:
-    1px solid #cbdcf5;
-
+  border: 1px solid #cbdcf5;
   border-radius: 7px;
 
   color: #2457b2;
 
-  background:
-    #edf4ff;
+  background: #edf4ff;
 
   font: inherit;
 
-  font-size: 8.5px;
-  font-weight: 700;
+  font-size: 9px;
+  font-weight: 650;
 
   cursor: pointer;
 
   transition:
     color 150ms ease,
     background 150ms ease,
-    border-color 150ms ease;
+    border-color 150ms ease,
+    transform 150ms ease;
 }
 
 
 .trip-edit-button:hover {
   color: #ffffff;
 
-  border-color:
-    #2457b2;
+  border-color: #2457b2;
 
-  background:
-    #2457b2;
+  background: #2457b2;
+
+  transform: translateY(-1px);
 }
 
 
@@ -835,6 +808,11 @@
 
 .trip-mobile-label {
   display: none;
+
+  font-size: 8px;
+  font-weight: 700;
+
+  letter-spacing: 0.25px;
 }
 
 
@@ -859,7 +837,7 @@
 
 
 /* =========================================
-   EMPTY
+   EMPTY STATE
 ========================================= */
 
 .trip-empty-state {
@@ -873,6 +851,8 @@
   justify-content: center;
 
   text-align: center;
+
+  font-size: 10px;
 }
 
 
@@ -889,8 +869,7 @@
 
   color: #2457b2;
 
-  background:
-    #edf4ff;
+  background: #edf4ff;
 }
 
 
@@ -898,24 +877,25 @@
   color: #294262;
 
   font-size: 12px;
+  font-weight: 700;
 }
 
 
 .trip-empty-state p {
-  margin:
-    5px 0 13px;
+  margin: 5px 0 13px;
 
   color: #8391a4;
 
-  font-size: 9px;
+  font-size: 9.5px;
+
+  line-height: 1.5;
 }
 
 
 .trip-empty-state button {
   min-height: 35px;
 
-  padding:
-    0 12px;
+  padding: 0 12px;
 
   display: inline-flex;
   align-items: center;
@@ -923,13 +903,11 @@
   gap: 6px;
 
   border: 0;
-
   border-radius: 8px;
 
   color: #ffffff;
 
-  background:
-    #2457b2;
+  background: #2457b2;
 
   font: inherit;
 
@@ -937,6 +915,11 @@
   font-weight: 700;
 
   cursor: pointer;
+}
+
+
+.trip-empty-state button:hover {
+  background: #1c4997;
 }
 
 
@@ -954,21 +937,24 @@
 
 
 @keyframes tripSpin {
+
   to {
-    transform:
-      rotate(360deg);
+    transform: rotate(360deg);
   }
+
 }
 
 
 /* =========================================
    TABLET
+   <= 1200px
 ========================================= */
 
 @media (max-width: 1200px) {
 
   .trip-list-column-head,
   .trip-full-row {
+
     grid-template-columns:
       0.8fr
       1.1fr
@@ -977,11 +963,13 @@
       0.6fr
       0.75fr
       0.75fr;
+
   }
 
 
   .trip-list-column-head
   > span:nth-child(7),
+
   .trip-full-row
   > div:nth-child(7) {
     display: none;
@@ -991,14 +979,28 @@
 
 
 /* =========================================
+   SMALL TABLET
+   <= 900px
+========================================= */
+
+@media (max-width: 900px) {
+
+  .trip-page-header h1 {
+    font-size: 25px;
+  }
+
+}
+
+
+/* =========================================
    MOBILE / SMALL TABLET
+   <= 850px
 ========================================= */
 
 @media (max-width: 850px) {
 
   .trip-list-page {
-    padding:
-      18px 14px 28px;
+    padding: 18px 14px 28px;
   }
 
 
@@ -1016,8 +1018,7 @@
         minmax(0, 1fr)
       );
 
-    gap:
-      13px 18px;
+    gap: 13px 18px;
   }
 
 
@@ -1037,14 +1038,12 @@
     font-size: 7.5px;
     font-weight: 700;
 
-    text-transform:
-      uppercase;
+    text-transform: uppercase;
   }
 
 
   .trip-row-actions {
-    justify-content:
-      flex-start;
+    justify-content: flex-start;
   }
 
 }
@@ -1052,444 +1051,20 @@
 
 /* =========================================
    MOBILE
+   <= 650px
 ========================================= */
 
-@media (max-width: 560px) {
-
-  .trip-list-page {
-    width: 100%;
-    min-height: calc(100vh - 70px);
-    padding: 16px 12px 30px;
-    background: #f4f7fb;
-  }
-
-  .trip-page-actions {
-    width: 100%;
-    margin-bottom: 22px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .trip-back-button,
-  .trip-create-button {
-    width: 48px;
-    height: 48px;
-    min-height: 48px;
-    padding: 0;
-    border-radius: 11px;
-  }
-
-  .trip-back-button span,
-  .trip-create-button span {
-    display: none;
-  }
-
-  .trip-back-button svg,
-  .trip-create-button svg {
-    width: 20px;
-    height: 20px;
-  }
-
-  .trip-page-header {
-    width: 100%;
-    margin-bottom: 20px;
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 12px;
-  }
-
-  .trip-page-eyebrow {
-    margin-bottom: 7px;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 1px;
-  }
-
-  .trip-page-header h1 {
-    margin: 0;
-    font-size: 25px;
-    font-weight: 700;
-    line-height: 1.2;
-  }
-
-  .trip-page-header p {
-    margin-top: 8px;
-    font-size: 11px;
-    line-height: 1.5;
-  }
-
-  .trip-page-header-actions {
-    flex-shrink: 0;
-  }
-
-  .trip-total-badge {
-    display: none;
-  }
-
-  .trip-refresh-button {
-    width: 42px;
-    height: 42px;
-    border-radius: 10px;
-  }
-
-  .trip-page-error {
-    width: 100%;
-    margin-bottom: 16px;
-    padding: 13px 14px;
-    border-radius: 10px;
-    font-size: 11px;
-  }
-
-  .trip-table-card {
-    width: 100%;
-    overflow: visible;
-    border: 1px solid #dfe7f1;
-    border-radius: 15px;
-    background: #ffffff;
-    box-shadow: 0 5px 18px rgba(17, 40, 83, 0.06);
-  }
-
-  .trip-table-header {
-    min-height: auto;
-    padding: 18px 17px;
-    border-bottom: 1px solid #e8edf4;
-    border-radius: 15px 15px 0 0;
-  }
-
-  .trip-table-header h2 {
-    font-size: 18px;
-    font-weight: 700;
-  }
-
-  .trip-table-header p {
-    margin-top: 4px;
-    font-size: 10px;
-    line-height: 1.4;
-  }
-
-  .trip-list-column-head {
-    display: none;
-  }
-
-  .trip-full-list {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    padding: 12px;
-    overflow: visible;
-  }
-
-  .trip-full-row {
-    width: 100%;
-    min-height: 0;
-    padding: 15px;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 15px 12px;
-    align-items: start;
-    border: 1px solid #dce5ef;
-    border-radius: 12px;
-    background: #ffffff;
-    box-shadow: 0 2px 8px rgba(17, 40, 83, 0.04);
-  }
-
-  .trip-full-row:last-child {
-    border-bottom: 1px solid #dce5ef;
-  }
-
-  .trip-full-row:hover {
-    background: #ffffff;
-    box-shadow: 0 3px 10px rgba(17, 40, 83, 0.06);
-  }
-
-  .trip-mobile-label {
-    display: block;
-    margin-bottom: 6px;
-    color: #8a98aa;
-    font-size: 8px;
-    font-weight: 700;
-    line-height: 1.2;
-    text-transform: uppercase;
-    letter-spacing: 0.35px;
-  }
-
-  .trip-row-main {
-    grid-column: 1 / -1;
-    min-width: 0;
-  }
-
-  .trip-id-box {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .trip-id-icon {
-    width: 38px;
-    height: 38px;
-    flex: 0 0 38px;
-    border-radius: 9px;
-  }
-
-  .trip-id-box strong {
-    font-size: 13px;
-  }
-
-  .trip-id-box small {
-    margin-top: 2px;
-    font-size: 8px;
-  }
-
-  .trip-row-cell {
-    min-width: 0;
-  }
-
-  .trip-cell-with-icon {
-    width: 100%;
-    gap: 6px;
-  }
-
-  .trip-cell-with-icon strong,
-  .trip-cell-with-icon span {
-    font-size: 10px;
-    white-space: normal;
-    overflow: visible;
-    text-overflow: unset;
-  }
-
-  .trip-route-cell {
-    grid-column: 1 / -1;
-  }
-
-  .trip-row-route {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 10px;
-    white-space: normal;
-  }
-
-  .trip-row-route span {
-    overflow: visible;
-    text-overflow: unset;
-    white-space: normal;
-  }
-
-  .trip-row-vehicle-count {
-    min-height: 30px;
-    padding: 0 10px;
-    font-size: 10px;
-    border-radius: 8px;
-  }
-
-  .trip-status-badge {
-    min-height: 29px;
-    padding: 0 11px;
-    font-size: 9px;
-  }
-
-  .trip-date-cell {
-    font-size: 10px;
-    gap: 6px;
-  }
-
-  .trip-row-actions {
-    min-width: 0;
-    display: block;
-  }
-
-  .trip-edit-button {
-    width: 100%;
-    min-height: 34px;
-    padding: 0 12px;
-    font-size: 10px;
-    border-radius: 8px;
-  }
-
-  .trip-page-loading {
-    width: 100%;
-    min-height: 250px;
-    padding: 30px 15px;
-    font-size: 11px;
-  }
-
-  .trip-empty-state {
-    width: 100%;
-    min-height: 320px;
-    padding: 35px 20px;
-  }
-
-  .trip-empty-icon {
-    width: 54px;
-    height: 54px;
-    margin-bottom: 14px;
-    border-radius: 13px;
-  }
-
-  .trip-empty-state strong {
-    font-size: 15px;
-  }
-
-  .trip-empty-state p {
-    margin: 7px 0 17px;
-    font-size: 10.5px;
-    line-height: 1.5;
-  }
-
-  .trip-empty-state button {
-    min-height: 40px;
-    padding: 0 16px;
-    font-size: 10px;
-  }
-}
-
-/* =========================================================
-   PROFESSIONAL TYPOGRAPHY REFINEMENT
-   Tripdetails.css
-========================================================= */
-
-.trip-list-page {
-  font-family:
-    Inter,
-    "Segoe UI",
-    Roboto,
-    Helvetica,
-    Arial,
-    sans-serif;
-  color: #1d3559;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
-}
-
-.trip-page-eyebrow {
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.9px;
-}
-
-.trip-page-header h1 {
-  font-size: 28px;
-  font-weight: 700;
-  line-height: 1.2;
-  letter-spacing: -0.45px;
-}
-
-.trip-page-header p {
-  font-size: 11px;
-  font-weight: 400;
-  line-height: 1.55;
-}
-
-.trip-back-button,
-.trip-create-button {
-  font-size: 10.5px;
-  font-weight: 600;
-}
-
-.trip-total-badge {
-  font-size: 9.5px;
-  font-weight: 700;
-}
-
-.trip-table-header h2 {
-  font-size: 15px;
-  font-weight: 700;
-}
-
-.trip-table-header p {
-  font-size: 9.5px;
-  font-weight: 400;
-  line-height: 1.4;
-}
-
-.trip-list-column-head {
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.35px;
-}
-
-.trip-id-box strong {
-  font-size: 11px;
-  font-weight: 700;
-}
-
-.trip-id-box small {
-  font-size: 8px;
-  font-weight: 500;
-}
-
-.trip-cell-with-icon strong,
-.trip-cell-with-icon span {
-  font-size: 10px;
-  font-weight: 600;
-}
-
-.trip-row-route {
-  font-size: 9.5px;
-  font-weight: 600;
-}
-
-.trip-row-vehicle-count {
-  font-size: 9.5px;
-  font-weight: 700;
-}
-
-.trip-status-badge {
-  font-size: 8.5px;
-  font-weight: 700;
-}
-
-.trip-date-cell {
-  font-size: 9.5px;
-  font-weight: 500;
-}
-
-.trip-edit-button {
-  font-size: 9px;
-  font-weight: 650;
-}
-
-.trip-mobile-label {
-  font-size: 8px;
-  font-weight: 700;
-  letter-spacing: 0.25px;
-}
-
-.trip-page-loading,
-.trip-empty-state {
-  font-size: 10px;
-}
-
-.trip-empty-state strong {
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.trip-empty-state p {
-  font-size: 9.5px;
-  line-height: 1.5;
-}
-
-@media (max-width: 900px) {
-  .trip-page-header h1 {
-    font-size: 25px;
-  }
-}
-
 @media (max-width: 650px) {
+
   .trip-page-header h1 {
     font-size: 22px;
   }
 
+
   .trip-page-header p {
     font-size: 10px;
   }
+
 
   .trip-cell-with-icon strong,
   .trip-cell-with-icon span,
@@ -1498,7 +1073,635 @@
     font-size: 9.5px;
   }
 
+
   .trip-edit-button {
     font-size: 9px;
   }
+
+}
+
+
+/* =========================================
+   PHONE
+   <= 560px
+========================================= */
+
+@media (max-width: 560px) {
+
+  /* =====================================
+     PAGE
+  ===================================== */
+
+  .trip-list-page {
+    width: 100%;
+
+    min-height:
+      calc(100vh - 70px);
+
+    padding:
+      16px 12px 30px;
+
+    background:
+      #f4f7fb;
+  }
+
+
+  /* =====================================
+     TOP BUTTONS
+  ===================================== */
+
+  .trip-page-actions {
+    width: 100%;
+
+    margin-bottom: 22px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+
+  .trip-back-button,
+  .trip-create-button {
+    width: 48px;
+    height: 48px;
+
+    min-height: 48px;
+
+    padding: 0;
+
+    border-radius: 11px;
+  }
+
+
+  .trip-back-button span,
+  .trip-create-button span {
+    display: none;
+  }
+
+
+  .trip-back-button svg,
+  .trip-create-button svg {
+    width: 20px;
+    height: 20px;
+  }
+
+
+  /* =====================================
+     PAGE HEADER
+  ===================================== */
+
+  .trip-page-header {
+    width: 100%;
+
+    margin-bottom: 20px;
+
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+
+    gap: 12px;
+  }
+
+
+  .trip-page-eyebrow {
+    margin-bottom: 7px;
+
+    font-size: 10px;
+    font-weight: 700;
+
+    letter-spacing: 1px;
+  }
+
+
+  .trip-page-header h1 {
+    margin: 0;
+
+    font-size: 25px;
+    font-weight: 700;
+
+    line-height: 1.2;
+  }
+
+
+  .trip-page-header p {
+    margin-top: 8px;
+
+    font-size: 11px;
+
+    line-height: 1.5;
+  }
+
+
+  .trip-page-header-actions {
+    flex-shrink: 0;
+  }
+
+
+  .trip-total-badge {
+    display: none;
+  }
+
+
+  .trip-refresh-button {
+    width: 42px;
+    height: 42px;
+
+    border-radius: 10px;
+  }
+
+
+  /* =====================================
+     ERROR
+  ===================================== */
+
+  .trip-page-error {
+    width: 100%;
+
+    margin-bottom: 16px;
+
+    padding: 13px 14px;
+
+    border-radius: 10px;
+
+    font-size: 11px;
+  }
+
+
+  /* =====================================
+     TABLE CARD
+  ===================================== */
+
+  .trip-table-card {
+    width: 100%;
+
+    overflow: visible;
+
+    border:
+      1px solid #dfe7f1;
+
+    border-radius: 15px;
+
+    background: #ffffff;
+
+    box-shadow:
+      0 5px 18px
+      rgba(17, 40, 83, 0.06);
+  }
+
+
+  /* =====================================
+     TABLE HEADER
+  ===================================== */
+
+  .trip-table-header {
+    min-height: auto;
+
+    padding: 18px 17px;
+
+    border-bottom:
+      1px solid #e8edf4;
+
+    border-radius:
+      15px 15px 0 0;
+  }
+
+
+  .trip-table-header h2 {
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+
+  .trip-table-header p {
+    margin-top: 4px;
+
+    font-size: 10px;
+
+    line-height: 1.4;
+  }
+
+
+  .trip-list-column-head {
+    display: none;
+  }
+
+
+  /* =====================================
+     LIST
+  ===================================== */
+
+  .trip-full-list {
+    width: 100%;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 12px;
+
+    padding: 12px;
+
+    overflow: visible;
+  }
+
+
+  /* =====================================
+     MOBILE ROW CARD
+  ===================================== */
+
+  .trip-full-row {
+    width: 100%;
+
+    min-height: 0;
+
+    padding: 15px;
+
+    display: grid;
+
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+
+    gap: 15px 12px;
+
+    align-items: start;
+
+    border:
+      1px solid #dce5ef;
+
+    border-radius: 12px;
+
+    box-shadow:
+      0 2px 8px
+      rgba(17, 40, 83, 0.04);
+  }
+
+
+  /*
+     IMPORTANT:
+     Keep odd/even background
+     on mobile also.
+  */
+
+  .trip-full-list
+  .trip-full-row:nth-child(odd) {
+    background-color: #ffffff;
+  }
+
+
+  .trip-full-list
+  .trip-full-row:nth-child(even) {
+    background-color: #f1f6fd;
+  }
+
+
+  .trip-full-row:last-child {
+    border-bottom:
+      1px solid #dce5ef;
+  }
+
+
+  .trip-full-list
+  .trip-full-row:hover {
+    background-color: #e4efff;
+
+    box-shadow:
+      0 3px 10px
+      rgba(17, 40, 83, 0.06);
+  }
+
+
+  /* =====================================
+     MOBILE LABEL
+  ===================================== */
+
+  .trip-mobile-label {
+    display: block;
+
+    margin-bottom: 6px;
+
+    color: #8a98aa;
+
+    font-size: 8px;
+    font-weight: 700;
+
+    line-height: 1.2;
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.35px;
+  }
+
+
+  /* =====================================
+     TRIP
+  ===================================== */
+
+  .trip-row-main {
+    grid-column: 1 / -1;
+
+    min-width: 0;
+  }
+
+
+  .trip-id-box {
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+  }
+
+
+  .trip-id-icon {
+    width: 38px;
+    height: 38px;
+
+    flex: 0 0 38px;
+
+    border-radius: 9px;
+  }
+
+
+  .trip-id-box strong {
+    font-size: 13px;
+  }
+
+
+  .trip-id-box small {
+    margin-top: 2px;
+
+    font-size: 8px;
+  }
+
+
+  /* =====================================
+     CELLS
+  ===================================== */
+
+  .trip-row-cell {
+    min-width: 0;
+  }
+
+
+  .trip-cell-with-icon {
+    width: 100%;
+
+    gap: 6px;
+  }
+
+
+  .trip-cell-with-icon strong,
+  .trip-cell-with-icon span {
+    font-size: 10px;
+
+    white-space: normal;
+
+    overflow: visible;
+
+    text-overflow: unset;
+  }
+
+
+  /* =====================================
+     ROUTE
+  ===================================== */
+
+  .trip-route-cell {
+    grid-column: 1 / -1;
+  }
+
+
+  .trip-row-route {
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+
+    gap: 6px;
+
+    font-size: 10px;
+
+    white-space: normal;
+  }
+
+
+  .trip-row-route span {
+    overflow: visible;
+
+    text-overflow: unset;
+
+    white-space: normal;
+  }
+
+
+  /* =====================================
+     VEHICLES
+  ===================================== */
+
+  .trip-row-vehicle-count {
+    min-height: 30px;
+
+    padding: 0 10px;
+
+    font-size: 10px;
+
+    border-radius: 8px;
+  }
+
+
+  /* =====================================
+     STATUS
+  ===================================== */
+
+  .trip-status-badge {
+    min-height: 29px;
+
+    padding: 0 11px;
+
+    font-size: 9px;
+  }
+
+
+  /* =====================================
+     DATE
+  ===================================== */
+
+  .trip-date-cell {
+    gap: 6px;
+
+    font-size: 10px;
+  }
+
+
+  /* =====================================
+     ACTION
+  ===================================== */
+
+  .trip-row-actions {
+    min-width: 0;
+
+    display: block;
+  }
+
+
+  .trip-edit-button {
+    width: 100%;
+
+    min-height: 34px;
+
+    padding: 0 12px;
+
+    font-size: 10px;
+
+    border-radius: 8px;
+  }
+
+
+  /* =====================================
+     LOADING
+  ===================================== */
+
+  .trip-page-loading {
+    width: 100%;
+
+    min-height: 250px;
+
+    padding: 30px 15px;
+
+    font-size: 11px;
+  }
+
+
+  /* =====================================
+     EMPTY STATE
+  ===================================== */
+
+  .trip-empty-state {
+    width: 100%;
+
+    min-height: 320px;
+
+    padding: 35px 20px;
+  }
+
+
+  .trip-empty-icon {
+    width: 54px;
+    height: 54px;
+
+    margin-bottom: 14px;
+
+    border-radius: 13px;
+  }
+
+
+  .trip-empty-state strong {
+    font-size: 15px;
+  }
+
+
+  .trip-empty-state p {
+    margin: 7px 0 17px;
+
+    font-size: 10.5px;
+
+    line-height: 1.5;
+  }
+
+
+  .trip-empty-state button {
+    min-height: 40px;
+
+    padding: 0 16px;
+
+    font-size: 10px;
+  }
+
+}
+
+
+/* =========================================
+   VERY SMALL PHONE
+========================================= */
+
+@media (max-width: 390px) {
+
+  .trip-list-page {
+    padding:
+      14px 9px 25px;
+  }
+
+
+  .trip-page-header h1 {
+    font-size: 22px;
+  }
+
+
+  .trip-page-header p {
+    font-size: 10px;
+  }
+
+
+  .trip-full-list {
+    padding: 9px;
+  }
+
+
+  .trip-full-row {
+    padding: 13px;
+
+    gap: 13px 9px;
+  }
+
+
+  .trip-cell-with-icon strong,
+  .trip-cell-with-icon span,
+  .trip-row-route,
+  .trip-date-cell {
+    font-size: 9px;
+  }
+
+
+  .trip-edit-button {
+    font-size: 9px;
+  }
+
+}
+
+
+/* =========================================
+   FINAL ODD / EVEN OVERRIDE
+========================================= */
+
+/*
+   These are intentionally placed at
+   the end of the file so that desktop,
+   tablet and mobile rules cannot
+   accidentally remove the alternating
+   row colors.
+*/
+
+.trip-full-list
+.trip-full-row:nth-child(odd) {
+  background-color: #ffffff;
+}
+
+
+.trip-full-list
+.trip-full-row:nth-child(even) {
+  background-color: #f1f6fd;
+}
+
+
+/* =========================================
+   FINAL HOVER
+========================================= */
+
+.trip-full-list
+.trip-full-row:hover {
+  background-color: #e4efff;
 }

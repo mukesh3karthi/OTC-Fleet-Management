@@ -1,8 +1,299 @@
-import React, { useMemo, useState } from "react";
+import React, {
+  useState,
+} from "react";
 
-import { AlertTriangle, CalendarDays, CheckCircle2, ChevronDown, ChevronUp, CirclePause, Clock3, FileSignature, FileText, MessageSquareText, Navigation, Package, PackageCheck, Route, Truck } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+  CirclePause,
+  FileText,
+  MessageSquareText,
+  Navigation,
+  Package,
+  PackageCheck,
+  Route,
+  Truck,
+} from "lucide-react";
 
 import "./VehicleColumn.css";
+
+
+/* =========================================
+   SAFE TEXT
+========================================= */
+
+const safeText = (
+  value,
+  fallback = "-"
+) => {
+  if (
+    value === null ||
+    value === undefined ||
+    value === ""
+  ) {
+    return fallback;
+  }
+
+  if (
+    typeof value === "object"
+  ) {
+    /*
+      MongoDB ObjectId
+    */
+
+    if (value.$oid) {
+      return String(
+        value.$oid
+      );
+    }
+
+    /*
+      MongoDB Extended JSON date
+
+      {
+        $date: "2026-08-01..."
+      }
+    */
+
+    if (value.$date) {
+      return String(
+        value.$date
+      );
+    }
+
+    return fallback;
+  }
+
+  return String(
+    value
+  );
+};
+
+
+/* =========================================
+   SAFE DATE VALUE
+========================================= */
+
+const getSafeDateValue = (
+  value
+) => {
+  if (
+    value === null ||
+    value === undefined ||
+    value === ""
+  ) {
+    return null;
+  }
+
+  /*
+    MongoDB Extended JSON
+
+    {
+      "$date":
+      "2026-08-01T09:00:00.000Z"
+    }
+  */
+
+  if (
+    typeof value === "object" &&
+    !Array.isArray(value)
+  ) {
+    if (
+      value.$date !== undefined
+    ) {
+      return getSafeDateValue(
+        value.$date
+      );
+    }
+
+    /*
+      {
+        "$numberLong": "..."
+      }
+    */
+
+    if (
+      value.$numberLong !==
+      undefined
+    ) {
+      const timestamp =
+        Number(
+          value.$numberLong
+        );
+
+      if (
+        Number.isFinite(
+          timestamp
+        )
+      ) {
+        return timestamp;
+      }
+    }
+
+    return null;
+  }
+
+  return value;
+};
+
+
+/* =========================================
+   FORMAT DATE
+========================================= */
+
+const formatDate = (
+  value
+) => {
+  const safeValue =
+    getSafeDateValue(
+      value
+    );
+
+  if (!safeValue) {
+    return "-";
+  }
+
+  const date =
+    new Date(
+      safeValue
+    );
+
+  if (
+    Number.isNaN(
+      date.getTime()
+    )
+  ) {
+    return "-";
+  }
+
+  return date.toLocaleDateString(
+    "en-GB",
+    {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }
+  );
+};
+
+
+/* =========================================
+   LAST UPDATED
+========================================= */
+
+const formatLastUpdated = (
+  value
+) => {
+  const safeValue =
+    getSafeDateValue(
+      value
+    );
+
+  if (!safeValue) {
+    return "-";
+  }
+
+  const date =
+    new Date(
+      safeValue
+    );
+
+  if (
+    Number.isNaN(
+      date.getTime()
+    )
+  ) {
+    return "-";
+  }
+
+  return date.toLocaleString(
+    "en-IN",
+    {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    }
+  );
+};
+
+
+/* =========================================
+   KM
+========================================= */
+
+const formatKm = (
+  value
+) => {
+  if (
+    value === null ||
+    value === undefined ||
+    value === ""
+  ) {
+    return "-";
+  }
+
+  const numericValue =
+    Number(
+      value
+    );
+
+  if (
+    Number.isNaN(
+      numericValue
+    )
+  ) {
+    return "-";
+  }
+
+  return `${numericValue.toLocaleString(
+    "en-IN"
+  )} km`;
+};
+
+
+/* =========================================
+   DAYS
+========================================= */
+
+const formatDays = (
+  value
+) => {
+  if (
+    value === null ||
+    value === undefined ||
+    value === ""
+  ) {
+    return "-";
+  }
+
+  const numericValue =
+    Number(
+      value
+    );
+
+  if (
+    Number.isNaN(
+      numericValue
+    )
+  ) {
+    return "-";
+  }
+
+  return `${numericValue} ${
+    numericValue === 1
+      ? "Day"
+      : "Days"
+  }`;
+};
+
+
+/* =========================================
+   COMPONENT
+========================================= */
 
 const VehicleColumn = ({
   trip,
@@ -15,16 +306,29 @@ const VehicleColumn = ({
     setShowVehicles,
   ] = useState(false);
 
+
+  /* =====================================
+     EMPTY TRIP
+  ===================================== */
+
   if (!trip) {
     return (
-      <section className="vehicle-column-panel">
-        <div className="vehicle-column-empty">
-          <div className="vehicle-column-empty-icon">
+      <section
+        className="vehicle-column-panel"
+      >
+        <div
+          className="vehicle-column-empty"
+        >
+          <div
+            className="vehicle-column-empty-icon"
+          >
             <Truck size={24} />
           </div>
+
           <strong>
             No Trip Selected
           </strong>
+
           <p>
             Select a trip to view
             vehicle information.
@@ -34,6 +338,11 @@ const VehicleColumn = ({
     );
   }
 
+
+  /* =====================================
+     VEHICLES
+  ===================================== */
+
   const vehicles =
     Array.isArray(
       trip.vehicles
@@ -41,58 +350,135 @@ const VehicleColumn = ({
       ? trip.vehicles
       : [];
 
+
+  /* =====================================
+     VEHICLE ID
+  ===================================== */
+
   const getVehicleId = (
     vehicle
-  ) =>
-    vehicle?._id ||
-    vehicle?.id ||
-    vehicle?.vehicleSubId;
+  ) => {
+    if (!vehicle) {
+      return "";
+    }
+
+    return (
+      safeText(
+        vehicle._id,
+        ""
+      ) ||
+      safeText(
+        vehicle.id,
+        ""
+      ) ||
+      safeText(
+        vehicle.vehicleSubId,
+        ""
+      ) ||
+      safeText(
+        vehicle.vehicleNumber,
+        ""
+      )
+    );
+  };
+
+
+  /* =====================================
+     SELECTED VEHICLE ID
+  ===================================== */
 
   const selectedVehicleId =
-    getVehicleId(
-      selectedVehicle
-    );
+    typeof selectedVehicle ===
+    "object"
+      ? getVehicleId(
+          selectedVehicle
+        )
+      : safeText(
+          selectedVehicle,
+          ""
+        );
+
+
+  /* =====================================
+     ACTIVE VEHICLE
+  ===================================== */
 
   const activeVehicle =
-    selectedVehicle ||
+    vehicles.find(
+      (
+        vehicle
+      ) =>
+        getVehicleId(
+          vehicle
+        ) ===
+        selectedVehicleId
+    ) ||
+    (
+      typeof selectedVehicle ===
+      "object"
+        ? selectedVehicle
+        : null
+    ) ||
     vehicles[0] ||
     null;
 
+
+  /* =====================================
+     STATUS COUNTS
+  ===================================== */
+
   const movingCount =
     vehicles.filter(
-      (vehicle) =>
+      (
+        vehicle
+      ) =>
         vehicle.status ===
         "Moving"
     ).length;
 
+
+  const idleCount =
+    vehicles.filter(
+      (
+        vehicle
+      ) =>
+        vehicle.status ===
+        "Idle"
+    ).length;
+
+
   const breakdownCount =
     vehicles.filter(
-      (vehicle) =>
+      (
+        vehicle
+      ) =>
         vehicle.status ===
           "Breakdown" ||
         vehicle.status ===
           "Stopped"
     ).length;
 
-  const idleCount =
-    vehicles.filter(
-      (vehicle) =>
-        vehicle.status ===
-        "Idle"
-    ).length;
 
   const reachedCount =
     vehicles.filter(
-      (vehicle) =>
+      (
+        vehicle
+      ) =>
         vehicle.status ===
         "Reached"
     ).length;
+
+
+  /* =====================================
+     STATUS ICON
+  ===================================== */
 
   const getVehicleStatusIcon = (
     status
   ) => {
     if (
-      status === "Moving"
+      status ===
+      "Moving"
     ) {
       return (
         <Navigation size={10} />
@@ -111,7 +497,8 @@ const VehicleColumn = ({
     }
 
     if (
-      status === "Reached"
+      status ===
+      "Reached"
     ) {
       return (
         <CheckCircle2 size={10} />
@@ -123,16 +510,25 @@ const VehicleColumn = ({
     );
   };
 
+
+  /* =====================================
+     STATUS CLASS
+  ===================================== */
+
   const getVehicleStatusClass = (
     status
   ) => {
     if (
-      status === "Stopped"
+      status ===
+      "Stopped"
     ) {
       return "breakdown";
     }
 
-    if (getStatusClass) {
+    if (
+      typeof getStatusClass ===
+      "function"
+    ) {
       return getStatusClass(
         status
       );
@@ -148,215 +544,114 @@ const VehicleColumn = ({
       );
   };
 
-  const formatKm = (
-    value
-  ) => {
-    if (
-      value === undefined ||
-      value === null ||
-      value === ""
-    ) {
-      return "-";
-    }
 
-    const numericValue =
-      Number(value);
+  /* =====================================
+     DISTANCE
+  ===================================== */
 
-    if (
-      Number.isNaN(
-        numericValue
-      )
-    ) {
-      return `${value}`;
-    }
+  const totalKm =
+    Number(
+      trip.totalKm ??
+      trip.totalDistance ??
+      0
+    ) || 0;
 
-    return `${numericValue.toLocaleString(
-      "en-IN"
-    )} km`;
-  };
 
-  const formatDays = (
-    value
-  ) => {
-    if (
-      value === undefined ||
-      value === null ||
-      value === ""
-    ) {
-      return "-";
-    }
+  const kmCovered =
+    Number(
+      activeVehicle?.kmCovered ??
+      activeVehicle?.runningKm ??
+      trip.kmCovered ??
+      trip.coveredKm ??
+      0
+    ) || 0;
 
-    const numericValue =
-      Number(value);
 
-    if (
-      Number.isNaN(
-        numericValue
-      )
-    ) {
-      return `${value}`;
-    }
+  const balanceFromData =
+    trip.balanceKm ??
+    activeVehicle?.balanceKm;
 
-    return `${numericValue} ${
-      numericValue === 1
-        ? "Day"
-        : "Days"
-    }`;
-  };
 
-  const formatDate = (
-    value
-  ) => {
-    if (!value) {
-      return "-";
-    }
+  const balanceKm =
+    balanceFromData !==
+      undefined &&
+    balanceFromData !==
+      null &&
+    balanceFromData !== ""
+      ? Number(
+          balanceFromData
+        ) || 0
+      : Math.max(
+          totalKm -
+            kmCovered,
+          0
+        );
 
-    const date =
-      new Date(value);
 
-    if (
-      Number.isNaN(
-        date.getTime()
-      )
-    ) {
-      return value;
-    }
-
-    return date.toLocaleDateString(
-      "en-GB",
-      {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-      }
-    );
-  };
-
-  const formatLastUpdated = (
-    value
-  ) => {
-    if (!value) {
-      return "-";
-    }
-
-    const date =
-      new Date(value);
-
-    if (
-      Number.isNaN(
-        date.getTime()
-      )
-    ) {
-      return value;
-    }
-
-    return date.toLocaleString(
-      "en-IN",
-      {
-        day: "2-digit",
-        month: "short",
-        hour: "2-digit",
-        minute: "2-digit",
-      }
-    );
-  };
-
-  const metrics =
-    useMemo(
-      () => {
-        const totalKm =
-          Number(
-            trip.totalKm ??
-            trip.totalDistance ??
-            0
-          ) || 0;
-
-        const kmCovered =
-          Number(
-            activeVehicle
-              ?.kmCovered ??
-            activeVehicle
-              ?.runningKm ??
-            trip.kmCovered ??
-            trip.coveredKm ??
-            0
-          ) || 0;
-
-        const balanceFromData =
-          trip.balanceKm ??
-          activeVehicle
-            ?.balanceKm;
-
-        const balanceKm =
-          balanceFromData !==
-            undefined &&
-          balanceFromData !==
-            null &&
-          balanceFromData !==
-            ""
-            ? Number(
-                balanceFromData
-              ) || 0
-            : totalKm > 0
-              ? Math.max(
-                  totalKm -
-                    kmCovered,
-                  0
-                )
-              : 0;
-
-        return {
-          totalKm,
-          kmCovered,
-          balanceKm,
-        };
-      },
-      [
-        trip,
-        activeVehicle,
-      ]
-    );
+  /* =====================================
+     MOVEMENT
+  ===================================== */
 
   const currentPosition =
-    activeVehicle
-      ?.currentPosition ||
-    activeVehicle
-      ?.currentLocation ||
-    trip.currentPosition ||
-    "-";
+    safeText(
+      activeVehicle
+        ?.currentPosition ||
+      activeVehicle
+        ?.currentLocation ||
+      trip.currentPosition
+    );
+
 
   const yesterdayPosition =
-    activeVehicle
-      ?.yesterdayPosition ||
-    trip.yesterdayPosition ||
-    "-";
+    safeText(
+      activeVehicle
+        ?.yesterdayPosition ||
+      trip.yesterdayPosition
+    );
+
 
   const runningKm =
     activeVehicle
       ?.runningKm ??
     trip.runningKm ??
-    "-";
+    null;
+
 
   const currentDay =
     activeVehicle
       ?.currentDay ??
     trip.currentDay ??
-    "-";
+    null;
+
+
+  /* =====================================
+     TRIP DETAILS
+  ===================================== */
 
   const lsp =
-    trip.lsp ||
-    trip.logisticsServiceProvider ||
-    "-";
+    safeText(
+      trip.lsp ||
+      trip.logisticsServiceProvider
+    );
+
 
   const transitDays =
     trip.estimatedTransitDays ??
     trip.transitDays ??
-    "-";
+    null;
+
+
+  /* =====================================
+     LOADING
+  ===================================== */
 
   const loadingStatus =
-    activeVehicle
-      ?.loadingStatus ||
-    "Pending";
+    safeText(
+      activeVehicle
+        ?.loadingStatus,
+      "Pending"
+    );
+
 
   const loadingPointInDate =
     formatDate(
@@ -364,11 +659,13 @@ const VehicleColumn = ({
         ?.loadingPointInDate
     );
 
+
   const loadingDate =
     formatDate(
       activeVehicle
         ?.loadingDate
     );
+
 
   const loadingPointOutDate =
     formatDate(
@@ -376,20 +673,31 @@ const VehicleColumn = ({
         ?.loadingPointOutDate
     );
 
+
   const loadingHaltingDays =
     activeVehicle
       ?.loadingHaltingDays ??
-    "-";
+    null;
+
 
   const loadingRemarks =
-    activeVehicle
-      ?.loadingRemarks ||
-    "-";
+    safeText(
+      activeVehicle
+        ?.loadingRemarks
+    );
+
+
+  /* =====================================
+     UNLOADING
+  ===================================== */
 
   const unloadingStatus =
-    activeVehicle
-      ?.unloadingStatus ||
-    "Pending";
+    safeText(
+      activeVehicle
+        ?.unloadingStatus,
+      "Pending"
+    );
+
 
   const unloadingPointInDate =
     formatDate(
@@ -397,11 +705,13 @@ const VehicleColumn = ({
         ?.unloadingPointInDate
     );
 
+
   const unloadingDate =
     formatDate(
       activeVehicle
         ?.unloadingDate
     );
+
 
   const unloadingPointOutDate =
     formatDate(
@@ -409,35 +719,88 @@ const VehicleColumn = ({
         ?.unloadingPointOutDate
     );
 
+
   const unloadingHaltingDays =
     activeVehicle
       ?.unloadingHaltingDays ??
-    "-";
+    null;
+
 
   const unloadingRemarks =
-    activeVehicle
-      ?.unloadingRemarks ||
-    "-";
+    safeText(
+      activeVehicle
+        ?.unloadingRemarks
+    );
+
+
+  /* =====================================
+     LR
+  ===================================== */
+
+  const vehicleNumber =
+    safeText(
+      activeVehicle
+        ?.vehicleNumber
+    );
+
 
   const lrNo =
-    activeVehicle
-      ?.lrNo ||
-    "-";
+    safeText(
+      activeVehicle
+        ?.lrNo
+    );
+
+
+  const lrStatus =
+    safeText(
+      activeVehicle
+        ?.lrStatus
+    );
+
 
   const lrRemarks =
-    activeVehicle
-      ?.lrRemarks ||
-    "-";
+    safeText(
+      activeVehicle
+        ?.lrRemarks
+    );
+
 
   const lrSignature =
-    activeVehicle
-      ?.lrSignature ||
-    "-";
+    safeText(
+      activeVehicle
+        ?.lrSignature
+    );
+
+
+  /* =====================================
+     POD
+  ===================================== */
 
   const podStatus =
-    activeVehicle
-      ?.podStatus ||
-    "Pending";
+    safeText(
+      activeVehicle
+        ?.podStatus,
+      "Pending"
+    );
+
+
+  const courierName =
+    safeText(
+      activeVehicle
+        ?.courierName ||
+      activeVehicle
+        ?.podCourierName
+    );
+
+
+  const trackingId =
+    safeText(
+      activeVehicle
+        ?.trackingId ||
+      activeVehicle
+        ?.podTrackingId
+    );
+
 
   const podCourierDate =
     formatDate(
@@ -445,116 +808,217 @@ const VehicleColumn = ({
         ?.podCourierDate
     );
 
+
   const podRemarks =
-    activeVehicle
-      ?.podRemarks ||
-    "-";
+    safeText(
+      activeVehicle
+        ?.podRemarks
+    );
 
-  const vehicleNumber =
-    activeVehicle?.vehicleNumber ||
-    "-";
 
-  const lrStatus =
-    activeVehicle?.lrStatus ||
-    "-";
-
-  const courierName =
-    activeVehicle?.courierName ||
-    activeVehicle?.podCourierName ||
-    "-";
-
-  const trackingId =
-    activeVehicle?.trackingId ||
-    activeVehicle?.podTrackingId ||
-    "-";
+  /* =====================================
+     DRIVER
+  ===================================== */
 
   const driverName =
-    activeVehicle?.driverName ||
-    trip.driverName ||
-    "-";
+    safeText(
+      activeVehicle
+        ?.driverName ||
+      trip.driverName
+    );
+
 
   const driverNumber =
-    activeVehicle?.driverNumber ||
-    activeVehicle?.driverPhone ||
-    trip.driverNumber ||
-    trip.driverPhone ||
-    "-";
+    safeText(
+      activeVehicle
+        ?.driverNumber ||
+      activeVehicle
+        ?.driverPhone ||
+      trip.driverNumber ||
+      trip.driverPhone
+    );
+
+
+  /* =====================================
+     ESCORT
+  ===================================== */
 
   const escortVehicleNumber =
-    trip.escortVehicleNumber ||
-    "-";
+    safeText(
+      trip.escortVehicleNumber
+    );
+
 
   const escortName =
-    trip.escortName ||
-    "-";
+    safeText(
+      trip.escortName
+    );
+
 
   const escortContactNumber =
-    trip.escortContactNumber ||
-    trip.escortPhone ||
-    "-";
+    safeText(
+      trip.escortContactNumber ||
+      trip.escortPhone
+    );
+
+
+  /* =====================================
+     SUPERVISOR
+  ===================================== */
 
   const supervisorName =
-    trip.supervisorName ||
-    "-";
+    safeText(
+      trip.supervisorName
+    );
+
 
   const supervisorContact =
-    trip.supervisorContact ||
-    trip.supervisorPhone ||
-    "-";
+    safeText(
+      trip.supervisorContact ||
+      trip.supervisorPhone
+    );
+
+
+  /* =====================================
+     CLIENT
+  ===================================== */
+
+  const clientName =
+    safeText(
+      trip.customer
+    );
+
+
+  const clientContact =
+    safeText(
+      trip.clientContactPerson ||
+      trip.customerContactPerson ||
+      trip.contactPerson
+    );
+
+
+  const clientPhone =
+    safeText(
+      trip.clientPhone ||
+      trip.customerPhone ||
+      trip.contactNumber
+    );
+
+
+  /* =====================================
+     TRANSPORTER
+  ===================================== */
+
+  const transporterContact =
+    safeText(
+      trip.transporterContactPerson ||
+      trip.lspContactPerson
+    );
+
+
+  const transporterPhone =
+    safeText(
+      trip.transporterPhone ||
+      trip.lspPhone
+    );
+
+
+  /* =====================================
+     RENDER
+  ===================================== */
 
   return (
-    <section className="vehicle-column-panel">
-      {}
+    <section
+      className="vehicle-column-panel"
+    >
 
-      <div className="vehicle-status-strip">
-        <div className="status-strip-left">
-          <div className="status-item moving">
+      {/* =================================
+          STATUS STRIP
+      ================================= */}
+
+      <div
+        className="vehicle-status-strip"
+      >
+        <div
+          className="status-strip-left"
+        >
+
+          <div
+            className="status-item moving"
+          >
             <Navigation size={11} />
+
             <strong>
               {movingCount}
             </strong>
+
             <span>
               Moving
             </span>
           </div>
-          <div className="status-item breakdown">
+
+
+          <div
+            className="status-item breakdown"
+          >
             <AlertTriangle size={11} />
+
             <strong>
               {breakdownCount}
             </strong>
+
             <span>
               Breakdown
             </span>
           </div>
-          <div className="status-item idle">
+
+
+          <div
+            className="status-item idle"
+          >
             <CirclePause size={11} />
+
             <strong>
               {idleCount}
             </strong>
+
             <span>
               Idle
             </span>
           </div>
-          <div className="status-item reached">
+
+
+          <div
+            className="status-item reached"
+          >
             <CheckCircle2 size={11} />
+
             <strong>
               {reachedCount}
             </strong>
+
             <span>
               Reached
             </span>
           </div>
+
         </div>
+
+
         <button
           type="button"
-          className={`vehicle-toggle-btn ${
-            showVehicles
-              ? "open"
-              : ""
-          }`}
+          className={
+            `vehicle-toggle-btn ${
+              showVehicles
+                ? "open"
+                : ""
+            }`
+          }
           onClick={() =>
             setShowVehicles(
-              (previous) =>
+              (
+                previous
+              ) =>
                 !previous
             )
           }
@@ -574,25 +1038,45 @@ const VehicleColumn = ({
           )}
         </button>
       </div>
-      {}
+
+
+      {/* =================================
+          VEHICLE LIST
+      ================================= */}
 
       {showVehicles && (
-        <div className="vehicle-list-section">
-          <div className="vehicle-list-heading">
+
+        <div
+          className="vehicle-list-section"
+        >
+
+          <div
+            className="vehicle-list-heading"
+          >
             <div>
               <strong>
                 Vehicle List
               </strong>
+
               <span>
                 Select vehicle
               </span>
             </div>
-            <span className="vehicle-list-count">
+
+            <span
+              className="vehicle-list-count"
+            >
               {vehicles.length}
             </span>
           </div>
-          <div className="vehicle-mini-list">
+
+
+          <div
+            className="vehicle-mini-list"
+          >
+
             {vehicles.length > 0 ? (
+
               vehicles.map(
                 (
                   vehicle,
@@ -621,759 +1105,1156 @@ const VehicleColumn = ({
                         vehicleId ||
                         index
                       }
-                      className={`vehicle-mini-row ${
-                        active
-                          ? "active"
-                          : ""
-                      }`}
+                      className={
+                        `vehicle-mini-row ${
+                          active
+                            ? "active"
+                            : ""
+                        }`
+                      }
                       onClick={() =>
                         onSelectVehicle?.(
                           vehicleId
                         )
                       }
                     >
-                      <div className="vehicle-mini-main">
-                        <span className="vehicle-mini-truck">
+
+                      <div
+                        className="vehicle-mini-main"
+                      >
+
+                        <span
+                          className="vehicle-mini-truck"
+                        >
                           <Truck size={12} />
                         </span>
-                        <div className="vehicle-mini-info">
+
+
+                        <div
+                          className="vehicle-mini-info"
+                        >
                           <strong>
-                            {vehicle.vehicleNumber ||
-                              `Vehicle ${index + 1}`}
+                            {safeText(
+                              vehicle
+                                .vehicleNumber,
+                              `Vehicle ${
+                                index + 1
+                              }`
+                            )}
                           </strong>
+
                           <span>
-                            {vehicle.currentPosition ||
-                              vehicle.currentLocation ||
-                              "Location unavailable"}
+                            {safeText(
+                              vehicle
+                                .currentPosition ||
+                              vehicle
+                                .currentLocation,
+                              "Location unavailable"
+                            )}
                           </span>
                         </div>
+
                       </div>
-                      <div className="vehicle-mini-right">
+
+
+                      <div
+                        className="vehicle-mini-right"
+                      >
                         <span
-                          className={`vehicle-mini-status ${statusClass}`}
+                          className={
+                            `vehicle-mini-status ${statusClass}`
+                          }
                         >
                           {getVehicleStatusIcon(
                             vehicle.status
                           )}
 
-                          {vehicle.status ||
-                            "Unknown"}
+                          {safeText(
+                            vehicle.status,
+                            "Unknown"
+                          )}
                         </span>
+
                         <small>
                           {formatLastUpdated(
-                            vehicle.lastUpdated
+                            vehicle
+                              .lastUpdated
                           )}
                         </small>
                       </div>
+
                     </button>
                   );
                 }
               )
+
             ) : (
-              <div className="vehicle-mini-empty">
+
+              <div
+                className="vehicle-mini-empty"
+              >
                 No vehicles found.
               </div>
+
             )}
+
           </div>
+
         </div>
+
       )}
 
-      {}
 
-      <div className="trip-route-card">
-        <div className="trip-route-point">
+      {/* =================================
+          ROUTE
+      ================================= */}
+
+      <div
+        className="trip-route-card"
+      >
+
+        <div
+          className="trip-route-point"
+        >
           <span>
             Origin
           </span>
+
           <strong>
-            {trip.origin ||
-              "-"}
+            {safeText(
+              trip.origin
+            )}
           </strong>
         </div>
-        <div className="trip-route-direction">
-          <span className="route-line" />
-          <div className="route-center-content">
-            <span className="route-material-name">
-              {trip.materialType ||
-                "-"}
+
+
+        <div
+          className="trip-route-direction"
+        >
+          <span
+            className="route-line"
+          />
+
+          <div
+            className="route-center-content"
+          >
+            <span
+              className="route-material-name"
+            >
+              {safeText(
+                trip.materialType
+              )}
             </span>
-            <span className="route-vehicle-icon">
+
+            <span
+              className="route-vehicle-icon"
+            >
               <Truck size={13} />
             </span>
           </div>
-          <span className="route-line" />
+
+          <span
+            className="route-line"
+          />
         </div>
-        <div className="trip-route-point destination">
+
+
+        <div
+          className="trip-route-point destination"
+        >
           <span>
             Destination
           </span>
+
           <strong>
-            {trip.destination ||
-              "-"}
+            {safeText(
+              trip.destination
+            )}
           </strong>
         </div>
-      </div>
-      {}
 
-      <div className="trip-distance-summary">
-        <div className="distance-summary-item total">
+      </div>
+
+
+      {/* =================================
+          DISTANCE
+      ================================= */}
+
+      <div
+        className="trip-distance-summary"
+      >
+
+        <div
+          className="distance-summary-item total"
+        >
           <span>
             Total KM
           </span>
+
           <strong>
             {formatKm(
-              metrics.totalKm
+              totalKm
             )}
           </strong>
         </div>
-        <div className="distance-summary-item covered">
+
+
+        <div
+          className="distance-summary-item covered"
+        >
           <span>
             KM Covered
           </span>
+
           <strong>
             {formatKm(
-              metrics.kmCovered
+              kmCovered
             )}
           </strong>
         </div>
-        <div className="distance-summary-item balance">
+
+
+        <div
+          className="distance-summary-item balance"
+        >
           <span>
             Balance
           </span>
+
           <strong>
             {formatKm(
-              metrics.balanceKm
+              balanceKm
             )}
           </strong>
         </div>
-      </div>
-      {}
 
-      <div className="movement-card-section">
-        <div className="movement-heading-row">
-          <span className="section-heading-icon blue">
+      </div>
+
+
+      {/* =================================
+          MOVEMENT
+      ================================= */}
+
+      <div
+        className="movement-card-section"
+      >
+
+        <div
+          className="movement-heading-row"
+        >
+
+          <span
+            className="section-heading-icon blue"
+          >
             <Navigation size={12} />
           </span>
-          <div className="movement-heading-content">
-            <div className="movement-title-line">
+
+
+          <div
+            className="movement-heading-content"
+          >
+
+            <div
+              className="movement-title-line"
+            >
               <strong>
                 Movement Status
               </strong>
-              <span className="movement-vehicle-badge">
-                {activeVehicle?.vehicleNumber || "-"}
+
+              <span
+                className="movement-vehicle-badge"
+              >
+                {vehicleNumber}
               </span>
             </div>
-            <span className="movement-heading-subtitle">
+
+            <span
+              className="movement-heading-subtitle"
+            >
               Current vehicle movement
             </span>
+
           </div>
+
         </div>
-        <div className="movement-card-grid">
-          <div className="movement-info-card">
+
+
+        <div
+          className="movement-card-grid"
+        >
+
+          <div
+            className="movement-info-card"
+          >
             <span>
               Current Position
             </span>
+
             <strong>
               {currentPosition}
             </strong>
           </div>
-          <div className="movement-info-card">
+
+
+          <div
+            className="movement-info-card"
+          >
             <span>
               Yesterday Position
             </span>
+
             <strong>
               {yesterdayPosition}
             </strong>
           </div>
-          <div className="movement-info-card">
+
+
+          <div
+            className="movement-info-card"
+          >
             <span>
               Running KM
             </span>
+
             <strong>
-              {runningKm === "-"
-                ? "-"
-                : formatKm(
-                    runningKm
-                  )}
+              {formatKm(
+                runningKm
+              )}
             </strong>
           </div>
-          <div className="movement-info-card">
+
+
+          <div
+            className="movement-info-card"
+          >
             <span>
               Current Day
             </span>
+
             <strong>
-              {currentDay === "-"
+              {currentDay ===
+                null ||
+              currentDay ===
+                undefined
                 ? "-"
                 : `Day ${currentDay}`}
             </strong>
           </div>
-        </div>
-      </div>
-      {}
 
-      <div className="consignment-card">
-        <div className="consignment-title">
+        </div>
+
+      </div>
+
+
+      {/* =================================
+          TRIP DETAILS
+      ================================= */}
+
+      <div
+        className="consignment-card"
+      >
+
+        <div
+          className="consignment-title"
+        >
           <Package size={13} />
+
           <strong>
             Trip Details
           </strong>
         </div>
-        {}
 
-        <div className="trip-detail-group client-group">
-          <div className="trip-detail-group-title">
-            <span className="trip-detail-group-icon client">
+
+        {/* CLIENT */}
+
+        <div
+          className="trip-detail-group client-group"
+        >
+
+          <div
+            className="trip-detail-group-title"
+          >
+            <span
+              className="trip-detail-group-icon client"
+            >
               <Package size={12} />
             </span>
+
             <strong>
               Client Details
             </strong>
           </div>
-          <div className="trip-detail-row">
-            <span className="trip-detail-label">
+
+
+          <div
+            className="trip-detail-row"
+          >
+            <span
+              className="trip-detail-label"
+            >
               Client Name
             </span>
-            <span className="trip-detail-colon">
+
+            <span
+              className="trip-detail-colon"
+            >
               :
             </span>
-            <strong className="trip-detail-value">
-              {trip.customer || "-"}
+
+            <strong
+              className="trip-detail-value"
+            >
+              {clientName}
             </strong>
           </div>
-          <div className="trip-detail-row">
-            <span className="trip-detail-label">
+
+
+          <div
+            className="trip-detail-row"
+          >
+            <span
+              className="trip-detail-label"
+            >
               Contact Person
             </span>
-            <span className="trip-detail-colon">
+
+            <span
+              className="trip-detail-colon"
+            >
               :
             </span>
-            <strong className="trip-detail-value">
-              {trip.clientContactPerson ||
-                trip.customerContactPerson ||
-                trip.contactPerson ||
-                "-"}
+
+            <strong
+              className="trip-detail-value"
+            >
+              {clientContact}
             </strong>
           </div>
-          <div className="trip-detail-row">
-            <span className="trip-detail-label">
+
+
+          <div
+            className="trip-detail-row"
+          >
+            <span
+              className="trip-detail-label"
+            >
               Phone No.
             </span>
-            <span className="trip-detail-colon">
+
+            <span
+              className="trip-detail-colon"
+            >
               :
             </span>
-            <strong className="trip-detail-value">
-              {trip.clientPhone ||
-                trip.customerPhone ||
-                trip.contactNumber ||
-                "-"}
+
+            <strong
+              className="trip-detail-value"
+            >
+              {clientPhone}
             </strong>
           </div>
-        </div>
-        {}
 
-        <div className="trip-detail-group transporter-group">
-          <div className="trip-detail-group-title">
-            <span className="trip-detail-group-icon transporter">
+        </div>
+
+
+        {/* TRANSPORTER */}
+
+        <div
+          className="trip-detail-group transporter-group"
+        >
+
+          <div
+            className="trip-detail-group-title"
+          >
+            <span
+              className="trip-detail-group-icon transporter"
+            >
               <Truck size={12} />
             </span>
+
             <strong>
               Transporter Details
             </strong>
           </div>
-          <div className="trip-detail-row">
-            <span className="trip-detail-label">
+
+
+          <div
+            className="trip-detail-row"
+          >
+            <span
+              className="trip-detail-label"
+            >
               Transporter
             </span>
-            <span className="trip-detail-colon">
+
+            <span
+              className="trip-detail-colon"
+            >
               :
             </span>
-            <strong className="trip-detail-value">
+
+            <strong
+              className="trip-detail-value"
+            >
               {lsp}
             </strong>
           </div>
-          <div className="trip-detail-row">
-            <span className="trip-detail-label">
+
+
+          <div
+            className="trip-detail-row"
+          >
+            <span
+              className="trip-detail-label"
+            >
               Contact Person
             </span>
-            <span className="trip-detail-colon">
+
+            <span
+              className="trip-detail-colon"
+            >
               :
             </span>
-            <strong className="trip-detail-value">
-              {trip.transporterContactPerson ||
-                trip.lspContactPerson ||
-                "-"}
+
+            <strong
+              className="trip-detail-value"
+            >
+              {transporterContact}
             </strong>
           </div>
-          <div className="trip-detail-row">
-            <span className="trip-detail-label">
+
+
+          <div
+            className="trip-detail-row"
+          >
+            <span
+              className="trip-detail-label"
+            >
               Phone No.
             </span>
-            <span className="trip-detail-colon">
+
+            <span
+              className="trip-detail-colon"
+            >
               :
             </span>
-            <strong className="trip-detail-value">
-              {trip.transporterPhone ||
-                trip.lspPhone ||
-                "-"}
+
+            <strong
+              className="trip-detail-value"
+            >
+              {transporterPhone}
             </strong>
           </div>
-        </div>
-        {}
 
-        <div className="transit-day-row">
+        </div>
+
+
+        {/* TRANSIT */}
+
+        <div
+          className="transit-day-row"
+        >
           <div>
             <Route size={12} />
+
             <span>
               Estimated Transit
             </span>
           </div>
+
           <strong>
-            {transitDays === "-"
-              ? "-"
-              : formatDays(
-                  transitDays
-                )}
+            {formatDays(
+              transitDays
+            )}
           </strong>
         </div>
-      </div>
-      {}
 
-      <div className="operation-details-section">
-        <div className="operation-main-grid">
-          {}
 
-          <div className="simple-operation-card loading-card">
-            <div className="simple-operation-header">
-              <div className="simple-operation-title">
-                <span className="simple-operation-icon loading">
-                  <Truck size={13} />
-                </span>
-                <div>
-                  <strong>
-                    Loading Point
-                  </strong>
-                  <span>
-                    Dispatch information
+        {/* =================================
+            LOADING + UNLOADING
+        ================================= */}
+
+        <div
+          className="operation-details-section"
+        >
+
+          <div
+            className="operation-main-grid"
+          >
+
+            {/* LOADING */}
+
+            <div
+              className="simple-operation-card loading-card"
+            >
+
+              <div
+                className="simple-operation-header"
+              >
+
+                <div
+                  className="simple-operation-title"
+                >
+                  <span
+                    className="simple-operation-icon loading"
+                  >
+                    <Truck size={13} />
                   </span>
+
+                  <div>
+                    <strong>
+                      Loading Point
+                    </strong>
+
+                    <span>
+                      Dispatch information
+                    </span>
+                  </div>
                 </div>
+
+
+                <span
+                  className="simple-operation-status loading"
+                >
+                  {loadingStatus}
+                </span>
+
               </div>
-              <span className="simple-operation-status loading">
-                {loadingStatus}
-              </span>
+
+
+              <div
+                className="simple-operation-details"
+              >
+
+                <DetailRow
+                  label="LP In Date"
+                  value={
+                    loadingPointInDate
+                  }
+                />
+
+                <DetailRow
+                  label="Loading Date"
+                  value={
+                    loadingDate
+                  }
+                />
+
+                <DetailRow
+                  label="LP Out Date"
+                  value={
+                    loadingPointOutDate
+                  }
+                />
+
+                <DetailRow
+                  label="Halting Days"
+                  value={
+                    formatDays(
+                      loadingHaltingDays
+                    )
+                  }
+                  halting
+                />
+
+
+                <div
+                  className="simple-remarks-box"
+                >
+                  <div
+                    className="simple-remarks-heading"
+                  >
+                    <MessageSquareText
+                      size={10}
+                    />
+
+                    <span>
+                      Remarks
+                    </span>
+                  </div>
+
+                  <div
+                    className="simple-remarks-value"
+                  >
+                    {loadingRemarks}
+                  </div>
+                </div>
+
+              </div>
+
             </div>
-            <div className="simple-operation-details">
-              <div className="simple-detail-row">
-                <span className="simple-detail-label">
-                  LP In Date
-                </span>
-                <span className="simple-detail-colon">
-                  :
-                </span>
-                <strong className="simple-detail-value">
-                  {loadingPointInDate}
-                </strong>
-              </div>
-              <div className="simple-detail-row">
-                <span className="simple-detail-label">
-                  Loading Date
-                </span>
-                <span className="simple-detail-colon">
-                  :
-                </span>
-                <strong className="simple-detail-value">
-                  {loadingDate}
-                </strong>
-              </div>
-              <div className="simple-detail-row">
-                <span className="simple-detail-label">
-                  LP Out Date
-                </span>
-                <span className="simple-detail-colon">
-                  :
-                </span>
-                <strong className="simple-detail-value">
-                  {loadingPointOutDate}
-                </strong>
-              </div>
-              <div className="simple-detail-row">
-                <span className="simple-detail-label">
-                  Halting Days
-                </span>
-                <span className="simple-detail-colon">
-                  :
-                </span>
-                <strong className="simple-detail-value halting">
-                  {formatDays(
-                    loadingHaltingDays
-                  )}
-                </strong>
-              </div>
-              <div className="simple-remarks-box">
-                <div className="simple-remarks-heading">
-                  <MessageSquareText size={10} />
-                  <span>
-                    Remarks
+
+
+            {/* UNLOADING */}
+
+            <div
+              className="simple-operation-card unloading-card"
+            >
+
+              <div
+                className="simple-operation-header"
+              >
+
+                <div
+                  className="simple-operation-title"
+                >
+                  <span
+                    className="simple-operation-icon unloading"
+                  >
+                    <PackageCheck
+                      size={13}
+                    />
                   </span>
+
+                  <div>
+                    <strong>
+                      Unloading Point
+                    </strong>
+
+                    <span>
+                      Delivery information
+                    </span>
+                  </div>
                 </div>
-                <div className="simple-remarks-value">
-                  {loadingRemarks || "-"}
-                </div>
+
+
+                <span
+                  className="simple-operation-status unloading"
+                >
+                  {unloadingStatus}
+                </span>
+
               </div>
+
+
+              <div
+                className="simple-operation-details"
+              >
+
+                <DetailRow
+                  label="UP In Date"
+                  value={
+                    unloadingPointInDate
+                  }
+                />
+
+                <DetailRow
+                  label="Unloading Date"
+                  value={
+                    unloadingDate
+                  }
+                />
+
+                <DetailRow
+                  label="UP Out Date"
+                  value={
+                    unloadingPointOutDate
+                  }
+                />
+
+                <DetailRow
+                  label="Halting Days"
+                  value={
+                    formatDays(
+                      unloadingHaltingDays
+                    )
+                  }
+                  halting
+                />
+
+
+                <div
+                  className="simple-remarks-box"
+                >
+                  <div
+                    className="simple-remarks-heading"
+                  >
+                    <MessageSquareText
+                      size={10}
+                    />
+
+                    <span>
+                      Remarks
+                    </span>
+                  </div>
+
+                  <div
+                    className="simple-remarks-value"
+                  >
+                    {unloadingRemarks}
+                  </div>
+                </div>
+
+              </div>
+
             </div>
+
           </div>
-          {}
 
-          <div className="simple-operation-card unloading-card">
-            <div className="simple-operation-header">
-              <div className="simple-operation-title">
-                <span className="simple-operation-icon unloading">
-                  <PackageCheck size={13} />
-                </span>
-                <div>
-                  <strong>
-                    Unloading Point
-                  </strong>
-                  <span>
-                    Delivery information
-                  </span>
-                </div>
-              </div>
-              <span className="simple-operation-status unloading">
-                {unloadingStatus}
-              </span>
-            </div>
-            <div className="simple-operation-details">
-              <div className="simple-detail-row">
-                <span className="simple-detail-label">
-                  UP In Date
-                </span>
-                <span className="simple-detail-colon">
-                  :
-                </span>
-                <strong className="simple-detail-value">
-                  {unloadingPointInDate}
-                </strong>
-              </div>
-              <div className="simple-detail-row">
-                <span className="simple-detail-label">
-                  Unloading Date
-                </span>
-                <span className="simple-detail-colon">
-                  :
-                </span>
-                <strong className="simple-detail-value">
-                  {unloadingDate}
-                </strong>
-              </div>
-              <div className="simple-detail-row">
-                <span className="simple-detail-label">
-                  UP Out Date
-                </span>
-                <span className="simple-detail-colon">
-                  :
-                </span>
-                <strong className="simple-detail-value">
-                  {unloadingPointOutDate}
-                </strong>
-              </div>
-              <div className="simple-detail-row">
-                <span className="simple-detail-label">
-                  Halting Days
-                </span>
-                <span className="simple-detail-colon">
-                  :
-                </span>
-                <strong className="simple-detail-value halting">
-                  {formatDays(
-                    unloadingHaltingDays
-                  )}
-                </strong>
-              </div>
-              <div className="simple-remarks-box">
-                <div className="simple-remarks-heading">
-                  <MessageSquareText size={10} />
-                  <span>
-                    Remarks
-                  </span>
-                </div>
-                <div className="simple-remarks-value">
-                  {unloadingRemarks || "-"}
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
-        {}
 
-        <div className="lr-pod-card">
-          {}
 
-          <div className="lr-pod-heading">
+        {/* =================================
+            LR & POD
+        ================================= */}
+
+        <div
+          className="lr-pod-card"
+        >
+
+          <div
+            className="lr-pod-heading"
+          >
             <FileText size={12} />
+
             <strong>
               LR & POD Details
             </strong>
           </div>
-          {}
 
-          <div className="lr-primary-grid">
-            <div className="lr-primary-item">
-              <span>
-                Vehicle No.
-              </span>
-              <strong>
-                {vehicleNumber}
-              </strong>
-            </div>
-            <div className="lr-primary-item">
-              <span>
-                LR No.
-              </span>
-              <strong>
-                {lrNo}
-              </strong>
-            </div>
-            <div className="lr-primary-item">
-              <span>
-                LR Status
-              </span>
-              <strong>
-                {lrStatus}
-              </strong>
-            </div>
-            <div className="lr-primary-item">
-              <span>
-                LR Signature
-              </span>
-              <strong>
-                {lrSignature}
-              </strong>
-            </div>
+
+          <div
+            className="lr-primary-grid"
+          >
+
+            <PrimaryItem
+              label="Vehicle No."
+              value={
+                vehicleNumber
+              }
+            />
+
+            <PrimaryItem
+              label="LR No."
+              value={
+                lrNo
+              }
+            />
+
+            <PrimaryItem
+              label="LR Status"
+              value={
+                lrStatus
+              }
+            />
+
+            <PrimaryItem
+              label="LR Signature"
+              value={
+                lrSignature
+              }
+            />
+
           </div>
-          {}
 
-          <div className="lr-remarks-box">
-            <div className="lr-remarks-label">
-              <MessageSquareText size={10} />
+
+          <div
+            className="lr-remarks-box"
+          >
+            <div
+              className="lr-remarks-label"
+            >
+              <MessageSquareText
+                size={10}
+              />
+
               <span>
                 LR Remarks
               </span>
             </div>
-            <div className="lr-remarks-value">
+
+            <div
+              className="lr-remarks-value"
+            >
               {lrRemarks}
             </div>
           </div>
-          {}
 
-          <div className="pod-details-grid">
-            <div className="pod-detail-item">
-              <span>
-                POD Status
-              </span>
-              <strong>
-                {podStatus}
-              </strong>
-            </div>
-            <div className="pod-detail-item">
-              <span>
-                Courier Name
-              </span>
-              <strong>
-                {courierName}
-              </strong>
-            </div>
-            <div className="pod-detail-item">
-              <span>
-                Tracking ID
-              </span>
-              <strong>
-                {trackingId}
-              </strong>
-            </div>
-            <div className="pod-detail-item">
-              <span>
-                Courier Date
-              </span>
-              <strong>
-                {podCourierDate}
-              </strong>
-            </div>
+
+          <div
+            className="pod-details-grid"
+          >
+
+            <PrimaryItem
+              pod
+              label="POD Status"
+              value={
+                podStatus
+              }
+            />
+
+            <PrimaryItem
+              pod
+              label="Courier Name"
+              value={
+                courierName
+              }
+            />
+
+            <PrimaryItem
+              pod
+              label="Tracking ID"
+              value={
+                trackingId
+              }
+            />
+
+            <PrimaryItem
+              pod
+              label="Courier Date"
+              value={
+                podCourierDate
+              }
+            />
+
           </div>
-          {}
 
-          <div className="lr-person-section driver-section">
-            <div className="lr-person-heading">
+
+          {/* DRIVER */}
+
+          <PersonSection
+            className="driver-section"
+            icon={
               <Truck size={11} />
-              <strong>
-                Driver Details
-              </strong>
-            </div>
-            <div className="lr-person-content">
-              <div className="lr-person-row">
-                <span>
-                  Driver Name
-                </span>
-                <span className="lr-person-colon">
-                  :
-                </span>
-                <strong>
-                  {driverName}
-                </strong>
-              </div>
-              <div className="lr-person-row">
-                <span>
-                  Driver Number
-                </span>
-                <span className="lr-person-colon">
-                  :
-                </span>
-                <strong>
-                  {driverNumber}
-                </strong>
-              </div>
-            </div>
-          </div>
-          {}
+            }
+            title="Driver Details"
+            rows={[
+              [
+                "Driver Name",
+                driverName,
+              ],
+              [
+                "Driver Number",
+                driverNumber,
+              ],
+            ]}
+          />
 
-          <div className="lr-person-section escort-section">
-            <div className="lr-person-heading">
-              <Navigation size={11} />
-              <strong>
-                Escort Details
-              </strong>
-            </div>
-            <div className="lr-person-content">
-              <div className="lr-person-row">
-                <span>
-                  Vehicle Number
-                </span>
-                <span className="lr-person-colon">
-                  :
-                </span>
-                <strong>
-                  {escortVehicleNumber}
-                </strong>
-              </div>
-              <div className="lr-person-row">
-                <span>
-                  Name
-                </span>
-                <span className="lr-person-colon">
-                  :
-                </span>
-                <strong>
-                  {escortName}
-                </strong>
-              </div>
-              <div className="lr-person-row">
-                <span>
-                  Contact Number
-                </span>
-                <span className="lr-person-colon">
-                  :
-                </span>
-                <strong>
-                  {escortContactNumber}
-                </strong>
-              </div>
-            </div>
-          </div>
-          {}
 
-          <div className="lr-person-section supervisor-section">
-            <div className="lr-person-heading">
-              <CheckCircle2 size={11} />
-              <strong>
-                Supervisor Details
-              </strong>
-            </div>
-            <div className="lr-person-content">
-              <div className="lr-person-row">
-                <span>
-                  Name
-                </span>
-                <span className="lr-person-colon">
-                  :
-                </span>
-                <strong>
-                  {supervisorName}
-                </strong>
-              </div>
-              <div className="lr-person-row">
-                <span>
-                  Contact
-                </span>
-                <span className="lr-person-colon">
-                  :
-                </span>
-                <strong>
-                  {supervisorContact}
-                </strong>
-              </div>
-            </div>
-          </div>
-          {}
+          {/* ESCORT */}
 
-          <div className="pod-remarks-box">
-            <div className="pod-remarks-label">
-              <MessageSquareText size={10} />
+          <PersonSection
+            className="escort-section"
+            icon={
+              <Navigation
+                size={11}
+              />
+            }
+            title="Escort Details"
+            rows={[
+              [
+                "Vehicle Number",
+                escortVehicleNumber,
+              ],
+              [
+                "Name",
+                escortName,
+              ],
+              [
+                "Contact Number",
+                escortContactNumber,
+              ],
+            ]}
+          />
+
+
+          {/* SUPERVISOR */}
+
+          <PersonSection
+            className="supervisor-section"
+            icon={
+              <CheckCircle2
+                size={11}
+              />
+            }
+            title="Supervisor Details"
+            rows={[
+              [
+                "Name",
+                supervisorName,
+              ],
+              [
+                "Contact",
+                supervisorContact,
+              ],
+            ]}
+          />
+
+
+          {/* POD REMARKS */}
+
+          <div
+            className="pod-remarks-box"
+          >
+            <div
+              className="pod-remarks-label"
+            >
+              <MessageSquareText
+                size={10}
+              />
+
               <span>
                 POD Remarks
               </span>
             </div>
-            <div className="pod-remarks-value">
+
+            <div
+              className="pod-remarks-value"
+            >
               {podRemarks}
             </div>
           </div>
+
         </div>
+
       </div>
+
     </section>
   );
 };
 
-const OperationItem = ({
-  icon,
+
+/* =========================================
+   DETAIL ROW
+========================================= */
+
+const DetailRow = ({
   label,
   value,
-}) => (
-  <div className="operation-info-item">
-    <div className="operation-info-label">
-      {icon}
+  halting = false,
+}) => {
+  return (
+    <div
+      className="simple-detail-row"
+    >
+      <span
+        className="simple-detail-label"
+      >
+        {label}
+      </span>
 
+      <span
+        className="simple-detail-colon"
+      >
+        :
+      </span>
+
+      <strong
+        className={
+          `simple-detail-value ${
+            halting
+              ? "halting"
+              : ""
+          }`
+        }
+      >
+        {safeText(
+          value
+        )}
+      </strong>
+    </div>
+  );
+};
+
+
+/* =========================================
+   PRIMARY ITEM
+========================================= */
+
+const PrimaryItem = ({
+  label,
+  value,
+  pod = false,
+}) => {
+  return (
+    <div
+      className={
+        pod
+          ? "pod-detail-item"
+          : "lr-primary-item"
+      }
+    >
       <span>
         {label}
       </span>
-    </div>
-    <strong>
-      {value}
-    </strong>
-  </div>
-);
 
-const DocumentItem = ({
+      <strong>
+        {safeText(
+          value
+        )}
+      </strong>
+    </div>
+  );
+};
+
+
+/* =========================================
+   PERSON SECTION
+========================================= */
+
+const PersonSection = ({
+  className = "",
   icon,
-  label,
-  value,
-  wide = false,
-}) => (
-  <div
-    className={`document-info-item ${
-      wide
-        ? "wide"
-        : ""
-    }`}
-  >
-    <div className="document-info-label">
-      {icon}
+  title,
+  rows = [],
+}) => {
+  return (
+    <div
+      className={
+        `lr-person-section ${className}`
+      }
+    >
 
-      <span>
-        {label}
-      </span>
+      <div
+        className="lr-person-heading"
+      >
+        {icon}
+
+        <strong>
+          {title}
+        </strong>
+      </div>
+
+
+      <div
+        className="lr-person-content"
+      >
+
+        {rows.map(
+          (
+            [
+              label,
+              value,
+            ]
+          ) => (
+            <div
+              className="lr-person-row"
+              key={label}
+            >
+              <span>
+                {label}
+              </span>
+
+              <span
+                className="lr-person-colon"
+              >
+                :
+              </span>
+
+              <strong>
+                {safeText(
+                  value
+                )}
+              </strong>
+            </div>
+          )
+        )}
+
+      </div>
+
     </div>
-    <strong>
-      {value}
-    </strong>
-  </div>
-);
+  );
+};
+
 
 export default VehicleColumn;
