@@ -3122,7 +3122,7 @@ const Vehicledocument = () => {
           Header — Refresh button removed
       ====================================== */}
 
-      <header className="vehicle-document-header">
+      {/* <header className="vehicle-document-header">
         <div className="vehicle-document-heading">
           <span className="vehicle-document-eyebrow">
             Fleet Compliance
@@ -3138,7 +3138,7 @@ const Vehicledocument = () => {
             compliance for every vehicle.
           </p>
         </div>
-      </header>
+      </header> */}
 
       {/* ======================================
           Error
