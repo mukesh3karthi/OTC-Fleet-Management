@@ -283,11 +283,10 @@ const formatDays = (
     return "-";
   }
 
-  return `${numericValue} ${
-    numericValue === 1
+  return `${numericValue} ${numericValue === 1
       ? "Day"
       : "Days"
-  }`;
+    }`;
 };
 
 
@@ -389,14 +388,14 @@ const VehicleColumn = ({
 
   const selectedVehicleId =
     typeof selectedVehicle ===
-    "object"
+      "object"
       ? getVehicleId(
-          selectedVehicle
-        )
+        selectedVehicle
+      )
       : safeText(
-          selectedVehicle,
-          ""
-        );
+        selectedVehicle,
+        ""
+      );
 
 
   /* =====================================
@@ -415,7 +414,7 @@ const VehicleColumn = ({
     ) ||
     (
       typeof selectedVehicle ===
-      "object"
+        "object"
         ? selectedVehicle
         : null
     ) ||
@@ -453,9 +452,9 @@ const VehicleColumn = ({
         vehicle
       ) =>
         vehicle.status ===
-          "Breakdown" ||
+        "Breakdown" ||
         vehicle.status ===
-          "Stopped"
+        "Stopped"
     ).length;
 
 
@@ -487,9 +486,9 @@ const VehicleColumn = ({
 
     if (
       status ===
-        "Breakdown" ||
+      "Breakdown" ||
       status ===
-        "Stopped"
+      "Stopped"
     ) {
       return (
         <AlertTriangle size={10} />
@@ -575,17 +574,17 @@ const VehicleColumn = ({
   const balanceKm =
     balanceFromData !==
       undefined &&
-    balanceFromData !==
+      balanceFromData !==
       null &&
-    balanceFromData !== ""
+      balanceFromData !== ""
       ? Number(
-          balanceFromData
-        ) || 0
+        balanceFromData
+      ) || 0
       : Math.max(
-          totalKm -
-            kmCovered,
-          0
-        );
+        totalKm -
+        kmCovered,
+        0
+      );
 
 
   /* =====================================
@@ -1008,10 +1007,9 @@ const VehicleColumn = ({
         <button
           type="button"
           className={
-            `vehicle-toggle-btn ${
-              showVehicles
-                ? "open"
-                : ""
+            `vehicle-toggle-btn ${showVehicles
+              ? "open"
+              : ""
             }`
           }
           onClick={() =>
@@ -1090,7 +1088,7 @@ const VehicleColumn = ({
                   const active =
                     selectedVehicleId
                       ? selectedVehicleId ===
-                        vehicleId
+                      vehicleId
                       : index === 0;
 
                   const statusClass =
@@ -1106,10 +1104,9 @@ const VehicleColumn = ({
                         index
                       }
                       className={
-                        `vehicle-mini-row ${
-                          active
-                            ? "active"
-                            : ""
+                        `vehicle-mini-row ${active
+                          ? "active"
+                          : ""
                         }`
                       }
                       onClick={() =>
@@ -1137,8 +1134,7 @@ const VehicleColumn = ({
                             {safeText(
                               vehicle
                                 .vehicleNumber,
-                              `Vehicle ${
-                                index + 1
+                              `Vehicle ${index + 1
                               }`
                             )}
                           </strong>
@@ -1434,7 +1430,7 @@ const VehicleColumn = ({
             <strong>
               {currentDay ===
                 null ||
-              currentDay ===
+                currentDay ===
                 undefined
                 ? "-"
                 : `Day ${currentDay}`}
@@ -1450,204 +1446,7 @@ const VehicleColumn = ({
           TRIP DETAILS
       ================================= */}
 
-      <div
-        className="consignment-card"
-      >
-
-        <div
-          className="consignment-title"
-        >
-          <Package size={13} />
-
-          <strong>
-            Trip Details
-          </strong>
-        </div>
-
-
-        {/* CLIENT */}
-
-        <div
-          className="trip-detail-group client-group"
-        >
-
-          <div
-            className="trip-detail-group-title"
-          >
-            <span
-              className="trip-detail-group-icon client"
-            >
-              <Package size={12} />
-            </span>
-
-            <strong>
-              Client Details
-            </strong>
-          </div>
-
-
-          <div
-            className="trip-detail-row"
-          >
-            <span
-              className="trip-detail-label"
-            >
-              Client Name
-            </span>
-
-            <span
-              className="trip-detail-colon"
-            >
-              :
-            </span>
-
-            <strong
-              className="trip-detail-value"
-            >
-              {clientName}
-            </strong>
-          </div>
-
-
-          <div
-            className="trip-detail-row"
-          >
-            <span
-              className="trip-detail-label"
-            >
-              Contact Person
-            </span>
-
-            <span
-              className="trip-detail-colon"
-            >
-              :
-            </span>
-
-            <strong
-              className="trip-detail-value"
-            >
-              {clientContact}
-            </strong>
-          </div>
-
-
-          <div
-            className="trip-detail-row"
-          >
-            <span
-              className="trip-detail-label"
-            >
-              Phone No.
-            </span>
-
-            <span
-              className="trip-detail-colon"
-            >
-              :
-            </span>
-
-            <strong
-              className="trip-detail-value"
-            >
-              {clientPhone}
-            </strong>
-          </div>
-
-        </div>
-
-
-        {/* TRANSPORTER */}
-
-        <div
-          className="trip-detail-group transporter-group"
-        >
-
-          <div
-            className="trip-detail-group-title"
-          >
-            <span
-              className="trip-detail-group-icon transporter"
-            >
-              <Truck size={12} />
-            </span>
-
-            <strong>
-              Transporter Details
-            </strong>
-          </div>
-
-
-          <div
-            className="trip-detail-row"
-          >
-            <span
-              className="trip-detail-label"
-            >
-              Transporter
-            </span>
-
-            <span
-              className="trip-detail-colon"
-            >
-              :
-            </span>
-
-            <strong
-              className="trip-detail-value"
-            >
-              {lsp}
-            </strong>
-          </div>
-
-
-          <div
-            className="trip-detail-row"
-          >
-            <span
-              className="trip-detail-label"
-            >
-              Contact Person
-            </span>
-
-            <span
-              className="trip-detail-colon"
-            >
-              :
-            </span>
-
-            <strong
-              className="trip-detail-value"
-            >
-              {transporterContact}
-            </strong>
-          </div>
-
-
-          <div
-            className="trip-detail-row"
-          >
-            <span
-              className="trip-detail-label"
-            >
-              Phone No.
-            </span>
-
-            <span
-              className="trip-detail-colon"
-            >
-              :
-            </span>
-
-            <strong
-              className="trip-detail-value"
-            >
-              {transporterPhone}
-            </strong>
-          </div>
-
-        </div>
-
+      
 
         {/* TRANSIT */}
 
@@ -1894,6 +1693,193 @@ const VehicleColumn = ({
         </div>
 
 
+        {/* CLIENT */}
+
+        <div
+          className="trip-detail-group client-group"
+        >
+
+          <div
+            className="trip-detail-group-title"
+          >
+            <span
+              className="trip-detail-group-icon client"
+            >
+              <Package size={12} />
+            </span>
+
+            <strong>
+              Client Details
+            </strong>
+          </div>
+
+
+          <div
+            className="trip-detail-row"
+          >
+            <span
+              className="trip-detail-label"
+            >
+              Client Name
+            </span>
+
+            <span
+              className="trip-detail-colon"
+            >
+              :
+            </span>
+
+            <strong
+              className="trip-detail-value"
+            >
+              {clientName}
+            </strong>
+          </div>
+
+
+          <div
+            className="trip-detail-row"
+          >
+            <span
+              className="trip-detail-label"
+            >
+              Contact Person
+            </span>
+
+            <span
+              className="trip-detail-colon"
+            >
+              :
+            </span>
+
+            <strong
+              className="trip-detail-value"
+            >
+              {clientContact}
+            </strong>
+          </div>
+
+
+          <div
+            className="trip-detail-row"
+          >
+            <span
+              className="trip-detail-label"
+            >
+              Phone No.
+            </span>
+
+            <span
+              className="trip-detail-colon"
+            >
+              :
+            </span>
+
+            <strong
+              className="trip-detail-value"
+            >
+              {clientPhone}
+            </strong>
+          </div>
+
+        </div>
+
+
+        {/* TRANSPORTER */}
+
+        <div
+          className="trip-detail-group transporter-group"
+        >
+
+          <div
+            className="trip-detail-group-title"
+          >
+            <span
+              className="trip-detail-group-icon transporter"
+            >
+              <Truck size={12} />
+            </span>
+
+            <strong>
+              Transporter Details
+            </strong>
+          </div>
+
+
+          <div
+            className="trip-detail-row"
+          >
+            <span
+              className="trip-detail-label"
+            >
+              Transporter
+            </span>
+
+            <span
+              className="trip-detail-colon"
+            >
+              :
+            </span>
+
+            <strong
+              className="trip-detail-value"
+            >
+              {lsp}
+            </strong>
+          </div>
+
+
+          <div
+            className="trip-detail-row"
+          >
+            <span
+              className="trip-detail-label"
+            >
+              Contact Person
+            </span>
+
+            <span
+              className="trip-detail-colon"
+            >
+              :
+            </span>
+
+            <strong
+              className="trip-detail-value"
+            >
+              {transporterContact}
+            </strong>
+          </div>
+
+
+          <div
+            className="trip-detail-row"
+          >
+            <span
+              className="trip-detail-label"
+            >
+              Phone No.
+            </span>
+
+            <span
+              className="trip-detail-colon"
+            >
+              :
+            </span>
+
+            <strong
+              className="trip-detail-value"
+            >
+              {transporterPhone}
+            </strong>
+          </div>
+
+        </div>
+
+
+
+
+
         {/* =================================
             LR & POD
         ================================= */}
@@ -1939,7 +1925,7 @@ const VehicleColumn = ({
             />
 
             <PrimaryItem
-              label="LR Signature"
+              label="LR Signature date"
               value={
                 lrSignature
               }
@@ -2094,7 +2080,7 @@ const VehicleColumn = ({
               />
 
               <span>
-                POD Remarks
+                Remarks
               </span>
             </div>
 
@@ -2107,7 +2093,7 @@ const VehicleColumn = ({
 
         </div>
 
-      </div>
+      
 
     </section>
   );
@@ -2141,10 +2127,9 @@ const DetailRow = ({
 
       <strong
         className={
-          `simple-detail-value ${
-            halting
-              ? "halting"
-              : ""
+          `simple-detail-value ${halting
+            ? "halting"
+            : ""
           }`
         }
       >

@@ -1,11 +1,7 @@
-/* =========================================================
-   INTERCARTING / VEHICLE INVENTORY
-   MATCH DASHBOARD EXACTLY
-========================================================= */
-
+/* Font sizes increased slightly: +1px for labels/text and +2px for large values. */
 
 /* =========================================================
-   RESET
+   INTERCARTING DASHBOARD
 ========================================================= */
 
 .intercarting-dashboard,
@@ -23,8 +19,7 @@
   min-width: 0;
   min-height: 100%;
 
-  /* EXACT DASHBOARD SPACING */
-  padding: 18px 20px !important;
+  padding: 16px 18px !important;
 
   background: #f4f7f9;
 
@@ -44,7 +39,7 @@
 ========================================================= */
 
 .intercarting-dashboard-error {
-  margin: 0 0 14px 0;
+  margin: 0 0 12px;
 
   padding: 9px 12px;
 
@@ -55,14 +50,13 @@
 
   color: #c93f3f;
 
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 500;
 }
 
 
 /* =========================================================
    STAT GRID
-   EXACT DASHBOARD GAP
 ========================================================= */
 
 .intercarting-dashboard-stats {
@@ -71,12 +65,14 @@
   display: grid;
 
   grid-template-columns:
-    repeat(4, minmax(0, 1fr));
+    repeat(
+      4,
+      minmax(0, 1fr)
+    );
 
-  gap: 12px !important;
+  gap: 12px;
 
-  margin: 0 0 14px 0 !important;
-  padding: 0 !important;
+  margin: 0 0 12px;
 }
 
 
@@ -86,13 +82,9 @@
 
 .intercarting-stat-card {
   min-width: 0;
+  min-height: 88px;
 
-  /* SAME HEIGHT AS DASHBOARD */
-  min-height: 96px !important;
-
-  margin: 0 !important;
-
-  padding: 14px 16px !important;
+  padding: 12px 15px;
 
   display: flex;
   align-items: center;
@@ -100,7 +92,6 @@
   gap: 10px;
 
   border: 1px solid #dce4e9;
-
   border-radius: 11px;
 
   background: #ffffff;
@@ -132,12 +123,12 @@
 ========================================================= */
 
 .intercarting-stat-icon {
-  width: 42px !important;
-  height: 42px !important;
+  width: 40px;
+  height: 40px;
 
-  min-width: 42px !important;
+  min-width: 40px;
 
-  flex: 0 0 42px;
+  flex: 0 0 40px;
 
   display: flex;
   align-items: center;
@@ -148,14 +139,10 @@
 
 
 .intercarting-stat-icon svg {
-  width: 17px !important;
-  height: 17px !important;
+  width: 16px;
+  height: 16px;
 }
 
-
-/* =========================================================
-   STAT COLORS
-========================================================= */
 
 .intercarting-stat-icon.total {
   color: #2d6fbe;
@@ -186,105 +173,64 @@
 
 
 /* =========================================================
-   STAT CONTENT
+   STAT TEXT
 ========================================================= */
 
 .intercarting-stat-card > div:last-child {
   min-width: 0;
-
-  margin: 0;
-  padding: 0;
 
   display: flex;
   flex-direction: column;
 }
 
 
-/* LABEL */
-
 .intercarting-stat-card span {
   display: block;
 
-  margin: 0 0 5px 0;
+  margin: 0 0 4px;
 
   color: #718096;
 
-  font-size: 10px !important;
+  font-size: 10px;
   font-weight: 600;
-
-  line-height: 1.25;
-
-  text-transform: none;
 }
 
-
-/* VALUE */
 
 .intercarting-stat-card strong {
   display: block;
 
-  margin: 0 !important;
-
   color: #0b2942;
 
-  font-size: 25px !important;
+  font-size: 25px;
   font-weight: 750;
 
   line-height: 1;
 }
 
 
-/* DESCRIPTION */
-
 .intercarting-stat-card small {
   display: block;
 
-  margin: 6px 0 0 0;
+  margin-top: 5px;
 
   color: #96a4b0;
 
-  font-size: 8.5px !important;
-
-  line-height: 1.35;
+  font-size: 9px;
 }
 
 
 /* =========================================================
-   CHART GRID
+   VEHICLES BY SITE CARD
 ========================================================= */
 
-.intercarting-mini-charts {
+.intercarting-site-chart-card {
   width: 100%;
 
-  display: grid;
+  margin: 0 0 12px;
 
-  grid-template-columns:
-    repeat(2, minmax(0, 1fr));
-
-  gap: 14px !important;
-
-  margin: 0 0 14px 0 !important;
-
-  padding: 0;
-}
-
-
-/* =========================================================
-   CHART CARD
-========================================================= */
-
-.intercarting-mini-chart-card {
-  min-width: 0;
-
-  /* REDUCED FROM YOUR LARGE INTERCARTING CARD */
-  height: 240px !important;
-
-  margin: 0;
-
-  padding: 16px !important;
+  padding: 12px 16px 8px;
 
   border: 1px solid #dce4e9;
-
   border-radius: 11px;
 
   background: #ffffff;
@@ -296,97 +242,114 @@
 
 
 /* =========================================================
-   CHART HEADER
+   SITE CHART HEADER
 ========================================================= */
 
-.intercarting-mini-chart-header {
-  width: 100%;
-
-  margin: 0 0 12px 0 !important;
-
-  padding: 0;
-
+.intercarting-site-chart-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
 
   gap: 12px;
+
+  margin-bottom: 0;
 }
 
 
-.intercarting-mini-chart-header > div {
-  margin: 0;
-  padding: 0;
-}
-
-
-/* =========================================================
-   CHART EYEBROW
-========================================================= */
-
-.intercarting-mini-chart-header span {
+.intercarting-site-chart-header
+> div:first-child
+> span {
   display: block;
 
-  margin: 0 0 4px 0;
+  margin-bottom: 2px;
 
   color: #0f9488;
 
-  font-size: 8px !important;
+  font-size: 8px;
   font-weight: 700;
 
-  line-height: 1;
-
-  letter-spacing: 0.07em;
+  letter-spacing: 0.08em;
 
   text-transform: uppercase;
 }
 
 
-/* =========================================================
-   CHART TITLE
-========================================================= */
-
-.intercarting-mini-chart-header h2 {
-  margin: 0 !important;
-
-  color: #0b2942;
-
-  font-size: 17px !important;
-  font-weight: 700;
-
-  line-height: 1.25;
-}
-
-
-/* =========================================================
-   CHART COUNT
-========================================================= */
-
-.intercarting-mini-chart-header strong {
+.intercarting-site-chart-header h2 {
   margin: 0;
 
   color: #0b2942;
 
-  font-size: 23px !important;
-  font-weight: 700;
+  font-size: 17px;
+  font-weight: 750;
 
-  line-height: 1;
+  line-height: 1.15;
+}
+
+
+.intercarting-site-chart-header p {
+  margin: 3px 0 0;
+
+  color: #81909d;
+
+  font-size: 9px;
 }
 
 
 /* =========================================================
-   CHART BODY
+   SITE TOTAL BADGE
 ========================================================= */
 
-.intercarting-mini-chart-body {
+.site-total-badge {
+  min-width: 66px;
+
+  padding: 5px 8px;
+
+  border: 1px solid #cce7e3;
+  border-radius: 8px;
+
+  background: #f0faf8;
+
+  text-align: center;
+}
+
+
+.site-total-badge small {
+  display: block;
+
+  color: #768a98;
+
+  font-size: 7px;
+  font-weight: 700;
+
+  letter-spacing: 0.05em;
+}
+
+
+.site-total-badge strong {
+  display: block;
+
+  margin-top: 1px;
+
+  color: #0f9488;
+
+  font-size: 20px;
+  font-weight: 750;
+}
+
+
+/* =========================================================
+   SITE CHART
+========================================================= */
+
+.intercarting-site-chart-body {
   width: 100%;
-
-  height: 165px !important;
-
-  margin: 0;
-  padding: 0;
+  height: 180px;
 }
 
+
+/* =========================================================
+   CHART STATE
+========================================================= */
 
 .intercarting-chart-state {
   width: 100%;
@@ -397,7 +360,417 @@
 
   color: #718096;
 
+  font-size: 11px;
+}
+
+
+/* =========================================================
+   DONUT GRID
+========================================================= */
+
+.fleet-secondary-charts {
+  width: 100%;
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      2,
+      minmax(0, 1fr)
+    );
+
+  gap: 12px;
+
+  margin: 0 0 12px;
+}
+
+
+/* =========================================================
+   DONUT CARD
+========================================================= */
+
+.fleet-modern-chart-card {
+  min-width: 0;
+
+  padding: 13px 16px;
+
+  border: 1px solid #dce4e9;
+  border-radius: 11px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #ffffff,
+      #fcfefe
+    );
+
+  box-shadow:
+    0 3px 10px
+    rgba(11, 41, 66, 0.04);
+
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+
+.fleet-modern-chart-card:hover {
+  transform: translateY(-1px);
+
+  border-color: #c8d8dd;
+
+  box-shadow:
+    0 6px 16px
+    rgba(11, 41, 66, 0.065);
+}
+
+
+/* =========================================================
+   DONUT HEADER
+========================================================= */
+
+.fleet-modern-chart-header {
+  min-height: 42px;
+
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 12px;
+
+  margin-bottom: 3px;
+}
+
+
+.fleet-modern-chart-header
+> div:first-child
+> span {
+  display: block;
+
+  margin-bottom: 2px;
+
+  color: #0f9488;
+
+  font-size: 7.5px;
+  font-weight: 750;
+
+  letter-spacing: 0.1em;
+}
+
+
+.fleet-modern-chart-header h2 {
+  margin: 0;
+
+  color: #0b2942;
+
+  font-size: 15px;
+  font-weight: 750;
+
+  line-height: 1.15;
+}
+
+
+.fleet-modern-chart-header p {
+  margin: 3px 0 0;
+
+  color: #8293a2;
+
+  font-size: 8.5px;
+}
+
+
+/* =========================================================
+   HEADER VALUE
+========================================================= */
+
+.fleet-chart-header-total {
+  min-width: 52px;
+
+  padding: 4px 7px;
+
+  border: 1px solid #d9ebe8;
+  border-radius: 8px;
+
+  background: #f2faf8;
+
+  text-align: center;
+}
+
+
+.fleet-chart-header-total small {
+  display: block;
+
+  color: #718797;
+
+  font-size: 7px;
+  font-weight: 700;
+
+  letter-spacing: 0.07em;
+}
+
+
+.fleet-chart-header-total strong {
+  display: block;
+
+  margin-top: 1px;
+
+  color: #0f9488;
+
+  font-size: 17px;
+  font-weight: 750;
+}
+
+
+/* =========================================================
+   DONUT CONTENT
+========================================================= */
+
+.fleet-modern-chart-content {
+  min-height: 170px;
+
+  display: grid;
+
+  grid-template-columns:
+    minmax(
+      165px,
+      0.8fr
+    )
+    minmax(
+      160px,
+      1fr
+    );
+
+  align-items: center;
+
+  gap: 12px;
+}
+
+
+/* =========================================================
+   DONUT GRAPH
+========================================================= */
+
+.fleet-modern-donut {
+  position: relative;
+
+  width: 100%;
+  height: 165px;
+}
+
+
+/* =========================================================
+   DONUT CENTER
+========================================================= */
+
+.fleet-modern-donut-center {
+  position: absolute;
+
+  top: 50%;
+  left: 50%;
+
+  transform:
+    translate(
+      -50%,
+      -50%
+    );
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  pointer-events: none;
+}
+
+
+.fleet-modern-donut-center strong {
+  color: #0b2942;
+
+  font-size: 25px;
+  font-weight: 750;
+
+  line-height: 1;
+}
+
+
+.fleet-modern-donut-center span {
+  margin-top: 4px;
+
+  color: #8193a2;
+
+  font-size: 8px;
+
+  white-space: nowrap;
+}
+
+
+.fleet-pie-cell {
+  cursor: pointer;
+
+  transition:
+    opacity 0.2s ease;
+}
+
+
+/* =========================================================
+   LEGEND
+========================================================= */
+
+.fleet-modern-legend {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 4px;
+}
+
+
+.fleet-modern-legend.category {
+  max-height: 160px;
+
+  overflow-y: auto;
+
+  padding-right: 2px;
+
+  scrollbar-width: thin;
+
+  scrollbar-color:
+    #cad6dc
+    transparent;
+}
+
+
+.fleet-modern-legend.category::-webkit-scrollbar {
+  width: 4px;
+}
+
+
+.fleet-modern-legend.category::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+
+  background: #cad6dc;
+}
+
+
+/* =========================================================
+   LEGEND ROW
+========================================================= */
+
+.fleet-modern-legend-row {
+  width: 100%;
+
+  min-height: 28px;
+
+  padding: 4px 6px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 8px;
+
+  border: 1px solid transparent;
+  border-radius: 6px;
+
+  background: transparent;
+
+  font-family: inherit;
+
+  cursor: pointer;
+
+  transition:
+    background 0.17s ease,
+    border-color 0.17s ease,
+    transform 0.17s ease;
+}
+
+
+.fleet-modern-legend-row:hover {
+  border-color: #e0e9ec;
+
+  background: #f7fafb;
+
+  transform: translateX(1px);
+}
+
+
+.fleet-modern-legend-row.selected {
+  border-color: #cce7e3;
+
+  background: #eff9f7;
+}
+
+
+/* =========================================================
+   LEGEND LEFT
+========================================================= */
+
+.fleet-legend-left {
+  min-width: 0;
+
+  display: flex;
+  align-items: center;
+
+  gap: 6px;
+}
+
+
+.fleet-legend-left i {
+  width: 8px;
+  height: 8px;
+
+  flex: 0 0 8px;
+
+  border-radius: 50%;
+}
+
+
+.fleet-legend-left span {
+  overflow: hidden;
+
+  color: #425d72;
+
+  font-size: 9px;
+  font-weight: 500;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   LEGEND RIGHT
+========================================================= */
+
+.fleet-legend-right {
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+
+  gap: 4px;
+}
+
+
+.fleet-legend-right strong {
+  color: #0b2942;
+
   font-size: 10px;
+  font-weight: 750;
+}
+
+
+.fleet-legend-right small {
+  min-width: 36px;
+
+  color: #8192a0;
+
+  font-size: 8px;
+
+  text-align: right;
 }
 
 
@@ -409,12 +782,11 @@
   width: 100%;
   min-width: 0;
 
-  margin: 0 !important;
+  margin: 0;
 
   overflow: hidden;
 
   border: 1px solid #dce4e9;
-
   border-radius: 11px;
 
   background: #ffffff;
@@ -430,11 +802,9 @@
 ========================================================= */
 
 .intercarting-vehicle-panel-header {
-  min-height: 58px;
+  min-height: 54px;
 
-  margin: 0;
-
-  padding: 10px 14px;
+  padding: 9px 13px;
 
   display: flex;
   align-items: center;
@@ -447,42 +817,28 @@
 }
 
 
-.intercarting-vehicle-panel-header > div:first-child {
+.intercarting-vehicle-panel-header
+> div:first-child {
   min-width: 0;
-
-  margin: 0;
-  padding: 0;
 }
 
 
-/* =========================================================
-   VEHICLE LIST TITLE
-========================================================= */
-
 .intercarting-vehicle-panel-header h2 {
-  margin: 0 !important;
+  margin: 0;
 
   color: #0b2942;
 
-  font-size: 17px !important;
+  font-size: 17px;
   font-weight: 700;
-
-  line-height: 1.25;
 }
 
 
-/* =========================================================
-   VEHICLE LIST DESCRIPTION
-========================================================= */
-
 .intercarting-vehicle-panel-header p {
-  margin: 4px 0 0 0 !important;
+  margin: 3px 0 0;
 
   color: #81909d;
 
-  font-size: 9.5px !important;
-
-  line-height: 1.4;
+  font-size: 9.5px;
 }
 
 
@@ -505,7 +861,7 @@
 
 .intercarting-dashboard-search {
   width: 260px;
-  height: 35px;
+  height: 34px;
 
   padding: 0 10px;
 
@@ -515,12 +871,27 @@
   gap: 7px;
 
   border: 1px solid #d6e0e6;
-
   border-radius: 8px;
 
   background: #f8fafb;
 
   color: #718096;
+}
+
+
+.intercarting-dashboard-search:focus-within {
+  border-color: #0f9488;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(
+      15,
+      148,
+      136,
+      0.08
+    );
 }
 
 
@@ -532,17 +903,6 @@
 }
 
 
-.intercarting-dashboard-search:focus-within {
-  border-color: #0f9488;
-
-  background: #ffffff;
-
-  box-shadow:
-    0 0 0 3px
-    rgba(15, 148, 136, 0.08);
-}
-
-
 .intercarting-dashboard-search input {
   width: 100%;
   min-width: 0;
@@ -550,7 +910,6 @@
   padding: 0;
 
   border: 0;
-
   outline: 0;
 
   background: transparent;
@@ -563,7 +922,8 @@
 }
 
 
-.intercarting-dashboard-search input::placeholder {
+.intercarting-dashboard-search
+input::placeholder {
   color: #98a6b3;
 }
 
@@ -573,9 +933,9 @@
 ========================================================= */
 
 .intercarting-vehicle-count {
-  height: 35px;
+  height: 34px;
 
-  padding: 0 10px;
+  padding: 0 9px;
 
   display: inline-flex;
   align-items: center;
@@ -588,7 +948,7 @@
 
   color: #087f76;
 
-  font-size: 9px;
+  font-size: 9.5px;
   font-weight: 650;
 
   white-space: nowrap;
@@ -667,12 +1027,13 @@
    TABLE HEADER
 ========================================================= */
 
-.intercarting-vehicle-table thead th {
+.intercarting-vehicle-table
+thead th {
   background: #f5f7f9;
 
   color: #667788;
 
-  font-size: 8px;
+  font-size: 9px;
   font-weight: 700;
 
   line-height: 1.2;
@@ -687,16 +1048,18 @@
    TABLE BODY
 ========================================================= */
 
-.intercarting-vehicle-table tbody td {
+.intercarting-vehicle-table
+tbody td {
   color: #334b5f;
 
-  font-size: 9.5px;
+  font-size: 10.5px;
 
   line-height: 1.35;
 }
 
 
-.intercarting-vehicle-table tbody tr:hover {
+.intercarting-vehicle-table
+tbody tr:hover {
   background: #f5faf9;
 }
 
@@ -716,7 +1079,7 @@
 
   border-radius: 999px;
 
-  font-size: 8px;
+  font-size: 9px;
   font-weight: 700;
 }
 
@@ -746,8 +1109,7 @@
   color:
     #7c899c !important;
 
-  font-size:
-    10px !important;
+  font-size: 11px !important;
 
   text-align:
     center !important;
@@ -759,9 +1121,9 @@
 ========================================================= */
 
 .intercarting-pagination {
-  min-height: 48px;
+  min-height: 46px;
 
-  padding: 8px 12px;
+  padding: 7px 11px;
 
   display: flex;
   align-items: center;
@@ -779,7 +1141,7 @@
 
   color: #718096;
 
-  font-size: 9px;
+  font-size: 9.5px;
 }
 
 
@@ -810,7 +1172,6 @@
   place-items: center;
 
   border: 1px solid #d7e0e6;
-
   border-radius: 6px;
 
   background: #ffffff;
@@ -819,7 +1180,7 @@
 
   font-family: inherit;
 
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 600;
 
   cursor: pointer;
@@ -858,17 +1219,46 @@ button:disabled {
    RESPONSIVE
 ========================================================= */
 
-@media (max-width: 1200px) {
+@media (
+  max-width: 1200px
+) {
 
   .intercarting-dashboard-stats {
     grid-template-columns:
-      repeat(2, minmax(0, 1fr));
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+  }
+
+
+  .fleet-modern-chart-content {
+    grid-template-columns:
+      160px
+      1fr;
   }
 
 }
 
 
-@media (max-width: 900px) {
+/* =========================================================
+   900
+========================================================= */
+
+@media (
+  max-width: 900px
+) {
+
+  .fleet-secondary-charts {
+    grid-template-columns:
+      1fr;
+  }
+
+
+  .intercarting-site-chart-body {
+    height: 175px;
+  }
+
 
   .intercarting-vehicle-panel-header {
     flex-direction: column;
@@ -879,10 +1269,6 @@ button:disabled {
 
   .intercarting-vehicle-panel-actions {
     width: 100%;
-
-    flex-direction: column;
-
-    align-items: stretch;
   }
 
 
@@ -897,25 +1283,36 @@ button:disabled {
    TABLET
 ========================================================= */
 
-@media (max-width: 768px) {
+@media (
+  max-width: 768px
+) {
 
   .intercarting-dashboard {
-    padding: 14px 12px !important;
+    padding:
+      13px 11px !important;
   }
 
 
-  .intercarting-mini-charts {
-    grid-template-columns: 1fr;
+  .fleet-modern-chart-content {
+    grid-template-columns:
+      1fr;
   }
 
 
-  .intercarting-mini-chart-card {
-    height: 225px !important;
+  .fleet-modern-donut {
+    height: 180px;
   }
 
 
-  .intercarting-mini-chart-body {
-    height: 150px !important;
+  .fleet-modern-legend {
+    padding:
+      0 10px
+      6px;
+  }
+
+
+  .intercarting-site-chart-body {
+    height: 170px;
   }
 
 }
@@ -925,45 +1322,91 @@ button:disabled {
    MOBILE
 ========================================================= */
 
-@media (max-width: 480px) {
+@media (
+  max-width: 480px
+) {
 
   .intercarting-dashboard {
-    padding: 12px 9px !important;
+    padding:
+      11px 8px !important;
   }
 
 
   .intercarting-dashboard-stats {
-    grid-template-columns: 1fr;
+    grid-template-columns:
+      1fr;
   }
 
 
   .intercarting-stat-card {
-    min-height: 88px !important;
+    min-height: 82px;
 
-    padding: 12px 14px !important;
+    padding:
+      11px 13px;
   }
 
 
   .intercarting-stat-card strong {
-    font-size: 22px !important;
+    font-size: 23px;
   }
 
 
   .intercarting-stat-icon {
-    width: 38px !important;
-    height: 38px !important;
+    width: 36px;
+    height: 36px;
 
-    min-width: 38px !important;
+    min-width: 36px;
+
+    flex-basis: 36px;
   }
 
 
-  .intercarting-mini-chart-card {
-    height: 210px !important;
+  .intercarting-site-chart-card {
+    padding:
+      11px 10px
+      7px;
   }
 
 
-  .intercarting-mini-chart-body {
-    height: 135px !important;
+  .intercarting-site-chart-body {
+    height: 160px;
+  }
+
+
+  .fleet-modern-chart-card {
+    padding:
+      12px 11px;
+  }
+
+
+  .fleet-modern-donut {
+    height: 170px;
+  }
+
+
+  .intercarting-vehicle-panel-actions {
+    flex-direction: column;
+
+    align-items: stretch;
+  }
+
+
+  .intercarting-vehicle-count {
+    justify-content: center;
+  }
+
+
+  .intercarting-pagination {
+    flex-direction: column;
+
+    align-items: flex-start;
+  }
+
+
+  .intercarting-pagination-controls {
+    width: 100%;
+
+    overflow-x: auto;
   }
 
 }
