@@ -2004,61 +2004,7 @@ const Tracking = () => {
       >
 
 
-        {/* SEARCH */}
-
-        <div
-          className="tracking-search"
-        >
-
-          <Search
-            size={18}
-          />
-
-
-          <input
-            type="search"
-            placeholder="Search trip, customer or vehicle..."
-            value={
-              searchTerm
-            }
-            onChange={(
-              event
-            ) =>
-
-              setSearchTerm(
-                event.target
-                  .value
-              )
-
-            }
-          />
-
-
-          {searchTerm && (
-
-            <button
-              type="button"
-              className="tracking-search-clear"
-              onClick={() =>
-                setSearchTerm(
-                  ""
-                )
-              }
-              aria-label="Clear search"
-            >
-
-              <X
-                size={15}
-              />
-
-            </button>
-
-          )}
-
-        </div>
-
-
-        {/* STATUS FILTER */}
+{/* STATUS FILTER */}
 
         <div
           className="tracking-status-filter"
@@ -2123,6 +2069,60 @@ const Tracking = () => {
               );
 
             }
+          )}
+
+        </div>
+        
+
+        {/* SEARCH */}
+
+        <div
+          className="tracking-search"
+        >
+
+          <Search
+            size={18}
+          />
+
+
+          <input
+            type="search"
+            placeholder="Search trip, customer or vehicle..."
+            value={
+              searchTerm
+            }
+            onChange={(
+              event
+            ) =>
+
+              setSearchTerm(
+                event.target
+                  .value
+              )
+
+            }
+          />
+
+
+          {searchTerm && (
+
+            <button
+              type="button"
+              className="tracking-search-clear"
+              onClick={() =>
+                setSearchTerm(
+                  ""
+                )
+              }
+              aria-label="Clear search"
+            >
+
+              <X
+                size={15}
+              />
+
+            </button>
+
           )}
 
         </div>

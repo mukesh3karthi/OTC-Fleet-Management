@@ -3118,27 +3118,6 @@ const Vehicledocument = () => {
 
   return (
     <section className="vehicle-document-page">
-      {/* ======================================
-          Header — Refresh button removed
-      ====================================== */}
-
-      {/* <header className="vehicle-document-header">
-        <div className="vehicle-document-heading">
-          <span className="vehicle-document-eyebrow">
-            Fleet Compliance
-          </span>
-
-          <h1>
-            Vehicle Document Dashboard
-          </h1>
-
-          <p>
-            Track document expiry dates,
-            uploaded certificates and fleet
-            compliance for every vehicle.
-          </p>
-        </div>
-      </header> */}
 
       {/* ======================================
           Error

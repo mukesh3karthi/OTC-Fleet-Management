@@ -15,17 +15,35 @@ import {
 } from "react-icons/fa";
 
 import {
-  Bar,
-  BarChart,
-  Line,
-  LineChart,
-  ResponsiveContainer,
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  LineElement,
+  PointElement,
   Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+  Legend,
+  Filler,
+} from "chart.js";
+
+import { Bar, Line } from "react-chartjs-2";
 
 import "../pagescss/ownvehicledash.css";
+
+/* =========================================
+   CHART.JS REGISTRATION
+========================================= */
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  LineElement,
+  PointElement,
+  Tooltip,
+  Legend,
+  Filler
+);
 
 const API_BASE_URL = (
   import.meta.env.VITE_API_URL ||
@@ -37,14 +55,17 @@ const OWN_VEHICLE_API =
 
 const RECORDS_PER_PAGE = 5;
 
-const normalizeVehicle = (
-  vehicle
-) => ({
+/* =========================================
+   NORMALIZE VEHICLE
+========================================= */
+
+const normalizeVehicle = (vehicle) => ({
   id:
     vehicle?._id ||
     vehicle?.id ||
     vehicle?.vehicleId ||
-    vehicle?.vehicleNo,
+    vehicle?.vehicleNo ||
+    "",
 
   vehicleNo:
     vehicle?.vehicleNo ||
@@ -84,14 +105,6 @@ const normalizeVehicle = (
     vehicle?.chassisNumber ||
     "",
 
-  gps:
-    vehicle?.gps === true ||
-    vehicle?.gps === "true" ||
-    vehicle?.gpsAvailable ===
-    true ||
-    vehicle?.gpsAvailable ===
-    "true",
-
   purchaseYear:
     vehicle?.purchaseYear ||
     "",
@@ -100,305 +113,724 @@ const normalizeVehicle = (
     vehicle?.purchasedFrom ||
     vehicle?.purchaseFrom ||
     "",
+
+  status: String(
+    vehicle?.status ||
+    vehicle?.vehicleStatus ||
+    vehicle?.availabilityStatus ||
+    vehicle?.currentStatus ||
+    ""
+  )
+    .trim()
+    .toLowerCase()
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " "),
 });
 
-const formatDate = (
-  dateValue
-) => {
-  if (!dateValue) {
-    return "-";
-  }
+/* =========================================
+   DATE
+========================================= */
 
-  const date = new Date(
-    dateValue
-  );
+const formatDate = (dateValue) => {
+  if (!dateValue) return "-";
 
-  if (
-    Number.isNaN(
-      date.getTime()
-    )
-  ) {
+  const date = new Date(dateValue);
+
+  if (Number.isNaN(date.getTime())) {
     return dateValue;
   }
 
-  return new Intl.DateTimeFormat(
-    "en-IN",
-    {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    }
-  ).format(date);
+  return new Intl.DateTimeFormat("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(date);
 };
 
+/* =========================================
+   STATUS
+========================================= */
+
+const normalizeStatus = (status) =>
+  String(status || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[_-]+/g, "")
+    .replace(/\s+/g, "");
+
+/* =========================================
+   CHART.JS COMMON OPTIONS
+========================================= */
+
+const commonChartOptions = {
+  responsive: true,
+
+  maintainAspectRatio: false,
+
+  animation: {
+    duration: 500,
+  },
+
+  plugins: {
+    legend: {
+      display: false,
+    },
+
+    tooltip: {
+      backgroundColor: "#ffffff",
+      titleColor: "#0b2942",
+      bodyColor: "#334b5f",
+      borderColor: "#dce5e9",
+      borderWidth: 1,
+
+      padding: 9,
+
+      titleFont: {
+        size: 10,
+        weight: "600",
+      },
+
+      bodyFont: {
+        size: 10,
+      },
+
+      displayColors: false,
+    },
+  },
+
+  interaction: {
+    intersect: false,
+    mode: "index",
+  },
+};
+
+/* =========================================
+   COMPONENT
+========================================= */
+
 const Ownvehicledash = () => {
+  const [vehicles, setVehicles] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(true);
+  const [pageError, setPageError] = useState("");
 
-  const [
-    vehicles,
-    setVehicles,
-  ] = useState([]);
+  /* =========================================
+     FETCH VEHICLES
+  ========================================= */
 
-  const [
-    currentPage,
-    setCurrentPage,
-  ] = useState(1);
+  const fetchVehicles = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      setPageError("");
 
-  const [
-    isLoading,
-    setIsLoading,
-  ] = useState(true);
+      const response = await axios.get(
+        OWN_VEHICLE_API,
+        {
+          timeout: 60000,
+        }
+      );
 
-  const [
-    pageError,
-    setPageError,
-  ] = useState("");
+      const responseData =
+        response?.data?.ownVehicles ||
+        response?.data?.vehicles ||
+        response?.data?.data ||
+        response?.data ||
+        [];
 
-  const currentYear =
-    new Date().getFullYear();
+      const vehicleList = Array.isArray(responseData)
+        ? responseData
+        : [];
 
-  /* =====================================
-     Fetch vehicles
-  ===================================== */
+      const normalizedVehicles =
+        vehicleList.map(normalizeVehicle);
 
-  const fetchVehicles =
-    useCallback(async () => {
-      try {
-        setIsLoading(true);
-        setPageError("");
+      console.log(
+        "OWN VEHICLES:",
+        normalizedVehicles
+      );
 
-        const response =
-          await axios.get(
-            OWN_VEHICLE_API,
-            {
-              timeout: 60000,
-            }
-          );
+      setVehicles(normalizedVehicles);
+    } catch (error) {
+      console.error(
+        "Unable to fetch own vehicles:",
+        error
+      );
 
-        const responseData =
-          response?.data
-            ?.ownVehicles ||
-          response?.data
-            ?.vehicles ||
-          response?.data?.data ||
-          response?.data ||
-          [];
+      setVehicles([]);
 
-        const vehicleList =
-          Array.isArray(
-            responseData
-          )
-            ? responseData
-            : [];
-
-        setVehicles(
-          vehicleList.map(
-            normalizeVehicle
-          )
-        );
-      } catch (error) {
-        console.error(
-          "Unable to fetch own vehicles:",
-          error
-        );
-
-        setVehicles([]);
-
-        setPageError(
-          error?.response?.data
-            ?.message ||
-          error?.message ||
-          "Unable to load own vehicle records."
-        );
-      } finally {
-        setIsLoading(false);
-      }
-    }, []);
+      setPageError(
+        error?.response?.data?.message ||
+        error?.message ||
+        "Unable to load own vehicle records."
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     fetchVehicles();
   }, [fetchVehicles]);
 
-  /* =====================================
-     Statistics
-  ===================================== */
+  /* =========================================
+     TOTAL
+  ========================================= */
 
-  const totalVehicles =
-    vehicles.length;
+  const totalVehicles = vehicles.length;
 
-  const gpsAvailable =
-    useMemo(
-      () =>
-        vehicles.filter(
-          (vehicle) =>
-            vehicle.gps
-        ).length,
-      [vehicles]
+  /* =========================================
+     STATUS COUNTS
+  ========================================= */
+
+  const statusCounts = useMemo(() => {
+    const counts = {
+      active: 0,
+      idle: 0,
+      inmaintenance: 0,
+    };
+
+    vehicles.forEach((vehicle) => {
+      const status = normalizeStatus(
+        vehicle.status
+      );
+
+      if (status === "active") {
+        counts.active += 1;
+      }
+
+      if (status === "idle") {
+        counts.idle += 1;
+      }
+
+      if (
+        status === "inmaintenance" ||
+        status === "maintenance" ||
+        status === "undermaintenance"
+      ) {
+        counts.inmaintenance += 1;
+      }
+    });
+
+    return counts;
+  }, [vehicles]);
+
+  /* =========================================
+     SUMMARY CARDS
+  ========================================= */
+
+  const stats = useMemo(
+    () => [
+      {
+        title: "Total Vehicles",
+        value: totalVehicles,
+        icon: <FaTruck />,
+        iconClass: "truck",
+      },
+      {
+        title: "Active",
+        value: statusCounts.active,
+        icon: (
+          <span className="text-icon">
+            A
+          </span>
+        ),
+        iconClass: "active",
+      },
+      {
+        title: "Idle",
+        value: statusCounts.idle,
+        icon: (
+          <span className="text-icon">
+            I
+          </span>
+        ),
+        iconClass: "idle",
+      },
+      {
+        title: "In Maintenance",
+        value: statusCounts.inmaintenance,
+        icon: (
+          <span className="text-icon">
+            M
+          </span>
+        ),
+        iconClass: "maintenance",
+      },
+    ],
+    [
+      totalVehicles,
+      statusCounts,
+    ]
+  );
+
+  /* =========================================
+     VEHICLES BY MAKE
+  ========================================= */
+
+  const vehicleMakeChartData = useMemo(() => {
+    const counts = {};
+
+    vehicles.forEach((vehicle) => {
+      const make =
+        String(
+          vehicle?.vehicleMake || ""
+        ).trim() || "Unknown";
+
+      counts[make] =
+        (counts[make] || 0) + 1;
+    });
+
+    const result = Object.entries(counts)
+      .map(([make, count]) => ({
+        make,
+        vehicles: Number(count),
+      }))
+      .sort(
+        (a, b) =>
+          b.vehicles - a.vehicles
+      );
+
+    console.log(
+      "VEHICLES BY MAKE:",
+      result
     );
 
-  const withoutGps =
-    useMemo(
-      () =>
-        vehicles.filter(
-          (vehicle) =>
-            !vehicle.gps
-        ).length,
-      [vehicles]
+    return result;
+  }, [vehicles]);
+
+  /* =========================================
+     VEHICLES BY TYPE
+  ========================================= */
+
+  const vehicleTypeChartData = useMemo(() => {
+    const counts = {};
+
+    vehicles.forEach((vehicle) => {
+      const type =
+        String(
+          vehicle?.type || ""
+        ).trim() || "Unknown";
+
+      counts[type] =
+        (counts[type] || 0) + 1;
+    });
+
+    const result = Object.entries(counts)
+      .map(([type, count]) => ({
+        type,
+        vehicles: Number(count),
+      }))
+      .sort(
+        (a, b) =>
+          b.vehicles - a.vehicles
+      );
+
+    console.log(
+      "VEHICLES BY TYPE:",
+      result
     );
 
-  const purchasedThisYear =
-    useMemo(
-      () =>
-        vehicles.filter(
-          (vehicle) =>
-            Number(
-              vehicle.purchaseYear
-            ) === currentYear
-        ).length,
-      [
-        vehicles,
-        currentYear,
-      ]
+    return result;
+  }, [vehicles]);
+
+  /* =========================================
+     FLEET GROWTH
+  ========================================= */
+
+  const currentYear =
+    new Date().getFullYear();
+
+  const activityChartData = useMemo(() => {
+    const years = Array.from(
+      { length: 6 },
+      (_, index) =>
+        currentYear - 5 + index
     );
 
-  /* =====================================
-     Pagination
-  ===================================== */
+    const result = years.map((year) => ({
+      year: String(year),
+      vehicles: vehicles.filter(
+        (vehicle) =>
+          Number(
+            vehicle.purchaseYear
+          ) === year
+      ).length,
+    }));
 
-  const totalPages =
-    Math.max(
-      1,
-      Math.ceil(
-        totalVehicles /
+    console.log(
+      "FLEET GROWTH:",
+      result
+    );
+
+    return result;
+  }, [vehicles, currentYear]);
+
+  /* =========================================
+     MAKE BAR CHART
+  ========================================= */
+
+  const makeChartData = useMemo(
+    () => ({
+      labels:
+        vehicleMakeChartData.map(
+          (item) =>
+            String(item.make).length > 15
+              ? `${String(item.make).slice(
+                  0,
+                  15
+                )}…`
+              : item.make
+        ),
+
+      datasets: [
+        {
+          label: "Vehicles",
+
+          data:
+            vehicleMakeChartData.map(
+              (item) => item.vehicles
+            ),
+
+          backgroundColor: "#f59e0b",
+
+          borderColor: "#f59e0b",
+
+          borderWidth: 0,
+
+          borderRadius: 7,
+
+          borderSkipped: false,
+
+          maxBarThickness: 55,
+        },
+      ],
+    }),
+    [vehicleMakeChartData]
+  );
+
+  const makeChartOptions = useMemo(
+    () => ({
+      ...commonChartOptions,
+
+      scales: {
+        x: {
+          grid: {
+            display: false,
+          },
+
+          border: {
+            color: "#d8e3e9",
+          },
+
+          ticks: {
+            color: "#61798c",
+
+            font: {
+              size: 9,
+            },
+
+            maxRotation: 0,
+
+            minRotation: 0,
+          },
+        },
+
+        y: {
+          beginAtZero: true,
+
+          suggestedMax:
+            Math.max(
+              ...vehicleMakeChartData.map(
+                (item) => item.vehicles
+              ),
+              0
+            ) + 1,
+
+          ticks: {
+            color: "#61798c",
+
+            font: {
+              size: 9,
+            },
+
+            precision: 0,
+
+            stepSize: 5,
+          },
+
+          grid: {
+            color: "#e4edf1",
+
+            borderDash: [3, 3],
+          },
+
+          border: {
+            display: false,
+          },
+        },
+      },
+    }),
+    [vehicleMakeChartData]
+  );
+
+  /* =========================================
+     TYPE BAR CHART
+  ========================================= */
+
+  const typeChartData = useMemo(
+    () => ({
+      labels:
+        vehicleTypeChartData.map(
+          (item) => item.type
+        ),
+
+      datasets: [
+        {
+          label: "Vehicles",
+
+          data:
+            vehicleTypeChartData.map(
+              (item) => item.vehicles
+            ),
+
+          backgroundColor: "#7c3aed",
+
+          borderColor: "#7c3aed",
+
+          borderWidth: 0,
+
+          borderRadius: 7,
+
+          borderSkipped: false,
+
+          maxBarThickness: 45,
+        },
+      ],
+    }),
+    [vehicleTypeChartData]
+  );
+
+  const typeChartOptions = useMemo(
+    () => ({
+      ...commonChartOptions,
+
+      scales: {
+        x: {
+          grid: {
+            display: false,
+          },
+
+          border: {
+            color: "#d8e3e9",
+          },
+
+          ticks: {
+            color: "#61798c",
+
+            font: {
+              size: 9,
+            },
+
+            maxRotation: 0,
+
+            minRotation: 0,
+          },
+        },
+
+        y: {
+          beginAtZero: true,
+
+          suggestedMax:
+            Math.max(
+              ...vehicleTypeChartData.map(
+                (item) => item.vehicles
+              ),
+              0
+            ) + 1,
+
+          ticks: {
+            color: "#61798c",
+
+            font: {
+              size: 9,
+            },
+
+            precision: 0,
+
+            stepSize: 5,
+          },
+
+          grid: {
+            color: "#e4edf1",
+
+            borderDash: [3, 3],
+          },
+
+          border: {
+            display: false,
+          },
+        },
+      },
+    }),
+    [vehicleTypeChartData]
+  );
+
+  /* =========================================
+     FLEET GROWTH LINE CHART
+  ========================================= */
+
+  const fleetGrowthChartData = useMemo(
+    () => ({
+      labels:
+        activityChartData.map(
+          (item) => item.year
+        ),
+
+      datasets: [
+        {
+          label: "Vehicles",
+
+          data:
+            activityChartData.map(
+              (item) => item.vehicles
+            ),
+
+          borderColor: "#7c3aed",
+
+          backgroundColor:
+            "rgba(124, 58, 237, 0.08)",
+
+          borderWidth: 3,
+
+          tension: 0.35,
+
+          fill: false,
+
+          pointRadius: 4,
+
+          pointHoverRadius: 6,
+
+          pointBackgroundColor: "#7c3aed",
+
+          pointBorderColor: "#ffffff",
+
+          pointBorderWidth: 2,
+        },
+      ],
+    }),
+    [activityChartData]
+  );
+
+  const fleetGrowthChartOptions = useMemo(
+    () => ({
+      ...commonChartOptions,
+
+      scales: {
+        x: {
+          grid: {
+            display: false,
+          },
+
+          border: {
+            color: "#d8e3e9",
+          },
+
+          ticks: {
+            color: "#61798c",
+
+            font: {
+              size: 9,
+            },
+          },
+        },
+
+        y: {
+          beginAtZero: true,
+
+          suggestedMax:
+            Math.max(
+              ...activityChartData.map(
+                (item) => item.vehicles
+              ),
+              0
+            ) + 1,
+
+          ticks: {
+            color: "#61798c",
+
+            font: {
+              size: 9,
+            },
+
+            precision: 0,
+
+            stepSize: 5,
+          },
+
+          grid: {
+            color: "#e4edf1",
+
+            borderDash: [3, 3],
+          },
+
+          border: {
+            display: false,
+          },
+        },
+      },
+    }),
+    [activityChartData]
+  );
+
+  /* =========================================
+     PAGINATION
+  ========================================= */
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(
+      totalVehicles /
         RECORDS_PER_PAGE
-      )
-    );
+    )
+  );
 
   useEffect(() => {
-    if (
-      currentPage >
-      totalPages
-    ) {
-      setCurrentPage(
-        totalPages
-      );
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
     }
-  }, [
-    currentPage,
-    totalPages,
-  ]);
+  }, [currentPage, totalPages]);
 
-  const currentVehicles =
-    useMemo(() => {
-      const startIndex =
-        (currentPage - 1) *
-        RECORDS_PER_PAGE;
+  const currentVehicles = useMemo(() => {
+    const start =
+      (currentPage - 1) *
+      RECORDS_PER_PAGE;
 
-      return vehicles.slice(
-        startIndex,
-        startIndex +
-        RECORDS_PER_PAGE
-      );
-    }, [
-      currentPage,
-      vehicles,
-    ]);
+    return vehicles.slice(
+      start,
+      start + RECORDS_PER_PAGE
+    );
+  }, [currentPage, vehicles]);
 
   const firstRecord =
     totalVehicles === 0
       ? 0
       : (currentPage - 1) *
-      RECORDS_PER_PAGE +
-      1;
+          RECORDS_PER_PAGE +
+        1;
 
-  const lastRecord =
-    Math.min(
-      currentPage *
-      RECORDS_PER_PAGE,
-      totalVehicles
-    );
+  const lastRecord = Math.min(
+    currentPage * RECORDS_PER_PAGE,
+    totalVehicles
+  );
 
-
-  /* =====================================
-     Dashboard data
-  ===================================== */
-
-  const stats = [
-    {
-      title:
-        "Total Vehicles",
-      value: totalVehicles,
-      icon: <FaTruck />,
-      iconClass: "truck",
-    },
-    {
-      title:
-        "GPS Available",
-      value: gpsAvailable,
-      icon: (
-        <span className="text-icon">
-          GPS
-        </span>
-      ),
-    },
-    {
-      title: "Without GPS",
-      value: withoutGps,
-      icon: (
-        <span className="text-icon">
-          GPS
-        </span>
-      ),
-    },
-    {
-      title:
-        "Purchased This Year",
-      value:
-        purchasedThisYear,
-      icon: (
-        <span className="text-icon">
-          {currentYear}
-        </span>
-      ),
-    },
-  ];
-
-  const overviewChartData = [
-    {
-      name: "Total",
-      value: totalVehicles,
-    },
-    {
-      name: "GPS",
-      value: gpsAvailable,
-    },
-    {
-      name: "No GPS",
-      value: withoutGps,
-    },
-    {
-      name: "This Year",
-      value: purchasedThisYear,
-    },
-  ];
-
-  const activityChartData = useMemo(() => {
-    const years = Array.from(
-      { length: 6 },
-      (_, index) => currentYear - 5 + index
-    );
-
-    return years.map((year) => ({
-      year: String(year),
-      vehicles: vehicles.filter(
-        (vehicle) =>
-          Number(vehicle.purchaseYear) === year
-      ).length,
-    }));
-  }, [vehicles, currentYear]);
+  /* =========================================
+     RENDER
+  ========================================= */
 
   return (
     <div className="own-vehicle-page">
-{/* API error */}
+
+      {/* ERROR */}
 
       {pageError && (
         <div
@@ -407,66 +839,75 @@ const Ownvehicledash = () => {
         >
           <FaExclamationCircle />
 
-          <span>
-            {pageError}
-          </span>
+          <span>{pageError}</span>
 
           <button
             type="button"
-            onClick={
-              fetchVehicles
-            }
+            onClick={fetchVehicles}
           >
             Retry
           </button>
         </div>
       )}
 
-      {/* Statistics */}
+      {/* =====================================
+          SUMMARY
+      ===================================== */}
 
-      <div className="own-vehicle-stats">
-        {stats.map(
-          (item) => (
-            <div
-              className="own-stat-card"
-              key={item.title}
-            >
-              <div>
-                <p className="own-stat-title">
-                  {item.title}
-                </p>
+      <section className="own-vehicle-stats">
 
-                <h2>
-                  {isLoading
-                    ? "..."
-                    : item.value}
-                </h2>
-              </div>
+        {stats.map((item) => (
+          <div
+            className="own-stat-card"
+            key={item.title}
+          >
+            <div className="own-stat-content">
 
-              <div
-                className={`own-stat-icon ${item.iconClass ||
-                  ""
-                  }`}
-              >
-                {item.icon}
-              </div>
+              <p className="own-stat-title">
+                {item.title}
+              </p>
+
+              <h2>
+                {isLoading
+                  ? "..."
+                  : item.value}
+              </h2>
+
             </div>
-          )
-        )}
-      </div>
 
-      {/* Compact charts */}
+            <div
+              className={`own-stat-icon ${item.iconClass}`}
+            >
+              {item.icon}
+            </div>
 
-      <section
-        className="own-mini-charts"
-        aria-label="Own vehicle charts"
-      >
-        <article className="own-mini-chart-card">
+          </div>
+        ))}
+
+      </section>
+
+      {/* =====================================
+          CHARTS
+      ===================================== */}
+
+      <section className="own-mini-charts">
+
+        {/* ===================================
+            VEHICLES BY MAKE
+        =================================== */}
+
+        <article className="own-mini-chart-card own-wide-chart">
+
           <div className="own-mini-chart-header">
-            <div>
-              <span>Fleet overview</span>
 
-              <h2>Vehicle Summary</h2>
+            <div>
+              <span>
+                Fleet composition
+              </span>
+
+              <h2>
+                Vehicles by Make
+              </h2>
             </div>
 
             <strong>
@@ -474,247 +915,194 @@ const Ownvehicledash = () => {
                 ? "..."
                 : totalVehicles}
             </strong>
+
           </div>
 
-          <div className="own-mini-chart-body">
+          <div className="own-make-chart-container">
+
             {isLoading ? (
               <div className="own-loading-state">
                 Loading chart...
               </div>
+            ) : vehicleMakeChartData.length === 0 ? (
+              <div className="own-loading-state">
+                No vehicle make data available.
+              </div>
             ) : (
-              <ResponsiveContainer
-                width="100%"
-                height="100%"
-              >
-                <BarChart
-                  data={overviewChartData}
-                  margin={{
-                    top: 10,
-                    right: 4,
-                    bottom: 0,
-                    left: 4,
-                  }}
-                  barCategoryGap="28%"
-                >
-                  <XAxis
-                    dataKey="name"
-                    hide
-                  />
-
-                  <YAxis hide />
-
-                  <Tooltip
-                    cursor={{
-                      fill:
-                        "rgba(245, 158, 11, 0.08)",
-                    }}
-                    formatter={(value) => [
-                      value,
-                      "Vehicles",
-                    ]}
-                    contentStyle={{
-                      border:
-                        "1px solid #e2e8f0",
-                      borderRadius: "10px",
-                      backgroundColor: "#ffffff",
-                      boxShadow:
-                        "0 10px 24px rgba(15, 23, 42, 0.10)",
-                    }}
-                  />
-
-                  <Bar
-                    dataKey="value"
-                    fill="#f59e0b"
-                    radius={[7, 7, 7, 7]}
-                    maxBarSize={38}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
+              <Bar
+                data={makeChartData}
+                options={makeChartOptions}
+              />
             )}
+
           </div>
 
-          <div className="own-mini-chart-labels">
-            {overviewChartData.map(
-              (item) => (
-                <span key={item.name}>
-                  {item.name}
-                </span>
-              )
-            )}
-          </div>
         </article>
 
-        <article className="own-mini-chart-card">
-          <div className="own-mini-chart-header">
-            <div>
-              <span>Purchase trend</span>
+        {/* ===================================
+            VEHICLES BY TYPE
+        =================================== */}
 
-              <h2>Fleet Growth</h2>
+        <article className="own-mini-chart-card">
+
+          <div className="own-mini-chart-header">
+
+            <div>
+              <span>
+                Fleet composition
+              </span>
+
+              <h2>
+                Vehicles by Type
+              </h2>
             </div>
 
             <strong>
               {isLoading
                 ? "..."
-                : purchasedThisYear}
+                : vehicleTypeChartData.length}
             </strong>
+
           </div>
 
-          <div className="own-mini-chart-body">
+          <div className="own-small-chart-container">
+
+            {isLoading ? (
+              <div className="own-loading-state">
+                Loading chart...
+              </div>
+            ) : vehicleTypeChartData.length === 0 ? (
+              <div className="own-loading-state">
+                No vehicle type data available.
+              </div>
+            ) : (
+              <Bar
+                data={typeChartData}
+                options={typeChartOptions}
+              />
+            )}
+
+          </div>
+
+        </article>
+
+        {/* ===================================
+            FLEET GROWTH
+        =================================== */}
+
+        <article className="own-mini-chart-card">
+
+          <div className="own-mini-chart-header">
+
+            <div>
+              <span>
+                Purchase trend
+              </span>
+
+              <h2>
+                Fleet Growth
+              </h2>
+            </div>
+
+            <strong>
+              {isLoading
+                ? "..."
+                : activityChartData.reduce(
+                    (total, item) =>
+                      total +
+                      item.vehicles,
+                    0
+                  )}
+            </strong>
+
+          </div>
+
+          <div className="own-small-chart-container">
+
             {isLoading ? (
               <div className="own-loading-state">
                 Loading chart...
               </div>
             ) : (
-              <ResponsiveContainer
-                width="100%"
-                height="100%"
-              >
-                <LineChart
-                  data={activityChartData}
-                  margin={{
-                    top: 12,
-                    right: 6,
-                    bottom: 0,
-                    left: 6,
-                  }}
-                >
-                  <XAxis
-                    dataKey="year"
-                    hide
-                  />
-
-                  <YAxis hide />
-
-                  <Tooltip
-                    formatter={(value) => [
-                      value,
-                      "Vehicles purchased",
-                    ]}
-                    labelFormatter={(label) =>
-                      `Year: ${label}`
-                    }
-                    contentStyle={{
-                      border:
-                        "1px solid #e2e8f0",
-                      borderRadius: "10px",
-                      backgroundColor: "#ffffff",
-                      boxShadow:
-                        "0 10px 24px rgba(15, 23, 42, 0.10)",
-                    }}
-                  />
-
-                  <Line
-                    type="monotone"
-                    dataKey="vehicles"
-                    stroke="#7c3aed"
-                    strokeWidth={3}
-                    dot={false}
-                    activeDot={{
-                      r: 4,
-                    }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+              <Line
+                data={fleetGrowthChartData}
+                options={
+                  fleetGrowthChartOptions
+                }
+              />
             )}
+
           </div>
 
-          <div className="own-mini-chart-years">
-            {activityChartData.map(
-              (item) => (
-                <span key={item.year}>
-                  {item.year}
-                </span>
-              )
-            )}
-          </div>
         </article>
+
       </section>
 
-      {/* Table */}
+      {/* =====================================
+          VEHICLE RECORDS
+      ===================================== */}
 
       <section className="own-record-card">
+
         <div className="own-record-header">
+
           <div>
             <h2>
               Vehicle Records
             </h2>
 
             <p>
-              Complete information
-              about company-owned
-              vehicles.
+              Complete information about
+              company-owned vehicles.
             </p>
           </div>
+
         </div>
 
         <div className="own-table-wrapper">
+
           <table className="own-vehicle-table">
+
             <thead>
               <tr>
                 <th>S.No</th>
-                <th>
-                  Vehicle No.
-                </th>
-                <th>
-                  Vehicle Type
-                </th>
-                <th>
-                  Vehicle Make
-                </th>
-                <th>
-                  Manufacturing
-                  Year
-                </th>
-                <th>
-                  Registration
-                  Date
-                </th>
-                <th>
-                  Transport Owner
-                </th>
-                <th>
-                  Engine No.
-                </th>
-                <th>
-                  Chassis No.
-                </th>
-                <th>GPS</th>
-                <th>
-                  Purchase Year
-                </th>
-                <th>
-                  Purchased From
-                </th>
+                <th>Vehicle No.</th>
+                <th>Vehicle Type</th>
+                <th>Vehicle Make</th>
+                <th>Manufacturing Year</th>
+                <th>Registration Date</th>
+                <th>Transport Owner</th>
+                <th>Engine No.</th>
+                <th>Chassis No.</th>
+                <th>Purchase Year</th>
+                <th>Purchased From</th>
               </tr>
             </thead>
 
             <tbody>
+
               {isLoading ? (
                 <tr>
                   <td
-                    colSpan={12}
+                    colSpan={11}
                     className="own-empty-row"
                   >
-                    Loading vehicle
-                    records...
+                    Loading vehicle records...
                   </td>
                 </tr>
-              ) : currentVehicles.length >
-                0 ? (
+              ) : currentVehicles.length > 0 ? (
                 currentVehicles.map(
-                  (
-                    vehicle,
-                    index
-                  ) => (
+                  (vehicle, index) => (
                     <tr
                       key={
                         vehicle.id ||
+                        vehicle.vehicleNo ||
                         index
                       }
                     >
+
                       <td>
-                        {(currentPage -
-                          1) *
+                        {(currentPage - 1) *
                           RECORDS_PER_PAGE +
                           index +
                           1}
@@ -728,8 +1116,7 @@ const Ownvehicledash = () => {
                       </td>
 
                       <td>
-                        {vehicle.type ||
-                          "-"}
+                        {vehicle.type || "-"}
                       </td>
 
                       <td>
@@ -754,27 +1141,11 @@ const Ownvehicledash = () => {
                       </td>
 
                       <td>
-                        {vehicle.engineNo ||
-                          "-"}
+                        {vehicle.engineNo || "-"}
                       </td>
 
                       <td>
-                        {vehicle.chassisNo ||
-                          "-"}
-                      </td>
-
-                      <td>
-                        <span
-                          className={
-                            vehicle.gps
-                              ? "own-gps-badge available"
-                              : "own-gps-badge unavailable"
-                          }
-                        >
-                          {vehicle.gps
-                            ? "Available"
-                            : "Not Available"}
-                        </span>
+                        {vehicle.chassisNo || "-"}
                       </td>
 
                       <td>
@@ -786,28 +1157,35 @@ const Ownvehicledash = () => {
                         {vehicle.purchasedFrom ||
                           "-"}
                       </td>
+
                     </tr>
                   )
                 )
               ) : (
                 <tr>
                   <td
-                    colSpan={12}
+                    colSpan={11}
                     className="own-empty-row"
                   >
-                    No vehicles
-                    found.
+                    No vehicles found.
                   </td>
                 </tr>
               )}
+
             </tbody>
+
           </table>
+
         </div>
+
       </section>
 
-      {/* Pagination */}
+      {/* =====================================
+          PAGINATION
+      ===================================== */}
 
       <div className="own-pagination-card">
+
         <p>
           Showing {firstRecord}–
           {lastRecord} of{" "}
@@ -815,83 +1193,69 @@ const Ownvehicledash = () => {
         </p>
 
         <div className="own-pagination-controls">
+
           <button
             type="button"
             className="own-page-arrow"
             onClick={() =>
-              setCurrentPage(
-                (page) =>
-                  Math.max(
-                    page - 1,
-                    1
-                  )
+              setCurrentPage((page) =>
+                Math.max(page - 1, 1)
               )
             }
             disabled={
               currentPage === 1 ||
               isLoading
             }
-            aria-label="Previous page"
           >
             <FaChevronLeft />
           </button>
 
           {Array.from(
             {
-              length:
-                totalPages,
+              length: totalPages,
             },
-            (_, index) =>
-              index + 1
-          ).map(
-            (pageNumber) => (
-              <button
-                type="button"
-                key={
-                  pageNumber
-                }
-                className={`own-page-number ${currentPage ===
-                    pageNumber
-                    ? "active"
-                    : ""
-                  }`}
-                onClick={() =>
-                  setCurrentPage(
-                    pageNumber
-                  )
-                }
-                disabled={
-                  isLoading
-                }
-              >
-                {pageNumber}
-              </button>
-            )
-          )}
+            (_, index) => index + 1
+          ).map((pageNumber) => (
+            <button
+              type="button"
+              key={pageNumber}
+              className={`own-page-number ${
+                currentPage === pageNumber
+                  ? "active"
+                  : ""
+              }`}
+              onClick={() =>
+                setCurrentPage(pageNumber)
+              }
+              disabled={isLoading}
+            >
+              {pageNumber}
+            </button>
+          ))}
 
           <button
             type="button"
             className="own-page-arrow"
             onClick={() =>
-              setCurrentPage(
-                (page) =>
-                  Math.min(
-                    page + 1,
-                    totalPages
-                  )
+              setCurrentPage((page) =>
+                Math.min(
+                  page + 1,
+                  totalPages
+                )
               )
             }
             disabled={
-              currentPage ===
-              totalPages ||
+              currentPage === totalPages ||
               isLoading
             }
-            aria-label="Next page"
           >
             <FaChevronRight />
           </button>
+
         </div>
+
       </div>
+
     </div>
   );
 };

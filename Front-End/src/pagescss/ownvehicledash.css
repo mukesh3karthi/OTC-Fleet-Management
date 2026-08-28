@@ -1,526 +1,962 @@
-/* =================================
+/* =========================================================
    GLOBAL
-================================= */
+========================================================= */
 
 * {
   box-sizing: border-box;
 }
 
+html,
 body {
   margin: 0;
+  padding: 0;
 }
 
-/* =================================
+
+/* =========================================================
    PAGE
-================================= */
+========================================================= */
 
 .own-vehicle-page {
   width: 100%;
+  min-width: 0;
   min-height: 100%;
-  padding: 14px 22px 24px;
-  background: #f5f7fb;
+
+  padding: 16px 18px !important;
+
+  background: #f4f7f9;
+
   color: #0b2942;
-  font-family: "Poppins", sans-serif;
+
+  font-family:
+    Inter,
+    "Segoe UI",
+    Roboto,
+    Arial,
+    sans-serif !important;
+
+  overflow-x: hidden;
 }
 
-/* =================================
-   API ERROR STATE
-================================= */
+
+/* =========================================================
+   API ERROR
+========================================================= */
 
 .own-page-error {
-  margin-bottom: 18px;
-  padding: 12px 15px;
-  border: 1px solid #ffc4ca;
-  border-radius: 10px;
-  background: #fff0f2;
-  color: #a52734;
-  font-size: 13px;
+  width: 100%;
+
+  margin: 0 0 12px;
+
+  padding: 9px 12px;
+
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+
+  border: 1px solid #f3c4c4;
+  border-radius: 8px;
+
+  background: #fff1f1;
+
+  color: #c93f3f;
+
+  font-size: 11px;
+  font-weight: 500;
 }
 
 .own-page-error svg {
   flex-shrink: 0;
-  font-size: 15px;
+
+  font-size: 13px;
 }
 
 .own-page-error span {
   flex: 1;
-  line-height: 1.5;
+
+  line-height: 1.4;
 }
 
 .own-page-error button {
-  padding: 7px 13px;
-  border: 1px solid #a52734;
-  border-radius: 7px;
+  padding: 5px 10px;
+
+  border: 1px solid #c93f3f;
+  border-radius: 6px;
+
   background: transparent;
-  color: #a52734;
+  color: #c93f3f;
+
   font: inherit;
-  font-size: 12px;
+  font-size: 10px;
   font-weight: 600;
+
   cursor: pointer;
+
   transition:
     background 0.2s ease,
     color 0.2s ease;
 }
 
 .own-page-error button:hover {
-  background: #a52734;
-  color: #ffffff;
+  background: #c93f3f;
+
+  color: #fff;
 }
 
-/* =================================
+
+/* =========================================================
    SUMMARY CARDS
-================================= */
+========================================================= */
 
 .own-vehicle-stats {
-  margin-bottom: 20px;
+  width: 100%;
+
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px;
+
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+
+  gap: 12px;
+
+  margin: 0 0 12px;
 }
 
+
+/* =========================================================
+   STAT CARD
+========================================================= */
+
 .own-stat-card {
+  width: 100%;
   min-width: 0;
-  min-height: 104px;
-  padding: 18px 20px;
-  border: 1px solid #dce5ec;
-  border-radius: 13px;
-  background: #ffffff;
-  box-shadow: 0 4px 14px rgba(8, 41, 67, 0.05);
+  min-height: 88px;
+
+  padding: 12px 15px;
+
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+
+  gap: 10px;
+
+  border: 1px solid #dce4e9;
+  border-radius: 11px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 3px 10px rgba(11, 41, 66, 0.04);
+
   transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease,
-    border-color 0.2s ease;
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
 }
 
 .own-stat-card:hover {
-  border-color: #c7d7df;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 22px rgba(8, 41, 67, 0.08);
+  transform: translateY(-1px);
+
+  border-color: #c7d5dc;
+
+  box-shadow:
+    0 5px 14px rgba(11, 41, 66, 0.065);
+}
+
+.own-stat-content {
+  min-width: 0;
 }
 
 .own-stat-title {
-  margin: 0 0 8px;
-  color: #647b8f;
-  font-size: 13px;
-  line-height: 1.4;
+  margin: 0 0 4px;
+
+  color: #718096;
+
+  font-size: 10px;
   font-weight: 600;
+
+  line-height: 1.2;
 }
 
 .own-stat-card h2 {
   margin: 0;
+
   color: #0b2942;
-  font-size: 28px;
+
+  font-size: 25px;
+  font-weight: 750;
+
   line-height: 1;
-  font-weight: 700;
 }
 
+.own-stat-subtitle {
+  display: block;
+
+  margin-top: 5px;
+
+  color: #96a4b0;
+
+  font-size: 9px;
+
+  line-height: 1.2;
+}
+
+
+/* =========================================================
+   STAT ICON
+========================================================= */
+
 .own-stat-icon {
-  width: 48px;
-  height: 48px;
-  min-width: 48px;
-  border-radius: 12px;
-  background: #e7f5f3;
-  color: #0f9488;
-  font-size: 20px;
-  font-weight: 700;
+  width: 40px;
+  height: 40px;
+
+  min-width: 40px;
+
+  flex: 0 0 40px;
+
   display: flex;
   align-items: center;
   justify-content: center;
+
+  border-radius: 10px;
+
+  font-size: 16px;
 }
 
 .own-stat-icon.truck {
-  font-size: 21px;
+  color: #2d6fbe;
+
+  background: #eaf2fb;
+}
+
+.own-stat-icon.active {
+  color: #15945a;
+
+  background: #e7f5ed;
+}
+
+.own-stat-icon.idle {
+  color: #667085;
+
+  background: #eef1f5;
+}
+
+.own-stat-icon.maintenance {
+  color: #c67a12;
+
+  background: #fff3df;
 }
 
 .text-icon {
-  font-size: 12px;
+  font-size: 14px;
+
   line-height: 1;
-  font-weight: 700;
+
+  font-weight: 800;
 }
 
-/* =================================
-   COMPACT CHARTS
-================================= */
+
+/* =========================================================
+   CHART GRID
+========================================================= */
 
 .own-mini-charts {
-  margin-bottom: 20px;
+  width: 100%;
+
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 12px;
+
+  margin: 0 0 12px;
 }
+
+
+/* =========================================================
+   CHART CARD
+========================================================= */
 
 .own-mini-chart-card {
+  width: 100%;
   min-width: 0;
-  min-height: 220px;
-  padding: 20px;
-  border: 1px solid #dce5ec;
-  border-radius: 16px;
-  background: #ffffff;
-  box-shadow: 0 5px 18px rgba(8, 41, 67, 0.05);
+
+  padding: 13px 16px;
+
+  border: 1px solid #dce4e9;
+  border-radius: 11px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #ffffff,
+      #fcfefe
+    );
+
+  box-shadow:
+    0 3px 10px rgba(11, 41, 66, 0.04);
+
+  overflow: hidden;
+
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
 }
 
+.own-mini-chart-card:hover {
+  transform: translateY(-1px);
+
+  border-color: #c8d8dd;
+
+  box-shadow:
+    0 6px 16px rgba(11, 41, 66, 0.065);
+}
+
+
+/* =========================================================
+   WIDE CHART
+   Vehicles by Make
+========================================================= */
+
+.own-wide-chart {
+  grid-column: 1 / -1;
+
+  padding: 12px 16px 8px;
+
+  background: #ffffff;
+}
+
+
+/* =========================================================
+   CHART HEADER
+========================================================= */
+
 .own-mini-chart-header {
+  width: 100%;
+  min-height: 42px;
+
+  margin-bottom: 3px;
+
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 10px;
+
+  gap: 12px;
 }
 
-.own-mini-chart-header span {
+.own-mini-chart-header > div:first-child {
+  min-width: 0;
+}
+
+.own-mini-chart-header
+  > div:first-child
+  > span {
   display: block;
-  margin-bottom: 5px;
-  color: #71889b;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
+
+  margin-bottom: 2px;
+
+  color: #0f9488;
+
+  font-size: 7.5px;
+  font-weight: 750;
+
+  letter-spacing: 0.1em;
+
   text-transform: uppercase;
 }
 
 .own-mini-chart-header h2 {
   margin: 0;
+
   color: #0b2942;
-  font-size: 19px;
+
+  font-size: 15px;
+  font-weight: 750;
+
+  line-height: 1.15;
+}
+
+.own-mini-chart-header p {
+  margin: 3px 0 0;
+
+  color: #8293a2;
+
+  font-size: 8.5px;
+
   line-height: 1.3;
-  font-weight: 700;
 }
 
-.own-mini-chart-header strong {
-  color: #0b2942;
-  font-size: 27px;
-  line-height: 1;
-  font-weight: 700;
+
+/* =========================================================
+   WIDE CHART HEADER
+========================================================= */
+
+.own-wide-chart
+  .own-mini-chart-header
+  > div:first-child
+  > span {
+  font-size: 8px;
+
+  letter-spacing: 0.08em;
 }
 
-.own-mini-chart-body {
-  width: 100%;
-  height: 125px;
+.own-wide-chart
+  .own-mini-chart-header
+  h2 {
+  font-size: 17px;
 }
 
-.own-mini-chart-labels,
-.own-mini-chart-years {
-  margin-top: 5px;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 6px;
+.own-wide-chart
+  .own-mini-chart-header
+  p {
+  font-size: 9px;
 }
 
-.own-mini-chart-years {
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-}
 
-.own-mini-chart-labels span,
-.own-mini-chart-years span {
-  overflow: hidden;
-  color: #71869a;
-  font-size: 10px;
-  font-weight: 500;
+/* =========================================================
+   HEADER VALUE
+========================================================= */
+
+.own-mini-chart-header > strong {
+  min-width: 52px;
+
+  padding: 4px 7px;
+
+  align-self: flex-start;
+
+  flex-shrink: 0;
+
+  border: 1px solid #d9ebe8;
+  border-radius: 8px;
+
+  background: #f2faf8;
+
+  color: #0f9488;
+
+  font-size: 17px;
+  font-weight: 750;
+
   text-align: center;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
+
+.own-wide-chart
+  .own-mini-chart-header
+  > strong {
+  min-width: 66px;
+
+  padding: 5px 8px;
+
+  border-color: #cce7e3;
+
+  background: #f0faf8;
+
+  font-size: 20px;
+}
+
+
+/* =========================================================
+   CHART BODIES
+========================================================= */
+
+.own-make-chart-container {
+  position: relative;
+
+  width: 100%;
+  height: 180px;
+
+  min-width: 0;
+}
+
+.own-small-chart-container {
+  position: relative;
+
+  width: 100%;
+  height: 165px;
+
+  min-width: 0;
+}
+
+
+/* =========================================================
+   CHART.JS CANVAS
+========================================================= */
+
+.own-make-chart-container canvas,
+.own-small-chart-container canvas {
+  display: block;
+
+  width: 100% !important;
+  height: 100% !important;
+
+  max-width: 100%;
+}
+
+
+/* =========================================================
+   CHART.JS WRAPPER
+========================================================= */
+
+.own-make-chart-container
+  > div,
+.own-small-chart-container
+  > div {
+  width: 100% !important;
+
+  height: 100% !important;
+
+  min-width: 0;
+
+  position: relative;
+}
+
+
+/* =========================================================
+   CHART.JS TOOLTIP
+========================================================= */
+
+.own-make-chart-container
+  .chartjs-tooltip,
+.own-small-chart-container
+  .chartjs-tooltip {
+  pointer-events: none;
+}
+
+
+/* =========================================================
+   LOADING / EMPTY CHART STATE
+========================================================= */
 
 .own-loading-state {
   width: 100%;
   height: 100%;
-  color: #71869a;
-  font-size: 13px;
+
+  display: grid;
+
+  place-items: center;
+
+  color: #718096;
+
+  font-size: 11px;
   font-weight: 500;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
-/* =================================
-   VEHICLE RECORD CARD
-================================= */
+
+/* =========================================================
+   RECORD CARD
+========================================================= */
 
 .own-record-card {
   width: 100%;
+  min-width: 0;
+
+  margin: 0;
+
   overflow: hidden;
-  border: 1px solid #dce5ec;
-  border-radius: 14px;
+
+  border: 1px solid #dce4e9;
+  border-radius: 11px;
+
   background: #ffffff;
-  box-shadow: 0 5px 18px rgba(8, 41, 67, 0.05);
+
+  box-shadow:
+    0 3px 10px rgba(11, 41, 66, 0.04);
 }
 
+
+/* =========================================================
+   RECORD HEADER
+========================================================= */
+
 .own-record-header {
-  min-height: 76px;
-  padding: 18px 20px;
+  min-height: 54px;
+
+  padding: 9px 13px;
+
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
+
+  gap: 12px;
+
+  border-bottom: 1px solid #e3e9ed;
 }
 
-.own-record-header > div {
+.own-record-header > div:first-child {
   min-width: 0;
+}
+
+.own-section-label {
+  display: block;
+
+  margin-bottom: 2px;
+
+  color: #0f9488;
+
+  font-size: 7.5px;
+  font-weight: 700;
+
+  letter-spacing: 0.08em;
+
+  text-transform: uppercase;
 }
 
 .own-record-header h2 {
   margin: 0;
+
   color: #0b2942;
-  font-size: 21px;
-  line-height: 1.3;
+
+  font-size: 17px;
   font-weight: 700;
 }
 
 .own-record-header p {
-  margin: 4px 0 0;
-  color: #71869a;
-  font-size: 13px;
-  line-height: 1.5;
+  margin: 3px 0 0;
+
+  color: #81909d;
+
+  font-size: 9.5px;
+
+  line-height: 1.3;
 }
 
-/* =================================
+.own-record-count {
+  height: 34px;
+
+  padding: 0 9px;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 5px;
+
+  border-radius: 8px;
+
+  background: #e7f5f3;
+
+  color: #087f76;
+
+  font-size: 9.5px;
+  font-weight: 650;
+
+  white-space: nowrap;
+}
+
+
+/* =========================================================
    TABLE WRAPPER
-================================= */
+========================================================= */
 
 .own-table-wrapper {
   width: 100%;
+
   overflow-x: auto;
+
   border-top: 1px solid #e5ecef;
+
   scrollbar-width: thin;
-  scrollbar-color: #b9c9d3 transparent;
+
+  scrollbar-color:
+    #bbc7cf
+    #f3f6f8;
 }
 
 .own-table-wrapper::-webkit-scrollbar {
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 .own-table-wrapper::-webkit-scrollbar-track {
-  background: transparent;
+  background: #f3f6f8;
 }
 
 .own-table-wrapper::-webkit-scrollbar-thumb {
-  background: #b9c9d3;
-  border-radius: 20px;
+  border-radius: 999px;
+
+  background: #bbc7cf;
 }
 
-.own-table-wrapper::-webkit-scrollbar-thumb:hover {
-  background: #9fb4c1;
-}
 
-/* =================================
+/* =========================================================
    TABLE
-================================= */
+========================================================= */
 
 .own-vehicle-table {
   width: 100%;
-  min-width: 1380px;
+
+  min-width: 1150px;
+
   border-collapse: separate;
+
   border-spacing: 0;
+
   table-layout: auto;
 }
 
 .own-vehicle-table th,
 .own-vehicle-table td {
-  padding: 13px 16px;
+  padding: 9px;
+
   text-align: left;
+
   vertical-align: middle;
+
   white-space: nowrap;
 }
 
 .own-vehicle-table thead th {
   position: sticky;
+
   top: 0;
+
   z-index: 1;
-  border-bottom: 1px solid #d8e3e9;
-  background: #edf3f6;
-  color: #385268;
-  font-size: 12.5px;
-  line-height: 1.4;
-  font-weight: 600;
+
+  border-bottom: 1px solid #e7ecf0;
+
+  background: #f5f7f9;
+
+  color: #667788;
+
+  font-size: 9px;
+  font-weight: 700;
+
+  line-height: 1.2;
+
+  letter-spacing: 0.03em;
+
+  text-transform: uppercase;
 }
 
 .own-vehicle-table tbody td {
-  border-bottom: 1px solid #e5ecef;
+  border-bottom: 1px solid #e7ecf0;
+
   background: #ffffff;
-  color: #334f65;
-  font-size: 13px;
-  line-height: 1.45;
+
+  color: #334b5f;
+
+  font-size: 10.5px;
+
+  line-height: 1.35;
+
   font-weight: 400;
 }
 
 .own-vehicle-table tbody tr {
-  transition: background 0.2s ease;
+  transition:
+    background 0.2s ease;
 }
 
-.own-vehicle-table tbody tr:hover td {
-  background: #f3f8f9;
+.own-vehicle-table
+  tbody
+  tr:hover
+  td {
+  background: #f5faf9;
 }
 
-.own-vehicle-table tbody tr:last-child td {
+.own-vehicle-table
+  tbody
+  tr:last-child
+  td {
   border-bottom: none;
 }
 
-.own-vehicle-table th:first-child,
-.own-vehicle-table td:first-child {
-  width: 70px;
+
+/* =========================================================
+   TABLE COLUMN WIDTHS
+========================================================= */
+
+.own-vehicle-table
+  th:first-child,
+.own-vehicle-table
+  td:first-child {
+  width: 45px;
+
   text-align: center;
 }
 
-.own-vehicle-table th:nth-child(2),
-.own-vehicle-table td:nth-child(2) {
-  min-width: 135px;
+.own-vehicle-table
+  th:nth-child(2),
+.own-vehicle-table
+  td:nth-child(2) {
+  min-width: 95px;
 }
 
-.own-vehicle-table th:nth-child(3),
-.own-vehicle-table td:nth-child(3) {
-  min-width: 115px;
+.own-vehicle-table
+  th:nth-child(3),
+.own-vehicle-table
+  td:nth-child(3) {
+  min-width: 80px;
 }
 
-.own-vehicle-table th:nth-child(4),
-.own-vehicle-table td:nth-child(4) {
-  min-width: 150px;
+.own-vehicle-table
+  th:nth-child(4),
+.own-vehicle-table
+  td:nth-child(4) {
+  min-width: 100px;
 }
 
-.own-vehicle-table th:nth-child(5),
-.own-vehicle-table td:nth-child(5) {
-  min-width: 155px;
+.own-vehicle-table
+  th:nth-child(5),
+.own-vehicle-table
+  td:nth-child(5) {
+  min-width: 110px;
 }
 
-.own-vehicle-table th:nth-child(6),
-.own-vehicle-table td:nth-child(6) {
-  min-width: 145px;
+.own-vehicle-table
+  th:nth-child(6),
+.own-vehicle-table
+  td:nth-child(6) {
+  min-width: 100px;
 }
 
-.own-vehicle-table th:nth-child(7),
-.own-vehicle-table td:nth-child(7) {
-  min-width: 145px;
+.own-vehicle-table
+  th:nth-child(7),
+.own-vehicle-table
+  td:nth-child(7) {
+  min-width: 100px;
 }
 
-.own-vehicle-table th:nth-child(8),
-.own-vehicle-table td:nth-child(8) {
-  min-width: 135px;
+.own-vehicle-table
+  th:nth-child(8),
+.own-vehicle-table
+  td:nth-child(8) {
+  min-width: 95px;
 }
 
-.own-vehicle-table th:nth-child(9),
-.own-vehicle-table td:nth-child(9) {
-  min-width: 145px;
+.own-vehicle-table
+  th:nth-child(9),
+.own-vehicle-table
+  td:nth-child(9) {
+  min-width: 100px;
 }
 
-.own-vehicle-table th:nth-child(10),
-.own-vehicle-table td:nth-child(10) {
-  min-width: 120px;
+.own-vehicle-table
+  th:nth-child(10),
+.own-vehicle-table
+  td:nth-child(10) {
+  min-width: 85px;
 }
 
-.own-vehicle-table th:nth-child(11),
-.own-vehicle-table td:nth-child(11) {
-  min-width: 125px;
+.own-vehicle-table
+  th:nth-child(11),
+.own-vehicle-table
+  td:nth-child(11) {
+  min-width: 90px;
 }
 
-.own-vehicle-table th:nth-child(12),
-.own-vehicle-table td:nth-child(12) {
-  min-width: 145px;
-}
 
-/* =================================
+/* =========================================================
    VEHICLE NUMBER
-================================= */
+========================================================= */
 
 .own-vehicle-number {
   color: #0f9488;
+
   font-weight: 700;
+
   letter-spacing: 0.1px;
 }
 
-/* =================================
-   GPS BADGES
-================================= */
 
-.own-gps-badge {
-  min-width: 92px;
-  padding: 5px 10px;
-  border-radius: 999px;
-  font-size: 11.5px;
-  line-height: 1.2;
-  font-weight: 600;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.own-gps-badge.available {
-  border: 1px solid #bdebcf;
-  background: #e4f8ed;
-  color: #087443;
-}
-
-.own-gps-badge.unavailable {
-  border: 1px solid #ffcbd1;
-  background: #ffebee;
-  color: #b3323d;
-}
-
-/* =================================
-   EMPTY TABLE
-================================= */
+/* =========================================================
+   EMPTY / LOADING TABLE ROW
+========================================================= */
 
 .own-empty-row {
-  height: 130px;
-  color: #8295a5 !important;
-  font-size: 14px !important;
+  padding: 28px 15px !important;
+
+  color: #7c899c !important;
+
+  font-size: 11px !important;
+
   font-weight: 500 !important;
+
   text-align: center !important;
 }
 
-/* =================================
+
+/* =========================================================
    PAGINATION
-================================= */
+========================================================= */
 
 .own-pagination-card {
   width: 100%;
-  margin-top: 16px;
-  padding: 13px 16px;
-  border: 1px solid #dce5ec;
-  border-radius: 12px;
-  background: #ffffff;
-  box-shadow: 0 4px 14px rgba(8, 41, 67, 0.04);
+
+  min-height: 46px;
+
+  margin-top: 12px;
+
+  padding: 7px 11px;
+
   display: flex;
+
   align-items: center;
+
   justify-content: space-between;
-  gap: 18px;
+
+  gap: 10px;
+
+  border: 1px solid #dce4e9;
+
+  border-radius: 8px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 3px 10px rgba(11, 41, 66, 0.04);
 }
 
 .own-pagination-card p {
   margin: 0;
-  color: #71869a;
-  font-size: 12.5px;
-  line-height: 1.5;
+
+  color: #718096;
+
+  font-size: 9.5px;
+
+  line-height: 1.4;
+
   font-weight: 500;
 }
 
 .own-pagination-controls {
   display: flex;
+
   align-items: center;
-  gap: 7px;
+
+  gap: 4px;
 }
 
 .own-page-arrow,
 .own-page-number {
-  width: 36px;
-  height: 36px;
-  padding: 0;
-  border: 1px solid #d8e3e9;
-  border-radius: 8px;
-  background: #ffffff;
-  color: #526b7f;
-  font: inherit;
-  font-size: 12px;
-  line-height: 1;
-  font-weight: 600;
-  cursor: pointer;
+  min-width: 27px;
+
+  height: 27px;
+
+  padding: 0 5px;
+
   display: inline-flex;
+
   align-items: center;
+
   justify-content: center;
+
+  border: 1px solid #d7e0e6;
+
+  border-radius: 6px;
+
+  background: #ffffff;
+
+  color: #536879;
+
+  font: inherit;
+
+  font-size: 10px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
   transition:
     background 0.2s ease,
     border-color 0.2s ease,
@@ -528,617 +964,163 @@ body {
 }
 
 .own-page-arrow svg {
-  font-size: 11px;
+  font-size: 8px;
 }
 
 .own-page-arrow:hover:not(:disabled),
 .own-page-number:hover:not(.active):not(:disabled) {
-  border-color: #aac1cd;
-  background: #edf5f6;
-  color: #0b2942;
+  border-color: #0f9488;
+
+  background: #eef8f7;
+
+  color: #0f9488;
 }
 
 .own-page-number.active {
-  border-color: #0b2942;
-  background: #0b2942;
+  border-color: #0f9488;
+
+  background: #0f9488;
+
   color: #ffffff;
-  box-shadow: 0 4px 10px rgba(11, 41, 66, 0.18);
 }
 
 .own-page-arrow:disabled,
 .own-page-number:disabled {
-  opacity: 0.42;
+  opacity: 0.4;
+
   cursor: not-allowed;
 }
 
 .own-page-arrow:focus-visible,
 .own-page-number:focus-visible {
-  outline: 3px solid rgba(15, 148, 136, 0.14);
+  outline: 3px solid
+    rgba(15, 148, 136, 0.14);
+
   outline-offset: 2px;
 }
 
-/* =================================
-   MODAL OVERLAY
-================================= */
 
-.own-modal-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  padding: 24px;
-  overflow-y: auto;
-  background: rgba(15, 28, 49, 0.58);
-  backdrop-filter: blur(3px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* =================================
-   DATA ENTRY MODAL
-================================= */
-
-.own-data-modal {
-  width: min(820px, 100%);
-  max-height: calc(100vh - 48px);
-  overflow: hidden;
-  border: 1px solid #dce3ed;
-  border-radius: 16px;
-  background: #ffffff;
-  box-shadow: 0 24px 70px rgba(8, 34, 56, 0.26);
-  display: flex;
-  flex-direction: column;
-}
-
-.own-modal-header {
-  padding: 20px 22px;
-  border-bottom: 1px solid #e5ecef;
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 20px;
-}
-
-.own-modal-header > div {
-  min-width: 0;
-}
-
-.own-modal-header h2 {
-  margin: 0;
-  color: #0b2942;
-  font-size: 21px;
-  line-height: 1.3;
-  font-weight: 700;
-}
-
-.own-modal-header p {
-  margin: 5px 0 0;
-  color: #71869a;
-  font-size: 13px;
-  line-height: 1.5;
-}
-
-.own-modal-close {
-  width: 36px;
-  height: 36px;
-  padding: 0;
-  border: 1px solid #dce5ec;
-  border-radius: 8px;
-  background: #ffffff;
-  color: #687993;
-  font-size: 15px;
-  cursor: pointer;
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition:
-    border-color 0.2s ease,
-    background 0.2s ease,
-    color 0.2s ease;
-}
-
-.own-modal-close:hover:not(:disabled) {
-  border-color: #f2c4c9;
-  background: #fff0f2;
-  color: #b52f3d;
-}
-
-.own-modal-close:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.own-modal-close:focus-visible {
-  outline: 3px solid rgba(15, 148, 136, 0.14);
-  outline-offset: 2px;
-}
-
-.own-data-modal form {
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.own-modal-body {
-  padding: 22px;
-  overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: #b9c9d3 transparent;
-}
-
-.own-modal-body::-webkit-scrollbar {
-  width: 7px;
-}
-
-.own-modal-body::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.own-modal-body::-webkit-scrollbar-thumb {
-  background: #b9c9d3;
-  border-radius: 20px;
-}
-
-/* =================================
-   FORM
-================================= */
-
-.own-form-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 17px 18px;
-}
-
-.own-form-group {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-}
-
-.own-form-group label {
-  color: #425d72;
-  font-size: 12.5px;
-  line-height: 1.4;
-  font-weight: 600;
-}
-
-.own-form-group label span {
-  margin-left: 3px;
-  color: #d43848;
-}
-
-.own-form-group input,
-.own-form-group select {
-  width: 100%;
-  height: 42px;
-  padding: 0 12px;
-  border: 1px solid #d7dfeb;
-  border-radius: 8px;
-  outline: none;
-  background: #ffffff;
-  color: #334f65;
-  font: inherit;
-  font-size: 13px;
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease,
-    background 0.2s ease;
-}
-
-.own-form-group input:hover,
-.own-form-group select:hover {
-  border-color: #bec9d8;
-}
-
-.own-form-group input::placeholder {
-  color: #9ba8ba;
-}
-
-.own-form-group input:focus,
-.own-form-group select:focus {
-  border-color: #0b2942;
-  box-shadow: 0 0 0 3px rgba(15, 148, 136, 0.10);
-}
-
-.own-form-group input:disabled,
-.own-form-group select:disabled {
-  background: #f3f5f8;
-  color: #8295a5;
-  cursor: not-allowed;
-}
-
-.own-form-group small {
-  color: #c32f3e;
-  font-size: 11.5px;
-  line-height: 1.4;
-}
-
-.own-form-full {
-  grid-column: 1 / -1;
-}
-
-/* =================================
-   SAVE ERROR
-================================= */
-
-.own-save-error {
-  margin-bottom: 17px;
-  padding: 11px 13px;
-  border: 1px solid #ffc4ca;
-  border-radius: 8px;
-  background: #fff0f2;
-  color: #a52734;
-  font-size: 12.5px;
-  line-height: 1.5;
-  display: flex;
-  align-items: flex-start;
-  gap: 9px;
-}
-
-.own-save-error svg {
-  margin-top: 2px;
-  flex-shrink: 0;
-}
-
-/* =================================
-   MODAL FOOTER
-================================= */
-
-.own-modal-footer {
-  padding: 15px 22px;
-  border-top: 1px solid #e5ecef;
-  background: #fafbfd;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 10px;
-}
-
-.own-cancel-button,
-.own-save-button {
-  min-width: 112px;
-  height: 40px;
-  padding: 0 17px;
-  border-radius: 8px;
-  font: inherit;
-  font-size: 12.5px;
-  line-height: 1;
-  font-weight: 600;
-  cursor: pointer;
-  transition:
-    background 0.2s ease,
-    border-color 0.2s ease,
-    color 0.2s ease,
-    box-shadow 0.2s ease;
-}
-
-.own-cancel-button {
-  border: 1px solid #d8e0eb;
-  background: #ffffff;
-  color: #526b7f;
-}
-
-.own-cancel-button:hover:not(:disabled) {
-  border-color: #c8d2df;
-  background: #f3f6fa;
-}
-
-.own-save-button {
-  border: 1px solid #0b2942;
-  background: #0b2942;
-  color: #ffffff;
-  box-shadow: 0 4px 10px rgba(15, 148, 136, 0.14);
-}
-
-.own-save-button:hover:not(:disabled) {
-  border-color: #123b5c;
-  background: #123b5c;
-  box-shadow: 0 6px 14px rgba(23, 71, 159, 0.22);
-}
-
-.own-cancel-button:disabled,
-.own-save-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.own-cancel-button:focus-visible,
-.own-save-button:focus-visible {
-  outline: 3px solid rgba(15, 148, 136, 0.14);
-  outline-offset: 2px;
-}
-
-/* =================================
-   LARGE LAPTOP
-================================= */
-
-@media (max-width: 1400px) {
-  .own-vehicle-page {
-    padding: 18px 20px 22px;
-  }
-
-  .own-vehicle-stats {
-    gap: 14px;
-  }
-
-  .own-stat-card {
-    padding: 17px 18px;
-  }
-
-  .own-stat-title {
-    font-size: 12.5px;
-  }
-
-  .own-stat-card h2 {
-    font-size: 26px;
-  }
-
-  .own-stat-icon {
-    width: 45px;
-    height: 45px;
-    min-width: 45px;
-  }
-}
-
-/* =================================
-   SMALL LAPTOP
-================================= */
+/* =========================================================
+   RESPONSIVE
+========================================================= */
 
 @media (max-width: 1200px) {
+
   .own-vehicle-stats {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
   }
 
   .own-vehicle-table {
-    min-width: 1320px;
+    min-width: 1050px;
   }
 }
 
-/* =================================
-   TABLET
-================================= */
+
+/* =========================================================
+   900
+========================================================= */
 
 @media (max-width: 900px) {
-  .own-vehicle-page {
-    padding: 18px;
-  }
-
-  .own-record-header {
-    align-items: flex-start;
-  }
-
-  .own-record-header h2,
-  .own-mini-chart-header h2 {
-    font-size: 20px;
-  }
-}
-
-/* =================================
-   MOBILE
-================================= */
-
-@media (max-width: 768px) {
-  .own-vehicle-page {
-    padding: 16px 14px 20px;
-  }
-
-  .own-page-error {
-    align-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  .own-page-error button {
-    margin-left: auto;
-  }
-
-  .own-vehicle-stats {
-    margin-bottom: 16px;
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
-
-  .own-stat-card {
-    min-height: 94px;
-    padding: 16px 18px;
-    border-radius: 11px;
-  }
-
-  .own-stat-card h2 {
-    font-size: 25px;
-  }
-
-  .own-stat-icon {
-    width: 44px;
-    height: 44px;
-    min-width: 44px;
-    border-radius: 10px;
-    font-size: 18px;
-  }
 
   .own-mini-charts {
     grid-template-columns: 1fr;
-    gap: 14px;
   }
 
-  .own-mini-chart-card {
-    min-height: 205px;
-    padding: 17px;
-    border-radius: 12px;
+  .own-make-chart-container {
+    height: 175px;
   }
 
-  .own-mini-chart-header h2 {
-    font-size: 18px;
-  }
-
-  .own-mini-chart-body {
-    height: 115px;
-  }
-
-  .own-record-card {
-    border-radius: 12px;
-  }
-
-  .own-record-header {
-    padding: 16px;
-    align-items: stretch;
-    flex-direction: column;
-    gap: 14px;
-  }
-
-  .own-record-header h2 {
-    font-size: 19px;
-  }
-
-  .own-record-header p {
-    font-size: 12.5px;
-  }
-
-  .own-vehicle-table th,
-  .own-vehicle-table td {
-    padding: 12px 14px;
-  }
-
-  .own-pagination-card {
-    padding: 13px 14px;
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .own-pagination-controls {
-    width: 100%;
-    justify-content: flex-end;
-    flex-wrap: wrap;
-  }
-
-  .own-modal-overlay {
-    padding: 14px;
-    align-items: flex-start;
-  }
-
-  .own-data-modal {
-    max-height: calc(100vh - 28px);
-    border-radius: 13px;
-  }
-
-  .own-modal-header {
-    padding: 17px;
-  }
-
-  .own-modal-body {
-    padding: 17px;
-  }
-
-  .own-form-grid {
-    grid-template-columns: 1fr;
-    gap: 15px;
-  }
-
-  .own-form-full {
-    grid-column: auto;
-  }
-
-  .own-modal-footer {
-    padding: 14px 17px;
+  .own-small-chart-container {
+    height: 165px;
   }
 }
 
-/* =================================
-   SMALL MOBILE
-================================= */
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 768px) {
+
+  .own-vehicle-page {
+    padding: 13px 11px !important;
+  }
+
+  .own-mini-chart-card {
+    padding: 12px 11px;
+  }
+
+  .own-wide-chart {
+    padding: 11px 10px 7px;
+  }
+
+  .own-make-chart-container {
+    height: 170px;
+  }
+
+  .own-small-chart-container {
+    height: 160px;
+  }
+
+  .own-record-header {
+    flex-direction: column;
+
+    align-items: stretch;
+  }
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
 
 @media (max-width: 480px) {
+
   .own-vehicle-page {
-    padding: 14px 10px 18px;
+    padding: 11px 8px !important;
+  }
+
+  .own-vehicle-stats {
+    grid-template-columns: 1fr;
   }
 
   .own-stat-card {
-    padding: 15px 16px;
-  }
+    min-height: 82px;
 
-  .own-stat-title {
-    font-size: 12px;
+    padding: 11px 13px;
   }
 
   .own-stat-card h2 {
     font-size: 23px;
   }
 
-  .own-mini-chart-card {
-    padding: 15px;
+  .own-stat-icon {
+    width: 36px;
+    height: 36px;
+
+    min-width: 36px;
+
+    flex-basis: 36px;
   }
 
-  .own-mini-chart-header h2 {
-    font-size: 17px;
+  .own-make-chart-container {
+    height: 160px;
   }
 
-  .own-mini-chart-header strong {
-    font-size: 24px;
+  .own-small-chart-container {
+    height: 150px;
   }
 
-  .own-mini-chart-body {
-    height: 105px;
+  .own-pagination-card {
+    flex-direction: column;
+
+    align-items: flex-start;
   }
 
-  .own-mini-chart-labels span,
-  .own-mini-chart-years span {
-    font-size: 9px;
-  }
-
-  .own-record-header {
-    padding: 15px;
-  }
-
-  .own-pagination-card p {
-    font-size: 12px;
-  }
-
-  .own-page-arrow,
-  .own-page-number {
-    width: 34px;
-    height: 34px;
-    border-radius: 7px;
-  }
-
-  .own-modal-overlay {
-    padding: 8px;
-  }
-
-  .own-data-modal {
-    max-height: calc(100vh - 16px);
-    border-radius: 10px;
-  }
-
-  .own-modal-header {
-    padding: 15px;
-  }
-
-  .own-modal-header h2 {
-    font-size: 18px;
-  }
-
-  .own-modal-header p {
-    font-size: 12px;
-  }
-
-  .own-modal-body {
-    padding: 15px;
-  }
-
-  .own-form-group input,
-  .own-form-group select {
-    height: 40px;
-  }
-
-  .own-modal-footer {
-    padding: 13px 15px;
-    align-items: stretch;
-    flex-direction: column-reverse;
-  }
-
-  .own-cancel-button,
-  .own-save-button {
+  .own-pagination-controls {
     width: 100%;
+
+    overflow-x: auto;
   }
 }
