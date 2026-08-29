@@ -1,12 +1,37 @@
 import React from "react";
 
 import {
+  AlertTriangle,
+  CheckCircle2,
   ChevronRight,
+  CirclePause,
   MapPin,
+  Navigation,
   Truck,
 } from "lucide-react";
 
 import "../Tracking/TripListColumn.css";
+
+
+/* =========================================
+   VEHICLE STATUS COUNTS
+
+   Same status matching rules as VehicleColumn:
+   "Stopped" counts as a Breakdown.
+========================================= */
+
+const getStatusCounts = (vehicles) => {
+  const list = Array.isArray(vehicles) ? vehicles : [];
+
+  return {
+    moving: list.filter((v) => v.status === "Moving").length,
+    breakdown: list.filter(
+      (v) => v.status === "Breakdown" || v.status === "Stopped"
+    ).length,
+    idle: list.filter((v) => v.status === "Idle").length,
+    reached: list.filter((v) => v.status === "Reached").length,
+  };
+};
 
 
 const TripListColumn = ({
@@ -89,6 +114,14 @@ const TripListColumn = ({
                 : 0;
 
 
+            /* --------------------------
+               STATUS COUNTS
+            -------------------------- */
+
+            const statusCounts =
+              getStatusCounts(trip.vehicles);
+
+
             return (
 
               <button
@@ -143,6 +176,39 @@ const TripListColumn = ({
                       {vehicleCount}
                     </span>
 
+                  </div>
+
+                </div>
+
+
+                {/* =========================
+                    VEHICLE STATUS STRIP
+                ========================== */}
+
+                <div className="trip-card-status-strip">
+
+                  <div className="trip-card-status-item moving">
+                    <Navigation size={11} />
+                    <strong>{statusCounts.moving}</strong>
+                    <span>Moving</span>
+                  </div>
+
+                  <div className="trip-card-status-item breakdown">
+                    <AlertTriangle size={11} />
+                    <strong>{statusCounts.breakdown}</strong>
+                    <span>Breakdown</span>
+                  </div>
+
+                  <div className="trip-card-status-item idle">
+                    <CirclePause size={11} />
+                    <strong>{statusCounts.idle}</strong>
+                    <span>Idle</span>
+                  </div>
+
+                  <div className="trip-card-status-item reached">
+                    <CheckCircle2 size={11} />
+                    <strong>{statusCounts.reached}</strong>
+                    <span>Reached</span>
                   </div>
 
                 </div>

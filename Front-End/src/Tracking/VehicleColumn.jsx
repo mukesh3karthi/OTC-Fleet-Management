@@ -303,7 +303,7 @@ const VehicleColumn = ({
   const [
     showVehicles,
     setShowVehicles,
-  ] = useState(false);
+  ] = useState(true);
 
 
   /* =====================================
@@ -420,52 +420,6 @@ const VehicleColumn = ({
     ) ||
     vehicles[0] ||
     null;
-
-
-  /* =====================================
-     STATUS COUNTS
-  ===================================== */
-
-  const movingCount =
-    vehicles.filter(
-      (
-        vehicle
-      ) =>
-        vehicle.status ===
-        "Moving"
-    ).length;
-
-
-  const idleCount =
-    vehicles.filter(
-      (
-        vehicle
-      ) =>
-        vehicle.status ===
-        "Idle"
-    ).length;
-
-
-  const breakdownCount =
-    vehicles.filter(
-      (
-        vehicle
-      ) =>
-        vehicle.status ===
-        "Breakdown" ||
-        vehicle.status ===
-        "Stopped"
-    ).length;
-
-
-  const reachedCount =
-    vehicles.filter(
-      (
-        vehicle
-      ) =>
-        vehicle.status ===
-        "Reached"
-    ).length;
 
 
   /* =====================================
@@ -932,92 +886,19 @@ const VehicleColumn = ({
     >
 
       {/* =================================
-          STATUS STRIP
+          VEHICLE LIST
       ================================= */}
 
       <div
-        className="vehicle-status-strip"
+        className="vehicle-list-section"
       >
-        <div
-          className="status-strip-left"
-        >
-
-          <div
-            className="status-item moving"
-          >
-            <Navigation size={11} />
-
-            <strong>
-              {movingCount}
-            </strong>
-
-            <span>
-              Moving
-            </span>
-          </div>
-
-
-          <div
-            className="status-item breakdown"
-          >
-            <AlertTriangle size={11} />
-
-            <strong>
-              {breakdownCount}
-            </strong>
-
-            <span>
-              Breakdown
-            </span>
-          </div>
-
-
-          <div
-            className="status-item idle"
-          >
-            <CirclePause size={11} />
-
-            <strong>
-              {idleCount}
-            </strong>
-
-            <span>
-              Idle
-            </span>
-          </div>
-
-
-          <div
-            className="status-item reached"
-          >
-            <CheckCircle2 size={11} />
-
-            <strong>
-              {reachedCount}
-            </strong>
-
-            <span>
-              Reached
-            </span>
-          </div>
-
-        </div>
-
 
         <button
           type="button"
-          className={
-            `vehicle-toggle-btn ${showVehicles
-              ? "open"
-              : ""
-            }`
-          }
+          className="vehicle-list-heading"
           onClick={() =>
             setShowVehicles(
-              (
-                previous
-              ) =>
-                !previous
+              (previous) => !previous
             )
           }
           aria-expanded={
@@ -1029,45 +910,44 @@ const VehicleColumn = ({
               : "Show vehicles"
           }
         >
-          {showVehicles ? (
-            <ChevronUp size={15} />
-          ) : (
-            <ChevronDown size={15} />
-          )}
-        </button>
-      </div>
-
-
-      {/* =================================
-          VEHICLE LIST
-      ================================= */}
-
-      {showVehicles && (
-
-        <div
-          className="vehicle-list-section"
-        >
 
           <div
-            className="vehicle-list-heading"
+            className="vehicle-list-heading-info"
           >
-            <div>
-              <strong>
-                Vehicle List
-              </strong>
+            <strong>
+              Vehicle List
+            </strong>
 
-              <span>
-                Select vehicle
-              </span>
-            </div>
+            <span>
+              Select vehicle
+            </span>
+          </div>
 
+          <div
+            className="vehicle-list-heading-right"
+          >
             <span
               className="vehicle-list-count"
             >
               {vehicles.length}
             </span>
+
+            <span
+              className="vehicle-list-arrow"
+              aria-hidden="true"
+            >
+              {showVehicles ? (
+                <ChevronUp size={14} />
+              ) : (
+                <ChevronDown size={14} />
+              )}
+            </span>
           </div>
 
+        </button>
+
+
+        {showVehicles && (
 
           <div
             className="vehicle-mini-list"
@@ -1125,7 +1005,6 @@ const VehicleColumn = ({
                         >
                           <Truck size={12} />
                         </span>
-
 
                         <div
                           className="vehicle-mini-info"
@@ -1196,9 +1075,9 @@ const VehicleColumn = ({
 
           </div>
 
-        </div>
+        )}
 
-      )}
+      </div>
 
 
       {/* =================================

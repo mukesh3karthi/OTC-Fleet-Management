@@ -5,9 +5,11 @@
 ========================================================= */
 
 
+
 /* =========================================================
    RESET
 ========================================================= */
+
 
 .tracking-page,
 .tracking-page * {
@@ -15,24 +17,31 @@
 }
 
 
+
 /* =========================================================
    PAGE
 ========================================================= */
+
 
 .tracking-page {
   width: 100%;
   min-width: 0;
 
+
   min-height:
     calc(100vh - 80px);
+
 
   padding:
     0px 10px 24px;
 
+
   color: #30364f;
+
 
   background:
     #f4f3f8;
+
 
   font-family:
     Inter,
@@ -43,21 +52,27 @@
 }
 
 
+
 /* =========================================================
    PAGE HEADER
 ========================================================= */
 
+
 .tracking-header {
   width: 100%;
 
+
   margin-bottom: 14px;
+
 
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
 
+
   gap: 20px;
 }
+
 
 
 .tracking-header-content {
@@ -65,87 +80,118 @@
 }
 
 
+
 .tracking-eyebrow {
   display: block;
 
+
   margin-bottom: 5px;
 
+
   color: #5548c8;
+
 
   font-size: 9px;
   font-weight: 700;
 
+
   line-height: 1;
+
 
   letter-spacing:
     1.1px;
+
 
   text-transform:
     uppercase;
 }
 
 
+
 .tracking-header-content h1 {
   margin: 0;
 
+
   color: #252b45;
+
 
   font-size: 27px;
   font-weight: 700;
 
+
   line-height: 1.2;
+
 
   letter-spacing:
     -0.4px;
 }
 
 
+
 .tracking-header-content p {
   max-width: 620px;
+
 
   margin:
     5px 0 0;
 
+
   color: #76859b;
+
 
   font-size: 10.5px;
   font-weight: 400;
+
 
   line-height: 1.45;
 }
 
 
+
 /* =========================================================
    TOOLBAR
-   SEARCH / STATUS / DATE
+   STATUS  /  SEARCH  /  DATE
 
-   This scrolls normally with the page.
+
+   Status chips pinned left.
+   Search + Date grouped together on the right.
 ========================================================= */
+
 
 .tracking-toolbar {
   position: relative;
 
+
   width: 100%;
+
 
   min-height: 56px;
 
+
   margin-bottom: 12px;
+
 
   padding:
     8px 9px;
 
+
   display: flex;
   align-items: center;
 
+
   gap: 9px;
+
 
   border:
     1px solid #dddfea;
 
+
   border-radius: 11px;
+
 
   background:
     #ffffff;
+
 
   box-shadow:
     0 4px 14px
@@ -153,213 +199,87 @@
 }
 
 
-/* =========================================================
-   SEARCH
-========================================================= */
-
-.tracking-search {
-  width: 100%;
-  max-width: 335px;
-
-  height: 39px;
-
-  padding:
-    0 11px;
-
-  display: flex;
-  align-items: center;
-
-  gap: 8px;
-
-  border:
-    1px solid #dedbe9;
-
-  border-radius: 9px;
-
-  background:
-    #f7f6fb;
-
-  transition:
-    border-color 150ms ease,
-    background 150ms ease,
-    box-shadow 150ms ease;
-}
-
-
-.tracking-search:hover {
-  border-color:
-    #c9c5dc;
-}
-
-
-.tracking-search:focus-within {
-  border-color:
-    #8074dd;
-
-  background:
-    #ffffff;
-
-  box-shadow:
-    0 0 0 3px
-    rgba(36, 87, 178, 0.07);
-}
-
-
-.tracking-search > svg {
-  width: 17px;
-  height: 17px;
-
-  flex:
-    0 0 17px;
-
-  color:
-    #778aa5;
-}
-
-
-.tracking-search:focus-within > svg {
-  color:
-    #5548c8;
-}
-
-
-.tracking-search input {
-  width: 100%;
-  min-width: 0;
-
-  height: 37px;
-
-  padding: 0;
-
-  border: 0;
-
-  outline: 0;
-
-  color:
-    #3f4660;
-
-  background:
-    transparent;
-
-  font: inherit;
-
-  font-size: 10.5px;
-  font-weight: 500;
-}
-
-
-.tracking-search input::placeholder {
-  color:
-    #9c9fb0;
-
-  font-weight: 400;
-}
-
-
-.tracking-search
-input[type="search"]::-webkit-search-cancel-button {
-  display: none;
-}
-
-
-/* =========================================================
-   SEARCH CLEAR
-========================================================= */
-
-.tracking-search-clear {
-  width: 28px;
-  height: 28px;
-
-  flex:
-    0 0 28px;
-
-  padding: 0;
-
-  display: grid;
-  place-items: center;
-
-  border: 0;
-
-  border-radius: 7px;
-
-  color:
-    #7e8fa6;
-
-  background:
-    transparent;
-
-  cursor: pointer;
-
-  transition:
-    color 150ms ease,
-    background 150ms ease;
-}
-
-
-.tracking-search-clear:hover {
-  color:
-    #c3424c;
-
-  background:
-    #fff0f1;
-}
-
 
 /* =========================================================
    STATUS FILTER
+   Darker charcoal / lavender track
 ========================================================= */
+
 
 .tracking-status-filter {
   min-width: 0;
 
+
+  margin-right:
+    auto;
+
+
   display: flex;
   align-items: center;
 
+
   gap: 4px;
+
 
   padding: 3px;
 
+
   border:
-    1px solid #e2e8f1;
+    1px solid #cfcbe4;
+
 
   border-radius: 9px;
 
+
   background:
-    #f6f5fa;
+    #e7e5f2;
 }
+
 
 
 .tracking-status-filter button {
   min-height: 31px;
 
+
   padding:
     0 9px;
+
 
   display: inline-flex;
   align-items: center;
   justify-content: center;
 
+
   gap: 5px;
+
 
   border:
     1px solid transparent;
 
+
   border-radius: 7px;
 
+
   color:
-    #6e8098;
+    #4d5a70;
+
 
   background:
     transparent;
 
+
   font: inherit;
+
 
   font-size: 8.5px;
   font-weight: 600;
 
+
   white-space: nowrap;
 
+
   cursor: pointer;
+
 
   transition:
     color 150ms ease,
@@ -369,49 +289,60 @@ input[type="search"]::-webkit-search-cancel-button {
 }
 
 
+
 .tracking-status-filter button:hover {
   color:
-    #5548c8;
+    #4337ac;
+
 
   background:
-    #efedfb;
+    #dcd9ef;
 }
+
 
 
 .tracking-status-filter button.active {
   color:
-    #5548c8;
+    #4337ac;
+
 
   border-color:
-    #d8d5f2;
+    #c3bdea;
+
 
   background:
     #ffffff;
 
+
   box-shadow:
     0 2px 6px
-    rgba(36, 87, 178, 0.08);
+    rgba(36, 87, 178, 0.12);
 }
+
 
 
 .tracking-status-filter button svg {
   width: 13px;
   height: 13px;
 
+
   flex:
     0 0 13px;
 }
+
 
 
 /* =========================================================
    STATUS COLORS
 ========================================================= */
 
+
 .tracking-status-filter
 button:nth-child(2) svg {
   color:
     #15945a;
 }
+
 
 
 .tracking-status-filter
@@ -421,11 +352,13 @@ button:nth-child(3) svg {
 }
 
 
+
 .tracking-status-filter
 button:nth-child(4) svg {
   color:
     #d44b53;
 }
+
 
 
 .tracking-status-filter
@@ -435,36 +368,50 @@ button:nth-child(5) svg {
 }
 
 
+
 /* =========================================================
-   DATE FILTER
+   SEARCH
+   Narrower, sits beside the date filter
 ========================================================= */
 
-.tracking-date {
+
+.tracking-search {
+  width: 100%;
+  max-width: 232px;
+
+
   height: 39px;
+
 
   margin-left:
     auto;
 
+
   padding:
-    0 10px;
+    0 11px;
+
 
   flex:
-    0 0 auto;
+    0 1 232px;
+
 
   display: flex;
   align-items: center;
 
-  gap: 7px;
+
+  gap: 8px;
+
 
   border:
     1px solid #dedbe9;
 
+
   border-radius: 9px;
+
 
   background:
     #f7f6fb;
 
-  cursor: pointer;
 
   transition:
     border-color 150ms ease,
@@ -473,18 +420,22 @@ button:nth-child(5) svg {
 }
 
 
-.tracking-date:hover {
+
+.tracking-search:hover {
   border-color:
     #c9c5dc;
 }
 
 
-.tracking-date:focus-within {
+
+.tracking-search:focus-within {
   border-color:
     #8074dd;
 
+
   background:
     #ffffff;
+
 
   box-shadow:
     0 0 0 3px
@@ -492,66 +443,340 @@ button:nth-child(5) svg {
 }
 
 
+
+.tracking-search > svg {
+  width: 17px;
+  height: 17px;
+
+
+  flex:
+    0 0 17px;
+
+
+  color:
+    #778aa5;
+}
+
+
+
+.tracking-search:focus-within > svg {
+  color:
+    #5548c8;
+}
+
+
+
+.tracking-search input {
+  width: 100%;
+  min-width: 0;
+
+
+  height: 37px;
+
+
+  padding: 0;
+
+
+  border: 0;
+
+
+  outline: 0;
+
+
+  color:
+    #3f4660;
+
+
+  background:
+    transparent;
+
+
+  font: inherit;
+
+
+  font-size: 10.5px;
+  font-weight: 500;
+}
+
+
+
+.tracking-search input::placeholder {
+  color:
+    #9c9fb0;
+
+
+  font-weight: 400;
+}
+
+
+
+.tracking-search
+input[type="search"]::-webkit-search-cancel-button {
+  display: none;
+}
+
+
+
+/* =========================================================
+   SEARCH CLEAR
+========================================================= */
+
+
+.tracking-search-clear {
+  width: 28px;
+  height: 28px;
+
+
+  flex:
+    0 0 28px;
+
+
+  padding: 0;
+
+
+  display: grid;
+  place-items: center;
+
+
+  border: 0;
+
+
+  border-radius: 7px;
+
+
+  color:
+    #7e8fa6;
+
+
+  background:
+    transparent;
+
+
+  cursor: pointer;
+
+
+  transition:
+    color 150ms ease,
+    background 150ms ease;
+}
+
+
+
+.tracking-search-clear:hover {
+  color:
+    #c3424c;
+
+
+  background:
+    #fff0f1;
+}
+
+
+
+/* =========================================================
+   DATE FILTER
+========================================================= */
+
+
+.tracking-date {
+  height: 39px;
+
+
+  margin-left:
+    0;
+
+
+  padding:
+    0 10px;
+
+
+  flex:
+    0 0 auto;
+
+
+  display: flex;
+  align-items: center;
+
+
+  gap: 7px;
+
+
+  border:
+    1px solid #dedbe9;
+
+
+  border-radius: 9px;
+
+
+  background:
+    #f7f6fb;
+
+
+  cursor: pointer;
+
+
+  transition:
+    border-color 150ms ease,
+    background 150ms ease,
+    box-shadow 150ms ease;
+}
+
+
+
+.tracking-date:hover {
+  border-color:
+    #c9c5dc;
+}
+
+
+
+.tracking-date:focus-within {
+  border-color:
+    #8074dd;
+
+
+  background:
+    #ffffff;
+
+
+  box-shadow:
+    0 0 0 3px
+    rgba(36, 87, 178, 0.07);
+}
+
+
+
 .tracking-date > svg {
   width: 16px;
   height: 16px;
 
+
   flex:
     0 0 16px;
+
 
   color:
     #7d8297;
 }
 
 
+
 .tracking-date input {
   width: 112px;
   height: 37px;
 
+
   padding: 0;
+
 
   border: 0;
 
+
   outline: 0;
+
 
   color:
     #506784;
 
+
   background:
     transparent;
 
+
   font: inherit;
+
 
   font-size: 9.5px;
   font-weight: 600;
+
 
   cursor: pointer;
 }
 
 
+
+.tracking-date-clear {
+  width: 26px;
+  height: 26px;
+
+
+  flex:
+    0 0 26px;
+
+
+  padding: 0;
+
+
+  display: grid;
+  place-items: center;
+
+
+  border: 0;
+
+
+  border-radius: 7px;
+
+
+  color:
+    #7e8fa6;
+
+
+  background:
+    transparent;
+
+
+  cursor: pointer;
+
+
+  transition:
+    color 150ms ease,
+    background 150ms ease;
+}
+
+
+
+.tracking-date-clear:hover {
+  color:
+    #c3424c;
+
+
+  background:
+    #fff0f1;
+}
+
+
+
 /* =========================================================
    MAIN 3 COLUMN LAYOUT
 
+
    Normal page scroll first.
+
 
    When this section reaches below navbar,
    it stays there.
 
+
    Navbar height = 80px.
 ========================================================= */
+
 
 .tracking-layout {
   position:
     sticky;
 
+
   top:
     80px;
+
 
   z-index:
     20;
 
+
   width: 100%;
   min-width: 0;
+
 
   /*
     Leave a small bottom gap.
@@ -559,78 +784,100 @@ button:nth-child(5) svg {
   height:
     calc(100vh - 92px);
 
+
   min-height:
     0;
 
+
   display:
     grid;
+
 
   grid-template-columns:
     minmax(250px, 0.82fr)
     minmax(430px, 1.48fr)
     minmax(330px, 0.92fr);
 
+
   align-items:
     stretch;
 
+
   gap:
     10px;
+
 
   overflow:
     hidden;
 }
 
 
+
 /* =========================================================
    ALL COLUMN WRAPPERS
 ========================================================= */
+
 
 .tracking-layout > * {
   width:
     100%;
 
+
   min-width:
     0;
 
+
   height:
     100%;
+
 
   min-height:
     0;
 }
 
 
+
 /* =========================================================
    LEFT - TRIP PANEL
 ========================================================= */
+
 
 .tracking-trip-panel {
   width:
     100%;
 
+
   height:
     100% !important;
+
 
   min-height:
     0;
 
+
   display:
     flex;
+
 
   flex-direction:
     column;
 
+
   overflow:
     hidden !important;
+
 
   border:
     1px solid #dddfea;
 
+
   border-radius:
     14px;
 
+
   background:
     #ffffff;
+
 
   box-shadow:
     0 5px 16px
@@ -638,50 +885,63 @@ button:nth-child(5) svg {
 }
 
 
+
 /* =========================================================
    TRIP LIST HEADER
    STAYS INSIDE LEFT PANEL
 ========================================================= */
+
 
 .tracking-trip-panel
 .tracking-column-heading {
   position:
     relative;
 
+
   top:
     auto;
+
 
   z-index:
     10;
 
+
   flex:
     0 0 auto;
+
 
   background:
     #ffffff;
 }
 
 
+
 /* =========================================================
    TRIP LIST INTERNAL SCROLL
 ========================================================= */
+
 
 .tracking-trip-panel
 .tracking-trip-list {
   flex:
     1 1 auto;
 
+
   min-height:
     0;
+
 
   max-height:
     none !important;
 
+
   overflow-y:
     auto;
 
+
   overflow-x:
     hidden;
+
 
   /*
     IMPORTANT:
@@ -692,74 +952,94 @@ button:nth-child(5) svg {
   overscroll-behavior-y:
     auto;
 
+
   scrollbar-width:
     thin;
+
 
   scrollbar-color:
     #c9c7d6
     transparent;
 }
+
 
 
 /* =========================================================
    CENTER COLUMN INTERNAL SCROLL
 ========================================================= */
 
+
 .tracking-layout >
 :nth-child(2) {
   width:
     100%;
 
+
   height:
     100%;
+
 
   min-height:
     0;
 
+
   overflow-y:
     auto;
+
 
   overflow-x:
     hidden;
 
+
   overscroll-behavior-y:
     auto;
 
+
   scrollbar-width:
     thin;
+
 
   scrollbar-color:
     #c9c7d6
     transparent;
 }
+
 
 
 /* =========================================================
    RIGHT MAP COLUMN INTERNAL SCROLL
 ========================================================= */
 
+
 .tracking-layout >
 :nth-child(3) {
   width:
     100%;
 
+
   height:
     100%;
+
 
   min-height:
     0;
 
+
   overflow-y:
     auto;
+
 
   overflow-x:
     hidden;
 
+
   overscroll-behavior-y:
     auto;
 
+
   scrollbar-width:
     thin;
+
 
   scrollbar-color:
     #c9c7d6
@@ -767,14 +1047,17 @@ button:nth-child(5) svg {
 }
 
 
+
 /* =========================================================
    TRIP LIST SCROLLBAR
 ========================================================= */
+
 
 .tracking-trip-list::-webkit-scrollbar {
   width:
     5px;
 }
+
 
 
 .tracking-trip-list::-webkit-scrollbar-track {
@@ -783,13 +1066,16 @@ button:nth-child(5) svg {
 }
 
 
+
 .tracking-trip-list::-webkit-scrollbar-thumb {
   border-radius:
     999px;
 
+
   background:
     #c9c7d6;
 }
+
 
 
 .tracking-trip-list::-webkit-scrollbar-thumb:hover {
@@ -798,15 +1084,18 @@ button:nth-child(5) svg {
 }
 
 
+
 /* =========================================================
    CENTER SCROLLBAR
 ========================================================= */
+
 
 .tracking-layout >
 :nth-child(2)::-webkit-scrollbar {
   width:
     5px;
 }
+
 
 
 .tracking-layout >
@@ -816,14 +1105,17 @@ button:nth-child(5) svg {
 }
 
 
+
 .tracking-layout >
 :nth-child(2)::-webkit-scrollbar-thumb {
   border-radius:
     999px;
 
+
   background:
     #c9c7d6;
 }
+
 
 
 .tracking-layout >
@@ -833,15 +1125,18 @@ button:nth-child(5) svg {
 }
 
 
+
 /* =========================================================
    MAP SCROLLBAR
 ========================================================= */
+
 
 .tracking-layout >
 :nth-child(3)::-webkit-scrollbar {
   width:
     5px;
 }
+
 
 
 .tracking-layout >
@@ -851,14 +1146,17 @@ button:nth-child(5) svg {
 }
 
 
+
 .tracking-layout >
 :nth-child(3)::-webkit-scrollbar-thumb {
   border-radius:
     999px;
 
+
   background:
     #c9c7d6;
 }
+
 
 
 .tracking-layout >
@@ -868,48 +1166,60 @@ button:nth-child(5) svg {
 }
 
 
+
 /* =========================================================
    MAP HEADER
 ========================================================= */
+
 
 .tracking-map-header {
   position:
     sticky;
 
+
   top:
     0;
+
 
   z-index:
     30;
 
+
   background:
     #ffffff;
 }
+
 
 
 /* =========================================================
    OPTIONAL VEHICLE COLUMN HEADER
 ========================================================= */
 
+
 .vehicle-column-header,
 .tracking-vehicle-header {
   position:
     sticky;
 
+
   top:
     0;
 
+
   z-index:
     30;
+
 
   background:
     #ffffff;
 }
 
 
+
 /* =========================================================
    PREVENT HORIZONTAL PAGE SCROLL
 ========================================================= */
+
 
 html,
 body {
@@ -918,11 +1228,14 @@ body {
 }
 
 
+
 /* =========================================================
    LARGE DESKTOP
 ========================================================= */
 
+
 @media (min-width: 1500px) {
+
 
   .tracking-layout {
     grid-template-columns:
@@ -931,18 +1244,22 @@ body {
       minmax(350px, 0.95fr);
   }
 
+
 }
+
 
 
 /* =========================================================
    MEDIUM DESKTOP
 ========================================================= */
 
+
 @media (
   min-width: 1251px
 ) and (
   max-width: 1499px
 ) {
+
 
   .tracking-layout {
     grid-template-columns:
@@ -951,14 +1268,18 @@ body {
       minmax(320px, 0.95fr);
   }
 
+
 }
+
 
 
 /* =========================================================
    LAPTOP
 ========================================================= */
 
+
 @media (max-width: 1250px) {
+
 
   .tracking-toolbar {
     flex-wrap:
@@ -966,13 +1287,27 @@ body {
   }
 
 
+
+  .tracking-status-filter {
+    margin-right:
+      0;
+  }
+
+
+
   .tracking-search {
     flex:
       1 1 300px;
 
+
     max-width:
       none;
+
+
+    margin-left:
+      0;
   }
+
 
 
   .tracking-date {
@@ -981,40 +1316,50 @@ body {
   }
 
 
+
   /*
     Disable desktop sticky behavior
     on smaller screens.
   */
 
+
   .tracking-layout {
     position:
       relative;
 
+
     top:
       auto;
+
 
     height:
       auto;
 
+
     min-height:
       0;
+
 
     grid-template-columns:
       minmax(250px, 0.9fr)
       minmax(380px, 1.1fr);
+
 
     overflow:
       visible;
   }
 
 
+
   .tracking-layout > * {
     height:
       auto;
 
+
     max-height:
       620px;
   }
+
 
 
   .tracking-layout >
@@ -1022,18 +1367,23 @@ body {
     grid-column:
       1 / -1;
 
+
     max-height:
       none;
   }
 
+
 }
+
 
 
 /* =========================================================
    TABLET
 ========================================================= */
 
+
 @media (max-width: 850px) {
+
 
   .tracking-page {
     padding:
@@ -1041,10 +1391,12 @@ body {
   }
 
 
+
   .tracking-header {
     align-items:
       flex-start;
   }
+
 
 
   .tracking-header-content h1 {
@@ -1053,25 +1405,39 @@ body {
   }
 
 
+
   .tracking-search {
     width:
       100%;
 
+
     flex-basis:
       100%;
+
+
+    margin-left:
+      0;
   }
+
 
 
   .tracking-status-filter {
     flex:
       1;
 
+
+    margin-right:
+      0;
+
+
     overflow-x:
       auto;
+
 
     scrollbar-width:
       none;
   }
+
 
 
   .tracking-status-filter::-webkit-scrollbar {
@@ -1080,10 +1446,12 @@ body {
   }
 
 
+
   .tracking-layout {
     grid-template-columns:
       1fr;
   }
+
 
 
   .tracking-layout > * {
@@ -1092,23 +1460,29 @@ body {
   }
 
 
+
   .tracking-layout >
   :nth-child(3) {
     grid-column:
       auto;
 
+
     max-height:
       none;
   }
 
+
 }
+
 
 
 /* =========================================================
    MOBILE
 ========================================================= */
 
+
 @media (max-width: 650px) {
+
 
   .tracking-page {
     padding:
@@ -1116,16 +1490,20 @@ body {
   }
 
 
+
   .tracking-header {
     margin-bottom:
       12px;
 
+
     align-items:
       flex-start;
+
 
     gap:
       10px;
   }
+
 
 
   .tracking-eyebrow {
@@ -1134,31 +1512,38 @@ body {
   }
 
 
+
   .tracking-header-content h1 {
     font-size:
       21px;
   }
 
 
+
   .tracking-header-content p {
     font-size:
       9px;
+
 
     line-height:
       1.4;
   }
 
 
+
   .tracking-toolbar {
     padding:
       7px;
 
+
     gap:
       7px;
+
 
     border-radius:
       10px;
   }
+
 
 
   .tracking-search {
@@ -1167,31 +1552,38 @@ body {
   }
 
 
+
   .tracking-status-filter {
     width:
       100%;
+
 
     flex:
       1 1 100%;
   }
 
 
+
   .tracking-status-filter button {
     flex:
       0 0 auto;
+
 
     padding:
       0 8px;
   }
 
 
+
   .tracking-date {
     width:
       100%;
 
+
     margin-left:
       0;
   }
+
 
 
   .tracking-date input {
@@ -1200,39 +1592,50 @@ body {
   }
 
 
+
   .tracking-layout {
     position:
       relative;
 
+
     top:
       auto;
+
 
     height:
       auto;
 
+
     min-height:
       0;
 
+
     gap:
       10px;
+
 
     overflow:
       visible;
   }
 
+
 }
+
 
 
 /* =========================================================
    SMALL MOBILE
 ========================================================= */
 
+
 @media (max-width: 430px) {
+
 
   .tracking-page {
     padding:
       12px 8px 22px;
   }
+
 
 
   .tracking-header-content h1 {
@@ -1241,17 +1644,22 @@ body {
   }
 
 
+
   .tracking-status-filter {
     justify-content:
       flex-start;
   }
 
-} 
+
+}
+
+
 
 /* =========================================================
    CHARCOAL + INDIGO + LAVENDER THEME OVERRIDES
    Visual-only: no layout/functionality changes
 ========================================================= */
+
 
 :where(.tracking-page, .vehicle-column-panel, .journey-column) {
   --theme-ink: #252b45;
@@ -1265,6 +1673,7 @@ body {
   --theme-page: #f4f3f8;
 }
 
+
 .tracking-data-entry-button,
 .vehicle-toggle-btn:hover,
 .vehicle-toggle-btn.open,
@@ -1274,20 +1683,24 @@ body {
   color: #ffffff;
 }
 
+
 .tracking-data-entry-button:hover {
   background: linear-gradient(135deg, #4b40b5, #6256ce);
 }
 
+
 .tracking-status-filter button.active,
 .vehicle-mini-row.active {
-  border-color: #c9c4ee;
-  background: #f0efff;
+  border-color: #c3bdea;
+  background: #ffffff;
   color: #4337ac;
 }
+
 
 .vehicle-mini-row.active {
   box-shadow: inset 2px 0 0 #5548c8;
 }
+
 
 .journey-column,
 .vehicle-column-panel {
@@ -1297,6 +1710,7 @@ body {
   box-shadow: 0 5px 18px rgba(35, 38, 60, 0.06);
 }
 
+
 .journey-route-wrapper {
   border-color: #dedbea;
   background:
@@ -1304,129 +1718,171 @@ body {
     linear-gradient(180deg, #fdfcff 0%, #f7f6fb 100%);
 }
 
+
 .journey-route-wrapper::before {
   opacity: 0.22;
   background-image: radial-gradient(circle, rgba(85, 72, 200, 0.10) 1px, transparent 1px);
 }
+
 
 .journey-path-progress {
   stroke: #6658d3;
   filter: drop-shadow(0 2px 3px rgba(102, 88, 211, 0.18));
 }
 
+
 .journey-stop.completed .journey-stop-outer {
   stroke: #6658d3;
 }
+
 
 .journey-stop.completed .journey-stop-inner {
   fill: #6658d3;
 }
 
+
 .journey-stop-name {
   fill: #252b45;
 }
+
 
 .journey-current-card-title > span {
   color: #5548c8;
   background: #f0efff;
 }
 
+
 .journey-current-card-title strong {
   color: #252b45;
 }
+
 
 
 /* =========================================================
    MOBILE TRACKING FIX
 ========================================================= */
 
+
 @media (max-width: 768px) {
+
 
   .tracking-page {
     width: 100%;
     min-width: 0;
     min-height: 100vh;
 
+
     padding: 0 8px 20px;
+
 
     overflow-x: hidden;
     overflow-y: visible;
   }
 
+
   /* HEADER */
+
 
   .tracking-header {
     width: 100%;
 
+
     flex-direction: column;
     align-items: flex-start;
 
+
     gap: 8px;
+
 
     margin-bottom: 10px;
   }
+
 
   .tracking-header-content {
     width: 100%;
     min-width: 0;
   }
 
+
   .tracking-header-content h1 {
     font-size: 21px;
   }
+
 
   .tracking-header-content p {
     width: 100%;
     max-width: none;
 
+
     font-size: 10px;
   }
+
 
 
   /* ===============================
      TOOLBAR
   =============================== */
 
+
   .tracking-toolbar {
     width: 100%;
+
 
     flex-direction: column;
     align-items: stretch;
 
+
     gap: 8px;
 
+
     padding: 8px;
+
 
     height: auto;
     min-height: auto;
 
+
     overflow: visible;
   }
+
 
   .tracking-search {
     width: 100%;
     max-width: none;
+
+
+    margin-left: 0;
   }
+
 
   .tracking-status-filter {
     width: 100%;
 
+
+    margin-right: 0;
+
+
     overflow-x: auto;
     overflow-y: hidden;
 
+
     justify-content: flex-start;
+
 
     -webkit-overflow-scrolling: touch;
   }
+
 
   .tracking-status-filter button {
     flex: 0 0 auto;
   }
 
 
+
   /* ===============================
      MAIN TRACKING COLUMNS
   =============================== */
+
 
   .tracking-content,
   .tracking-columns,
@@ -1435,161 +1891,216 @@ body {
   .tracking-body {
     width: 100% !important;
 
+
     display: flex !important;
     flex-direction: column !important;
 
+
     grid-template-columns: 1fr !important;
+
 
     height: auto !important;
     min-height: 0 !important;
 
+
     overflow: visible !important;
+
 
     gap: 12px;
   }
 
 
+
   /* TRIP COLUMN */
+
 
   .tracking-trip-panel {
     width: 100% !important;
+
 
     height: auto !important;
     min-height: 250px !important;
     max-height: 400px;
 
+
     flex: none !important;
+
 
     overflow: hidden;
   }
 
+
   .tracking-trip-list {
     width: 100%;
+
 
     min-height: 180px;
     max-height: 320px;
 
+
     overflow-y: auto;
     overflow-x: hidden;
+
 
     -webkit-overflow-scrolling: touch;
   }
 
 
+
   /* VEHICLE DETAILS COLUMN */
+
 
   .vehicle-column-panel {
     width: 100% !important;
 
+
     height: auto !important;
     min-height: auto !important;
 
+
     overflow: visible !important;
+
 
     flex: none !important;
   }
+
 
 
   /* ROUTE / MAP COLUMN */
 
+
   .journey-column {
     width: 100% !important;
+
 
     height: auto !important;
     min-height: 550px !important;
 
+
     overflow: visible !important;
+
 
     flex: none !important;
   }
 
+
   .journey-route-wrapper {
     width: calc(100% - 16px);
+
 
     height: 500px !important;
     min-height: 500px !important;
 
+
     flex: none !important;
+
 
     overflow: hidden;
   }
 }
 
+
 /* =========================================================
    API ERROR
 ========================================================= */
 
+
 .tracking-api-error {
   width: 100%;
 
+
   margin-bottom: 12px;
 
+
   padding: 10px 14px;
+
 
   border: 1px solid #fecaca;
   border-radius: 8px;
 
+
   color: #b91c1c;
 
+
   background: #fef2f2;
+
 
   font-size: 12px;
   font-weight: 600;
 
+
   line-height: 1.45;
 }
+
 
 
 /* =========================================================
    TABLET / MOBILE TRACKING FIX
 ========================================================= */
 
+
 @media (max-width: 850px) {
+
 
   /* =====================================
      PAGE
   ===================================== */
 
+
   .tracking-page {
     width: 100%;
 
+
     min-width: 0;
+
 
     min-height:
       calc(100vh - 70px);
 
+
     padding:
       12px 10px 24px;
+
 
     overflow-x: hidden;
     overflow-y: visible;
   }
 
 
+
   /* =====================================
      HEADER
   ===================================== */
 
+
   .tracking-header {
     width: 100%;
 
+
     margin-bottom: 10px;
+
 
     display: flex;
 
+
     flex-direction: column;
 
+
     align-items: flex-start;
+
 
     gap: 8px;
   }
 
 
+
   .tracking-header-content {
     width: 100%;
 
+
     min-width: 0;
   }
+
 
 
   .tracking-header-content h1 {
@@ -1597,76 +2108,110 @@ body {
   }
 
 
+
   .tracking-header-content p {
     width: 100%;
 
+
     max-width: none;
+
 
     font-size: 10px;
   }
+
 
 
   /* =====================================
      TOOLBAR
   ===================================== */
 
+
   .tracking-toolbar {
     position: relative;
 
+
     width: 100%;
+
 
     min-height: auto;
 
+
     margin-bottom: 10px;
+
 
     padding: 8px;
 
+
     display: flex;
+
 
     flex-direction: column;
 
+
     align-items: stretch;
 
+
     gap: 8px;
+
 
     overflow: visible;
   }
 
 
+
   /* SEARCH */
+
 
   .tracking-search {
     width: 100%;
 
+
     max-width: none;
 
+
     flex: none;
+
+
+    margin-left: 0;
   }
+
 
 
   /* =====================================
      STATUS
   ===================================== */
 
+
   .tracking-status-filter {
     width: 100%;
 
+
     max-width: 100%;
+
 
     flex: none;
 
+
+    margin-right: 0;
+
+
     display: flex;
 
+
     justify-content: flex-start;
+
 
     overflow-x: auto;
     overflow-y: hidden;
 
+
     scrollbar-width: none;
+
 
     -webkit-overflow-scrolling:
       touch;
   }
+
 
 
   .tracking-status-filter::-webkit-scrollbar {
@@ -1674,184 +2219,247 @@ body {
   }
 
 
+
   .tracking-status-filter button {
     flex: 0 0 auto;
 
+
     min-width: fit-content;
   }
+
 
 
   /* =====================================
      DATE
   ===================================== */
 
+
   .tracking-date {
     width: 100%;
 
+
     margin-left: 0;
+
 
     flex: none;
   }
 
 
+
   .tracking-date input {
     width: 100%;
 
+
     min-width: 0;
   }
+
 
 
   /* =====================================
      MAIN LAYOUT
   ===================================== */
 
+
   .tracking-layout {
     position: relative !important;
 
+
     top: auto !important;
+
 
     width: 100% !important;
 
+
     min-width: 0 !important;
+
 
     height: auto !important;
 
+
     min-height: 0 !important;
+
 
     display: flex !important;
 
+
     flex-direction: column !important;
+
 
     grid-template-columns:
       none !important;
 
+
     align-items: stretch;
+
 
     gap: 12px;
 
+
     overflow: visible !important;
   }
+
 
 
   /* =====================================
      ALL 3 COLUMNS
   ===================================== */
 
+
   .tracking-layout > * {
     width: 100% !important;
 
+
     min-width: 0 !important;
+
 
     height: auto !important;
 
+
     max-height: none !important;
+
 
     min-height: 0 !important;
 
+
     overflow: visible;
   }
+
 
 
   /* =====================================
      TRIP PANEL
   ===================================== */
 
+
   .tracking-layout
   .tracking-trip-panel {
     width: 100% !important;
 
+
     height: auto !important;
+
 
     min-height: 260px !important;
 
+
     max-height: 400px !important;
+
 
     flex: none;
 
+
     overflow: hidden !important;
+
 
     border-radius: 12px;
   }
+
 
 
   .tracking-trip-panel
   .tracking-column-heading {
     min-height: 62px;
 
+
     flex:
       0 0 auto;
   }
+
 
 
   .tracking-trip-panel
   .tracking-trip-list {
     width: 100%;
 
+
     min-height: 190px;
+
 
     max-height: 330px !important;
 
+
     flex: none;
+
 
     overflow-y: auto !important;
     overflow-x: hidden;
+
 
     -webkit-overflow-scrolling:
       touch;
   }
 
 
+
   /* =====================================
      VEHICLE COLUMN
   ===================================== */
+
 
   .tracking-layout >
   :nth-child(2) {
     width: 100% !important;
 
+
     height: auto !important;
+
 
     min-height: 0 !important;
 
+
     max-height: none !important;
+
 
     overflow: visible !important;
   }
+
 
 
   .vehicle-column-panel {
     width: 100% !important;
 
+
     min-width: 0 !important;
+
 
     height: auto !important;
 
+
     min-height: 0 !important;
+
 
     max-height: none !important;
 
+
     overflow: visible !important;
   }
+
 
 
   /* =====================================
      VEHICLE STATUS STRIP
   ===================================== */
 
+
   .vehicle-status-strip {
     width:
       calc(100% - 16px);
 
+
     min-height: auto;
 
+
     align-items: stretch;
+
 
     gap: 7px;
   }
 
 
+
   .status-strip-left {
     min-width: 0;
+
 
     grid-template-columns:
       repeat(
@@ -1862,16 +2470,20 @@ body {
         )
       );
 
+
     row-gap: 5px;
   }
+
 
 
   .status-item {
     justify-content:
       flex-start;
 
+
     padding: 0 5px;
   }
+
 
 
   .status-item:nth-child(2) {
@@ -1879,77 +2491,103 @@ body {
   }
 
 
+
   /* =====================================
      VEHICLE LIST
   ===================================== */
+
 
   .vehicle-mini-list {
     max-height: 250px;
   }
 
 
+
   /* =====================================
      MAP COLUMN
   ===================================== */
+
 
   .tracking-layout >
   :nth-child(3) {
     width: 100% !important;
 
+
     height: auto !important;
+
 
     min-height: 560px !important;
 
+
     max-height: none !important;
+
 
     grid-column: auto !important;
 
+
     overflow: visible !important;
   }
+
 
 
   .journey-column {
     width: 100% !important;
 
+
     min-width: 0 !important;
+
 
     height: auto !important;
 
+
     min-height: 560px !important;
+
 
     max-height: none !important;
 
+
     overflow: visible !important;
   }
+
 
 
   /* =====================================
      MAP ROUTE
   ===================================== */
 
+
   .journey-route-wrapper {
     width:
       calc(100% - 16px) !important;
 
+
     height: 500px !important;
+
 
     min-height: 500px !important;
 
+
     max-height: none !important;
 
+
     flex: none !important;
+
 
     overflow: hidden !important;
   }
 
+
 }
+
 
 
 /* =========================================================
    MOBILE
 ========================================================= */
 
+
 @media (max-width: 650px) {
+
 
   .tracking-page {
     padding:
@@ -1957,17 +2595,22 @@ body {
   }
 
 
+
   /* =====================================
      TOOLBAR
   ===================================== */
 
+
   .tracking-toolbar {
     padding: 7px;
 
+
     gap: 7px;
+
 
     border-radius: 10px;
   }
+
 
 
   .tracking-search {
@@ -1975,81 +2618,101 @@ body {
   }
 
 
+
   .tracking-search input {
     font-size: 11px;
   }
+
 
 
   /* =====================================
      STATUS FILTER
   ===================================== */
 
+
   .tracking-status-filter {
     padding: 3px;
+
 
     gap: 3px;
   }
 
 
+
   .tracking-status-filter button {
     min-height: 32px;
+
 
     padding:
       0 8px;
 
+
     font-size: 8.5px;
   }
+
 
 
   /* =====================================
      DATE
   ===================================== */
 
+
   .tracking-date {
     min-height: 40px;
   }
+
 
 
   /* =====================================
      TRIP LIST
   ===================================== */
 
+
   .tracking-layout
   .tracking-trip-panel {
     min-height:
       250px !important;
+
 
     max-height:
       380px !important;
   }
 
 
+
   .tracking-trip-panel
   .tracking-trip-list {
     min-height: 180px;
+
 
     max-height:
       305px !important;
   }
 
 
+
   /* =====================================
      TRIP CARD
   ===================================== */
 
+
   .tracking-trip-card {
     min-height: 68px;
+
 
     padding:
       10px;
   }
 
 
+
   .trip-customer-name {
     max-width: 55%;
 
+
     font-size: 11.5px;
   }
+
 
 
   .trip-material-name {
@@ -2057,9 +2720,11 @@ body {
   }
 
 
+
   /* =====================================
      STATUS
   ===================================== */
+
 
   .status-strip-left {
     grid-template-columns:
@@ -2073,9 +2738,11 @@ body {
   }
 
 
+
   /* =====================================
      MAP
   ===================================== */
+
 
   .tracking-layout >
   :nth-child(3),
@@ -2085,22 +2752,28 @@ body {
   }
 
 
+
   .journey-route-wrapper {
     height:
       460px !important;
+
 
     min-height:
       460px !important;
   }
 
+
 }
+
 
 
 /* =========================================================
    SMALL MOBILE
 ========================================================= */
 
+
 @media (max-width: 430px) {
+
 
   .tracking-page {
     padding:
@@ -2108,19 +2781,23 @@ body {
   }
 
 
+
   .tracking-toolbar {
     padding: 6px;
   }
+
 
 
   /* =====================================
      STATUS BUTTON SCROLL
   ===================================== */
 
+
   .tracking-status-filter {
     justify-content:
       flex-start;
   }
+
 
 
   .tracking-status-filter button {
@@ -2129,18 +2806,22 @@ body {
   }
 
 
+
   /* =====================================
      TRIP PANEL
   ===================================== */
+
 
   .tracking-layout
   .tracking-trip-panel {
     min-height:
       235px !important;
 
+
     max-height:
       350px !important;
   }
+
 
 
   .tracking-trip-panel
@@ -2148,14 +2829,17 @@ body {
     min-height:
       165px;
 
+
     max-height:
       280px !important;
   }
 
 
+
   /* =====================================
      STATUS GRID
   ===================================== */
+
 
   .status-strip-left {
     grid-template-columns:
@@ -2169,9 +2853,11 @@ body {
   }
 
 
+
   /* =====================================
      MAP
   ===================================== */
+
 
   .tracking-layout >
   :nth-child(3),
@@ -2181,9 +2867,11 @@ body {
   }
 
 
+
   .journey-route-wrapper {
     height:
       430px !important;
+
 
     min-height:
       430px !important;
