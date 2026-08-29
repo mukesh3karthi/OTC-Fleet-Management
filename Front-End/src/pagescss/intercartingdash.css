@@ -1410,3 +1410,254 @@ button:disabled {
   }
 
 }
+
+/* ================================
+   PAGE TRANSITION
+================================ */
+
+.intercarting-dashboard {
+  animation: pageFadeIn 0.45s ease-out;
+}
+
+@keyframes pageFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+/* ================================
+   STAT CARD ANIMATION
+================================ */
+
+.intercarting-stat-card {
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
+  animation: cardAppear 0.5s ease both;
+}
+
+.intercarting-stat-card:nth-child(1) {
+  animation-delay: 0.05s;
+}
+
+.intercarting-stat-card:nth-child(2) {
+  animation-delay: 0.10s;
+}
+
+.intercarting-stat-card:nth-child(3) {
+  animation-delay: 0.15s;
+}
+
+.intercarting-stat-card:nth-child(4) {
+  animation-delay: 0.20s;
+}
+
+.intercarting-stat-card:hover {
+  transform: translateY(-4px);
+}
+
+@keyframes cardAppear {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+/* ================================
+   CHART / CONTENT SECTIONS
+================================ */
+
+.intercarting-dashboard section {
+  animation: sectionFade 0.55s ease both;
+}
+
+@keyframes sectionFade {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+/* ================================
+   TABLE ROW TRANSITION
+================================ */
+
+.intercarting-dashboard table tbody tr {
+  transition:
+    background-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.intercarting-dashboard table tbody tr:hover {
+  transform: translateX(3px);
+}
+
+
+/* ================================
+   TABLE ROW LOAD ANIMATION
+================================ */
+
+.intercarting-dashboard table tbody tr {
+  animation: rowAppear 0.35s ease both;
+}
+
+.intercarting-dashboard table tbody tr:nth-child(1) {
+  animation-delay: 0.05s;
+}
+
+.intercarting-dashboard table tbody tr:nth-child(2) {
+  animation-delay: 0.08s;
+}
+
+.intercarting-dashboard table tbody tr:nth-child(3) {
+  animation-delay: 0.11s;
+}
+
+.intercarting-dashboard table tbody tr:nth-child(4) {
+  animation-delay: 0.14s;
+}
+
+.intercarting-dashboard table tbody tr:nth-child(5) {
+  animation-delay: 0.17s;
+}
+
+@keyframes rowAppear {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+/* ================================
+   STATUS BADGE
+================================ */
+
+.intercarting-status {
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.intercarting-status:hover {
+  transform: scale(1.04);
+}
+
+
+/* ================================
+   PAGINATION BUTTON
+================================ */
+
+.intercarting-pagination-controls button {
+  transition:
+    transform 0.2s ease,
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.intercarting-pagination-controls button:not(:disabled):hover {
+  transform: translateY(-2px);
+}
+
+.intercarting-pagination-controls button:not(:disabled):active {
+  transform: scale(0.94);
+}
+
+
+/* ================================
+   ERROR MESSAGE
+================================ */
+
+.intercarting-dashboard-error {
+  animation: errorSlide 0.35s ease-out;
+}
+
+@keyframes errorSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+/* ================================
+   REDUCED MOTION
+================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .intercarting-dashboard,
+  .intercarting-stat-card,
+  .intercarting-dashboard section,
+  .intercarting-dashboard table tbody tr,
+  .intercarting-dashboard-error {
+    animation: none;
+  }
+
+  .intercarting-stat-card,
+  .intercarting-dashboard table tbody tr,
+  .intercarting-status,
+  .intercarting-pagination-controls button {
+    transition: none;
+  }
+}
+
+
+.document-modal-overlay {
+  animation: modalOverlayIn 0.25s ease-out;
+}
+
+.document-upload-modal {
+  animation: modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalOverlayIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
