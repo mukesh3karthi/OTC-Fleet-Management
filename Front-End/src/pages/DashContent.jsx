@@ -51,7 +51,7 @@ import {
   Area,
 } from "recharts";
 
-import "../pagescss/dashContent.css";
+import "../pagescss/dashcontent.css";
 
 /* =========================================================
    API CONFIGURATION
