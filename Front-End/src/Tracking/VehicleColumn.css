@@ -4478,7 +4478,8 @@
 }
 
 .vehicle-column-panel .trip-detail-group-title>strong,
-.vehicle-column-panel .simple-operation-title>div>strong {
+.vehicle-column-panel .simple-operation-title>div>strong,
+.vehicle-column-panel .movement-title-line>strong {
   display: block !important;
   margin: 0 !important;
   color: #ffffff !important;
@@ -4487,13 +4488,24 @@
   line-height: 1.15 !important;
 }
 
-.vehicle-column-panel .simple-operation-title>div>span {
+.vehicle-column-panel .simple-operation-title>div>span,
+.vehicle-column-panel .movement-heading-subtitle {
   display: block !important;
   margin-top: 2px !important;
   color: #dce8f0 !important;
   font-size: 7.5px !important;
   font-weight: 500 !important;
   line-height: 1.1 !important;
+}
+
+/* Vehicle number badge: vertically centered in the header row */
+.vehicle-column-panel .movement-heading-row {
+  align-items: center !important;
+}
+
+.vehicle-column-panel .movement-vehicle-badge {
+  align-self: center !important;
+  justify-content: center !important;
 }
 
 .vehicle-column-panel .trip-detail-group-icon,
@@ -5082,4 +5094,18 @@
 /* Vehicle rows: no zebra striping, clean flat white rows */
 .vehicle-mini-row {
   background: #ffffff;
+}
+
+/* ============================================================
+   DRIVER / ESCORT / SUPERVISOR content — remove floating white
+   card look. It carried a leftover border-radius + border +
+   shadow while sitting flush-width inside the dark blue
+   .lr-person-section, so the blue background peeked through at
+   each rounded corner. Flatten it so it sits flush, same as the
+   Client/Transporter detail groups. No text, rows, or colors change.
+   ============================================================ */
+.vehicle-column-panel .lr-person-content {
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
 }
