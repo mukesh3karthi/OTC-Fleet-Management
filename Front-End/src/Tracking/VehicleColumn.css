@@ -2455,10 +2455,6 @@
   background: #f0f2f5;
 }
 
-.vehicle-mini-row:nth-child(even) {
-  background: #f7f8f9;
-}
-
 .trip-detail-group.client-group,
 .trip-detail-group.transporter-group {
   width: 100%;
@@ -3548,14 +3544,6 @@
 .lr-person-section.supervisor-section,
 .lr-pod-card .supervisor-section {
   background: #f5fbfa;
-}
-
-.lr-person-row:nth-child(odd) {
-  background: #ffffff;
-}
-
-.lr-person-row:nth-child(even) {
-  background: #f7fafb;
 }
 
 .lr-person-heading {
@@ -4700,28 +4688,58 @@
 }
 
 .vehicle-column-panel .transit-day-row {
-  min-height: 38px !important;
-  margin-top: 10px !important;
-  padding: 7px 10px !important;
-  color: #365e7c !important;
-  background:
-    linear-gradient(180deg,
-      #edf4f8 0%,
-      #e7f0f6 100%) !important;
-  border:
-    1px solid #d2e0e9 !important;
-  border-radius: 7px !important;
+  min-height: 48px;
+  margin: 0 8px 10px;
+  padding: 8px 11px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid #c8dae7;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #f7fbfe 0%, #eaf3f9 100%);
+  box-shadow: 0 3px 9px rgba(22, 59, 91, 0.055);
+}
+
+.vehicle-column-panel .transit-day-row>div {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.vehicle-column-panel .transit-day-row svg {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  padding: 6px;
+  box-sizing: content-box;
+  border: 1px solid #b9d1e2;
+  border-radius: 7px;
+  color: #2f678e;
+  background: #ffffff;
 }
 
 .vehicle-column-panel .transit-day-row span {
-  color: #526f84 !important;
-  font-size: 8px !important;
+  overflow: hidden;
+  color: #31566f;
+  font-size: 11px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .vehicle-column-panel .transit-day-row strong {
-  color: #173c59 !important;
-  font-size: 9.5px !important;
-  font-weight: 700 !important;
+  flex: 0 0 auto;
+  padding: 6px 10px;
+  border: 1px solid #9abbd1;
+  border-radius: 999px;
+  color: #154a70;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(22, 59, 91, 0.07);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
 }
 
 .vehicle-column-panel .lr-person-heading,
@@ -4956,116 +4974,112 @@
   border-radius: 9px;
 }
 
+/* ============================================================
+   VEHICLE LIST — dark header, matches Consignment/LR-POD style
+   ============================================================ */
 
-.vehicle-column-panel .transit-day-row {
-  min-height: 48px;
-  margin: 0 8px 10px;
-  padding: 8px 11px;
+.vehicle-list-section {
+  overflow: hidden;
+  border: 1px solid var(--fleet-border, #d6e1e9);
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: 0 3px 10px rgba(30, 65, 95, 0.05);
+}
+
+.vehicle-list-heading {
+  width: 100%;
+  min-height: 50px;
+  padding: 9px 12px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  border: 1px solid #c8dae7;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #f7fbfe 0%, #eaf3f9 100%);
-  box-shadow: 0 3px 9px rgba(22, 59, 91, 0.055);
+  gap: 10px;
+  border: 0;
+  border-bottom: 0;
+  border-radius: 9px 9px 0 0;
+  color: #ffffff;
+  background: var(--fleet-heading-main, #294f73);
+  text-align: left;
+  cursor: pointer;
+  transition: background 160ms ease;
 }
 
-.vehicle-column-panel .transit-day-row>div {
-  min-width: 0;
+.vehicle-list-heading:hover {
+  background: #24476a;
+}
+
+.vehicle-list-heading:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: -3px;
+}
+
+.vehicle-list-heading-info strong {
+  display: block;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1.2;
+}
+
+.vehicle-list-heading-info span {
+  display: block;
+  margin-top: 3px;
+  color: var(--fleet-heading-muted, #dce7ef);
+  font-size: 8px;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.vehicle-list-heading-right {
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
-.vehicle-column-panel .transit-day-row svg {
-  width: 16px;
-  height: 16px;
-  flex: 0 0 16px;
-  padding: 6px;
-  box-sizing: content-box;
-  border: 1px solid #b9d1e2;
-  border-radius: 7px;
-  color: #2f678e;
-  background: #ffffff;
-}
-
-.vehicle-column-panel .transit-day-row span {
-  overflow: hidden;
-  color: #31566f;
-  font-size: 11px;
-  font-weight: 700;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.vehicle-column-panel .transit-day-row strong {
-  flex: 0 0 auto;
-  padding: 6px 10px;
-  border: 1px solid #9abbd1;
+.vehicle-list-count {
+  min-width: 30px;
+  height: 26px;
+  padding: 0 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #cbdbe6;
   border-radius: 999px;
-  color: #154a70;
+  color: #294f73;
   background: #ffffff;
-  box-shadow: 0 1px 3px rgba(22, 59, 91, 0.07);
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 750;
   line-height: 1;
+  box-shadow: 0 1px 3px rgba(20, 53, 80, 0.08);
 }
 
-
-/* ============================================================
-   Movement Status header — match Loading Point / Unloading Point style
-   (dark #294f73 header, translucent icon, pill badge, white text)
-   ============================================================ */
-
-/* Icon box: translucent white on dark, same as .simple-operation-icon */
-.vehicle-column-panel .movement-heading-row .section-heading-icon,
-.vehicle-column-panel .movement-heading-row .section-heading-icon.blue,
-.vehicle-column-panel .movement-heading-row .section-heading-icon.purple {
-  background: rgba(255, 255, 255, 0.12) !important;
-  border: 1px solid rgba(255, 255, 255, 0.30) !important;
-  color: #ffffff !important;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+.vehicle-list-arrow {
+  width: 26px;
+  height: 26px;
+  flex: 0 0 26px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.30);
+  border-radius: 7px;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transition: background 160ms ease, border-color 160ms ease;
 }
 
-.vehicle-column-panel .movement-heading-row .section-heading-icon svg {
-  color: #ffffff !important;
-  stroke: #ffffff !important;
+.vehicle-list-arrow svg {
+  width: 14px;
+  height: 14px;
+  stroke: #ffffff;
 }
 
-/* Title / subtitle: white on dark, same treatment as operation headers */
-.vehicle-column-panel .movement-title-line > strong {
-  color: #ffffff !important;
+.vehicle-list-heading:hover .vehicle-list-arrow {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.45);
 }
 
-.vehicle-column-panel .movement-heading-subtitle {
-  color: #dce8f0 !important;
-}
-
-/* Right-side vehicle badge: white pill on dark, same as .simple-operation-status */
-.vehicle-column-panel .movement-vehicle-badge {
-  min-width: 54px !important;
-  min-height: 23px !important;
-  padding: 3px 9px !important;
-  border: 1px solid #cbdbe6 !important;
-  border-radius: 999px !important;
-  color: #294f73 !important;
-  background: #ffffff !important;
-  box-shadow: 0 1px 3px rgba(20, 53, 80, 0.08) !important;
-}
-
-.vehicle-column-panel .movement-vehicle-badge > svg {
-  color: #294f73 !important;
-  stroke: #294f73 !important;
-}
-
-.vehicle-column-panel .movement-vehicle-badge > span {
-  color: #6b8194 !important;
-  font-size: 7px !important;
-}
-
-.vehicle-column-panel .movement-vehicle-badge > strong {
-  color: #294f73 !important;
-  font-size: 9px !important;
-  font-weight: 700 !important;
+/* Vehicle rows: no zebra striping, clean flat white rows */
+.vehicle-mini-row {
+  background: #ffffff;
 }
