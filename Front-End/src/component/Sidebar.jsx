@@ -24,7 +24,6 @@ import {
   FaWarehouse,
 } from "react-icons/fa";
 
-
 /* =========================================
    LOGIN MODALS
 ========================================= */
@@ -41,28 +40,20 @@ import Trackinglogin
 import AssetsLogin
   from "../Loginpage/Assetslogin";
 
-
 /* =========================================
    CSS
 ========================================= */
 
 import "../css/sidebar.css";
 
-
 const MOBILE_BREAKPOINT = 560;
-
 
 const Sidebar = ({
   collapsed,
   setCollapsed,
 }) => {
-
-  const navigate =
-    useNavigate();
-
-  const location =
-    useLocation();
-
+  const navigate = useNavigate();
+  const location = useLocation();
 
   /* =========================================
      LOGIN POPUPS
@@ -73,80 +64,60 @@ const Sidebar = ({
     setShowIntercartingLogin,
   ] = useState(false);
 
-
   const [
     showOwnVehicleLogin,
     setShowOwnVehicleLogin,
   ] = useState(false);
-
 
   const [
     showTrackingLogin,
     setShowTrackingLogin,
   ] = useState(false);
 
-
   const [
     showAssetsLogin,
     setShowAssetsLogin,
   ] = useState(false);
-
 
   /* =========================================
      MOBILE CHECK
   ========================================= */
 
   const isMobile = () => {
-
     return (
       window.innerWidth <=
       MOBILE_BREAKPOINT
     );
-
   };
-
 
   /* =========================================
      CLOSE SIDEBAR ON MOBILE
   ========================================= */
 
-  const closeMobileSidebar =
-    () => {
-
-      if (
-        isMobile() &&
-        typeof setCollapsed ===
-          "function"
-      ) {
-
-        setCollapsed(true);
-
-      }
-
-    };
-
+  const closeMobileSidebar = () => {
+    if (
+      isMobile() &&
+      typeof setCollapsed ===
+        "function"
+    ) {
+      setCollapsed(true);
+    }
+  };
 
   /* =========================================
      OPEN LOGIN MODAL FROM ROUTE STATE
-
-     Used when user manually enters a
-     protected route URL.
   ========================================= */
 
   useEffect(() => {
-
     const state =
       location.state || {};
-
 
     /* ASSETS */
 
     if (
       state.openAssetsLogin
     ) {
-
       setShowAssetsLogin(true);
-
 
       navigate(
         location.pathname,
@@ -156,22 +127,17 @@ const Sidebar = ({
         }
       );
 
-
       return;
-
     }
-
 
     /* OWN VEHICLE */
 
     if (
       state.openOwnVehicleLogin
     ) {
-
       setShowOwnVehicleLogin(
         true
       );
-
 
       navigate(
         location.pathname,
@@ -181,22 +147,17 @@ const Sidebar = ({
         }
       );
 
-
       return;
-
     }
-
 
     /* INTERCARTING */
 
     if (
       state.openIntercartingLogin
     ) {
-
       setShowIntercartingLogin(
         true
       );
-
 
       navigate(
         location.pathname,
@@ -206,22 +167,17 @@ const Sidebar = ({
         }
       );
 
-
       return;
-
     }
-
 
     /* TRACKING */
 
     if (
       state.openTrackingLogin
     ) {
-
       setShowTrackingLogin(
         true
       );
-
 
       navigate(
         location.pathname,
@@ -230,15 +186,12 @@ const Sidebar = ({
           state: {},
         }
       );
-
     }
-
   }, [
     location.pathname,
     location.state,
     navigate,
   ]);
-
 
   /* =========================================
      CLEAR SUB LOGIN SESSION
@@ -246,14 +199,12 @@ const Sidebar = ({
   ========================================= */
 
   useEffect(() => {
-
     /* OWN VEHICLE */
 
     if (
       location.pathname ===
       "/ownvehicledetaildash"
     ) {
-
       sessionStorage.removeItem(
         "ownVehicleLoggedIn"
       );
@@ -261,9 +212,7 @@ const Sidebar = ({
       sessionStorage.removeItem(
         "ownVehicleUsername"
       );
-
     }
-
 
     /* TRACKING */
 
@@ -271,7 +220,6 @@ const Sidebar = ({
       location.pathname ===
       "/tracking"
     ) {
-
       sessionStorage.removeItem(
         "trackingLoggedIn"
       );
@@ -279,9 +227,7 @@ const Sidebar = ({
       sessionStorage.removeItem(
         "trackingUsername"
       );
-
     }
-
 
     /* INTERCARTING */
 
@@ -289,7 +235,6 @@ const Sidebar = ({
       location.pathname ===
       "/intercartingdash"
     ) {
-
       sessionStorage.removeItem(
         "intercartingLoggedIn"
       );
@@ -297,20 +242,39 @@ const Sidebar = ({
       sessionStorage.removeItem(
         "intercartingUsername"
       );
-
     }
 
+    /* TRIPS LANDING PAGE */
+
+    if (
+      location.pathname ===
+      "/trip-dashboard"
+    ) {
+      sessionStorage.removeItem(
+        "kamLoggedIn"
+      );
+
+      sessionStorage.removeItem(
+        "kamUsername"
+      );
+
+      sessionStorage.removeItem(
+        "trafficLoggedIn"
+      );
+
+      sessionStorage.removeItem(
+        "trafficUsername"
+      );
+    }
   }, [
     location.pathname,
   ]);
-
 
   /* =========================================
      OPERATIONS MENU
   ========================================= */
 
   const operationsMenu = [
-
     {
       title: "Dashboard",
 
@@ -321,9 +285,9 @@ const Sidebar = ({
         "/dashboard",
     },
 
-
     {
-      title: "Intercarting",
+      title:
+        "Intercarting",
 
       icon:
         <FaExchangeAlt />,
@@ -334,9 +298,9 @@ const Sidebar = ({
       dataEntry: true,
     },
 
-
     {
-      title: "Own Vehicle",
+      title:
+        "Own Vehicle",
 
       icon:
         <FaCar />,
@@ -346,7 +310,6 @@ const Sidebar = ({
 
       dataEntry: true,
     },
-
 
     {
       title:
@@ -358,7 +321,6 @@ const Sidebar = ({
       path:
         "/vehicle-documents",
     },
-
 
     {
       title: "Assets",
@@ -372,17 +334,47 @@ const Sidebar = ({
       secureLogin: true,
     },
 
-  ];
+    {
+      title: "Trips",
 
+      icon:
+        <FaFileAlt />,
+
+      path:
+        "/trip-dashboard",
+
+      subLinks: [
+        {
+          key: "kam",
+
+          title:
+            "Key-Account",
+
+          path:
+            "/trip-dashboard/key-account",
+        },
+
+        {
+          key: "traffic",
+
+          title:
+            "Traffic-Management",
+
+          path:
+            "/trip-dashboard/traffic-management",
+        },
+      ],
+    },
+  ];
 
   /* =========================================
      LIVE MENU
   ========================================= */
 
   const liveMenu = [
-
     {
-      title: "Tracking",
+      title:
+        "Tracking",
 
       icon:
         <FaMapMarkerAlt />,
@@ -399,7 +391,6 @@ const Sidebar = ({
       ],
     },
 
-
     {
       title:
         "Inbound & Outbound",
@@ -411,9 +402,9 @@ const Sidebar = ({
         "/inbound-outbound",
     },
 
-
     {
-      title: "Warehouse",
+      title:
+        "Warehouse",
 
       icon:
         <FaWarehouse />,
@@ -421,7 +412,6 @@ const Sidebar = ({
       path:
         "/warehouse",
     },
-
 
     {
       title:
@@ -434,7 +424,6 @@ const Sidebar = ({
         "/vehicle-maintenance",
     },
 
-
     {
       title:
         "Driver Management",
@@ -445,9 +434,7 @@ const Sidebar = ({
       path:
         "/driver-management",
     },
-
   ];
-
 
   /* =========================================
      NORMALIZE PATH
@@ -456,7 +443,6 @@ const Sidebar = ({
   const normalizePath = (
     path
   ) => {
-
     const normalizedPath =
       String(
         path || ""
@@ -467,13 +453,10 @@ const Sidebar = ({
           ""
         );
 
-
     return (
       normalizedPath || "/"
     );
-
   };
-
 
   /* =========================================
      ACTIVE MENU CHECK
@@ -482,92 +465,68 @@ const Sidebar = ({
   const isItemActive = (
     item
   ) => {
-
     const currentPath =
       normalizePath(
         location.pathname
       );
-
 
     if (
       Array.isArray(
         item.relatedPaths
       )
     ) {
-
       return (
         item.relatedPaths.some(
           (path) => {
-
             const relatedPath =
               normalizePath(
                 path
               );
 
-
             return (
               currentPath ===
                 relatedPath ||
-
               currentPath.startsWith(
                 `${relatedPath}/`
               )
             );
-
           }
         )
       );
-
     }
-
 
     const itemPath =
       normalizePath(
         item.path
       );
 
-
     if (
       itemPath ===
       "/dashboard"
     ) {
-
       return (
         currentPath ===
         "/dashboard"
       );
-
     }
-
 
     return (
       currentPath ===
         itemPath ||
-
       currentPath.startsWith(
         `${itemPath}/`
       )
     );
-
   };
-
 
   /* =========================================
      ASSETS CLICK
-     SHOW LOGIN BEFORE NAVIGATION
   ========================================= */
 
   const handleAssetsClick = (
     event
   ) => {
-
     event.preventDefault();
-
-
-    /*
-      Require Assets login every time
-      Assets menu is clicked.
-    */
 
     sessionStorage.removeItem(
       "assetsLoggedIn"
@@ -577,14 +536,12 @@ const Sidebar = ({
       "assetsUsername"
     );
 
-
-    setShowAssetsLogin(true);
-
+    setShowAssetsLogin(
+      true
+    );
 
     closeMobileSidebar();
-
   };
-
 
   /* =========================================
      DATA ENTRY CLICK
@@ -593,14 +550,12 @@ const Sidebar = ({
   const handleDataEntry = (
     section
   ) => {
-
     /* INTERCARTING */
 
     if (
       section ===
       "Intercarting"
     ) {
-
       sessionStorage.removeItem(
         "intercartingLoggedIn"
       );
@@ -609,16 +564,12 @@ const Sidebar = ({
         "intercartingUsername"
       );
 
-
       setShowIntercartingLogin(
         true
       );
 
-
       return;
-
     }
-
 
     /* OWN VEHICLE */
 
@@ -626,7 +577,6 @@ const Sidebar = ({
       section ===
       "Own Vehicle"
     ) {
-
       sessionStorage.removeItem(
         "ownVehicleLoggedIn"
       );
@@ -635,16 +585,12 @@ const Sidebar = ({
         "ownVehicleUsername"
       );
 
-
       setShowOwnVehicleLogin(
         true
       );
 
-
       return;
-
     }
-
 
     /* TRACKING */
 
@@ -652,7 +598,6 @@ const Sidebar = ({
       section ===
       "Tracking"
     ) {
-
       sessionStorage.removeItem(
         "trackingLoggedIn"
       );
@@ -661,27 +606,98 @@ const Sidebar = ({
         "trackingUsername"
       );
 
-
       setShowTrackingLogin(
         true
       );
-
     }
-
   };
 
+  /* =========================================
+     TRIPS SUB MENU CLICK
+
+     IMPORTANT:
+     Only one Trips login can stay active.
+
+     KAM CLICK:
+     Logout Traffic.
+
+     TRAFFIC CLICK:
+     Logout KAM.
+  ========================================= */
+
+  const handleTripsSubLinkClick = (
+    event,
+    subLink
+  ) => {
+    event.preventDefault();
+
+    /* =========================================
+       KEY ACCOUNT CLICK
+       LOGOUT TRAFFIC
+    ========================================= */
+
+    if (
+      subLink.key === "kam"
+    ) {
+      sessionStorage.removeItem(
+        "trafficLoggedIn"
+      );
+
+      sessionStorage.removeItem(
+        "trafficUsername"
+      );
+
+      navigate(
+        subLink.path
+      );
+
+      closeMobileSidebar();
+
+      return;
+    }
+
+    /* =========================================
+       TRAFFIC CLICK
+       LOGOUT KEY ACCOUNT
+    ========================================= */
+
+    if (
+      subLink.key ===
+      "traffic"
+    ) {
+      sessionStorage.removeItem(
+        "kamLoggedIn"
+      );
+
+      sessionStorage.removeItem(
+        "kamUsername"
+      );
+
+      navigate(
+        subLink.path
+      );
+
+      closeMobileSidebar();
+
+      return;
+    }
+
+    navigate(
+      subLink.path
+    );
+
+    closeMobileSidebar();
+  };
 
   /* =========================================
-     LOGIN SUCCESS
+     INTERCARTING LOGIN SUCCESS
   ========================================= */
 
   const handleIntercartingLoginSuccess =
     () => {
-
       setShowIntercartingLogin(
         false
       );
-
 
       navigate(
         "/intercartingdash/intercarting",
@@ -690,19 +706,18 @@ const Sidebar = ({
         }
       );
 
-
       closeMobileSidebar();
-
     };
 
+  /* =========================================
+     OWN VEHICLE LOGIN SUCCESS
+  ========================================= */
 
   const handleOwnVehicleLoginSuccess =
     () => {
-
       setShowOwnVehicleLogin(
         false
       );
-
 
       navigate(
         "/ownvehicledetaildash/ownvehicledetails",
@@ -711,19 +726,18 @@ const Sidebar = ({
         }
       );
 
-
       closeMobileSidebar();
-
     };
 
+  /* =========================================
+     TRACKING LOGIN SUCCESS
+  ========================================= */
 
   const handleTrackingLoginSuccess =
     () => {
-
       setShowTrackingLogin(
         false
       );
-
 
       navigate(
         "/trip-details",
@@ -732,11 +746,8 @@ const Sidebar = ({
         }
       );
 
-
       closeMobileSidebar();
-
     };
-
 
   /* =========================================
      ASSETS LOGIN SUCCESS
@@ -744,17 +755,9 @@ const Sidebar = ({
 
   const handleAssetsLoginSuccess =
     () => {
-
-      setShowAssetsLogin(false);
-
-
-      /*
-        AssetsLogin should already save:
-
-        assetsLoggedIn = true
-        assetsUsername = username
-      */
-
+      setShowAssetsLogin(
+        false
+      );
 
       navigate(
         "/assets",
@@ -763,18 +766,14 @@ const Sidebar = ({
         }
       );
 
-
       closeMobileSidebar();
-
     };
-
 
   /* =========================================
      MAIN LOGOUT
   ========================================= */
 
   const handleLogout = () => {
-
     /* MAIN LOGIN */
 
     localStorage.removeItem(
@@ -784,7 +783,6 @@ const Sidebar = ({
     localStorage.removeItem(
       "username"
     );
-
 
     /* INTERCARTING */
 
@@ -796,7 +794,6 @@ const Sidebar = ({
       "intercartingUsername"
     );
 
-
     /* OWN VEHICLE */
 
     sessionStorage.removeItem(
@@ -806,7 +803,6 @@ const Sidebar = ({
     sessionStorage.removeItem(
       "ownVehicleUsername"
     );
-
 
     /* TRACKING */
 
@@ -818,7 +814,6 @@ const Sidebar = ({
       "trackingUsername"
     );
 
-
     /* ASSETS */
 
     sessionStorage.removeItem(
@@ -829,6 +824,25 @@ const Sidebar = ({
       "assetsUsername"
     );
 
+    /* KAM */
+
+    sessionStorage.removeItem(
+      "kamLoggedIn"
+    );
+
+    sessionStorage.removeItem(
+      "kamUsername"
+    );
+
+    /* TRAFFIC */
+
+    sessionStorage.removeItem(
+      "trafficLoggedIn"
+    );
+
+    sessionStorage.removeItem(
+      "trafficUsername"
+    );
 
     /* CLOSE POPUPS */
 
@@ -848,16 +862,12 @@ const Sidebar = ({
       false
     );
 
-
     if (
       typeof setCollapsed ===
       "function"
     ) {
-
       setCollapsed(true);
-
     }
-
 
     navigate(
       "/",
@@ -865,9 +875,7 @@ const Sidebar = ({
         replace: true,
       }
     );
-
   };
-
 
   /* =========================================
      NORMAL MENU CLICK
@@ -875,44 +883,45 @@ const Sidebar = ({
 
   const handleMenuClick =
     () => {
-
       closeMobileSidebar();
-
     };
 
-
   /* =========================================
-     RENDER MENU
+     RENDER MENU ITEMS
   ========================================= */
 
   const renderMenuItems = (
     items
   ) => {
-
     return items.map(
       (item) => {
-
         const active =
           isItemActive(
             item
           );
-
 
         const showDataEntry =
           item.dataEntry &&
           active &&
           !collapsed;
 
+        const showSubLinks =
+          Array.isArray(
+            item.subLinks
+          ) &&
+          item.subLinks.length >
+            0 &&
+          active &&
+          !collapsed;
 
         return (
-
           <div
             key={
               item.path
             }
             className="sidebar-menu-group"
           >
-
+            {/* MAIN MENU */}
 
             <NavLink
               to={
@@ -950,7 +959,6 @@ const Sidebar = ({
                   : handleMenuClick
               }
             >
-
               <span
                 className="sidebar-icon"
                 aria-hidden="true"
@@ -958,24 +966,19 @@ const Sidebar = ({
                 {item.icon}
               </span>
 
-
               <span
                 className="sidebar-text"
               >
                 {item.title}
               </span>
-
             </NavLink>
-
 
             {/* DATA ENTRY SUB MENU */}
 
             {showDataEntry && (
-
               <div
                 className="sidebar-submenu"
               >
-
                 <button
                   type="button"
 
@@ -987,12 +990,10 @@ const Sidebar = ({
                     )
                   }
                 >
-
                   <span
                     className="sidebar-submenu-connector"
                     aria-hidden="true"
                   />
-
 
                   <span
                     className="sidebar-submenu-icon"
@@ -1001,61 +1002,90 @@ const Sidebar = ({
                     <FaDatabase />
                   </span>
 
-
                   <span
                     className="sidebar-submenu-text"
                   >
                     Data Entry
                   </span>
-
                 </button>
-
               </div>
-
             )}
 
+            {/* =================================
+                TRIPS SUB LINKS
+            ================================= */}
 
+            {showSubLinks && (
+              <div
+                className="sidebar-submenu"
+              >
+                {item.subLinks.map(
+                  (subLink) => (
+                    <NavLink
+                      key={
+                        subLink.key
+                      }
+
+                      to={
+                        subLink.path
+                      }
+
+                      className="sidebar-submenu-link"
+
+                      onClick={(
+                        event
+                      ) =>
+                        handleTripsSubLinkClick(
+                          event,
+                          subLink
+                        )
+                      }
+                    >
+                      <span
+                        className="sidebar-submenu-connector"
+                        aria-hidden="true"
+                      />
+
+                      <span
+                        className="sidebar-submenu-icon"
+                        aria-hidden="true"
+                      >
+                        <FaDatabase />
+                      </span>
+
+                      <span
+                        className="sidebar-submenu-text"
+                      >
+                        {
+                          subLink.title
+                        }
+                      </span>
+                    </NavLink>
+                  )
+                )}
+              </div>
+            )}
           </div>
-
         );
-
       }
     );
-
   };
-
 
   /* =========================================
      RETURN
   ========================================= */
 
   return (
-
     <>
-
-
-      {/* =====================================
-          MOBILE SIDEBAR OVERLAY
-      ===================================== */}
-
       {!collapsed && (
-
         <div
           className="sidebar-mobile-overlay"
-
           onClick={
             closeMobileSidebar
           }
-
           aria-hidden="true"
         />
-
       )}
-
-
-      {/* =====================================
-          SIDEBAR
-      ===================================== */}
 
       <aside
         className={
@@ -1066,98 +1096,71 @@ const Sidebar = ({
           }`
         }
       >
-
         <nav
           className="sidebar-menu"
         >
-
-
           {/* OPERATIONS */}
 
           <div
             className="sidebar-section"
           >
-
             {!collapsed && (
-
               <div
                 className="sidebar-section-title"
               >
                 Operations
               </div>
-
             )}
-
 
             <div
               className="sidebar-section-menu"
             >
-
               {renderMenuItems(
                 operationsMenu
               )}
-
             </div>
-
           </div>
-
 
           {/* LIVE */}
 
           <div
             className="sidebar-section"
           >
-
             {!collapsed && (
-
               <div
                 className="sidebar-section-title"
               >
                 Live
               </div>
-
             )}
-
 
             <div
               className="sidebar-section-menu"
             >
-
               {renderMenuItems(
                 liveMenu
               )}
-
             </div>
-
           </div>
-
         </nav>
 
-
-        {/* =================================
-            FOOTER
-        ================================= */}
+        {/* FOOTER */}
 
         <div
           className="sidebar-footer"
         >
-
           <button
             type="button"
-
             className="logout-button"
-
             onClick={
               handleLogout
             }
-
             title={
               collapsed
                 ? "Sign Out"
                 : undefined
             }
           >
-
             <span
               className="logout-icon"
               aria-hidden="true"
@@ -1165,99 +1168,74 @@ const Sidebar = ({
               <FaSignOutAlt />
             </span>
 
-
             <span
               className="logout-text"
             >
               Sign Out
             </span>
-
           </button>
-
         </div>
-
       </aside>
 
-
-      {/* =====================================
-          LOGIN POPUPS
-      ===================================== */}
+      {/* LOGIN POPUPS */}
 
       <Intercarttinglogin
         open={
           showIntercartingLogin
         }
-
         onClose={() =>
           setShowIntercartingLogin(
             false
           )
         }
-
         onLogin={
           handleIntercartingLoginSuccess
         }
       />
 
-
       <Ownvehiclelogin
         open={
           showOwnVehicleLogin
         }
-
         onClose={() =>
           setShowOwnVehicleLogin(
             false
           )
         }
-
         onLogin={
           handleOwnVehicleLoginSuccess
         }
       />
 
-
       <Trackinglogin
         open={
           showTrackingLogin
         }
-
         onClose={() =>
           setShowTrackingLogin(
             false
           )
         }
-
         onLoginSuccess={
           handleTrackingLoginSuccess
         }
       />
 
-
-      {/* ASSETS LOGIN */}
-
       <AssetsLogin
         open={
           showAssetsLogin
         }
-
         onClose={() =>
           setShowAssetsLogin(
             false
           )
         }
-
         onLoginSuccess={
           handleAssetsLoginSuccess
         }
       />
-
-
     </>
-
   );
-
 };
-
 
 export default Sidebar;

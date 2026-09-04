@@ -5109,3 +5109,340 @@
   border-radius: 0 !important;
   box-shadow: none !important;
 }
+
+.vehicle-mini-list {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  width: 100%;
+  overflow-x: auto;
+  padding: 3px 0;
+}
+
+.vehicle-number-card {
+  flex: 0 0 auto;
+  min-width: 95px;
+  height: 36px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0 12px;
+
+  border: 1px solid #d9dee7;
+  border-radius: 6px;
+  background: #ffffff;
+
+  color: #374151;
+  font-size: 11px;
+  font-weight: 600;
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.vehicle-number-card:hover {
+  border-color: #294f73;
+  background: #f4f7fa;
+}
+
+.vehicle-number-card.active {
+  background: #294f73;
+  border-color: #294f73;
+  color: #ffffff;
+}
+
+.vehicle-mini-empty {
+  padding: 10px;
+  color: #6b7280;
+  font-size: 11px;
+}
+
+/* ============================================================
+   PROFESSIONAL VEHICLE SELECTOR
+   First 5 vehicles stay visible. Extra vehicles open from arrow.
+   ============================================================ */
+.vehicle-selector-shell {
+  position: relative;
+  width: 100%;
+  padding: 4px 6px 5px;
+  overflow: visible;
+  z-index: 40;
+}
+
+.vehicle-selector-row {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.vehicle-visible-list {
+  min-width: 0;
+  flex: 1 1 auto;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.vehicle-selector-shell .vehicle-number-card {
+  width: 100%;
+  min-width: 0;
+  height: 44px;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid #d7e0e9;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfcfd 100%);
+  color: #20384f;
+  box-shadow: 0 1px 2px rgba(15, 35, 55, 0.03);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.vehicle-selector-shell .vehicle-number-card:hover {
+  border-color: #aebfce;
+  background: #f7fafc;
+  box-shadow: 0 4px 10px rgba(30, 60, 90, 0.08);
+  transform: translateY(-1px);
+}
+
+.vehicle-selector-shell .vehicle-number-card.active {
+  border-color: #294f73;
+  color: #ffffff;
+  background: linear-gradient(135deg, #294f73 0%, #214666 100%);
+  box-shadow: 0 5px 13px rgba(41, 79, 115, 0.2);
+}
+
+.vehicle-selector-shell .vehicle-number-card:focus-visible,
+.vehicle-dropdown-trigger:focus-visible,
+.vehicle-dropdown-item:focus-visible {
+  outline: 2px solid rgba(41, 79, 115, 0.24);
+  outline-offset: 2px;
+}
+
+.vehicle-dropdown {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.vehicle-dropdown-trigger {
+  width: 42px;
+  height: 44px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: 1px solid #d5dee7;
+  border-radius: 8px;
+  color: #294f73;
+  background: linear-gradient(180deg, #ffffff 0%, #f5f8fa 100%);
+  box-shadow: 0 2px 5px rgba(20, 45, 70, 0.05);
+  cursor: pointer;
+  transition:
+    color 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.vehicle-dropdown-trigger:hover,
+.vehicle-dropdown-trigger.open {
+  border-color: #294f73;
+  color: #ffffff;
+  background: #294f73;
+  box-shadow: 0 5px 13px rgba(41, 79, 115, 0.2);
+}
+
+.vehicle-dropdown-trigger:hover {
+  transform: translateY(-1px);
+}
+
+.vehicle-dropdown-trigger svg {
+  transition: transform 180ms ease;
+}
+
+.vehicle-dropdown-trigger.open svg {
+  transform: rotate(180deg);
+}
+
+.vehicle-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 230px;
+  max-width: min(230px, calc(100vw - 28px));
+  overflow: hidden;
+  border: 1px solid #dbe3ea;
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow:
+    0 16px 36px rgba(25, 48, 70, 0.16),
+    0 4px 10px rgba(25, 48, 70, 0.06);
+  z-index: 9999;
+  transform-origin: top right;
+  animation: vehicleDropdownOpen 150ms ease-out;
+}
+
+.vehicle-dropdown-top {
+  min-height: 42px;
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border-bottom: 1px solid #e9eef2;
+  background: linear-gradient(180deg, #fafcfd 0%, #f5f8fa 100%);
+}
+
+.vehicle-dropdown-top strong {
+  color: #29445d;
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.vehicle-dropdown-top span {
+  min-width: 24px;
+  height: 20px;
+  padding: 0 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #d8e3eb;
+  border-radius: 999px;
+  color: #294f73;
+  background: #edf3f7;
+  font-size: 9px;
+  font-weight: 750;
+}
+
+.vehicle-dropdown-list {
+  max-height: 260px;
+  padding: 5px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #c9d3dc transparent;
+}
+
+.vehicle-dropdown-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.vehicle-dropdown-list::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: #c9d3dc;
+}
+
+.vehicle-dropdown-item {
+  width: 100%;
+  min-height: 44px;
+  padding: 6px 8px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  border: 0;
+  border-radius: 7px;
+  color: inherit;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: background 140ms ease, box-shadow 140ms ease;
+}
+
+.vehicle-dropdown-item:hover {
+  background: #f4f8fa;
+}
+
+.vehicle-dropdown-item.active {
+  background: #edf3f7;
+  box-shadow: inset 3px 0 0 #294f73;
+}
+
+.vehicle-dropdown-truck {
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #d8e3eb;
+  border-radius: 7px;
+  color: #294f73;
+  background: #f1f6f9;
+}
+
+.vehicle-dropdown-item.active .vehicle-dropdown-truck {
+  border-color: #294f73;
+  color: #ffffff;
+  background: #294f73;
+}
+
+.vehicle-dropdown-text {
+  min-width: 0;
+  flex: 1;
+}
+
+.vehicle-dropdown-text strong {
+  display: block;
+  overflow: hidden;
+  color: #233c53;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vehicle-dropdown-check {
+  flex: 0 0 auto;
+  color: #294f73;
+}
+
+@keyframes vehicleDropdownOpen {
+  from {
+    opacity: 0;
+    transform: translateY(-5px) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 900px) {
+  .vehicle-selector-row {
+    gap: 5px;
+  }
+
+  .vehicle-visible-list {
+    gap: 5px;
+  }
+
+  .vehicle-selector-shell .vehicle-number-card {
+    height: 40px;
+    padding: 0 6px;
+    font-size: 10px;
+  }
+
+  .vehicle-dropdown-trigger {
+    width: 38px;
+    height: 40px;
+  }
+}

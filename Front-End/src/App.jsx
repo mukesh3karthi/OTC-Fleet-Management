@@ -4,120 +4,103 @@ import {
   Routes,
 } from "react-router-dom";
 
-
 /* =========================================
    LOGIN
 ========================================= */
 
-import Login
-  from "./Loginpage/Login";
-
+import Login from "./Loginpage/Login";
 
 /* =========================================
    LAYOUT
 ========================================= */
 
-import Dashboard
-  from "./component/Dashboard";
-
+import Dashboard from "./component/Dashboard";
 
 /* =========================================
    PROTECTED ROUTES
 ========================================= */
 
-import ProtectedRoute
-  from "./Protectedroute/MainloginProtectedRoute";
+import ProtectedRoute from "./Protectedroute/MainloginProtectedRoute";
 
-import Intercartingprotected
-  from "./Protectedroute/IntercartingProtectedRoute";
+import Intercartingprotected from "./Protectedroute/IntercartingProtectedRoute";
 
-import Ownvehicleprotected
-  from "./Protectedroute/OwnvehicleProtectedRoute";
+import Ownvehicleprotected from "./Protectedroute/OwnvehicleProtectedRoute";
 
-import Trackingprotected
-  from "./Protectedroute/TrackingProtectedRoute";
+import Trackingprotected from "./Protectedroute/TrackingProtectedRoute";
 
-import AssetsProtectedRoute
-  from "./Protectedroute/AssetsProtectedRoute";
+import AssetsProtectedRoute from "./Protectedroute/AssetsProtectedRoute";
 
+import KeyaccountProtectedRoute from "./Protectedroute/KeyaccountProtectedRoute";
+
+import TrafficProtectedRoute from "./Protectedroute/TrafficProtectedRoute";
 
 /* =========================================
    MAIN PAGES
 ========================================= */
 
-import DashContent
-  from "./pages/DashContent";
+import DashContent from "./pages/DashContent";
 
-import Intercartingdash
-  from "./pages/Intercartingdash";
+import Intercartingdash from "./pages/Intercartingdash";
 
-import InAndOutBound
-  from "./pages/InAndOutBound";
+import InAndOutBound from "./pages/InAndOutBound";
 
-import Tracking
-  from "./pages/Tracking";
+import Tracking from "./pages/Tracking";
 
-import Warehouse
-  from "./pages/Warehouse";
+import Warehouse from "./pages/Warehouse";
 
-import DriverManagement
-  from "./pages/DriverManagement";
+import DriverManagement from "./pages/DriverManagement";
 
-import VehicleDocuments
-  from "./pages/Vehicledocument";
+import VehicleDocuments from "./pages/Vehicledocument";
 
-import Assets
-  from "./pages/Assets";
+import Assets from "./pages/Assets";
 
-import Vehiclemaintenance
-  from "./pages/Vehiclemaintenance";
+import Vehiclemaintenance from "./pages/Vehiclemaintenance";
 
-import Ownvehicledash
-  from "./pages/Ownvehicledash";
+import Ownvehicledash from "./pages/Ownvehicledash";
 
+import TripDashboard from "./pages/TripDashboard";
+
+/* =========================================
+   TRIPS
+========================================= */
+
+import KeyAccount from "./pages/KeyAccount";
+
+import TrafficManagement from "./pages/Traffic";
 
 /* =========================================
    TRACKING
 ========================================= */
 
-import Trackinginput
-  from "./Tracking/Trackinginput";
+import Trackinginput from "./Tracking/Trackinginput";
 
-import Tripdetails
-  from "./Tracking/Tripdetails";
-
+import Tripdetails from "./Tracking/Tripdetails";
 
 /* =========================================
    OWN VEHICLE
 ========================================= */
 
-import Ownvehicledetails
-  from "./Ownvehicledetails/Ownvehicledetails";
-
+import Ownvehicledetails from "./Ownvehicledetails/Ownvehicledetails";
 
 /* =========================================
    INTERCARTING
 ========================================= */
 
-import Intercarting
-  from "./intercarting/Intercarting";
+import Intercarting from "./intercarting/Intercarting";
 
-import Vehicledetails
-  from "./intercarting/Vehicledetails";
+import Vehicledetails from "./intercarting/Vehicledetails";
 
-import Dailylog
-  from "./intercarting/Dailylog";
+import Dailylog from "./intercarting/Dailylog";
 
-import Monthlylog
-  from "./intercarting/Monthlylog";
+import Monthlylog from "./intercarting/Monthlylog";
 
+/* =========================================
+   APP
+========================================= */
 
 function App() {
-
   return (
-
     <Routes>
-
 
       {/* =====================================
           MAIN LOGIN
@@ -125,11 +108,8 @@ function App() {
 
       <Route
         path="/"
-        element={
-          <Login />
-        }
+        element={<Login />}
       />
-
 
       {/* =====================================
           DASHBOARD
@@ -144,22 +124,15 @@ function App() {
           </ProtectedRoute>
         }
       >
-
         <Route
           index
-          element={
-            <DashContent />
-          }
+          element={<DashContent />}
         />
-
       </Route>
-
 
       {/* =====================================
           ASSETS
-          MAIN LOGIN
-          +
-          ASSETS LOGIN
+          MAIN LOGIN + ASSETS LOGIN
       ===================================== */}
 
       <Route
@@ -170,20 +143,15 @@ function App() {
           </ProtectedRoute>
         }
       >
-
         <Route
           index
           element={
             <AssetsProtectedRoute>
-
               <Assets />
-
             </AssetsProtectedRoute>
           }
         />
-
       </Route>
-
 
       {/* =====================================
           TRACKING MAIN PAGE
@@ -198,22 +166,15 @@ function App() {
           </ProtectedRoute>
         }
       >
-
         <Route
           index
-          element={
-            <Tracking />
-          }
+          element={<Tracking />}
         />
-
       </Route>
-
 
       {/* =====================================
           TRIP DETAILS
-          MAIN LOGIN
-          +
-          TRACKING LOGIN
+          MAIN LOGIN + TRACKING LOGIN
       ===================================== */}
 
       <Route
@@ -224,26 +185,19 @@ function App() {
           </ProtectedRoute>
         }
       >
-
         <Route
           index
           element={
             <Trackingprotected>
-
               <Tripdetails />
-
             </Trackingprotected>
           }
         />
-
       </Route>
-
 
       {/* =====================================
           TRACKING INPUT
-          MAIN LOGIN
-          +
-          TRACKING LOGIN
+          MAIN LOGIN + TRACKING LOGIN
       ===================================== */}
 
       <Route
@@ -254,20 +208,15 @@ function App() {
           </ProtectedRoute>
         }
       >
-
         <Route
           index
           element={
             <Trackingprotected>
-
               <Trackinginput />
-
             </Trackingprotected>
           }
         />
-
       </Route>
-
 
       {/* =====================================
           INBOUND & OUTBOUND
@@ -281,16 +230,11 @@ function App() {
           </ProtectedRoute>
         }
       >
-
         <Route
           index
-          element={
-            <InAndOutBound />
-          }
+          element={<InAndOutBound />}
         />
-
       </Route>
-
 
       {/* =====================================
           VEHICLE MAINTENANCE
@@ -304,16 +248,11 @@ function App() {
           </ProtectedRoute>
         }
       >
-
         <Route
           index
-          element={
-            <Vehiclemaintenance />
-          }
+          element={<Vehiclemaintenance />}
         />
-
       </Route>
-
 
       {/* =====================================
           WAREHOUSE
@@ -327,16 +266,11 @@ function App() {
           </ProtectedRoute>
         }
       >
-
         <Route
           index
-          element={
-            <Warehouse />
-          }
+          element={<Warehouse />}
         />
-
       </Route>
-
 
       {/* =====================================
           DRIVER MANAGEMENT
@@ -350,16 +284,11 @@ function App() {
           </ProtectedRoute>
         }
       >
-
         <Route
           index
-          element={
-            <DriverManagement />
-          }
+          element={<DriverManagement />}
         />
-
       </Route>
-
 
       {/* =====================================
           VEHICLE DOCUMENTS
@@ -373,20 +302,14 @@ function App() {
           </ProtectedRoute>
         }
       >
-
         <Route
           index
-          element={
-            <VehicleDocuments />
-          }
+          element={<VehicleDocuments />}
         />
-
       </Route>
-
 
       {/* =====================================
           OWN VEHICLE DASHBOARD
-          MAIN LOGIN ONLY
       ===================================== */}
 
       <Route
@@ -397,46 +320,27 @@ function App() {
           </ProtectedRoute>
         }
       >
-
-
-        {/* =================================
-            OWN VEHICLE DASHBOARD
-        ================================= */}
-
         <Route
           index
-          element={
-            <Ownvehicledash />
-          }
+          element={<Ownvehicledash />}
         />
-
 
         {/* =================================
             OWN VEHICLE DATA ENTRY
-
-            MAIN LOGIN
-            +
-            OWN VEHICLE LOGIN
         ================================= */}
 
         <Route
           path="ownvehicledetails"
           element={
             <Ownvehicleprotected>
-
               <Ownvehicledetails />
-
             </Ownvehicleprotected>
           }
         />
-
-
       </Route>
-
 
       {/* =====================================
           INTERCARTING DASHBOARD
-          MAIN LOGIN ONLY
       ===================================== */}
 
       <Route
@@ -447,90 +351,115 @@ function App() {
           </ProtectedRoute>
         }
       >
-
-
-        {/* =================================
-            INTERCARTING DASHBOARD
-        ================================= */}
-
         <Route
           index
-          element={
-            <Intercartingdash />
-          }
+          element={<Intercartingdash />}
         />
 
-
-        {/* =================================
-            INTERCARTING DATA ENTRY
-
-            MAIN LOGIN
-            +
-            INTERCARTING LOGIN
-        ================================= */}
+        {/* INTERCARTING */}
 
         <Route
           path="intercarting"
           element={
             <Intercartingprotected>
-
               <Intercarting />
-
             </Intercartingprotected>
           }
         />
 
-
-        {/* =================================
-            VEHICLE DETAILS
-        ================================= */}
+        {/* VEHICLE DETAILS */}
 
         <Route
           path="intercarting/vehicle-details"
           element={
             <Intercartingprotected>
-
               <Vehicledetails />
-
             </Intercartingprotected>
           }
         />
 
-
-        {/* =================================
-            DAILY LOG
-        ================================= */}
+        {/* DAILY LOG */}
 
         <Route
           path="intercarting/daily-logs"
           element={
             <Intercartingprotected>
-
               <Dailylog />
-
             </Intercartingprotected>
           }
         />
 
-
-        {/* =================================
-            MONTHLY LOG
-        ================================= */}
+        {/* MONTHLY LOG */}
 
         <Route
           path="intercarting/monthly-logs"
           element={
             <Intercartingprotected>
-
               <Monthlylog />
-
             </Intercartingprotected>
           }
         />
-
-
       </Route>
 
+      {/* =====================================
+          TRIP DASHBOARD
+
+          MAIN LOGIN
+      ===================================== */}
+
+      <Route
+        path="/trip-dashboard"
+        element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        }
+      >
+
+        {/* =================================
+            TRIP LANDING PAGE
+        ================================= */}
+
+        <Route
+          index
+          element={<TripDashboard />}
+        />
+
+        {/* =================================
+            KEY ACCOUNT MANAGEMENT
+
+            MAIN LOGIN
+            +
+            KEY ACCOUNT LOGIN
+        ================================= */}
+
+        <Route
+          path="key-account"
+          element={
+            <KeyaccountProtectedRoute>
+              <KeyAccount />
+            </KeyaccountProtectedRoute>
+          }
+        />
+
+        {/* =================================
+            TRAFFIC MANAGEMENT
+
+            MAIN LOGIN
+            +
+            TRAFFIC LOGIN
+        ================================= */}
+
+        <Route
+          path="traffic-management"
+          element={
+            <TrafficProtectedRoute>
+              <TrafficManagement />
+            </TrafficProtectedRoute>
+          }
+        />
+
+      </Route>
 
       {/* =====================================
           UNKNOWN ROUTE
@@ -546,12 +475,8 @@ function App() {
         }
       />
 
-
     </Routes>
-
   );
-
 }
-
 
 export default App;

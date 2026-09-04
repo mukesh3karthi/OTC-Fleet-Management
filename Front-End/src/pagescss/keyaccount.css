@@ -1,0 +1,2602 @@
+/* =========================================================
+   KEY ACCOUNT MANAGEMENT — PROFESSIONAL UI
+========================================================= */
+
+.key-account-page {
+  --kam-bg: #f3f6f8;
+  --kam-surface: #ffffff;
+  --kam-surface-soft: #f8fafb;
+  --kam-border: #dde6ea;
+  --kam-border-strong: #ccd8de;
+
+  --kam-heading: #102f44;
+  --kam-body: #29475a;
+  --kam-muted: #6d8291;
+  --kam-faint: #98a9b4;
+
+  --kam-primary: #0d9488;
+  --kam-primary-dark: #0b7c73;
+  --kam-primary-soft: #e7f5f2;
+  --kam-primary-ring: rgba(13, 148, 136, 0.14);
+
+  --kam-navy: #0a2134;
+  --kam-navy-2: #123b4a;
+  --kam-dark-panel: #182936;
+  --kam-dark-input: rgba(255, 255, 255, 0.07);
+  --kam-dark-border: rgba(255, 255, 255, 0.12);
+
+  --kam-shadow-sm: 0 3px 12px rgba(16, 47, 68, 0.06);
+  --kam-shadow-md: 0 14px 34px rgba(16, 47, 68, 0.11);
+  --kam-shadow-lg: 0 24px 60px rgba(6, 24, 38, 0.22);
+
+  width: 100%;
+  min-height: 100%;
+  background:
+    linear-gradient(180deg, #f7fafb 0, var(--kam-bg) 220px);
+  color: var(--kam-heading);
+  font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+  box-sizing: border-box;
+}
+
+.key-account-page *,
+.key-account-page *::before,
+.key-account-page *::after {
+  box-sizing: border-box;
+}
+
+.key-account-page button,
+.key-account-page input,
+.key-account-page select,
+.key-account-page textarea {
+  font: inherit;
+}
+
+.key-account-page button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* =========================================================
+   SHELL / PAGE HEADER
+========================================================= */
+
+.key-account-shell {
+  width: calc(100% - 28px);
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 18px 0 28px;
+}
+
+.kam-page-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 16px;
+}
+
+.kam-eyebrow {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--kam-primary);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+}
+
+.kam-page-heading h1 {
+  margin: 0;
+  color: var(--kam-heading);
+  font-size: 24px;
+  line-height: 1.2;
+  letter-spacing: -0.4px;
+}
+
+.kam-page-heading p {
+  max-width: 760px;
+  margin: 6px 0 0;
+  color: var(--kam-muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.new-trip-button {
+  min-width: 138px;
+  height: 42px;
+  padding: 0 17px;
+  border: 0;
+  border-radius: 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--kam-primary);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 750;
+  cursor: pointer;
+  box-shadow: 0 8px 18px rgba(13, 148, 136, 0.19);
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    background 0.18s ease;
+}
+
+.new-trip-button:hover {
+  background: var(--kam-primary-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 11px 22px rgba(13, 148, 136, 0.24);
+}
+
+.new-trip-button:active {
+  transform: translateY(0);
+}
+
+.new-trip-plus {
+  font-size: 20px;
+  line-height: 1;
+}
+
+/* =========================================================
+   SUMMARY CARDS
+========================================================= */
+
+.kam-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.kam-stat-card {
+  min-height: 92px;
+  padding: 15px 16px;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  border: 1px solid var(--kam-border);
+  border-radius: 12px;
+  background: var(--kam-surface);
+  box-shadow: var(--kam-shadow-sm);
+}
+
+.kam-stat-icon {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: var(--kam-primary-soft);
+  color: var(--kam-primary);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+}
+
+.kam-stat-card > div:last-child {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.kam-stat-label {
+  color: var(--kam-muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.kam-stat-value {
+  color: var(--kam-heading);
+  font-size: 23px;
+  line-height: 1.05;
+}
+
+.kam-stat-caption {
+  color: var(--kam-faint);
+  font-size: 10.5px;
+}
+
+/* =========================================================
+   ORDER CONTAINER
+========================================================= */
+
+.key-account-container {
+  overflow: hidden;
+  border: 1px solid var(--kam-border);
+  border-radius: 13px;
+  background: var(--kam-surface);
+  box-shadow: var(--kam-shadow-sm);
+}
+
+.key-account-header {
+  min-height: 70px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  border-bottom: 1px solid var(--kam-border);
+}
+
+.key-account-header-left h2 {
+  margin: 0 0 3px;
+  color: var(--kam-heading);
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.key-account-header-left p {
+  margin: 0;
+  color: var(--kam-muted);
+  font-size: 12px;
+}
+
+.kam-header-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--kam-muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.kam-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22a06b;
+  box-shadow: 0 0 0 4px rgba(34, 160, 107, 0.11);
+}
+
+/* =========================================================
+   FILTER BAR
+========================================================= */
+
+.key-account-filters {
+  min-height: 58px;
+  padding: 10px 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f8fafb;
+  border-bottom: 1px solid var(--kam-border);
+}
+
+.key-search-box {
+  width: min(420px, 42vw);
+  height: 36px;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  border: 1px solid var(--kam-border);
+  border-radius: 8px;
+  background: #fff;
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.key-search-box:focus-within {
+  border-color: var(--kam-primary);
+  box-shadow: 0 0 0 3px var(--kam-primary-ring);
+}
+
+.key-search-box svg {
+  flex-shrink: 0;
+  width: 15px;
+  height: 15px;
+  color: var(--kam-primary);
+}
+
+.key-search-box input {
+  width: 100%;
+  height: 100%;
+  padding: 0 8px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--kam-heading);
+  font-size: 12.5px;
+}
+
+.key-search-box input::placeholder {
+  color: var(--kam-faint);
+}
+
+.key-stage-select {
+  position: relative;
+  width: 190px;
+  height: 36px;
+}
+
+.key-stage-select select {
+  width: 100%;
+  height: 100%;
+  appearance: none;
+  padding: 0 32px 0 12px;
+  border: 1px solid var(--kam-border);
+  border-radius: 8px;
+  outline: 0;
+  background: #fff;
+  color: var(--kam-body);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.key-stage-select select:focus {
+  border-color: var(--kam-primary);
+  box-shadow: 0 0 0 3px var(--kam-primary-ring);
+}
+
+.select-arrow {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  width: 14px;
+  height: 14px;
+  transform: translateY(-50%);
+  color: var(--kam-primary);
+  pointer-events: none;
+}
+
+.kam-clear-filter {
+  height: 34px;
+  padding: 0 11px;
+  border: 1px solid var(--kam-border);
+  border-radius: 7px;
+  background: #fff;
+  color: var(--kam-muted);
+  font-size: 11px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.kam-clear-filter:hover {
+  border-color: var(--kam-primary);
+  color: var(--kam-primary);
+}
+
+.order-count {
+  margin-left: auto;
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  color: var(--kam-muted);
+  white-space: nowrap;
+}
+
+.order-count strong {
+  color: var(--kam-heading);
+  font-size: 14px;
+}
+
+.order-count span {
+  font-size: 11px;
+}
+
+/* =========================================================
+   TABLE
+========================================================= */
+
+.key-account-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.key-account-table {
+  width: 100%;
+  min-width: 1080px;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.key-account-table thead {
+  background: #f9fbfc;
+}
+
+.key-account-table th {
+  height: 39px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--kam-border);
+  color: #78909e;
+  text-align: left;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+.key-account-table th:nth-child(1),
+.key-account-table td:nth-child(1) {
+  width: 11%;
+}
+
+.key-account-table th:nth-child(2),
+.key-account-table td:nth-child(2) {
+  width: 15%;
+}
+
+.key-account-table th:nth-child(3),
+.key-account-table td:nth-child(3) {
+  width: 17%;
+}
+
+.key-account-table th:nth-child(4),
+.key-account-table td:nth-child(4) {
+  width: 24%;
+}
+
+.key-account-table th:nth-child(5),
+.key-account-table td:nth-child(5) {
+  width: 15%;
+}
+
+.key-account-table th:nth-child(6),
+.key-account-table td:nth-child(6) {
+  width: 18%;
+}
+
+.key-account-row {
+  min-height: 62px;
+  background: #fff;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.key-account-row:hover {
+  background: #f7fbfa;
+  box-shadow: inset 3px 0 0 var(--kam-primary);
+}
+
+.key-account-table td {
+  padding: 11px 16px;
+  border-bottom: 1px solid #e8eef1;
+  vertical-align: middle;
+  color: var(--kam-body);
+  font-size: 12.5px;
+}
+
+.order-id,
+.client-name,
+.role-responsible {
+  color: var(--kam-heading);
+  font-weight: 750;
+}
+
+.order-id {
+  font-size: 12px;
+}
+
+.client-name {
+  font-size: 12.7px;
+  line-height: 1.25;
+}
+
+.role-responsible {
+  font-size: 11.5px;
+  line-height: 1.3;
+}
+
+.order-subtext,
+.order-row-arrow {
+  display: block;
+  margin-top: 3px;
+  color: var(--kam-faint);
+  font-size: 10px;
+}
+
+.order-row-arrow {
+  color: var(--kam-primary);
+  font-weight: 750;
+}
+
+.cargo-details {
+  line-height: 1.3;
+}
+
+.cargo-name {
+  color: var(--kam-body);
+  font-weight: 600;
+}
+
+.cargo-weight {
+  margin-top: 3px;
+  color: var(--kam-faint);
+  font-size: 10.5px;
+}
+
+.route-details {
+  color: var(--kam-body);
+  line-height: 1.45;
+}
+
+.route-arrow {
+  display: inline-block;
+  margin: 0 7px;
+  color: var(--kam-primary);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.stage-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: var(--kam-primary-soft);
+  color: var(--kam-primary);
+  font-size: 10.5px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.stage-dot {
+  width: 6px;
+  height: 6px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.stage-documentation {
+  background: #eef2ff;
+  color: #5865c7;
+}
+
+.stage-trip-started,
+.stage-delivery-in-progress {
+  background: #e9f6ee;
+  color: #21845a;
+}
+
+.stage-client-enquiry,
+.stage-order-finalization {
+  background: #fff4de;
+  color: #a56a0b;
+}
+
+.stage-completion-order-placed {
+  background: #e8f4ff;
+  color: #216fa6;
+}
+
+.no-orders {
+  height: 180px;
+  text-align: center !important;
+  color: var(--kam-muted) !important;
+}
+
+.no-orders strong,
+.no-orders span {
+  display: block;
+}
+
+.no-orders strong {
+  margin-top: 7px;
+  color: var(--kam-heading);
+  font-size: 13px;
+}
+
+.no-orders span {
+  margin-top: 4px;
+  color: var(--kam-faint);
+  font-size: 11px;
+}
+
+.no-orders-icon {
+  color: var(--kam-primary);
+  font-size: 24px;
+}
+
+/* =========================================================
+   ORDER WORKFLOW MODAL — LIGHT TEAL / NAVY PROFESSIONAL THEME
+   Matches the New Trip color combination
+========================================================= */
+
+.kam-workflow-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 22px;
+
+  background:
+    radial-gradient(
+      circle at 84% 10%,
+      rgba(13, 148, 136, 0.16),
+      transparent 28%
+    ),
+    rgba(7, 25, 38, 0.66);
+
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+
+  animation: kamWorkflowFade 0.18s ease;
+}
+
+/* =========================================================
+   MODAL SHELL
+========================================================= */
+
+.kam-workflow-modal {
+  width: min(1320px, 100%);
+  max-height: 92vh;
+
+  display: flex;
+  flex-direction: column;
+
+  overflow: hidden;
+
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 18px;
+
+  background: #f4f8f9;
+
+  box-shadow:
+    0 34px 85px rgba(4, 22, 34, 0.38),
+    0 8px 28px rgba(16, 47, 68, 0.12);
+
+  animation: kamWorkflowOpen 0.22s ease;
+}
+
+@keyframes kamWorkflowFade {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes kamWorkflowOpen {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* =========================================================
+   TOP TOOLBAR
+========================================================= */
+
+.kam-detail-toolbar {
+  min-height: 66px;
+  padding: 11px 14px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 14px;
+  flex-shrink: 0;
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+
+  background:
+    radial-gradient(
+      circle at 82% -45%,
+      rgba(39, 185, 171, 0.18) 0 92px,
+      transparent 93px
+    ),
+    radial-gradient(
+      circle at 82% -45%,
+      rgba(39, 185, 171, 0.1) 0 132px,
+      transparent 133px
+    ),
+    linear-gradient(
+      110deg,
+      #0a2f43 0%,
+      #0d4350 58%,
+      #0b766f 100%
+    );
+}
+
+.kam-modal-toolbar-left,
+.kam-modal-toolbar-right {
+  min-width: 0;
+
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+}
+
+.kam-back-btn {
+  min-width: 126px;
+  height: 38px;
+  padding: 0 13px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 7px;
+
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 9px;
+
+  background: rgba(255, 255, 255, 0.08);
+
+  color: #ffffff;
+
+  font-size: 11px;
+  font-weight: 800;
+
+  cursor: pointer;
+
+  transition:
+    border-color 0.18s ease,
+    color 0.18s ease,
+    background 0.18s ease,
+    transform 0.18s ease;
+}
+
+.kam-back-btn:hover {
+  border-color: #8fcac4;
+
+  background: #f1faf8;
+
+  color: #0b8379;
+
+  transform: translateX(-1px);
+}
+
+.kam-modal-heading {
+  min-width: 0;
+
+  display: grid;
+
+  gap: 2px;
+}
+
+.kam-modal-heading span {
+  color: #8ee1d8;
+
+  font-size: 8.5px;
+  font-weight: 850;
+
+  letter-spacing: 0.11em;
+}
+
+.kam-modal-heading strong {
+  overflow: hidden;
+
+  color: #ffffff;
+
+  font-size: 12px;
+  font-weight: 850;
+
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.kam-detail-meta {
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+
+  color: #c8dce2;
+
+  font-size: 10.5px;
+  font-weight: 650;
+}
+
+.kam-detail-meta strong {
+  padding: 6px 9px;
+
+  border: 1px solid #cbe6e2;
+  border-radius: 7px;
+
+  background: #e8f6f3;
+
+  color: #0b8379;
+
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
+
+  font-size: 10px;
+  font-weight: 850;
+}
+
+.kam-workflow-close {
+  width: 36px;
+  height: 36px;
+
+  padding: 0;
+
+  display: grid;
+  place-items: center;
+
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 9px;
+
+  background: rgba(255, 255, 255, 0.08);
+
+  color: #ffffff;
+
+  font-size: 20px;
+  line-height: 1;
+
+  cursor: pointer;
+
+  transition:
+    background 0.18s ease,
+    color 0.18s ease,
+    transform 0.18s ease;
+}
+
+.kam-workflow-close:hover {
+  background: #eef4f5;
+
+  color: #17384b;
+
+  transform: rotate(2deg);
+}
+
+/* =========================================================
+   LIFECYCLE CARD
+========================================================= */
+
+.kam-detail-card {
+  min-height: 0;
+  flex: 1;
+
+  display: flex;
+  flex-direction: column;
+
+  overflow: hidden;
+
+  background: #f4f8f9;
+}
+
+/* =========================================================
+   STEPPER — SAME NAVY / TEAL FAMILY AS NEW TRIP HEADER
+========================================================= */
+
+.kam-stepper {
+  position: relative;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+
+  gap: 0;
+
+  padding: 15px 18px;
+
+  overflow-x: auto;
+
+  scrollbar-width: thin;
+
+  background: #ffffff;
+
+  border-bottom: 1px solid #dce6e9;
+}
+
+.kam-stepper::-webkit-scrollbar {
+  height: 5px;
+}
+
+.kam-stepper::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+
+  background: rgba(121, 211, 202, 0.32);
+}
+
+.kam-step-pill {
+  min-width: max-content;
+  height: 36px;
+
+  padding: 0 12px 0 8px;
+
+  display: inline-flex;
+  align-items: center;
+
+  gap: 7px;
+
+  border: 1px solid #d5e3e7;
+  border-radius: 999px;
+
+  outline: 0;
+
+  background: #f7fafb;
+
+  color: #58727f;
+
+  font-size: 10.5px;
+  font-weight: 750;
+
+  cursor: pointer;
+
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.kam-step-pill:hover {
+  border-color: #9fd7d1;
+
+  background: #eef9f7;
+
+  color: #087b73;
+}
+
+.kam-step-pill.active {
+  border-color: #24c2b4;
+
+    background: #0a2f43;
+
+  color: #ffffff;
+
+  box-shadow:
+    0 7px 18px
+    rgba(8, 143, 132, 0.26);
+}
+
+.kam-step-pill.completed {
+  border-color: #b9e2dd;
+
+  background: #eaf7f5;
+
+  color: #0b8379;
+}
+
+.kam-step-number {
+  width: 21px;
+  height: 21px;
+
+  flex-shrink: 0;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 50%;
+
+  background: #e6f1f3;
+
+  font-size: 8.5px;
+  font-weight: 900;
+}
+
+.kam-step-pill.active .kam-step-number {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.kam-step-connector {
+  min-width: 22px;
+  flex: 1;
+  height: 2px;
+
+  background: #dce8eb;
+}
+
+.kam-step-connector.completed {
+  background:
+    linear-gradient(
+      90deg,
+      #10a79a,
+      #35c8ba
+    );
+}
+
+/* =========================================================
+   WORKFLOW COMPLETED TICK — UPDATED STYLE
+========================================================= */
+
+.kam-step-pill.completed .kam-step-number {
+  width: 18px;
+  height: 18px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  border: 2px solid #123f55;
+  border-radius: 50%;
+
+  background: #0a2f43;
+  color: #ffffff;
+
+  font-size: 0;
+
+  box-shadow:
+    0 2px 5px rgba(10, 47, 67, 0.18),
+    inset 0 1px 1px rgba(255, 255, 255, 0.12);
+}
+
+/* Create a cleaner white tick */
+.kam-step-pill.completed .kam-step-number::before {
+  content: "✓";
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  height: 100%;
+
+  color: #fff;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1;
+
+  transform: translate(0.2px, 0.2px);
+}
+
+/* Keep completed pill clean */
+.kam-step-pill.completed {
+  border-color: #a8ded8;
+  background: #f1fbf9;
+  color: #07887f;
+}
+
+/* Current active/final step */
+.kam-step-pill.active .kam-step-number {
+  width: 24px;
+  height: 24px;
+
+  border: 0;
+  background: rgba(255, 255, 255, 0.18);
+
+  color: #ffffff;
+
+  font-size: 9px;
+
+  box-shadow: none;
+}
+
+/* Don't show generated tick on active step */
+.kam-step-pill.active .kam-step-number::before {
+  content: none;
+}
+
+
+/* =========================================================
+   SCROLLABLE BODY — LIGHT LIKE NEW TRIP
+========================================================= */
+
+.kam-card-body {
+  min-height: 0;
+  flex: 1;
+
+  overflow-y: auto;
+
+  padding: 19px 20px 20px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #f7fafb 0%,
+      #f2f6f7 100%
+    );
+}
+
+.kam-card-body::-webkit-scrollbar {
+  width: 7px;
+}
+
+.kam-card-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.kam-card-body::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+
+  background: #b9cbd0;
+}
+
+/* =========================================================
+   BODY HEADER
+========================================================= */
+
+.kam-card-header {
+  padding: 0 0 14px;
+  margin-bottom: 15px;
+
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 18px;
+
+  border-bottom: 1px solid #dce6e9;
+}
+
+.kam-section-kicker {
+  display: block;
+
+  margin-bottom: 5px;
+
+  color: #0d9488;
+
+  font-size: 8.5px;
+  font-weight: 900;
+
+  letter-spacing: 0.14em;
+}
+
+.kam-card-header h2 {
+  margin: 0;
+
+  color: #102f44;
+
+  font-size: 17px;
+  font-weight: 900;
+
+  letter-spacing: -0.2px;
+}
+
+.kam-card-header p {
+  margin: 5px 0 0;
+
+  color: #5f7884;
+
+  font-size: 10.5px;
+  line-height: 1.45;
+
+  font-weight: 600;
+}
+
+/* =========================================================
+   ORDER ID BADGE
+========================================================= */
+
+.kam-id-badge {
+  min-width: 98px;
+
+  padding: 8px 10px;
+
+  display: grid;
+
+  gap: 2px;
+
+  border: 1px solid #c7dedb;
+  border-radius: 8px;
+
+  background: #eef8f6;
+}
+
+.kam-id-badge span {
+  color: #6c8792;
+
+  font-size: 8px;
+  font-weight: 800;
+
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.kam-id-badge strong {
+  color: #08776f;
+
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
+
+  font-size: 10.5px;
+  font-weight: 850;
+}
+
+/* =========================================================
+   ORDER SUMMARY STRIP
+========================================================= */
+
+.kam-order-overview {
+  margin-bottom: 16px;
+
+  padding: 12px 13px;
+
+  display: grid;
+
+  grid-template-columns:
+    1fr
+    1.5fr
+    1.35fr
+    0.8fr
+    0.8fr;
+
+  gap: 12px;
+
+  border: 1px solid #d8e4e8;
+  border-radius: 10px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 4px 14px
+    rgba(16, 47, 68, 0.045);
+}
+
+.kam-order-overview > div {
+  min-width: 0;
+
+  display: grid;
+
+  gap: 4px;
+}
+
+.kam-order-overview span {
+  color: #718a96;
+
+  font-size: 8px;
+  font-weight: 850;
+
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.kam-order-overview strong {
+  overflow: hidden;
+
+  color: #15384a;
+
+  font-size: 10.3px;
+  font-weight: 750;
+
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* =========================================================
+   FORM
+========================================================= */
+
+.kam-form-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 13px 15px;
+
+  margin-bottom: 14px;
+}
+
+.kam-field-group {
+  min-width: 0;
+}
+
+.kam-field-group label,
+.trip-field-group label {
+  display: block;
+
+  margin-bottom: 6px;
+
+  font-size: 8.7px;
+  font-weight: 900;
+
+  letter-spacing: 0.055em;
+
+  text-transform: uppercase;
+}
+
+.kam-field-group label {
+  color: #365c6d;
+}
+
+/* =========================================================
+   FORM CONTROLS
+========================================================= */
+
+.kam-input-wrap,
+.kam-select-wrap {
+  position: relative;
+
+  min-width: 0;
+  min-height: 40px;
+
+  display: flex;
+  align-items: center;
+
+  border: 1px solid #ccdce2;
+  border-radius: 8px;
+
+  background: #ffffff;
+
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    background 0.18s ease;
+}
+
+.kam-input-wrap:hover,
+.kam-select-wrap:hover,
+.kam-date-input:hover,
+.kam-field-group textarea:hover {
+  border-color: #aebfc6;
+}
+
+.kam-input-wrap:focus-within,
+.kam-select-wrap:focus-within,
+.kam-date-input:focus,
+.kam-field-group textarea:focus {
+  border-color: #0d9488;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(13, 148, 136, 0.11);
+}
+
+.kam-prefix {
+  padding-left: 11px;
+
+  color: #547585;
+
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.kam-input-wrap input,
+.kam-select-wrap select {
+  width: 100%;
+  min-width: 0;
+  height: 38px;
+
+  padding: 0 11px;
+
+  border: 0;
+  outline: 0;
+
+  background: transparent;
+
+  color: #12394b;
+
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+.kam-select-wrap select {
+  appearance: none;
+
+  padding-right: 30px;
+
+  cursor: pointer;
+
+  color-scheme: light;
+}
+
+.kam-select-wrap option {
+  background: #ffffff;
+
+  color: #12394b;
+}
+
+.select-chevron {
+  position: absolute;
+
+  right: 10px;
+
+  color: #3f6879;
+
+  font-size: 13px;
+  font-weight: 900;
+
+  pointer-events: none;
+}
+
+/* =========================================================
+   DATE / TEXTAREA
+========================================================= */
+
+.kam-date-input,
+.kam-field-group textarea {
+  width: 100%;
+
+  border: 1px solid #ccdce2;
+  border-radius: 8px;
+
+  outline: 0;
+
+  background: #ffffff;
+
+  color: #12394b;
+
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+.kam-date-input {
+  height: 40px;
+
+  padding: 0 11px;
+
+  color-scheme: light;
+}
+
+.kam-field-group textarea {
+  min-height: 82px;
+
+  padding: 10px 11px;
+
+  resize: vertical;
+
+  line-height: 1.45;
+}
+
+.kam-field-group input::placeholder,
+.kam-field-group textarea::placeholder {
+  color: #758c98;
+
+  opacity: 1;
+}
+
+.kam-field-full {
+  margin-bottom: 15px;
+}
+
+/* =========================================================
+   READ-ONLY TEAM
+========================================================= */
+
+.kam-readonly-field {
+  min-height: 40px;
+
+  padding: 0 11px;
+
+  display: flex;
+  align-items: center;
+
+  border: 1px dashed #c3d7dc;
+  border-radius: 8px;
+
+  background: #eef5f6;
+
+  color: #54717e;
+
+  font-size: 10.5px;
+  font-weight: 650;
+}
+
+/* =========================================================
+   ACTIONS / FOOTER
+========================================================= */
+
+.kam-actions {
+  position: sticky;
+
+  bottom: -20px;
+
+  margin: 0 -20px -20px;
+
+  padding: 12px 20px;
+
+  display: flex;
+  justify-content: flex-end;
+
+  gap: 9px;
+
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+
+  background:
+    radial-gradient(
+      circle at 82% 145%,
+      rgba(39, 185, 171, 0.18) 0 92px,
+      transparent 93px
+    ),
+    radial-gradient(
+      circle at 82% 145%,
+      rgba(39, 185, 171, 0.10) 0 132px,
+      transparent 133px
+    ),
+    linear-gradient(
+      110deg,
+      #0a2f43 0%,
+      #0d4350 58%,
+      #0b766f 100%
+    );
+
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+.kam-btn-outline,
+.kam-btn-primary {
+  min-height: 38px;
+
+  padding: 0 15px;
+
+  border-radius: 8px;
+
+  font-size: 10.5px;
+  font-weight: 850;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.18s ease,
+    background 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    color 0.18s ease;
+}
+
+.kam-btn-outline {
+  border: 1px solid rgba(255, 255, 255, 0.38);
+
+  background: rgba(255, 255, 255, 0.08);
+
+  color: #ffffff;
+}
+
+.kam-btn-outline:hover {
+  border-color: rgba(255, 255, 255, 0.62);
+
+  background: rgba(255, 255, 255, 0.16);
+
+  color: #ffffff;
+}
+
+.kam-btn-primary {
+  border: 0;
+
+  display: inline-flex;
+  align-items: center;
+
+  gap: 7px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #0d9488,
+      #0b8178
+    );
+
+  color: #ffffff;
+
+  box-shadow:
+    0 7px 17px
+    rgba(5, 145, 133, 0.22);
+}
+
+.kam-btn-primary:hover {
+  background:
+    linear-gradient(
+      135deg,
+      #0c887f,
+      #09766f
+    );
+
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 9px 20px
+    rgba(5, 145, 133, 0.28);
+}
+
+/* =========================================================
+   RESPONSIVE WORKFLOW MODAL
+========================================================= */
+
+@media (max-width: 1100px) {
+  .kam-order-overview {
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 800px) {
+  .kam-workflow-modal-overlay {
+    padding: 10px;
+  }
+
+  .kam-workflow-modal {
+    max-height: 96vh;
+
+    border-radius: 14px;
+  }
+
+  .kam-modal-heading {
+    display: none;
+  }
+
+  .kam-detail-meta > span {
+    display: none;
+  }
+
+  .kam-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .kam-order-overview {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .kam-card-header {
+    flex-direction: column;
+  }
+
+  .kam-id-badge {
+    width: 100%;
+  }
+}
+
+@media (max-width: 560px) {
+  .kam-workflow-modal-overlay {
+    padding: 5px;
+  }
+
+  .kam-workflow-modal {
+    border-radius: 11px;
+  }
+
+  .kam-detail-toolbar {
+    min-height: 58px;
+
+    padding: 9px;
+  }
+
+  .kam-back-btn {
+    min-width: auto;
+  }
+
+  .kam-detail-meta {
+    display: none;
+  }
+
+  .kam-stepper {
+    padding: 11px 10px;
+  }
+
+  .kam-card-body {
+    padding: 14px;
+  }
+
+  .kam-order-overview {
+    grid-template-columns: 1fr;
+  }
+
+  .kam-actions {
+    bottom: -14px;
+
+    margin:
+      0
+      -14px
+      -14px;
+
+    padding: 10px 14px;
+
+    flex-direction: column-reverse;
+  }
+
+  .kam-btn-outline,
+  .kam-btn-primary {
+    width: 100%;
+
+    justify-content: center;
+  }
+}
+
+
+/* =========================================================
+   NEW TRIP MODAL — CLEAN FINAL VERSION
+   Replaces all previous trip-modal CSS.
+========================================================= */
+
+.trip-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  background:
+    radial-gradient(circle at 82% 8%, rgba(13, 148, 136, 0.2), transparent 30%),
+    rgba(6, 23, 35, 0.72);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+.trip-modal-card {
+  width: min(900px, 100%);
+  max-width: 900px;
+  max-height: 95vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 18px;
+  background: #f4f8f9;
+  box-shadow: 0 34px 85px rgba(4, 22, 34, 0.4);
+}
+
+.trip-modal-header {
+  position: relative;
+  flex: 0 0 auto;
+  min-height: 98px;
+  padding: 18px 22px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  overflow: hidden;
+  border-bottom: 0;
+  background: linear-gradient(110deg, #0a2f43 0%, #0d4350 58%, #0b766f 100%);
+}
+
+.trip-modal-header::after {
+  content: "";
+  position: absolute;
+  top: -112px;
+  right: 86px;
+  width: 190px;
+  height: 190px;
+  border: 30px solid rgba(255, 255, 255, 0.045);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.trip-modal-subtitle {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  margin-bottom: 6px;
+  padding: 4px 8px;
+  border: 1px solid rgba(126, 232, 221, 0.24);
+  border-radius: 999px;
+  background: rgba(63, 205, 191, 0.09);
+  color: #8bece3;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+}
+
+.trip-modal-header h2 {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  color: #ffffff;
+  font-size: 22px;
+  line-height: 1.2;
+  font-weight: 900;
+  letter-spacing: -0.35px;
+}
+
+.trip-modal-header p {
+  position: relative;
+  z-index: 1;
+  margin: 6px 0 0;
+  color: #d4e3e8;
+  font-size: 11px;
+  line-height: 1.45;
+  font-weight: 650;
+}
+
+.trip-modal-close {
+  position: relative;
+  z-index: 2;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #e8f3f5;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.18s ease, transform 0.18s ease;
+}
+
+.trip-modal-close:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: rotate(2deg);
+}
+
+.trip-modal-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 14px;
+  background: linear-gradient(180deg, #f7fafb 0%, #f2f6f7 100%);
+}
+
+.trip-modal-body::-webkit-scrollbar {
+  width: 7px;
+}
+
+.trip-modal-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.trip-modal-body::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: #b9cbd0;
+}
+
+.trip-form-section {
+  width: 100%;
+  margin: 0 0 13px;
+  padding: 15px 18px 18px;
+  border: 1px solid #d8e4e8;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 4px 14px rgba(16, 47, 68, 0.045);
+}
+
+.trip-form-section:last-child {
+  margin-bottom: 0;
+}
+
+.trip-movement-section {
+  border-color: #c9e4df;
+  background: linear-gradient(135deg, #ffffff 0%, #f3fbf9 100%);
+  box-shadow: inset 3px 0 0 #0d9488, 0 4px 14px rgba(13, 148, 136, 0.05);
+}
+
+.trip-section-heading {
+  width: 100%;
+  margin-bottom: 14px;
+  padding-bottom: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid #e7eef1;
+}
+
+.trip-section-heading > div {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.trip-section-heading > div > span {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border: 1px solid #c8e4df;
+  border-radius: 9px;
+  background: #e8f7f4;
+  color: #0a837a;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.trip-section-heading strong {
+  display: block;
+  color: #0b3145;
+  font-size: 14px;
+  line-height: 1.25;
+  font-weight: 900;
+}
+
+.trip-section-heading small {
+  display: block;
+  margin-top: 2px;
+  color: #536f7c;
+  font-size: 10px;
+  line-height: 1.4;
+  font-weight: 650;
+}
+
+.trip-form-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 14px 16px;
+}
+
+.trip-field-full {
+  grid-column: 1 / -1;
+}
+
+.trip-field-group {
+  width: 100%;
+  min-width: 0;
+}
+
+.trip-field-group label {
+  display: block;
+  margin-bottom: 6px;
+  color: #163e51;
+  font-size: 10px;
+  line-height: 1.2;
+  font-weight: 900;
+  letter-spacing: 0.045em;
+  text-transform: uppercase;
+}
+
+.trip-required {
+  margin-left: 2px;
+  color: #dc3434;
+  font-weight: 900;
+}
+
+.trip-field-group input,
+.trip-field-group textarea,
+.trip-select-wrap select {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  border: 1px solid #ccdce2;
+  border-radius: 9px;
+  outline: 0;
+  background: #ffffff;
+  color: #12394b;
+  font-size: 13px;
+  font-weight: 700;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+
+.trip-field-group input,
+.trip-select-wrap select {
+  height: 38px;
+  padding: 0 14px;
+}
+
+.trip-field-group textarea {
+  min-height: 104px;
+  padding: 13px 14px;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.trip-field-group input:hover,
+.trip-field-group textarea:hover,
+.trip-select-wrap select:hover {
+  border-color: #aebfc6;
+}
+
+.trip-field-group input:focus,
+.trip-field-group textarea:focus,
+.trip-select-wrap select:focus {
+  border-color: #0d9488;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.11);
+}
+
+.trip-field-group input::placeholder,
+.trip-field-group textarea::placeholder {
+  color: #758c98;
+  opacity: 1;
+  font-weight: 650;
+}
+
+.trip-select-wrap {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+
+.trip-select-wrap select {
+  appearance: none;
+  padding-right: 36px;
+  cursor: pointer;
+}
+
+.trip-select-arrow,
+.select-chevron {
+  position: absolute;
+  top: 50%;
+  right: 13px;
+  transform: translateY(-50%);
+  color: #3f6879;
+  font-size: 14px;
+  font-weight: 900;
+  pointer-events: none;
+}
+
+/* IMPORTANT: fixes KM / TON / FT overlap */
+.trip-input-unit {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  display: block;
+}
+
+.trip-input-unit input {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  padding-right: 62px !important;
+  box-sizing: border-box !important;
+}
+
+.trip-input-unit > span {
+  position: absolute;
+  top: 50%;
+  right: 13px;
+  transform: translateY(-50%);
+  min-width: 32px;
+  padding-left: 10px;
+  border-left: 1px solid #dce5e8;
+  color: #345b6b;
+  font-size: 9px;
+  line-height: 20px;
+  font-weight: 900;
+  text-align: center;
+  pointer-events: none;
+}
+
+.trip-auto-id-wrap {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+
+.trip-auto-id-wrap input {
+  padding-right: 70px !important;
+  border-color: #bddfd9 !important;
+  background: #edf8f6 !important;
+  color: #08776f !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.02em;
+  cursor: not-allowed;
+}
+
+.trip-auto-badge {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  padding: 4px 8px;
+  border: 1px solid #b9ddd7;
+  border-radius: 6px;
+  background: #dff3ef;
+  color: #08776f;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  pointer-events: none;
+}
+
+.trip-field-hint {
+  display: block;
+  margin-top: 5px;
+  color: #5e7884;
+  font-size: 9px;
+  line-height: 1.35;
+  font-weight: 650;
+}
+
+.trip-empty-state {
+  min-height: 170px;
+  padding: 26px 18px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  text-align: center;
+  border: 1px dashed #c0d1d6;
+  border-radius: 14px;
+  background: #fbfdfd;
+}
+
+.trip-empty-state-icon {
+  width: 42px;
+  height: 42px;
+  margin-bottom: 8px;
+  display: grid;
+  place-items: center;
+  border-radius: 11px;
+  background: #e4f5f1;
+  color: #0d9488;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.trip-empty-state strong {
+  color: #0c3245;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.trip-empty-state p {
+  max-width: 390px;
+  margin: 5px 0 0;
+  color: #5f7884;
+  font-size: 10px;
+  line-height: 1.45;
+  font-weight: 650;
+}
+
+.trip-vehicles-heading {
+  margin-bottom: 10px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.trip-vehicle-title {
+  margin-bottom: 3px !important;
+  color: #0c3245 !important;
+  font-weight: 900 !important;
+}
+
+.trip-vehicles-heading p {
+  margin: 0;
+  color: #5a7480;
+  font-size: 10px;
+  line-height: 1.4;
+  font-weight: 650;
+}
+
+.trip-vehicle-count {
+  flex-shrink: 0;
+  padding: 6px 10px;
+  border: 1px solid #c3e2dd;
+  border-radius: 999px;
+  background: #e7f6f3;
+  color: #08776f;
+  font-size: 9px;
+  font-weight: 900;
+}
+
+.trip-vehicle-list {
+  display: grid;
+  gap: 10px;
+}
+
+.trip-vehicle-card {
+  padding: 13px;
+  border: 1px solid #d6e3e7;
+  border-radius: 11px;
+  background: #f8fbfc;
+}
+
+.trip-vehicle-card-header {
+  margin-bottom: 11px;
+  padding-bottom: 9px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid #e3ebee;
+}
+
+.trip-vehicle-card-header > div {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.trip-vehicle-index {
+  color: #0d3548;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.trip-vehicle-card-header small {
+  color: #58727f;
+  font-size: 9px;
+  font-weight: 650;
+}
+
+.trip-remove-vehicle {
+  min-height: 29px;
+  padding: 0 10px;
+  border: 1px solid #ebc8c8;
+  border-radius: 7px;
+  background: #fff6f6;
+  color: #b83f3f;
+  font-size: 9px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.trip-remove-vehicle:hover {
+  border-color: #dfaaaa;
+  background: #fff0f0;
+}
+
+.trip-vehicle-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px 14px;
+}
+
+.trip-add-vehicle {
+  width: 100%;
+  min-height: 40px;
+  margin-top: 11px;
+  border: 1px dashed #8fc7c0;
+  border-radius: 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #eef9f7;
+  color: #08786f;
+  font-size: 10px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+}
+
+.trip-add-vehicle:hover {
+  border-color: #0d9488;
+  background: #e4f5f1;
+  transform: translateY(-1px);
+}
+
+.trip-add-vehicle span {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.trip-file-upload {
+  position: relative;
+  width: 100%;
+  min-height: 74px;
+  padding: 11px 12px;
+  display: flex !important;
+  align-items: center;
+  gap: 11px;
+  border: 1px dashed #9dc8c3;
+  border-radius: 10px;
+  background: #f5fbf9;
+  cursor: pointer;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+  transition: border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+}
+
+.trip-file-upload:hover {
+  border-color: #0d9488;
+  background: #ebf7f4;
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.07);
+}
+
+.trip-file-upload input {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+.trip-file-icon {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  background: #dff3ef;
+  color: #0d9488;
+  font-size: 17px;
+  font-weight: 900;
+}
+
+.trip-file-content {
+  min-width: 0;
+  flex: 1;
+  display: grid;
+  gap: 2px;
+}
+
+.trip-file-content strong {
+  overflow: hidden;
+  color: #143b4d;
+  font-size: 10px;
+  font-weight: 900;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.trip-file-content small {
+  color: #5c7682;
+  font-size: 9px;
+  font-weight: 650;
+}
+
+.trip-file-action {
+  flex-shrink: 0;
+  padding: 7px 10px;
+  border: 1px solid #c5d8dc;
+  border-radius: 7px;
+  background: #ffffff;
+  color: #08776f;
+  font-size: 9px;
+  font-weight: 900;
+}
+
+.trip-modal-actions {
+  flex: 0 0 auto;
+  min-height: 68px;
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  border-top: 1px solid #d8e4e8;
+  background: #ffffff;
+}
+
+.trip-btn-outline,
+.trip-btn-primary {
+  min-width: 118px;
+  height: 42px;
+  padding: 0 17px;
+  border-radius: 9px;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.trip-btn-outline {
+  border: 1px solid #c8d8dd;
+  background: #ffffff;
+  color: #264b5b;
+}
+
+.trip-btn-outline:hover {
+  border-color: #aebfc5;
+  background: #f7f9fa;
+}
+
+.trip-btn-primary {
+  border: 0;
+  background: linear-gradient(135deg, #0d9488 0%, #0a8178 100%);
+  color: #ffffff;
+  box-shadow: 0 7px 17px rgba(13, 148, 136, 0.22);
+}
+
+.trip-btn-primary:hover {
+  background: linear-gradient(135deg, #0b887e 0%, #087069 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 9px 20px rgba(13, 148, 136, 0.26);
+}
+
+.trip-btn-primary:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 760px) {
+  .trip-modal-overlay {
+    padding: 8px;
+  }
+
+  .trip-modal-card {
+    max-height: 97vh;
+    border-radius: 14px;
+  }
+
+  .trip-modal-header {
+    min-height: 90px;
+    padding: 16px;
+  }
+
+  .trip-modal-header h2 {
+    font-size: 19px;
+  }
+
+  .trip-modal-body {
+    padding: 10px;
+  }
+
+  .trip-form-section {
+    padding: 13px;
+  }
+
+  .trip-form-grid,
+  .trip-vehicle-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .trip-field-full {
+    grid-column: auto;
+  }
+
+  .trip-section-heading,
+  .trip-vehicles-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .trip-vehicle-count {
+    align-self: flex-start;
+  }
+
+  .trip-file-action {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .trip-modal-overlay {
+    padding: 4px;
+  }
+
+  .trip-modal-card {
+    border-radius: 11px;
+  }
+
+  .trip-modal-header {
+    min-height: auto;
+    padding: 14px;
+  }
+
+  .trip-modal-header p {
+    display: none;
+  }
+
+  .trip-modal-actions {
+    padding: 10px;
+    flex-direction: column-reverse;
+  }
+
+  .trip-btn-outline,
+  .trip-btn-primary {
+    width: 100%;
+  }
+}
+
+/* =========================================================
+   TOAST
+========================================================= */
+
+.kam-toast {
+  position: fixed;
+  top: 96px;
+  right: 20px;
+  z-index: 2000;
+  max-width: 340px;
+  padding: 10px 13px;
+  border: 1px solid rgba(13, 148, 136, 0.22);
+  border-radius: 8px;
+  background: #0f3f43;
+  color: #eafffb;
+  font-size: 11.5px;
+  font-weight: 700;
+  box-shadow: 0 12px 28px rgba(6, 33, 39, 0.22);
+  animation: kamToastIn 0.18s ease;
+}
+
+@keyframes kamToastIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* =========================================================
+   RESPONSIVE — PAGE / LIFECYCLE
+========================================================= */
+
+@media (max-width: 1100px) {
+  .kam-stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .kam-order-overview {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 800px) {
+  .key-account-shell {
+    width: calc(100% - 14px);
+    padding-top: 10px;
+  }
+
+  .kam-page-heading {
+    align-items: flex-start;
+  }
+
+  .kam-page-heading h1 {
+    font-size: 20px;
+  }
+
+  .key-account-filters {
+    flex-wrap: wrap;
+  }
+
+  .key-search-box,
+  .key-stage-select {
+    width: 100%;
+  }
+
+  .order-count {
+    width: 100%;
+    margin-left: 0;
+    justify-content: flex-end;
+  }
+
+  .kam-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .kam-card-header {
+    flex-direction: column;
+  }
+
+  .kam-id-badge {
+    width: 100%;
+  }
+}
+
+@media (max-width: 560px) {
+  .kam-page-heading {
+    flex-direction: column;
+  }
+
+  .new-trip-button {
+    width: 100%;
+  }
+
+  .kam-stat-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .kam-stat-card {
+    min-height: 78px;
+  }
+
+  .kam-detail-toolbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .kam-detail-meta {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .kam-card-body {
+    padding: 15px;
+  }
+
+  .kam-order-overview {
+    grid-template-columns: 1fr;
+  }
+
+  .kam-actions {
+    flex-direction: column-reverse;
+  }
+
+  .kam-btn-outline,
+  .kam-btn-primary {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .kam-toast {
+    top: 82px;
+    left: 10px;
+    right: 10px;
+    max-width: none;
+  }
+}
+
+

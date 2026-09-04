@@ -1,0 +1,558 @@
+/* =========================================================
+   TRAFFIC LOGIN
+   SAME DESIGN AS KEY ACCOUNT LOGIN
+========================================================= */
+
+.traffic-login-overlay {
+  position: fixed;
+  inset: 0;
+
+  z-index: 9999;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  background: rgba(5, 15, 28, 0.62);
+
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+
+  animation: trafficOverlayFade 0.2s ease;
+}
+
+/* =========================================================
+   LOGIN CARD
+========================================================= */
+
+.traffic-login-card {
+  position: relative;
+
+  width: 100%;
+  max-width: 410px;
+
+  padding: 38px 32px 26px;
+
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 16px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 25px 65px rgba(15, 23, 42, 0.28),
+    0 8px 25px rgba(15, 23, 42, 0.12);
+
+  overflow: hidden;
+
+  animation: trafficCardOpen 0.22s ease;
+}
+
+/* =========================================================
+   TOP BAR
+========================================================= */
+
+.traffic-login-topbar {
+  position: absolute;
+
+  top: 0;
+  left: 0;
+  right: 0;
+
+  height: 5px;
+
+  background: linear-gradient(
+    90deg,
+    #0d9488,
+    #0891b2,
+    #0f3b53
+  );
+}
+
+/* =========================================================
+   CLOSE BUTTON
+========================================================= */
+
+.traffic-login-close {
+  position: absolute;
+
+  top: 15px;
+  right: 15px;
+
+  width: 32px;
+  height: 32px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+
+  background: #f8fafc;
+
+  color: #64748b;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.traffic-login-close:hover {
+  background: #eef2f7;
+
+  color: #0f172a;
+
+  transform: rotate(3deg);
+}
+
+/* =========================================================
+   ICON
+========================================================= */
+
+.traffic-login-icon {
+  width: 54px;
+  height: 54px;
+
+  margin: 0 auto 14px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 14px;
+
+  background: #e7f5f3;
+
+  color: #0d9488;
+
+  box-shadow:
+    inset 0 0 0 1px
+    rgba(13, 148, 136, 0.12);
+}
+
+/* =========================================================
+   EYEBROW
+========================================================= */
+
+.traffic-login-eyebrow {
+  margin: 0 0 5px;
+
+  text-align: center;
+
+  color: #0d9488;
+
+  font-size: 11px;
+  font-weight: 800;
+
+  letter-spacing: 1.2px;
+
+  text-transform: uppercase;
+}
+
+/* =========================================================
+   TITLE
+========================================================= */
+
+.traffic-login-title {
+  margin: 0;
+
+  text-align: center;
+
+  color: #102f44;
+
+  font-size: 23px;
+  font-weight: 800;
+
+  line-height: 1.25;
+
+  letter-spacing: -0.4px;
+}
+
+/* =========================================================
+   SUBTITLE
+========================================================= */
+
+.traffic-login-subtitle {
+  max-width: 300px;
+
+  margin: 8px auto 24px;
+
+  text-align: center;
+
+  color: #64748b;
+
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+/* =========================================================
+   FORM
+========================================================= */
+
+.traffic-login-form {
+  width: 100%;
+}
+
+/* =========================================================
+   FIELD
+========================================================= */
+
+.traffic-login-field {
+  margin-bottom: 16px;
+}
+
+.traffic-login-field label {
+  display: block;
+
+  margin-bottom: 7px;
+
+  color: #334155;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* =========================================================
+   INPUT WRAPPER
+========================================================= */
+
+.traffic-login-input-wrap {
+  position: relative;
+
+  width: 100%;
+  height: 44px;
+
+  display: flex;
+  align-items: center;
+
+  border: 1px solid #dce5ec;
+  border-radius: 9px;
+
+  background: #f8fafc;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+/* =========================================================
+   INPUT FOCUS
+========================================================= */
+
+.traffic-login-input-wrap:focus-within {
+  border-color: #0d9488;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(13, 148, 136, 0.12);
+}
+
+/* =========================================================
+   INPUT ICON
+========================================================= */
+
+.traffic-login-input-icon {
+  position: absolute;
+
+  left: 13px;
+
+  color: #94a3b8;
+
+  pointer-events: none;
+}
+
+/* =========================================================
+   INPUT
+========================================================= */
+
+.traffic-login-input-wrap input {
+  width: 100%;
+  height: 100%;
+
+  padding: 0 42px;
+
+  border: none;
+  outline: none;
+
+  background: transparent;
+
+  color: #0f172a;
+
+  font-family: inherit;
+
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.traffic-login-input-wrap input::placeholder {
+  color: #94a3b8;
+
+  font-weight: 400;
+}
+
+/* =========================================================
+   PASSWORD EYE
+========================================================= */
+
+.traffic-login-eye {
+  position: absolute;
+
+  right: 8px;
+
+  width: 30px;
+  height: 30px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+
+  border: none;
+  border-radius: 6px;
+
+  background: transparent;
+
+  color: #64748b;
+
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.traffic-login-eye:hover {
+  background: #e8eef3;
+
+  color: #0d9488;
+}
+
+/* =========================================================
+   ERROR INPUT
+========================================================= */
+
+.traffic-login-input-wrap.traffic-input-error {
+  border-color: #ef4444;
+
+  background: #fffafa;
+}
+
+.traffic-login-input-wrap.traffic-input-error:focus-within {
+  border-color: #ef4444;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(239, 68, 68, 0.1);
+}
+
+/* =========================================================
+   ERROR TEXT
+========================================================= */
+
+.traffic-login-error-text {
+  margin: 6px 0 -4px;
+
+  color: #dc2626;
+
+  font-size: 11px;
+  font-weight: 600;
+
+  line-height: 1.35;
+}
+
+/* =========================================================
+   LOGIN BUTTON
+========================================================= */
+
+.traffic-login-submit {
+  width: 100%;
+  height: 44px;
+
+  margin-top: 2px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  border: none;
+  border-radius: 9px;
+
+  background: linear-gradient(
+    135deg,
+    #0d9488,
+    #0b7d73
+  );
+
+  color: #ffffff;
+
+  font-family: inherit;
+
+  font-size: 13px;
+  font-weight: 800;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 8px 20px
+    rgba(13, 148, 136, 0.22);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.traffic-login-submit:hover {
+  transform: translateY(-1px);
+
+  background: linear-gradient(
+    135deg,
+    #0f9f93,
+    #0b756d
+  );
+
+  box-shadow:
+    0 11px 25px
+    rgba(13, 148, 136, 0.3);
+}
+
+.traffic-login-submit:active {
+  transform: translateY(0);
+}
+
+/* =========================================================
+   DIVIDER
+========================================================= */
+
+.traffic-login-divider {
+  width: 100%;
+  height: 1px;
+
+  margin: 22px 0 16px;
+
+  background: #e8edf2;
+}
+
+/* =========================================================
+   FOOTER
+========================================================= */
+
+.traffic-login-footer {
+  margin: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 6px;
+
+  color: #94a3b8;
+
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.traffic-login-footer svg {
+  flex-shrink: 0;
+
+  color: #94a3b8;
+}
+
+.traffic-login-footer span {
+  color: #94a3b8;
+}
+
+/* =========================================================
+   AUTOFILL FIX
+========================================================= */
+
+.traffic-login-input-wrap
+input:-webkit-autofill,
+
+.traffic-login-input-wrap
+input:-webkit-autofill:hover,
+
+.traffic-login-input-wrap
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #0f172a;
+
+  -webkit-box-shadow:
+    0 0 0 1000px
+    #ffffff inset;
+
+  transition:
+    background-color
+    9999s ease-out;
+}
+
+/* =========================================================
+   ANIMATION
+========================================================= */
+
+@keyframes trafficOverlayFade {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes trafficCardOpen {
+  from {
+    opacity: 0;
+
+    transform:
+      translateY(10px)
+      scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+
+    transform:
+      translateY(0)
+      scale(1);
+  }
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 520px) {
+  .traffic-login-overlay {
+    padding: 14px;
+  }
+
+  .traffic-login-card {
+    max-width: 100%;
+
+    padding:
+      36px
+      20px
+      22px;
+  }
+
+  .traffic-login-title {
+    font-size: 20px;
+  }
+
+  .traffic-login-subtitle {
+    font-size: 12px;
+  }
+}

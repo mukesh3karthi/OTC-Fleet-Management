@@ -5,6 +5,7 @@
 
 .sidebar {
   position: fixed;
+
   top: 80px;
   bottom: 0;
   left: 0;
@@ -12,20 +13,36 @@
   z-index: 900;
 
   width: 260px;
-  height: calc(100vh - 80px);
+
+  height:
+    calc(
+      100vh - 80px
+    );
 
   display: flex;
+
   flex-direction: column;
 
-  background: #071f33;
+  background:
+    #071f33;
 
   border-right:
     1px solid
-    rgba(255, 255, 255, 0.05);
+    rgba(
+      255,
+      255,
+      255,
+      0.05
+    );
 
   box-shadow:
     3px 0 14px
-    rgba(3, 18, 31, 0.08);
+    rgba(
+      3,
+      18,
+      31,
+      0.08
+    );
 
   overflow: hidden;
 
@@ -34,7 +51,6 @@
     transform 0.3s ease;
 }
 
-
 /* =========================================================
    COLLAPSED SIDEBAR
 ========================================================= */
@@ -42,7 +58,6 @@
 .sidebar.collapsed {
   width: 72px;
 }
-
 
 /* =========================================================
    MAIN MENU CONTAINER
@@ -54,20 +69,22 @@
   margin: 0;
 
   padding:
-    20px 15px 10px;
+    20px
+    15px
+    10px;
 
   overflow-x: hidden;
+
   overflow-y: auto;
 
   scrollbar-width: none;
+
   -ms-overflow-style: none;
 }
-
 
 .sidebar-menu::-webkit-scrollbar {
   display: none;
 }
-
 
 /* =========================================================
    SECTION
@@ -79,11 +96,9 @@
   margin-bottom: 9px;
 }
 
-
 .sidebar-section:last-child {
   margin-bottom: 0;
 }
-
 
 /* =========================================================
    OPERATIONS / LIVE TITLE
@@ -96,7 +111,8 @@
   padding:
     0 13px;
 
-  color: #567c9c;
+  color:
+    #567c9c;
 
   font-family:
     Inter,
@@ -106,17 +122,19 @@
     sans-serif;
 
   font-size: 10px;
+
   font-weight: 700;
 
   line-height: 1;
 
-  letter-spacing: 0.1em;
+  letter-spacing:
+    0.1em;
 
-  text-transform: uppercase;
+  text-transform:
+    uppercase;
 
   user-select: none;
 }
-
 
 /* =========================================================
    SECTION MENU
@@ -126,11 +144,11 @@
   width: 100%;
 
   display: flex;
+
   flex-direction: column;
 
   gap: 0;
 }
-
 
 /* =========================================================
    MENU GROUP
@@ -140,11 +158,11 @@
   width: 100%;
 
   display: flex;
+
   flex-direction: column;
 
   gap: 0;
 }
-
 
 /* =========================================================
    MAIN MENU LINK
@@ -161,18 +179,22 @@
     0 13px;
 
   display: flex;
+
   align-items: center;
 
   gap: 10px;
 
   border:
-    1px solid transparent;
+    1px solid
+    transparent;
 
   border-radius: 8px;
 
-  color: #bfd1e0;
+  color:
+    #bfd1e0;
 
-  background: transparent;
+  background:
+    transparent;
 
   text-decoration: none;
 
@@ -182,49 +204,69 @@
 
   transition:
     color 0.18s ease,
-    background-color 0.18s ease,
-    border-color 0.18s ease,
-    box-shadow 0.18s ease,
-    transform 0.18s ease;
+    background-color
+      0.18s ease,
+    border-color
+      0.18s ease,
+    box-shadow
+      0.18s ease,
+    transform
+      0.18s ease;
 }
-
 
 /* =========================================================
    MENU HOVER
 ========================================================= */
 
 .sidebar-link:hover {
-  color: #ffffff;
+  color:
+    #ffffff;
 
   background:
-    rgba(255, 255, 255, 0.045);
+    rgba(
+      255,
+      255,
+      255,
+      0.045
+    );
 }
-
 
 /* =========================================================
    ACTIVE MENU
 ========================================================= */
 
 .sidebar-link.active {
-  color: #ffffff;
+  color:
+    #ffffff;
 
-  background: #18a99d;
+  background:
+    #18a99d;
 
   border-color:
-    rgba(95, 222, 211, 0.12);
+    rgba(
+      95,
+      222,
+      211,
+      0.12
+    );
 
   box-shadow:
     0 5px 12px
-    rgba(24, 169, 157, 0.17);
+    rgba(
+      24,
+      169,
+      157,
+      0.17
+    );
 }
-
 
 .sidebar-link.active:hover {
-  color: #ffffff;
+  color:
+    #ffffff;
 
-  background: #159f95;
+  background:
+    #159f95;
 }
-
 
 /* =========================================================
    MENU FOCUS
@@ -233,11 +275,15 @@
 .sidebar-link:focus-visible {
   outline:
     2px solid
-    rgba(70, 205, 193, 0.32);
+    rgba(
+      70,
+      205,
+      193,
+      0.32
+    );
 
   outline-offset: 2px;
 }
-
 
 /* =========================================================
    MAIN MENU ICON
@@ -245,16 +291,24 @@
 
 .sidebar-icon {
   width: 19px;
+
   min-width: 19px;
+
   height: 19px;
 
   flex-shrink: 0;
 
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  display:
+    inline-flex;
 
-  color: #8eafc9;
+  align-items:
+    center;
+
+  justify-content:
+    center;
+
+  color:
+    #8eafc9;
 
   font-size: 13px;
 
@@ -265,14 +319,13 @@
     transform 0.18s ease;
 }
 
-
 .sidebar-icon svg {
   width: 13px;
+
   height: 13px;
 
   display: block;
 }
-
 
 /* =========================================================
    ICON HOVER
@@ -280,9 +333,9 @@
 
 .sidebar-link:hover
 .sidebar-icon {
-  color: #c8e0f1;
+  color:
+    #c8e0f1;
 }
-
 
 /* =========================================================
    ACTIVE ICON
@@ -290,9 +343,9 @@
 
 .sidebar-link.active
 .sidebar-icon {
-  color: #ffffff;
+  color:
+    #ffffff;
 }
-
 
 /* =========================================================
    MAIN MENU TEXT
@@ -313,21 +366,25 @@
     sans-serif;
 
   font-size: 14px;
+
   font-weight: 500;
 
   line-height: 1.15;
 
-  white-space: nowrap;
+  white-space:
+    nowrap;
 
-  text-overflow: ellipsis;
+  text-overflow:
+    ellipsis;
 
   opacity: 1;
 
   transition:
-    opacity 0.2s ease,
-    width 0.3s ease;
+    opacity
+      0.2s ease,
+    width
+      0.3s ease;
 }
-
 
 /* =========================================================
    ACTIVE TEXT
@@ -335,14 +392,14 @@
 
 .sidebar-link.active
 .sidebar-text {
-  color: #ffffff;
+  color:
+    #ffffff;
 
   font-weight: 600;
 }
 
-
 /* =========================================================
-   DATA ENTRY SUBMENU
+   SUBMENU
 ========================================================= */
 
 .sidebar-submenu {
@@ -351,10 +408,11 @@
   width: 100%;
 
   padding:
-    2px 6px
-    3px 39px;
+    2px
+    6px
+    3px
+    39px;
 }
-
 
 /* =========================================================
    SUBMENU VERTICAL LINE
@@ -366,22 +424,32 @@
   position: absolute;
 
   top: -3px;
+
   bottom: 15px;
+
   left: 27px;
 
   width: 1px;
 
   background:
-    rgba(142, 175, 201, 0.20);
+    rgba(
+      142,
+      175,
+      201,
+      0.20
+    );
 }
 
-
 /* =========================================================
-   DATA ENTRY BUTTON
+   SUBMENU LINK
 ========================================================= */
 
 .sidebar-submenu-link {
-  position: relative;
+  text-decoration:
+    none;
+
+  position:
+    relative;
 
   width: 100%;
 
@@ -391,17 +459,22 @@
     0 8px;
 
   display: flex;
-  align-items: center;
+
+  align-items:
+    center;
 
   gap: 6px;
 
   border: 0;
 
-  border-radius: 6px;
+  border-radius:
+    6px;
 
-  color: #9ab5ca;
+  color:
+    #9ab5ca;
 
-  background: transparent;
+  background:
+    transparent;
 
   font-family:
     Inter,
@@ -410,16 +483,20 @@
     Arial,
     sans-serif;
 
-  text-align: left;
+  text-align:
+    left;
 
-  cursor: pointer;
+  cursor:
+    pointer;
 
   transition:
-    color 0.18s ease,
-    background-color 0.18s ease,
-    padding-left 0.18s ease;
+    color
+      0.18s ease,
+    background-color
+      0.18s ease,
+    padding-left
+      0.18s ease;
 }
-
 
 /* =========================================================
    SUBMENU CONNECTOR
@@ -429,22 +506,34 @@
   position: absolute;
 
   left: -12px;
+
   top: 0;
 
   width: 12px;
+
   height: 15px;
 
   border-left:
     1px solid
-    rgba(142, 175, 201, 0.22);
+    rgba(
+      142,
+      175,
+      201,
+      0.22
+    );
 
   border-bottom:
     1px solid
-    rgba(142, 175, 201, 0.22);
+    rgba(
+      142,
+      175,
+      201,
+      0.22
+    );
 
-  border-bottom-left-radius: 4px;
+  border-bottom-left-radius:
+    4px;
 }
-
 
 /* =========================================================
    SUBMENU ICON
@@ -452,28 +541,36 @@
 
 .sidebar-submenu-icon {
   width: 18px;
+
   min-width: 18px;
+
   height: 18px;
 
   flex-shrink: 0;
 
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  display:
+    inline-flex;
 
-  color: #55cfc4;
+  align-items:
+    center;
 
-  font-size: 10px;
+  justify-content:
+    center;
+
+  color:
+    #55cfc4;
+
+  font-size:
+    10px;
 }
-
 
 .sidebar-submenu-icon svg {
   width: 10px;
+
   height: 10px;
 
   display: block;
 }
-
 
 /* =========================================================
    SUBMENU TEXT
@@ -486,36 +583,62 @@
 
   color: inherit;
 
-  font-size: 11.5px;
-  font-weight: 500;
+  font-size:
+    11.5px;
 
-  line-height: 1.1;
+  font-weight:
+    500;
 
-  white-space: nowrap;
+  line-height:
+    1.1;
 
-  text-overflow: ellipsis;
+  white-space:
+    nowrap;
+
+  text-overflow:
+    ellipsis;
 }
-
 
 /* =========================================================
    SUBMENU HOVER
+
+   NOTE:
+   Key-Account / Traffic only change on hover.
+   They DO NOT stay highlighted.
 ========================================================= */
 
 .sidebar-submenu-link:hover {
-  color: #ffffff;
+  color:
+    #ffffff;
 
   background:
-    rgba(24, 169, 157, 0.10);
+    rgba(
+      24,
+      169,
+      157,
+      0.10
+    );
 
-  padding-left: 10px;
+  padding-left:
+    10px;
 }
-
 
 .sidebar-submenu-link:hover
 .sidebar-submenu-icon {
-  color: #69e2d7;
+  color:
+    #69e2d7;
 }
 
+/* =========================================================
+   IMPORTANT
+
+   DO NOT ADD:
+
+   .sidebar-submenu-link.active
+
+   because you do not want
+   Key-Account or Traffic highlighted.
+========================================================= */
 
 /* =========================================================
    SUBMENU FOCUS
@@ -524,29 +647,41 @@
 .sidebar-submenu-link:focus-visible {
   outline:
     2px solid
-    rgba(85, 207, 196, 0.28);
+    rgba(
+      85,
+      207,
+      196,
+      0.28
+    );
 
-  outline-offset: 2px;
+  outline-offset:
+    2px;
 }
-
 
 /* =========================================================
    FOOTER
 ========================================================= */
 
 .sidebar-footer {
-  flex-shrink: 0;
+  flex-shrink:
+    0;
 
   padding:
-    9px 13px;
+    9px
+    13px;
 
-  background: #071f33;
+  background:
+    #071f33;
 
   border-top:
     1px solid
-    rgba(255, 255, 255, 0.07);
+    rgba(
+      255,
+      255,
+      255,
+      0.07
+    );
 }
-
 
 /* =========================================================
    LOGOUT BUTTON
@@ -555,23 +690,32 @@
 .logout-button {
   width: 100%;
 
-  min-height: 40px;
+  min-height:
+    40px;
 
   padding:
     0 13px;
 
-  display: flex;
-  align-items: center;
+  display:
+    flex;
 
-  gap: 10px;
+  align-items:
+    center;
 
-  border: 0;
+  gap:
+    10px;
 
-  border-radius: 8px;
+  border:
+    0;
 
-  color: #bfd1e0;
+  border-radius:
+    8px;
 
-  background: transparent;
+  color:
+    #bfd1e0;
+
+  background:
+    transparent;
 
   font-family:
     Inter,
@@ -580,34 +724,42 @@
     Arial,
     sans-serif;
 
-  cursor: pointer;
+  cursor:
+    pointer;
 
-  overflow: hidden;
+  overflow:
+    hidden;
 
   transition:
-    color 0.18s ease,
-    background-color 0.18s ease,
-    transform 0.18s ease;
+    color
+      0.18s ease,
+    background-color
+      0.18s ease,
+    transform
+      0.18s ease;
 }
-
 
 /* =========================================================
    LOGOUT HOVER
 ========================================================= */
 
 .logout-button:hover {
-  color: #ffffff;
+  color:
+    #ffffff;
 
   background:
-    rgba(220, 38, 38, 0.13);
+    rgba(
+      220,
+      38,
+      38,
+      0.13
+    );
 }
-
 
 .logout-button:active {
   transform:
     scale(0.98);
 }
-
 
 /* =========================================================
    LOGOUT FOCUS
@@ -616,74 +768,105 @@
 .logout-button:focus-visible {
   outline:
     2px solid
-    rgba(248, 113, 113, 0.30);
+    rgba(
+      248,
+      113,
+      113,
+      0.30
+    );
 
-  outline-offset: 2px;
+  outline-offset:
+    2px;
 }
-
 
 /* =========================================================
    LOGOUT ICON
 ========================================================= */
 
 .logout-icon {
-  width: 19px;
-  min-width: 19px;
-  height: 19px;
+  width:
+    19px;
 
-  flex-shrink: 0;
+  min-width:
+    19px;
 
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  height:
+    19px;
 
-  color: #8eafc9;
+  flex-shrink:
+    0;
 
-  font-size: 13px;
+  display:
+    inline-flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    center;
+
+  color:
+    #8eafc9;
+
+  font-size:
+    13px;
 }
-
 
 .logout-icon svg {
-  width: 13px;
-  height: 13px;
+  width:
+    13px;
 
-  display: block;
+  height:
+    13px;
+
+  display:
+    block;
 }
-
 
 .logout-button:hover
 .logout-icon {
-  color: #fca5a5;
+  color:
+    #fca5a5;
 }
-
 
 /* =========================================================
    LOGOUT TEXT
 ========================================================= */
 
 .logout-text {
-  min-width: 0;
+  min-width:
+    0;
 
-  overflow: hidden;
+  overflow:
+    hidden;
 
-  color: inherit;
+  color:
+    inherit;
 
-  font-size: 14px;
-  font-weight: 500;
+  font-size:
+    14px;
 
-  line-height: 1.15;
+  font-weight:
+    500;
 
-  white-space: nowrap;
+  line-height:
+    1.15;
 
-  text-overflow: ellipsis;
+  white-space:
+    nowrap;
 
-  opacity: 1;
+  text-overflow:
+    ellipsis;
+
+  opacity:
+    1;
 
   transition:
-    opacity 0.2s ease,
-    width 0.3s ease;
+    opacity
+      0.2s ease,
+    width
+      0.3s ease;
 }
-
 
 /* =========================================================
    COLLAPSED SIDEBAR MENU
@@ -692,20 +875,20 @@
 .sidebar.collapsed
 .sidebar-menu {
   padding:
-    15px 10px
+    15px
+    10px
     12px;
 }
 
-
 /* =========================================================
-   HIDE SECTION HEADINGS WHEN COLLAPSED
+   COLLAPSED SECTION TITLE
 ========================================================= */
 
 .sidebar.collapsed
 .sidebar-section-title {
-  display: none;
+  display:
+    none;
 }
-
 
 /* =========================================================
    COLLAPSED SECTION SPACING
@@ -713,9 +896,9 @@
 
 .sidebar.collapsed
 .sidebar-section {
-  margin-bottom: 2px;
+  margin-bottom:
+    2px;
 }
-
 
 /* =========================================================
    COLLAPSED MAIN LINK
@@ -723,20 +906,24 @@
 
 .sidebar.collapsed
 .sidebar-link {
-  width: 44px;
+  width:
+    44px;
 
-  min-height: 40px;
+  min-height:
+    40px;
 
   margin:
     0 auto;
 
-  padding: 0;
+  padding:
+    0;
 
-  justify-content: center;
+  justify-content:
+    center;
 
-  gap: 0;
+  gap:
+    0;
 }
-
 
 /* =========================================================
    COLLAPSED ICON
@@ -744,13 +931,18 @@
 
 .sidebar.collapsed
 .sidebar-icon {
-  width: 19px;
-  min-width: 19px;
-  height: 19px;
+  width:
+    19px;
 
-  margin: 0;
+  min-width:
+    19px;
+
+  height:
+    19px;
+
+  margin:
+    0;
 }
-
 
 /* =========================================================
    COLLAPSED TEXT
@@ -758,27 +950,31 @@
 
 .sidebar.collapsed
 .sidebar-text {
-  width: 0;
+  width:
+    0;
 
-  min-width: 0;
+  min-width:
+    0;
 
-  opacity: 0;
+  opacity:
+    0;
 
-  visibility: hidden;
+  visibility:
+    hidden;
 
-  pointer-events: none;
+  pointer-events:
+    none;
 }
 
-
 /* =========================================================
-   HIDE DATA ENTRY WHEN COLLAPSED
+   HIDE SUBMENU WHEN COLLAPSED
 ========================================================= */
 
 .sidebar.collapsed
 .sidebar-submenu {
-  display: none;
+  display:
+    none;
 }
-
 
 /* =========================================================
    COLLAPSED FOOTER
@@ -787,9 +983,9 @@
 .sidebar.collapsed
 .sidebar-footer {
   padding:
-    9px 10px;
+    9px
+    10px;
 }
-
 
 /* =========================================================
    COLLAPSED LOGOUT
@@ -797,205 +993,423 @@
 
 .sidebar.collapsed
 .logout-button {
-  width: 44px;
+  width:
+    44px;
 
-  min-height: 40px;
+  min-height:
+    40px;
 
   margin:
     0 auto;
 
-  padding: 0;
+  padding:
+    0;
 
-  justify-content: center;
+  justify-content:
+    center;
 
-  gap: 0;
+  gap:
+    0;
 }
-
 
 .sidebar.collapsed
 .logout-icon {
-  width: 19px;
-  min-width: 19px;
-  height: 19px;
+  width:
+    19px;
 
-  margin: 0;
+  min-width:
+    19px;
+
+  height:
+    19px;
+
+  margin:
+    0;
 }
-
 
 .sidebar.collapsed
 .logout-text {
-  width: 0;
+  width:
+    0;
 
-  min-width: 0;
+  min-width:
+    0;
 
-  opacity: 0;
+  opacity:
+    0;
 
-  visibility: hidden;
+  visibility:
+    hidden;
 
-  pointer-events: none;
+  pointer-events:
+    none;
 }
-
 
 /* =========================================================
    TABLET
 ========================================================= */
 
-@media (max-width: 768px) {
-
+@media (
+  max-width:
+    768px
+) {
   .sidebar {
-    top: 70px;
+    top:
+      70px;
 
     height:
-      calc(100vh - 70px);
+      calc(
+        100vh - 70px
+      );
   }
-
 
   .sidebar-text,
   .logout-text {
-    font-size: 13.5px;
+    font-size:
+      13.5px;
   }
-
 
   .sidebar-section-title {
-    font-size: 9.5px;
+    font-size:
+      9.5px;
   }
-
 }
 
 /* =========================================================
-   MOBILE SIDEBAR OVERLAY
+   MOBILE OVERLAY
 ========================================================= */
 
 .sidebar-mobile-overlay {
-  display: none;
+  display:
+    none;
 }
-
 
 /* =========================================================
    MOBILE
 ========================================================= */
 
-@media (max-width: 560px) {
-
+@media (
+  max-width:
+    560px
+) {
   .sidebar-mobile-overlay {
-    display: block;
-    position: fixed;
-    top: 70px;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    width: 100%;
-    height: calc(100vh - 70px);
-    z-index: 899;
-    background: rgba(3, 18, 31, 0.48);
-    -webkit-backdrop-filter: blur(1px);
-    backdrop-filter: blur(1px);
-    cursor: pointer;
-    animation: sidebarOverlayFade 0.2s ease;
+    display:
+      block;
+
+    position:
+      fixed;
+
+    top:
+      70px;
+
+    left:
+      0;
+
+    right:
+      0;
+
+    bottom:
+      0;
+
+    width:
+      100%;
+
+    height:
+      calc(
+        100vh - 70px
+      );
+
+    z-index:
+      899;
+
+    background:
+      rgba(
+        3,
+        18,
+        31,
+        0.48
+      );
+
+    -webkit-backdrop-filter:
+      blur(1px);
+
+    backdrop-filter:
+      blur(1px);
+
+    cursor:
+      pointer;
+
+    animation:
+      sidebarOverlayFade
+      0.2s
+      ease;
   }
 
   .sidebar {
-    position: fixed;
-    top: 70px;
-    left: 0;
-    bottom: 0;
-    width: 230px;
-    height: calc(100vh - 70px);
-    z-index: 900;
-    transform: translateX(0);
-    background: #071f33;
-    border-right: 1px solid rgba(255, 255, 255, 0.05);
-    box-shadow: 8px 0 24px rgba(3, 18, 31, 0.30);
-    transition: transform 0.25s ease;
+    position:
+      fixed;
+
+    top:
+      70px;
+
+    left:
+      0;
+
+    bottom:
+      0;
+
+    width:
+      230px;
+
+    height:
+      calc(
+        100vh - 70px
+      );
+
+    z-index:
+      900;
+
+    transform:
+      translateX(0);
+
+    background:
+      #071f33;
+
+    border-right:
+      1px solid
+      rgba(
+        255,
+        255,
+        255,
+        0.05
+      );
+
+    box-shadow:
+      8px 0 24px
+      rgba(
+        3,
+        18,
+        31,
+        0.30
+      );
+
+    transition:
+      transform
+      0.25s
+      ease;
   }
+
+  /* CLOSED */
 
   .sidebar.collapsed {
-    width: 230px;
-    transform: translateX(-100%);
-    border-right: none;
-    box-shadow: none;
-    pointer-events: none;
+    width:
+      230px;
+
+    transform:
+      translateX(
+        -100%
+      );
+
+    border-right:
+      none;
+
+    box-shadow:
+      none;
+
+    pointer-events:
+      none;
   }
 
-  .sidebar.collapsed .sidebar-menu,
-  .sidebar.collapsed .sidebar-footer {
-    visibility: hidden;
+  .sidebar.collapsed
+  .sidebar-menu,
+  .sidebar.collapsed
+  .sidebar-footer {
+    visibility:
+      hidden;
   }
 
-  .sidebar:not(.collapsed) .sidebar-menu,
-  .sidebar:not(.collapsed) .sidebar-footer {
-    visibility: visible;
+  /* OPEN */
+
+  .sidebar:not(.collapsed)
+  .sidebar-menu,
+  .sidebar:not(.collapsed)
+  .sidebar-footer {
+    visibility:
+      visible;
   }
 
-  .sidebar:not(.collapsed) .sidebar-menu {
-    padding: 20px 15px 10px;
+  .sidebar:not(.collapsed)
+  .sidebar-menu {
+    padding:
+      20px
+      15px
+      10px;
   }
 
-  .sidebar:not(.collapsed) .sidebar-section-title {
-    display: block;
-    font-size: 9.5px;
+  .sidebar:not(.collapsed)
+  .sidebar-section-title {
+    display:
+      block;
+
+    font-size:
+      9.5px;
   }
 
-  .sidebar:not(.collapsed) .sidebar-link {
-    width: 100%;
-    min-height: 40px;
-    margin: 0;
-    padding: 0 13px;
-    justify-content: flex-start;
-    gap: 10px;
+  .sidebar:not(.collapsed)
+  .sidebar-link {
+    width:
+      100%;
+
+    min-height:
+      40px;
+
+    margin:
+      0;
+
+    padding:
+      0
+      13px;
+
+    justify-content:
+      flex-start;
+
+    gap:
+      10px;
   }
 
-  .sidebar:not(.collapsed) .sidebar-text {
-    width: auto;
-    min-width: 0;
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
+  .sidebar:not(.collapsed)
+  .sidebar-text {
+    width:
+      auto;
+
+    min-width:
+      0;
+
+    opacity:
+      1;
+
+    visibility:
+      visible;
+
+    pointer-events:
+      auto;
   }
 
-  .sidebar:not(.collapsed) .sidebar-link.active {
-    color: #ffffff;
-    background: #18a99d;
-    border-color: rgba(95, 222, 211, 0.12);
-    box-shadow: 0 5px 12px rgba(24, 169, 157, 0.17);
+  /* ACTIVE MAIN MENU */
+
+  .sidebar:not(.collapsed)
+  .sidebar-link.active {
+    color:
+      #ffffff;
+
+    background:
+      #18a99d;
+
+    border-color:
+      rgba(
+        95,
+        222,
+        211,
+        0.12
+      );
+
+    box-shadow:
+      0 5px 12px
+      rgba(
+        24,
+        169,
+        157,
+        0.17
+      );
   }
 
-  .sidebar:not(.collapsed) .sidebar-link.active .sidebar-icon {
-    color: #ffffff;
+  .sidebar:not(.collapsed)
+  .sidebar-link.active
+  .sidebar-icon {
+    color:
+      #ffffff;
   }
 
-  .sidebar:not(.collapsed) .sidebar-link.active .sidebar-text {
-    color: #ffffff;
-    font-weight: 600;
+  .sidebar:not(.collapsed)
+  .sidebar-link.active
+  .sidebar-text {
+    color:
+      #ffffff;
+
+    font-weight:
+      600;
   }
 
-  .sidebar:not(.collapsed) .sidebar-submenu {
-    display: block;
+  /* SHOW SUBMENU */
+
+  .sidebar:not(.collapsed)
+  .sidebar-submenu {
+    display:
+      block;
   }
 
-  .sidebar:not(.collapsed) .sidebar-footer {
-    padding: 9px 13px;
+  /* FOOTER */
+
+  .sidebar:not(.collapsed)
+  .sidebar-footer {
+    padding:
+      9px
+      13px;
   }
 
-  .sidebar:not(.collapsed) .logout-button {
-    width: 100%;
-    min-height: 40px;
-    margin: 0;
-    padding: 0 13px;
-    justify-content: flex-start;
-    gap: 10px;
+  .sidebar:not(.collapsed)
+  .logout-button {
+    width:
+      100%;
+
+    min-height:
+      40px;
+
+    margin:
+      0;
+
+    padding:
+      0
+      13px;
+
+    justify-content:
+      flex-start;
+
+    gap:
+      10px;
   }
 
-  .sidebar:not(.collapsed) .logout-text {
-    width: auto;
-    min-width: 0;
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
+  .sidebar:not(.collapsed)
+  .logout-text {
+    width:
+      auto;
+
+    min-width:
+      0;
+
+    opacity:
+      1;
+
+    visibility:
+      visible;
+
+    pointer-events:
+      auto;
   }
 }
 
+/* =========================================================
+   MOBILE OVERLAY ANIMATION
+========================================================= */
+
 @keyframes sidebarOverlayFade {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity:
+      0;
+  }
+
+  to {
+    opacity:
+      1;
+  }
 }
