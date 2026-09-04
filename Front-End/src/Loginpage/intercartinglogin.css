@@ -1,4 +1,10 @@
-* {
+/* =========================================================
+   INTERCARTING LOGIN
+   SAME DESIGN AS KEY ACCOUNT LOGIN
+========================================================= */
+
+.inter-login-overlay,
+.inter-login-overlay * {
   box-sizing: border-box;
 }
 
@@ -7,132 +13,173 @@
    OVERLAY
 ========================================================= */
 
-.inter-secure-login-overlay {
+.inter-login-overlay {
   position: fixed;
+
   inset: 0;
 
   z-index: 2000000;
 
   display: flex;
+
   align-items: center;
+
   justify-content: center;
 
   padding: 20px;
 
   background:
-    rgba(15, 28, 49, 0.58);
+    rgba(
+      5,
+      15,
+      28,
+      0.62
+    );
 
-  backdrop-filter: blur(7px);
-  -webkit-backdrop-filter: blur(7px);
+  backdrop-filter:
+    blur(5px);
+
+  -webkit-backdrop-filter:
+    blur(5px);
 
   animation:
-    interSecureFadeIn
-    0.2s ease;
+    interOverlayFade
+    0.2s
+    ease;
 }
 
 
 /* =========================================================
-   MODAL
+   LOGIN CARD
 ========================================================= */
 
-.inter-secure-login-modal {
+.inter-login-card {
   position: relative;
 
-  width: min(
-    410px,
-    100%
-  );
+  width: 100%;
+
+  max-width: 410px;
 
   padding:
-    35px 32px 25px;
-
-  overflow: hidden;
+    38px
+    32px
+    26px;
 
   border:
     1px solid
-    #dbe4ee;
+    rgba(
+      226,
+      232,
+      240,
+      0.9
+    );
 
-  border-radius: 17px;
+  border-radius: 16px;
 
   background: #ffffff;
 
   box-shadow:
-    0 28px 70px
-    rgba(7, 24, 54, 0.28);
+    0 25px 65px
+      rgba(
+        15,
+        23,
+        42,
+        0.28
+      ),
+    0 8px 25px
+      rgba(
+        15,
+        23,
+        42,
+        0.12
+      );
 
-  font-family:
-    "Poppins",
-    "Segoe UI",
-    Arial,
-    sans-serif;
+  overflow: hidden;
 
   animation:
-    interSecureModalIn
-    0.23s ease;
+    interCardOpen
+    0.22s
+    ease;
+
+  font-family:
+    Inter,
+    "Segoe UI",
+    Roboto,
+    Arial,
+    sans-serif;
 }
 
 
-/* TOP LINE */
+/* =========================================================
+   TOP BAR
+========================================================= */
 
-.inter-secure-login-modal::before {
-  content: "";
-
+.inter-login-topbar {
   position: absolute;
 
   top: 0;
   left: 0;
+  right: 0;
 
-  width: 100%;
-  height: 3px;
+  height: 5px;
 
   background:
     linear-gradient(
       90deg,
-      #2563c9,
-      #3f7ce5
+      #0d9488,
+      #0891b2,
+      #0f3b53
     );
 }
 
 
 /* =========================================================
-   CLOSE
+   CLOSE BUTTON
 ========================================================= */
 
-.inter-secure-login-close {
+.inter-login-close {
   position: absolute;
 
-  top: 18px;
-  right: 18px;
+  top: 15px;
+  right: 15px;
 
-  width: 31px;
-  height: 31px;
+  width: 32px;
+  height: 32px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
 
   padding: 0;
 
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  border: 0;
+  border:
+    1px solid
+    #e2e8f0;
 
   border-radius: 8px;
 
-  background: transparent;
+  background: #f8fafc;
 
-  color: #71849d;
+  color: #64748b;
 
   cursor: pointer;
 
   transition:
-    color 0.18s ease,
-    background 0.18s ease;
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
 }
 
 
-.inter-secure-login-close:hover {
-  color: #1b365d;
+.inter-login-close:hover {
+  background: #eef2f7;
 
-  background: #f0f4f8;
+  color: #0f172a;
+
+  transform:
+    rotate(3deg);
 }
 
 
@@ -140,85 +187,109 @@
    ICON
 ========================================================= */
 
-.inter-secure-login-icon {
-  width: 58px;
-  height: 58px;
+.inter-login-icon {
+  width: 54px;
+  height: 54px;
 
-  margin-bottom: 19px;
+  margin:
+    0
+    auto
+    14px;
 
   display: flex;
+
   align-items: center;
+
   justify-content: center;
 
-  border-radius: 15px;
+  border-radius: 14px;
 
-  color: #ffffff;
+  background: #e7f5f3;
 
-  background:
-    linear-gradient(
-      135deg,
-      #3478d4,
-      #174fa6
-    );
+  color: #0d9488;
 
   box-shadow:
-    0 10px 24px
-    rgba(33, 100, 190, 0.28);
+    inset
+    0
+    0
+    0
+    1px
+    rgba(
+      13,
+      148,
+      136,
+      0.12
+    );
 }
 
 
 /* =========================================================
-   HEADING
+   EYEBROW
 ========================================================= */
 
-.inter-secure-login-heading {
-  margin-bottom: 24px;
-}
+.inter-login-eyebrow {
+  margin:
+    0
+    0
+    5px;
 
+  text-align: center;
 
-.inter-secure-login-heading > span {
-  display: block;
+  color: #0d9488;
 
-  margin-bottom: 7px;
+  font-size: 11px;
 
-  color: #2364bc;
-
-  font-size: 9px;
-  font-weight: 700;
-
-  line-height: 1.2;
-
-  letter-spacing: 0.12em;
-
-  text-transform: uppercase;
-}
-
-
-.inter-secure-login-heading h2 {
-  margin: 0;
-
-  color: #152e56;
-
-  font-size: 23px;
-  font-weight: 700;
-
-  line-height: 1.25;
+  font-weight: 800;
 
   letter-spacing:
-    -0.025em;
+    1.2px;
+
+  text-transform:
+    uppercase;
 }
 
 
-.inter-secure-login-heading p {
+/* =========================================================
+   TITLE
+========================================================= */
+
+.inter-login-title {
+  margin: 0;
+
+  text-align: center;
+
+  color: #102f44;
+
+  font-size: 23px;
+
+  font-weight: 800;
+
+  letter-spacing:
+    -0.4px;
+
+  line-height: 1.2;
+}
+
+
+/* =========================================================
+   SUBTITLE
+========================================================= */
+
+.inter-login-subtitle {
+  max-width: 300px;
+
   margin:
-    6px 0 0;
+    8px
+    auto
+    24px;
 
-  color: #7a8ca5;
+  text-align: center;
 
-  font-size: 11.5px;
-  font-weight: 400;
+  color: #64748b;
 
-  line-height: 1.5;
+  font-size: 13px;
+
+  line-height: 1.55;
 }
 
 
@@ -226,7 +297,7 @@
    FORM
 ========================================================= */
 
-.inter-secure-login-form {
+.inter-login-form {
   width: 100%;
 }
 
@@ -235,22 +306,25 @@
    FIELD
 ========================================================= */
 
-.inter-secure-login-field {
-  margin-bottom: 17px;
+.inter-login-field {
+  margin-bottom: 16px;
 }
 
 
-.inter-secure-login-field label {
+/* =========================================================
+   LABEL
+========================================================= */
+
+.inter-login-field label {
   display: block;
 
   margin-bottom: 7px;
 
-  color: #415977;
+  color: #334155;
 
-  font-size: 10.5px;
-  font-weight: 600;
+  font-size: 12px;
 
-  line-height: 1.4;
+  font-weight: 700;
 }
 
 
@@ -258,54 +332,63 @@
    INPUT WRAPPER
 ========================================================= */
 
-.inter-secure-login-input {
+.inter-login-input-wrap {
   position: relative;
 
   width: 100%;
 
-  min-height: 46px;
+  height: 44px;
 
   display: flex;
+
   align-items: center;
 
   border:
     1px solid
-    #d3deea;
+    #dce5ec;
 
   border-radius: 9px;
 
   background: #f8fafc;
 
   transition:
-    border-color 0.18s ease,
-    box-shadow 0.18s ease,
-    background 0.18s ease;
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
 }
 
 
-.inter-secure-login-input:focus-within {
-  border-color: #3478db;
+.inter-login-input-wrap:focus-within {
+  border-color: #0d9488;
 
   background: #ffffff;
 
   box-shadow:
-    0 0 0 3px
-    rgba(52, 120, 219, 0.11);
+    0
+    0
+    0
+    3px
+    rgba(
+      13,
+      148,
+      136,
+      0.12
+    );
 }
 
 
-.inter-secure-login-input > svg {
-  margin-left: 13px;
+/* =========================================================
+   INPUT ICON
+========================================================= */
 
-  flex-shrink: 0;
+.inter-login-input-icon {
+  position: absolute;
 
-  color: #8193aa;
-}
+  left: 13px;
 
+  color: #94a3b8;
 
-.inter-secure-login-input:focus-within
-> svg {
-  color: #2869c8;
+  pointer-events: none;
 }
 
 
@@ -313,60 +396,80 @@
    INPUT
 ========================================================= */
 
-.inter-secure-login-input input {
+.inter-login-input-wrap input {
   width: 100%;
-  height: 44px;
+
+  height: 100%;
 
   padding:
-    0 12px;
+    0
+    42px;
 
-  border: 0;
-  outline: 0;
+  border: none;
 
-  background: transparent;
+  outline: none;
 
-  color: #243c60;
+  background:
+    transparent;
 
-  font: inherit;
+  color: #0f172a;
 
-  font-size: 11.5px;
+  font-family:
+    inherit;
+
+  font-size: 13px;
+
   font-weight: 500;
 }
 
 
-.inter-secure-login-input input::placeholder {
-  color: #99a8bb;
-
-  font-weight: 400;
+.inter-login-input-wrap
+input::placeholder {
+  color: #94a3b8;
 }
 
 
 /* =========================================================
-   PASSWORD TOGGLE
+   PASSWORD EYE
 ========================================================= */
 
-.inter-secure-password-toggle {
-  width: 38px;
-  height: 44px;
+.inter-login-eye {
+  position: absolute;
 
-  flex: 0 0 38px;
+  right: 8px;
+
+  width: 30px;
+  height: 30px;
 
   display: flex;
+
   align-items: center;
+
   justify-content: center;
 
-  border: 0;
+  padding: 0;
 
-  background: transparent;
+  border: none;
 
-  color: #8193aa;
+  border-radius: 6px;
+
+  background:
+    transparent;
+
+  color: #64748b;
 
   cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
 }
 
 
-.inter-secure-password-toggle:hover {
-  color: #2869c8;
+.inter-login-eye:hover {
+  background: #e8eef3;
+
+  color: #0d9488;
 }
 
 
@@ -374,28 +477,36 @@
    ERROR
 ========================================================= */
 
-.inter-secure-login-error {
+.inter-login-error {
   margin:
-    -3px 0
-    15px;
+    -4px
+    0
+    14px;
 
   padding:
-    9px 11px;
+    9px
+    11px;
 
   border:
     1px solid
     #fecaca;
 
-  border-radius: 8px;
+  border-radius: 7px;
 
-  background: #fff3f3;
+  background: #fef2f2;
 
-  color: #bd3434;
+  color: #dc2626;
 
-  font-size: 10.5px;
-  font-weight: 500;
+  font-size: 12px;
 
-  line-height: 1.45;
+  font-weight: 600;
+
+  line-height: 1.4;
+
+  animation:
+    interErrorOpen
+    0.16s
+    ease;
 }
 
 
@@ -403,69 +514,83 @@
    LOGIN BUTTON
 ========================================================= */
 
-.inter-secure-login-submit {
+.inter-login-submit {
   width: 100%;
-  height: 46px;
 
-  margin-top: 3px;
+  height: 44px;
 
   display: flex;
+
   align-items: center;
+
   justify-content: center;
 
-  gap: 7px;
+  gap: 8px;
 
-  border:
-    1px solid
-    #2866c3;
+  border: none;
 
   border-radius: 9px;
-
-  color: #ffffff;
 
   background:
     linear-gradient(
       135deg,
-      #397bd3,
-      #225db5
+      #0d9488,
+      #0b7d73
     );
 
-  font: inherit;
+  color: #ffffff;
 
-  font-size: 11.5px;
-  font-weight: 700;
+  font-family:
+    inherit;
+
+  font-size: 13px;
+
+  font-weight: 800;
 
   cursor: pointer;
 
   box-shadow:
-    0 7px 16px
-    rgba(39, 101, 190, 0.21);
+    0
+    8px
+    20px
+    rgba(
+      13,
+      148,
+      136,
+      0.22
+    );
 
   transition:
-    transform 0.18s ease,
-    box-shadow 0.18s ease,
-    background 0.18s ease;
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
 }
 
 
-.inter-secure-login-submit:hover:not(:disabled) {
+.inter-login-submit:hover:not(:disabled) {
   transform:
     translateY(-1px);
 
-  background:
-    linear-gradient(
-      135deg,
-      #2f70c8,
-      #194f9f
-    );
-
   box-shadow:
-    0 9px 20px
-    rgba(39, 101, 190, 0.28);
+    0
+    11px
+    25px
+    rgba(
+      13,
+      148,
+      136,
+      0.3
+    );
 }
 
 
-.inter-secure-login-submit:disabled {
+.inter-login-submit:active:not(:disabled) {
+  transform:
+    translateY(0);
+}
+
+
+.inter-login-submit:disabled {
   opacity: 0.65;
 
   cursor: not-allowed;
@@ -473,30 +598,43 @@
 
 
 /* =========================================================
+   DIVIDER
+========================================================= */
+
+.inter-login-divider {
+  width: 100%;
+
+  height: 1px;
+
+  margin:
+    22px
+    0
+    16px;
+
+  background: #e8edf2;
+}
+
+
+/* =========================================================
    FOOTER
 ========================================================= */
 
-.inter-secure-login-footer {
-  min-height: 43px;
-
-  margin-top: 19px;
-
-  padding-top: 17px;
+.inter-login-footer {
+  margin: 0;
 
   display: flex;
+
   align-items: center;
+
   justify-content: center;
 
   gap: 6px;
 
-  border-top:
-    1px solid
-    #e8edf3;
+  color: #94a3b8;
 
-  color: #92a0b2;
+  font-size: 11px;
 
-  font-size: 9px;
-  font-weight: 400;
+  font-weight: 600;
 }
 
 
@@ -504,7 +642,8 @@
    ANIMATIONS
 ========================================================= */
 
-@keyframes interSecureFadeIn {
+@keyframes interOverlayFade {
+
   from {
     opacity: 0;
   }
@@ -512,15 +651,17 @@
   to {
     opacity: 1;
   }
+
 }
 
 
-@keyframes interSecureModalIn {
+@keyframes interCardOpen {
+
   from {
     opacity: 0;
 
     transform:
-      translateY(12px)
+      translateY(10px)
       scale(0.98);
   }
 
@@ -531,6 +672,26 @@
       translateY(0)
       scale(1);
   }
+
+}
+
+
+@keyframes interErrorOpen {
+
+  from {
+    opacity: 0;
+
+    transform:
+      translateY(-3px);
+  }
+
+  to {
+    opacity: 1;
+
+    transform:
+      translateY(0);
+  }
+
 }
 
 
@@ -538,21 +699,28 @@
    MOBILE
 ========================================================= */
 
-@media (max-width: 480px) {
-  .inter-secure-login-overlay {
-    padding: 12px;
+@media (max-width: 520px) {
+
+  .inter-login-overlay {
+    padding: 14px;
   }
 
-  .inter-secure-login-modal {
-    width: 100%;
 
+  .inter-login-card {
     padding:
-      31px 22px 22px;
-
-    border-radius: 14px;
+      36px
+      20px
+      22px;
   }
 
-  .inter-secure-login-heading h2 {
-    font-size: 21px;
+
+  .inter-login-title {
+    font-size: 20px;
   }
+
+
+  .inter-login-subtitle {
+    font-size: 12px;
+  }
+
 }

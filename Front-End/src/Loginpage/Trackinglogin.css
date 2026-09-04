@@ -1,6 +1,7 @@
-/* =========================================
-   RESET
-========================================= */
+/* =========================================================
+   TRACKING LOGIN
+   SAME DESIGN AS KEY ACCOUNT LOGIN
+========================================================= */
 
 .tracking-login-overlay,
 .tracking-login-overlay * {
@@ -8,105 +9,761 @@
 }
 
 
-/* =========================================
+/* =========================================================
    OVERLAY
-========================================= */
+========================================================= */
 
 .tracking-login-overlay {
   position: fixed;
 
   inset: 0;
 
-  z-index: 99999;
-
-  width: 100%;
-  min-height: 100vh;
-
-  padding: 24px;
+  z-index: 2000000;
 
   display: flex;
+
   align-items: center;
+
   justify-content: center;
 
-  overflow-y: auto;
+  padding: 20px;
 
   background:
-    rgba(13, 28, 49, 0.58);
+    rgba(
+      5,
+      15,
+      28,
+      0.62
+    );
 
   backdrop-filter:
-    blur(7px);
+    blur(5px);
 
   -webkit-backdrop-filter:
-    blur(7px);
+    blur(5px);
 
   animation:
     trackingOverlayFade
-    180ms ease;
+    0.2s
+    ease;
 }
 
 
-@keyframes trackingOverlayFade {
+/* =========================================================
+   LOGIN CARD
+========================================================= */
 
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
-
-}
-
-
-/* =========================================
-   MODAL
-========================================= */
-
-.tracking-login-modal {
+.tracking-login-card {
   position: relative;
 
   width: 100%;
+
   max-width: 410px;
 
   padding:
-    34px
+    38px
     32px
     26px;
 
-  overflow: hidden;
-
   border:
     1px solid
-    #dbe4ef;
+    rgba(
+      226,
+      232,
+      240,
+      0.9
+    );
 
-  border-radius: 18px;
+  border-radius: 16px;
 
   background: #ffffff;
 
   box-shadow:
-    0 30px 85px
-      rgba(7, 25, 52, 0.30),
-    0 8px 26px
-      rgba(7, 25, 52, 0.12);
+    0 25px 65px
+      rgba(
+        15,
+        23,
+        42,
+        0.28
+      ),
+    0 8px 25px
+      rgba(
+        15,
+        23,
+        42,
+        0.12
+      );
+
+  overflow: hidden;
 
   animation:
-    trackingModalOpen
-    220ms ease;
+    trackingCardOpen
+    0.22s
+    ease;
+
+  font-family:
+    Inter,
+    "Segoe UI",
+    Roboto,
+    Arial,
+    sans-serif;
 }
 
 
-@keyframes trackingModalOpen {
+/* =========================================================
+   TOP BAR
+========================================================= */
+
+.tracking-login-topbar {
+  position: absolute;
+
+  top: 0;
+  left: 0;
+  right: 0;
+
+  height: 5px;
+
+  background:
+    linear-gradient(
+      90deg,
+      #0d9488,
+      #0891b2,
+      #0f3b53
+    );
+}
+
+
+/* =========================================================
+   CLOSE BUTTON
+========================================================= */
+
+.tracking-login-close {
+  position: absolute;
+
+  top: 15px;
+  right: 15px;
+
+  width: 32px;
+  height: 32px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding: 0;
+
+  border:
+    1px solid
+    #e2e8f0;
+
+  border-radius: 8px;
+
+  background:
+    #f8fafc;
+
+  color: #64748b;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+
+.tracking-login-close:hover {
+  background:
+    #eef2f7;
+
+  color: #0f172a;
+
+  transform:
+    rotate(3deg);
+}
+
+
+/* =========================================================
+   ICON
+========================================================= */
+
+.tracking-login-icon {
+  width: 54px;
+  height: 54px;
+
+  margin:
+    0
+    auto
+    14px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border-radius: 14px;
+
+  background:
+    #e7f5f3;
+
+  color:
+    #0d9488;
+
+  box-shadow:
+    inset
+    0
+    0
+    0
+    1px
+    rgba(
+      13,
+      148,
+      136,
+      0.12
+    );
+}
+
+
+/* =========================================================
+   EYEBROW
+========================================================= */
+
+.tracking-login-eyebrow {
+  margin:
+    0
+    0
+    5px;
+
+  text-align:
+    center;
+
+  color:
+    #0d9488;
+
+  font-size:
+    11px;
+
+  font-weight:
+    800;
+
+  letter-spacing:
+    1.2px;
+
+  text-transform:
+    uppercase;
+}
+
+
+/* =========================================================
+   TITLE
+========================================================= */
+
+.tracking-login-title {
+  margin:
+    0;
+
+  text-align:
+    center;
+
+  color:
+    #102f44;
+
+  font-size:
+    23px;
+
+  font-weight:
+    800;
+
+  letter-spacing:
+    -0.4px;
+
+  line-height:
+    1.2;
+}
+
+
+/* =========================================================
+   SUBTITLE
+========================================================= */
+
+.tracking-login-subtitle {
+  max-width:
+    300px;
+
+  margin:
+    8px
+    auto
+    24px;
+
+  text-align:
+    center;
+
+  color:
+    #64748b;
+
+  font-size:
+    13px;
+
+  line-height:
+    1.55;
+}
+
+
+/* =========================================================
+   FORM
+========================================================= */
+
+.tracking-login-form {
+  width:
+    100%;
+}
+
+
+/* =========================================================
+   FIELD
+========================================================= */
+
+.tracking-login-field {
+  margin-bottom:
+    16px;
+}
+
+
+/* =========================================================
+   LABEL
+========================================================= */
+
+.tracking-login-field label {
+  display:
+    block;
+
+  margin-bottom:
+    7px;
+
+  color:
+    #334155;
+
+  font-size:
+    12px;
+
+  font-weight:
+    700;
+}
+
+
+/* =========================================================
+   INPUT WRAPPER
+========================================================= */
+
+.tracking-login-input-wrap {
+  position:
+    relative;
+
+  width:
+    100%;
+
+  height:
+    44px;
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  border:
+    1px solid
+    #dce5ec;
+
+  border-radius:
+    9px;
+
+  background:
+    #f8fafc;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+
+.tracking-login-input-wrap:focus-within {
+  border-color:
+    #0d9488;
+
+  background:
+    #ffffff;
+
+  box-shadow:
+    0
+    0
+    0
+    3px
+    rgba(
+      13,
+      148,
+      136,
+      0.12
+    );
+}
+
+
+/* =========================================================
+   INPUT ICON
+========================================================= */
+
+.tracking-login-input-icon {
+  position:
+    absolute;
+
+  left:
+    13px;
+
+  color:
+    #94a3b8;
+
+  pointer-events:
+    none;
+}
+
+
+/* =========================================================
+   INPUT
+========================================================= */
+
+.tracking-login-input-wrap input {
+  width:
+    100%;
+
+  height:
+    100%;
+
+  padding:
+    0
+    42px;
+
+  border:
+    none;
+
+  outline:
+    none;
+
+  background:
+    transparent;
+
+  color:
+    #0f172a;
+
+  font-family:
+    inherit;
+
+  font-size:
+    13px;
+
+  font-weight:
+    500;
+}
+
+
+.tracking-login-input-wrap
+input::placeholder {
+  color:
+    #94a3b8;
+}
+
+
+/* =========================================================
+   PASSWORD EYE
+========================================================= */
+
+.tracking-login-eye {
+  position:
+    absolute;
+
+  right:
+    8px;
+
+  width:
+    30px;
+
+  height:
+    30px;
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    center;
+
+  padding:
+    0;
+
+  border:
+    none;
+
+  border-radius:
+    6px;
+
+  background:
+    transparent;
+
+  color:
+    #64748b;
+
+  cursor:
+    pointer;
+
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+
+.tracking-login-eye:hover {
+  background:
+    #e8eef3;
+
+  color:
+    #0d9488;
+}
+
+
+/* =========================================================
+   ERROR
+========================================================= */
+
+.tracking-login-error {
+  margin:
+    -4px
+    0
+    14px;
+
+  padding:
+    9px
+    11px;
+
+  border:
+    1px solid
+    #fecaca;
+
+  border-radius:
+    7px;
+
+  background:
+    #fef2f2;
+
+  color:
+    #dc2626;
+
+  font-size:
+    12px;
+
+  font-weight:
+    600;
+
+  line-height:
+    1.4;
+
+  animation:
+    trackingErrorOpen
+    0.16s
+    ease;
+}
+
+
+/* =========================================================
+   LOGIN BUTTON
+========================================================= */
+
+.tracking-login-submit {
+  width:
+    100%;
+
+  height:
+    44px;
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    center;
+
+  gap:
+    8px;
+
+  border:
+    none;
+
+  border-radius:
+    9px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #0d9488,
+      #0b7d73
+    );
+
+  color:
+    #ffffff;
+
+  font-family:
+    inherit;
+
+  font-size:
+    13px;
+
+  font-weight:
+    800;
+
+  cursor:
+    pointer;
+
+  box-shadow:
+    0
+    8px
+    20px
+    rgba(
+      13,
+      148,
+      136,
+      0.22
+    );
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+
+.tracking-login-submit:hover:not(:disabled) {
+  transform:
+    translateY(-1px);
+
+  box-shadow:
+    0
+    11px
+    25px
+    rgba(
+      13,
+      148,
+      136,
+      0.3
+    );
+}
+
+
+.tracking-login-submit:active:not(:disabled) {
+  transform:
+    translateY(0);
+}
+
+
+.tracking-login-submit:disabled {
+  opacity:
+    0.65;
+
+  cursor:
+    not-allowed;
+}
+
+
+/* =========================================================
+   DIVIDER
+========================================================= */
+
+.tracking-login-divider {
+  width:
+    100%;
+
+  height:
+    1px;
+
+  margin:
+    22px
+    0
+    16px;
+
+  background:
+    #e8edf2;
+}
+
+
+/* =========================================================
+   FOOTER
+========================================================= */
+
+.tracking-login-footer {
+  margin:
+    0;
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    center;
+
+  gap:
+    6px;
+
+  color:
+    #94a3b8;
+
+  font-size:
+    11px;
+
+  font-weight:
+    600;
+}
+
+
+/* =========================================================
+   ANIMATIONS
+========================================================= */
+
+@keyframes trackingOverlayFade {
 
   from {
-    opacity: 0;
-
-    transform:
-      translateY(12px)
-      scale(0.985);
+    opacity:
+      0;
   }
 
   to {
-    opacity: 1;
+    opacity:
+      1;
+  }
+
+}
+
+
+@keyframes trackingCardOpen {
+
+  from {
+    opacity:
+      0;
+
+    transform:
+      translateY(10px)
+      scale(0.98);
+  }
+
+  to {
+    opacity:
+      1;
 
     transform:
       translateY(0)
@@ -116,490 +773,56 @@
 }
 
 
-/* =========================================
-   TOP ACCENT
-========================================= */
+@keyframes trackingErrorOpen {
 
-.tracking-login-modal::before {
-  content: "";
+  from {
+    opacity:
+      0;
 
-  position: absolute;
+    transform:
+      translateY(-3px);
+  }
 
-  top: 0;
-  left: 0;
+  to {
+    opacity:
+      1;
 
-  width: 100%;
-  height: 4px;
+    transform:
+      translateY(0);
+  }
 
-  background:
-    linear-gradient(
-      90deg,
-      #173f84,
-      #2862bd,
-      #4e83dc
-    );
 }
 
 
-/* =========================================
-   CLOSE
-========================================= */
-
-.tracking-login-close {
-  position: absolute;
-
-  top: 14px;
-  right: 14px;
-
-  width: 32px;
-  height: 32px;
-
-  padding: 0;
-
-  display: grid;
-  place-items: center;
-
-  border:
-    1px solid
-    transparent;
-
-  border-radius: 8px;
-
-  color: #77899f;
-
-  background:
-    transparent;
-
-  cursor: pointer;
-
-  transition:
-    150ms ease;
-}
-
-
-.tracking-login-close:hover {
-  color: #c5424b;
-
-  border-color:
-    #efd5d8;
-
-  background:
-    #fff5f6;
-}
-
-
-/* =========================================
-   ICON
-========================================= */
-
-.tracking-login-icon {
-  width: 58px;
-  height: 58px;
-
-  margin-bottom: 18px;
-
-  display: grid;
-  place-items: center;
-
-  border-radius: 16px;
-
-  color: #ffffff;
-
-  background:
-    linear-gradient(
-      145deg,
-      #326fd1,
-      #18458d
-    );
-
-  box-shadow:
-    0 11px 24px
-    rgba(36, 87, 178, 0.25);
-}
-
-
-/* =========================================
-   HEADING
-========================================= */
-
-.tracking-login-heading {
-  margin-bottom: 24px;
-}
-
-
-.tracking-login-heading > span {
-  display: block;
-
-  margin-bottom: 6px;
-
-  color: #2860b8;
-
-  font-size: 9px;
-  font-weight: 800;
-
-  letter-spacing: 1.2px;
-
-  text-transform:
-    uppercase;
-}
-
-
-.tracking-login-heading h2 {
-  margin: 0;
-
-  color: #16345f;
-
-  font-size: 23px;
-  font-weight: 700;
-
-  line-height: 1.2;
-}
-
-
-.tracking-login-heading p {
-  max-width: 320px;
-
-  margin:
-    8px 0 0;
-
-  color: #7d8ca3;
-
-  font-size: 11px;
-
-  line-height: 1.55;
-}
-
-
-/* =========================================
-   FORM
-========================================= */
-
-.tracking-login-form {
-  width: 100%;
-
-  display: flex;
-  flex-direction: column;
-
-  gap: 17px;
-}
-
-
-/* =========================================
-   FIELD
-========================================= */
-
-.tracking-login-field {
-  width: 100%;
-}
-
-
-.tracking-login-field label {
-  display: block;
-
-  margin-bottom: 7px;
-
-  color: #435a79;
-
-  font-size: 10px;
-  font-weight: 600;
-}
-
-
-/* =========================================
-   INPUT WRAPPER
-========================================= */
-
-.tracking-login-input {
-  width: 100%;
-  height: 48px;
-
-  padding:
-    0 12px;
-
-  display: flex;
-  align-items: center;
-
-  gap: 9px;
-
-  border:
-    1px solid
-    #d8e1ec;
-
-  border-radius: 10px;
-
-  background:
-    #f8fafe;
-
-  transition:
-    border-color 150ms ease,
-    background 150ms ease,
-    box-shadow 150ms ease;
-}
-
-
-.tracking-login-input:hover {
-  border-color:
-    #c8d5e5;
-}
-
-
-.tracking-login-input:focus-within {
-  border-color:
-    #4f7fd1;
-
-  background:
-    #ffffff;
-
-  box-shadow:
-    0 0 0 3px
-    rgba(36, 87, 178, 0.09);
-}
-
-
-.tracking-login-input > svg {
-  width: 17px;
-  height: 17px;
-
-  flex:
-    0 0 17px;
-
-  color: #7486a0;
-}
-
-
-.tracking-login-input:focus-within > svg {
-  color:
-    #2860b8;
-}
-
-
-/* =========================================
-   INPUT
-========================================= */
-
-.tracking-login-input input {
-  width: 100%;
-  min-width: 0;
-
-  height: 100%;
-
-  padding: 0;
-
-  border: 0;
-
-  outline: 0;
-
-  color: #203a60;
-
-  background:
-    transparent;
-
-  font-family:
-    Inter,
-    "Segoe UI",
-    Roboto,
-    Arial,
-    sans-serif;
-
-  font-size: 12px;
-  font-weight: 500;
-}
-
-
-.tracking-login-input input::placeholder {
-  color: #9aa7b8;
-}
-
-
-/* =========================================
-   PASSWORD
-========================================= */
-
-.tracking-password-toggle {
-  width: 30px;
-  height: 30px;
-
-  flex:
-    0 0 30px;
-
-  padding: 0;
-
-  display: grid;
-  place-items: center;
-
-  border: 0;
-
-  border-radius: 7px;
-
-  color: #7588a3;
-
-  background:
-    transparent;
-
-  cursor: pointer;
-}
-
-
-.tracking-password-toggle:hover {
-  color: #2457b2;
-
-  background:
-    #ebf2fd;
-}
-
-
-/* =========================================
-   ERROR
-========================================= */
-
-.tracking-login-error {
-  margin-top: -3px;
-
-  padding:
-    9px 11px;
-
-  border:
-    1px solid
-    #efcfd3;
-
-  border-radius: 8px;
-
-  color: #b43b44;
-
-  background:
-    #fff5f6;
-
-  font-size: 10px;
-  font-weight: 500;
-}
-
-
-/* =========================================
-   LOGIN BUTTON
-========================================= */
-
-.tracking-login-submit {
-  width: 100%;
-  height: 46px;
-
-  margin-top: 2px;
-
-  padding:
-    0 16px;
-
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  gap: 7px;
-
-  border:
-    1px solid
-    #2457b2;
-
-  border-radius: 10px;
-
-  color: #ffffff;
-
-  background:
-    linear-gradient(
-      135deg,
-      #316dcd,
-      #2457b2
-    );
-
-  font-family:
-    Inter,
-    "Segoe UI",
-    Roboto,
-    Arial,
-    sans-serif;
-
-  font-size: 11px;
-  font-weight: 700;
-
-  cursor: pointer;
-
-  box-shadow:
-    0 7px 16px
-    rgba(36, 87, 178, 0.17);
-
-  transition:
-    150ms ease;
-}
-
-
-.tracking-login-submit:hover {
-  background:
-    linear-gradient(
-      135deg,
-      #265db7,
-      #194896
-    );
-
-  box-shadow:
-    0 10px 22px
-    rgba(36, 87, 178, 0.23);
-
-  transform:
-    translateY(-1px);
-}
-
-
-/* =========================================
-   FOOTER
-========================================= */
-
-.tracking-login-footer {
-  margin-top: 20px;
-
-  padding-top: 15px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  gap: 5px;
-
-  border-top:
-    1px solid
-    #edf1f5;
-
-  color: #919fb1;
-
-  font-size: 9px;
-}
-
-
-/* =========================================
+/* =========================================================
    MOBILE
-========================================= */
+========================================================= */
 
 @media (max-width: 520px) {
 
   .tracking-login-overlay {
-    padding: 14px;
-  }
-
-
-  .tracking-login-modal {
-    max-width: 100%;
-
     padding:
-      30px 20px 22px;
-
-    border-radius: 15px;
+      14px;
   }
 
 
-  .tracking-login-icon {
-    width: 51px;
-    height: 51px;
+  .tracking-login-card {
+    padding:
+      36px
+      20px
+      22px;
   }
 
 
-  .tracking-login-heading h2 {
-    font-size: 21px;
+  .tracking-login-title {
+    font-size:
+      20px;
+  }
+
+
+  .tracking-login-subtitle {
+    font-size:
+      12px;
   }
 
 }

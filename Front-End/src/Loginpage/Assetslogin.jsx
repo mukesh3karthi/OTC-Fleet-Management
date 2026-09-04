@@ -15,6 +15,17 @@ import {
 import "./assetslogin.css";
 
 
+/* =========================================================
+   TEMPORARY FRONTEND LOGIN
+
+   For production:
+   Move validation to backend API.
+========================================================= */
+
+const ASSETS_USERNAME = "admin";
+const ASSETS_PASSWORD = "admin@2026";
+
+
 const Assetslogin = ({
   open,
   onClose,
@@ -42,32 +53,81 @@ const Assetslogin = ({
   ] = useState("");
 
 
-  /* =========================================
-     RESET WHEN MODAL OPENS
-  ========================================= */
+  /* =========================================================
+     RESET FORM WHEN MODAL OPENS
+  ========================================================= */
+
+  useEffect(() => {
+
+    if (open) {
+
+      setUsername("");
+      setPassword("");
+      setShowPassword(false);
+      setError("");
+
+    }
+
+  }, [open]);
+
+
+  /* =========================================================
+     ESC KEY CLOSE
+  ========================================================= */
 
   useEffect(() => {
 
     if (!open) {
-      return;
+      return undefined;
     }
 
-    setUsername("");
-    setPassword("");
-    setError("");
-    setShowPassword(false);
+
+    const handleKeyDown = (
+      event
+    ) => {
+
+      if (
+        event.key ===
+        "Escape"
+      ) {
+
+        handleClose();
+
+      }
+
+    };
+
+
+    window.addEventListener(
+      "keydown",
+      handleKeyDown
+    );
+
+
+    return () => {
+
+      window.removeEventListener(
+        "keydown",
+        handleKeyDown
+      );
+
+    };
 
   }, [open]);
 
+
+  /* =========================================================
+     DON'T RENDER WHEN CLOSED
+  ========================================================= */
 
   if (!open) {
     return null;
   }
 
 
-  /* =========================================
+  /* =========================================================
      LOGIN
-  ========================================= */
+  ========================================================= */
 
   const handleSubmit = (
     event
@@ -75,12 +135,12 @@ const Assetslogin = ({
 
     event.preventDefault();
 
-    setError("");
-
 
     const cleanUsername =
       username.trim();
 
+
+    /* BOTH EMPTY */
 
     if (
       !cleanUsername &&
@@ -96,6 +156,8 @@ const Assetslogin = ({
     }
 
 
+    /* USERNAME EMPTY */
+
     if (!cleanUsername) {
 
       setError(
@@ -106,6 +168,8 @@ const Assetslogin = ({
 
     }
 
+
+    /* PASSWORD EMPTY */
 
     if (!password) {
 
@@ -118,18 +182,42 @@ const Assetslogin = ({
     }
 
 
-    /* =========================================
-       TEMPORARY LOGIN
-       Replace with API later
-    ========================================= */
+    /* =========================================================
+       LOGIN CHECK
+    ========================================================= */
 
     if (
-      cleanUsername !== "admin" ||
-      password !== "admin@2026"
+      cleanUsername ===
+        ASSETS_USERNAME &&
+      password ===
+        ASSETS_PASSWORD
     ) {
 
-      setError(
-        "Invalid username or password."
+      /* SAVE SESSION */
+
+      sessionStorage.setItem(
+        "assetsLoggedIn",
+        "true"
+      );
+
+      sessionStorage.setItem(
+        "assetsUsername",
+        cleanUsername
+      );
+
+
+      /* RESET */
+
+      setError("");
+      setUsername("");
+      setPassword("");
+      setShowPassword(false);
+
+
+      /* SUCCESS */
+
+      onLoginSuccess?.(
+        cleanUsername
       );
 
       return;
@@ -137,40 +225,32 @@ const Assetslogin = ({
     }
 
 
-    /* =========================================
-       SAVE ASSETS LOGIN SESSION
-    ========================================= */
-
-    sessionStorage.setItem(
-      "assetsLoggedIn",
-      "true"
+    setError(
+      "Invalid username or password."
     );
-
-    sessionStorage.setItem(
-      "assetsUsername",
-      cleanUsername
-    );
-
-
-    /* =========================================
-       LOGIN SUCCESS
-    ========================================= */
-
-    if (
-      typeof onLoginSuccess ===
-      "function"
-    ) {
-
-      onLoginSuccess();
-
-    }
 
   };
 
 
-  /* =========================================
+  /* =========================================================
+     CLOSE
+  ========================================================= */
+
+  const handleClose = () => {
+
+    setError("");
+    setUsername("");
+    setPassword("");
+    setShowPassword(false);
+
+    onClose?.();
+
+  };
+
+
+  /* =========================================================
      RETURN
-  ========================================= */
+  ========================================================= */
 
   return (
 
@@ -184,15 +264,17 @@ const Assetslogin = ({
           event.currentTarget
         ) {
 
-          onClose?.();
+          handleClose();
 
         }
 
       }}
+
+      role="presentation"
     >
 
       <div
-        className="assets-login-modal"
+        className="assets-login-card"
 
         role="dialog"
 
@@ -202,14 +284,18 @@ const Assetslogin = ({
       >
 
 
-        {/* TOP LINE */}
+        {/* =====================================================
+            TOP BAR
+        ===================================================== */}
 
         <div
-          className="assets-login-top-line"
+          className="assets-login-topbar"
         />
 
 
-        {/* CLOSE */}
+        {/* =====================================================
+            CLOSE BUTTON
+        ===================================================== */}
 
         <button
           type="button"
@@ -217,68 +303,88 @@ const Assetslogin = ({
           className="assets-login-close"
 
           onClick={
-            onClose
+            handleClose
           }
 
           aria-label="Close Assets Login"
         >
 
-          <X size={18} />
+          <X
+            size={18}
+          />
 
         </button>
 
 
-        {/* ICON */}
+        {/* =====================================================
+            LOCK ICON
+        ===================================================== */}
 
         <div
           className="assets-login-icon"
         >
 
           <LockKeyhole
-            size={27}
+            size={26}
           />
 
         </div>
 
 
-        {/* EYEBROW */}
+        {/* =====================================================
+            EYEBROW
+        ===================================================== */}
 
-        <span
+        <p
           className="assets-login-eyebrow"
         >
-          SECURE ACCESS
-        </span>
+          Secure access
+        </p>
 
 
-        {/* TITLE */}
+        {/* =====================================================
+            TITLE
+        ===================================================== */}
 
         <h2
           id="assets-login-title"
+
+          className="assets-login-title"
         >
           Assets Login
         </h2>
 
 
-        {/* DESCRIPTION */}
+        {/* =====================================================
+            SUBTITLE
+        ===================================================== */}
 
         <p
-          className="assets-login-description"
+          className="assets-login-subtitle"
         >
-          Sign in to access asset
-          management and data entry.
+          Sign in to continue with
+          Assets Management.
         </p>
 
 
-        {/* FORM */}
+        {/* =====================================================
+            FORM
+        ===================================================== */}
 
         <form
           onSubmit={
             handleSubmit
           }
+
+          className="assets-login-form"
+
+          noValidate
         >
 
 
-          {/* USERNAME */}
+          {/* =================================================
+              USERNAME
+          ================================================= */}
 
           <div
             className="assets-login-field"
@@ -292,11 +398,13 @@ const Assetslogin = ({
 
 
             <div
-              className="assets-login-input"
+              className="assets-login-input-wrap"
             >
 
               <User
-                size={17}
+                size={18}
+
+                className="assets-login-input-icon"
               />
 
 
@@ -309,21 +417,24 @@ const Assetslogin = ({
                   username
                 }
 
-                placeholder="Enter username"
-
-                autoComplete="username"
-
-                autoFocus
-
                 onChange={(event) => {
 
                   setUsername(
                     event.target.value
                   );
 
-                  setError("");
+
+                  if (error) {
+                    setError("");
+                  }
 
                 }}
+
+                placeholder="Enter username"
+
+                autoFocus
+
+                autoComplete="username"
               />
 
             </div>
@@ -331,7 +442,9 @@ const Assetslogin = ({
           </div>
 
 
-          {/* PASSWORD */}
+          {/* =================================================
+              PASSWORD
+          ================================================= */}
 
           <div
             className="assets-login-field"
@@ -345,11 +458,13 @@ const Assetslogin = ({
 
 
             <div
-              className="assets-login-input"
+              className="assets-login-input-wrap"
             >
 
               <LockKeyhole
-                size={16}
+                size={18}
+
+                className="assets-login-input-icon"
               />
 
 
@@ -366,31 +481,36 @@ const Assetslogin = ({
                   password
                 }
 
-                placeholder="Enter password"
-
-                autoComplete="current-password"
-
                 onChange={(event) => {
 
                   setPassword(
                     event.target.value
                   );
 
-                  setError("");
+
+                  if (error) {
+                    setError("");
+                  }
 
                 }}
+
+                placeholder="Enter password"
+
+                autoComplete="current-password"
               />
 
+
+              {/* PASSWORD EYE */}
 
               <button
                 type="button"
 
-                className="assets-password-toggle"
+                className="assets-login-eye"
 
                 onClick={() =>
                   setShowPassword(
-                    (previous) =>
-                      !previous
+                    (current) =>
+                      !current
                   )
                 }
 
@@ -405,12 +525,12 @@ const Assetslogin = ({
                   showPassword
                     ? (
                       <EyeOff
-                        size={17}
+                        size={18}
                       />
                     )
                     : (
                       <Eye
-                        size={17}
+                        size={18}
                       />
                     )
                 }
@@ -422,56 +542,68 @@ const Assetslogin = ({
           </div>
 
 
-          {/* ERROR */}
+          {/* =================================================
+              ERROR
+          ================================================= */}
 
           {error && (
 
-            <div
+            <p
               className="assets-login-error"
+
               role="alert"
             >
               {error}
-            </div>
+            </p>
 
           )}
 
 
-          {/* LOGIN */}
+          {/* =================================================
+              LOGIN BUTTON
+          ================================================= */}
 
           <button
             type="submit"
 
-            className="assets-login-button"
+            className="assets-login-submit"
           >
 
             <ShieldCheck
               size={16}
             />
 
-            <span>
-              Login
-            </span>
+            Login
 
           </button>
 
         </form>
 
 
-        {/* FOOTER */}
+        {/* =====================================================
+            DIVIDER
+        ===================================================== */}
 
         <div
+          className="assets-login-divider"
+        />
+
+
+        {/* =====================================================
+            FOOTER
+        ===================================================== */}
+
+        <p
           className="assets-login-footer"
         >
 
           <LockKeyhole
-            size={12}
+            size={13}
           />
 
-          <span>
-            Authorized personnel only
-          </span>
+          Authorized personnel only
 
-        </div>
+        </p>
 
 
       </div>
