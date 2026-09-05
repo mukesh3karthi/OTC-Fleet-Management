@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import "../pagescss/keyaccount.css";
+import Tripcreatemodal from "../keyaccount/Tripcreatemodal";
 
 /* =========================================================
    CONSTANTS
@@ -160,6 +161,9 @@ const PRIMARY_VEHICLE_TYPES = [
   "Crane Mounted Truck",
 ];
 
+
+
+
 const VENDORS = [
   "OTC Logistics",
   "South Line Logistics",
@@ -169,19 +173,36 @@ const VENDORS = [
 
 const TRIP_ID_YEAR = 2026;
 
-const EMPTY_VEHICLE = {
-  vehicleNumber: "",
+const EMPTY_WTG_VEHICLE = {
   vehicleType: "",
-  driverName: "",
-  driverNumber: "",
+  configurationModel: "",
+  movementClassification: "",
+  quantity: "1",
+  weight: "",
+  length: "",
+  height: "",
+  width: "",
 };
 
 const createEmptyTripForm = (tripId = "") => ({
   movementType: "",
+
   client: "",
+  companyName: "",
+  clientContact: "",
+  clientEmail: "",
+  assignedKam: "",
+
   tripId,
   enquiryDate: "",
   placementDate: "",
+  deploymentDate: "",
+
+  siteLocation: "",
+  period: "",
+  dieselScope: "",
+  totalQuantity: "",
+
   origin: "",
   destination: "",
   estimatedDistance: "",
@@ -189,10 +210,12 @@ const createEmptyTripForm = (tripId = "") => ({
   weight: "",
   height: "",
   width: "",
+
   remark: "",
   requiredVehicles: "",
   primaryVehicleType: "",
-  vehicles: [{ ...EMPTY_VEHICLE }],
+
+  vehicles: [{ ...EMPTY_WTG_VEHICLE }],
 });
 
 /* =========================================================
@@ -284,6 +307,9 @@ const KeyAccount = () => {
       const haystack = [
         order.id,
         order.client,
+        order.companyName,
+        order.clientContact,
+        order.clientEmail,
         order.cargo,
         order.weight,
         order.origin,
@@ -303,13 +329,23 @@ const KeyAccount = () => {
         order.requiredVehicles,
         order.primaryVehicleType,
         order.documentName,
+        order.assignedKam,
+        order.siteLocation,
+        order.period,
+        order.dieselScope,
+        order.totalQuantity,
+        order.deploymentDate,
         ...(Array.isArray(order.vehicles)
           ? order.vehicles.flatMap((vehicle) => [
-              vehicle.vehicleNumber,
-              vehicle.vehicleType,
-              vehicle.driverName,
-              vehicle.driverNumber,
-            ])
+            vehicle.vehicleNumber,
+            vehicle.vehicleType,
+            vehicle.configurationModel,
+            vehicle.movementClassification,
+            vehicle.quantity,
+            vehicle.weight,
+            vehicle.driverName,
+            vehicle.driverNumber,
+          ])
           : []),
       ]
         .filter(Boolean)
@@ -403,7 +439,7 @@ const KeyAccount = () => {
     setTripUpload(file);
   };
 
-  const handleVehicleFieldChange = (index, field) => (event) => {
+  const handleWtgVehicleFieldChange = (index, field) => (event) => {
     const value = event.target.value;
 
     setTripForm((previous) => ({
@@ -411,27 +447,29 @@ const KeyAccount = () => {
       vehicles: previous.vehicles.map((vehicle, vehicleIndex) =>
         vehicleIndex === index
           ? {
-              ...vehicle,
-              [field]: value,
-            }
+            ...vehicle,
+            [field]: value,
+          }
           : vehicle
       ),
     }));
   };
 
-  const handleAddVehicle = () => {
+  const handleAddWtgVehicle = () => {
     setTripForm((previous) => ({
       ...previous,
       vehicles: [
-        ...previous.vehicles,
-        { ...EMPTY_VEHICLE },
+        ...(previous.vehicles.length
+          ? previous.vehicles
+          : [{ ...EMPTY_WTG_VEHICLE }]),
+        { ...EMPTY_WTG_VEHICLE },
       ],
     }));
   };
 
-  const handleRemoveVehicle = (index) => {
+  const handleRemoveWtgVehicle = (index) => {
     setTripForm((previous) => {
-      if (previous.vehicles.length === 1) {
+      if (previous.vehicles.length <= 1) {
         return previous;
       }
 
@@ -446,7 +484,8 @@ const KeyAccount = () => {
 
   const handleCreateTrip = () => {
     const isWTG = tripForm.movementType === "WTG Movement";
-    const isCraneOrOther =
+    const isIntercarting = tripForm.movementType === "Intercarting";
+    const isStandardMovement =
       tripForm.movementType === "Crane" ||
       tripForm.movementType === "Other";
 
@@ -455,57 +494,194 @@ const KeyAccount = () => {
       return;
     }
 
-    const commonRequiredFields = [
-      tripForm.client,
-      tripForm.tripId,
-      tripForm.enquiryDate,
-      tripForm.placementDate,
-      tripForm.origin,
-      tripForm.destination,
-      tripForm.estimatedDistance,
-      tripForm.cargo,
-      tripForm.weight,
-    ];
-
-    if (commonRequiredFields.some((value) => !String(value).trim())) {
-      setToast("Please complete all required trip fields.");
-      return;
-    }
-
-    if (
-      isWTG &&
-      [tripForm.height, tripForm.width].some(
-        (value) => !String(value).trim()
-      )
-    ) {
-      setToast("Please enter WTG height and width.");
-      return;
-    }
-
-    if (
-      isCraneOrOther &&
-      (!String(tripForm.requiredVehicles).trim() ||
-        !String(tripForm.primaryVehicleType).trim())
-    ) {
-      setToast(
-        "Please enter Required Vehicles and select Primary Vehicle Type."
-      );
+    if (!String(tripForm.tripId).trim()) {
+      setToast("Trip ID is required.");
       return;
     }
 
     if (isWTG) {
-      const invalidVehicle = tripForm.vehicles.some(
-        (vehicle) =>
-          !String(vehicle.vehicleNumber).trim() ||
-          !String(vehicle.vehicleType).trim()
-      );
+      const requiredWtgFields = [
+        tripForm.client,
+        tripForm.companyName,
+        tripForm.clientContact,
+        tripForm.clientEmail,
+        tripForm.enquiryDate,
+        tripForm.placementDate,
+        tripForm.assignedKam,
+        tripForm.origin,
+        tripForm.destination,
+        tripForm.estimatedDistance,
+        tripForm.cargo,
+      ];
 
-      if (invalidVehicle) {
+      if (
+        requiredWtgFields.some(
+          (value) => !String(value ?? "").trim()
+        )
+      ) {
+        setToast("Please complete all required WTG trip fields.");
+        return;
+      }
+    }
+
+    if (isIntercarting) {
+      const requiredIntercartingFields = [
+        tripForm.companyName,
+        tripForm.client,
+        tripForm.clientContact,
+        tripForm.clientEmail,
+        tripForm.siteLocation,
+        tripForm.period,
+        tripForm.dieselScope,
+        tripForm.totalQuantity,
+        tripForm.enquiryDate,
+        tripForm.deploymentDate,
+        tripForm.assignedKam,
+      ];
+
+      if (
+        requiredIntercartingFields.some(
+          (value) => !String(value ?? "").trim()
+        )
+      ) {
+        setToast("Please complete all required Intercarting fields.");
+        return;
+      }
+
+      const totalQuantity = Number(tripForm.totalQuantity);
+
+      if (
+        !Number.isInteger(totalQuantity) ||
+        totalQuantity < 1
+      ) {
+        setToast("Total Quantity must be at least 1.");
+        return;
+      }
+    }
+
+    if (isStandardMovement) {
+      const requiredStandardFields = [
+        tripForm.client,
+        tripForm.companyName,
+        tripForm.clientContact,
+        tripForm.clientEmail,
+        tripForm.enquiryDate,
+        tripForm.placementDate,
+        tripForm.origin,
+        tripForm.destination,
+        tripForm.estimatedDistance,
+        tripForm.cargo,
+      ];
+
+      if (
+        requiredStandardFields.some(
+          (value) => !String(value ?? "").trim()
+        )
+      ) {
+        setToast("Please complete all required client and trip fields.");
+        return;
+      }
+    }
+
+    const emailIsValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+      String(tripForm.clientEmail).trim()
+    );
+
+    if (!emailIsValid) {
+      setToast("Please enter a valid client email address.");
+      return;
+    }
+
+    if (isWTG) {
+      const invalidWtgVehicle = tripForm.vehicles.some((vehicle) => {
+        const requiredValues = [
+          vehicle.vehicleType,
+          vehicle.configurationModel,
+          vehicle.movementClassification,
+          vehicle.quantity,
+          vehicle.weight,
+          vehicle.length,
+          vehicle.height,
+          vehicle.width,
+        ];
+
+        const hasMissingValue = requiredValues.some(
+          (value) => !String(value ?? "").trim()
+        );
+
+        const numericValues = [
+          vehicle.quantity,
+          vehicle.weight,
+          vehicle.length,
+          vehicle.height,
+          vehicle.width,
+        ].map(Number);
+
+        const hasInvalidNumber = numericValues.some(
+          (value) => !Number.isFinite(value) || value <= 0
+        );
+
+        const invalidQuantity =
+          !Number.isInteger(Number(vehicle.quantity)) ||
+          Number(vehicle.quantity) < 1;
+
+        return hasMissingValue || hasInvalidNumber || invalidQuantity;
+      });
+
+      if (invalidWtgVehicle) {
         setToast(
-          "Enter Vehicle Number and Vehicle Type for every WTG vehicle."
+          "Complete Vehicle Type, Configuration Model, Classification, Quantity, Weight and L × H × W dimensions for every WTG vehicle."
         );
         return;
       }
+    }
+
+    if (isIntercarting) {
+      const invalidIntercartingVehicle = tripForm.vehicles.some(
+        (vehicle) => {
+          const requiredValues = [
+            vehicle.vehicleType,
+            vehicle.configurationModel,
+            vehicle.movementClassification,
+            vehicle.quantity,
+            vehicle.weight,
+          ];
+
+          const hasMissingValue = requiredValues.some(
+            (value) => !String(value ?? "").trim()
+          );
+
+          const quantity = Number(vehicle.quantity);
+          const weight = Number(vehicle.weight);
+
+          const invalidQuantity =
+            !Number.isInteger(quantity) || quantity < 1;
+
+          const invalidWeight =
+            !Number.isFinite(weight) || weight <= 0;
+
+          return hasMissingValue || invalidQuantity || invalidWeight;
+        }
+      );
+
+      if (invalidIntercartingVehicle) {
+        setToast(
+          "Complete Vehicle Type, Configuration Model, Classification, Quantity and Weight for every Intercarting vehicle."
+        );
+        return;
+      }
+    }
+
+    if (
+      isStandardMovement &&
+      (!String(tripForm.requiredVehicles).trim() ||
+        !String(tripForm.primaryVehicleType).trim() ||
+        !String(tripForm.weight).trim())
+    ) {
+      setToast(
+        "Please enter Weight, Required Vehicles and select Primary Vehicle Type."
+      );
+      return;
     }
 
     const duplicateTrip = orders.some(
@@ -526,23 +702,37 @@ const KeyAccount = () => {
       return;
     }
 
-    const cleanVehicles = isWTG
+    const usesVehicleRows = isWTG || isIntercarting;
+
+    const cleanVehicles = usesVehicleRows
       ? tripForm.vehicles.map((vehicle) => ({
-          vehicleNumber: vehicle.vehicleNumber.trim().toUpperCase(),
-          vehicleType: vehicle.vehicleType,
-          driverName: vehicle.driverName.trim(),
-          driverNumber: vehicle.driverNumber.trim(),
+          vehicleType: String(vehicle.vehicleType).trim(),
+          configurationModel: String(vehicle.configurationModel).trim(),
+          movementClassification: vehicle.movementClassification,
+          quantity: Number(vehicle.quantity),
+          weight: Number(vehicle.weight),
+          ...(isWTG
+            ? {
+                length: Number(vehicle.length),
+                height: Number(vehicle.height),
+                width: Number(vehicle.width),
+                dimensions: `${Number(vehicle.length)} × ${Number(
+                  vehicle.height
+                )} × ${Number(vehicle.width)} FT`,
+              }
+            : {}),
         }))
       : [];
 
-    const requiredVehicleCount = isWTG
-      ? cleanVehicles.length
+    const requiredVehicleCount = usesVehicleRows
+      ? cleanVehicles.reduce(
+          (total, vehicle) => total + vehicle.quantity,
+          0
+        )
       : Number(tripForm.requiredVehicles);
 
-    const primaryVehicleType = isWTG
-      ? cleanVehicles.length === 1
-        ? cleanVehicles[0].vehicleType
-        : cleanVehicles[0]?.vehicleType || ""
+    const primaryVehicleType = usesVehicleRows
+      ? cleanVehicles[0]?.vehicleType || ""
       : tripForm.primaryVehicleType;
 
     const uploadMeta = tripUpload
@@ -554,34 +744,84 @@ const KeyAccount = () => {
         }
       : null;
 
+    const effectivePlacementDate = isIntercarting
+      ? tripForm.deploymentDate
+      : tripForm.placementDate;
+
     const newOrder = {
       id: tripForm.tripId,
       tripId: tripForm.tripId,
       movementType: tripForm.movementType,
+
       client: tripForm.client.trim(),
+      companyName: tripForm.companyName.trim(),
+      clientContact: tripForm.clientContact.trim(),
+      clientEmail: tripForm.clientEmail.trim(),
+      assignedKam: String(tripForm.assignedKam || "").trim(),
+
       enquiryDate: tripForm.enquiryDate,
-      placementDate: tripForm.placementDate,
+      placementDate: effectivePlacementDate,
+      deploymentDate: isIntercarting ? tripForm.deploymentDate : "",
       date: tripForm.enquiryDate,
-      origin: tripForm.origin.trim(),
-      destination: tripForm.destination.trim(),
-      estimatedDistance: Number(tripForm.estimatedDistance),
-      cargo: tripForm.cargo.trim(),
-      weight: `${tripForm.weight} Tons`,
-      height: isWTG ? Number(tripForm.height) : null,
-      width: isWTG ? Number(tripForm.width) : null,
+
+      siteLocation: isIntercarting
+        ? tripForm.siteLocation.trim()
+        : "",
+      period: isIntercarting ? tripForm.period.trim() : "",
+      dieselScope: isIntercarting ? tripForm.dieselScope : "",
+      totalQuantity: isIntercarting
+        ? Number(tripForm.totalQuantity)
+        : null,
+
+      origin: isIntercarting
+        ? tripForm.siteLocation.trim()
+        : tripForm.origin.trim(),
+      destination: isIntercarting
+        ? ""
+        : tripForm.destination.trim(),
+      estimatedDistance: isIntercarting
+        ? null
+        : Number(tripForm.estimatedDistance),
+
+      cargo: isIntercarting
+        ? "Intercarting"
+        : tripForm.cargo.trim(),
+
+      weight: usesVehicleRows
+        ? `${cleanVehicles[0]?.weight || 0} Tons`
+        : `${tripForm.weight} Tons`,
+
+      length: isWTG ? cleanVehicles[0]?.length || null : null,
+      height: isWTG ? cleanVehicles[0]?.height || null : null,
+      width: isWTG ? cleanVehicles[0]?.width || null : null,
+
+      configurationModel: usesVehicleRows
+        ? cleanVehicles[0]?.configurationModel || ""
+        : "",
+
+      movementClassification: usesVehicleRows
+        ? cleanVehicles[0]?.movementClassification || ""
+        : "",
+
       remark: isWTG ? tripForm.remark.trim() : "",
       instructions: isWTG ? tripForm.remark.trim() : "",
+
       vehicles: cleanVehicles,
       requiredVehicles: requiredVehicleCount,
       vehicleCount: requiredVehicleCount,
       primaryVehicleType,
+
       vehicleType:
-        isWTG && cleanVehicles.length > 1
-          ? `${primaryVehicleType} +${cleanVehicles.length - 1}`
+        usesVehicleRows && cleanVehicles.length > 1
+          ? cleanVehicles
+              .map((vehicle) => vehicle.vehicleType)
+              .join(", ")
           : primaryVehicleType,
+
       document: uploadMeta,
       documentName: uploadMeta?.name || "",
-      loadingDate: tripForm.placementDate,
+      loadingDate: effectivePlacementDate,
+
       stage: "Client Enquiry",
       role: "Key Account Management Team",
       vendor: "",
@@ -591,11 +831,7 @@ const KeyAccount = () => {
 
     setOrders((previous) => [newOrder, ...previous]);
     setSelectedOrderId(newOrder.id);
-    setToast(
-      `${newOrder.tripId} created with ${newOrder.vehicleCount} required vehicle${
-        newOrder.vehicleCount > 1 ? "s" : ""
-      }.`
-    );
+    setToast(`${newOrder.tripId} created successfully.`);
     handleCloseTripModal();
   };
 
@@ -620,8 +856,7 @@ const KeyAccount = () => {
       <div className="key-account-shell">
         <section className="kam-page-heading">
           <div>
-            <span className="kam-eyebrow">TRIPS / KEY ACCOUNT MANAGEMENT</span>
-            <h1>Running Order Management</h1>
+            <h1>Order Management</h1>
             <p>
               Manage client orders, commercial workflow, vendor finalization and
               trip readiness from one operational workspace.
@@ -665,165 +900,161 @@ const KeyAccount = () => {
           />
         </section>
 
-          <section className="key-account-container">
-            <div className="key-account-header">
-              <div className="key-account-header-left">
-                <h2>Running Order List</h2>
-                <p>
-                  Select any order to open its commercial and operational lifecycle.
-                </p>
-              </div>
-
-              <div className="kam-header-indicator">
-                <span className="kam-status-dot" />
-                Live workspace
-              </div>
+        <section className="key-account-container">
+          <div className="key-account-header">
+            <div className="key-account-header-left">
+              <h2>Running Order List</h2>
             </div>
 
-            <div className="key-account-filters">
-              <div className="key-search-box">
-                <svg
-                  viewBox="0 0 24 24"
-                  width="18"
-                  height="18"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  aria-hidden="true"
-                >
-                  <circle cx="11" cy="11" r="7" />
-                  <path strokeLinecap="round" d="M16 16l4 4" />
-                </svg>
+            <div className="kam-header-indicator">
+              <span className="kam-status-dot" />
+              Live workspace
+            </div>
+          </div>
 
-                <input
-                  type="text"
-                  placeholder="Search order, client, cargo, route, vendor..."
-                  value={search}
-                  onChange={(event) => setSearch(event.target.value)}
-                />
-              </div>
+          <div className="key-account-filters">
+            <div className="key-search-box">
+              <svg
+                viewBox="0 0 24 24"
+                width="18"
+                height="18"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                aria-hidden="true"
+              >
+                <circle cx="11" cy="11" r="7" />
+                <path strokeLinecap="round" d="M16 16l4 4" />
+              </svg>
 
-              <div className="key-stage-select">
-                <select
-                  value={stageFilter}
-                  onChange={(event) => setStageFilter(event.target.value)}
-                >
-                  {stages.map((stage) => (
-                    <option key={stage} value={stage}>
-                      {stage}
-                    </option>
-                  ))}
-                </select>
-
-                <svg
-                  className="select-arrow"
-                  viewBox="0 0 24 24"
-                  width="18"
-                  height="18"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  aria-hidden="true"
-                >
-                  <path d="M6 9l6 6 6-6" />
-                </svg>
-              </div>
-
-              {(search || stageFilter !== "All Stages") && (
-                <button
-                  type="button"
-                  className="kam-clear-filter"
-                  onClick={handleClearFilters}
-                >
-                  Clear
-                </button>
-              )}
-
-              <div className="order-count">
-                <strong>{filteredOrders.length}</strong>
-                <span>of {orders.length} orders</span>
-              </div>
+              <input
+                type="text"
+                placeholder="Search order, client, cargo, route, vendor..."
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+              />
             </div>
 
-            <div className="key-account-table-wrapper">
-              <table className="key-account-table">
-                <thead>
-                  <tr>
-                    <th>ORDER ID</th>
-                    <th>CLIENT</th>
-                    <th>CARGO &amp; WEIGHT</th>
-                    <th>ROUTE</th>
-                    <th>STAGE</th>
-                    <th>RESPONSIBLE TEAM</th>
-                  </tr>
-                </thead>
+            <div className="key-stage-select">
+              <select
+                value={stageFilter}
+                onChange={(event) => setStageFilter(event.target.value)}
+              >
+                {stages.map((stage) => (
+                  <option key={stage} value={stage}>
+                    {stage}
+                  </option>
+                ))}
+              </select>
 
-                <tbody>
-                  {filteredOrders.length > 0 ? (
-                    filteredOrders.map((order) => (
-                      <tr
-                        key={order.id}
-                        className="key-account-row"
-                        onClick={() => handleOrderClick(order)}
-                      >
-                        <td>
-                          <div className="order-id">{order.id}</div>
-                          <span className="order-subtext">Running order</span>
-                        </td>
+              <svg
+                className="select-arrow"
+                viewBox="0 0 24 24"
+                width="18"
+                height="18"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                aria-hidden="true"
+              >
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </div>
 
-                        <td>
-                          <div className="client-name">{order.client}</div>
-                          <span className="order-subtext">
-                            {order.vehicleCount
-                              ? `${order.vehicleCount} vehicle${
-                                  Number(order.vehicleCount) > 1 ? "s" : ""
-                                }`
-                              : Array.isArray(order.vehicles) &&
-                                order.vehicles.length
-                              ? `${order.vehicles.length} vehicle${
-                                  order.vehicles.length > 1 ? "s" : ""
-                                }`
-                              : order.vehicleType || "Vehicle pending"}
-                          </span>
-                        </td>
+            {(search || stageFilter !== "All Stages") && (
+              <button
+                type="button"
+                className="kam-clear-filter"
+                onClick={handleClearFilters}
+              >
+                Clear
+              </button>
+            )}
 
-                        <td className="cargo-details">
-                          <div className="cargo-name">{order.cargo}</div>
-                          <div className="cargo-weight">{order.weight}</div>
-                        </td>
+            <div className="order-count">
+              <strong>{filteredOrders.length}</strong>
+              <span>of {orders.length} orders</span>
+            </div>
+          </div>
 
-                        <td className="route-details">
-                          <span>{order.origin}</span>
-                          <span className="route-arrow">→</span>
-                          <span>{order.destination}</span>
-                        </td>
+          <div className="key-account-table-wrapper">
+            <table className="key-account-table">
+              <thead>
+                <tr>
+                  <th>ORDER ID</th>
+                  <th>CLIENT</th>
+                  <th>CARGO &amp; WEIGHT</th>
+                  <th>ROUTE</th>
+                  <th>STAGE</th>
+                  <th>Key Account Name</th>
+                </tr>
+              </thead>
 
-                        <td>
-                          <span className={getStageClass(order.stage)}>
-                            <span className="stage-dot" />
-                            {order.stage}
-                          </span>
-                        </td>
+              <tbody>
+                {filteredOrders.length > 0 ? (
+                  filteredOrders.map((order) => (
+                    <tr
+                      key={order.id}
+                      className="key-account-row"
+                      onClick={() => handleOrderClick(order)}
+                    >
+                      <td>
+                        <div className="order-id">{order.id}</div>
+                      </td>
 
-                        <td>
-                          <div className="role-responsible">{order.role}</div>
-                          <span className="order-row-arrow">Open →</span>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan="6" className="no-orders">
-                        <div className="no-orders-icon">⌕</div>
-                        <strong>No matching orders found</strong>
-                        <span>Try changing your search or stage filter.</span>
+                      <td>
+                        <div className="client-name">{order.client}</div>
+
+                      </td>
+
+                      <td className="cargo-details">
+                        <div className="cargo-name">
+                          {order.movementType === "Intercarting"
+                            ? `Intercarting · ${order.totalQuantity || 0} Nos`
+                            : order.cargo}
+                        </div>
+                      </td>
+
+                      <td className="route-details">
+                        {order.movementType === "Intercarting" ? (
+                          <span>{order.siteLocation || "—"}</span>
+                        ) : (
+                          <>
+                            <span>{order.origin}</span>
+                            <span className="route-arrow">→</span>
+                            <span>{order.destination}</span>
+                          </>
+                        )}
+                      </td>
+
+                      <td>
+                        <span className={getStageClass(order.stage)}>
+                          <span className="stage-dot" />
+                          {order.stage}
+                        </span>
+                      </td>
+
+                      <td>
+                        <div className="role-responsible">
+                          {order.assignedKam || order.role}
+                        </div>
+                        <span className="order-row-arrow">Open →</span>
                       </td>
                     </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </section>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="6" className="no-orders">
+                      <div className="no-orders-icon">⌕</div>
+                      <strong>No matching orders found</strong>
+                      <span>Try changing your search or stage filter.</span>
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </section>
       </div>
 
       {selectedOrder && (
@@ -882,549 +1113,21 @@ const KeyAccount = () => {
         </div>
       )}
 
-      {showTripModal && (
-        <div
-          className="trip-modal-overlay"
-          onMouseDown={handleTripOverlayClick}
-          role="presentation"
-        >
-          <div
-            className="trip-modal-card"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="new-trip-title"
-          >
-            <div className="trip-modal-header">
-              <div>
-                <span className="trip-modal-subtitle">KEY ACCOUNT MANAGEMENT</span>
-                <h2 id="new-trip-title">New Trip Creation</h2>
-                <p>Enter movement, client, route, cargo and vehicle details.</p>
-              </div>
-
-              <button
-                type="button"
-                className="trip-modal-close"
-                onClick={handleCloseTripModal}
-                aria-label="Close"
-              >
-                ×
-              </button>
-            </div>
-
-            <div className="trip-modal-body">
-              <section className="trip-form-section trip-movement-section">
-                <div className="trip-section-heading">
-                  <div>
-                    <span>01</span>
-                    <div>
-                      <strong>Movement Type</strong>
-                      <small>Select the operation to load the correct trip form.</small>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="trip-field-group trip-field-full">
-                  <label>
-                    Movement Type <span className="trip-required">*</span>
-                  </label>
-
-                  <div className="trip-select-wrap">
-                    <select
-                      value={tripForm.movementType}
-                      onChange={handleMovementTypeChange}
-                    >
-                      <option value="">Select movement type...</option>
-                      <option value="WTG Movement">WTG Movement</option>
-                      <option value="Crane">Crane</option>
-                      <option value="Other">Other</option>
-                    </select>
-                    <span className="trip-select-arrow">⌄</span>
-                  </div>
-                </div>
-              </section>
-
-              {!tripForm.movementType && (
-                <div className="trip-empty-state">
-                  <div className="trip-empty-state-icon">↗</div>
-                  <strong>Select a movement type</strong>
-                  <p>
-                    WTG, Crane and Other movements use different operational
-                    fields.
-                  </p>
-                </div>
-              )}
-
-              {tripForm.movementType === "WTG Movement" && (
-                <>
-                  <section className="trip-form-section">
-                    <div className="trip-section-heading">
-                      <div>
-                        <span>02</span>
-                        <div>
-                          <strong>WTG Trip Information</strong>
-                          <small>
-                            Commercial, enquiry, placement and route details.
-                          </small>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="trip-form-grid">
-                      <AutoTripId value={tripForm.tripId} />
-
-                      <TripField
-                        label="Client Name"
-                        required
-                        value={tripForm.client}
-                        placeholder="Enter client name"
-                        onChange={handleTripFieldChange("client")}
-                      />
-
-                      <TripField
-                        label="Enquiry Date"
-                        required
-                        type="date"
-                        value={tripForm.enquiryDate}
-                        onChange={handleTripFieldChange("enquiryDate")}
-                      />
-
-                      <TripField
-                        label="Placement Date"
-                        required
-                        type="date"
-                        value={tripForm.placementDate}
-                        onChange={handleTripFieldChange("placementDate")}
-                      />
-
-                      <TripField
-                        label="Estimated KM"
-                        required
-                        type="number"
-                        min="0"
-                        value={tripForm.estimatedDistance}
-                        placeholder="Enter estimated distance"
-                        unit="KM"
-                        onChange={handleTripFieldChange("estimatedDistance")}
-                      />
-
-                      <TripField
-                        label="Cargo Type"
-                        required
-                        value={tripForm.cargo}
-                        placeholder="e.g. WTG Blade / Tower Section"
-                        onChange={handleTripFieldChange("cargo")}
-                      />
-
-                      <TripField
-                        label="Origin"
-                        required
-                        value={tripForm.origin}
-                        placeholder="Enter origin"
-                        onChange={handleTripFieldChange("origin")}
-                      />
-
-                      <TripField
-                        label="Destination"
-                        required
-                        value={tripForm.destination}
-                        placeholder="Enter destination"
-                        onChange={handleTripFieldChange("destination")}
-                      />
-                    </div>
-                  </section>
-
-                  <section className="trip-form-section">
-                    <div className="trip-section-heading">
-                      <div>
-                        <span>03</span>
-                        <div>
-                          <strong>WTG Cargo Dimensions</strong>
-                          <small>
-                            Weight, height, width and placement remarks.
-                          </small>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="trip-form-grid">
-                      <TripField
-                        label="Weight"
-                        required
-                        type="number"
-                        min="0"
-                        value={tripForm.weight}
-                        placeholder="Enter weight"
-                        unit="TON"
-                        onChange={handleTripFieldChange("weight")}
-                      />
-
-                      <TripField
-                        label="Height"
-                        required
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        value={tripForm.height}
-                        placeholder="Enter height"
-                        unit="FT"
-                        onChange={handleTripFieldChange("height")}
-                      />
-
-                      <TripField
-                        label="Width"
-                        required
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        value={tripForm.width}
-                        placeholder="Enter width"
-                        unit="FT"
-                        onChange={handleTripFieldChange("width")}
-                      />
-
-                      <div className="trip-field-group trip-field-full">
-                        <label>Remark</label>
-                        <textarea
-                          rows={3}
-                          value={tripForm.remark}
-                          placeholder="Enter WTG placement, route, loading or handling remarks..."
-                          onChange={handleTripFieldChange("remark")}
-                        />
-                      </div>
-                    </div>
-                  </section>
-
-                  <section className="trip-form-section">
-                    <div className="trip-section-heading">
-                      <div>
-                        <span>04</span>
-                        <div>
-                          <strong>WTG Vehicles</strong>
-                          <small>
-                            One WTG trip can contain multiple assigned vehicles.
-                          </small>
-                        </div>
-                      </div>
-
-                      <span className="trip-vehicle-count">
-                        {tripForm.vehicles.length} Vehicle
-                        {tripForm.vehicles.length > 1 ? "s" : ""}
-                      </span>
-                    </div>
-
-                    <div className="trip-vehicle-list">
-                      {tripForm.vehicles.map((vehicle, index) => (
-                        <div
-                          className="trip-vehicle-card"
-                          key={`vehicle-${index}`}
-                        >
-                          <div className="trip-vehicle-card-header">
-                            <div>
-                              <span className="trip-vehicle-index">
-                                Vehicle {index + 1}
-                              </span>
-                              <small>
-                                Assignment for {tripForm.tripId || "new trip"}
-                              </small>
-                            </div>
-
-                            {tripForm.vehicles.length > 1 && (
-                              <button
-                                type="button"
-                                className="trip-remove-vehicle"
-                                onClick={() => handleRemoveVehicle(index)}
-                              >
-                                Remove
-                              </button>
-                            )}
-                          </div>
-
-                          <div className="trip-vehicle-grid">
-                            <TripField
-                              label="Vehicle Number"
-                              required
-                              value={vehicle.vehicleNumber}
-                              placeholder="e.g. KA01AB1234"
-                              onChange={handleVehicleFieldChange(
-                                index,
-                                "vehicleNumber"
-                              )}
-                            />
-
-                            <div className="trip-field-group">
-                              <label>
-                                Vehicle Type{" "}
-                                <span className="trip-required">*</span>
-                              </label>
-
-                              <div className="trip-select-wrap">
-                                <select
-                                  value={vehicle.vehicleType}
-                                  onChange={handleVehicleFieldChange(
-                                    index,
-                                    "vehicleType"
-                                  )}
-                                >
-                                  <option value="">
-                                    Select vehicle type...
-                                  </option>
-
-                                  {PRIMARY_VEHICLE_TYPES.map((vehicleType) => (
-                                    <option
-                                      key={vehicleType}
-                                      value={vehicleType}
-                                    >
-                                      {vehicleType}
-                                    </option>
-                                  ))}
-                                </select>
-
-                                <span className="trip-select-arrow">⌄</span>
-                              </div>
-                            </div>
-
-                            <TripField
-                              label="Driver Name"
-                              value={vehicle.driverName}
-                              placeholder="Enter driver name"
-                              onChange={handleVehicleFieldChange(
-                                index,
-                                "driverName"
-                              )}
-                            />
-
-                            <TripField
-                              label="Driver Number"
-                              type="tel"
-                              value={vehicle.driverNumber}
-                              placeholder="Enter mobile number"
-                              onChange={handleVehicleFieldChange(
-                                index,
-                                "driverNumber"
-                              )}
-                            />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-
-                    <button
-                      type="button"
-                      className="trip-add-vehicle"
-                      onClick={handleAddVehicle}
-                    >
-                      <span>+</span>
-                      Add Another Vehicle
-                    </button>
-                  </section>
-                </>
-              )}
-
-              {(tripForm.movementType === "Crane" ||
-                tripForm.movementType === "Other") && (
-                <>
-                  <section className="trip-form-section">
-                    <div className="trip-section-heading">
-                      <div>
-                        <span>02</span>
-                        <div>
-                          <strong>
-                            {tripForm.movementType === "Crane"
-                              ? "Crane Trip Details"
-                              : "Other Movement Details"}
-                          </strong>
-                          <small>
-                            Client, cargo, enquiry, placement and route
-                            information.
-                          </small>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="trip-form-grid">
-                      <AutoTripId value={tripForm.tripId} />
-
-                      <TripField
-                        label="Client Name"
-                        required
-                        value={tripForm.client}
-                        placeholder="Enter client name"
-                        onChange={handleTripFieldChange("client")}
-                      />
-
-                      <TripField
-                        label="Cargo Type"
-                        required
-                        value={tripForm.cargo}
-                        placeholder="Enter cargo type"
-                        onChange={handleTripFieldChange("cargo")}
-                      />
-
-                      <TripField
-                        label="Weight"
-                        required
-                        type="number"
-                        min="0"
-                        value={tripForm.weight}
-                        placeholder="Enter weight"
-                        unit="TON"
-                        onChange={handleTripFieldChange("weight")}
-                      />
-
-                      <TripField
-                        label="Enquiry Date"
-                        required
-                        type="date"
-                        value={tripForm.enquiryDate}
-                        onChange={handleTripFieldChange("enquiryDate")}
-                      />
-
-                      <TripField
-                        label="Placement Date"
-                        required
-                        type="date"
-                        value={tripForm.placementDate}
-                        onChange={handleTripFieldChange("placementDate")}
-                      />
-
-                      <TripField
-                        label="Estimated KM"
-                        required
-                        type="number"
-                        min="0"
-                        value={tripForm.estimatedDistance}
-                        placeholder="Enter estimated distance"
-                        unit="KM"
-                        onChange={handleTripFieldChange("estimatedDistance")}
-                      />
-
-                      <TripField
-                        label="Origin"
-                        required
-                        value={tripForm.origin}
-                        placeholder="Enter origin"
-                        onChange={handleTripFieldChange("origin")}
-                      />
-
-                      <TripField
-                        label="Destination"
-                        required
-                        value={tripForm.destination}
-                        placeholder="Enter destination"
-                        onChange={handleTripFieldChange("destination")}
-                      />
-
-                      <TripField
-                        label="Required Vehicles"
-                        required
-                        type="number"
-                        min="1"
-                        step="1"
-                        value={tripForm.requiredVehicles}
-                        placeholder="Enter required vehicle quantity"
-                        onChange={handleTripFieldChange("requiredVehicles")}
-                      />
-                    </div>
-                  </section>
-
-                  <section className="trip-form-section">
-                    <div className="trip-section-heading">
-                      <div>
-                        <span>03</span>
-                        <div>
-                          <strong>Vehicle & Document</strong>
-                          <small>
-                            Select the primary vehicle type and attach the supporting document.
-                          </small>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="trip-form-grid">
-                      <div className="trip-field-group">
-                        <label>
-                          Primary Vehicle Type{" "}
-                          <span className="trip-required">*</span>
-                        </label>
-
-                        <div className="trip-select-wrap">
-                          <select
-                            value={tripForm.primaryVehicleType}
-                            onChange={handleTripFieldChange(
-                              "primaryVehicleType"
-                            )}
-                          >
-                            <option value="">
-                              Select primary vehicle type...
-                            </option>
-
-                            {PRIMARY_VEHICLE_TYPES.map((vehicleType) => (
-                              <option
-                                key={vehicleType}
-                                value={vehicleType}
-                              >
-                                {vehicleType}
-                              </option>
-                            ))}
-                          </select>
-                          <span className="trip-select-arrow">⌄</span>
-                        </div>
-                      </div>
-
-                      <div className="trip-field-group trip-field-full">
-                        <label>Upload File</label>
-
-                        <label className="trip-file-upload">
-                          <input
-                            type="file"
-                            onChange={handleTripFileChange}
-                            accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
-                          />
-
-                          <span className="trip-file-icon">↑</span>
-
-                          <span className="trip-file-content">
-                            <strong>
-                              {tripUpload
-                                ? tripUpload.name
-                                : "Choose supporting document"}
-                            </strong>
-                            <small>
-                              PDF, Word, Excel, JPG or PNG
-                            </small>
-                          </span>
-
-                          <span className="trip-file-action">
-                            Browse
-                          </span>
-                        </label>
-                      </div>
-                    </div>
-                  </section>
-                </>
-              )}
-            </div>
-
-            <div className="trip-modal-actions">
-              <button
-                type="button"
-                className="trip-btn-outline"
-                onClick={handleCloseTripModal}
-              >
-                Cancel
-              </button>
-
-              <button
-                type="button"
-                className="trip-btn-primary"
-                onClick={handleCreateTrip}
-              >
-                Create Trip
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <Tripcreatemodal
+        showTripModal={showTripModal}
+        tripForm={tripForm}
+        tripUpload={tripUpload}
+        primaryVehicleTypes={PRIMARY_VEHICLE_TYPES}
+        handleTripOverlayClick={handleTripOverlayClick}
+        handleMovementTypeChange={handleMovementTypeChange}
+        handleCloseTripModal={handleCloseTripModal}
+        handleTripFieldChange={handleTripFieldChange}
+        handleAddWtgVehicle={handleAddWtgVehicle}
+        handleWtgVehicleFieldChange={handleWtgVehicleFieldChange}
+        handleRemoveWtgVehicle={handleRemoveWtgVehicle}
+        handleTripFileChange={handleTripFileChange}
+        handleCreateTrip={handleCreateTrip}
+      />
     </div>
   );
 };
@@ -1445,68 +1148,6 @@ const SummaryCard = ({ label, value, caption, icon }) => (
 );
 
 
-const AutoTripId = ({ value }) => (
-  <div className="trip-field-group">
-    <label>
-      Trip ID <span className="trip-required">*</span>
-    </label>
-
-    <div className="trip-auto-id-wrap">
-      <input
-        type="text"
-        value={value}
-        readOnly
-        aria-readonly="true"
-      />
-      <span className="trip-auto-badge">AUTO</span>
-    </div>
-
-    <small className="trip-field-hint">
-      Auto sequence: 2026-1, 2026-2, 2026-3...
-    </small>
-  </div>
-);
-
-const TripField = ({
-  label,
-  value,
-  placeholder = "",
-  onChange,
-  type = "text",
-  required = false,
-  unit = "",
-  min,
-  step,
-}) => (
-  <div className="trip-field-group">
-    <label>
-      {label} {required && <span className="trip-required">*</span>}
-    </label>
-
-    {unit ? (
-      <div className="trip-input-unit">
-        <input
-          type={type}
-          min={min}
-          step={step}
-          placeholder={placeholder}
-          value={value}
-          onChange={onChange}
-        />
-        <span>{unit}</span>
-      </div>
-    ) : (
-      <input
-        type={type}
-        min={min}
-        step={step}
-        placeholder={placeholder}
-        value={value}
-        onChange={onChange}
-      />
-    )}
-  </div>
-);
 
 /* =========================================================
    ORDER LIFECYCLE PANEL
@@ -2080,24 +1721,35 @@ const OrderLifecyclePanel = ({ order, onUpdate }) => {
             <strong>{order.client}</strong>
           </div>
           <div>
-            <span>Route</span>
+            <span>
+              {order.movementType === "Intercarting" ? "Site" : "Route"}
+            </span>
             <strong>
-              {order.origin} → {order.destination}
+              {order.movementType === "Intercarting"
+                ? order.siteLocation || "—"
+                : `${order.origin} → ${order.destination}`}
             </strong>
           </div>
           <div>
-            <span>Cargo</span>
+            <span>
+              {order.movementType === "Intercarting"
+                ? "Requirement"
+                : "Cargo"}
+            </span>
             <strong>
-              {order.cargo} · {order.weight}
+              {order.movementType === "Intercarting"
+                ? `${order.totalQuantity || 0} Nos · ${
+                    order.dieselScope || "Diesel scope pending"
+                  }`
+                : `${order.cargo} · ${order.weight}`}
             </strong>
           </div>
           <div>
             <span>Vehicles</span>
             <strong>
               {Array.isArray(order.vehicles) && order.vehicles.length
-                ? `${order.vehicles.length} vehicle${
-                    order.vehicles.length > 1 ? "s" : ""
-                  }`
+                ? `${order.vehicles.length} vehicle${order.vehicles.length > 1 ? "s" : ""
+                }`
                 : form.vehicleType || order.vehicleType || "Pending"}
             </strong>
           </div>

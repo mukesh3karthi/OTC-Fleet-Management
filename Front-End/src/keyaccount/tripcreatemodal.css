@@ -1,0 +1,1794 @@
+/* =========================================================
+   TRIP CREATE MODAL
+   SAME WIDTH + HEIGHT FOR ALL MOVEMENT TYPES
+========================================================= */
+
+.trip-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 18px;
+
+  background: rgba(7, 27, 38, 0.72);
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
+
+  overflow: hidden;
+}
+
+
+/* =========================================================
+   MODAL CARD
+========================================================= */
+
+.trip-modal-card {
+  width: 1380px;
+  height: 780px;
+
+  min-width: 1380px;
+  max-width: 1380px;
+
+  min-height: 780px;
+  max-height: 780px;
+
+  display: flex;
+  flex-direction: column;
+
+  overflow: hidden;
+
+  background: #f4f8f9;
+
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 18px;
+
+  box-shadow:
+    0 32px 80px rgba(4, 22, 34, 0.38),
+    0 8px 24px rgba(4, 22, 34, 0.18);
+}
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.trip-modal-header {
+  position: relative;
+
+  flex: 0 0 auto;
+  min-height: 0;
+
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+
+  gap: 24px;
+
+  padding: 18px 22px 17px;
+
+  color: #ffffff;
+
+  background:
+    radial-gradient(
+      circle at 85% -40%,
+      rgba(255, 255, 255, 0.1) 0,
+      rgba(255, 255, 255, 0.1) 110px,
+      transparent 111px
+    ),
+    linear-gradient(
+      110deg,
+      #0a3d4d 0%,
+      #0b5360 55%,
+      #0b8379 100%
+    );
+
+  overflow: hidden;
+}
+
+.trip-modal-header::after {
+  content: "";
+
+  position: absolute;
+  top: -90px;
+  right: 90px;
+
+  width: 220px;
+  height: 220px;
+
+  border-radius: 50%;
+
+  background: rgba(255, 255, 255, 0.04);
+
+  pointer-events: none;
+}
+
+
+/* =========================================================
+   HEADER LEFT
+========================================================= */
+
+.trip-modal-header-left {
+  position: relative;
+  z-index: 1;
+
+  min-width: 0;
+}
+
+.trip-modal-badge {
+  display: inline-flex;
+  align-items: center;
+
+  min-height: 22px;
+
+  margin-bottom: 10px;
+  padding: 3px 10px;
+
+  color: #72efe3;
+
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+
+  border: 1px solid rgba(114, 239, 227, 0.35);
+  border-radius: 999px;
+
+  background: rgba(0, 150, 136, 0.12);
+}
+
+.trip-modal-title {
+  margin: 0;
+
+  color: #ffffff;
+
+  font-size: 25px;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.4px;
+}
+
+.trip-modal-subtitle {
+  margin: 5px 0 0;
+
+  color: rgba(255, 255, 255, 0.82);
+
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+
+/* =========================================================
+   HEADER RIGHT
+========================================================= */
+
+.trip-modal-header-right {
+  position: relative;
+  z-index: 2;
+
+  display: flex;
+  align-items: flex-end;
+
+  gap: 14px;
+
+  flex: 0 0 auto;
+}
+
+.trip-movement-field {
+  width: 295px;
+}
+
+.trip-movement-field label {
+  display: block;
+
+  margin-bottom: 5px;
+
+  color: rgba(255, 255, 255, 0.82);
+
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+.trip-movement-field label .trip-required {
+  color: #ff8c8c;
+}
+
+.trip-movement-field .trip-select-wrap {
+  position: relative;
+}
+
+.trip-movement-field select {
+  width: 100%;
+  height: 45px;
+
+  padding: 0 42px 0 15px;
+
+  color: #ffffff;
+
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+
+  outline: none;
+
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  border-radius: 10px;
+
+  background: rgba(255, 255, 255, 0.1);
+
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.trip-movement-field select:focus {
+  border-color: rgba(99, 235, 221, 0.8);
+
+  background: rgba(255, 255, 255, 0.14);
+
+  box-shadow:
+    0 0 0 3px rgba(29, 210, 192, 0.13);
+}
+
+.trip-movement-field option {
+  color: #14394a;
+  background: #ffffff;
+}
+
+
+/* =========================================================
+   SELECT
+========================================================= */
+
+.trip-select-wrap {
+  position: relative;
+
+  width: 100%;
+}
+
+.trip-select-wrap select {
+  width: 100%;
+  height: 45px;
+
+  padding: 0 42px 0 14px;
+
+  color: #12394a;
+
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 650;
+
+  outline: none;
+
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  border: 1px solid #c7dbe3;
+  border-radius: 10px;
+
+  background: #ffffff;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.trip-select-wrap select:focus {
+  border-color: #159f96;
+
+  box-shadow:
+    0 0 0 3px rgba(21, 159, 150, 0.1);
+}
+
+.trip-select-arrow {
+  position: absolute;
+  top: 50%;
+  right: 14px;
+
+  transform: translateY(-52%);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #397084;
+
+  font-size: 14px;
+  font-weight: 800;
+
+  pointer-events: none;
+}
+
+
+/* =========================================================
+   CLOSE BUTTON
+========================================================= */
+
+.trip-modal-close {
+  width: 40px;
+  height: 40px;
+
+  flex: 0 0 40px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+
+  color: #ffffff;
+
+  font-family: inherit;
+  font-size: 22px;
+  font-weight: 400;
+
+  cursor: pointer;
+
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+
+  background: rgba(255, 255, 255, 0.08);
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.trip-modal-close:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.trip-modal-close:active {
+  transform: scale(0.96);
+}
+
+
+/* =========================================================
+   BODY
+   IMPORTANT:
+   ONLY THIS SECTION SCROLLS
+========================================================= */
+
+.trip-modal-body {
+  flex: 1 1 auto;
+
+  min-width: 0;
+  min-height: 0;
+
+  padding: 10px 12px 14px;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  background:
+    linear-gradient(
+      180deg,
+      #f7fafb 0%,
+      #f1f6f7 100%
+    );
+
+  scrollbar-width: thin;
+  scrollbar-color: #b4cdd3 transparent;
+}
+
+.trip-modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.trip-modal-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.trip-modal-body::-webkit-scrollbar-thumb {
+  background: #b4cdd3;
+  border-radius: 20px;
+}
+
+.trip-modal-body::-webkit-scrollbar-thumb:hover {
+  background: #8eb3bc;
+}
+
+
+/* =========================================================
+   SECTION CARD
+========================================================= */
+
+.trip-section {
+  width: 100%;
+
+  margin-bottom: 10px;
+  padding: 14px;
+
+  box-sizing: border-box;
+
+  border: 1px solid #d6e3e7;
+  border-radius: 14px;
+
+  background: #ffffff;
+}
+
+.trip-section:last-child {
+  margin-bottom: 0;
+}
+
+
+/* =========================================================
+   SECTION HEADER
+========================================================= */
+
+.trip-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 14px;
+
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+
+  border-bottom: 1px solid #e2ebee;
+}
+
+.trip-section-heading {
+  min-width: 0;
+}
+
+.trip-section-heading strong {
+  display: block;
+
+  color: #173e50;
+
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.trip-section-heading span {
+  display: block;
+
+  margin-top: 2px;
+
+  color: #607c89;
+
+  font-size: 11px;
+  font-weight: 550;
+  line-height: 1.4;
+}
+
+
+/* =========================================================
+   TRIP ID
+========================================================= */
+
+.trip-id-badge {
+  flex: 0 0 auto;
+
+  display: inline-flex;
+  align-items: center;
+
+  min-height: 38px;
+
+  padding: 0 12px;
+
+  color: #118d86;
+
+  font-size: 13px;
+  font-weight: 800;
+
+  border: 1px solid #c4e4e1;
+  border-radius: 9px;
+
+  background: #f1fbfa;
+}
+
+.trip-id-badge small {
+  margin-right: 2px;
+
+  color: #718a95;
+
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+
+/* =========================================================
+   STANDARD FORM GRIDS
+========================================================= */
+
+
+
+
+
+
+
+
+
+/* =========================================================
+   UNIFORM FORM GRID — SAME INPUT WIDTH FOR ALL MOVEMENTS
+========================================================= */
+
+.trip-form-grid,
+.trip-form-grid-2,
+.trip-form-grid-3,
+.intercarting-client-grid,
+.intercarting-operations-grid,
+.intercarting-date-row {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px 12px;
+  align-items: end;
+}
+
+
+
+/* Every field occupies exactly one grid column */
+.trip-form-grid > *,
+.trip-form-grid-2 > *,
+.trip-form-grid-3 > *,
+.intercarting-client-grid > *,
+.intercarting-operations-grid > *,
+.intercarting-date-row > * {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+
+  grid-column: auto !important;
+
+  box-sizing: border-box;
+}
+
+/* Every actual control fills its column */
+.trip-form-grid input,
+.trip-form-grid select,
+.trip-form-grid textarea,
+.trip-form-grid .trip-select-wrap,
+.trip-form-grid .trip-input-unit,
+
+.trip-form-grid-2 input,
+.trip-form-grid-2 select,
+.trip-form-grid-2 textarea,
+.trip-form-grid-2 .trip-select-wrap,
+.trip-form-grid-2 .trip-input-unit,
+
+.trip-form-grid-3 input,
+.trip-form-grid-3 select,
+.trip-form-grid-3 textarea,
+.trip-form-grid-3 .trip-select-wrap,
+.trip-form-grid-3 .trip-input-unit,
+
+.intercarting-client-grid input,
+.intercarting-client-grid select,
+.intercarting-client-grid textarea,
+.intercarting-client-grid .trip-select-wrap,
+.intercarting-client-grid .trip-input-unit,
+
+.intercarting-operations-grid input,
+.intercarting-operations-grid select,
+.intercarting-operations-grid textarea,
+.intercarting-operations-grid .trip-select-wrap,
+.intercarting-operations-grid .trip-input-unit,
+
+.intercarting-date-row input,
+.intercarting-date-row select,
+.intercarting-date-row textarea,
+.intercarting-date-row .trip-select-wrap,
+.intercarting-date-row .trip-input-unit {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+
+  box-sizing: border-box;
+}
+
+
+.trip-form-grid > * {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.trip-form-grid .trip-field-group,
+.trip-form-grid .trip-select-wrap,
+.trip-form-grid .trip-input-unit,
+.trip-form-grid input,
+.trip-form-grid select,
+.trip-form-grid textarea {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* =========================================================
+   FIELD
+========================================================= */
+
+.trip-field-group {
+  min-width: 0;
+}
+
+.trip-field-group label {
+  display: block;
+
+  margin: 0 0 5px;
+
+  color: #183e50;
+
+  font-size: 10.5px;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.trip-required {
+  margin-left: 3px;
+
+  color: #ef4444;
+
+  font-weight: 800;
+}
+
+.trip-field-group input,
+.trip-field-group textarea {
+  width: 100%;
+
+  box-sizing: border-box;
+
+  color: #163b4d;
+
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 550;
+
+  outline: none;
+
+  border: 1px solid #c7dbe3;
+  border-radius: 10px;
+
+  background: #ffffff;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.trip-field-group input {
+  height: 45px;
+
+  padding: 0 14px;
+}
+
+.trip-field-group textarea {
+  min-height: 76px;
+
+  padding: 11px 14px;
+
+  resize: vertical;
+}
+
+.trip-field-group input:focus,
+.trip-field-group textarea:focus {
+  border-color: #159f96;
+
+  box-shadow:
+    0 0 0 3px rgba(21, 159, 150, 0.09);
+}
+
+.trip-field-group input::placeholder,
+.trip-field-group textarea::placeholder {
+  color: #8297a2;
+
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 550;
+
+  opacity: 1;
+}
+
+
+/* =========================================================
+   INPUT + UNIT
+========================================================= */
+
+.trip-input-unit {
+  width: 100%;
+  height: 45px;
+
+  display: flex;
+  align-items: stretch;
+
+  box-sizing: border-box;
+
+  overflow: hidden;
+
+  border: 1px solid #c7dbe3;
+  border-radius: 10px;
+
+  background: #ffffff;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.trip-input-unit:focus-within {
+  border-color: #159f96;
+
+  box-shadow:
+    0 0 0 3px rgba(21, 159, 150, 0.09);
+}
+
+.trip-input-unit input {
+  min-width: 0;
+  height: 100%;
+
+  flex: 1;
+
+  padding: 0 14px;
+
+  border: 0 !important;
+  border-radius: 0 !important;
+
+  outline: none;
+
+  box-shadow: none !important;
+
+  background: transparent;
+}
+
+.trip-input-unit > span {
+  min-width: 52px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0 10px;
+
+  color: #31566a;
+
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+
+  border-left: 1px solid #d9e5e9;
+
+  background: #f7fafb;
+}
+
+
+/* =========================================================
+   INTERCARTING / OTHER
+========================================================= */
+
+
+
+
+
+
+
+
+
+/* =========================================================
+   VEHICLE SECTION
+========================================================= */
+
+.trip-vehicle-section {
+  position: relative;
+
+  width: 100%;
+}
+
+.trip-vehicle-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 12px;
+
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+
+  border-bottom: 1px solid #e1eaed;
+}
+
+
+/* =========================================================
+   ADD VEHICLE BUTTON
+========================================================= */
+
+.trip-add-vehicle-btn {
+  min-height: 38px;
+
+  display: inline-flex;
+  align-items: center;
+
+  gap: 8px;
+
+  padding: 4px 8px 4px 6px;
+
+  color: #087f78;
+
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 650;
+
+  cursor: pointer;
+
+  border: 1px solid #bcdedb;
+  border-radius: 10px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 3px 10px rgba(15, 118, 110, 0.06);
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.trip-add-vehicle-btn:hover {
+  border-color: #75c8c1;
+
+  background: #f5fcfb;
+}
+
+.trip-add-vehicle-btn:active {
+  transform: translateY(1px);
+}
+
+.trip-add-vehicle-btn .trip-add-icon {
+  width: 27px;
+  height: 27px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #ffffff;
+
+  font-size: 20px;
+  font-weight: 500;
+
+  border-radius: 8px;
+
+  background: #0e9b91;
+}
+
+.trip-add-count {
+  min-width: 26px;
+  height: 25px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0 7px;
+
+  color: #147e78;
+
+  font-size: 10px;
+  font-weight: 800;
+
+  border: 1px solid #d2e8e6;
+  border-radius: 8px;
+
+  background: #f2fbfa;
+}
+
+
+/* =========================================================
+   WTG VEHICLE ROW
+========================================================= */
+
+.wtg-vehicle-list {
+  width: 100%;
+}
+
+.wtg-vehicle-row {
+  position: relative;
+
+  width: 100%;
+
+  display: grid;
+
+  grid-template-columns:
+    32px
+    minmax(155px, 1.05fr)
+    minmax(145px, 0.95fr)
+    minmax(165px, 1fr)
+    minmax(95px, 0.55fr)
+    minmax(110px, 0.65fr)
+    minmax(220px, 1.35fr)
+    28px;
+
+  gap: 10px;
+
+  align-items: end;
+
+  padding: 7px 0;
+}
+
+.wtg-row-number {
+  height: 45px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #088b83;
+
+  font-size: 12px;
+  font-weight: 800;
+}
+
+
+/* =========================================================
+   VEHICLE TEXT INPUT
+========================================================= */
+
+.wtg-text-input {
+  width: 100%;
+  height: 45px;
+
+  padding: 0 13px;
+
+  box-sizing: border-box;
+
+  color: #163c4e;
+
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 550;
+
+  outline: none;
+
+  border: 1px solid #c7dbe3;
+  border-radius: 10px;
+
+  background: #ffffff;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.wtg-text-input:focus {
+  border-color: #159f96;
+
+  box-shadow:
+    0 0 0 3px rgba(21, 159, 150, 0.09);
+}
+
+.wtg-text-input::placeholder {
+  color: #8297a2;
+  opacity: 1;
+}
+
+
+/* =========================================================
+   REMOVE VEHICLE
+========================================================= */
+
+.wtg-remove-btn {
+  width: 28px;
+  height: 45px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+
+  color: #e34848;
+
+  font-size: 18px;
+  font-weight: 400;
+
+  cursor: pointer;
+
+  border: 0;
+
+  background: transparent;
+
+  transition:
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.wtg-remove-btn:hover {
+  color: #c82020;
+
+  transform: scale(1.08);
+}
+
+
+/* =========================================================
+   DIMENSIONS
+========================================================= */
+
+.wtg-dimension-control {
+  width: 100%;
+  height: 45px;
+
+  display: flex;
+  align-items: stretch;
+
+  overflow: hidden;
+
+  box-sizing: border-box;
+
+  border: 1px solid #c7dbe3;
+  border-radius: 10px;
+
+  background: #ffffff;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.wtg-dimension-control:focus-within {
+  border-color: #159f96;
+
+  box-shadow:
+    0 0 0 3px rgba(21, 159, 150, 0.09);
+}
+
+.wtg-dimension-control input {
+  min-width: 0;
+  height: 100%;
+
+  flex: 1;
+
+  padding: 0 5px;
+
+  color: #173d4f;
+
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 650;
+  text-align: center;
+
+  outline: none;
+
+  border: 0;
+
+  background: transparent;
+}
+
+.wtg-dimension-control input::placeholder {
+  color: #81949e;
+
+  opacity: 1;
+}
+
+.wtg-dimension-x {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #78909a;
+
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.wtg-dimension-unit {
+  min-width: 42px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #31566a;
+
+  font-size: 10px;
+  font-weight: 800;
+
+  border-left: 1px solid #d9e5e9;
+
+  background: #f7fafb;
+}
+
+
+/* =========================================================
+   REMARK
+========================================================= */
+
+.trip-remark-group {
+  width: 100%;
+
+  margin-top: 5px;
+}
+
+.trip-remark-group label {
+  display: block;
+
+  margin-bottom: 5px;
+
+  color: #173e50;
+
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.trip-remark-group textarea {
+  width: 100%;
+  min-height: 74px;
+
+  padding: 11px 13px;
+
+  box-sizing: border-box;
+
+  color: #173d4e;
+
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 550;
+
+  outline: none;
+
+  resize: vertical;
+
+  border: 1px solid #c7dbe3;
+  border-radius: 10px;
+
+  background: #ffffff;
+}
+
+.trip-remark-group textarea:focus {
+  border-color: #159f96;
+
+  box-shadow:
+    0 0 0 3px rgba(21, 159, 150, 0.09);
+}
+
+.trip-remark-group textarea::placeholder {
+  color: #8297a2;
+  opacity: 1;
+}
+
+
+
+
+/* =========================================================
+   REMARKS — INTERCARTING / OTHER / CRANE
+========================================================= */
+
+.intercarting-remark-field,
+.crane-remark-field {
+  width: 100%;
+  margin-top: 10px;
+}
+
+.intercarting-remark-field textarea,
+.crane-remark-field textarea {
+  width: 100%;
+  min-height: 72px;
+  max-height: 110px;
+
+  padding: 11px 13px;
+
+  box-sizing: border-box;
+
+  color: #173d4e;
+
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 550;
+  line-height: 1.45;
+
+  outline: none;
+  resize: vertical;
+
+  border: 1px solid #c7dbe3;
+  border-radius: 10px;
+
+  background: #ffffff;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.intercarting-remark-field textarea:focus,
+.crane-remark-field textarea:focus {
+  border-color: #159f96;
+
+  box-shadow:
+    0 0 0 3px rgba(21, 159, 150, 0.09);
+}
+
+.intercarting-remark-field textarea::placeholder,
+.crane-remark-field textarea::placeholder {
+  color: #8297a2;
+  opacity: 1;
+}
+
+/* =========================================================
+   FOOTER
+   FIXED FOR EVERY MOVEMENT
+========================================================= */
+
+.trip-modal-actions {
+  flex: 0 0 auto;
+  min-height: 72px;
+
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+
+  gap: 10px;
+
+  padding: 12px 20px;
+
+  border-top: 1px solid #bfdedb;
+
+  background:
+    linear-gradient(
+      90deg,
+      #f4f9f9 0%,
+      #edf7f6 55%,
+      #e2f2f0 100%
+    );
+
+  box-shadow:
+    0 -8px 24px rgba(12, 94, 91, 0.07);
+}
+
+.trip-modal-actions button {
+  min-width: 138px;
+  height: 48px;
+
+  padding: 0 22px;
+
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  border-radius: 10px;
+
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    background 0.18s ease;
+}
+
+
+/* CANCEL */
+
+.trip-cancel-btn {
+  color: #183e50;
+
+  border: 1px solid #c7dbe3;
+
+  background: #ffffff;
+}
+
+.trip-cancel-btn:hover {
+  background: #f5f8f9;
+}
+
+
+/* CREATE */
+
+.trip-create-btn {
+  color: #ffffff;
+
+  border: 1px solid #0d968d;
+
+  background:
+    linear-gradient(
+      135deg,
+      #10a097,
+      #078b83
+    );
+
+  box-shadow:
+    0 7px 16px rgba(14, 155, 145, 0.18);
+}
+
+.trip-create-btn:hover {
+  background:
+    linear-gradient(
+      135deg,
+      #0d958c,
+      #077d77
+    );
+
+  box-shadow:
+    0 9px 20px rgba(14, 155, 145, 0.24);
+}
+
+.trip-modal-actions button:active {
+  transform: translateY(1px);
+}
+
+
+/* =========================================================
+   DATE INPUT
+========================================================= */
+
+.trip-field-group input[type="date"] {
+  color: #173d4f;
+
+  cursor: pointer;
+}
+
+.trip-field-group input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+}
+
+
+/* =========================================================
+   NUMBER INPUT
+========================================================= */
+
+.trip-field-group input[type="number"]::-webkit-inner-spin-button,
+.trip-field-group input[type="number"]::-webkit-outer-spin-button,
+.wtg-text-input[type="number"]::-webkit-inner-spin-button,
+.wtg-text-input[type="number"]::-webkit-outer-spin-button {
+  margin: 0;
+
+  -webkit-appearance: none;
+}
+
+
+/* =========================================================
+   LAPTOP / SMALL DESKTOP
+   Keep the same modal proportions, only shrink when the
+   physical viewport cannot fit the 1380 × 780 desktop size.
+========================================================= */
+
+@media (max-width: 1420px), (max-height: 820px) {
+
+  .trip-modal-overlay {
+    padding: 15px;
+  }
+
+  .trip-modal-card {
+    width: calc(100vw - 30px);
+    height: calc(100dvh - 30px);
+
+    min-width: 0;
+    min-height: 0;
+
+    max-width: 1380px;
+    max-height: 780px;
+  }
+
+  .wtg-vehicle-row {
+    grid-template-columns:
+      28px
+      minmax(140px, 1fr)
+      minmax(130px, 0.95fr)
+      minmax(150px, 1fr)
+      minmax(90px, 0.55fr)
+      minmax(105px, 0.65fr)
+      minmax(205px, 1.25fr)
+      26px;
+
+    gap: 8px;
+  }
+}
+
+
+/* =========================================================
+   TABLET LANDSCAPE
+========================================================= */
+
+@media (max-width: 1100px) {
+
+  .trip-modal-overlay {
+    padding: 12px;
+  }
+
+  .trip-modal-card {
+    width: calc(100vw - 24px);
+    height: calc(100dvh - 24px);
+
+    min-width: 0;
+    min-height: 0;
+
+    max-width: none;
+    max-height: none;
+
+    border-radius: 15px;
+  }
+
+  .trip-modal-header {
+    padding: 16px 18px;
+  }
+
+  .trip-form-grid,
+  .trip-form-grid-2,
+  .trip-form-grid-3,
+  .intercarting-client-grid,
+  .intercarting-operations-grid,
+  .intercarting-date-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .wtg-vehicle-row {
+    grid-template-columns:
+      30px
+      repeat(2, minmax(0, 1fr));
+
+    align-items: end;
+  }
+
+  .wtg-row-number {
+    grid-row: span 3;
+  }
+
+  .wtg-remove-btn {
+    position: absolute;
+    top: 6px;
+    right: 0;
+  }
+}
+
+
+/* =========================================================
+   TABLET PORTRAIT
+========================================================= */
+
+@media (max-width: 768px) {
+
+  .trip-modal-overlay {
+    align-items: center;
+
+    padding: 8px;
+  }
+
+  .trip-modal-card {
+    width: calc(100vw - 16px);
+    height: calc(100dvh - 16px);
+
+    min-width: 0;
+    min-height: 0;
+
+    max-width: none;
+    max-height: none;
+
+    border-radius: 13px;
+  }
+
+  .trip-modal-header {
+    align-items: flex-start;
+
+    padding: 14px 15px;
+  }
+
+  .trip-modal-title {
+    font-size: 21px;
+  }
+
+  .trip-modal-header-right {
+    gap: 8px;
+  }
+
+  .trip-movement-field {
+    width: 210px;
+  }
+
+  .trip-modal-body {
+    padding: 8px;
+  }
+
+  .trip-section {
+    padding: 12px;
+  }
+
+  .trip-form-grid,
+  .trip-form-grid-2,
+  .trip-form-grid-3,
+  .intercarting-client-grid,
+  .intercarting-operations-grid,
+  .intercarting-date-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .trip-modal-actions {
+    padding: 10px 12px;
+  }
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 520px) {
+
+  .trip-modal-overlay {
+    padding: 4px;
+
+    background: rgba(7, 27, 38, 0.82);
+  }
+
+  .trip-modal-card {
+    width: calc(100vw - 8px);
+    height: calc(100dvh - 8px);
+
+    min-width: 0;
+    min-height: 0;
+
+    max-width: none;
+    max-height: none;
+
+    border-radius: 11px;
+  }
+
+
+  /* HEADER */
+
+  .trip-modal-header {
+    display: block;
+
+    padding: 14px;
+  }
+
+  .trip-modal-badge {
+    display: none;
+  }
+
+  .trip-modal-title {
+    padding-right: 48px;
+
+    font-size: 20px;
+  }
+
+  .trip-modal-subtitle {
+    display: none;
+  }
+
+  .trip-modal-header-right {
+    width: 100%;
+
+    display: block;
+
+    margin-top: 10px;
+  }
+
+  .trip-movement-field {
+    width: 100%;
+  }
+
+  .trip-movement-field select {
+    height: 45px;
+  }
+
+  .trip-modal-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+
+    width: 40px;
+    height: 40px;
+  }
+
+
+  /* BODY */
+
+  .trip-modal-body {
+    flex: 1 1 auto;
+
+    min-height: 0;
+
+    padding: 7px;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+
+  /* SECTIONS */
+
+  .trip-section {
+    margin-bottom: 8px;
+    padding: 11px 10px;
+
+    border-radius: 11px;
+  }
+
+  .trip-section-header {
+    align-items: flex-start;
+
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+  }
+
+  .trip-section-heading strong {
+    font-size: 14px;
+  }
+
+  .trip-id-badge {
+    min-height: 34px;
+
+    padding: 0 8px;
+
+    font-size: 11px;
+  }
+
+
+  /* ALL FORM ROWS BECOME SINGLE COLUMN */
+
+  .trip-form-grid,
+  .trip-form-grid-2,
+  .trip-form-grid-3,
+  .intercarting-client-grid,
+  .intercarting-operations-grid,
+  .intercarting-date-row {
+    grid-template-columns: 1fr;
+
+    gap: 9px;
+  }
+
+  .intercarting-operations-grid,
+  .intercarting-date-row {
+    margin-top: 9px;
+  }
+
+
+  /* INPUTS */
+
+  .trip-field-group input,
+  .trip-select-wrap select,
+  .trip-input-unit,
+  .wtg-text-input,
+  .wtg-dimension-control {
+    height: 46px;
+  }
+
+
+  /* VEHICLE HEADER */
+
+  .trip-vehicle-header {
+    align-items: flex-start;
+  }
+
+  .trip-add-vehicle-btn {
+    flex: 0 0 auto;
+  }
+
+
+  /* VEHICLE ROW */
+
+  .wtg-vehicle-row {
+    display: grid;
+
+    grid-template-columns:
+      26px
+      minmax(0, 1fr);
+
+    gap: 9px 7px;
+
+    padding: 9px 0;
+  }
+
+  .wtg-row-number {
+    grid-column: 1;
+    grid-row: 1;
+
+    height: 46px;
+
+    align-items: center;
+  }
+
+  .wtg-vehicle-row > .trip-field-group,
+  .wtg-vehicle-row > .wtg-field {
+    grid-column: 2;
+
+    min-width: 0;
+  }
+
+  .wtg-remove-btn {
+    position: absolute;
+    top: 5px;
+    right: 0;
+
+    width: 26px;
+    height: 26px;
+  }
+
+
+  /* FOOTER */
+
+  .trip-modal-actions {
+    flex: 0 0 auto;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 8px;
+
+    padding: 10px;
+
+    background: #ffffff;
+  }
+
+  .trip-modal-actions button {
+    width: 100%;
+    min-width: 0;
+    height: 48px;
+  }
+
+  .trip-create-btn {
+    order: 1;
+  }
+
+  .trip-cancel-btn {
+    order: 2;
+  }
+}
+
+
+/* =========================================================
+   VERY SMALL MOBILE
+========================================================= */
+
+@media (max-width: 380px) {
+
+  .trip-modal-overlay {
+    padding: 0;
+  }
+
+  .trip-modal-card {
+    width: 100vw;
+    height: 100dvh;
+
+    min-width: 0;
+    min-height: 0;
+
+    max-width: none;
+    max-height: none;
+
+    border: 0;
+    border-radius: 0;
+  }
+
+  .trip-modal-header {
+    padding: 12px;
+  }
+
+  .trip-modal-title {
+    font-size: 19px;
+  }
+
+  .trip-modal-body {
+    padding: 6px;
+  }
+
+  .trip-section {
+    padding: 10px 8px;
+  }
+
+  .trip-modal-actions {
+    padding: 8px;
+  }
+}
