@@ -984,9 +984,13 @@ const Tripcreatemodal = ({
                                         <TripField
                                             label="Crane Weight"
                                             required
-                                            value={tripForm.cargo}
-                                            placeholder="Enter Crane weight"
-                                            onChange={handleTripFieldChange("cargo")}
+                                            type="number"
+                                            min="0"
+                                            step="0.01"
+                                            value={tripForm.weight}
+                                            placeholder="Enter crane weight"
+                                            unit="TON"
+                                            onChange={handleTripFieldChange("weight")}
                                         />
 
                                         <TripField
@@ -1047,9 +1051,9 @@ const Tripcreatemodal = ({
                                             label="Assigned KAM"
                                             required
                                             type="text"
-                                            value={tripForm.assignedKAM}
-                                            placeholder="Enter assigned KAM"
-                                            onChange={handleTripFieldChange("assignedKAM")}
+                                            value={tripForm.assignedKam}
+                                            placeholder="Enter KAM name"
+                                            onChange={handleTripFieldChange("assignedKam")}
                                         />
 
                                     </div>

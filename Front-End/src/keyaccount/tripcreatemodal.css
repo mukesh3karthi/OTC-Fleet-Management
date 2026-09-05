@@ -1,7 +1,14 @@
 /* =========================================================
    TRIP CREATE MODAL
-   SAME WIDTH + HEIGHT FOR ALL MOVEMENT TYPES
+   Matches the class names in Tripcreatemodal.jsx
 ========================================================= */
+
+.trip-modal-overlay,
+.trip-modal-overlay *,
+.trip-modal-overlay *::before,
+.trip-modal-overlay *::after {
+  box-sizing: border-box;
+}
 
 .trip-modal-overlay {
   position: fixed;
@@ -14,16 +21,23 @@
 
   padding: 18px;
 
-  background: rgba(7, 27, 38, 0.72);
-  backdrop-filter: blur(7px);
-  -webkit-backdrop-filter: blur(7px);
+  background:
+    radial-gradient(
+      circle at 82% 8%,
+      rgba(13, 148, 136, 0.16),
+      transparent 30%
+    ),
+    rgba(6, 23, 35, 0.72);
+
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
 
   overflow: hidden;
 }
 
 
 /* =========================================================
-   MODAL CARD
+   FIXED MODAL SHELL
 ========================================================= */
 
 .trip-modal-card {
@@ -41,272 +55,216 @@
 
   overflow: hidden;
 
-  background: #f4f8f9;
-
   border: 1px solid rgba(255, 255, 255, 0.55);
   border-radius: 18px;
 
+  background: #f4f8f9;
+
   box-shadow:
-    0 32px 80px rgba(4, 22, 34, 0.38),
-    0 8px 24px rgba(4, 22, 34, 0.18);
+    0 34px 85px rgba(4, 22, 34, 0.4),
+    0 8px 25px rgba(5, 33, 44, 0.14);
+
+  font-family:
+    Inter,
+    "Segoe UI",
+    Roboto,
+    Arial,
+    sans-serif;
 }
 
 
 /* =========================================================
-   HEADER
+   HEADER — FIXED
 ========================================================= */
 
 .trip-modal-header {
   position: relative;
 
-  flex: 0 0 auto;
-  min-height: 0;
+  width: 100%;
+  height: 118px;
+
+  min-height: 118px;
+  max-height: 118px;
+
+  flex: 0 0 118px;
+
+  display: flex;
+  align-items: center;
+
+  padding: 15px 20px;
+
+  overflow: hidden;
+
+  color: #ffffff;
+
+  background:
+    radial-gradient(
+      circle at 86% -38%,
+      rgba(255, 255, 255, 0.08) 0 110px,
+      transparent 111px
+    ),
+    radial-gradient(
+      circle at 86% -38%,
+      rgba(255, 255, 255, 0.04) 0 170px,
+      transparent 171px
+    ),
+    linear-gradient(
+      110deg,
+      #08394d 0%,
+      #0b5360 56%,
+      #0b847a 100%
+    );
+}
+
+.trip-modal-header-left {
+  position: relative;
+  z-index: 2;
+
+  width: 100%;
+  min-width: 0;
+
+  padding-right: 58px;
+}
+
+.trip-modal-subtitle {
+  display: inline-flex;
+  align-items: center;
+
+  margin-bottom: 7px;
+  padding: 3px 8px;
+
+  border: 1px solid rgba(126, 232, 221, 0.28);
+  border-radius: 999px;
+
+  background: rgba(63, 205, 191, 0.08);
+
+  color: #8bece3;
+
+  font-size: 8.5px;
+  line-height: 1;
+  font-weight: 900;
+
+  letter-spacing: 0.08em;
+}
+
+.trip-modal-title-row {
+  width: 100%;
 
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
 
   gap: 24px;
-
-  padding: 18px 22px 17px;
-
-  color: #ffffff;
-
-  background:
-    radial-gradient(
-      circle at 85% -40%,
-      rgba(255, 255, 255, 0.1) 0,
-      rgba(255, 255, 255, 0.1) 110px,
-      transparent 111px
-    ),
-    linear-gradient(
-      110deg,
-      #0a3d4d 0%,
-      #0b5360 55%,
-      #0b8379 100%
-    );
-
-  overflow: hidden;
 }
 
-.trip-modal-header::after {
-  content: "";
-
-  position: absolute;
-  top: -90px;
-  right: 90px;
-
-  width: 220px;
-  height: 220px;
-
-  border-radius: 50%;
-
-  background: rgba(255, 255, 255, 0.04);
-
-  pointer-events: none;
-}
-
-
-/* =========================================================
-   HEADER LEFT
-========================================================= */
-
-.trip-modal-header-left {
-  position: relative;
-  z-index: 1;
-
+.trip-modal-title-copy {
   min-width: 0;
 }
 
-.trip-modal-badge {
-  display: inline-flex;
-  align-items: center;
-
-  min-height: 22px;
-
-  margin-bottom: 10px;
-  padding: 3px 10px;
-
-  color: #72efe3;
-
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.8px;
-  text-transform: uppercase;
-
-  border: 1px solid rgba(114, 239, 227, 0.35);
-  border-radius: 999px;
-
-  background: rgba(0, 150, 136, 0.12);
-}
-
-.trip-modal-title {
+.trip-modal-title-copy h2 {
   margin: 0;
 
   color: #ffffff;
 
-  font-size: 25px;
-  font-weight: 800;
-  line-height: 1.15;
-  letter-spacing: -0.4px;
+  font-size: 22px;
+  line-height: 1.12;
+  font-weight: 900;
+
+  letter-spacing: -0.35px;
 }
 
-.trip-modal-subtitle {
-  margin: 5px 0 0;
+.trip-modal-title-copy p {
+  margin: 3px 0 0;
 
-  color: rgba(255, 255, 255, 0.82);
+  color: #d5e5e9;
 
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 1.4;
+  font-size: 10.5px;
+  line-height: 1.3;
+  font-weight: 600;
 }
 
 
 /* =========================================================
-   HEADER RIGHT
+   HEADER MOVEMENT TYPE
 ========================================================= */
 
-.trip-modal-header-right {
-  position: relative;
-  z-index: 2;
-
-  display: flex;
-  align-items: flex-end;
-
-  gap: 14px;
-
-  flex: 0 0 auto;
+.trip-header-movement {
+  width: 300px;
+  min-width: 300px;
 }
 
-.trip-movement-field {
-  width: 295px;
-}
-
-.trip-movement-field label {
+.trip-header-movement > label {
   display: block;
 
   margin-bottom: 5px;
 
-  color: rgba(255, 255, 255, 0.82);
+  color: #c7e5e5;
 
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.4px;
+  font-size: 8.5px;
+  line-height: 1;
+  font-weight: 900;
+
+  letter-spacing: 0.05em;
   text-transform: uppercase;
 }
 
-.trip-movement-field label .trip-required {
-  color: #ff8c8c;
-}
-
-.trip-movement-field .trip-select-wrap {
+.trip-header-select-wrap {
   position: relative;
+  width: 100%;
 }
 
-.trip-movement-field select {
+.trip-header-select-wrap select {
   width: 100%;
-  height: 45px;
+  height: 42px;
 
-  padding: 0 42px 0 15px;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  padding: 0 38px 0 13px;
+
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 10px;
+
+  outline: 0;
+
+  background: rgba(255, 255, 255, 0.11);
 
   color: #ffffff;
 
   font-family: inherit;
-  font-size: 13px;
-  font-weight: 700;
+  font-size: 12px;
+  font-weight: 750;
 
-  outline: none;
-
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-
-  border: 1px solid rgba(255, 255, 255, 0.26);
-  border-radius: 10px;
-
-  background: rgba(255, 255, 255, 0.1);
-
-  transition:
-    border-color 0.2s ease,
-    background 0.2s ease,
-    box-shadow 0.2s ease;
-}
-
-.trip-movement-field select:focus {
-  border-color: rgba(99, 235, 221, 0.8);
-
-  background: rgba(255, 255, 255, 0.14);
+  cursor: pointer;
 
   box-shadow:
-    0 0 0 3px rgba(29, 210, 192, 0.13);
+    inset 0 0 0 1px rgba(78, 224, 210, 0.12);
 }
 
-.trip-movement-field option {
-  color: #14394a;
+.trip-header-select-wrap select:focus {
+  border-color: rgba(103, 230, 218, 0.9);
+
+  box-shadow:
+    0 0 0 3px rgba(20, 184, 166, 0.14);
+}
+
+.trip-header-select-wrap select option {
+  color: #15394b;
   background: #ffffff;
 }
 
-
-/* =========================================================
-   SELECT
-========================================================= */
-
-.trip-select-wrap {
-  position: relative;
-
-  width: 100%;
-}
-
-.trip-select-wrap select {
-  width: 100%;
-  height: 45px;
-
-  padding: 0 42px 0 14px;
-
-  color: #12394a;
-
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 650;
-
-  outline: none;
-
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-
-  border: 1px solid #c7dbe3;
-  border-radius: 10px;
-
-  background: #ffffff;
-
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
-}
-
-.trip-select-wrap select:focus {
-  border-color: #159f96;
-
-  box-shadow:
-    0 0 0 3px rgba(21, 159, 150, 0.1);
-}
-
-.trip-select-arrow {
+.trip-header-select-arrow {
   position: absolute;
   top: 50%;
-  right: 14px;
+  right: 13px;
 
   transform: translateY(-52%);
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  color: #9edbd6;
 
-  color: #397084;
-
-  font-size: 14px;
-  font-weight: 800;
+  font-size: 13px;
+  font-weight: 900;
 
   pointer-events: none;
 }
@@ -317,37 +275,41 @@
 ========================================================= */
 
 .trip-modal-close {
-  width: 40px;
-  height: 40px;
+  position: absolute;
+  z-index: 4;
 
-  flex: 0 0 40px;
+  top: 18px;
+  right: 18px;
 
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  width: 38px;
+  height: 38px;
+
+  display: grid;
+  place-items: center;
 
   padding: 0;
 
-  color: #ffffff;
-
-  font-family: inherit;
-  font-size: 22px;
-  font-weight: 400;
-
-  cursor: pointer;
-
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 10px;
 
   background: rgba(255, 255, 255, 0.08);
 
+  color: #ffffff;
+
+  font-family: inherit;
+  font-size: 20px;
+  line-height: 1;
+  font-weight: 500;
+
+  cursor: pointer;
+
   transition:
-    background 0.2s ease,
-    transform 0.2s ease;
+    background 0.18s ease,
+    transform 0.18s ease;
 }
 
 .trip-modal-close:hover {
-  background: rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.15);
 }
 
 .trip-modal-close:active {
@@ -356,21 +318,23 @@
 
 
 /* =========================================================
-   BODY
-   IMPORTANT:
-   ONLY THIS SECTION SCROLLS
+   CENTER BODY — ONLY THIS AREA SCROLLS
 ========================================================= */
 
 .trip-modal-body {
+  width: 100%;
+
   flex: 1 1 auto;
 
   min-width: 0;
   min-height: 0;
 
-  padding: 10px 12px 14px;
+  padding: 9px 10px 12px;
 
   overflow-y: auto;
   overflow-x: hidden;
+
+  overscroll-behavior: contain;
 
   background:
     linear-gradient(
@@ -380,7 +344,7 @@
     );
 
   scrollbar-width: thin;
-  scrollbar-color: #b4cdd3 transparent;
+  scrollbar-color: #aec8cf transparent;
 }
 
 .trip-modal-body::-webkit-scrollbar {
@@ -392,79 +356,134 @@
 }
 
 .trip-modal-body::-webkit-scrollbar-thumb {
-  background: #b4cdd3;
   border-radius: 20px;
+  background: #aec8cf;
 }
 
 .trip-modal-body::-webkit-scrollbar-thumb:hover {
-  background: #8eb3bc;
+  background: #89afb9;
 }
 
 
 /* =========================================================
-   SECTION CARD
+   EMPTY STATE
 ========================================================= */
 
-.trip-section {
-  width: 100%;
+.trip-empty-state {
+  min-height: 310px;
 
-  margin-bottom: 10px;
-  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 
-  box-sizing: border-box;
+  padding: 30px;
 
-  border: 1px solid #d6e3e7;
-  border-radius: 14px;
-
-  background: #ffffff;
+  text-align: center;
 }
 
-.trip-section:last-child {
+.trip-empty-state-icon {
+  width: 46px;
+  height: 46px;
+
+  display: grid;
+  place-items: center;
+
+  margin-bottom: 10px;
+
+  border-radius: 12px;
+
+  background: #e9f7f5;
+
+  color: #0d9488;
+
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.trip-empty-state strong {
+  color: #173d4e;
+
+  font-size: 14px;
+  font-weight: 850;
+}
+
+.trip-empty-state p {
+  max-width: 430px;
+
+  margin: 5px 0 0;
+
+  color: #728995;
+
+  font-size: 10.5px;
+  line-height: 1.45;
+}
+
+
+/* =========================================================
+   FORM SECTION
+========================================================= */
+
+.trip-form-section {
+  width: 100%;
+
+  margin: 0 0 8px;
+  padding: 11px 13px 12px;
+
+  border: 1px solid #d7e4e8;
+  border-radius: 13px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 3px 12px rgba(15, 56, 75, 0.04);
+}
+
+.trip-form-section:last-child {
   margin-bottom: 0;
 }
 
+.trip-section-heading {
+  width: 100%;
 
-/* =========================================================
-   SECTION HEADER
-========================================================= */
+  min-height: 42px;
 
-.trip-section-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
 
   gap: 14px;
 
-  margin-bottom: 12px;
-  padding-bottom: 10px;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
 
-  border-bottom: 1px solid #e2ebee;
+  border-bottom: 1px solid #e3ecef;
 }
 
-.trip-section-heading {
+.trip-section-heading > div:first-child {
   min-width: 0;
 }
 
-.trip-section-heading strong {
+.trip-section-heading > div:first-child strong {
   display: block;
 
-  color: #173e50;
+  color: #12394b;
 
-  font-size: 16px;
-  font-weight: 800;
+  font-size: 13px;
   line-height: 1.2;
+  font-weight: 900;
 }
 
-.trip-section-heading span {
+.trip-section-heading > div:first-child small {
   display: block;
 
   margin-top: 2px;
 
-  color: #607c89;
+  color: #587583;
 
-  font-size: 11px;
-  font-weight: 550;
-  line-height: 1.4;
+  font-size: 9.5px;
+  line-height: 1.25;
+  font-weight: 600;
 }
 
 
@@ -472,341 +491,311 @@
    TRIP ID
 ========================================================= */
 
-.trip-id-badge {
+.trip-heading-trip-id {
   flex: 0 0 auto;
 
-  display: inline-flex;
-  align-items: center;
+  min-width: 104px;
 
-  min-height: 38px;
+  padding: 7px 10px;
 
-  padding: 0 12px;
-
-  color: #118d86;
-
-  font-size: 13px;
-  font-weight: 800;
-
-  border: 1px solid #c4e4e1;
+  border: 1px solid #c7e3e0;
   border-radius: 9px;
 
-  background: #f1fbfa;
+  background: #eff9f7;
 }
 
-.trip-id-badge small {
-  margin-right: 2px;
+.trip-heading-trip-id small,
+.trip-heading-trip-id strong {
+  display: block;
+}
 
-  color: #718a95;
+.trip-heading-trip-id small {
+  color: #748d98;
 
-  font-size: 9px;
-  font-weight: 800;
-  text-transform: uppercase;
+  font-size: 7.5px;
+  line-height: 1;
+  font-weight: 900;
+
+  letter-spacing: 0.05em;
+}
+
+.trip-heading-trip-id strong {
+  margin-top: 2px;
+
+  color: #087c74;
+
+  font-size: 11px;
+  line-height: 1.1;
+  font-weight: 900;
 }
 
 
 /* =========================================================
-   STANDARD FORM GRIDS
+   COMMON 4-COLUMN GRID
+   WTG / INTERCARTING / OTHER / CRANE
 ========================================================= */
 
-
-
-
-
-
-
-
-
-/* =========================================================
-   UNIFORM FORM GRID — SAME INPUT WIDTH FOR ALL MOVEMENTS
-========================================================= */
-
-.trip-form-grid,
-.trip-form-grid-2,
-.trip-form-grid-3,
-.intercarting-client-grid,
-.intercarting-operations-grid,
-.intercarting-date-row {
+.trip-form-grid {
   width: 100%;
+
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
+
   gap: 10px 12px;
+
   align-items: end;
 }
-
-
-
-/* Every field occupies exactly one grid column */
-.trip-form-grid > *,
-.trip-form-grid-2 > *,
-.trip-form-grid-3 > *,
-.intercarting-client-grid > *,
-.intercarting-operations-grid > *,
-.intercarting-date-row > * {
-  width: 100%;
-  min-width: 0;
-  max-width: 100%;
-
-  grid-column: auto !important;
-
-  box-sizing: border-box;
-}
-
-/* Every actual control fills its column */
-.trip-form-grid input,
-.trip-form-grid select,
-.trip-form-grid textarea,
-.trip-form-grid .trip-select-wrap,
-.trip-form-grid .trip-input-unit,
-
-.trip-form-grid-2 input,
-.trip-form-grid-2 select,
-.trip-form-grid-2 textarea,
-.trip-form-grid-2 .trip-select-wrap,
-.trip-form-grid-2 .trip-input-unit,
-
-.trip-form-grid-3 input,
-.trip-form-grid-3 select,
-.trip-form-grid-3 textarea,
-.trip-form-grid-3 .trip-select-wrap,
-.trip-form-grid-3 .trip-input-unit,
-
-.intercarting-client-grid input,
-.intercarting-client-grid select,
-.intercarting-client-grid textarea,
-.intercarting-client-grid .trip-select-wrap,
-.intercarting-client-grid .trip-input-unit,
-
-.intercarting-operations-grid input,
-.intercarting-operations-grid select,
-.intercarting-operations-grid textarea,
-.intercarting-operations-grid .trip-select-wrap,
-.intercarting-operations-grid .trip-input-unit,
-
-.intercarting-date-row input,
-.intercarting-date-row select,
-.intercarting-date-row textarea,
-.intercarting-date-row .trip-select-wrap,
-.intercarting-date-row .trip-input-unit {
-  width: 100% !important;
-  min-width: 0 !important;
-  max-width: 100% !important;
-
-  box-sizing: border-box;
-}
-
 
 .trip-form-grid > * {
   width: 100%;
   min-width: 0;
-  max-width: 100%;
-  box-sizing: border-box;
 }
 
-.trip-form-grid .trip-field-group,
-.trip-form-grid .trip-select-wrap,
-.trip-form-grid .trip-input-unit,
-.trip-form-grid input,
-.trip-form-grid select,
-.trip-form-grid textarea {
-  width: 100%;
-  min-width: 0;
-  max-width: 100%;
-  box-sizing: border-box;
+.trip-field-full {
+  grid-column: 1 / -1;
 }
+
 
 /* =========================================================
    FIELD
 ========================================================= */
 
 .trip-field-group {
+  width: 100%;
   min-width: 0;
 }
 
-.trip-field-group label {
+.trip-field-group > label {
   display: block;
 
   margin: 0 0 5px;
 
-  color: #183e50;
+  color: #173c50;
 
-  font-size: 10.5px;
-  font-weight: 800;
-  line-height: 1.2;
-  letter-spacing: 0.3px;
+  font-size: 9px;
+  line-height: 1.1;
+  font-weight: 850;
+
+  letter-spacing: 0.03em;
   text-transform: uppercase;
 }
 
 .trip-required {
   margin-left: 3px;
 
-  color: #ef4444;
+  color: #e34242;
 
-  font-weight: 800;
+  font-weight: 900;
 }
 
-.trip-field-group input,
-.trip-field-group textarea {
+.trip-field-group > input,
+.trip-field-group > textarea {
   width: 100%;
 
   box-sizing: border-box;
 
-  color: #163b4d;
+  border: 1px solid #c9dce3;
+  border-radius: 9px;
 
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 550;
-
-  outline: none;
-
-  border: 1px solid #c7dbe3;
-  border-radius: 10px;
+  outline: 0;
 
   background: #ffffff;
 
+  color: #173a4c;
+
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 650;
+
   transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease,
-    background 0.2s ease;
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
 }
 
-.trip-field-group input {
-  height: 45px;
+.trip-field-group > input {
+  height: 42px;
 
-  padding: 0 14px;
+  padding: 0 12px;
 }
 
-.trip-field-group textarea {
-  min-height: 76px;
+.trip-field-group > textarea {
+  min-height: 66px;
+  max-height: 110px;
 
-  padding: 11px 14px;
+  padding: 9px 11px;
+
+  line-height: 1.4;
 
   resize: vertical;
 }
 
-.trip-field-group input:focus,
-.trip-field-group textarea:focus {
-  border-color: #159f96;
+.trip-field-group > input:focus,
+.trip-field-group > textarea:focus {
+  border-color: #159b92;
 
   box-shadow:
-    0 0 0 3px rgba(21, 159, 150, 0.09);
+    0 0 0 3px rgba(21, 155, 146, 0.09);
 }
 
-.trip-field-group input::placeholder,
-.trip-field-group textarea::placeholder {
-  color: #8297a2;
-
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 550;
+.trip-field-group > input::placeholder,
+.trip-field-group > textarea::placeholder {
+  color: #8599a4;
 
   opacity: 1;
+
+  font-family: inherit;
+  font-weight: 550;
 }
 
 
 /* =========================================================
-   INPUT + UNIT
+   SELECT
 ========================================================= */
 
-.trip-input-unit {
+.trip-select-wrap {
+  position: relative;
+
   width: 100%;
-  height: 45px;
+  min-width: 0;
+}
+
+.trip-select-wrap select {
+  width: 100%;
+  height: 42px;
+
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  padding: 0 34px 0 12px;
+
+  border: 1px solid #c9dce3;
+  border-radius: 9px;
+
+  outline: 0;
+
+  background: #ffffff;
+
+  color: #173a4c;
+
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 750;
+
+  cursor: pointer;
+
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.trip-select-wrap select:focus {
+  border-color: #159b92;
+
+  box-shadow:
+    0 0 0 3px rgba(21, 155, 146, 0.09);
+}
+
+.trip-select-arrow {
+  position: absolute;
+  top: 50%;
+  right: 11px;
+
+  transform: translateY(-52%);
+
+  color: #426b7b;
+
+  font-size: 12px;
+  font-weight: 900;
+
+  pointer-events: none;
+}
+
+
+/* =========================================================
+   INPUT WITH UNIT
+========================================================= */
+
+.trip-input-unit,
+.wtg-quantity-control,
+.wtg-weight-control {
+  width: 100%;
+  height: 42px;
 
   display: flex;
   align-items: stretch;
 
-  box-sizing: border-box;
-
   overflow: hidden;
 
-  border: 1px solid #c7dbe3;
-  border-radius: 10px;
+  border: 1px solid #c9dce3;
+  border-radius: 9px;
 
   background: #ffffff;
 
   transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
 }
 
-.trip-input-unit:focus-within {
-  border-color: #159f96;
+.trip-input-unit:focus-within,
+.wtg-quantity-control:focus-within,
+.wtg-weight-control:focus-within {
+  border-color: #159b92;
 
   box-shadow:
-    0 0 0 3px rgba(21, 159, 150, 0.09);
+    0 0 0 3px rgba(21, 155, 146, 0.09);
 }
 
-.trip-input-unit input {
+.trip-input-unit input,
+.wtg-quantity-control input,
+.wtg-weight-control input {
+  width: 100%;
   min-width: 0;
   height: 100%;
 
   flex: 1;
 
-  padding: 0 14px;
+  padding: 0 11px;
 
   border: 0 !important;
   border-radius: 0 !important;
 
-  outline: none;
+  outline: 0;
 
   box-shadow: none !important;
 
   background: transparent;
+
+  color: #173a4c;
+
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 700;
 }
 
-.trip-input-unit > span {
-  min-width: 52px;
+.trip-input-unit > span,
+.wtg-quantity-control > span,
+.wtg-weight-control > span {
+  min-width: 44px;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  padding: 0 10px;
+  flex: 0 0 auto;
 
-  color: #31566a;
+  padding: 0 7px;
 
-  font-size: 10px;
-  font-weight: 800;
+  border-left: 1px solid #e0e9ec;
+
+  background: #f8fafb;
+
+  color: #3e6070;
+
+  font-size: 8px;
+  font-weight: 900;
+
   text-transform: uppercase;
-
-  border-left: 1px solid #d9e5e9;
-
-  background: #f7fafb;
-}
-
-
-/* =========================================================
-   INTERCARTING / OTHER
-========================================================= */
-
-
-
-
-
-
-
-
-
-/* =========================================================
-   VEHICLE SECTION
-========================================================= */
-
-.trip-vehicle-section {
-  position: relative;
-
-  width: 100%;
-}
-
-.trip-vehicle-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  gap: 12px;
-
-  margin-bottom: 8px;
-  padding-bottom: 8px;
-
-  border-bottom: 1px solid #e1eaed;
 }
 
 
@@ -815,39 +804,42 @@
 ========================================================= */
 
 .trip-add-vehicle-btn {
-  min-height: 38px;
+  height: 34px;
 
   display: inline-flex;
   align-items: center;
+  justify-content: center;
 
-  gap: 8px;
+  gap: 7px;
 
-  padding: 4px 8px 4px 6px;
+  flex: 0 0 auto;
 
-  color: #087f78;
+  padding: 0 7px 0 5px;
 
-  font-family: inherit;
-  font-size: 14px;
-  font-weight: 650;
-
-  cursor: pointer;
-
-  border: 1px solid #bcdedb;
-  border-radius: 10px;
+  border: 1px solid #b9ddd8;
+  border-radius: 9px;
 
   background: #ffffff;
 
+  color: #0b756f;
+
+  font-family: inherit;
+  font-size: 10.5px;
+  font-weight: 750;
+
+  cursor: pointer;
+
   box-shadow:
-    0 3px 10px rgba(15, 118, 110, 0.06);
+    0 3px 10px rgba(14, 116, 107, 0.05);
 
   transition:
-    background 0.2s ease,
-    border-color 0.2s ease,
-    transform 0.2s ease;
+    border-color 0.18s ease,
+    background 0.18s ease,
+    transform 0.18s ease;
 }
 
 .trip-add-vehicle-btn:hover {
-  border-color: #75c8c1;
+  border-color: #72c6be;
 
   background: #f5fcfb;
 }
@@ -856,43 +848,48 @@
   transform: translateY(1px);
 }
 
-.trip-add-vehicle-btn .trip-add-icon {
-  width: 27px;
-  height: 27px;
+.trip-add-vehicle-icon {
+  width: 23px;
+  height: 23px;
 
   display: inline-flex;
   align-items: center;
   justify-content: center;
+
+  border-radius: 7px;
+
+  background: #0d9488;
 
   color: #ffffff;
 
-  font-size: 20px;
+  font-size: 17px;
+  line-height: 1;
   font-weight: 500;
-
-  border-radius: 8px;
-
-  background: #0e9b91;
 }
 
-.trip-add-count {
-  min-width: 26px;
-  height: 25px;
+.trip-add-vehicle-text {
+  white-space: nowrap;
+}
+
+.trip-add-vehicle-count {
+  min-width: 23px;
+  height: 23px;
 
   display: inline-flex;
   align-items: center;
   justify-content: center;
 
-  padding: 0 7px;
+  padding: 0 6px;
 
-  color: #147e78;
+  border: 1px solid #d0e9e6;
+  border-radius: 7px;
 
-  font-size: 10px;
-  font-weight: 800;
+  background: #eff9f8;
 
-  border: 1px solid #d2e8e6;
-  border-radius: 8px;
+  color: #087c75;
 
-  background: #f2fbfa;
+  font-size: 9px;
+  font-weight: 900;
 }
 
 
@@ -900,8 +897,14 @@
    WTG VEHICLE ROW
 ========================================================= */
 
-.wtg-vehicle-list {
+.wtg-vehicle-rows,
+.intercarting-vehicle-rows {
   width: 100%;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 3px;
 }
 
 .wtg-vehicle-row {
@@ -910,78 +913,197 @@
   width: 100%;
 
   display: grid;
-
   grid-template-columns:
-    32px
-    minmax(155px, 1.05fr)
-    minmax(145px, 0.95fr)
+    28px
+    minmax(145px, 0.9fr)
+    minmax(145px, 0.9fr)
     minmax(165px, 1fr)
-    minmax(95px, 0.55fr)
-    minmax(110px, 0.65fr)
-    minmax(220px, 1.35fr)
+    minmax(92px, 0.56fr)
+    minmax(110px, 0.64fr)
+    minmax(220px, 1.3fr)
     28px;
-
-  gap: 10px;
 
   align-items: end;
 
-  padding: 7px 0;
+  column-gap: 9px;
+  row-gap: 5px;
+
+  padding: 4px 0;
 }
 
-.wtg-row-number {
-  height: 45px;
+.wtg-vehicle-index,
+.intercarting-vehicle-index {
+  width: 28px;
+  height: 42px;
+
+  align-self: end;
+
+  display: grid;
+  place-items: center;
+
+  color: #0b837a;
+
+  font-size: 10.5px;
+  font-weight: 900;
+}
+
+.wtg-vehicle-row .trip-field-group,
+.intercarting-vehicle-row .trip-field-group {
+  min-width: 0;
+}
+
+.wtg-vehicle-row .trip-field-group > label,
+.intercarting-vehicle-row .trip-field-group > label {
+  min-height: 20px;
+
+  display: flex;
+  align-items: flex-end;
+
+  margin-bottom: 4px;
+
+  font-size: 8.5px;
+}
+
+
+/* =========================================================
+   SUGGEST / DATALIST INPUT
+========================================================= */
+
+.wtg-suggest-input {
+  width: 100%;
+  min-width: 0;
+}
+
+.wtg-suggest-input input {
+  width: 100%;
+  height: 42px;
+
+  padding: 0 11px;
+
+  border: 1px solid #c9dce3;
+  border-radius: 9px;
+
+  outline: 0;
+
+  background: #ffffff;
+
+  color: #173a4c;
+
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 650;
+
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.wtg-suggest-input input:focus {
+  border-color: #159b92;
+
+  box-shadow:
+    0 0 0 3px rgba(21, 155, 146, 0.09);
+}
+
+.wtg-suggest-input input::placeholder {
+  color: #8599a4;
+  opacity: 1;
+}
+
+
+/* =========================================================
+   WTG DIMENSIONS — ONE SINGLE CONTROL
+========================================================= */
+
+.wtg-dimensions-control {
+  width: 100%;
+  height: 42px;
+
+  display: flex;
+  align-items: stretch;
+
+  overflow: hidden;
+
+  border: 1px solid #c9dce3;
+  border-radius: 9px;
+
+  background: #ffffff;
+
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.wtg-dimensions-control:focus-within {
+  border-color: #159b92;
+
+  box-shadow:
+    0 0 0 3px rgba(21, 155, 146, 0.09);
+}
+
+.wtg-dimension-part {
+  min-width: 0;
+  flex: 1;
+
+  display: flex;
+}
+
+.wtg-dimension-part input {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+
+  padding: 0 3px;
+
+  border: 0;
+
+  outline: 0;
+
+  background: transparent;
+
+  color: #173a4c;
+
+  text-align: center;
+
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.wtg-dimension-part input::placeholder {
+  color: #7e939e;
+  opacity: 1;
+  font-weight: 800;
+}
+
+.wtg-dimension-separator {
+  flex: 0 0 18px;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  color: #088b83;
+  color: #8ba0aa;
 
-  font-size: 12px;
-  font-weight: 800;
+  font-size: 10px;
+  font-weight: 900;
 }
 
+.wtg-dimensions-unit {
+  min-width: 38px;
 
-/* =========================================================
-   VEHICLE TEXT INPUT
-========================================================= */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
-.wtg-text-input {
-  width: 100%;
-  height: 45px;
+  border-left: 1px solid #e0e9ec;
 
-  padding: 0 13px;
+  background: #f8fafb;
 
-  box-sizing: border-box;
+  color: #3e6070;
 
-  color: #163c4e;
-
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 550;
-
-  outline: none;
-
-  border: 1px solid #c7dbe3;
-  border-radius: 10px;
-
-  background: #ffffff;
-
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
-}
-
-.wtg-text-input:focus {
-  border-color: #159f96;
-
-  box-shadow:
-    0 0 0 3px rgba(21, 159, 150, 0.09);
-}
-
-.wtg-text-input::placeholder {
-  color: #8297a2;
-  opacity: 1;
+  font-size: 8px;
+  font-weight: 900;
 }
 
 
@@ -989,252 +1111,251 @@
    REMOVE VEHICLE
 ========================================================= */
 
-.wtg-remove-btn {
+.wtg-remove-vehicle-btn {
   width: 28px;
-  height: 45px;
+  height: 42px;
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  align-self: end;
+
+  display: grid;
+  place-items: center;
 
   padding: 0;
 
-  color: #e34848;
-
-  font-size: 18px;
-  font-weight: 400;
-
-  cursor: pointer;
-
   border: 0;
+  border-radius: 50%;
 
   background: transparent;
 
-  transition:
-    color 0.2s ease,
-    transform 0.2s ease;
+  color: #d94747;
+
+  font-size: 17px;
+  line-height: 1;
+  font-weight: 700;
+
+  cursor: pointer;
 }
 
-.wtg-remove-btn:hover {
-  color: #c82020;
-
-  transform: scale(1.08);
+.wtg-remove-vehicle-btn:hover {
+  color: #b91c1c;
 }
 
 
 /* =========================================================
-   DIMENSIONS
+   WTG COMPACT ADDED ROWS
 ========================================================= */
 
-.wtg-dimension-control {
+.wtg-vehicle-row-compact,
+.intercarting-vehicle-row-compact {
+  padding: 3px 0;
+}
+
+.wtg-vehicle-row-compact .trip-field-group > label,
+.intercarting-vehicle-row-compact .trip-field-group > label {
+  display: none;
+}
+
+.wtg-vehicle-row-compact .wtg-vehicle-index,
+.wtg-vehicle-row-compact .wtg-remove-vehicle-btn,
+.intercarting-vehicle-row-compact .intercarting-vehicle-index,
+.intercarting-vehicle-row-compact .wtg-remove-vehicle-btn {
+  align-self: center;
+}
+
+
+/* =========================================================
+   INTERCARTING / OTHER VEHICLE ROW
+========================================================= */
+
+.intercarting-vehicle-row {
+  position: relative;
+
   width: 100%;
-  height: 45px;
 
-  display: flex;
-  align-items: stretch;
+  display: grid;
+  grid-template-columns:
+    28px
+    minmax(160px, 1.05fr)
+    minmax(160px, 1.05fr)
+    minmax(175px, 1.12fr)
+    minmax(102px, 0.64fr)
+    minmax(125px, 0.76fr)
+    28px;
 
-  overflow: hidden;
+  align-items: end;
 
-  box-sizing: border-box;
+  column-gap: 10px;
+  row-gap: 5px;
 
-  border: 1px solid #c7dbe3;
-  border-radius: 10px;
+  padding: 4px 0;
+}
+
+
+/* =========================================================
+   REMARKS
+========================================================= */
+
+.wtg-remark-field,
+.intercarting-remark-field,
+.crane-remark-field {
+  width: 100%;
+
+  margin-top: 8px;
+}
+
+.wtg-remark-field textarea,
+.intercarting-remark-field textarea,
+.crane-remark-field textarea {
+  width: 100%;
+  min-height: 68px;
+  max-height: 110px;
+
+  padding: 9px 11px;
+
+  border: 1px solid #c9dce3;
+  border-radius: 9px;
+
+  outline: 0;
 
   background: #ffffff;
 
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
-}
-
-.wtg-dimension-control:focus-within {
-  border-color: #159f96;
-
-  box-shadow:
-    0 0 0 3px rgba(21, 159, 150, 0.09);
-}
-
-.wtg-dimension-control input {
-  min-width: 0;
-  height: 100%;
-
-  flex: 1;
-
-  padding: 0 5px;
-
-  color: #173d4f;
+  color: #173a4c;
 
   font-family: inherit;
-  font-size: 12px;
-  font-weight: 650;
-  text-align: center;
+  font-size: 11.5px;
+  font-weight: 550;
+  line-height: 1.4;
 
-  outline: none;
+  resize: vertical;
 
-  border: 0;
-
-  background: transparent;
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
 }
 
-.wtg-dimension-control input::placeholder {
-  color: #81949e;
+.wtg-remark-field textarea:focus,
+.intercarting-remark-field textarea:focus,
+.crane-remark-field textarea:focus {
+  border-color: #159b92;
 
+  box-shadow:
+    0 0 0 3px rgba(21, 155, 146, 0.09);
+}
+
+.wtg-remark-field textarea::placeholder,
+.intercarting-remark-field textarea::placeholder,
+.crane-remark-field textarea::placeholder {
+  color: #8599a4;
   opacity: 1;
 }
 
-.wtg-dimension-x {
-  display: flex;
-  align-items: center;
-  justify-content: center;
 
-  color: #78909a;
+/* =========================================================
+   FILE UPLOAD
+========================================================= */
 
-  font-size: 12px;
-  font-weight: 800;
+.trip-file-upload {
+  width: 100%;
+  min-height: 62px;
+
+  display: flex !important;
+  align-items: center !important;
+
+  gap: 10px;
+
+  padding: 8px 10px !important;
+
+  border: 1px dashed #a8cbd0;
+  border-radius: 10px;
+
+  background: #f5fbfa;
+
+  cursor: pointer;
+
+  text-transform: none !important;
+  letter-spacing: 0 !important;
 }
 
-.wtg-dimension-unit {
-  min-width: 42px;
+.trip-file-upload input {
+  display: none;
+}
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.trip-file-icon {
+  width: 34px;
+  height: 34px;
 
-  color: #31566a;
+  flex: 0 0 34px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 8px;
+
+  background: #dff5f2;
+
+  color: #0d9488;
+
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.trip-file-content {
+  min-width: 0;
+  flex: 1;
+
+  display: grid;
+
+  gap: 2px;
+}
+
+.trip-file-content strong {
+  overflow: hidden;
+
+  color: #264c5d;
 
   font-size: 10px;
   font-weight: 800;
 
-  border-left: 1px solid #d9e5e9;
-
-  background: #f7fafb;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
+.trip-file-content small {
+  color: #7c929c;
 
-/* =========================================================
-   REMARK
-========================================================= */
-
-.trip-remark-group {
-  width: 100%;
-
-  margin-top: 5px;
+  font-size: 8.5px;
+  font-weight: 600;
 }
 
-.trip-remark-group label {
-  display: block;
+.trip-file-action {
+  flex: 0 0 auto;
 
-  margin-bottom: 5px;
+  padding: 6px 9px;
 
-  color: #173e50;
-
-  font-size: 10.5px;
-  font-weight: 800;
-  letter-spacing: 0.3px;
-  text-transform: uppercase;
-}
-
-.trip-remark-group textarea {
-  width: 100%;
-  min-height: 74px;
-
-  padding: 11px 13px;
-
-  box-sizing: border-box;
-
-  color: #173d4e;
-
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 550;
-
-  outline: none;
-
-  resize: vertical;
-
-  border: 1px solid #c7dbe3;
-  border-radius: 10px;
-
-  background: #ffffff;
-}
-
-.trip-remark-group textarea:focus {
-  border-color: #159f96;
-
-  box-shadow:
-    0 0 0 3px rgba(21, 159, 150, 0.09);
-}
-
-.trip-remark-group textarea::placeholder {
-  color: #8297a2;
-  opacity: 1;
-}
-
-
-
-
-/* =========================================================
-   REMARKS — INTERCARTING / OTHER / CRANE
-========================================================= */
-
-.intercarting-remark-field,
-.crane-remark-field {
-  width: 100%;
-  margin-top: 10px;
-}
-
-.intercarting-remark-field textarea,
-.crane-remark-field textarea {
-  width: 100%;
-  min-height: 72px;
-  max-height: 110px;
-
-  padding: 11px 13px;
-
-  box-sizing: border-box;
-
-  color: #173d4e;
-
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 550;
-  line-height: 1.45;
-
-  outline: none;
-  resize: vertical;
-
-  border: 1px solid #c7dbe3;
-  border-radius: 10px;
+  border: 1px solid #c6dcdf;
+  border-radius: 7px;
 
   background: #ffffff;
 
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
+  color: #087d75;
+
+  font-size: 9px;
+  font-weight: 850;
 }
 
-.intercarting-remark-field textarea:focus,
-.crane-remark-field textarea:focus {
-  border-color: #159f96;
-
-  box-shadow:
-    0 0 0 3px rgba(21, 159, 150, 0.09);
-}
-
-.intercarting-remark-field textarea::placeholder,
-.crane-remark-field textarea::placeholder {
-  color: #8297a2;
-  opacity: 1;
-}
 
 /* =========================================================
-   FOOTER
-   FIXED FOR EVERY MOVEMENT
+   FOOTER — FIXED
 ========================================================= */
 
 .trip-modal-actions {
-  flex: 0 0 auto;
+  width: 100%;
+  height: 72px;
+
   min-height: 72px;
+  max-height: 72px;
+
+  flex: 0 0 72px;
 
   display: flex;
   align-items: center;
@@ -1242,86 +1363,83 @@
 
   gap: 10px;
 
-  padding: 12px 20px;
+  padding: 11px 20px;
 
   border-top: 1px solid #bfdedb;
 
   background:
     linear-gradient(
       90deg,
-      #f4f9f9 0%,
+      #f3f8f8 0%,
       #edf7f6 55%,
-      #e2f2f0 100%
+      #e3f2f0 100%
     );
 
   box-shadow:
-    0 -8px 24px rgba(12, 94, 91, 0.07);
+    0 -7px 20px rgba(11, 82, 79, 0.05);
 }
 
 .trip-modal-actions button {
-  min-width: 138px;
-  height: 48px;
+  min-width: 120px;
+  height: 42px;
 
-  padding: 0 22px;
+  padding: 0 18px;
+
+  border-radius: 9px;
 
   font-family: inherit;
-  font-size: 14px;
-  font-weight: 700;
+  font-size: 12px;
+  font-weight: 800;
 
   cursor: pointer;
 
-  border-radius: 10px;
-
   transition:
-    transform 0.18s ease,
+    background 0.18s ease,
+    border-color 0.18s ease,
     box-shadow 0.18s ease,
-    background 0.18s ease;
+    transform 0.18s ease;
 }
 
-
-/* CANCEL */
-
-.trip-cancel-btn {
-  color: #183e50;
-
-  border: 1px solid #c7dbe3;
+.trip-btn-outline {
+  border: 1px solid #c6d9df;
 
   background: #ffffff;
+
+  color: #173d4e;
 }
 
-.trip-cancel-btn:hover {
-  background: #f5f8f9;
+.trip-btn-outline:hover {
+  border-color: #a9c8cf;
+
+  background: #f8fbfb;
 }
 
+.trip-btn-primary {
+  border: 1px solid #0c8f86;
 
-/* CREATE */
+  background:
+    linear-gradient(
+      135deg,
+      #10a095,
+      #07877f
+    );
 
-.trip-create-btn {
   color: #ffffff;
 
-  border: 1px solid #0d968d;
-
-  background:
-    linear-gradient(
-      135deg,
-      #10a097,
-      #078b83
-    );
-
   box-shadow:
-    0 7px 16px rgba(14, 155, 145, 0.18);
+    0 7px 16px rgba(13, 148, 136, 0.18);
 }
 
-.trip-create-btn:hover {
+.trip-btn-primary:hover {
   background:
     linear-gradient(
       135deg,
-      #0d958c,
-      #077d77
+      #0d958b,
+      #067c75
     );
 
   box-shadow:
-    0 9px 20px rgba(14, 155, 145, 0.24);
+    0 9px 20px rgba(13, 148, 136, 0.23);
 }
 
 .trip-modal-actions button:active {
@@ -1330,12 +1448,10 @@
 
 
 /* =========================================================
-   DATE INPUT
+   DATE / NUMBER INPUT
 ========================================================= */
 
 .trip-field-group input[type="date"] {
-  color: #173d4f;
-
   cursor: pointer;
 }
 
@@ -1343,36 +1459,31 @@
   cursor: pointer;
 }
 
-
-/* =========================================================
-   NUMBER INPUT
-========================================================= */
-
 .trip-field-group input[type="number"]::-webkit-inner-spin-button,
 .trip-field-group input[type="number"]::-webkit-outer-spin-button,
-.wtg-text-input[type="number"]::-webkit-inner-spin-button,
-.wtg-text-input[type="number"]::-webkit-outer-spin-button {
-  margin: 0;
-
+.wtg-quantity-control input::-webkit-inner-spin-button,
+.wtg-quantity-control input::-webkit-outer-spin-button,
+.wtg-weight-control input::-webkit-inner-spin-button,
+.wtg-weight-control input::-webkit-outer-spin-button,
+.wtg-dimension-part input::-webkit-inner-spin-button,
+.wtg-dimension-part input::-webkit-outer-spin-button {
   -webkit-appearance: none;
+  margin: 0;
 }
 
 
 /* =========================================================
-   LAPTOP / SMALL DESKTOP
-   Keep the same modal proportions, only shrink when the
-   physical viewport cannot fit the 1380 × 780 desktop size.
+   LAPTOP — SHRINK OUTER SHELL ONLY WHEN SCREEN CANNOT FIT
 ========================================================= */
 
 @media (max-width: 1420px), (max-height: 820px) {
-
   .trip-modal-overlay {
-    padding: 15px;
+    padding: 14px;
   }
 
   .trip-modal-card {
-    width: calc(100vw - 30px);
-    height: calc(100dvh - 30px);
+    width: calc(100vw - 28px);
+    height: calc(100dvh - 28px);
 
     min-width: 0;
     min-height: 0;
@@ -1380,36 +1491,21 @@
     max-width: 1380px;
     max-height: 780px;
   }
-
-  .wtg-vehicle-row {
-    grid-template-columns:
-      28px
-      minmax(140px, 1fr)
-      minmax(130px, 0.95fr)
-      minmax(150px, 1fr)
-      minmax(90px, 0.55fr)
-      minmax(105px, 0.65fr)
-      minmax(205px, 1.25fr)
-      26px;
-
-    gap: 8px;
-  }
 }
 
 
 /* =========================================================
-   TABLET LANDSCAPE
+   TABLET / NARROW LAPTOP
 ========================================================= */
 
 @media (max-width: 1100px) {
-
   .trip-modal-overlay {
-    padding: 12px;
+    padding: 10px;
   }
 
   .trip-modal-card {
-    width: calc(100vw - 24px);
-    height: calc(100dvh - 24px);
+    width: calc(100vw - 20px);
+    height: calc(100dvh - 20px);
 
     min-width: 0;
     min-height: 0;
@@ -1421,34 +1517,93 @@
   }
 
   .trip-modal-header {
-    padding: 16px 18px;
+    height: 112px;
+    min-height: 112px;
+    max-height: 112px;
+    flex-basis: 112px;
+
+    padding: 14px 16px;
   }
 
-  .trip-form-grid,
-  .trip-form-grid-2,
-  .trip-form-grid-3,
-  .intercarting-client-grid,
-  .intercarting-operations-grid,
-  .intercarting-date-row {
+  .trip-modal-header-left {
+    padding-right: 50px;
+  }
+
+  .trip-modal-title-copy h2 {
+    font-size: 20px;
+  }
+
+  .trip-header-movement {
+    width: 250px;
+    min-width: 250px;
+  }
+
+  .trip-form-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .wtg-vehicle-row {
+  .wtg-vehicle-row,
+  .intercarting-vehicle-row {
     grid-template-columns:
-      30px
-      repeat(2, minmax(0, 1fr));
+      26px
+      repeat(3, minmax(0, 1fr))
+      26px;
 
-    align-items: end;
+    row-gap: 7px;
   }
 
-  .wtg-row-number {
-    grid-row: span 3;
+  .wtg-vehicle-index,
+  .intercarting-vehicle-index {
+    grid-column: 1;
+    grid-row: 1 / 3;
+    align-self: center;
   }
 
-  .wtg-remove-btn {
-    position: absolute;
-    top: 6px;
-    right: 0;
+  .wtg-vehicle-row .wtg-field-vehicle-type,
+  .intercarting-vehicle-row .intercarting-field-vehicle-type {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .wtg-vehicle-row .wtg-field-configuration,
+  .intercarting-vehicle-row .intercarting-field-configuration {
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  .wtg-vehicle-row .wtg-field-classification,
+  .intercarting-vehicle-row .intercarting-field-classification {
+    grid-column: 4;
+    grid-row: 1;
+  }
+
+  .wtg-vehicle-row .wtg-field-quantity,
+  .intercarting-vehicle-row .intercarting-field-quantity {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  .wtg-vehicle-row .wtg-field-weight,
+  .intercarting-vehicle-row .intercarting-field-weight {
+    grid-column: 3;
+    grid-row: 2;
+  }
+
+  .wtg-vehicle-row .wtg-field-dimensions {
+    grid-column: 4;
+    grid-row: 2;
+  }
+
+  .wtg-vehicle-row .wtg-remove-vehicle-btn,
+  .intercarting-vehicle-row .wtg-remove-vehicle-btn {
+    grid-column: 5;
+    grid-row: 1 / 3;
+    align-self: center;
+  }
+
+  .wtg-vehicle-row-compact .trip-field-group > label,
+  .intercarting-vehicle-row-compact .trip-field-group > label {
+    display: none;
   }
 }
 
@@ -1457,64 +1612,107 @@
    TABLET PORTRAIT
 ========================================================= */
 
-@media (max-width: 768px) {
-
-  .trip-modal-overlay {
-    align-items: center;
-
-    padding: 8px;
-  }
-
-  .trip-modal-card {
-    width: calc(100vw - 16px);
-    height: calc(100dvh - 16px);
-
-    min-width: 0;
-    min-height: 0;
-
-    max-width: none;
-    max-height: none;
-
-    border-radius: 13px;
-  }
-
+@media (max-width: 760px) {
   .trip-modal-header {
+    height: 138px;
+    min-height: 138px;
+    max-height: 138px;
+    flex-basis: 138px;
+
     align-items: flex-start;
 
-    padding: 14px 15px;
+    padding: 12px 14px;
   }
 
-  .trip-modal-title {
-    font-size: 21px;
+  .trip-modal-header-left {
+    padding-right: 44px;
   }
 
-  .trip-modal-header-right {
+  .trip-modal-title-row {
+    align-items: stretch;
+    flex-direction: column;
+
     gap: 8px;
   }
 
-  .trip-movement-field {
-    width: 210px;
+  .trip-header-movement {
+    width: min(360px, 100%);
+    min-width: 0;
+  }
+
+  .trip-modal-close {
+    top: 12px;
+    right: 12px;
   }
 
   .trip-modal-body {
     padding: 8px;
   }
 
-  .trip-section {
-    padding: 12px;
-  }
-
-  .trip-form-grid,
-  .trip-form-grid-2,
-  .trip-form-grid-3,
-  .intercarting-client-grid,
-  .intercarting-operations-grid,
-  .intercarting-date-row {
+  .trip-form-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .trip-modal-actions {
-    padding: 10px 12px;
+  .wtg-vehicle-row,
+  .intercarting-vehicle-row {
+    grid-template-columns:
+      24px
+      repeat(2, minmax(0, 1fr))
+      24px;
+
+    row-gap: 7px;
+  }
+
+  .wtg-vehicle-index,
+  .intercarting-vehicle-index {
+    grid-column: 1;
+    grid-row: 1 / 4;
+  }
+
+  .wtg-vehicle-row .wtg-field-vehicle-type,
+  .intercarting-vehicle-row .intercarting-field-vehicle-type {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .wtg-vehicle-row .wtg-field-configuration,
+  .intercarting-vehicle-row .intercarting-field-configuration {
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  .wtg-vehicle-row .wtg-field-classification,
+  .intercarting-vehicle-row .intercarting-field-classification {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  .wtg-vehicle-row .wtg-field-quantity,
+  .intercarting-vehicle-row .intercarting-field-quantity {
+    grid-column: 3;
+    grid-row: 2;
+  }
+
+  .wtg-vehicle-row .wtg-field-weight,
+  .intercarting-vehicle-row .intercarting-field-weight {
+    grid-column: 2;
+    grid-row: 3;
+  }
+
+  .wtg-vehicle-row .wtg-field-dimensions {
+    grid-column: 3;
+    grid-row: 3;
+  }
+
+  .wtg-vehicle-row .wtg-remove-vehicle-btn,
+  .intercarting-vehicle-row .wtg-remove-vehicle-btn {
+    grid-column: 4;
+    grid-row: 1 / 4;
+  }
+
+  .wtg-vehicle-row-compact .trip-field-group > label,
+  .intercarting-vehicle-row-compact .trip-field-group > label {
+    display: flex;
   }
 }
 
@@ -1524,11 +1722,8 @@
 ========================================================= */
 
 @media (max-width: 520px) {
-
   .trip-modal-overlay {
     padding: 4px;
-
-    background: rgba(7, 27, 38, 0.82);
   }
 
   .trip-modal-card {
@@ -1544,205 +1739,140 @@
     border-radius: 11px;
   }
 
-
-  /* HEADER */
-
   .trip-modal-header {
-    display: block;
+    height: 142px;
+    min-height: 142px;
+    max-height: 142px;
+    flex-basis: 142px;
 
-    padding: 14px;
-  }
-
-  .trip-modal-badge {
-    display: none;
-  }
-
-  .trip-modal-title {
-    padding-right: 48px;
-
-    font-size: 20px;
+    padding: 11px 12px;
   }
 
   .trip-modal-subtitle {
     display: none;
   }
 
-  .trip-modal-header-right {
-    width: 100%;
+  .trip-modal-title-copy h2 {
+    padding-right: 38px;
 
-    display: block;
-
-    margin-top: 10px;
+    font-size: 18px;
   }
 
-  .trip-movement-field {
+  .trip-modal-title-copy p {
+    display: none;
+  }
+
+  .trip-header-movement {
     width: 100%;
   }
 
-  .trip-movement-field select {
-    height: 45px;
+  .trip-header-select-wrap select {
+    height: 44px;
   }
 
   .trip-modal-close {
-    position: absolute;
-    top: 12px;
-    right: 12px;
+    top: 10px;
+    right: 10px;
 
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
   }
-
-
-  /* BODY */
 
   .trip-modal-body {
-    flex: 1 1 auto;
-
-    min-height: 0;
-
     padding: 7px;
-
-    overflow-y: auto;
-    overflow-x: hidden;
   }
 
-
-  /* SECTIONS */
-
-  .trip-section {
-    margin-bottom: 8px;
-    padding: 11px 10px;
+  .trip-form-section {
+    padding: 10px 9px;
 
     border-radius: 11px;
   }
 
-  .trip-section-header {
+  .trip-section-heading {
     align-items: flex-start;
-
-    margin-bottom: 10px;
-    padding-bottom: 8px;
   }
 
-  .trip-section-heading strong {
-    font-size: 14px;
+  .trip-heading-trip-id {
+    display: none;
   }
 
-  .trip-id-badge {
-    min-height: 34px;
-
-    padding: 0 8px;
-
-    font-size: 11px;
-  }
-
-
-  /* ALL FORM ROWS BECOME SINGLE COLUMN */
-
-  .trip-form-grid,
-  .trip-form-grid-2,
-  .trip-form-grid-3,
-  .intercarting-client-grid,
-  .intercarting-operations-grid,
-  .intercarting-date-row {
+  .trip-form-grid {
     grid-template-columns: 1fr;
 
     gap: 9px;
   }
 
-  .intercarting-operations-grid,
-  .intercarting-date-row {
-    margin-top: 9px;
+  .trip-add-vehicle-text {
+    display: none;
   }
 
-
-  /* INPUTS */
-
-  .trip-field-group input,
-  .trip-select-wrap select,
-  .trip-input-unit,
-  .wtg-text-input,
-  .wtg-dimension-control {
-    height: 46px;
-  }
-
-
-  /* VEHICLE HEADER */
-
-  .trip-vehicle-header {
-    align-items: flex-start;
-  }
-
-  .trip-add-vehicle-btn {
-    flex: 0 0 auto;
-  }
-
-
-  /* VEHICLE ROW */
-
-  .wtg-vehicle-row {
-    display: grid;
-
+  .wtg-vehicle-row,
+  .intercarting-vehicle-row {
     grid-template-columns:
-      26px
-      minmax(0, 1fr);
+      22px
+      minmax(0, 1fr)
+      22px;
 
-    gap: 9px 7px;
+    column-gap: 6px;
+    row-gap: 8px;
 
-    padding: 9px 0;
+    padding: 7px 0;
   }
 
-  .wtg-row-number {
+  .wtg-vehicle-row .trip-field-group,
+  .intercarting-vehicle-row .trip-field-group {
+    grid-column: 2 !important;
+    grid-row: auto !important;
+
+    width: 100%;
+  }
+
+  .wtg-vehicle-index,
+  .intercarting-vehicle-index {
     grid-column: 1;
     grid-row: 1;
 
-    height: 46px;
-
-    align-items: center;
+    align-self: end;
   }
 
-  .wtg-vehicle-row > .trip-field-group,
-  .wtg-vehicle-row > .wtg-field {
-    grid-column: 2;
+  .wtg-vehicle-row .wtg-remove-vehicle-btn,
+  .intercarting-vehicle-row .wtg-remove-vehicle-btn {
+    grid-column: 3;
+    grid-row: 1;
 
-    min-width: 0;
+    align-self: end;
   }
 
-  .wtg-remove-btn {
-    position: absolute;
-    top: 5px;
-    right: 0;
-
-    width: 26px;
-    height: 26px;
+  .wtg-vehicle-row .trip-field-group > label,
+  .intercarting-vehicle-row .trip-field-group > label,
+  .wtg-vehicle-row-compact .trip-field-group > label,
+  .intercarting-vehicle-row-compact .trip-field-group > label {
+    display: flex;
+    min-height: auto;
   }
-
-
-  /* FOOTER */
 
   .trip-modal-actions {
-    flex: 0 0 auto;
+    height: 116px;
+    min-height: 116px;
+    max-height: 116px;
+    flex-basis: 116px;
 
-    display: flex;
     flex-direction: column;
 
-    gap: 8px;
-
-    padding: 10px;
-
-    background: #ffffff;
+    padding: 9px;
   }
 
   .trip-modal-actions button {
     width: 100%;
     min-width: 0;
-    height: 48px;
+    height: 44px;
   }
 
-  .trip-create-btn {
+  .trip-btn-primary {
     order: 1;
   }
 
-  .trip-cancel-btn {
+  .trip-btn-outline {
     order: 2;
   }
 }
@@ -1753,7 +1883,6 @@
 ========================================================= */
 
 @media (max-width: 380px) {
-
   .trip-modal-overlay {
     padding: 0;
   }
@@ -1770,25 +1899,5 @@
 
     border: 0;
     border-radius: 0;
-  }
-
-  .trip-modal-header {
-    padding: 12px;
-  }
-
-  .trip-modal-title {
-    font-size: 19px;
-  }
-
-  .trip-modal-body {
-    padding: 6px;
-  }
-
-  .trip-section {
-    padding: 10px 8px;
-  }
-
-  .trip-modal-actions {
-    padding: 8px;
   }
 }
