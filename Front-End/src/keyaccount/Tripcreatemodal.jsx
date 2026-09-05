@@ -1,6 +1,6 @@
 import React from "react";
 // import "../keyaccount/Tripcreatemodal.css";
-import "./Tripcreatemodal.css";
+import "./tripcreatemodal.css";
 
 const WTG_VEHICLE_TYPES = [
     "Low Bed Trailer",
