@@ -1901,3 +1901,135 @@
     border-radius: 0;
   }
 }
+
+/* =========================================================
+   EDIT MODE / DISABLED STATES
+========================================================= */
+
+/* Movement Type disabled while editing */
+
+.trip-header-select-wrap select:disabled {
+  cursor: not-allowed;
+
+  opacity: 0.72;
+
+  background:
+    rgba(255, 255, 255, 0.07);
+
+  color: rgba(
+    255,
+    255,
+    255,
+    0.82
+  );
+
+  border-color:
+    rgba(
+      255,
+      255,
+      255,
+      0.18
+    );
+
+  box-shadow: none;
+}
+
+
+/* Keep arrow professional when select disabled */
+
+.trip-header-select-wrap
+  select:disabled
+  + .trip-header-select-arrow {
+  opacity: 0.55;
+}
+
+
+/* =========================================================
+   SAVE / CREATE BUTTON DISABLED
+========================================================= */
+
+.trip-btn-primary:disabled {
+  cursor: not-allowed;
+
+  opacity: 0.65;
+
+  background:
+    linear-gradient(
+      135deg,
+      #6aa9a4,
+      #5b8f8b
+    );
+
+  border-color: #79aaa6;
+
+  box-shadow: none;
+
+  transform: none;
+}
+
+
+.trip-btn-primary:disabled:hover {
+  background:
+    linear-gradient(
+      135deg,
+      #6aa9a4,
+      #5b8f8b
+    );
+
+  box-shadow: none;
+
+  transform: none;
+}
+
+
+.trip-btn-primary:disabled:active {
+  transform: none;
+}
+
+
+/* =========================================================
+   OPTIONAL LOADING EFFECT
+========================================================= */
+
+.trip-btn-primary:disabled {
+  position: relative;
+}
+
+
+/* =========================================================
+   COMMON INPUT DISABLED STYLE
+========================================================= */
+
+.trip-field-group
+  input:disabled,
+.trip-field-group
+  textarea:disabled,
+.trip-select-wrap
+  select:disabled,
+.wtg-suggest-input
+  input:disabled,
+.wtg-quantity-control
+  input:disabled,
+.wtg-weight-control
+  input:disabled,
+.wtg-dimension-part
+  input:disabled {
+  cursor: not-allowed;
+
+  color: #607985;
+
+  background: #f3f7f8;
+
+  opacity: 0.82;
+}
+
+
+/* =========================================================
+   MOBILE SAFETY
+========================================================= */
+
+@media (max-width: 768px) {
+  .trip-btn-primary:disabled {
+    width: 100%;
+  }
+}

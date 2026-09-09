@@ -24,10 +24,6 @@ import {
   FaWarehouse,
 } from "react-icons/fa";
 
-/* =========================================
-   LOGIN MODALS
-========================================= */
-
 import Intercarttinglogin
   from "../Loginpage/Intercartinglogin";
 
@@ -40,10 +36,6 @@ import Trackinglogin
 import AssetsLogin
   from "../Loginpage/Assetslogin";
 
-/* =========================================
-   CSS
-========================================= */
-
 import "../css/sidebar.css";
 
 const MOBILE_BREAKPOINT = 560;
@@ -54,10 +46,6 @@ const Sidebar = ({
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
-
-  /* =========================================
-     LOGIN POPUPS
-  ========================================= */
 
   const [
     showIntercartingLogin,
@@ -79,20 +67,12 @@ const Sidebar = ({
     setShowAssetsLogin,
   ] = useState(false);
 
-  /* =========================================
-     MOBILE CHECK
-  ========================================= */
-
   const isMobile = () => {
     return (
       window.innerWidth <=
       MOBILE_BREAKPOINT
     );
   };
-
-  /* =========================================
-     CLOSE SIDEBAR ON MOBILE
-  ========================================= */
 
   const closeMobileSidebar = () => {
     if (
@@ -104,15 +84,9 @@ const Sidebar = ({
     }
   };
 
-  /* =========================================
-     OPEN LOGIN MODAL FROM ROUTE STATE
-  ========================================= */
-
   useEffect(() => {
     const state =
       location.state || {};
-
-    /* ASSETS */
 
     if (
       state.openAssetsLogin
@@ -129,8 +103,6 @@ const Sidebar = ({
 
       return;
     }
-
-    /* OWN VEHICLE */
 
     if (
       state.openOwnVehicleLogin
@@ -150,8 +122,6 @@ const Sidebar = ({
       return;
     }
 
-    /* INTERCARTING */
-
     if (
       state.openIntercartingLogin
     ) {
@@ -169,8 +139,6 @@ const Sidebar = ({
 
       return;
     }
-
-    /* TRACKING */
 
     if (
       state.openTrackingLogin
@@ -193,14 +161,7 @@ const Sidebar = ({
     navigate,
   ]);
 
-  /* =========================================
-     CLEAR SUB LOGIN SESSION
-     WHEN LANDING DASHBOARD IS OPENED
-  ========================================= */
-
   useEffect(() => {
-    /* OWN VEHICLE */
-
     if (
       location.pathname ===
       "/ownvehicledetaildash"
@@ -213,8 +174,6 @@ const Sidebar = ({
         "ownVehicleUsername"
       );
     }
-
-    /* TRACKING */
 
     if (
       location.pathname ===
@@ -229,8 +188,6 @@ const Sidebar = ({
       );
     }
 
-    /* INTERCARTING */
-
     if (
       location.pathname ===
       "/intercartingdash"
@@ -243,8 +200,6 @@ const Sidebar = ({
         "intercartingUsername"
       );
     }
-
-    /* TRIPS LANDING PAGE */
 
     if (
       location.pathname ===
@@ -270,17 +225,11 @@ const Sidebar = ({
     location.pathname,
   ]);
 
-  /* =========================================
-     OPERATIONS MENU
-  ========================================= */
-
   const operationsMenu = [
     {
       title: "Dashboard",
-
       icon:
         <FaTachometerAlt />,
-
       path:
         "/dashboard",
     },
@@ -288,100 +237,84 @@ const Sidebar = ({
     {
       title:
         "Intercarting",
-
       icon:
         <FaExchangeAlt />,
-
       path:
         "/intercartingdash",
-
       dataEntry: true,
     },
 
     {
       title:
         "Own Vehicle",
-
       icon:
         <FaCar />,
-
       path:
         "/ownvehicledetaildash",
-
       dataEntry: true,
     },
 
     {
       title:
         "Vehicle Documents",
-
       icon:
         <FaFileAlt />,
-
       path:
         "/vehicle-documents",
     },
 
     {
       title: "Assets",
-
       icon:
         <FaBoxOpen />,
-
       path:
         "/assets",
-
       secureLogin: true,
     },
 
     {
       title: "Trips",
-
       icon:
         <FaFileAlt />,
-
       path:
         "/trip-dashboard",
 
       subLinks: [
         {
           key: "kam",
-
           title:
             "Key-Account",
-
           path:
             "/trip-dashboard/key-account",
         },
 
         {
           key: "traffic",
-
           title:
             "Traffic-Management",
-
           path:
             "/trip-dashboard/traffic-management",
+        },
+
+        {
+          key: "approval",
+          title:
+            "Approval Management",
+          path:
+            "/trip-dashboard/approval-management",
         },
       ],
     },
   ];
 
-  /* =========================================
-     LIVE MENU
-  ========================================= */
-
   const liveMenu = [
     {
       title:
         "Tracking",
-
       icon:
         <FaMapMarkerAlt />,
-
       path:
         "/tracking",
-
       dataEntry: true,
 
       relatedPaths: [
@@ -394,10 +327,8 @@ const Sidebar = ({
     {
       title:
         "Inbound & Outbound",
-
       icon:
         <FaTruck />,
-
       path:
         "/inbound-outbound",
     },
@@ -405,10 +336,8 @@ const Sidebar = ({
     {
       title:
         "Warehouse",
-
       icon:
         <FaWarehouse />,
-
       path:
         "/warehouse",
     },
@@ -416,10 +345,8 @@ const Sidebar = ({
     {
       title:
         "Vehicle Maintenance",
-
       icon:
         <FaTools />,
-
       path:
         "/vehicle-maintenance",
     },
@@ -427,18 +354,12 @@ const Sidebar = ({
     {
       title:
         "Driver Management",
-
       icon:
         <FaUsers />,
-
       path:
         "/driver-management",
     },
   ];
-
-  /* =========================================
-     NORMALIZE PATH
-  ========================================= */
 
   const normalizePath = (
     path
@@ -457,10 +378,6 @@ const Sidebar = ({
       normalizedPath || "/"
     );
   };
-
-  /* =========================================
-     ACTIVE MENU CHECK
-  ========================================= */
 
   const isItemActive = (
     item
@@ -519,10 +436,6 @@ const Sidebar = ({
     );
   };
 
-  /* =========================================
-     ASSETS CLICK
-  ========================================= */
-
   const handleAssetsClick = (
     event
   ) => {
@@ -543,15 +456,9 @@ const Sidebar = ({
     closeMobileSidebar();
   };
 
-  /* =========================================
-     DATA ENTRY CLICK
-  ========================================= */
-
   const handleDataEntry = (
     section
   ) => {
-    /* INTERCARTING */
-
     if (
       section ===
       "Intercarting"
@@ -570,8 +477,6 @@ const Sidebar = ({
 
       return;
     }
-
-    /* OWN VEHICLE */
 
     if (
       section ===
@@ -592,8 +497,6 @@ const Sidebar = ({
       return;
     }
 
-    /* TRACKING */
-
     if (
       section ===
       "Tracking"
@@ -612,29 +515,11 @@ const Sidebar = ({
     }
   };
 
-  /* =========================================
-     TRIPS SUB MENU CLICK
-
-     IMPORTANT:
-     Only one Trips login can stay active.
-
-     KAM CLICK:
-     Logout Traffic.
-
-     TRAFFIC CLICK:
-     Logout KAM.
-  ========================================= */
-
   const handleTripsSubLinkClick = (
     event,
     subLink
   ) => {
     event.preventDefault();
-
-    /* =========================================
-       KEY ACCOUNT CLICK
-       LOGOUT TRAFFIC
-    ========================================= */
 
     if (
       subLink.key === "kam"
@@ -655,11 +540,6 @@ const Sidebar = ({
 
       return;
     }
-
-    /* =========================================
-       TRAFFIC CLICK
-       LOGOUT KEY ACCOUNT
-    ========================================= */
 
     if (
       subLink.key ===
@@ -682,16 +562,25 @@ const Sidebar = ({
       return;
     }
 
+    if (
+      subLink.key ===
+      "approval"
+    ) {
+      navigate(
+        subLink.path
+      );
+
+      closeMobileSidebar();
+
+      return;
+    }
+
     navigate(
       subLink.path
     );
 
     closeMobileSidebar();
   };
-
-  /* =========================================
-     INTERCARTING LOGIN SUCCESS
-  ========================================= */
 
   const handleIntercartingLoginSuccess =
     () => {
@@ -709,10 +598,6 @@ const Sidebar = ({
       closeMobileSidebar();
     };
 
-  /* =========================================
-     OWN VEHICLE LOGIN SUCCESS
-  ========================================= */
-
   const handleOwnVehicleLoginSuccess =
     () => {
       setShowOwnVehicleLogin(
@@ -728,10 +613,6 @@ const Sidebar = ({
 
       closeMobileSidebar();
     };
-
-  /* =========================================
-     TRACKING LOGIN SUCCESS
-  ========================================= */
 
   const handleTrackingLoginSuccess =
     () => {
@@ -749,10 +630,6 @@ const Sidebar = ({
       closeMobileSidebar();
     };
 
-  /* =========================================
-     ASSETS LOGIN SUCCESS
-  ========================================= */
-
   const handleAssetsLoginSuccess =
     () => {
       setShowAssetsLogin(
@@ -769,13 +646,7 @@ const Sidebar = ({
       closeMobileSidebar();
     };
 
-  /* =========================================
-     MAIN LOGOUT
-  ========================================= */
-
   const handleLogout = () => {
-    /* MAIN LOGIN */
-
     localStorage.removeItem(
       "token"
     );
@@ -783,8 +654,6 @@ const Sidebar = ({
     localStorage.removeItem(
       "username"
     );
-
-    /* INTERCARTING */
 
     sessionStorage.removeItem(
       "intercartingLoggedIn"
@@ -794,8 +663,6 @@ const Sidebar = ({
       "intercartingUsername"
     );
 
-    /* OWN VEHICLE */
-
     sessionStorage.removeItem(
       "ownVehicleLoggedIn"
     );
@@ -803,8 +670,6 @@ const Sidebar = ({
     sessionStorage.removeItem(
       "ownVehicleUsername"
     );
-
-    /* TRACKING */
 
     sessionStorage.removeItem(
       "trackingLoggedIn"
@@ -814,8 +679,6 @@ const Sidebar = ({
       "trackingUsername"
     );
 
-    /* ASSETS */
-
     sessionStorage.removeItem(
       "assetsLoggedIn"
     );
@@ -823,8 +686,6 @@ const Sidebar = ({
     sessionStorage.removeItem(
       "assetsUsername"
     );
-
-    /* KAM */
 
     sessionStorage.removeItem(
       "kamLoggedIn"
@@ -834,8 +695,6 @@ const Sidebar = ({
       "kamUsername"
     );
 
-    /* TRAFFIC */
-
     sessionStorage.removeItem(
       "trafficLoggedIn"
     );
@@ -843,8 +702,6 @@ const Sidebar = ({
     sessionStorage.removeItem(
       "trafficUsername"
     );
-
-    /* CLOSE POPUPS */
 
     setShowIntercartingLogin(
       false
@@ -877,18 +734,10 @@ const Sidebar = ({
     );
   };
 
-  /* =========================================
-     NORMAL MENU CLICK
-  ========================================= */
-
   const handleMenuClick =
     () => {
       closeMobileSidebar();
     };
-
-  /* =========================================
-     RENDER MENU ITEMS
-  ========================================= */
 
   const renderMenuItems = (
     items
@@ -921,18 +770,14 @@ const Sidebar = ({
             }
             className="sidebar-menu-group"
           >
-            {/* MAIN MENU */}
-
             <NavLink
               to={
                 item.path
               }
-
               end={
                 item.path ===
                 "/dashboard"
               }
-
               className={
                 `sidebar-link ${
                   active
@@ -940,19 +785,16 @@ const Sidebar = ({
                     : ""
                 }`
               }
-
               aria-current={
                 active
                   ? "page"
                   : undefined
               }
-
               title={
                 collapsed
                   ? item.title
                   : undefined
               }
-
               onClick={
                 item.secureLogin
                   ? handleAssetsClick
@@ -973,17 +815,13 @@ const Sidebar = ({
               </span>
             </NavLink>
 
-            {/* DATA ENTRY SUB MENU */}
-
             {showDataEntry && (
               <div
                 className="sidebar-submenu"
               >
                 <button
                   type="button"
-
                   className="sidebar-submenu-link"
-
                   onClick={() =>
                     handleDataEntry(
                       item.title
@@ -1011,10 +849,6 @@ const Sidebar = ({
               </div>
             )}
 
-            {/* =================================
-                TRIPS SUB LINKS
-            ================================= */}
-
             {showSubLinks && (
               <div
                 className="sidebar-submenu"
@@ -1025,13 +859,18 @@ const Sidebar = ({
                       key={
                         subLink.key
                       }
-
                       to={
                         subLink.path
                       }
-
-                      className="sidebar-submenu-link"
-
+                      className={({
+                        isActive,
+                      }) =>
+                        `sidebar-submenu-link ${
+                          isActive
+                            ? "active"
+                            : ""
+                        }`
+                      }
                       onClick={(
                         event
                       ) =>
@@ -1071,10 +910,6 @@ const Sidebar = ({
     );
   };
 
-  /* =========================================
-     RETURN
-  ========================================= */
-
   return (
     <>
       {!collapsed && (
@@ -1099,8 +934,6 @@ const Sidebar = ({
         <nav
           className="sidebar-menu"
         >
-          {/* OPERATIONS */}
-
           <div
             className="sidebar-section"
           >
@@ -1120,8 +953,6 @@ const Sidebar = ({
               )}
             </div>
           </div>
-
-          {/* LIVE */}
 
           <div
             className="sidebar-section"
@@ -1143,8 +974,6 @@ const Sidebar = ({
             </div>
           </div>
         </nav>
-
-        {/* FOOTER */}
 
         <div
           className="sidebar-footer"
@@ -1176,8 +1005,6 @@ const Sidebar = ({
           </button>
         </div>
       </aside>
-
-      {/* LOGIN POPUPS */}
 
       <Intercarttinglogin
         open={

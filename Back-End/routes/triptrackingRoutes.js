@@ -1,7 +1,6 @@
 const express =
   require("express");
 
-
 const {
   createTrip,
   getAllTrips,
@@ -10,75 +9,74 @@ const {
   updateTrip,
   updateVehicle,
   deleteTrip,
-} =
-  require(
-    "../controllers/triptrackingController"
-  );
-
+} = require(
+  "../controllers/triptrackingController"
+);
 
 const router =
   express.Router();
 
-
-/* CREATE TRIP
-   POST /api/triptracking */
+/* =========================================================
+   CREATE
+========================================================= */
 
 router.post(
   "/",
   createTrip
 );
 
-
-/* GET ALL TRIPS
-   GET /api/triptracking */
+/* =========================================================
+   GET ALL
+========================================================= */
 
 router.get(
   "/",
   getAllTrips
 );
 
-
-/* GET BY BUSINESS TRIP ID
-   GET /api/triptracking/trip/2026-1 */
+/* =========================================================
+   GET BY TRIP ID
+========================================================= */
 
 router.get(
   "/trip/:tripId",
   getTripByTripId
 );
 
-
-/* UPDATE ONE VEHICLE
-   PUT /api/triptracking/2026-1/vehicles/2026-1-V1 */
+/* =========================================================
+   UPDATE VEHICLE
+========================================================= */
 
 router.put(
   "/:tripId/vehicles/:vehicleSubId",
   updateVehicle
 );
 
-
-/* GET BY MONGODB ID */
+/* =========================================================
+   GET BY MONGODB ID
+========================================================= */
 
 router.get(
   "/:id",
   getTripById
 );
 
-
-/* UPDATE COMPLETE TRIP */
+/* =========================================================
+   UPDATE COMPLETE TRIP
+========================================================= */
 
 router.put(
   "/:id",
   updateTrip
 );
 
-
-/* DELETE TRIP */
+/* =========================================================
+   DELETE
+========================================================= */
 
 router.delete(
   "/:id",
   deleteTrip
 );
 
-
-module.exports =
-  router;
+module.exports = router;

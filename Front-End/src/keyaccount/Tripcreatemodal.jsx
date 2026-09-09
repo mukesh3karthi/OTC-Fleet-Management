@@ -82,6 +82,8 @@ const Tripcreatemodal = ({
     handleRemoveWtgVehicle,
     handleTripFileChange,
     handleCreateTrip,
+    isEditing = false,
+    isSaving = false,
 }) => {
     if (!showTripModal) {
         return null;
@@ -105,8 +107,12 @@ const Tripcreatemodal = ({
 
                         <div className="trip-modal-title-row">
                             <div className="trip-modal-title-copy">
-                                <h2 id="new-trip-title">New Trip Creation</h2>
-                                <p>Enter client, route, cargo and vehicle details.</p>
+                                <h2 id="new-trip-title">{isEditing ? "Edit Trip" : "New Trip Creation"}</h2>
+                                <p>
+                                    {isEditing
+                                        ? "Update client, route, cargo and vehicle details."
+                                        : "Enter client, route, cargo and vehicle details."}
+                                </p>
                             </div>
 
                             <div className="trip-header-movement">
@@ -119,6 +125,7 @@ const Tripcreatemodal = ({
                                         id="trip-movement-type"
                                         value={tripForm.movementType}
                                         onChange={handleMovementTypeChange}
+                                        disabled={isEditing}
                                     >
                                         <option value="">Select Movement...</option>
                                         <option value="WTG Movement">WTG Movement</option>
@@ -1004,6 +1011,27 @@ const Tripcreatemodal = ({
                                             onChange={handleTripFieldChange("requiredVehicles")}
                                         />
 
+                                        <div className="trip-field-group">
+                                            <label htmlFor="crane-primary-vehicle-type">
+                                                Primary Vehicle Type <span className="trip-required">*</span>
+                                            </label>
+                                            <div className="trip-select-wrap">
+                                                <select
+                                                    id="crane-primary-vehicle-type"
+                                                    value={tripForm.primaryVehicleType || ""}
+                                                    onChange={handleTripFieldChange("primaryVehicleType")}
+                                                >
+                                                    <option value="">Select vehicle type</option>
+                                                    {primaryVehicleTypes.map((vehicleType) => (
+                                                        <option key={vehicleType} value={vehicleType}>
+                                                            {vehicleType}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                                <span className="trip-select-arrow">⌄</span>
+                                            </div>
+                                        </div>
+
                                         <TripField
                                             label="Estimated KM"
                                             required
@@ -1135,8 +1163,11 @@ const Tripcreatemodal = ({
                         type="button"
                         className="trip-btn-primary"
                         onClick={handleCreateTrip}
+                        disabled={isSaving}
                     >
-                        Create Trip
+                        {isSaving
+                            ? (isEditing ? "Saving Changes..." : "Creating Trip...")
+                            : (isEditing ? "Save Changes" : "Create Trip")}
                     </button>
                 </div>
             </div>
