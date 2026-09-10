@@ -125,13 +125,13 @@ const Lifecyclemodal = ({
 
             <div className="kam-modal-heading">
               <span>ORDER LIFECYCLE</span>
-              <strong>{order.client || order.customer || "—"}</strong>
+              <strong>{order.companyName || order.customer || order.client || "—"}</strong>
             </div>
           </div>
 
           <div className="kam-modal-toolbar-right">
             <div className="kam-detail-meta">
-              <span>{order.client || order.customer || "—"}</span>
+              <span>{order.companyName || order.customer || order.client || "—"}</span>
               <strong>{order.tripId || order.id || "—"}</strong>
             </div>
 
@@ -802,14 +802,14 @@ const OrderLifecyclePanel = ({
             <div className="kam-client-trip-grid">
 
               <ClientEnquiryField
-                label="Company Name"
+                label="Customer"
                 value={
                   order.companyName
                 }
               />
 
               <ClientEnquiryField
-                label="Client Name"
+                label="Contact Person"
                 value={
                   order.client ||
                   order.customer
@@ -817,7 +817,7 @@ const OrderLifecyclePanel = ({
               />
 
               <ClientEnquiryField
-                label="Client Contact"
+                label="Contact Number"
                 value={
                   order.clientContact ||
                   order.clientPhone
@@ -898,14 +898,14 @@ const OrderLifecyclePanel = ({
             <div className="kam-client-trip-grid">
 
               <ClientEnquiryField
-                label="Company Name"
+                label="Customer"
                 value={
                   order.companyName
                 }
               />
 
               <ClientEnquiryField
-                label="Client Name"
+                label="Contact Person"
                 value={
                   order.client ||
                   order.customer
@@ -913,7 +913,7 @@ const OrderLifecyclePanel = ({
               />
 
               <ClientEnquiryField
-                label="Client Contact"
+                label="Contact Number"
                 value={
                   order.clientContact ||
                   order.clientPhone
@@ -992,21 +992,21 @@ const OrderLifecyclePanel = ({
             <div className="kam-client-trip-grid">
 
               <ClientEnquiryField
-                label="Company Name"
+                label="Customer"
                 value={
                   order.companyName
                 }
               />
 
               <ClientEnquiryField
-                label="Client Name"
+                label="Contact Person"
                 value={
                   order.client
                 }
               />
 
               <ClientEnquiryField
-                label="Client Contact"
+                label="Contact Number"
                 value={
                   order.clientContact
                 }
@@ -1060,7 +1060,7 @@ const OrderLifecyclePanel = ({
               />
 
               <ClientEnquiryField
-                label="Placement Date"
+                label="Deployment Date"
                 value={
                   formatDisplayDate(
                     order.placementDate
@@ -1469,19 +1469,69 @@ const OrderLifecyclePanel = ({
           return (
             <>
 
-              <section className="kam-client-vehicle-section">
+              <section className="kam-approved-allocation-card">
 
-                <div className="kam-client-section-heading">
+                <div className="kam-approved-allocation-head">
 
-                  <div>
-                    <h3>
-                      Approved Vehicle Allocations
-                    </h3>
+                  <div className="kam-approved-allocation-title">
 
-                    <p>
-                      Only vehicles approved by Approval Management are available
-                      for Vendor Finalization.
-                    </p>
+                    <div className="kam-approved-allocation-icon">
+                      ✓
+                    </div>
+
+                    <div>
+                      <span className="kam-approved-allocation-kicker">
+                        APPROVAL MANAGEMENT
+                      </span>
+
+                      <h3>
+                        Approved Vehicle Allocations
+                      </h3>
+
+                      <p>
+                        Only management-approved vehicle allocations are available
+                        for Vendor Finalization.
+                      </p>
+                    </div>
+
+                  </div>
+
+
+                  <div className="kam-approved-allocation-summary">
+
+                    <div>
+                      <span>
+                        Approved Types
+                      </span>
+
+                      <strong>
+                        {approvedVehicles.length}
+                      </strong>
+                    </div>
+
+
+                    <div>
+                      <span>
+                        Total Quantity
+                      </span>
+
+                      <strong>
+                        {approvedVehicles.reduce(
+                          (
+                            total,
+                            vehicle
+                          ) =>
+                            total +
+                            Number(
+                              vehicle.quantity ||
+                              0
+                            ),
+                          0
+                        )}{" "}
+                        NOS
+                      </strong>
+                    </div>
+
                   </div>
 
                 </div>
@@ -1489,16 +1539,17 @@ const OrderLifecyclePanel = ({
 
                 {approvedVehicles.length > 0 ? (
 
-                  <div className="kam-client-table-wrap">
+                  <div className="kam-approved-allocation-table-wrap">
 
-                    <table className="kam-client-vehicle-table">
+                    <table className="kam-approved-allocation-table">
 
                       <thead>
                         <tr>
                           <th>S.No</th>
-                          <th>Vehicle Type</th>
+                          <th>Vehicle Requirement</th>
                           <th>Quantity</th>
-                          <th>Approved Vendor</th>
+                          <th>Approved Transporter</th>
+                          <th>Contact Person / Number</th>
                           <th>Approved Rate</th>
                           <th>Status</th>
                         </tr>
@@ -1511,73 +1562,145 @@ const OrderLifecyclePanel = ({
                           (
                             vehicle,
                             index
-                          ) => (
+                          ) => {
 
-                            <tr
-                              key={
-                                vehicle._id ||
-                                vehicle.vehicleSubId ||
-                                index
-                              }
-                            >
+                            const selectedTransport =
+                              vehicle.selectedTransport ||
+                              {};
 
-                              <td>
-                                <span className="kam-client-row-no">
-                                  {index + 1}
-                                </span>
-                              </td>
+                            return (
 
+                              <tr
+                                key={
+                                  vehicle._id ||
+                                  vehicle.vehicleSubId ||
+                                  index
+                                }
+                              >
 
-                              <td>
-                                <strong>
-                                  {vehicle.vehicleType ||
-                                    "—"}
-                                </strong>
+                                <td>
 
-                                <div>
-                                  {vehicle.vehicleSubId ||
-                                    ""}
-                                </div>
-                              </td>
+                                  <span className="kam-approved-row-number">
+                                    {String(
+                                      index + 1
+                                    ).padStart(
+                                      2,
+                                      "0"
+                                    )}
+                                  </span>
 
-
-                              <td>
-                                {vehicle.quantity ||
-                                  0}{" "}
-                                NOS
-                              </td>
+                                </td>
 
 
-                              <td>
-                                <strong>
-                                  {vehicle
-                                    .selectedTransport
-                                    ?.transportName ||
-                                    "—"}
-                                </strong>
-                              </td>
+                                <td>
+
+                                  <div className="kam-approved-vehicle-cell">
+
+                                    <div className="kam-approved-vehicle-mark">
+                                      ✓
+                                    </div>
+
+                                    <div>
+                                      <strong>
+                                        {vehicle.vehicleType ||
+                                          "—"}
+                                      </strong>
+
+                                      <span>
+                                        {vehicle.vehicleSubId ||
+                                          "Vehicle Requirement"}
+                                      </span>
+                                    </div>
+
+                                  </div>
+
+                                </td>
 
 
-                              <td>
-                                <strong>
-                                  {formatAmount(
-                                    vehicle
-                                      .selectedTransport
-                                      ?.amount
-                                  )}
-                                </strong>
-                              </td>
+                                <td>
+
+                                  <div className="kam-approved-qty">
+
+                                    <strong>
+                                      {vehicle.quantity ||
+                                        0}
+                                    </strong>
+
+                                    <span>
+                                      NOS
+                                    </span>
+
+                                  </div>
+
+                                </td>
 
 
-                              <td>
-                                <span className="kam-client-classification non-odc">
-                                  Approved
-                                </span>
-                              </td>
+                                <td>
 
-                            </tr>
+                                  <div className="kam-approved-vendor-cell">
 
-                          )
+                                    <strong>
+                                      {selectedTransport.transportName ||
+                                        "—"}
+                                    </strong>
+
+                                    {selectedTransport.quotationId && (
+                                      <span>
+                                        {selectedTransport.quotationId}
+                                      </span>
+                                    )}
+
+                                  </div>
+
+                                </td>
+
+
+                                <td>
+
+                                  <div className="kam-approved-contact-cell">
+
+                                    <strong>
+                                      {selectedTransport.contactName ||
+                                        "—"}
+                                    </strong>
+
+                                    <span>
+                                      {selectedTransport.contactNumber ||
+                                        "No contact number"}
+                                    </span>
+
+                                  </div>
+
+                                </td>
+
+
+                                <td>
+
+                                  <strong className="kam-approved-rate">
+                                    {formatAmount(
+                                      selectedTransport.amount
+                                    )}
+                                  </strong>
+
+                                </td>
+
+
+                                <td>
+
+                                  <span className="kam-approved-status">
+                                    <span>
+                                      ✓
+                                    </span>
+
+                                    Approved
+                                  </span>
+
+                                </td>
+
+                              </tr>
+
+                            );
+                          }
                         )}
 
                       </tbody>
@@ -1588,14 +1711,23 @@ const OrderLifecyclePanel = ({
 
                 ) : (
 
-                  <div
-                    className="kam-readonly-field"
-                    style={{
-                      padding: "18px",
-                    }}
-                  >
-                    No approved vehicles yet. Pending or rejected Traffic
-                    allocations are not shown in Vendor Finalization.
+                  <div className="kam-approved-empty">
+
+                    <div className="kam-approved-empty-icon">
+                      !
+                    </div>
+
+                    <div>
+                      <strong>
+                        No approved vehicle allocations
+                      </strong>
+
+                      <span>
+                        Pending or rejected Traffic allocations are not shown
+                        in Vendor Finalization.
+                      </span>
+                    </div>
+
                   </div>
 
                 )}
@@ -1603,11 +1735,26 @@ const OrderLifecyclePanel = ({
               </section>
 
 
-              <div className="kam-field-group kam-field-full">
+              <div className="kam-vendor-remarks-card">
 
-                <label>
-                  Vendor Remarks
-                </label>
+                <div className="kam-vendor-remarks-head">
+
+                  <div>
+                    <span>
+                      VENDOR FINALIZATION
+                    </span>
+
+                    <h3>
+                      Vendor Remarks
+                    </h3>
+
+                    <p>
+                      Add final remarks or instructions related to the approved allocation.
+                    </p>
+                  </div>
+
+                </div>
+
 
                 <textarea
                   rows={4}
@@ -1784,96 +1931,996 @@ const OrderLifecyclePanel = ({
         case 4:
 
           return (
-            <>
+            <div className="kam-completion-shell">
 
-              <div className="kam-form-grid">
+              {/* =========================================
+                  ORDER / CUSTOMER INFORMATION
+              ========================================= */}
 
-                <LifecycleField
-                  label="Vehicle Number"
-                  placeholder="e.g. KA01AB1234"
-                  value={
-                    form.vehicleNumber
-                  }
-                  onChange={
-                    handleChange(
-                      "vehicleNumber"
-                    )
-                  }
-                />
+              <section className="kam-completion-card">
 
-                <LifecycleField
-                  label="Driver Name"
-                  placeholder="Enter driver name"
-                  value={
-                    form.driverName
-                  }
-                  onChange={
-                    handleChange(
-                      "driverName"
-                    )
-                  }
-                />
+                <div className="kam-completion-card-head">
 
-                <LifecycleField
-                  label="Driver Number"
-                  type="tel"
-                  placeholder="Enter mobile number"
-                  value={
-                    form.driverNumber
-                  }
-                  onChange={
-                    handleChange(
-                      "driverNumber"
-                    )
-                  }
-                />
+                  <div className="kam-completion-step-icon">
+                    01
+                  </div>
 
-                <div className="kam-field-group">
+                  <div>
+                    <span className="kam-completion-eyebrow">
+                      ORDER INFORMATION
+                    </span>
 
-                  <label>
-                    Placement Date
-                  </label>
+                    <h3>
+                      Customer &amp; Trip Details
+                    </h3>
 
-                  <input
-                    type="date"
-                    className="kam-date-input"
+                    <p>
+                      Complete enquiry and route information for this order.
+                    </p>
+                  </div>
+
+                </div>
+
+
+                <div className="kam-completion-info-grid">
+
+                  <div>
+                    <span>
+                      Trip / Order ID
+                    </span>
+
+                    <strong>
+                      {order.tripId ||
+                        order.id ||
+                        "—"}
+                    </strong>
+                  </div>
+
+
+                  <div>
+                    <span>
+                      Movement Type
+                    </span>
+
+                    <strong>
+                      {order.movementType ||
+                        "—"}
+                    </strong>
+                  </div>
+
+
+                  <div>
+                    <span>
+                      Customer
+                    </span>
+
+                    <strong>
+                      {order.companyName ||
+                        order.customer ||
+                        "—"}
+                    </strong>
+                  </div>
+
+
+                  <div>
+                    <span>
+                      Contact Person
+                    </span>
+
+                    <strong>
+                      {order.client ||
+                        "—"}
+                    </strong>
+                  </div>
+
+
+                  <div>
+                    <span>
+                      Contact Number
+                    </span>
+
+                    <strong>
+                      {order.clientContact ||
+                        order.clientPhone ||
+                        "—"}
+                    </strong>
+                  </div>
+
+
+                  <div>
+                    <span>
+                      Email
+                    </span>
+
+                    <strong>
+                      {order.clientEmail ||
+                        "—"}
+                    </strong>
+                  </div>
+
+
+                  <div>
+                    <span>
+                      Cargo Type
+                    </span>
+
+                    <strong>
+                      {order.cargo ||
+                        order.materialType ||
+                        "—"}
+                    </strong>
+                  </div>
+
+
+                  <div>
+                    <span>
+                      Assigned KAM
+                    </span>
+
+                    <strong>
+                      {order.assignedKam ||
+                        order.responsibleKam ||
+                        "—"}
+                    </strong>
+                  </div>
+
+
+                  <div>
+                    <span>
+                      Enquiry Date
+                    </span>
+
+                    <strong>
+                      {formatDisplayDate(
+                        order.enquiryDate
+                      )}
+                    </strong>
+                  </div>
+
+
+                  <div>
+                    <span>
+                      Deployment Date
+                    </span>
+
+                    <strong>
+                      {formatDisplayDate(
+                        order.deploymentDate ||
+                        order.placementDate
+                      )}
+                    </strong>
+                  </div>
+
+
+                  {isIntercarting ? (
+                    <>
+                      <div>
+                        <span>
+                          Site Location
+                        </span>
+
+                        <strong>
+                          {order.siteLocation ||
+                            "—"}
+                        </strong>
+                      </div>
+
+                      <div>
+                        <span>
+                          Period
+                        </span>
+
+                        <strong>
+                          {order.period ||
+                            "—"}
+                        </strong>
+                      </div>
+
+                      <div>
+                        <span>
+                          Diesel Scope
+                        </span>
+
+                        <strong>
+                          {order.dieselScope ||
+                            "—"}
+                        </strong>
+                      </div>
+
+                      <div>
+                        <span>
+                          Total Quantity
+                        </span>
+
+                        <strong>
+                          {order.totalQuantity !==
+                            undefined &&
+                          order.totalQuantity !==
+                            null &&
+                          order.totalQuantity !==
+                            ""
+                            ? `${order.totalQuantity} NOS`
+                            : "—"}
+                        </strong>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div>
+                        <span>
+                          Origin
+                        </span>
+
+                        <strong>
+                          {order.origin ||
+                            "—"}
+                        </strong>
+                      </div>
+
+                      <div>
+                        <span>
+                          Destination
+                        </span>
+
+                        <strong>
+                          {order.destination ||
+                            "—"}
+                        </strong>
+                      </div>
+
+                      <div>
+                        <span>
+                          Estimated KM
+                        </span>
+
+                        <strong>
+                          {order.estimatedDistance !==
+                            undefined &&
+                          order.estimatedDistance !==
+                            null &&
+                          order.estimatedDistance !==
+                            ""
+                            ? `${order.estimatedDistance} KM`
+                            : order.totalKm !==
+                                  undefined &&
+                                order.totalKm !==
+                                  null &&
+                                order.totalKm !==
+                                  ""
+                              ? `${order.totalKm} KM`
+                              : "—"}
+                        </strong>
+                      </div>
+
+                      <div>
+                        <span>
+                          Weight
+                        </span>
+
+                        <strong>
+                          {order.weight !==
+                            undefined &&
+                          order.weight !==
+                            null &&
+                          order.weight !==
+                            ""
+                            ? `${order.weight} TON`
+                            : "—"}
+                        </strong>
+                      </div>
+                    </>
+                  )}
+
+                </div>
+
+              </section>
+
+
+              {/* =========================================
+                  COMMERCIAL / ORDER FINALIZATION
+              ========================================= */}
+
+              <section className="kam-completion-card">
+
+                <div className="kam-completion-card-head">
+
+                  <div className="kam-completion-step-icon">
+                    02
+                  </div>
+
+                  <div>
+                    <span className="kam-completion-eyebrow">
+                      ORDER FINALIZATION
+                    </span>
+
+                    <h3>
+                      Commercial &amp; Approval Details
+                    </h3>
+
+                    <p>
+                      Final commercial values and approval information.
+                    </p>
+                  </div>
+
+                </div>
+
+
+                <div className="kam-completion-info-grid">
+
+                  <div>
+                    <span>
+                      Order Reference Number
+                    </span>
+
+                    <strong>
+                      {order.orderReferenceNumber ||
+                        form.orderReferenceNumber ||
+                        "—"}
+                    </strong>
+                  </div>
+
+
+                  <div>
+                    <span>
+                      Order Count / Trip Lots
+                    </span>
+
+                    <strong>
+                      {order.orderCount ??
+                        form.orderCount ??
+                        "—"}
+                    </strong>
+                  </div>
+
+
+                  <div>
+                    <span>
+                      Responsible KAM
+                    </span>
+
+                    <strong>
+                      {order.responsibleKam ||
+                        form.responsibleKam ||
+                        order.assignedKam ||
+                        "—"}
+                    </strong>
+                  </div>
+
+
+                  <div>
+                    <span>
+                      Quoted Rate
+                    </span>
+
+                    <strong>
+                      {formatAmount(
+                        order.quotedRate ??
+                        form.quotedRate
+                      )}
+                    </strong>
+                  </div>
+
+
+                  <div>
+                    <span>
+                      Negotiated Rate
+                    </span>
+
+                    <strong>
+                      {formatAmount(
+                        order.negotiatedRate ??
+                        form.negotiatedRate
+                      )}
+                    </strong>
+                  </div>
+
+
+                  <div>
+                    <span>
+                      Final Approved Rate
+                    </span>
+
+                    <strong className="kam-completion-rate">
+                      {formatAmount(
+                        order.finalRate ??
+                        form.finalRate
+                      )}
+                    </strong>
+                  </div>
+
+
+                  <div>
+                    <span>
+                      Payment Terms
+                    </span>
+
+                    <strong>
+                      {order.paymentTerms ||
+                        form.paymentTerms ||
+                        "—"}
+                    </strong>
+                  </div>
+
+
+                  <div>
+                    <span>
+                      Approval Status
+                    </span>
+
+                    <strong className="kam-completion-approved-text">
+                      {order.approvalStatus ||
+                        approvalStatus ||
+                        "—"}
+                    </strong>
+                  </div>
+
+                </div>
+
+
+                <div className="kam-completion-notes-grid">
+
+                  <div>
+                    <span>
+                      Commercial Terms &amp; Payment SLAs
+                    </span>
+
+                    <p>
+                      {order.commercialTerms ||
+                        form.commercialTerms ||
+                        "—"}
+                    </p>
+                  </div>
+
+
+                  <div>
+                    <span>
+                      Delivery Commitments &amp; SLAs
+                    </span>
+
+                    <p>
+                      {order.deliveryCommitments ||
+                        form.deliveryCommitments ||
+                        "—"}
+                    </p>
+                  </div>
+
+
+                  <div>
+                    <span>
+                      Client Confirmation Notes
+                    </span>
+
+                    <p>
+                      {order.clientConfirmationNotes ||
+                        form.clientConfirmationNotes ||
+                        "—"}
+                    </p>
+                  </div>
+
+
+                  <div>
+                    <span>
+                      Commercial Remarks
+                    </span>
+
+                    <p>
+                      {order.commercialRemarks ||
+                        form.commercialRemarks ||
+                        "—"}
+                    </p>
+                  </div>
+
+                </div>
+
+              </section>
+
+
+              {/* =========================================
+                  VEHICLE / TRANSPORT ALLOCATIONS
+              ========================================= */}
+
+              <section className="kam-completion-card">
+
+                <div className="kam-completion-card-head kam-completion-card-head-between">
+
+                  <div className="kam-completion-card-head-left">
+
+                    <div className="kam-completion-step-icon">
+                      03
+                    </div>
+
+                    <div>
+                      <span className="kam-completion-eyebrow">
+                        VEHICLE ALLOCATION
+                      </span>
+
+                      <h3>
+                        Approved Vehicle &amp; Transport Details
+                      </h3>
+
+                      <p>
+                        All management-approved vehicle allocations for this order.
+                      </p>
+                    </div>
+
+                  </div>
+
+
+                  <div className="kam-completion-count">
+
+                    <span>
+                      Approved Vehicles
+                    </span>
+
+                    <strong>
+                      {approvedVehicles.length}
+                    </strong>
+
+                  </div>
+
+                </div>
+
+
+                {approvedVehicles.length > 0 ? (
+
+                  <div className="kam-completion-table-wrap">
+
+                    <table className="kam-completion-table">
+
+                      <thead>
+                        <tr>
+                          <th>S.No</th>
+                          <th>Vehicle Type</th>
+                          <th>Configuration Model</th>
+                          <th>Movement Classification</th>
+                          <th>Quantity</th>
+                          <th>Weight</th>
+                          <th>Dimensions (L × H × W)</th>
+                          <th>Approved Transporter</th>
+                          <th>Contact Person</th>
+                          <th>Contact Number</th>
+                          <th>Approved Rate</th>
+                          <th>Status</th>
+                        </tr>
+                      </thead>
+
+
+                      <tbody>
+
+                        {approvedVehicles.map(
+                          (
+                            vehicle,
+                            index
+                          ) => {
+
+                            const selectedTransport =
+                              vehicle.selectedTransport ||
+                              {};
+
+                            const dimensions =
+                              vehicle.length !==
+                                undefined &&
+                              vehicle.length !==
+                                null &&
+                              vehicle.length !==
+                                "" &&
+                              vehicle.height !==
+                                undefined &&
+                              vehicle.height !==
+                                null &&
+                              vehicle.height !==
+                                "" &&
+                              vehicle.width !==
+                                undefined &&
+                              vehicle.width !==
+                                null &&
+                              vehicle.width !==
+                                ""
+                                ? `${vehicle.length} × ${vehicle.height} × ${vehicle.width}`
+                                : vehicle.dimensions ||
+                                  "—";
+
+                            return (
+
+                              <tr
+                                key={
+                                  vehicle._id ||
+                                  vehicle.vehicleSubId ||
+                                  index
+                                }
+                              >
+
+                                <td>
+                                  <span className="kam-completion-row-no">
+                                    {String(
+                                      index + 1
+                                    ).padStart(
+                                      2,
+                                      "0"
+                                    )}
+                                  </span>
+                                </td>
+
+
+                                <td>
+                                  <div className="kam-completion-vehicle-cell">
+
+                                    <strong>
+                                      {vehicle.vehicleType ||
+                                        "—"}
+                                    </strong>
+
+                                    <span>
+                                      {vehicle.vehicleSubId ||
+                                        ""}
+                                    </span>
+
+                                  </div>
+                                </td>
+
+
+                                <td>
+                                  {vehicle.configurationModel ||
+                                    "—"}
+                                </td>
+
+
+                                <td>
+                                  {vehicle.movementClassification ||
+                                    "—"}
+                                </td>
+
+
+                                <td>
+                                  <strong>
+                                    {vehicle.quantity ||
+                                      0}
+                                  </strong>{" "}
+                                  NOS
+                                </td>
+
+
+                                <td>
+                                  {vehicle.weight !==
+                                    undefined &&
+                                  vehicle.weight !==
+                                    null &&
+                                  vehicle.weight !==
+                                    ""
+                                    ? `${vehicle.weight} TON`
+                                    : "—"}
+                                </td>
+
+
+                                <td>
+                                  {dimensions}
+                                </td>
+
+
+                                <td>
+                                  <div className="kam-completion-vehicle-cell">
+
+                                    <strong>
+                                      {selectedTransport.transportName ||
+                                        "—"}
+                                    </strong>
+
+                                    <span>
+                                      {selectedTransport.quotationId ||
+                                        ""}
+                                    </span>
+
+                                  </div>
+                                </td>
+
+
+                                <td>
+                                  {selectedTransport.contactName ||
+                                    "—"}
+                                </td>
+
+
+                                <td>
+                                  {selectedTransport.contactNumber ||
+                                    "—"}
+                                </td>
+
+
+                                <td>
+                                  <strong className="kam-completion-rate">
+                                    {formatAmount(
+                                      selectedTransport.amount
+                                    )}
+                                  </strong>
+                                </td>
+
+
+                                <td>
+                                  <span className="kam-completion-status">
+                                    ✓ Approved
+                                  </span>
+                                </td>
+
+                              </tr>
+
+                            );
+                          }
+                        )}
+
+                      </tbody>
+
+                    </table>
+
+                  </div>
+
+                ) : (
+
+                  <div className="kam-completion-empty">
+                    No approved vehicle allocations are available.
+                  </div>
+
+                )}
+
+              </section>
+
+
+              {/* =========================================
+                  PO / DOCUMENT DETAILS
+              ========================================= */}
+
+              <section className="kam-completion-card">
+
+                <div className="kam-completion-card-head">
+
+                  <div className="kam-completion-step-icon">
+                    04
+                  </div>
+
+                  <div>
+                    <span className="kam-completion-eyebrow">
+                      PO DOCUMENTS
+                    </span>
+
+                    <h3>
+                      Purchase Order &amp; Billing Details
+                    </h3>
+
+                    <p>
+                      Purchase order and supporting documentation information.
+                    </p>
+                  </div>
+
+                </div>
+
+
+                <div className="kam-completion-info-grid">
+
+                  <div>
+                    <span>
+                      Client PO Number
+                    </span>
+
+                    <strong>
+                      {order.poNumber ||
+                        form.poNumber ||
+                        "—"}
+                    </strong>
+                  </div>
+
+
+                  <div>
+                    <span>
+                      PO Validity Period
+                    </span>
+
+                    <strong>
+                      {formatDisplayDate(
+                        order.poDate ||
+                        form.poDate
+                      )}
+                    </strong>
+                  </div>
+
+
+                  <div>
+                    <span>
+                      Billing GSTIN
+                    </span>
+
+                    <strong>
+                      {order.billingGstin ||
+                        order.billingGSTIN ||
+                        form.billingGstin ||
+                        "—"}
+                    </strong>
+                  </div>
+
+
+                  <div>
+                    <span>
+                      PO Document
+                    </span>
+
+                    <strong>
+                      {order.poDocumentName ||
+                        form.poDocumentName ||
+                        "—"}
+                    </strong>
+                  </div>
+
+                </div>
+
+
+                <div className="kam-completion-notes-grid">
+
+                  <div>
+                    <span>
+                      Scope of Work
+                    </span>
+
+                    <p>
+                      {order.scopeOfWork ||
+                        form.scopeOfWork ||
+                        "—"}
+                    </p>
+                  </div>
+
+
+                  <div>
+                    <span>
+                      Registered Billing Address
+                    </span>
+
+                    <p>
+                      {order.registeredBillingAddress ||
+                        order.billingAddress ||
+                        form.registeredBillingAddress ||
+                        "—"}
+                    </p>
+                  </div>
+
+
+                  <div className="kam-completion-note-full">
+                    <span>
+                      Document Remarks
+                    </span>
+
+                    <p>
+                      {order.poRemarks ||
+                        form.poRemarks ||
+                        "—"}
+                    </p>
+                  </div>
+
+                </div>
+
+              </section>
+
+
+              {/* =========================================
+                  FINAL VEHICLE / DRIVER CONFIRMATION
+              ========================================= */}
+
+              <section className="kam-completion-card kam-completion-final-card">
+
+                <div className="kam-completion-card-head">
+
+                  <div className="kam-completion-step-icon">
+                    05
+                  </div>
+
+                  <div>
+                    <span className="kam-completion-eyebrow">
+                      FINAL CONFIRMATION
+                    </span>
+
+                    <h3>
+                      Vehicle &amp; Driver Confirmation
+                    </h3>
+
+                    <p>
+                      Enter final operational details before completing the order.
+                    </p>
+                  </div>
+
+                </div>
+
+
+                <div className="kam-completion-form-grid">
+
+                  <LifecycleField
+                    label="Vehicle Number"
+                    placeholder="e.g. KA01AB1234"
                     value={
-                      form.placementDate
+                      form.vehicleNumber
                     }
                     onChange={
                       handleChange(
-                        "placementDate"
+                        "vehicleNumber"
                       )
                     }
                   />
 
+
+                  <LifecycleField
+                    label="Driver Name"
+                    placeholder="Enter driver name"
+                    value={
+                      form.driverName
+                    }
+                    onChange={
+                      handleChange(
+                        "driverName"
+                      )
+                    }
+                  />
+
+
+                  <LifecycleField
+                    label="Driver Number"
+                    type="tel"
+                    placeholder="Enter mobile number"
+                    value={
+                      form.driverNumber
+                    }
+                    onChange={
+                      handleChange(
+                        "driverNumber"
+                      )
+                    }
+                  />
+
+
+                  <div className="kam-field-group">
+
+                    <label>
+                      Deployment Date
+                    </label>
+
+                    <input
+                      type="date"
+                      className="kam-date-input"
+                      value={
+                        form.placementDate
+                      }
+                      onChange={
+                        handleChange(
+                          "placementDate"
+                        )
+                      }
+                    />
+
+                  </div>
+
                 </div>
 
-              </div>
 
-              <div className="kam-field-group kam-field-full">
+                <div className="kam-field-group kam-field-full kam-completion-instruction">
 
-                <label>
-                  Final Instructions
-                </label>
+                  <label>
+                    Final Instructions
+                  </label>
 
-                <textarea
-                  rows={4}
-                  value={
-                    form.instructions
-                  }
-                  onChange={
-                    handleChange(
-                      "instructions"
-                    )
-                  }
-                  placeholder="Enter final instructions..."
-                />
+                  <textarea
+                    rows={3}
+                    value={
+                      form.instructions
+                    }
+                    onChange={
+                      handleChange(
+                        "instructions"
+                      )
+                    }
+                    placeholder="Enter final instructions..."
+                  />
 
-              </div>
+                </div>
 
-            </>
+              </section>
+
+            </div>
           );
+
 
         default:
 
@@ -1885,7 +2932,17 @@ const OrderLifecyclePanel = ({
 
   return (
 
-    <div className="kam-detail-card">
+    <div
+      className={`kam-detail-card ${
+        activeStepIndex === 2
+          ? "kam-vendor-step-active"
+          : ""
+      } ${
+        activeStepIndex === 4
+          ? "kam-completion-step-active"
+          : ""
+      }`}
+    >
 
       <div className="kam-stepper">
 
@@ -2037,11 +3094,12 @@ const OrderLifecyclePanel = ({
             <div>
 
               <span>
-                Client
+                Customer
               </span>
 
               <strong>
-                {order.client ||
+                {order.companyName ||
+                  order.customer ||
                   "—"}
               </strong>
 
@@ -2073,7 +3131,7 @@ const OrderLifecyclePanel = ({
             <div>
 
               <span>
-                Cargo
+                Cargo Type
               </span>
 
               <strong>

@@ -410,6 +410,11 @@ const Traffic = () => {
     setMessage,
   ] = useState("");
 
+  const [
+    trafficAllocatedBy,
+    setTrafficAllocatedBy,
+  ] = useState("");
+
 
   /* =========================================================
      FETCH APPROVED ORDERS
@@ -614,6 +619,11 @@ const Traffic = () => {
       order
     );
 
+    setTrafficAllocatedBy(
+      order.trafficAllocatedBy ||
+        ""
+    );
+
     setMessage("");
 
     document.body.style.overflow =
@@ -628,6 +638,8 @@ const Traffic = () => {
       );
 
       setVehicleForms([]);
+
+      setTrafficAllocatedBy("");
 
       document.body.style.overflow =
         "";
@@ -878,13 +890,11 @@ const Traffic = () => {
 
 
   /* =========================================================
-     SAVE ONE VEHICLE'S QUOTATIONS
+     REQUEST APPROVAL FOR ALL VEHICLES
   ========================================================= */
 
-  const handleSaveVehicleQuotations =
-    async (
-      vehicleIndex
-    ) => {
+  const handleRequestApproval =
+    async () => {
       if (
         !selectedOrder?._id
       ) {
@@ -896,77 +906,210 @@ const Traffic = () => {
       }
 
 
-      const currentVehicle =
-        vehicleForms[
-          vehicleIndex
-        ];
+      const allocatorName =
+        String(
+          trafficAllocatedBy ||
+          ""
+        ).trim();
 
 
-      const validOptions =
-        (
-          currentVehicle.transportOptions ||
-          []
-        )
-          .map(
-            (option) => ({
-              ...option,
-
-              transportName:
-                String(
-                  option.transportName ||
-                  ""
-                ).trim(),
-
-              amount:
-                option.amount ===
-                  "" ||
-                option.amount ===
-                  null ||
-                option.amount ===
-                  undefined
-                  ? ""
-                  : Number(
-                      option.amount
-                    ),
-            })
-          )
-          .filter(
-            (option) =>
-              option.transportName ||
-              option.amount !== ""
-          );
-
-
-      if (
-        validOptions.length ===
-        0
-      ) {
+      if (!allocatorName) {
         setMessage(
-          "Please enter at least one transport quotation."
+          "Please enter the Traffic Allocator name before requesting approval."
         );
 
         return;
       }
 
 
-      const invalid =
-        validOptions.some(
-          (option) =>
-            !option.transportName ||
-            !Number.isFinite(
-              Number(
-                option.amount
-              )
-            ) ||
-            Number(
-              option.amount
-            ) <= 0
+      if (
+        !Array.isArray(
+          vehicleForms
+        ) ||
+        vehicleForms.length ===
+          0
+      ) {
+        setMessage(
+          "No vehicle requirements found."
         );
 
+        return;
+      }
 
-      if (invalid) {
+
+      const now =
+        new Date()
+          .toISOString();
+
+
+      const updatedVehicles =
+        [];
+
+      let validationError =
+        "";
+
+
+      for (
+        let vehicleIndex = 0;
+        vehicleIndex <
+        vehicleForms.length;
+        vehicleIndex += 1
+      ) {
+        const vehicle =
+          vehicleForms[
+            vehicleIndex
+          ];
+
+
+        const status =
+          normalizeQuotationStatus(
+            vehicle.quotationStatus
+          );
+
+
+        if (
+          status ===
+          "Approved"
+        ) {
+          updatedVehicles.push(
+            vehicle
+          );
+
+          continue;
+        }
+
+
+        const validOptions =
+          (
+            vehicle.transportOptions ||
+            []
+          )
+            .map(
+              (option) => ({
+                ...option,
+
+                transportName:
+                  String(
+                    option.transportName ||
+                    ""
+                  ).trim(),
+
+                amount:
+                  option.amount ===
+                    "" ||
+                  option.amount ===
+                    null ||
+                  option.amount ===
+                    undefined
+                    ? ""
+                    : Number(
+                        option.amount
+                      ),
+              })
+            )
+            .filter(
+              (option) =>
+                option.transportName ||
+                option.amount !== ""
+            );
+
+
+        if (
+          validOptions.length ===
+          0
+        ) {
+          validationError =
+            `Please enter at least one transport quotation for ${
+              vehicle.vehicleType ||
+              `Vehicle ${
+                vehicleIndex + 1
+              }`
+            }.`;
+
+          break;
+        }
+
+
+        const invalid =
+          validOptions.some(
+            (option) =>
+              !option.transportName ||
+              !Number.isFinite(
+                Number(
+                  option.amount
+                )
+              ) ||
+              Number(
+                option.amount
+              ) <= 0
+          );
+
+
+        if (invalid) {
+          validationError =
+            `Enter Transport Name and valid Amount for every quotation in ${
+              vehicle.vehicleType ||
+              `Vehicle ${
+                vehicleIndex + 1
+              }`
+            }.`;
+
+          break;
+        }
+
+
+        updatedVehicles.push({
+          ...vehicle,
+
+          transportOptions:
+            validOptions.map(
+              (option) => ({
+                ...option,
+
+                status:
+                  "Submitted",
+              })
+            ),
+
+          quotationStatus:
+            "Approval Pending",
+
+          quotationSubmittedAt:
+            now,
+
+          vehicleApprovalRequested:
+            true,
+
+          vehicleApprovalStatus:
+            "Pending",
+
+          vehicleApprovalRequestedAt:
+            now,
+
+          vehicleApprovalReviewedAt:
+            null,
+
+          approvedQuotationId:
+            "",
+
+          vehicleApprovalRemarks:
+            "",
+
+          vehicleRejectionReason:
+            "",
+
+          quotationRemark:
+            "",
+
+          selectedTransport:
+            null,
+        });
+      }
+
+
+      if (validationError) {
         setMessage(
-          "Enter Transport Name and valid Amount for every quotation."
+          validationError
         );
 
         return;
@@ -974,96 +1117,11 @@ const Traffic = () => {
 
 
       try {
-        const vehicleId =
-          currentVehicle.vehicleSubId ||
-          vehicleIndex;
-
         setSavingVehicleId(
-          vehicleId
+          "__ALL__"
         );
 
         setMessage("");
-
-
-        const now =
-          new Date()
-            .toISOString();
-
-
-        const updatedVehicles =
-          vehicleForms.map(
-            (
-              vehicle,
-              index
-            ) => {
-              if (
-                index !==
-                vehicleIndex
-              ) {
-                return vehicle;
-              }
-
-
-              /*
-               * Traffic only submits options.
-               * It does NOT select transporter.
-               */
-
-              return {
-                ...vehicle,
-
-                transportOptions:
-                  validOptions.map(
-                    (
-                      option
-                    ) => ({
-                      ...option,
-
-                      status:
-                        "Submitted",
-                    })
-                  ),
-
-                quotationStatus:
-                  "Approval Pending",
-
-                quotationSubmittedAt:
-                  now,
-
-                vehicleApprovalRequested:
-                  true,
-
-                vehicleApprovalStatus:
-                  "Pending",
-
-                vehicleApprovalRequestedAt:
-                  now,
-
-                vehicleApprovalReviewedAt:
-                  null,
-
-                approvedQuotationId:
-                  "",
-
-                vehicleApprovalRemarks:
-                  "",
-
-                vehicleRejectionReason:
-                  "",
-
-                /*
-                 * Fresh Traffic submission always
-                 * returns the vehicle to approval.
-                 */
-
-                quotationRemark:
-                  "",
-
-                selectedTransport:
-                  null,
-              };
-            }
-          );
 
 
         const payload = {
@@ -1072,7 +1130,16 @@ const Traffic = () => {
           vehicles:
             updatedVehicles,
 
+          trafficAllocatedBy:
+            allocatorName,
+
+          trafficAllocatedAt:
+            now,
+
           trafficQuotationUpdatedAt:
+            now,
+
+          vehicleApprovalUpdatedAt:
             now,
         };
 
@@ -1114,7 +1181,7 @@ const Traffic = () => {
         if (!response.ok) {
           throw new Error(
             result.message ||
-            "Unable to save transport quotations."
+            "Unable to request vehicle allocation approval."
           );
         }
 
@@ -1127,7 +1194,12 @@ const Traffic = () => {
 
         const updatedOrder = {
           ...selectedOrder,
-          ...saved,
+
+          ...(saved &&
+          typeof saved ===
+            "object"
+            ? saved
+            : {}),
 
           _id:
             selectedOrder._id,
@@ -1161,18 +1233,18 @@ const Traffic = () => {
 
 
         setMessage(
-          "Transport quotations sent to KAM successfully."
+          "Vehicle allocation approval requested successfully."
         );
 
       } catch (err) {
         console.error(
-          "Save Quotations Error:",
+          "Request Approval Error:",
           err
         );
 
         setMessage(
           err.message ||
-          "Unable to save quotations."
+          "Unable to request approval."
         );
 
       } finally {
@@ -1479,7 +1551,7 @@ const Traffic = () => {
                 </th>
 
                 <th>
-                  Client
+                  Customer
                 </th>
 
                 <th>
@@ -1491,7 +1563,7 @@ const Traffic = () => {
                 </th>
 
                 <th>
-                  Placement Date
+                  Deployment Date
                 </th>
 
                 <th>
@@ -1741,7 +1813,7 @@ const Traffic = () => {
 
             <div className="traffic-modal-header">
 
-              <div>
+              <div className="traffic-modal-heading">
 
                 <span>
                   TRANSPORT QUOTATION
@@ -1763,15 +1835,59 @@ const Traffic = () => {
               </div>
 
 
-              <button
-                type="button"
-                className="traffic-modal-close"
-                onClick={
-                  handleCloseOrder
-                }
-              >
-                <X size={17} />
-              </button>
+              <div className="traffic-modal-header-actions">
+
+                <div className="traffic-allocator-field">
+
+                  <label
+                    htmlFor="traffic-allocated-by"
+                  >
+                    Traffic Allocator
+                    <b>*</b>
+                  </label>
+
+                  <input
+                    id="traffic-allocated-by"
+                    type="text"
+                    value={
+                      trafficAllocatedBy
+                    }
+                    onChange={(
+                      event
+                    ) =>
+                      setTrafficAllocatedBy(
+                        event.target.value
+                      )
+                    }
+                    placeholder="Enter your name"
+                    autoComplete="name"
+                  />
+
+                  {selectedOrder.trafficAllocatedAt && (
+                    <small>
+                      Last allocation:{" "}
+                      {formatDate(
+                        selectedOrder
+                          .trafficAllocatedAt
+                      )}
+                    </small>
+                  )}
+
+                </div>
+
+
+                <button
+                  type="button"
+                  className="traffic-modal-close"
+                  onClick={
+                    handleCloseOrder
+                  }
+                  aria-label="Close quotation modal"
+                >
+                  <X size={17} />
+                </button>
+
+              </div>
 
             </div>
 
@@ -1795,7 +1911,7 @@ const Traffic = () => {
 
               <div>
                 <span>
-                  Client
+                  Customer
                 </span>
 
                 <strong>
@@ -1829,7 +1945,7 @@ const Traffic = () => {
 
               <div>
                 <span>
-                  Placement
+                  Deployment
                 </span>
 
                 <strong>
@@ -1892,7 +2008,7 @@ const Traffic = () => {
 
                       <div className="traffic-vehicle-card-header">
 
-                        <div>
+                        <div className="traffic-vehicle-header-main">
 
                           <span className="traffic-vehicle-index">
                             {String(
@@ -1917,7 +2033,7 @@ const Traffic = () => {
                                 0}{" "}
                               NOS
                               {" • "}
-                              Placement:
+                              Deployment:
                               {" "}
                               {formatDate(
                                 vehicle.placementDate
@@ -1929,21 +2045,40 @@ const Traffic = () => {
                         </div>
 
 
-                        <span
-                          className={`traffic-status ${getStatusClass(
-                            status
-                          )}`}
-                        >
+                        <div className="traffic-vehicle-header-actions">
 
-                          <StatusIcon
-                            status={
+                          <span
+                            className={`traffic-status ${getStatusClass(
                               status
-                            }
-                          />
+                            )}`}
+                          >
 
-                          {status}
+                            <StatusIcon
+                              status={
+                                status
+                              }
+                            />
 
-                        </span>
+                            {status}
+
+                          </span>
+
+                          {!isSelected && (
+                            <button
+                              type="button"
+                              className="traffic-add-btn traffic-add-btn-header"
+                              onClick={() =>
+                                handleAddTransport(
+                                  vehicleIndex
+                                )
+                              }
+                            >
+                              <Plus size={13} />
+                              Add Transport
+                            </button>
+                          )}
+
+                        </div>
 
                       </div>
 
@@ -2034,96 +2169,9 @@ const Traffic = () => {
                       )}
 
 
-                      {/* VEHICLE REQUIREMENT */}
-
-                      <div className="traffic-requirement-row">
-
-                        <div>
-                          <span>
-                            Vehicle Type
-                          </span>
-
-                          <strong>
-                            {vehicle.vehicleType ||
-                              "—"}
-                          </strong>
-                        </div>
-
-
-                        <div>
-                          <span>
-                            Quantity
-                          </span>
-
-                          <strong>
-                            {vehicle.quantity ||
-                              0}{" "}
-                            NOS
-                          </strong>
-                        </div>
-
-
-                        <div>
-                          <span>
-                            Placement Date
-                          </span>
-
-                          <strong>
-                            {formatDate(
-                              vehicle.placementDate
-                            )}
-                          </strong>
-                        </div>
-
-                      </div>
-
-
                       {/* QUOTATION SECTION */}
 
                       <div className="traffic-quotation-section">
-
-                        <div className="traffic-quotation-heading">
-
-                          <div>
-
-                            <h4>
-                              Transport Options
-                            </h4>
-
-                            <p>
-                              Add one or more
-                              transporter quotations
-                              for this vehicle
-                              requirement.
-                            </p>
-
-                          </div>
-
-
-                          {!isSelected && (
-
-                            <button
-                              type="button"
-                              className="traffic-add-btn"
-                              onClick={() =>
-                                handleAddTransport(
-                                  vehicleIndex
-                                )
-                              }
-                            >
-
-                              <Plus
-                                size={13}
-                              />
-
-                              Add Transport
-
-                            </button>
-
-                          )}
-
-                        </div>
-
 
                         <div className="traffic-quotation-table-wrap">
 
@@ -2376,54 +2424,6 @@ const Traffic = () => {
                         </div>
 
 
-                        {/* SAVE */}
-
-                        {!isSelected && (
-
-                          <div className="traffic-quotation-footer">
-
-                            <span>
-                              Traffic Team only
-                              submits quotations.
-                              Management will approve the
-                              suitable transporter.
-                            </span>
-
-
-                            <button
-                              type="button"
-                              className="traffic-submit-btn"
-                              disabled={
-                                savingVehicleId ===
-                                vehicleKey
-                              }
-                              onClick={() =>
-                                handleSaveVehicleQuotations(
-                                  vehicleIndex
-                                )
-                              }
-                            >
-
-                              <Send
-                                size={14}
-                              />
-
-                              {savingVehicleId ===
-                              vehicleKey
-                                ? "Saving..."
-                                : status ===
-                                    "Rejected" ||
-                                  status ===
-                                    "Revision Requested"
-                                  ? "Resubmit Quotations"
-                                  : "Save Quotations"}
-
-                            </button>
-
-                          </div>
-
-                        )}
-
                       </div>
 
                     </section>
@@ -2431,6 +2431,42 @@ const Traffic = () => {
                   );
                 }
               )}
+
+              <div className="traffic-quotation-footer">
+
+                <span>
+                  Traffic Team only
+                  submits quotations.
+                  Management will approve the
+                  suitable transporter.
+                </span>
+
+
+                <button
+                  type="button"
+                  className="traffic-submit-btn"
+                  disabled={
+                    savingVehicleId ===
+                      "__ALL__" ||
+                    !trafficAllocatedBy.trim()
+                  }
+                  onClick={
+                    handleRequestApproval
+                  }
+                >
+
+                  <Send
+                    size={14}
+                  />
+
+                  {savingVehicleId ===
+                  "__ALL__"
+                    ? "Requesting..."
+                    : "Request Approval"}
+
+                </button>
+
+              </div>
 
             </div>
 

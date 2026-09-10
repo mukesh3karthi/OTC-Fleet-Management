@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 
 const { Schema } = mongoose;
 
+
 /* =========================================================
    TRANSPORT QUOTATION SCHEMA
 ========================================================= */
@@ -15,6 +16,18 @@ const transportOptionSchema = new Schema(
     },
 
     transportName: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
+    contactName: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
+    contactNumber: {
       type: String,
       trim: true,
       default: "",
@@ -37,6 +50,7 @@ const transportOptionSchema = new Schema(
   }
 );
 
+
 /* =========================================================
    SELECTED TRANSPORT SCHEMA
 ========================================================= */
@@ -55,6 +69,18 @@ const selectedTransportSchema = new Schema(
       default: "",
     },
 
+    contactName: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
+    contactNumber: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
     amount: {
       type: Number,
       min: 0,
@@ -65,6 +91,7 @@ const selectedTransportSchema = new Schema(
     _id: false,
   }
 );
+
 
 /* =========================================================
    VEHICLE SCHEMA
@@ -196,6 +223,7 @@ const vehicleSchema = new Schema(
       default: "",
     },
 
+
     /* =========================
        TRAFFIC / QUOTATION
     ========================= */
@@ -233,6 +261,7 @@ const vehicleSchema = new Schema(
       default: "",
     },
 
+
     /* =========================
        VEHICLE APPROVAL
     ========================= */
@@ -244,12 +273,14 @@ const vehicleSchema = new Schema(
 
     vehicleApprovalStatus: {
       type: String,
+
       enum: [
         "Not Requested",
         "Pending",
         "Approved",
         "Rejected",
       ],
+
       default: "Not Requested",
     },
 
@@ -296,12 +327,14 @@ const vehicleSchema = new Schema(
   }
 );
 
+
 /* =========================================================
    MAIN TRIP SCHEMA
 ========================================================= */
 
 const triptrackingSchema = new Schema(
   {
+
     /* =========================
        BASIC TRIP
     ========================= */
@@ -319,6 +352,7 @@ const triptrackingSchema = new Schema(
       trim: true,
       default: "",
     },
+
 
     /* =========================
        CLIENT
@@ -367,6 +401,7 @@ const triptrackingSchema = new Schema(
       default: "",
     },
 
+
     /* =========================
        DATES
     ========================= */
@@ -390,6 +425,7 @@ const triptrackingSchema = new Schema(
       type: Date,
       default: null,
     },
+
 
     /* =========================
        ROUTE
@@ -423,6 +459,7 @@ const triptrackingSchema = new Schema(
       type: [String],
       default: [],
     },
+
 
     /* =========================
        CARGO
@@ -467,6 +504,7 @@ const triptrackingSchema = new Schema(
       default: "",
     },
 
+
     /* =========================
        INTERCARTING
     ========================= */
@@ -495,6 +533,7 @@ const triptrackingSchema = new Schema(
       default: 0,
     },
 
+
     /* =========================
        CRANE / OTHER
     ========================= */
@@ -511,6 +550,7 @@ const triptrackingSchema = new Schema(
       default: "",
     },
 
+
     /* =========================
        VEHICLES
     ========================= */
@@ -519,6 +559,7 @@ const triptrackingSchema = new Schema(
       type: [vehicleSchema],
       default: [],
     },
+
 
     /* =========================
        ORDER LIFECYCLE
@@ -542,6 +583,7 @@ const triptrackingSchema = new Schema(
       default: 0,
     },
 
+
     /* =========================
        CLIENT ENQUIRY
     ========================= */
@@ -557,6 +599,7 @@ const triptrackingSchema = new Schema(
       trim: true,
       default: "",
     },
+
 
     /* =========================
        ORDER FINALIZATION
@@ -641,6 +684,7 @@ const triptrackingSchema = new Schema(
       default: "",
     },
 
+
     /* =========================
        ORDER APPROVAL
     ========================= */
@@ -652,12 +696,14 @@ const triptrackingSchema = new Schema(
 
     approvalStatus: {
       type: String,
+
       enum: [
         "Not Requested",
         "Pending",
         "Approved",
         "Rejected",
       ],
+
       default: "Not Requested",
     },
 
@@ -689,9 +735,21 @@ const triptrackingSchema = new Schema(
       default: "",
     },
 
+
     /* =========================
        TRAFFIC / VEHICLE APPROVAL
     ========================= */
+
+    trafficAllocatedBy: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
+    trafficAllocatedAt: {
+      type: Date,
+      default: null,
+    },
 
     trafficQuotationUpdatedAt: {
       type: Date,
@@ -702,6 +760,7 @@ const triptrackingSchema = new Schema(
       type: Date,
       default: null,
     },
+
 
     /* =========================
        PO DOCUMENT
@@ -735,6 +794,7 @@ const triptrackingSchema = new Schema(
       trim: true,
       default: "",
     },
+
 
     /* =========================
        VENDOR
@@ -770,6 +830,7 @@ const triptrackingSchema = new Schema(
       default: "",
     },
 
+
     /* =========================
        COMPLETION
     ========================= */
@@ -797,6 +858,7 @@ const triptrackingSchema = new Schema(
   }
 );
 
+
 /* =========================================================
    INDEXES
 ========================================================= */
@@ -822,6 +884,7 @@ triptrackingSchema.index({
   approvalStatus: 1,
   approvalRequestedAt: -1,
 });
+
 
 /* =========================================================
    MODEL

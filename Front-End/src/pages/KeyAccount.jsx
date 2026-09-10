@@ -2677,7 +2677,7 @@ const KeyAccount = () => {
             </h1>
 
             <p>
-              Manage client orders,
+              Manage customer orders,
               commercial workflow,
               vendor finalization and
               trip readiness from one
@@ -2806,7 +2806,7 @@ const KeyAccount = () => {
 
               <input
                 type="text"
-                placeholder="Search order, client, cargo, route, status..."
+                placeholder="Search order, customer, cargo, route, status..."
                 value={
                   search
                 }
@@ -2921,11 +2921,11 @@ const KeyAccount = () => {
                   </th>
 
                   <th>
-                    CLIENT
+                    CUSTOMER
                   </th>
 
                   <th>
-                    CARGO &amp; WEIGHT
+                    CARGO TYPE &amp; WEIGHT
                   </th>
 
                   <th>
@@ -2943,7 +2943,7 @@ const KeyAccount = () => {
                   </th>
 
                   <th>
-                    KEY ACCOUNT NAME
+                    ASSIGNED KAM
                   </th>
 
                   <th className="kam-actions-column">
@@ -2987,24 +2987,25 @@ const KeyAccount = () => {
                         </td>
 
 
-                        {/* CLIENT */}
+                        {/* CUSTOMER */}
 
                         <td>
 
                           <div className="client-name">
 
-                            {order.client ||
+                            {order.companyName ||
+                              order.customer ||
                               "—"}
 
                           </div>
 
 
-                          {order.companyName && (
+                          {order.client && (
 
                             <span className="order-subtext">
 
-                              {
-                                order.companyName
+                              Contact Person: {
+                                order.client
                               }
 
                             </span>
@@ -3505,4 +3506,4 @@ const SummaryCard = ({
 );
 
 
-export default KeyAccount;
+export default KeyAccount;  

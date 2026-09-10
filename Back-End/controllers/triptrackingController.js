@@ -3,12 +3,14 @@ const mongoose = require("mongoose");
 const Triptracking =
   require("../models/Triptracking");
 
+
 /* =========================================================
    HELPERS
 ========================================================= */
 
 const cleanText = (value) =>
   String(value ?? "").trim();
+
 
 const numberOrZero = (value) => {
   const number = Number(value);
@@ -17,6 +19,7 @@ const numberOrZero = (value) => {
     ? Math.max(number, 0)
     : 0;
 };
+
 
 const nullableNumber = (value) => {
   if (
@@ -34,6 +37,7 @@ const nullableNumber = (value) => {
     : null;
 };
 
+
 const positiveInteger = (
   value,
   fallback = 1
@@ -50,12 +54,14 @@ const positiveInteger = (
   return number;
 };
 
+
 const dateOrNull = (value) => {
   if (!value) {
     return null;
   }
 
-  const date = new Date(value);
+  const date =
+    new Date(value);
 
   return Number.isNaN(
     date.getTime()
@@ -63,6 +69,7 @@ const dateOrNull = (value) => {
     ? null
     : date;
 };
+
 
 /* =========================================================
    ROUTE LOCATIONS
@@ -75,7 +82,8 @@ const cleanRouteLocations = (
     return [];
   }
 
-  const seen = new Set();
+  const seen =
+    new Set();
 
   return locations
     .map((location) => {
@@ -92,7 +100,9 @@ const cleanRouteLocations = (
         );
       }
 
-      return cleanText(location);
+      return cleanText(
+        location
+      );
     })
     .filter(Boolean)
     .filter((location) => {
@@ -109,6 +119,7 @@ const cleanRouteLocations = (
     });
 };
 
+
 /* =========================================================
    TRANSPORT OPTIONS
 ========================================================= */
@@ -121,34 +132,49 @@ const normalizeTransportOptions = (
   }
 
   return options
-    .map((option = {}) => ({
-      quotationId:
-        cleanText(
-          option.quotationId
-        ),
+    .map(
+      (option = {}) => ({
+        quotationId:
+          cleanText(
+            option.quotationId
+          ),
 
-      transportName:
-        cleanText(
-          option.transportName
-        ),
+        transportName:
+          cleanText(
+            option.transportName
+          ),
 
-      amount:
-        numberOrZero(
-          option.amount
-        ),
+        contactName:
+          cleanText(
+            option.contactName
+          ),
 
-      status:
-        cleanText(
-          option.status
-        ) || "Pending",
-    }))
+        contactNumber:
+          cleanText(
+            option.contactNumber
+          ),
+
+        amount:
+          numberOrZero(
+            option.amount
+          ),
+
+        status:
+          cleanText(
+            option.status
+          ) || "Pending",
+      })
+    )
     .filter(
       (option) =>
         option.quotationId ||
         option.transportName ||
+        option.contactName ||
+        option.contactNumber ||
         option.amount > 0
     );
 };
+
 
 /* =========================================================
    SELECTED TRANSPORT
@@ -168,12 +194,26 @@ const normalizeSelectedTransport = (
   const normalized = {
     quotationId:
       cleanText(
-        selectedTransport.quotationId
+        selectedTransport
+          .quotationId
       ),
 
     transportName:
       cleanText(
-        selectedTransport.transportName
+        selectedTransport
+          .transportName
+      ),
+
+    contactName:
+      cleanText(
+        selectedTransport
+          .contactName
+      ),
+
+    contactNumber:
+      cleanText(
+        selectedTransport
+          .contactNumber
       ),
 
     amount:
@@ -182,9 +222,12 @@ const normalizeSelectedTransport = (
       ),
   };
 
+
   if (
     !normalized.quotationId &&
     !normalized.transportName &&
+    !normalized.contactName &&
+    !normalized.contactNumber &&
     normalized.amount <= 0
   ) {
     return null;
@@ -192,6 +235,7 @@ const normalizeSelectedTransport = (
 
   return normalized;
 };
+
 
 /* =========================================================
    NORMALIZE VEHICLE
@@ -202,6 +246,7 @@ const normalizeVehicle = (
   tripId,
   index
 ) => {
+
   const length =
     nullableNumber(
       vehicle.length
@@ -217,15 +262,20 @@ const normalizeVehicle = (
       vehicle.width
     );
 
+
   const vehicleApprovalRequested =
     Boolean(
-      vehicle.vehicleApprovalRequested
+      vehicle
+        .vehicleApprovalRequested
     );
+
 
   const rawApprovalStatus =
     cleanText(
-      vehicle.vehicleApprovalStatus
+      vehicle
+        .vehicleApprovalStatus
     );
+
 
   const validApprovalStatuses = [
     "Not Requested",
@@ -233,6 +283,7 @@ const normalizeVehicle = (
     "Approved",
     "Rejected",
   ];
+
 
   const vehicleApprovalStatus =
     validApprovalStatuses.includes(
@@ -243,32 +294,40 @@ const normalizeVehicle = (
         ? "Pending"
         : "Not Requested";
 
+
   return {
+
     vehicleSubId:
       cleanText(
         vehicle.vehicleSubId
       ) ||
       `${tripId}-V${index + 1}`,
 
+
     vehicleNumber:
       cleanText(
         vehicle.vehicleNumber
       ).toUpperCase(),
+
 
     vehicleType:
       cleanText(
         vehicle.vehicleType
       ),
 
+
     configurationModel:
       cleanText(
         vehicle.configurationModel
       ),
 
+
     movementClassification:
       cleanText(
-        vehicle.movementClassification
+        vehicle
+          .movementClassification
       ),
+
 
     quantity:
       positiveInteger(
@@ -276,16 +335,19 @@ const normalizeVehicle = (
         1
       ),
 
+
     weight:
       numberOrZero(
         vehicle.weight
       ),
+
 
     length,
 
     height,
 
     width,
+
 
     dimensions:
       length !== null &&
@@ -296,10 +358,12 @@ const normalizeVehicle = (
             vehicle.dimensions
           ),
 
+
     remark:
       cleanText(
         vehicle.remark
       ),
+
 
     currentPosition:
       cleanText(
@@ -307,16 +371,19 @@ const normalizeVehicle = (
           vehicle.currentLocation
       ),
 
+
     currentLocation:
       cleanText(
         vehicle.currentLocation ??
           vehicle.currentPosition
       ),
 
+
     driverName:
       cleanText(
         vehicle.driverName
       ),
+
 
     driverPhone:
       cleanText(
@@ -324,21 +391,25 @@ const normalizeVehicle = (
           vehicle.driverNumber
       ),
 
+
     driverNumber:
       cleanText(
         vehicle.driverNumber ??
           vehicle.driverPhone
       ),
 
+
     vendorName:
       cleanText(
         vehicle.vendorName
       ),
 
+
     vendorPhone:
       cleanText(
         vehicle.vendorPhone
       ),
+
 
     vehicleStatus:
       cleanText(
@@ -346,10 +417,12 @@ const normalizeVehicle = (
       ) ||
       "Pending Assignment",
 
+
     trackingStatus:
       cleanText(
         vehicle.trackingStatus
       ),
+
 
     /* =========================
        TRAFFIC / QUOTATION
@@ -360,10 +433,12 @@ const normalizeVehicle = (
         vehicle.placementDate
       ),
 
+
     transportOptions:
       normalizeTransportOptions(
         vehicle.transportOptions
       ),
+
 
     quotationStatus:
       cleanText(
@@ -371,20 +446,25 @@ const normalizeVehicle = (
       ) ||
       "Quotation Pending",
 
+
     quotationSubmittedAt:
       dateOrNull(
-        vehicle.quotationSubmittedAt
+        vehicle
+          .quotationSubmittedAt
       ),
+
 
     quotationRemark:
       cleanText(
         vehicle.quotationRemark
       ),
 
+
     transportRemark:
       cleanText(
         vehicle.transportRemark
       ),
+
 
     /* =========================
        VEHICLE APPROVAL
@@ -392,7 +472,9 @@ const normalizeVehicle = (
 
     vehicleApprovalRequested,
 
+
     vehicleApprovalStatus,
+
 
     vehicleApprovalRequestedAt:
       dateOrNull(
@@ -400,16 +482,20 @@ const normalizeVehicle = (
           .vehicleApprovalRequestedAt
       ),
 
+
     vehicleApprovalReviewedAt:
       dateOrNull(
         vehicle
           .vehicleApprovalReviewedAt
       ),
 
+
     approvedQuotationId:
       cleanText(
-        vehicle.approvedQuotationId
+        vehicle
+          .approvedQuotationId
       ),
+
 
     vehicleApprovalRemarks:
       cleanText(
@@ -417,16 +503,19 @@ const normalizeVehicle = (
           .vehicleApprovalRemarks
       ),
 
+
     vehicleRejectionReason:
       cleanText(
         vehicle
           .vehicleRejectionReason
       ),
 
+
     selectedTransport:
       normalizeSelectedTransport(
         vehicle.selectedTransport
       ),
+
 
     lastUpdated:
       dateOrNull(
@@ -434,6 +523,7 @@ const normalizeVehicle = (
       ),
   };
 };
+
 
 /* =========================================================
    BUILD TRIP DATA
@@ -443,11 +533,13 @@ const buildTripData = (
   body = {},
   existingTrip = null
 ) => {
+
   const tripId =
     cleanText(
       body.tripId ??
         existingTrip?.tripId
     );
+
 
   const client =
     cleanText(
@@ -456,6 +548,7 @@ const buildTripData = (
         existingTrip?.client ??
         existingTrip?.customer
     );
+
 
   const clientContact =
     cleanText(
@@ -467,6 +560,7 @@ const buildTripData = (
           ?.clientPhone
     );
 
+
   const cargo =
     cleanText(
       body.cargo ??
@@ -476,6 +570,7 @@ const buildTripData = (
           ?.materialType
     );
 
+
   const rawVehicles =
     Array.isArray(
       body.vehicles
@@ -483,6 +578,7 @@ const buildTripData = (
       ? body.vehicles
       : existingTrip
           ?.vehicles || [];
+
 
   const vehicles =
     rawVehicles.map(
@@ -497,6 +593,7 @@ const buildTripData = (
         )
     );
 
+
   const movementType =
     cleanText(
       body.movementType ??
@@ -504,7 +601,9 @@ const buildTripData = (
           ?.movementType
     );
 
+
   return {
+
     /* =========================
        BASIC
     ========================= */
@@ -512,6 +611,7 @@ const buildTripData = (
     tripId,
 
     movementType,
+
 
     /* =========================
        CLIENT
@@ -524,15 +624,20 @@ const buildTripData = (
             ?.companyName
       ),
 
+
     client,
+
 
     customer:
       client,
 
+
     clientContact,
+
 
     clientPhone:
       clientContact,
+
 
     clientEmail:
       cleanText(
@@ -541,12 +646,14 @@ const buildTripData = (
             ?.clientEmail
       ).toLowerCase(),
 
+
     assignedKam:
       cleanText(
         body.assignedKam ??
           existingTrip
             ?.assignedKam
       ),
+
 
     /* =========================
        DATES
@@ -561,6 +668,7 @@ const buildTripData = (
         : existingTrip
             ?.enquiryDate,
 
+
     placementDate:
       body.placementDate !==
       undefined
@@ -569,6 +677,7 @@ const buildTripData = (
           )
         : existingTrip
             ?.placementDate,
+
 
     deploymentDate:
       body.deploymentDate !==
@@ -579,6 +688,7 @@ const buildTripData = (
         : existingTrip
             ?.deploymentDate,
 
+
     loadingDate:
       body.loadingDate !==
       undefined
@@ -587,6 +697,7 @@ const buildTripData = (
           )
         : existingTrip
             ?.loadingDate,
+
 
     /* =========================
        ROUTE
@@ -598,12 +709,14 @@ const buildTripData = (
           existingTrip?.origin
       ),
 
+
     destination:
       cleanText(
         body.destination ??
           existingTrip
             ?.destination
       ),
+
 
     estimatedDistance:
       numberOrZero(
@@ -612,11 +725,13 @@ const buildTripData = (
             ?.estimatedDistance
       ),
 
+
     totalKm:
       numberOrZero(
         body.totalKm ??
           existingTrip?.totalKm
       ),
+
 
     routeLocations:
       body.routeLocations !==
@@ -629,20 +744,24 @@ const buildTripData = (
               ?.routeLocations
           ),
 
+
     /* =========================
        CARGO
     ========================= */
 
     cargo,
 
+
     materialType:
       cargo,
+
 
     weight:
       numberOrZero(
         body.weight ??
           existingTrip?.weight
       ),
+
 
     length:
       body.length !==
@@ -653,6 +772,7 @@ const buildTripData = (
         : existingTrip
             ?.length ?? null,
 
+
     height:
       body.height !==
       undefined
@@ -661,6 +781,7 @@ const buildTripData = (
           )
         : existingTrip
             ?.height ?? null,
+
 
     width:
       body.width !==
@@ -671,11 +792,13 @@ const buildTripData = (
         : existingTrip
             ?.width ?? null,
 
+
     remark:
       cleanText(
         body.remark ??
           existingTrip?.remark
       ),
+
 
     /* =========================
        INTERCARTING
@@ -688,11 +811,13 @@ const buildTripData = (
             ?.siteLocation
       ),
 
+
     period:
       cleanText(
         body.period ??
           existingTrip?.period
       ),
+
 
     dieselScope:
       cleanText(
@@ -701,12 +826,14 @@ const buildTripData = (
             ?.dieselScope
       ),
 
+
     totalQuantity:
       numberOrZero(
         body.totalQuantity ??
           existingTrip
             ?.totalQuantity
       ),
+
 
     /* =========================
        CRANE / OTHER
@@ -719,6 +846,7 @@ const buildTripData = (
             ?.requiredVehicles
       ),
 
+
     primaryVehicleType:
       cleanText(
         body.primaryVehicleType ??
@@ -726,11 +854,13 @@ const buildTripData = (
             ?.primaryVehicleType
       ),
 
+
     /* =========================
        VEHICLES
     ========================= */
 
     vehicles,
+
 
     /* =========================
        LIFECYCLE
@@ -745,6 +875,7 @@ const buildTripData = (
       ) ||
       "Client Enquiry",
 
+
     responsibleTeam:
       cleanText(
         body.responsibleTeam ??
@@ -754,12 +885,14 @@ const buildTripData = (
       ) ||
       "Key Account Management Team",
 
+
     lifecycleStep:
       numberOrZero(
         body.lifecycleStep ??
           existingTrip
             ?.lifecycleStep
       ),
+
 
     /* =========================
        CLIENT ENQUIRY
@@ -772,12 +905,14 @@ const buildTripData = (
             ?.requirement
       ),
 
+
     enquiryRemarks:
       cleanText(
         body.enquiryRemarks ??
           existingTrip
             ?.enquiryRemarks
       ),
+
 
     /* =========================
        ORDER FINALIZATION
@@ -790,12 +925,14 @@ const buildTripData = (
             ?.quotedRate
       ),
 
+
     negotiatedRate:
       numberOrZero(
         body.negotiatedRate ??
           existingTrip
             ?.negotiatedRate
       ),
+
 
     finalRate:
       numberOrZero(
@@ -804,12 +941,14 @@ const buildTripData = (
             ?.finalRate
       ),
 
+
     agreedRate:
       numberOrZero(
         body.agreedRate ??
           existingTrip
             ?.agreedRate
       ),
+
 
     paymentTerms:
       cleanText(
@@ -818,12 +957,14 @@ const buildTripData = (
             ?.paymentTerms
       ),
 
+
     pricingRemarks:
       cleanText(
         body.pricingRemarks ??
           existingTrip
             ?.pricingRemarks
       ),
+
 
     commercialTerms:
       cleanText(
@@ -833,6 +974,7 @@ const buildTripData = (
           existingTrip
             ?.commercialTerms
       ),
+
 
     deliveryCommitments:
       cleanText(
@@ -844,6 +986,7 @@ const buildTripData = (
             ?.deliveryCommitments
       ),
 
+
     clientConfirmationNotes:
       cleanText(
         body
@@ -851,6 +994,7 @@ const buildTripData = (
           existingTrip
             ?.clientConfirmationNotes
       ),
+
 
     orderReferenceNumber:
       cleanText(
@@ -861,12 +1005,14 @@ const buildTripData = (
             ?.orderReferenceNumber
       ),
 
+
     orderCount:
       numberOrZero(
         body.orderCount ??
           existingTrip
             ?.orderCount
       ),
+
 
     responsibleKam:
       cleanText(
@@ -878,6 +1024,7 @@ const buildTripData = (
             ?.assignedKam
       ),
 
+
     commercialRemarks:
       cleanText(
         body.commercialRemarks ??
@@ -887,6 +1034,7 @@ const buildTripData = (
           existingTrip
             ?.pricingRemarks
       ),
+
 
     /* =========================
        ORDER APPROVAL
@@ -904,6 +1052,7 @@ const buildTripData = (
               ?.approvalRequested
           ),
 
+
     approvalStatus:
       cleanText(
         body.approvalStatus ??
@@ -911,6 +1060,7 @@ const buildTripData = (
             ?.approvalStatus
       ) ||
       "Not Requested",
+
 
     approvalRequestedAt:
       body.approvalRequestedAt !==
@@ -923,6 +1073,7 @@ const buildTripData = (
             ?.approvalRequestedAt ??
           null,
 
+
     approvalReviewedAt:
       body.approvalReviewedAt !==
       undefined
@@ -934,6 +1085,7 @@ const buildTripData = (
             ?.approvalReviewedAt ??
           null,
 
+
     approvalReviewedBy:
       cleanText(
         body
@@ -941,6 +1093,7 @@ const buildTripData = (
           existingTrip
             ?.approvalReviewedBy
       ),
+
 
     approvalRejectionReason:
       cleanText(
@@ -951,6 +1104,7 @@ const buildTripData = (
             ?.approvalRejectionReason
       ),
 
+
     approvalRemarks:
       cleanText(
         body.approvalRemarks ??
@@ -958,9 +1112,30 @@ const buildTripData = (
             ?.approvalRemarks
       ),
 
+
     /* =========================
        TRAFFIC / VEHICLE APPROVAL
     ========================= */
+
+    trafficAllocatedBy:
+      cleanText(
+        body.trafficAllocatedBy ??
+          existingTrip
+            ?.trafficAllocatedBy
+      ),
+
+
+    trafficAllocatedAt:
+      body.trafficAllocatedAt !==
+      undefined
+        ? dateOrNull(
+            body
+              .trafficAllocatedAt
+          )
+        : existingTrip
+            ?.trafficAllocatedAt ??
+          null,
+
 
     trafficQuotationUpdatedAt:
       body
@@ -974,6 +1149,7 @@ const buildTripData = (
             ?.trafficQuotationUpdatedAt ??
           null,
 
+
     vehicleApprovalUpdatedAt:
       body
         .vehicleApprovalUpdatedAt !==
@@ -986,6 +1162,7 @@ const buildTripData = (
             ?.vehicleApprovalUpdatedAt ??
           null,
 
+
     /* =========================
        PO
     ========================= */
@@ -996,12 +1173,16 @@ const buildTripData = (
           existingTrip?.poNumber
       ),
 
+
     poDate:
-      body.poDate !== undefined
+      body.poDate !==
+      undefined
         ? dateOrNull(
             body.poDate
           )
-        : existingTrip?.poDate,
+        : existingTrip
+            ?.poDate,
+
 
     poDocumentName:
       cleanText(
@@ -1010,12 +1191,14 @@ const buildTripData = (
             ?.poDocumentName
       ),
 
+
     poDocumentUrl:
       cleanText(
         body.poDocumentUrl ??
           existingTrip
             ?.poDocumentUrl
       ),
+
 
     documentationRemarks:
       cleanText(
@@ -1024,6 +1207,7 @@ const buildTripData = (
           existingTrip
             ?.documentationRemarks
       ),
+
 
     /* =========================
        VENDOR
@@ -1038,6 +1222,7 @@ const buildTripData = (
             ?.vendorName
       ),
 
+
     vendorName:
       cleanText(
         body.vendorName ??
@@ -1047,12 +1232,14 @@ const buildTripData = (
           existingTrip?.vendor
       ),
 
+
     vendorContact:
       cleanText(
         body.vendorContact ??
           existingTrip
             ?.vendorContact
       ),
+
 
     vendorRate:
       numberOrZero(
@@ -1061,12 +1248,14 @@ const buildTripData = (
             ?.vendorRate
       ),
 
+
     vendorRemarks:
       cleanText(
         body.vendorRemarks ??
           existingTrip
             ?.vendorRemarks
       ),
+
 
     /* =========================
        COMPLETION
@@ -1079,6 +1268,7 @@ const buildTripData = (
             ?.instructions
       ),
 
+
     completionRemarks:
       cleanText(
         body
@@ -1086,6 +1276,7 @@ const buildTripData = (
           existingTrip
             ?.completionRemarks
       ),
+
 
     tripStatus:
       cleanText(
@@ -1097,6 +1288,7 @@ const buildTripData = (
   };
 };
 
+
 /* =========================================================
    CREATE TRIP
 ========================================================= */
@@ -1105,93 +1297,117 @@ const createTrip = async (
   req,
   res
 ) => {
+
   try {
+
     const tripData =
       buildTripData(
         req.body
       );
 
+
     if (!tripData.tripId) {
+
       return res
         .status(400)
         .json({
           success: false,
+
           message:
             "Trip ID is required.",
         });
     }
 
+
     if (
       !tripData.movementType
     ) {
+
       return res
         .status(400)
         .json({
           success: false,
+
           message:
             "Movement Type is required.",
         });
     }
 
+
     const existingTrip =
-      await Triptracking.findOne(
-        {
-          tripId:
-            tripData.tripId,
-        }
-      );
+      await Triptracking.findOne({
+        tripId:
+          tripData.tripId,
+      });
+
 
     if (existingTrip) {
+
       return res
         .status(409)
         .json({
           success: false,
+
           message:
             `Trip ID ${tripData.tripId} already exists.`,
         });
     }
+
 
     const trip =
       await Triptracking.create(
         tripData
       );
 
+
     return res
       .status(201)
       .json({
         success: true,
+
         message:
           "Trip created successfully.",
-        data: trip,
+
+        data:
+          trip,
       });
+
+
   } catch (error) {
+
     console.error(
       "Create Trip Error:",
       error
     );
 
+
     if (
       error.code === 11000
     ) {
+
       return res
         .status(409)
         .json({
           success: false,
+
           message:
             "Trip ID already exists.",
         });
     }
 
+
     return res
       .status(500)
       .json({
         success: false,
+
         message:
           error.message ||
           "Unable to create trip.",
       });
   }
 };
+
 
 /* =========================================================
    GET ALL TRIPS
@@ -1201,7 +1417,9 @@ const getAllTrips = async (
   req,
   res
 ) => {
+
   try {
+
     const trips =
       await Triptracking
         .find({})
@@ -1210,30 +1428,40 @@ const getAllTrips = async (
         })
         .lean();
 
+
     return res
       .status(200)
       .json({
         success: true,
+
         count:
           trips.length,
-        data: trips,
+
+        data:
+          trips,
       });
+
+
   } catch (error) {
+
     console.error(
       "Get Trips Error:",
       error
     );
 
+
     return res
       .status(500)
       .json({
         success: false,
+
         message:
           error.message ||
           "Unable to load trips.",
       });
   }
 };
+
 
 /* =========================================================
    GET BY MONGODB ID
@@ -1243,59 +1471,77 @@ const getTripById = async (
   req,
   res
 ) => {
+
   try {
+
     const { id } =
       req.params;
+
 
     if (
       !mongoose.Types.ObjectId
         .isValid(id)
     ) {
+
       return res
         .status(400)
         .json({
           success: false,
+
           message:
             "Invalid MongoDB trip ID.",
         });
     }
 
+
     const trip =
       await Triptracking
         .findById(id);
 
+
     if (!trip) {
+
       return res
         .status(404)
         .json({
           success: false,
+
           message:
             "Trip not found.",
         });
     }
 
+
     return res
       .status(200)
       .json({
         success: true,
-        data: trip,
+
+        data:
+          trip,
       });
+
+
   } catch (error) {
+
     console.error(
       "Get Trip By ID Error:",
       error
     );
 
+
     return res
       .status(500)
       .json({
         success: false,
+
         message:
           error.message ||
           "Unable to load trip.",
       });
   }
 };
+
 
 /* =========================================================
    GET USING TRIP ID
@@ -1306,11 +1552,14 @@ const getTripByTripId =
     req,
     res
   ) => {
+
     try {
+
       const tripId =
         cleanText(
           req.params.tripId
         );
+
 
       const trip =
         await Triptracking
@@ -1318,39 +1567,51 @@ const getTripByTripId =
             tripId,
           });
 
+
       if (!trip) {
+
         return res
           .status(404)
           .json({
             success:
               false,
+
             message:
               "Trip not found.",
           });
       }
 
+
       return res
         .status(200)
         .json({
           success: true,
-          data: trip,
+
+          data:
+            trip,
         });
+
+
     } catch (error) {
+
       console.error(
         "Get Trip By Trip ID Error:",
         error
       );
 
+
       return res
         .status(500)
         .json({
           success: false,
+
           message:
             error.message ||
             "Unable to load trip.",
         });
     }
   };
+
 
 /* =========================================================
    UPDATE COMPLETE TRIP
@@ -1360,36 +1621,46 @@ const updateTrip = async (
   req,
   res
 ) => {
+
   try {
+
     const { id } =
       req.params;
+
 
     if (
       !mongoose.Types.ObjectId
         .isValid(id)
     ) {
+
       return res
         .status(400)
         .json({
           success: false,
+
           message:
             "Invalid MongoDB trip ID.",
         });
     }
 
+
     const existingTrip =
       await Triptracking
         .findById(id);
 
+
     if (!existingTrip) {
+
       return res
         .status(404)
         .json({
           success: false,
+
           message:
             "Trip not found.",
         });
     }
+
 
     const tripData =
       buildTripData(
@@ -1397,10 +1668,12 @@ const updateTrip = async (
         existingTrip
       );
 
+
     if (
       tripData.tripId !==
       existingTrip.tripId
     ) {
+
       const duplicate =
         await Triptracking
           .findOne({
@@ -1412,50 +1685,64 @@ const updateTrip = async (
             },
           });
 
+
       if (duplicate) {
+
         return res
           .status(409)
           .json({
             success:
               false,
+
             message:
               "Trip ID already exists.",
           });
       }
     }
 
+
     Object.assign(
       existingTrip,
       tripData
     );
 
+
     await existingTrip.save();
+
 
     return res
       .status(200)
       .json({
         success: true,
+
         message:
           "Trip updated successfully.",
+
         data:
           existingTrip,
       });
+
+
   } catch (error) {
+
     console.error(
       "Update Trip Error:",
       error
     );
 
+
     return res
       .status(500)
       .json({
         success: false,
+
         message:
           error.message ||
           "Unable to update trip.",
       });
   }
 };
+
 
 /* =========================================================
    UPDATE VEHICLE
@@ -1465,11 +1752,14 @@ const updateVehicle = async (
   req,
   res
 ) => {
+
   try {
+
     const {
       tripId,
       vehicleSubId,
     } = req.params;
+
 
     const trip =
       await Triptracking
@@ -1480,15 +1770,19 @@ const updateVehicle = async (
             ),
         });
 
+
     if (!trip) {
+
       return res
         .status(404)
         .json({
           success: false,
+
           message:
             "Trip not found.",
         });
     }
+
 
     const vehicleIndex =
       trip.vehicles.findIndex(
@@ -1501,27 +1795,33 @@ const updateVehicle = async (
           )
       );
 
+
     if (
       vehicleIndex === -1
     ) {
+
       return res
         .status(404)
         .json({
           success: false,
+
           message:
             "Vehicle not found.",
         });
     }
+
 
     const oldVehicle =
       trip.vehicles[
         vehicleIndex
       ].toObject();
 
+
     const mergedVehicle = {
       ...oldVehicle,
       ...req.body,
     };
+
 
     const normalizedVehicle =
       normalizeVehicle(
@@ -1530,6 +1830,7 @@ const updateVehicle = async (
         vehicleIndex
       );
 
+
     Object.assign(
       trip.vehicles[
         vehicleIndex
@@ -1537,37 +1838,49 @@ const updateVehicle = async (
       normalizedVehicle
     );
 
+
     trip.vehicles[
       vehicleIndex
     ].lastUpdated =
       new Date();
 
+
     await trip.save();
+
 
     return res
       .status(200)
       .json({
         success: true,
+
         message:
           "Vehicle updated successfully.",
-        data: trip,
+
+        data:
+          trip,
       });
+
+
   } catch (error) {
+
     console.error(
       "Update Vehicle Error:",
       error
     );
 
+
     return res
       .status(500)
       .json({
         success: false,
+
         message:
           error.message ||
           "Unable to update vehicle.",
       });
   }
 };
+
 
 /* =========================================================
    DELETE TRIP
@@ -1577,22 +1890,28 @@ const deleteTrip = async (
   req,
   res
 ) => {
+
   try {
+
     const { id } =
       req.params;
+
 
     if (
       !mongoose.Types.ObjectId
         .isValid(id)
     ) {
+
       return res
         .status(400)
         .json({
           success: false,
+
           message:
             "Invalid MongoDB trip ID.",
         });
     }
+
 
     const trip =
       await Triptracking
@@ -1600,39 +1919,50 @@ const deleteTrip = async (
           id
         );
 
+
     if (!trip) {
+
       return res
         .status(404)
         .json({
           success: false,
+
           message:
             "Trip not found.",
         });
     }
 
+
     return res
       .status(200)
       .json({
         success: true,
+
         message:
           "Trip deleted successfully.",
       });
+
+
   } catch (error) {
+
     console.error(
       "Delete Trip Error:",
       error
     );
 
+
     return res
       .status(500)
       .json({
         success: false,
+
         message:
           error.message ||
           "Unable to delete trip.",
       });
   }
 };
+
 
 /* =========================================================
    EXPORTS
