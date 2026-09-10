@@ -65,6 +65,32 @@ const formatDisplayDate = (value) => {
   }).format(date);
 };
 
+
+const formatAmount = (value) => {
+  if (
+    value === "" ||
+    value === null ||
+    value === undefined
+  ) {
+    return "—";
+  }
+
+  const number = Number(value);
+
+  if (Number.isNaN(number)) {
+    return `₹ ${value}`;
+  }
+
+  return new Intl.NumberFormat(
+    "en-IN",
+    {
+      style: "currency",
+      currency: "INR",
+      maximumFractionDigits: 0,
+    }
+  ).format(number);
+};
+
 const Lifecyclemodal = ({
   order,
   onClose,
@@ -236,6 +262,17 @@ const OrderLifecyclePanel = ({
   const isCrane =
     order.movementType ===
     "Crane";
+
+
+  const approvedVehicles =
+    Array.isArray(order.vehicles)
+      ? order.vehicles.filter(
+          (vehicle) =>
+            vehicle.vehicleApprovalStatus ===
+              "Approved" &&
+            vehicle.selectedTransport
+        )
+      : [];
 
 
 
@@ -507,16 +544,12 @@ const OrderLifecyclePanel = ({
       ) {
 
         if (
-          !String(
-            form.vendor
-          ).trim() ||
-          !String(
-            form.vehicleType
-          ).trim()
+          approvedVehicles.length ===
+          0
         ) {
 
           window.alert(
-            "Select vendor and vehicle type."
+            "No management-approved vehicle allocation is available for Vendor Finalization."
           );
 
           return false;
@@ -1436,132 +1469,139 @@ const OrderLifecyclePanel = ({
           return (
             <>
 
-              <div className="kam-form-grid">
+              <section className="kam-client-vehicle-section">
 
-                <div className="kam-field-group">
+                <div className="kam-client-section-heading">
 
-                  <label>
-                    Selected Vendor
-                  </label>
+                  <div>
+                    <h3>
+                      Approved Vehicle Allocations
+                    </h3>
 
-                  <div className="kam-select-wrap">
-
-                    <select
-                      value={
-                        form.vendor
-                      }
-                      onChange={
-                        handleChange(
-                          "vendor"
-                        )
-                      }
-                    >
-
-                      <option value="">
-                        Select vendor...
-                      </option>
-
-                      {VENDORS.map(
-                        (vendor) => (
-
-                          <option
-                            key={vendor}
-                            value={vendor}
-                          >
-                            {vendor}
-                          </option>
-                        ))}
-
-                    </select>
-
-                    <span className="select-chevron">
-                      ⌄
-                    </span>
-
+                    <p>
+                      Only vehicles approved by Approval Management are available
+                      for Vendor Finalization.
+                    </p>
                   </div>
 
                 </div>
 
-                <div className="kam-field-group">
 
-                  <label>
-                    Vehicle Type Required
-                  </label>
+                {approvedVehicles.length > 0 ? (
 
-                  <div className="kam-select-wrap">
+                  <div className="kam-client-table-wrap">
 
-                    <select
-                      value={
-                        form.vehicleType
-                      }
-                      onChange={
-                        handleChange(
-                          "vehicleType"
-                        )
-                      }
-                    >
+                    <table className="kam-client-vehicle-table">
 
-                      <option value="">
-                        Select vehicle...
-                      </option>
+                      <thead>
+                        <tr>
+                          <th>S.No</th>
+                          <th>Vehicle Type</th>
+                          <th>Quantity</th>
+                          <th>Approved Vendor</th>
+                          <th>Approved Rate</th>
+                          <th>Status</th>
+                        </tr>
+                      </thead>
 
-                      {primaryVehicleTypes.map(
-                        (vehicle) => (
 
-                          <option
-                            key={vehicle}
-                            value={vehicle}
-                          >
-                            {vehicle}
-                          </option>
-                        ))}
+                      <tbody>
 
-                    </select>
+                        {approvedVehicles.map(
+                          (
+                            vehicle,
+                            index
+                          ) => (
 
-                    <span className="select-chevron">
-                      ⌄
-                    </span>
+                            <tr
+                              key={
+                                vehicle._id ||
+                                vehicle.vehicleSubId ||
+                                index
+                              }
+                            >
+
+                              <td>
+                                <span className="kam-client-row-no">
+                                  {index + 1}
+                                </span>
+                              </td>
+
+
+                              <td>
+                                <strong>
+                                  {vehicle.vehicleType ||
+                                    "—"}
+                                </strong>
+
+                                <div>
+                                  {vehicle.vehicleSubId ||
+                                    ""}
+                                </div>
+                              </td>
+
+
+                              <td>
+                                {vehicle.quantity ||
+                                  0}{" "}
+                                NOS
+                              </td>
+
+
+                              <td>
+                                <strong>
+                                  {vehicle
+                                    .selectedTransport
+                                    ?.transportName ||
+                                    "—"}
+                                </strong>
+                              </td>
+
+
+                              <td>
+                                <strong>
+                                  {formatAmount(
+                                    vehicle
+                                      .selectedTransport
+                                      ?.amount
+                                  )}
+                                </strong>
+                              </td>
+
+
+                              <td>
+                                <span className="kam-client-classification non-odc">
+                                  Approved
+                                </span>
+                              </td>
+
+                            </tr>
+
+                          )
+                        )}
+
+                      </tbody>
+
+                    </table>
 
                   </div>
 
-                </div>
+                ) : (
 
-                <LifecycleField
-                  label="Vendor Rate"
-                  prefix="₹"
-                  type="number"
-                  value={
-                    form.vendorRate
-                  }
-                  onChange={
-                    handleChange(
-                      "vendorRate"
-                    )
-                  }
-                />
+                  <div
+                    className="kam-readonly-field"
+                    style={{
+                      padding: "18px",
+                    }}
+                  >
+                    No approved vehicles yet. Pending or rejected Traffic
+                    allocations are not shown in Vendor Finalization.
+                  </div>
 
-                <div className="kam-field-group">
+                )}
 
-                  <label>
-                    Expected Loading Date
-                  </label>
+              </section>
 
-                  <input
-                    type="date"
-                    className="kam-date-input"
-                    value={
-                      form.loadingDate
-                    }
-                    onChange={
-                      handleChange(
-                        "loadingDate"
-                      )
-                    }
-                  />
-
-                </div>
-
-              </div>
 
               <div className="kam-field-group kam-field-full">
 
@@ -1579,14 +1619,13 @@ const OrderLifecyclePanel = ({
                       "vendorRemarks"
                     )
                   }
-                  placeholder="Enter vendor remarks..."
+                  placeholder="Enter vendor finalization remarks..."
                 />
 
               </div>
 
             </>
           );
-
 
 
         case 3:

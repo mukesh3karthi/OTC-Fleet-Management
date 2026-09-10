@@ -206,8 +206,8 @@ const normalizeQuotationStatus = (
 ) => {
   switch (status) {
     case "Selected":
-    case "Transport Selected":
-      return "Transport Selected";
+    case "Approved":
+      return "Approved";
 
     case "Rejected":
     case "Options Rejected":
@@ -218,8 +218,8 @@ const normalizeQuotationStatus = (
 
     case "Submitted":
     case "Waiting for Selection":
-    case "Waiting for KAM":
-      return "Waiting for KAM";
+    case "Approval Pending":
+      return "Approval Pending";
 
     case "Quotation Pending":
     case "Pending":
@@ -252,10 +252,10 @@ const getOrderQuotationStatus = (
     statuses.every(
       (status) =>
         status ===
-        "Transport Selected"
+        "Approved"
     )
   ) {
-    return "Transport Selected";
+    return "Approved";
   }
 
 
@@ -285,10 +285,10 @@ const getOrderQuotationStatus = (
     statuses.some(
       (status) =>
         status ===
-        "Waiting for KAM"
+        "Approval Pending"
     )
   ) {
-    return "Waiting for KAM";
+    return "Approval Pending";
   }
 
 
@@ -300,7 +300,7 @@ const getStatusClass = (
   status
 ) => {
   switch (status) {
-    case "Transport Selected":
+    case "Approved":
       return "selected";
 
     case "Rejected":
@@ -309,7 +309,7 @@ const getStatusClass = (
     case "Revision Requested":
       return "revision";
 
-    case "Waiting for KAM":
+    case "Approval Pending":
       return "waiting";
 
     default:
@@ -322,7 +322,7 @@ const StatusIcon = ({
   status,
 }) => {
   switch (status) {
-    case "Transport Selected":
+    case "Approved":
       return (
         <CheckCircle2
           size={13}
@@ -343,7 +343,7 @@ const StatusIcon = ({
         />
       );
 
-    case "Waiting for KAM":
+    case "Approval Pending":
       return (
         <Clock3
           size={13}
@@ -550,7 +550,7 @@ const Traffic = () => {
             normalizeQuotationStatus(
               vehicle.quotationStatus
             ) !==
-              "Transport Selected"
+              "Approved"
           ) {
             transportOptions = [
               createQuotation(),
@@ -722,14 +722,14 @@ const Traffic = () => {
 
           if (
             status ===
-            "Waiting for KAM"
+            "Approval Pending"
           ) {
             waiting += 1;
           }
 
           if (
             status ===
-            "Transport Selected"
+            "Approved"
           ) {
             selected += 1;
           }
@@ -1025,22 +1025,41 @@ const Traffic = () => {
                   ),
 
                 quotationStatus:
-                  "Waiting for KAM",
+                  "Approval Pending",
 
                 quotationSubmittedAt:
                   now,
 
+                vehicleApprovalRequested:
+                  true,
+
+                vehicleApprovalStatus:
+                  "Pending",
+
+                vehicleApprovalRequestedAt:
+                  now,
+
+                vehicleApprovalReviewedAt:
+                  null,
+
+                approvedQuotationId:
+                  "",
+
+                vehicleApprovalRemarks:
+                  "",
+
+                vehicleRejectionReason:
+                  "",
+
                 /*
-                 * Clear old rejection/revision
-                 * message when Traffic submits
-                 * fresh quotation.
+                 * Fresh Traffic submission always
+                 * returns the vehicle to approval.
                  */
 
                 quotationRemark:
                   "",
 
                 selectedTransport:
-                  currentVehicle.selectedTransport ||
                   null,
               };
             }
@@ -1272,7 +1291,7 @@ const Traffic = () => {
 
           <div>
             <span>
-              Waiting for KAM
+              Approval Pending
             </span>
 
             <strong>
@@ -1293,7 +1312,7 @@ const Traffic = () => {
 
           <div>
             <span>
-              Transport Selected
+              Approved
             </span>
 
             <strong>
@@ -1414,12 +1433,12 @@ const Traffic = () => {
                 Quotation Pending
               </option>
 
-              <option value="Waiting for KAM">
-                Waiting for KAM
+              <option value="Approval Pending">
+                Approval Pending
               </option>
 
-              <option value="Transport Selected">
-                Transport Selected
+              <option value="Approved">
+                Approved
               </option>
 
               <option value="Rejected">
@@ -1854,7 +1873,7 @@ const Traffic = () => {
 
                   const isSelected =
                     status ===
-                    "Transport Selected";
+                    "Approved";
 
                   const vehicleKey =
                     vehicle.vehicleSubId ||
@@ -1932,7 +1951,7 @@ const Traffic = () => {
                       {/* KAM RESPONSE */}
 
                       {(status ===
-                        "Transport Selected" ||
+                        "Approved" ||
                         status ===
                           "Rejected" ||
                         status ===
@@ -1947,12 +1966,12 @@ const Traffic = () => {
                           <div>
 
                             <strong>
-                              KAM Response
+                              Management Response
                             </strong>
 
 
                             {status ===
-                              "Transport Selected" &&
+                              "Approved" &&
                               vehicle.selectedTransport && (
 
                                 <p>
@@ -2276,11 +2295,11 @@ const Traffic = () => {
                                               <CheckCircle2
                                                 size={12}
                                               />
-                                              Selected
+                                              Approved
                                             </span>
 
                                           ) : status ===
-                                            "Transport Selected" ? (
+                                            "Approved" ? (
 
                                             <span className="traffic-option-not-selected">
                                               Not Selected
@@ -2366,7 +2385,7 @@ const Traffic = () => {
                             <span>
                               Traffic Team only
                               submits quotations.
-                              KAM will select the
+                              Management will approve the
                               suitable transporter.
                             </span>
 

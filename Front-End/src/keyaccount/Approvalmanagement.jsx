@@ -148,6 +148,19 @@ const Approvalmanagement = () => {
   const [approvals, setApprovals] =
     useState([]);
 
+  const [allOrders, setAllOrders] =
+    useState([]);
+
+  const [
+    vehicleSelections,
+    setVehicleSelections,
+  ] = useState({});
+
+  const [
+    vehicleUpdatingKey,
+    setVehicleUpdatingKey,
+  ] = useState(null);
+
   const [isLoading, setIsLoading] =
     useState(true);
 
@@ -210,6 +223,8 @@ const Approvalmanagement = () => {
 
       const trips =
         extractTripList(payload);
+
+      setAllOrders(trips);
 
       const approvalRequests =
         trips.filter(
@@ -276,6 +291,7 @@ const Approvalmanagement = () => {
       );
 
       setApprovals([]);
+      setAllOrders([]);
     } finally {
       setIsLoading(false);
     }
@@ -419,6 +435,350 @@ const Approvalmanagement = () => {
       statusFilter,
       searchText,
     ]);
+
+
+
+  /* =========================================================
+     VEHICLE ALLOCATION APPROVALS
+  ========================================================= */
+
+  const vehicleApprovalRows =
+    useMemo(() => {
+      const rows = [];
+
+      allOrders.forEach(
+        (order) => {
+          const vehicles =
+            Array.isArray(order.vehicles)
+              ? order.vehicles
+              : [];
+
+          vehicles.forEach(
+            (vehicle, vehicleIndex) => {
+              const hasRequest =
+                vehicle.vehicleApprovalRequested === true ||
+                Boolean(
+                  vehicle.vehicleApprovalRequestedAt
+                ) ||
+                [
+                  "Pending",
+                  "Approved",
+                  "Rejected",
+                ].includes(
+                  vehicle.vehicleApprovalStatus
+                ) ||
+                [
+                  "Approval Pending",
+                  "Approved",
+                  "Rejected",
+                ].includes(
+                  vehicle.quotationStatus
+                );
+
+              if (!hasRequest) {
+                return;
+              }
+
+              rows.push({
+                order,
+                vehicle,
+                vehicleIndex,
+                key: `${order._id || order.tripId || order.id}-${
+                  vehicle.vehicleSubId || vehicleIndex
+                }`,
+              });
+            }
+          );
+        }
+      );
+
+      return rows.sort(
+        (a, b) =>
+          new Date(
+            b.vehicle.vehicleApprovalRequestedAt ||
+              b.vehicle.quotationSubmittedAt ||
+              b.order.updatedAt ||
+              0
+          ).getTime() -
+          new Date(
+            a.vehicle.vehicleApprovalRequestedAt ||
+              a.vehicle.quotationSubmittedAt ||
+              a.order.updatedAt ||
+              0
+          ).getTime()
+      );
+    }, [allOrders]);
+
+
+  const handleVehicleSelection = (
+    rowKey,
+    quotationId
+  ) => {
+    setVehicleSelections(
+      (previous) => ({
+        ...previous,
+        [rowKey]: quotationId,
+      })
+    );
+  };
+
+
+  const updateVehicleApproval =
+    async (
+      row,
+      status
+    ) => {
+      const {
+        order,
+        vehicle,
+        vehicleIndex,
+        key,
+      } = row;
+
+      if (
+        !order?._id ||
+        vehicleUpdatingKey
+      ) {
+        return;
+      }
+
+      const options =
+        Array.isArray(
+          vehicle.transportOptions
+        )
+          ? vehicle.transportOptions
+          : [];
+
+      const selectedQuotationId =
+        vehicleSelections[key] ||
+        vehicle.approvedQuotationId ||
+        vehicle.selectedTransport
+          ?.quotationId ||
+        "";
+
+      if (
+        status === "Approved" &&
+        !selectedQuotationId
+      ) {
+        setError(
+          "Select a transporter quotation before approving the vehicle."
+        );
+        return;
+      }
+
+      const selectedOption =
+        options.find(
+          (option) =>
+            option.quotationId ===
+            selectedQuotationId
+        );
+
+      if (
+        status === "Approved" &&
+        !selectedOption
+      ) {
+        setError(
+          "Selected transporter quotation was not found."
+        );
+        return;
+      }
+
+      try {
+        setVehicleUpdatingKey(key);
+        setError("");
+
+        const now =
+          new Date().toISOString();
+
+        const updatedVehicles =
+          order.vehicles.map(
+            (
+              currentVehicle,
+              index
+            ) => {
+              if (
+                index !==
+                vehicleIndex
+              ) {
+                return currentVehicle;
+              }
+
+              if (
+                status ===
+                "Approved"
+              ) {
+                return {
+                  ...currentVehicle,
+
+                  vehicleApprovalRequested:
+                    true,
+
+                  vehicleApprovalStatus:
+                    "Approved",
+
+                  vehicleApprovalReviewedAt:
+                    now,
+
+                  approvedQuotationId:
+                    selectedQuotationId,
+
+                  selectedTransport: {
+                    quotationId:
+                      selectedOption.quotationId,
+
+                    transportName:
+                      selectedOption.transportName,
+
+                    amount:
+                      Number(
+                        selectedOption.amount
+                      ),
+                  },
+
+                  transportOptions:
+                    options.map(
+                      (option) => ({
+                        ...option,
+
+                        status:
+                          option.quotationId ===
+                          selectedQuotationId
+                            ? "Approved"
+                            : "Not Selected",
+                      })
+                    ),
+
+                  quotationStatus:
+                    "Approved",
+
+                  quotationRemark:
+                    "",
+
+                  vehicleApprovalRemarks:
+                    "Approved by management",
+
+                  vehicleRejectionReason:
+                    "",
+                };
+              }
+
+              return {
+                ...currentVehicle,
+
+                vehicleApprovalRequested:
+                  true,
+
+                vehicleApprovalStatus:
+                  "Rejected",
+
+                vehicleApprovalReviewedAt:
+                  now,
+
+                quotationStatus:
+                  "Rejected",
+
+                approvedQuotationId:
+                  "",
+
+                selectedTransport:
+                  null,
+
+                transportOptions:
+                  options.map(
+                    (option) => ({
+                      ...option,
+                      status:
+                        "Rejected",
+                    })
+                  ),
+
+                quotationRemark:
+                  "Vehicle allocation rejected by management.",
+
+                vehicleApprovalRemarks:
+                  "",
+
+                vehicleRejectionReason:
+                  "Vehicle allocation rejected by management.",
+              };
+            }
+          );
+
+        const payload = {
+          ...order,
+
+          vehicles:
+            updatedVehicles,
+
+          vehicleApprovalUpdatedAt:
+            now,
+        };
+
+        delete payload._id;
+        delete payload.id;
+        delete payload.__v;
+        delete payload.createdAt;
+        delete payload.updatedAt;
+
+        const response =
+          await fetch(
+            `${TRIP_API_URL}/${order._id}`,
+            {
+              method: "PUT",
+
+              headers: {
+                "Content-Type":
+                  "application/json",
+              },
+
+              body:
+                JSON.stringify(
+                  payload
+                ),
+            }
+          );
+
+        const result =
+          await response
+            .json()
+            .catch(
+              () => ({})
+            );
+
+        if (!response.ok) {
+          throw new Error(
+            result.message ||
+              `Unable to ${status.toLowerCase()} vehicle allocation.`
+          );
+        }
+
+        setVehicleSelections(
+          (previous) => {
+            const next = {
+              ...previous,
+            };
+            delete next[key];
+            return next;
+          }
+        );
+
+        await fetchApprovals();
+      } catch (vehicleError) {
+        console.error(
+          "Vehicle Approval Error:",
+          vehicleError
+        );
+
+        setError(
+          vehicleError.message ||
+            "Unable to update vehicle approval."
+        );
+      } finally {
+        setVehicleUpdatingKey(
+          null
+        );
+      }
+    };
 
 
   /* =========================================================
@@ -1177,6 +1537,355 @@ const Approvalmanagement = () => {
           </table>
 
         </div>
+      </div>
+
+
+
+      {/* =====================================================
+          VEHICLE ALLOCATION APPROVAL TABLE
+      ===================================================== */}
+
+      <div
+        className="approval-table-card"
+        style={{ marginTop: "22px" }}
+      >
+
+        <div className="approval-table-heading">
+
+          <div>
+            <h2>
+              Vehicle Allocation Approval
+            </h2>
+
+            <p>
+              {
+                vehicleApprovalRows.length
+              }{" "}
+              vehicle request(s)
+            </p>
+          </div>
+
+        </div>
+
+
+        <div className="approval-table-wrap">
+
+          <table className="approval-table">
+
+            <thead>
+              <tr>
+                <th>S.No</th>
+                <th>Trip / Order ID</th>
+                <th>Client</th>
+                <th>Vehicle</th>
+                <th>Qty</th>
+                <th>Transport Quotation</th>
+                <th>Requested At</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+
+
+            <tbody>
+
+              {isLoading ? (
+
+                <tr>
+                  <td
+                    colSpan="9"
+                    className="approval-empty"
+                  >
+                    Loading vehicle
+                    approvals...
+                  </td>
+                </tr>
+
+              ) :
+              vehicleApprovalRows.length ===
+              0 ? (
+
+                <tr>
+                  <td
+                    colSpan="9"
+                    className="approval-empty"
+                  >
+                    <div className="approval-empty-state">
+
+                      <FileText
+                        size={28}
+                      />
+
+                      <strong>
+                        No vehicle approval
+                        requests
+                      </strong>
+
+                      <span>
+                        Traffic submitted
+                        vehicles will appear
+                        here.
+                      </span>
+
+                    </div>
+                  </td>
+                </tr>
+
+              ) : (
+
+                vehicleApprovalRows.map(
+                  (
+                    row,
+                    index
+                  ) => {
+                    const {
+                      order,
+                      vehicle,
+                      key,
+                    } = row;
+
+                    const vehicleStatus =
+                      vehicle.vehicleApprovalStatus ||
+                      (
+                        vehicle.quotationStatus ===
+                        "Approved"
+                          ? "Approved"
+                          : vehicle.quotationStatus ===
+                            "Rejected"
+                            ? "Rejected"
+                            : "Pending"
+                      );
+
+                    const options =
+                      Array.isArray(
+                        vehicle.transportOptions
+                      )
+                        ? vehicle.transportOptions
+                        : [];
+
+                    const selectedValue =
+                      vehicleSelections[key] ||
+                      vehicle.approvedQuotationId ||
+                      vehicle.selectedTransport
+                        ?.quotationId ||
+                      "";
+
+                    const isRowUpdating =
+                      vehicleUpdatingKey ===
+                      key;
+
+                    return (
+                      <tr
+                        key={key}
+                      >
+
+                        <td>
+                          <span className="approval-row-number">
+                            {index + 1}
+                          </span>
+                        </td>
+
+
+                        <td>
+                          <strong className="approval-order-ref">
+                            {order.tripId ||
+                              order.id ||
+                              "—"}
+                          </strong>
+                        </td>
+
+
+                        <td>
+                          <strong>
+                            {order.client ||
+                              order.customer ||
+                              "—"}
+                          </strong>
+                        </td>
+
+
+                        <td>
+                          <div className="approval-client-cell">
+                            <strong>
+                              {vehicle.vehicleType ||
+                                "Vehicle"}
+                            </strong>
+
+                            <span>
+                              {vehicle.vehicleSubId ||
+                                "—"}
+                            </span>
+                          </div>
+                        </td>
+
+
+                        <td>
+                          {vehicle.quantity ||
+                            0}{" "}
+                          NOS
+                        </td>
+
+
+                        <td>
+                          <select
+                            className="approval-filter"
+                            value={
+                              selectedValue
+                            }
+                            disabled={
+                              vehicleStatus ===
+                                "Approved" ||
+                              isRowUpdating
+                            }
+                            onChange={(
+                              event
+                            ) =>
+                              handleVehicleSelection(
+                                key,
+                                event.target.value
+                              )
+                            }
+                          >
+                            <option value="">
+                              Select transporter
+                            </option>
+
+                            {options.map(
+                              (
+                                option,
+                                optionIndex
+                              ) => (
+                                <option
+                                  key={
+                                    option.quotationId ||
+                                    optionIndex
+                                  }
+                                  value={
+                                    option.quotationId
+                                  }
+                                >
+                                  {
+                                    option.transportName
+                                  }{" "}
+                                  -{" "}
+                                  {formatAmount(
+                                    option.amount
+                                  )}
+                                </option>
+                              )
+                            )}
+                          </select>
+                        </td>
+
+
+                        <td>
+                          <div className="approval-date-cell">
+                            <Clock3
+                              size={13}
+                            />
+
+                            <span>
+                              {formatDateTime(
+                                vehicle.vehicleApprovalRequestedAt ||
+                                  vehicle.quotationSubmittedAt
+                              )}
+                            </span>
+                          </div>
+                        </td>
+
+
+                        <td>
+                          <span
+                            className={`approval-status ${vehicleStatus.toLowerCase()}`}
+                          >
+                            {
+                              vehicleStatus
+                            }
+                          </span>
+                        </td>
+
+
+                        <td>
+                          <div
+                            style={{
+                              display:
+                                "flex",
+                              gap: "8px",
+                              alignItems:
+                                "center",
+                            }}
+                          >
+
+                            {vehicleStatus !==
+                              "Approved" && (
+
+                              <button
+                                type="button"
+                                className="approval-approve-button"
+                                disabled={
+                                  isRowUpdating ||
+                                  !selectedValue
+                                }
+                                onClick={() =>
+                                  updateVehicleApproval(
+                                    row,
+                                    "Approved"
+                                  )
+                                }
+                              >
+                                <Check
+                                  size={14}
+                                />
+
+                                {isRowUpdating
+                                  ? "Saving"
+                                  : "Approve"}
+                              </button>
+
+                            )}
+
+
+                            {vehicleStatus !==
+                              "Rejected" && (
+
+                              <button
+                                type="button"
+                                className="approval-reject-button"
+                                disabled={
+                                  isRowUpdating
+                                }
+                                onClick={() =>
+                                  updateVehicleApproval(
+                                    row,
+                                    "Rejected"
+                                  )
+                                }
+                              >
+                                <XCircle
+                                  size={14}
+                                />
+
+                                Reject
+                              </button>
+
+                            )}
+
+                          </div>
+                        </td>
+
+                      </tr>
+                    );
+                  }
+                )
+
+              )}
+
+            </tbody>
+
+          </table>
+
+        </div>
+
       </div>
 
 

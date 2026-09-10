@@ -3,6 +3,70 @@ const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
 /* =========================================================
+   TRANSPORT QUOTATION SCHEMA
+========================================================= */
+
+const transportOptionSchema = new Schema(
+  {
+    quotationId: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
+    transportName: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
+    amount: {
+      type: Number,
+      min: 0,
+      default: 0,
+    },
+
+    status: {
+      type: String,
+      trim: true,
+      default: "Pending",
+    },
+  },
+  {
+    _id: false,
+  }
+);
+
+/* =========================================================
+   SELECTED TRANSPORT SCHEMA
+========================================================= */
+
+const selectedTransportSchema = new Schema(
+  {
+    quotationId: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
+    transportName: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
+    amount: {
+      type: Number,
+      min: 0,
+      default: 0,
+    },
+  },
+  {
+    _id: false,
+  }
+);
+
+/* =========================================================
    VEHICLE SCHEMA
 ========================================================= */
 
@@ -130,6 +194,96 @@ const vehicleSchema = new Schema(
       type: String,
       trim: true,
       default: "",
+    },
+
+    /* =========================
+       TRAFFIC / QUOTATION
+    ========================= */
+
+    placementDate: {
+      type: Date,
+      default: null,
+    },
+
+    transportOptions: {
+      type: [transportOptionSchema],
+      default: [],
+    },
+
+    quotationStatus: {
+      type: String,
+      trim: true,
+      default: "Quotation Pending",
+    },
+
+    quotationSubmittedAt: {
+      type: Date,
+      default: null,
+    },
+
+    quotationRemark: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
+    transportRemark: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
+    /* =========================
+       VEHICLE APPROVAL
+    ========================= */
+
+    vehicleApprovalRequested: {
+      type: Boolean,
+      default: false,
+    },
+
+    vehicleApprovalStatus: {
+      type: String,
+      enum: [
+        "Not Requested",
+        "Pending",
+        "Approved",
+        "Rejected",
+      ],
+      default: "Not Requested",
+    },
+
+    vehicleApprovalRequestedAt: {
+      type: Date,
+      default: null,
+    },
+
+    vehicleApprovalReviewedAt: {
+      type: Date,
+      default: null,
+    },
+
+    approvedQuotationId: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
+    vehicleApprovalRemarks: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
+    vehicleRejectionReason: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
+    selectedTransport: {
+      type: selectedTransportSchema,
+      default: null,
     },
 
     lastUpdated: {
@@ -488,7 +642,7 @@ const triptrackingSchema = new Schema(
     },
 
     /* =========================
-       APPROVAL
+       ORDER APPROVAL
     ========================= */
 
     approvalRequested: {
@@ -527,6 +681,26 @@ const triptrackingSchema = new Schema(
       type: String,
       trim: true,
       default: "",
+    },
+
+    approvalRemarks: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
+    /* =========================
+       TRAFFIC / VEHICLE APPROVAL
+    ========================= */
+
+    trafficQuotationUpdatedAt: {
+      type: Date,
+      default: null,
+    },
+
+    vehicleApprovalUpdatedAt: {
+      type: Date,
+      default: null,
     },
 
     /* =========================
