@@ -2746,651 +2746,530 @@ cursor: not-allowed;
 }
 
 /* =========================================================
-   LIFECYCLE - GLOBAL STANDARD DESIGN SYSTEM
-   Applies the same sizing to all five workflow steps.
+   UNIFIED LIFECYCLE DESIGN SYSTEM
+   IMPORTANT:
+   This is the ONLY typography / size authority for all
+   5 lifecycle pages.
 ========================================================= */
 
 :root {
   --kam-primary: #0d9488;
-  --kam-primary-dark: #0a756d;
+  --kam-primary-dark: #0b8178;
   --kam-navy: #0a2f43;
   --kam-text: #17394a;
   --kam-muted: #718894;
   --kam-border: #d6e3e7;
   --kam-soft: #f7fafb;
   --kam-ring: rgba(13, 148, 136, 0.12);
+
+  /* Global lifecycle scale */
+  --kam-step-font: 10.5px;
+  --kam-page-title: 16px;
+  --kam-page-subtitle: 10px;
+  --kam-section-title: 13px;
+  --kam-section-subtitle: 9px;
+  --kam-label-size: 8px;
+  --kam-data-size: 11px;
+  --kam-table-head: 7.8px;
+  --kam-table-data: 10px;
+  --kam-button-size: 10.5px;
 }
 
 
 /* =========================================================
-   MODAL
+   1. STEPPER
+   SAME HEIGHT + FONT ON EVERY STEP
 ========================================================= */
 
-.kam-workflow-modal {
-  width: min(1380px, 100%);
-  height: min(860px, 94vh);
-}
+.kam-stepper,
+.kam-vendor-step-active .kam-stepper,
+.kam-completion-step-active .kam-stepper {
+  min-height: 64px !important;
+  padding: 13px 18px !important;
 
-.kam-detail-card {
-  min-height: 0;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
+  display: flex !important;
+  align-items: center !important;
 
+  flex-shrink: 0 !important;
 
-/* =========================================================
-   STEPPER - SAME SIZE ON EVERY PAGE
-========================================================= */
+  overflow-x: auto !important;
 
-.kam-stepper {
-  min-height: 64px;
-  padding: 13px 18px;
+  background: #ffffff !important;
+
+  border-bottom: 1px solid #dce6e9 !important;
 }
 
 .kam-step-pill,
 .kam-vendor-step-active .kam-step-pill,
 .kam-completion-step-active .kam-step-pill {
-  min-width: max-content;
-  height: 38px;
-  min-height: 38px;
-  padding: 0 13px 0 8px;
-  gap: 7px;
+  min-width: max-content !important;
 
-  border-radius: 999px;
+  height: 38px !important;
+  min-height: 38px !important;
 
-  font-size: 11px;
-  font-weight: 800;
-  line-height: 1;
+  padding: 0 13px 0 8px !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+
+  gap: 7px !important;
+
+  border-radius: 999px !important;
+
+  font-size: var(--kam-step-font) !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
 }
 
 .kam-step-number,
 .kam-vendor-step-active .kam-step-number,
 .kam-completion-step-active .kam-step-number {
-  width: 22px;
-  height: 22px;
-  min-width: 22px;
+  width: 22px !important;
+  height: 22px !important;
+  min-width: 22px !important;
 
-  font-size: 8.5px;
-  font-weight: 900;
-}
-
-.kam-step-connector {
-  min-width: 22px;
-  height: 2px;
+  font-size: 8.5px !important;
+  font-weight: 900 !important;
 }
 
 
 /* =========================================================
-   PAGE BODY - SAME SPACING
+   2. MAIN PAGE HEADER
+   Client Enquiry / Order Finalization / Vendor Finalization
+   / PO Documents / Completion
 ========================================================= */
 
 .kam-card-body,
 .kam-vendor-step-active .kam-card-body,
 .kam-completion-step-active .kam-card-body {
-  min-height: 0;
-  flex: 1;
+  min-height: 0 !important;
 
-  padding: 14px 18px 18px;
+  flex: 1 !important;
 
-  overflow-y: auto;
+  padding: 14px 18px 18px !important;
+
+  overflow-y: auto !important;
 }
-
-
-/* =========================================================
-   PAGE TITLE - SAME SIZE
-========================================================= */
 
 .kam-card-header,
 .kam-vendor-step-active .kam-card-header,
 .kam-completion-step-active .kam-card-header {
-  min-height: 66px;
+  min-height: 66px !important;
 
-  margin-bottom: 12px;
-  padding-bottom: 11px;
+  margin-bottom: 12px !important;
+  padding-bottom: 11px !important;
 
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
 
-  gap: 18px;
+  gap: 18px !important;
 }
 
 .kam-section-kicker,
 .kam-vendor-step-active .kam-section-kicker,
 .kam-completion-step-active .kam-section-kicker {
-  margin-bottom: 4px;
+  margin-bottom: 4px !important;
 
-  font-size: 8px;
-  font-weight: 900;
-  letter-spacing: 0.14em;
+  font-size: var(--kam-label-size) !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  letter-spacing: 0.14em !important;
 }
 
 .kam-card-header h2,
 .kam-vendor-step-active .kam-card-header h2,
 .kam-completion-step-active .kam-card-header h2 {
-  margin: 0;
+  margin: 0 !important;
 
-  font-size: 16px;
-  font-weight: 900;
-  line-height: 1.25;
+  font-size: var(--kam-page-title) !important;
+  font-weight: 900 !important;
+  line-height: 1.25 !important;
 }
 
 .kam-card-header p,
 .kam-vendor-step-active .kam-card-header p,
 .kam-completion-step-active .kam-card-header p {
-  margin: 4px 0 0;
+  margin: 4px 0 0 !important;
 
-  font-size: 10px;
-  font-weight: 500;
-  line-height: 1.4;
+  font-size: var(--kam-page-subtitle) !important;
+  font-weight: 500 !important;
+  line-height: 1.4 !important;
 }
 
 
 /* =========================================================
-   ORDER ID BADGE
+   3. ORDER ID BADGE
 ========================================================= */
 
-.kam-id-badge {
-  min-width: 100px;
-  padding: 7px 10px;
+.kam-id-badge,
+.kam-client-trip-id {
+  min-width: 100px !important;
+
+  padding: 7px 10px !important;
+
+  border-radius: 8px !important;
 }
 
-.kam-id-badge span {
-  font-size: 7.5px;
+.kam-id-badge span,
+.kam-client-trip-id span {
+  font-size: var(--kam-label-size) !important;
+  font-weight: 800 !important;
 }
 
-.kam-id-badge strong {
-  margin-top: 2px;
-  font-size: 10.5px;
+.kam-id-badge strong,
+.kam-client-trip-id strong {
+  margin-top: 2px !important;
+
+  font-size: var(--kam-data-size) !important;
+  font-weight: 900 !important;
 }
 
 
 /* =========================================================
-   ORDER OVERVIEW - SAME SIZE
+   4. COMMON ORDER OVERVIEW
 ========================================================= */
 
 .kam-order-overview,
 .kam-vendor-step-active .kam-order-overview,
 .kam-completion-step-active .kam-order-overview {
-  min-height: 58px;
+  min-height: 58px !important;
 
-  margin-bottom: 12px;
-  padding: 10px 13px;
+  margin-bottom: 12px !important;
+  padding: 10px 13px !important;
 
-  gap: 12px;
+  gap: 12px !important;
 }
 
 .kam-order-overview span {
-  font-size: 8px;
-  font-weight: 900;
+  font-size: var(--kam-label-size) !important;
+  font-weight: 900 !important;
 }
 
 .kam-order-overview strong {
-  font-size: 10.3px;
-  font-weight: 800;
+  font-size: var(--kam-data-size) !important;
+  font-weight: 800 !important;
 }
 
 
 /* =========================================================
-   COMMON FORM LABELS
+   5. ALL INNER SECTION HEADINGS
+   EVERY STEP USES 13px
+========================================================= */
+
+.kam-client-trip-header h3,
+.kam-client-vehicle-heading h3,
+.kam-finalization-card-head h3,
+.kam-approved-allocation-title h3,
+.kam-vendor-remarks-head h3,
+.kam-completion-card-head h3 {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+
+  font-size: var(--kam-section-title) !important;
+  font-weight: 900 !important;
+  line-height: 1.25 !important;
+}
+
+.kam-client-trip-header p,
+.kam-client-vehicle-heading p,
+.kam-approved-allocation-title p,
+.kam-vendor-remarks-head p,
+.kam-completion-card-head p {
+  margin-top: 3px !important;
+  margin-bottom: 0 !important;
+
+  font-size: var(--kam-section-subtitle) !important;
+  font-weight: 600 !important;
+  line-height: 1.4 !important;
+}
+
+
+/* =========================================================
+   6. ALL EYEBROWS / SMALL SECTION LABELS
+========================================================= */
+
+.kam-finalization-eyebrow,
+.kam-approved-allocation-kicker,
+.kam-vendor-remarks-head > div > span,
+.kam-completion-eyebrow {
+  font-size: var(--kam-label-size) !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  letter-spacing: 0.1em !important;
+}
+
+
+/* =========================================================
+   7. ALL NORMAL FIELD LABELS
 ========================================================= */
 
 .kam-field-group label,
+.kam-field-group > label,
 .kam-finalization-card .kam-field-group label,
-.kam-finalization-card .kam-field-group > label {
-  margin-bottom: 6px;
-
-  color: #365c6d;
-
-  font-size: 8.7px;
-  font-weight: 900;
-  letter-spacing: 0.04em;
+.kam-finalization-card .kam-field-group > label,
+.kam-client-trip-field > span,
+.kam-client-remark span,
+.kam-client-team span,
+.kam-completion-info-grid span,
+.kam-completion-notes-grid span,
+.kam-approved-allocation-summary span,
+.kam-completion-count span {
+  font-size: var(--kam-label-size) !important;
+  font-weight: 900 !important;
+  line-height: 1.15 !important;
 }
 
 
 /* =========================================================
-   COMMON INPUTS
+   8. ALL INPUT / SELECT / DATE VALUES
 ========================================================= */
-
-.kam-input-wrap,
-.kam-select-wrap,
-.kam-finalization-card .kam-input-wrap,
-.kam-finalization-card .kam-select-wrap {
-  min-height: 40px;
-  border-radius: 8px;
-}
 
 .kam-input-wrap input,
 .kam-select-wrap select,
 .kam-finalization-card .kam-input-wrap input,
-.kam-finalization-card .kam-select-wrap select {
-  height: 38px;
-
-  padding: 0 11px;
-
-  font-size: 11.5px;
-  font-weight: 700;
-}
-
-.kam-date-input {
-  height: 40px;
-
-  padding: 0 11px;
-
-  font-size: 11.5px;
-  font-weight: 700;
+.kam-finalization-card .kam-select-wrap select,
+.kam-date-input,
+.kam-readonly-field,
+.kam-client-trip-field > strong {
+  font-size: var(--kam-data-size) !important;
+  font-weight: 700 !important;
+  line-height: 1.35 !important;
 }
 
 
 /* =========================================================
-   COMMON TEXTAREA
+   9. ALL TEXTAREA VALUES
 ========================================================= */
 
 .kam-field-group textarea,
-.kam-finalization-textarea {
-  min-height: 76px;
-
-  padding: 10px 11px;
-
-  font-size: 11px;
-  font-weight: 650;
-  line-height: 1.45;
+.kam-finalization-textarea,
+.kam-po-bottom-row .kam-po-remarks,
+.kam-vendor-remarks-card textarea,
+.kam-completion-instruction textarea {
+  font-size: var(--kam-data-size) !important;
+  font-weight: 650 !important;
+  line-height: 1.45 !important;
 }
 
 
 /* =========================================================
-   CLIENT ENQUIRY - STANDARD SECTION TITLES
+   10. CLIENT ENQUIRY DATA
 ========================================================= */
 
-.kam-client-trip-header {
-  min-height: 64px;
-  padding: 10px 14px;
-}
-
-.kam-client-trip-header h3 {
-  font-size: 14px;
-  font-weight: 900;
-}
-
-.kam-client-trip-header p {
-  font-size: 9.5px;
-}
-
-.kam-client-trip-field > span {
-  font-size: 8px;
-}
-
 .kam-client-trip-field > strong {
-  min-height: 42px;
+  min-height: 44px !important;
+  padding: 0 12px !important;
+}
 
-  padding: 0 11px;
-
-  font-size: 10.8px;
+.kam-client-remark p,
+.kam-client-team strong,
+.kam-client-team small {
+  font-size: var(--kam-data-size) !important;
 }
 
 
 /* =========================================================
-   ORDER FINALIZATION - STANDARD
+   11. ORDER FINALIZATION DATA
 ========================================================= */
 
 .kam-finalization-card-head {
-  min-height: 58px;
-  padding: 10px 14px;
+  min-height: 58px !important;
+  padding: 10px 14px !important;
 }
 
 .kam-finalization-step-icon {
-  width: 32px;
-  height: 32px;
-  flex: 0 0 32px;
+  width: 32px !important;
+  height: 32px !important;
+  flex: 0 0 32px !important;
 
-  font-size: 9px;
+  font-size: 9px !important;
 }
 
-.kam-finalization-eyebrow {
-  margin-bottom: 2px;
-
-  font-size: 7.5px;
+.kam-finalization-card .kam-input-wrap,
+.kam-finalization-card .kam-select-wrap {
+  min-height: 40px !important;
 }
 
-.kam-finalization-card-head h3 {
-  font-size: 12px;
-}
-
-.kam-finalization-fields {
-  padding: 12px 14px 14px;
+.kam-finalization-card .kam-input-wrap input,
+.kam-finalization-card .kam-select-wrap select {
+  height: 38px !important;
 }
 
 
 /* =========================================================
-   VENDOR FINALIZATION - STANDARD
+   12. VENDOR FINALIZATION DATA
 ========================================================= */
-
-.kam-approved-allocation-card {
-  margin-bottom: 12px;
-}
 
 .kam-approved-allocation-head,
 .kam-vendor-step-active .kam-approved-allocation-head {
-  min-height: 70px;
+  min-height: 66px !important;
 
-  padding: 11px 14px;
-
-  gap: 14px;
+  padding: 10px 14px !important;
 }
 
-.kam-approved-allocation-icon,
-.kam-vendor-step-active .kam-approved-allocation-icon {
-  width: 36px;
-  height: 36px;
-  flex: 0 0 36px;
+.kam-approved-allocation-icon {
+  width: 36px !important;
+  height: 36px !important;
+  flex: 0 0 36px !important;
 
-  border-radius: 9px;
-
-  font-size: 12px;
+  font-size: 12px !important;
 }
 
-.kam-approved-allocation-kicker,
-.kam-vendor-step-active .kam-approved-allocation-kicker {
-  margin-bottom: 2px;
-
-  font-size: 7.5px;
+.kam-approved-allocation-summary strong {
+  font-size: var(--kam-data-size) !important;
+  font-weight: 900 !important;
 }
 
-.kam-approved-allocation-title h3,
-.kam-vendor-step-active .kam-approved-allocation-title h3 {
-  font-size: 13px;
+.kam-approved-vehicle-cell strong,
+.kam-approved-vendor-cell strong,
+.kam-approved-contact-cell strong,
+.kam-approved-qty strong,
+.kam-approved-rate {
+  font-size: var(--kam-data-size) !important;
 }
 
-.kam-approved-allocation-title p,
-.kam-vendor-step-active .kam-approved-allocation-title p {
-  margin-top: 3px;
-
-  font-size: 9px;
-}
-
-.kam-approved-allocation-summary > div,
-.kam-vendor-step-active .kam-approved-allocation-summary > div {
-  min-width: 105px;
-  min-height: 46px;
-
-  padding: 7px 10px;
-}
-
-.kam-approved-allocation-summary span,
-.kam-vendor-step-active .kam-approved-allocation-summary span {
-  font-size: 7px;
-}
-
-.kam-approved-allocation-summary strong,
-.kam-vendor-step-active .kam-approved-allocation-summary strong {
-  font-size: 11px;
-}
-
-.kam-approved-allocation-table th,
-.kam-vendor-step-active .kam-approved-allocation-table th {
-  height: 36px;
-
-  padding: 0 12px;
-
-  font-size: 7.7px;
-}
-
-.kam-approved-allocation-table td,
-.kam-vendor-step-active .kam-approved-allocation-table td {
-  height: 56px;
-
-  padding: 8px 12px;
-
-  font-size: 10px;
-}
-
-.kam-vendor-remarks-card,
-.kam-vendor-step-active .kam-vendor-remarks-card {
-  padding: 11px 13px;
-}
-
-.kam-vendor-remarks-head,
-.kam-vendor-step-active .kam-vendor-remarks-head {
-  margin-bottom: 7px;
-}
-
-.kam-vendor-remarks-head h3,
-.kam-vendor-step-active .kam-vendor-remarks-head h3 {
-  font-size: 11px;
-}
-
-.kam-vendor-remarks-head p,
-.kam-vendor-step-active .kam-vendor-remarks-head p {
-  display: block;
-
-  margin-top: 3px;
-
-  font-size: 8.5px;
-}
-
-.kam-vendor-remarks-card textarea,
-.kam-vendor-step-active .kam-vendor-remarks-card textarea {
-  min-height: 62px;
-  height: 62px;
-
-  padding: 9px 10px;
-
-  font-size: 10.5px;
+.kam-approved-vehicle-cell span,
+.kam-approved-vendor-cell span,
+.kam-approved-contact-cell span,
+.kam-approved-qty span {
+  font-size: 8px !important;
 }
 
 
 /* =========================================================
-   PO DOCUMENTS - STANDARD
+   13. PO DOCUMENT DATA
 ========================================================= */
 
-.kam-po-bottom-row {
-  margin-top: 2px;
-  margin-bottom: 12px;
-
-  gap: 14px;
-}
-
-.kam-po-upload-modern {
-  min-height: 82px;
-
-  padding: 12px 13px;
-
-  gap: 11px;
-}
-
-.kam-po-modern-icon {
-  width: 42px;
-  height: 42px;
-  flex: 0 0 42px;
-}
-
-.kam-po-modern-icon svg {
-  width: 20px;
-  height: 20px;
-}
-
 .kam-po-modern-info strong {
-  font-size: 10.5px;
+  font-size: var(--kam-data-size) !important;
 }
 
 .kam-po-modern-file-name {
-  font-size: 8.8px;
+  font-size: 9px !important;
 }
 
 .kam-po-modern-action {
-  min-width: 88px;
-  height: 32px;
-
-  padding: 0 11px;
-
-  font-size: 9px;
-}
-
-.kam-po-bottom-row .kam-po-remarks {
-  min-height: 82px;
-  height: 82px;
-
-  padding: 10px 12px;
-
-  font-size: 10.5px;
+  font-size: 9px !important;
 }
 
 
 /* =========================================================
-   COMPLETION & ORDER PLACED - STANDARD
+   14. COMPLETION DATA
+   SAME SIZE AS THE OTHER STEPS
 ========================================================= */
 
-.kam-completion-shell {
-  gap: 12px;
-}
-
 .kam-completion-card-head {
-  min-height: 64px;
+  min-height: 58px !important;
 
-  padding: 10px 14px;
-
-  gap: 10px;
+  padding: 10px 14px !important;
 }
 
 .kam-completion-step-icon {
-  width: 32px;
-  height: 32px;
-  flex: 0 0 32px;
+  width: 32px !important;
+  height: 32px !important;
+  flex: 0 0 32px !important;
 
-  font-size: 8px;
-}
-
-.kam-completion-eyebrow {
-  margin-bottom: 2px;
-
-  font-size: 7.5px;
-}
-
-.kam-completion-card-head h3 {
-  font-size: 12px;
-}
-
-.kam-completion-card-head p {
-  margin-top: 3px;
-
-  font-size: 8.8px;
-}
-
-.kam-completion-count {
-  min-width: 105px;
-
-  padding: 7px 10px;
-}
-
-.kam-completion-count span {
-  font-size: 7px;
-}
-
-.kam-completion-count strong {
-  font-size: 11px;
-}
-
-.kam-completion-info-grid {
-  padding: 12px 14px;
-
-  gap: 10px 12px;
+  font-size: 9px !important;
 }
 
 .kam-completion-info-grid > div {
-  min-height: 52px;
+  min-height: 52px !important;
 
-  padding: 8px 10px;
-}
-
-.kam-completion-info-grid span {
-  margin-bottom: 4px;
-
-  font-size: 7.5px;
+  padding: 8px 10px !important;
 }
 
 .kam-completion-info-grid strong {
-  font-size: 10px;
-}
-
-.kam-completion-notes-grid {
-  padding: 0 14px 12px;
-
-  gap: 10px;
-}
-
-.kam-completion-notes-grid > div {
-  padding: 9px 10px;
-}
-
-.kam-completion-notes-grid span {
-  font-size: 7.5px;
+  font-size: var(--kam-data-size) !important;
+  font-weight: 700 !important;
 }
 
 .kam-completion-notes-grid p {
-  font-size: 9px;
+  font-size: var(--kam-data-size) !important;
+  font-weight: 600 !important;
 }
 
-.kam-completion-table th {
-  height: 36px;
-
-  padding: 0 11px;
-
-  font-size: 7.5px;
-}
-
-.kam-completion-table td {
-  height: 54px;
-
-  padding: 8px 11px;
-
-  font-size: 9.5px;
-}
-
-.kam-completion-vehicle-cell strong {
-  font-size: 10px;
-}
-
-.kam-completion-vehicle-cell span {
-  font-size: 7.5px;
-}
-
-.kam-completion-form-grid {
-  padding: 12px 14px 0;
-
-  gap: 11px 12px;
-}
-
-.kam-completion-instruction {
-  padding: 0 14px 12px;
+.kam-completion-count strong {
+  font-size: var(--kam-data-size) !important;
 }
 
 
 /* =========================================================
-   BOTTOM ACTION BAR - SAME ON ALL STEPS
+   15. ALL TABLES
+   SAME HEADER + DATA FONT SIZE
+========================================================= */
+
+.kam-client-vehicle-table th,
+.kam-approved-allocation-table th,
+.kam-completion-table th {
+  height: 36px !important;
+
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+
+  font-size: var(--kam-table-head) !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+}
+
+.kam-client-vehicle-table td,
+.kam-approved-allocation-table td,
+.kam-completion-table td {
+  height: 54px !important;
+
+  font-size: var(--kam-table-data) !important;
+  font-weight: 650 !important;
+  line-height: 1.35 !important;
+}
+
+.kam-completion-vehicle-cell strong {
+  font-size: var(--kam-table-data) !important;
+}
+
+.kam-completion-vehicle-cell span {
+  font-size: 8px !important;
+}
+
+
+/* =========================================================
+   16. STATUS / RATE CHIPS
+========================================================= */
+
+.kam-approved-status,
+.kam-completion-status {
+  min-height: 28px !important;
+
+  font-size: 8px !important;
+  font-weight: 900 !important;
+}
+
+.kam-approved-rate,
+.kam-completion-rate {
+  font-size: var(--kam-data-size) !important;
+  font-weight: 900 !important;
+}
+
+
+/* =========================================================
+   17. ACTION BAR
+   SAME SIZE ON EVERY STEP
 ========================================================= */
 
 .kam-actions,
 .kam-vendor-step-active .kam-actions,
 .kam-completion-step-active .kam-actions {
-  position: sticky;
+  position: sticky !important;
 
-  bottom: -18px;
+  bottom: -18px !important;
 
-  margin:
-    0
-    -18px
-    -18px;
+  margin: 0 -18px -18px !important;
 
-  padding:
-    10px
-    18px;
+  padding: 10px 18px !important;
 
-  display: flex;
-  justify-content: flex-end;
+  display: flex !important;
+  justify-content: flex-end !important;
 
-  gap: 9px;
+  gap: 9px !important;
 }
 
 .kam-btn-outline,
@@ -3399,45 +3278,32 @@ cursor: not-allowed;
 .kam-vendor-step-active .kam-btn-primary,
 .kam-completion-step-active .kam-btn-outline,
 .kam-completion-step-active .kam-btn-primary {
-  min-height: 38px;
+  min-height: 38px !important;
 
-  padding: 0 15px;
+  padding: 0 15px !important;
 
-  border-radius: 8px;
+  border-radius: 8px !important;
 
-  font-size: 10.5px;
-  font-weight: 850;
+  font-size: var(--kam-button-size) !important;
+  font-weight: 850 !important;
 }
 
 
 /* =========================================================
-   RESPONSIVE
+   18. RESPONSIVE
 ========================================================= */
 
 @media (max-width: 1100px) {
 
+  .kam-order-overview {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr)) !important;
+  }
+
   .kam-completion-info-grid,
   .kam-completion-form-grid {
     grid-template-columns:
-      repeat(2, minmax(0, 1fr));
-  }
-
-}
-
-
-@media (max-width: 900px) {
-
-  .kam-approved-allocation-head {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .kam-approved-allocation-summary {
-    width: 100%;
-  }
-
-  .kam-approved-allocation-summary > div {
-    flex: 1;
+      repeat(2, minmax(0, 1fr)) !important;
   }
 
 }
@@ -3446,16 +3312,21 @@ cursor: not-allowed;
 @media (max-width: 800px) {
 
   .kam-form-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
+  }
+
+  .kam-client-trip-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr)) !important;
   }
 
   .kam-card-header {
-    align-items: flex-start;
-    flex-direction: column;
+    align-items: flex-start !important;
+    flex-direction: column !important;
   }
 
   .kam-id-badge {
-    width: 100%;
+    width: 100% !important;
   }
 
 }
@@ -3466,20 +3337,7 @@ cursor: not-allowed;
   .kam-completion-info-grid,
   .kam-completion-notes-grid,
   .kam-completion-form-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .kam-completion-note-full {
-    grid-column: auto;
-  }
-
-  .kam-completion-card-head-between {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .kam-completion-count {
-    width: 100%;
+    grid-template-columns: 1fr !important;
   }
 
 }
@@ -3487,56 +3345,62 @@ cursor: not-allowed;
 
 @media (max-width: 560px) {
 
-  .kam-stepper {
-    padding: 10px 12px;
+  .kam-stepper,
+  .kam-vendor-step-active .kam-stepper,
+  .kam-completion-step-active .kam-stepper {
+    padding: 10px 12px !important;
   }
 
   .kam-step-pill,
   .kam-vendor-step-active .kam-step-pill,
   .kam-completion-step-active .kam-step-pill {
-    height: 34px;
-    min-height: 34px;
+    height: 34px !important;
+    min-height: 34px !important;
 
-    padding: 0 10px 0 7px;
+    padding: 0 10px 0 7px !important;
 
-    font-size: 10px;
+    font-size: 10px !important;
   }
 
   .kam-step-number,
   .kam-vendor-step-active .kam-step-number,
   .kam-completion-step-active .kam-step-number {
-    width: 20px;
-    height: 20px;
-    min-width: 20px;
+    width: 20px !important;
+    height: 20px !important;
+    min-width: 20px !important;
 
-    font-size: 8px;
+    font-size: 8px !important;
   }
 
   .kam-card-body,
   .kam-vendor-step-active .kam-card-body,
   .kam-completion-step-active .kam-card-body {
-    padding: 12px;
+    padding: 12px !important;
+  }
+
+  .kam-client-trip-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .kam-order-overview {
+    grid-template-columns: 1fr !important;
   }
 
   .kam-actions,
   .kam-vendor-step-active .kam-actions,
   .kam-completion-step-active .kam-actions {
-    bottom: -12px;
+    bottom: -12px !important;
 
-    margin:
-      0
-      -12px
-      -18px;
+    margin: 0 -12px -18px !important;
 
-    padding: 10px 12px;
+    padding: 10px 12px !important;
 
-    flex-direction: column-reverse;
+    flex-direction: column-reverse !important;
   }
 
   .kam-btn-outline,
   .kam-btn-primary {
-    width: 100%;
+    width: 100% !important;
   }
 
 }
-
