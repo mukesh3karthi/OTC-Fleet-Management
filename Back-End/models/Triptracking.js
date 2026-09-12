@@ -21,6 +21,16 @@ const transportOptionSchema = new Schema(
       default: "",
     },
 
+    /* =========================================
+       VENDOR ASSIGNED
+    ========================================= */
+
+    vendorAssigned: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
     contactName: {
       type: String,
       trim: true,
@@ -64,6 +74,16 @@ const selectedTransportSchema = new Schema(
     },
 
     transportName: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
+    /* =========================================
+       VENDOR ASSIGNED
+    ========================================= */
+
+    vendorAssigned: {
       type: String,
       trim: true,
       default: "",
@@ -228,6 +248,10 @@ const vehicleSchema = new Schema(
       default: null,
     },
 
+    /* =========================================
+       TRAFFIC QUOTATIONS
+    ========================================= */
+
     transportOptions: {
       type: [transportOptionSchema],
       default: [],
@@ -255,6 +279,10 @@ const vehicleSchema = new Schema(
       trim: true,
       default: "",
     },
+
+    /* =========================================
+       VEHICLE APPROVAL
+    ========================================= */
 
     vehicleApprovalRequested: {
       type: Boolean,
@@ -325,7 +353,7 @@ const vehicleSchema = new Schema(
 const triptrackingSchema = new Schema(
   {
     /* =========================
-       BASIC TRIP
+       BASIC
     ========================= */
 
     tripId: {
@@ -524,7 +552,7 @@ const triptrackingSchema = new Schema(
 
 
     /* =========================
-       CRANE / OTHER
+       VEHICLE REQUIREMENT
     ========================= */
 
     requiredVehicles: {
@@ -532,10 +560,6 @@ const triptrackingSchema = new Schema(
       min: 0,
       default: 0,
     },
-
-    /* =========================================
-       MANUAL TOTAL VEHICLES
-    ========================================= */
 
     totalVehicleCount: {
       type: Number,
@@ -548,11 +572,6 @@ const triptrackingSchema = new Schema(
       trim: true,
       default: "",
     },
-
-
-    /* =========================
-       VEHICLES
-    ========================= */
 
     vehicles: {
       type: [vehicleSchema],
@@ -736,7 +755,7 @@ const triptrackingSchema = new Schema(
 
 
     /* =========================
-       TRAFFIC / VEHICLE APPROVAL
+       TRAFFIC
     ========================= */
 
     trafficAllocatedBy: {

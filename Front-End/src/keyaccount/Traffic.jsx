@@ -127,6 +127,7 @@ const createQuotation = () => ({
 
   transportName: "",
 
+
   amount: "",
 
   status: "Pending",
@@ -425,11 +426,6 @@ const Traffic = () => {
     setMessage,
   ] = useState("");
 
-  const [
-    trafficAllocatedBy,
-    setTrafficAllocatedBy,
-  ] = useState("");
-
 
   /* =========================================================
      FETCH APPROVED ORDERS
@@ -551,7 +547,6 @@ const Traffic = () => {
                     transportName:
                       option.transportName ||
                       "",
-
                     amount:
                       option.amount ??
                       "",
@@ -599,6 +594,14 @@ const Traffic = () => {
                 vehicle.quotationStatus
               ),
 
+            trafficAllocatedBy:
+              vehicle.trafficAllocatedBy ||
+              "",
+
+            trafficAllocatedAt:
+              vehicle.trafficAllocatedAt ||
+              null,
+
             transportOptions,
 
             selectedTransport:
@@ -633,12 +636,6 @@ const Traffic = () => {
     loadVehicleForms(
       order
     );
-
-    setTrafficAllocatedBy(
-      order.trafficAllocatedBy ||
-        ""
-    );
-
     setMessage("");
 
     document.body.style.overflow =
@@ -653,9 +650,6 @@ const Traffic = () => {
       );
 
       setVehicleForms([]);
-
-      setTrafficAllocatedBy("");
-
       document.body.style.overflow =
         "";
     };
@@ -832,6 +826,32 @@ const Traffic = () => {
 
 
   /* =========================================================
+     VEHICLE TRAFFIC ALLOCATOR
+  ========================================================= */
+
+  const handleVehicleAllocatorChange = (
+    vehicleIndex,
+    value
+  ) => {
+    setVehicleForms(
+      (previous) =>
+        previous.map(
+          (
+            vehicle,
+            index
+          ) =>
+            index === vehicleIndex
+              ? {
+                  ...vehicle,
+                  trafficAllocatedBy: value,
+                }
+              : vehicle
+        )
+    );
+  };
+
+
+  /* =========================================================
      ADD OPTION
   ========================================================= */
 
@@ -920,23 +940,6 @@ const Traffic = () => {
         return;
       }
 
-
-      const allocatorName =
-        String(
-          trafficAllocatedBy ||
-          ""
-        ).trim();
-
-
-      if (!allocatorName) {
-        setMessage(
-          "Please enter the Traffic Allocator name before requesting approval."
-        );
-
-        return;
-      }
-
-
       if (
         !Array.isArray(
           vehicleForms
@@ -991,6 +994,26 @@ const Traffic = () => {
           );
 
           continue;
+        }
+
+
+        const vehicleAllocator =
+          String(
+            vehicle.trafficAllocatedBy ||
+            ""
+          ).trim();
+
+
+        if (!vehicleAllocator) {
+          validationError =
+            `Enter Traffic Allocator for ${
+              vehicle.vehicleType ||
+              `Vehicle ${
+                vehicleIndex + 1
+              }`
+            }.`;
+
+          break;
         }
 
 
@@ -1076,6 +1099,12 @@ const Traffic = () => {
         updatedVehicles.push({
           ...vehicle,
 
+          trafficAllocatedBy:
+            vehicleAllocator,
+
+          trafficAllocatedAt:
+            now,
+
           transportOptions:
             validOptions.map(
               (option) => ({
@@ -1144,10 +1173,6 @@ const Traffic = () => {
 
           vehicles:
             updatedVehicles,
-
-          trafficAllocatedBy:
-            allocatorName,
-
           trafficAllocatedAt:
             now,
 
@@ -1852,45 +1877,6 @@ const Traffic = () => {
 
               <div className="traffic-modal-header-actions">
 
-                <div className="traffic-allocator-field">
-
-                  <label
-                    htmlFor="traffic-allocated-by"
-                  >
-                    Traffic Allocator
-                    <b>*</b>
-                  </label>
-
-                  <input
-                    id="traffic-allocated-by"
-                    type="text"
-                    value={
-                      trafficAllocatedBy
-                    }
-                    onChange={(
-                      event
-                    ) =>
-                      setTrafficAllocatedBy(
-                        event.target.value
-                      )
-                    }
-                    placeholder="Enter your name"
-                    autoComplete="name"
-                  />
-
-                  {selectedOrder.trafficAllocatedAt && (
-                    <small>
-                      Last allocation:{" "}
-                      {formatDate(
-                        selectedOrder
-                          .trafficAllocatedAt
-                      )}
-                    </small>
-                  )}
-
-                </div>
-
-
                 <button
                   type="button"
                   className="traffic-modal-close"
@@ -2205,11 +2191,15 @@ const Traffic = () => {
                                 </th>
 
                                 <th>
+                                  Traffic Allocator
+                                </th>
+
+                                <th>
                                   Quoted Amount
                                 </th>
 
                                 <th>
-                                  KAM Status
+                                  Approval Status
                                 </th>
 
                                 {!isSelected && (
@@ -2303,6 +2293,45 @@ const Traffic = () => {
                                           )}
 
                                         </td>
+
+
+                                        {quotationIndex === 0 && (
+                                          <td
+                                            rowSpan={
+                                              vehicle.transportOptions.length
+                                            }
+                                          >
+
+                                            {isSelected ? (
+
+                                              <strong>
+                                                {vehicle.trafficAllocatedBy ||
+                                                  "—"}
+                                              </strong>
+
+                                            ) : (
+
+                                              <input
+                                                type="text"
+                                                value={
+                                                  vehicle.trafficAllocatedBy ||
+                                                  ""
+                                                }
+                                                onChange={(
+                                                  event
+                                                ) =>
+                                                  handleVehicleAllocatorChange(
+                                                    vehicleIndex,
+                                                    event.target.value
+                                                  )
+                                                }
+                                                placeholder="Enter allocator name"
+                                              />
+
+                                            )}
+
+                                          </td>
+                                        )}
 
 
                                         <td>
@@ -2419,8 +2448,8 @@ const Traffic = () => {
                                   <td
                                     colSpan={
                                       isSelected
-                                        ? 4
-                                        : 5
+                                        ? 5
+                                        : 6
                                     }
                                     className="traffic-no-options"
                                   >
@@ -2462,8 +2491,7 @@ const Traffic = () => {
                   className="traffic-submit-btn"
                   disabled={
                     savingVehicleId ===
-                      "__ALL__" ||
-                    !trafficAllocatedBy.trim()
+                      "__ALL__"
                   }
                   onClick={
                     handleRequestApproval

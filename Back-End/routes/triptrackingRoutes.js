@@ -1,5 +1,4 @@
-const express =
-  require("express");
+const express = require("express");
 
 const {
   createTrip,
@@ -13,12 +12,12 @@ const {
   "../controllers/triptrackingController"
 );
 
-const router =
-  express.Router();
+const router = express.Router();
 
 
 /* =========================================================
-   CREATE
+   CREATE TRIP
+   POST /api/triptracking
 ========================================================= */
 
 router.post(
@@ -28,7 +27,8 @@ router.post(
 
 
 /* =========================================================
-   GET ALL
+   GET ALL TRIPS
+   GET /api/triptracking
 ========================================================= */
 
 router.get(
@@ -38,7 +38,10 @@ router.get(
 
 
 /* =========================================================
-   GET BY TRIP ID
+   GET TRIP BY TRIP ID
+
+   Example:
+   GET /api/triptracking/trip/2026-1
 ========================================================= */
 
 router.get(
@@ -48,7 +51,17 @@ router.get(
 
 
 /* =========================================================
-   UPDATE VEHICLE
+   UPDATE SINGLE VEHICLE
+
+   Example:
+   PUT /api/triptracking/2026-1/vehicles/2026-1-V1
+
+   Can update:
+   - transportOptions
+   - vendorAssigned
+   - selectedTransport
+   - approval status
+   - vehicle details
 ========================================================= */
 
 router.put(
@@ -58,7 +71,10 @@ router.put(
 
 
 /* =========================================================
-   GET BY MONGODB ID
+   GET TRIP BY MONGODB ID
+
+   Example:
+   GET /api/triptracking/66xxxxxxx
 ========================================================= */
 
 router.get(
@@ -70,8 +86,24 @@ router.get(
 /* =========================================================
    UPDATE COMPLETE TRIP
 
-   totalVehicleCount is sent through req.body
-   and saved by updateTrip.
+   Example:
+   PUT /api/triptracking/66xxxxxxx
+
+   This endpoint is used by:
+   - Traffic Management
+   - Approval Management
+   - Order updates
+
+   It can save:
+   - totalVehicleCount
+   - trafficAllocatedBy
+   - trafficAllocatedAt
+   - vehicles
+   - transportOptions
+   - vendorAssigned
+   - quotationStatus
+   - vehicleApprovalStatus
+   - selectedTransport
 ========================================================= */
 
 router.put(
@@ -81,7 +113,10 @@ router.put(
 
 
 /* =========================================================
-   DELETE
+   DELETE TRIP
+
+   Example:
+   DELETE /api/triptracking/66xxxxxxx
 ========================================================= */
 
 router.delete(
@@ -90,5 +125,4 @@ router.delete(
 );
 
 
-module.exports =
-  router;
+module.exports = router;
