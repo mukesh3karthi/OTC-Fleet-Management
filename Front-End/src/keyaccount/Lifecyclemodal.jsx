@@ -866,6 +866,14 @@ const OrderLifecyclePanel = ({
               />
 
               <ClientEnquiryField
+                label="Vehicles"
+                value={
+                  order.totalVehicleCount
+                }
+                suffix=" NOS"
+              />
+
+              <ClientEnquiryField
                 label="Origin"
                 value={
                   order.origin
@@ -982,6 +990,14 @@ const OrderLifecyclePanel = ({
                 }
               />
 
+              <ClientEnquiryField
+                label="Vehicles"
+                value={
+                  order.totalVehicleCount
+                }
+                suffix=" NOS"
+              />
+
             </div>
           )}
 
@@ -1073,6 +1089,14 @@ const OrderLifecyclePanel = ({
                 value={
                   order.assignedKam
                 }
+              />
+
+              <ClientEnquiryField
+                label="Vehicles"
+                value={
+                  order.totalVehicleCount
+                }
+                suffix=" NOS"
               />
 
               <ClientEnquiryField

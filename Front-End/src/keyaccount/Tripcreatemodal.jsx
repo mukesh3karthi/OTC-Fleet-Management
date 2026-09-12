@@ -445,6 +445,22 @@ const Tripcreatemodal = ({
                                     />
 
 
+                                    {/* TOTAL VEHICLE COUNT */}
+
+                                    <TripField
+                                        label="Vehicles"
+                                        required
+                                        type="number"
+                                        min="1"
+                                        step="1"
+                                        value={tripForm.totalVehicleCount}
+                                        placeholder="Enter vehicle count"
+                                        onChange={handleTripFieldChange(
+                                            "totalVehicleCount"
+                                        )}
+                                    />
+
+
                                     {/* ORIGIN */}
 
                                     <TripField
@@ -1245,6 +1261,22 @@ const Tripcreatemodal = ({
                                         )}
                                     />
 
+
+                                    {/* TOTAL VEHICLE COUNT */}
+
+                                    <TripField
+                                        label="Vehicles"
+                                        required
+                                        type="number"
+                                        min="1"
+                                        step="1"
+                                        value={tripForm.totalVehicleCount}
+                                        placeholder="Enter vehicle count"
+                                        onChange={handleTripFieldChange(
+                                            "totalVehicleCount"
+                                        )}
+                                    />
+
                                 </div>
 
                             </section>
@@ -1952,6 +1984,22 @@ const Tripcreatemodal = ({
                                         placeholder="Enter KAM name"
                                         onChange={handleTripFieldChange(
                                             "assignedKam"
+                                        )}
+                                    />
+
+
+                                    {/* TOTAL VEHICLE COUNT */}
+
+                                    <TripField
+                                        label="Vehicles"
+                                        required
+                                        type="number"
+                                        min="1"
+                                        step="1"
+                                        value={tripForm.totalVehicleCount}
+                                        placeholder="Enter vehicle count"
+                                        onChange={handleTripFieldChange(
+                                            "totalVehicleCount"
                                         )}
                                     />
 

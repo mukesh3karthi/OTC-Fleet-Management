@@ -70,6 +70,9 @@ const createEmptyTripForm = (
   dieselScope: "",
   totalQuantity: "",
 
+  // Manual total vehicles entered in Create / Edit Trip
+  totalVehicleCount: "",
+
   origin: "",
   destination: "",
   estimatedDistance: "",
@@ -482,6 +485,10 @@ const mapDbTripToOrder = (
 
     totalQuantity:
       trip.totalQuantity ??
+      "",
+
+    totalVehicleCount:
+      trip.totalVehicleCount ??
       "",
 
     weight:
@@ -1109,6 +1116,10 @@ const KeyAccount = () => {
 
         totalQuantity:
           order.totalQuantity ??
+          "",
+
+        totalVehicleCount:
+          order.totalVehicleCount ??
           "",
 
         origin:
@@ -2038,6 +2049,12 @@ const KeyAccount = () => {
                   .totalQuantity
               )
             : 0,
+
+        // Manual count used across Lifecycle, Traffic and Approval pages
+        totalVehicleCount:
+          Number(
+            tripForm.totalVehicleCount
+          ),
 
         origin:
           isIntercarting

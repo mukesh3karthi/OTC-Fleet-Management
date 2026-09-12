@@ -93,10 +93,10 @@ const cleanRouteLocations = (
       ) {
         return cleanText(
           location.name ||
-            location.location ||
-            location.city ||
-            location.place ||
-            location.label
+          location.location ||
+          location.city ||
+          location.place ||
+          location.label
         );
       }
 
@@ -368,14 +368,14 @@ const normalizeVehicle = (
     currentPosition:
       cleanText(
         vehicle.currentPosition ??
-          vehicle.currentLocation
+        vehicle.currentLocation
       ),
 
 
     currentLocation:
       cleanText(
         vehicle.currentLocation ??
-          vehicle.currentPosition
+        vehicle.currentPosition
       ),
 
 
@@ -388,14 +388,14 @@ const normalizeVehicle = (
     driverPhone:
       cleanText(
         vehicle.driverPhone ??
-          vehicle.driverNumber
+        vehicle.driverNumber
       ),
 
 
     driverNumber:
       cleanText(
         vehicle.driverNumber ??
-          vehicle.driverPhone
+        vehicle.driverPhone
       ),
 
 
@@ -423,10 +423,6 @@ const normalizeVehicle = (
         vehicle.trackingStatus
       ),
 
-
-    /* =========================
-       TRAFFIC / QUOTATION
-    ========================= */
 
     placementDate:
       dateOrNull(
@@ -465,10 +461,6 @@ const normalizeVehicle = (
         vehicle.transportRemark
       ),
 
-
-    /* =========================
-       VEHICLE APPROVAL
-    ========================= */
 
     vehicleApprovalRequested,
 
@@ -537,37 +529,34 @@ const buildTripData = (
   const tripId =
     cleanText(
       body.tripId ??
-        existingTrip?.tripId
+      existingTrip?.tripId
     );
 
 
   const client =
     cleanText(
       body.client ??
-        body.customer ??
-        existingTrip?.client ??
-        existingTrip?.customer
+      body.customer ??
+      existingTrip?.client ??
+      existingTrip?.customer
     );
 
 
   const clientContact =
     cleanText(
       body.clientContact ??
-        body.clientPhone ??
-        existingTrip
-          ?.clientContact ??
-        existingTrip
-          ?.clientPhone
+      body.clientPhone ??
+      existingTrip?.clientContact ??
+      existingTrip?.clientPhone
     );
 
 
   const cargo =
     cleanText(
       body.cargo ??
-        body.materialType ??
-        existingTrip?.cargo ??
-        existingTrip
-          ?.materialType
+      body.materialType ??
+      existingTrip?.cargo ??
+      existingTrip?.materialType
     );
 
 
@@ -576,8 +565,7 @@ const buildTripData = (
       body.vehicles
     )
       ? body.vehicles
-      : existingTrip
-          ?.vehicles || [];
+      : existingTrip?.vehicles || [];
 
 
   const vehicles =
@@ -597,8 +585,7 @@ const buildTripData = (
   const movementType =
     cleanText(
       body.movementType ??
-        existingTrip
-          ?.movementType
+      existingTrip?.movementType
     );
 
 
@@ -620,38 +607,29 @@ const buildTripData = (
     companyName:
       cleanText(
         body.companyName ??
-          existingTrip
-            ?.companyName
+        existingTrip?.companyName
       ),
 
-
     client,
-
 
     customer:
       client,
 
-
     clientContact,
-
 
     clientPhone:
       clientContact,
 
-
     clientEmail:
       cleanText(
         body.clientEmail ??
-          existingTrip
-            ?.clientEmail
+        existingTrip?.clientEmail
       ).toLowerCase(),
-
 
     assignedKam:
       cleanText(
         body.assignedKam ??
-          existingTrip
-            ?.assignedKam
+        existingTrip?.assignedKam
       ),
 
 
@@ -665,9 +643,7 @@ const buildTripData = (
         ? dateOrNull(
             body.enquiryDate
           )
-        : existingTrip
-            ?.enquiryDate,
-
+        : existingTrip?.enquiryDate,
 
     placementDate:
       body.placementDate !==
@@ -675,9 +651,7 @@ const buildTripData = (
         ? dateOrNull(
             body.placementDate
           )
-        : existingTrip
-            ?.placementDate,
-
+        : existingTrip?.placementDate,
 
     deploymentDate:
       body.deploymentDate !==
@@ -685,9 +659,7 @@ const buildTripData = (
         ? dateOrNull(
             body.deploymentDate
           )
-        : existingTrip
-            ?.deploymentDate,
-
+        : existingTrip?.deploymentDate,
 
     loadingDate:
       body.loadingDate !==
@@ -695,8 +667,7 @@ const buildTripData = (
         ? dateOrNull(
             body.loadingDate
           )
-        : existingTrip
-            ?.loadingDate,
+        : existingTrip?.loadingDate,
 
 
     /* =========================
@@ -706,32 +677,26 @@ const buildTripData = (
     origin:
       cleanText(
         body.origin ??
-          existingTrip?.origin
+        existingTrip?.origin
       ),
-
 
     destination:
       cleanText(
         body.destination ??
-          existingTrip
-            ?.destination
+        existingTrip?.destination
       ),
-
 
     estimatedDistance:
       numberOrZero(
         body.estimatedDistance ??
-          existingTrip
-            ?.estimatedDistance
+        existingTrip?.estimatedDistance
       ),
-
 
     totalKm:
       numberOrZero(
         body.totalKm ??
-          existingTrip?.totalKm
+        existingTrip?.totalKm
       ),
-
 
     routeLocations:
       body.routeLocations !==
@@ -751,17 +716,14 @@ const buildTripData = (
 
     cargo,
 
-
     materialType:
       cargo,
-
 
     weight:
       numberOrZero(
         body.weight ??
-          existingTrip?.weight
+        existingTrip?.weight
       ),
-
 
     length:
       body.length !==
@@ -769,9 +731,7 @@ const buildTripData = (
         ? nullableNumber(
             body.length
           )
-        : existingTrip
-            ?.length ?? null,
-
+        : existingTrip?.length ?? null,
 
     height:
       body.height !==
@@ -779,9 +739,7 @@ const buildTripData = (
         ? nullableNumber(
             body.height
           )
-        : existingTrip
-            ?.height ?? null,
-
+        : existingTrip?.height ?? null,
 
     width:
       body.width !==
@@ -789,14 +747,12 @@ const buildTripData = (
         ? nullableNumber(
             body.width
           )
-        : existingTrip
-            ?.width ?? null,
-
+        : existingTrip?.width ?? null,
 
     remark:
       cleanText(
         body.remark ??
-          existingTrip?.remark
+        existingTrip?.remark
       ),
 
 
@@ -807,31 +763,25 @@ const buildTripData = (
     siteLocation:
       cleanText(
         body.siteLocation ??
-          existingTrip
-            ?.siteLocation
+        existingTrip?.siteLocation
       ),
-
 
     period:
       cleanText(
         body.period ??
-          existingTrip?.period
+        existingTrip?.period
       ),
-
 
     dieselScope:
       cleanText(
         body.dieselScope ??
-          existingTrip
-            ?.dieselScope
+        existingTrip?.dieselScope
       ),
-
 
     totalQuantity:
       numberOrZero(
         body.totalQuantity ??
-          existingTrip
-            ?.totalQuantity
+        existingTrip?.totalQuantity
       ),
 
 
@@ -842,16 +792,26 @@ const buildTripData = (
     requiredVehicles:
       numberOrZero(
         body.requiredVehicles ??
-          existingTrip
-            ?.requiredVehicles
+        existingTrip?.requiredVehicles
       ),
 
+    /* =========================================
+       MANUAL VEHICLES COUNT
+       IMPORTANT:
+       If another page updates the trip without
+       sending totalVehicleCount, preserve old value.
+    ========================================= */
+
+    totalVehicleCount:
+      numberOrZero(
+        body.totalVehicleCount ??
+        existingTrip?.totalVehicleCount
+      ),
 
     primaryVehicleType:
       cleanText(
         body.primaryVehicleType ??
-          existingTrip
-            ?.primaryVehicleType
+        existingTrip?.primaryVehicleType
       ),
 
 
@@ -869,28 +829,23 @@ const buildTripData = (
     orderStage:
       cleanText(
         body.orderStage ??
-          body.stage ??
-          existingTrip
-            ?.orderStage
+        body.stage ??
+        existingTrip?.orderStage
       ) ||
       "Client Enquiry",
-
 
     responsibleTeam:
       cleanText(
         body.responsibleTeam ??
-          body.role ??
-          existingTrip
-            ?.responsibleTeam
+        body.role ??
+        existingTrip?.responsibleTeam
       ) ||
       "Key Account Management Team",
-
 
     lifecycleStep:
       numberOrZero(
         body.lifecycleStep ??
-          existingTrip
-            ?.lifecycleStep
+        existingTrip?.lifecycleStep
       ),
 
 
@@ -901,16 +856,13 @@ const buildTripData = (
     requirement:
       cleanText(
         body.requirement ??
-          existingTrip
-            ?.requirement
+        existingTrip?.requirement
       ),
-
 
     enquiryRemarks:
       cleanText(
         body.enquiryRemarks ??
-          existingTrip
-            ?.enquiryRemarks
+        existingTrip?.enquiryRemarks
       ),
 
 
@@ -921,118 +873,92 @@ const buildTripData = (
     quotedRate:
       numberOrZero(
         body.quotedRate ??
-          existingTrip
-            ?.quotedRate
+        existingTrip?.quotedRate
       ),
-
 
     negotiatedRate:
       numberOrZero(
         body.negotiatedRate ??
-          existingTrip
-            ?.negotiatedRate
+        existingTrip?.negotiatedRate
       ),
-
 
     finalRate:
       numberOrZero(
         body.finalRate ??
-          existingTrip
-            ?.finalRate
+        existingTrip?.finalRate
       ),
-
 
     agreedRate:
       numberOrZero(
         body.agreedRate ??
-          existingTrip
-            ?.agreedRate
+        existingTrip?.agreedRate
       ),
-
 
     paymentTerms:
       cleanText(
         body.paymentTerms ??
-          existingTrip
-            ?.paymentTerms
+        existingTrip?.paymentTerms
       ),
-
 
     pricingRemarks:
       cleanText(
         body.pricingRemarks ??
-          existingTrip
-            ?.pricingRemarks
+        existingTrip?.pricingRemarks
       ),
-
 
     commercialTerms:
       cleanText(
         body.commercialTerms ??
-          body
-            .commercialTermsPaymentSlas ??
-          existingTrip
-            ?.commercialTerms
+        body
+          .commercialTermsPaymentSlas ??
+        existingTrip?.commercialTerms
       ),
-
 
     deliveryCommitments:
       cleanText(
+        body.deliveryCommitments ??
         body
-          .deliveryCommitments ??
-          body
-            .deliveryCommitmentsSlas ??
-          existingTrip
-            ?.deliveryCommitments
+          .deliveryCommitmentsSlas ??
+        existingTrip
+          ?.deliveryCommitments
       ),
-
 
     clientConfirmationNotes:
       cleanText(
         body
           .clientConfirmationNotes ??
-          existingTrip
-            ?.clientConfirmationNotes
+        existingTrip
+          ?.clientConfirmationNotes
       ),
-
 
     orderReferenceNumber:
       cleanText(
-        body
-          .orderReferenceNumber ??
-          body.orderReference ??
-          existingTrip
-            ?.orderReferenceNumber
+        body.orderReferenceNumber ??
+        body.orderReference ??
+        existingTrip
+          ?.orderReferenceNumber
       ),
-
 
     orderCount:
       numberOrZero(
         body.orderCount ??
-          existingTrip
-            ?.orderCount
+        existingTrip?.orderCount
       ),
-
 
     responsibleKam:
       cleanText(
         body.responsibleKam ??
-          body.assignedKam ??
-          existingTrip
-            ?.responsibleKam ??
-          existingTrip
-            ?.assignedKam
+        body.assignedKam ??
+        existingTrip?.responsibleKam ??
+        existingTrip?.assignedKam
       ),
-
 
     commercialRemarks:
       cleanText(
         body.commercialRemarks ??
-          body.pricingRemarks ??
-          existingTrip
-            ?.commercialRemarks ??
-          existingTrip
-            ?.pricingRemarks
+        body.pricingRemarks ??
+        existingTrip?.commercialRemarks ??
+        existingTrip?.pricingRemarks
       ),
 
 
@@ -1044,72 +970,60 @@ const buildTripData = (
       body.approvalRequested !==
       undefined
         ? Boolean(
-            body
-              .approvalRequested
+            body.approvalRequested
           )
         : Boolean(
             existingTrip
               ?.approvalRequested
           ),
 
-
     approvalStatus:
       cleanText(
         body.approvalStatus ??
-          existingTrip
-            ?.approvalStatus
+        existingTrip?.approvalStatus
       ) ||
       "Not Requested",
-
 
     approvalRequestedAt:
       body.approvalRequestedAt !==
       undefined
         ? dateOrNull(
-            body
-              .approvalRequestedAt
+            body.approvalRequestedAt
           )
         : existingTrip
             ?.approvalRequestedAt ??
           null,
 
-
     approvalReviewedAt:
       body.approvalReviewedAt !==
       undefined
         ? dateOrNull(
-            body
-              .approvalReviewedAt
+            body.approvalReviewedAt
           )
         : existingTrip
             ?.approvalReviewedAt ??
           null,
 
-
     approvalReviewedBy:
       cleanText(
-        body
-          .approvalReviewedBy ??
-          existingTrip
-            ?.approvalReviewedBy
+        body.approvalReviewedBy ??
+        existingTrip
+          ?.approvalReviewedBy
       ),
-
 
     approvalRejectionReason:
       cleanText(
-        body
-          .approvalRejectionReason ??
-          body.rejectionReason ??
-          existingTrip
-            ?.approvalRejectionReason
+        body.approvalRejectionReason ??
+        body.rejectionReason ??
+        existingTrip
+          ?.approvalRejectionReason
       ),
-
 
     approvalRemarks:
       cleanText(
         body.approvalRemarks ??
-          existingTrip
-            ?.approvalRemarks
+        existingTrip
+          ?.approvalRemarks
       ),
 
 
@@ -1120,26 +1034,22 @@ const buildTripData = (
     trafficAllocatedBy:
       cleanText(
         body.trafficAllocatedBy ??
-          existingTrip
-            ?.trafficAllocatedBy
+        existingTrip
+          ?.trafficAllocatedBy
       ),
-
 
     trafficAllocatedAt:
       body.trafficAllocatedAt !==
       undefined
         ? dateOrNull(
-            body
-              .trafficAllocatedAt
+            body.trafficAllocatedAt
           )
         : existingTrip
             ?.trafficAllocatedAt ??
           null,
 
-
     trafficQuotationUpdatedAt:
-      body
-        .trafficQuotationUpdatedAt !==
+      body.trafficQuotationUpdatedAt !==
       undefined
         ? dateOrNull(
             body
@@ -1149,10 +1059,8 @@ const buildTripData = (
             ?.trafficQuotationUpdatedAt ??
           null,
 
-
     vehicleApprovalUpdatedAt:
-      body
-        .vehicleApprovalUpdatedAt !==
+      body.vehicleApprovalUpdatedAt !==
       undefined
         ? dateOrNull(
             body
@@ -1170,9 +1078,8 @@ const buildTripData = (
     poNumber:
       cleanText(
         body.poNumber ??
-          existingTrip?.poNumber
+        existingTrip?.poNumber
       ),
-
 
     poDate:
       body.poDate !==
@@ -1180,32 +1087,27 @@ const buildTripData = (
         ? dateOrNull(
             body.poDate
           )
-        : existingTrip
-            ?.poDate,
-
+        : existingTrip?.poDate,
 
     poDocumentName:
       cleanText(
         body.poDocumentName ??
-          existingTrip
-            ?.poDocumentName
+        existingTrip
+          ?.poDocumentName
       ),
-
 
     poDocumentUrl:
       cleanText(
         body.poDocumentUrl ??
-          existingTrip
-            ?.poDocumentUrl
+        existingTrip
+          ?.poDocumentUrl
       ),
-
 
     documentationRemarks:
       cleanText(
-        body
-          .documentationRemarks ??
-          existingTrip
-            ?.documentationRemarks
+        body.documentationRemarks ??
+        existingTrip
+          ?.documentationRemarks
       ),
 
 
@@ -1216,44 +1118,37 @@ const buildTripData = (
     vendor:
       cleanText(
         body.vendor ??
-          body.vendorName ??
-          existingTrip?.vendor ??
-          existingTrip
-            ?.vendorName
+        body.vendorName ??
+        existingTrip?.vendor ??
+        existingTrip?.vendorName
       ),
-
 
     vendorName:
       cleanText(
         body.vendorName ??
-          body.vendor ??
-          existingTrip
-            ?.vendorName ??
-          existingTrip?.vendor
+        body.vendor ??
+        existingTrip?.vendorName ??
+        existingTrip?.vendor
       ),
-
 
     vendorContact:
       cleanText(
         body.vendorContact ??
-          existingTrip
-            ?.vendorContact
+        existingTrip
+          ?.vendorContact
       ),
-
 
     vendorRate:
       numberOrZero(
         body.vendorRate ??
-          existingTrip
-            ?.vendorRate
+        existingTrip?.vendorRate
       ),
-
 
     vendorRemarks:
       cleanText(
         body.vendorRemarks ??
-          existingTrip
-            ?.vendorRemarks
+        existingTrip
+          ?.vendorRemarks
       ),
 
 
@@ -1264,25 +1159,20 @@ const buildTripData = (
     instructions:
       cleanText(
         body.instructions ??
-          existingTrip
-            ?.instructions
+        existingTrip?.instructions
       ),
-
 
     completionRemarks:
       cleanText(
-        body
-          .completionRemarks ??
-          existingTrip
-            ?.completionRemarks
+        body.completionRemarks ??
+        existingTrip
+          ?.completionRemarks
       ),
-
 
     tripStatus:
       cleanText(
         body.tripStatus ??
-          existingTrip
-            ?.tripStatus
+        existingTrip?.tripStatus
       ) ||
       "Active",
   };
@@ -1330,6 +1220,28 @@ const createTrip = async (
 
           message:
             "Movement Type is required.",
+        });
+    }
+
+
+    if (
+      !Number.isInteger(
+        Number(
+          tripData.totalVehicleCount
+        )
+      ) ||
+      Number(
+        tripData.totalVehicleCount
+      ) < 1
+    ) {
+
+      return res
+        .status(400)
+        .json({
+          success: false,
+
+          message:
+            "Vehicles must be at least 1.",
         });
     }
 
@@ -1667,6 +1579,28 @@ const updateTrip = async (
         req.body,
         existingTrip
       );
+
+
+    if (
+      !Number.isInteger(
+        Number(
+          tripData.totalVehicleCount
+        )
+      ) ||
+      Number(
+        tripData.totalVehicleCount
+      ) < 1
+    ) {
+
+      return res
+        .status(400)
+        .json({
+          success: false,
+
+          message:
+            "Vehicles must be at least 1.",
+        });
+    }
 
 
     if (

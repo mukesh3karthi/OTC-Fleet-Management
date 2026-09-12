@@ -16,6 +16,7 @@ const {
 const router =
   express.Router();
 
+
 /* =========================================================
    CREATE
 ========================================================= */
@@ -24,6 +25,7 @@ router.post(
   "/",
   createTrip
 );
+
 
 /* =========================================================
    GET ALL
@@ -34,6 +36,7 @@ router.get(
   getAllTrips
 );
 
+
 /* =========================================================
    GET BY TRIP ID
 ========================================================= */
@@ -42,6 +45,7 @@ router.get(
   "/trip/:tripId",
   getTripByTripId
 );
+
 
 /* =========================================================
    UPDATE VEHICLE
@@ -52,6 +56,7 @@ router.put(
   updateVehicle
 );
 
+
 /* =========================================================
    GET BY MONGODB ID
 ========================================================= */
@@ -61,14 +66,19 @@ router.get(
   getTripById
 );
 
+
 /* =========================================================
    UPDATE COMPLETE TRIP
+
+   totalVehicleCount is sent through req.body
+   and saved by updateTrip.
 ========================================================= */
 
 router.put(
   "/:id",
   updateTrip
 );
+
 
 /* =========================================================
    DELETE
@@ -79,4 +89,6 @@ router.delete(
   deleteTrip
 );
 
-module.exports = router;
+
+module.exports =
+  router;

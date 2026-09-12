@@ -186,8 +186,22 @@ const getVehicleQuantity = (
 
 const getTotalVehicleQuantity = (
   order
-) =>
-  getOrderVehicles(order)
+) => {
+  // Prefer the manual Vehicles value saved from Create / Edit Trip.
+  const savedCount =
+    Number(
+      order?.totalVehicleCount
+    );
+
+  if (
+    Number.isInteger(savedCount) &&
+    savedCount >= 0
+  ) {
+    return savedCount;
+  }
+
+  // Backward compatibility for old trips without totalVehicleCount.
+  return getOrderVehicles(order)
     .reduce(
       (
         total,
@@ -199,6 +213,7 @@ const getTotalVehicleQuantity = (
         ),
       0
     );
+};
 
 
 const normalizeQuotationStatus = (

@@ -6,8 +6,7 @@ import React, {
 
 import {
   Check,
-  ChevronRight,
-  Clock3,
+  ChevronDown,
   FileText,
   Search,
   X,
@@ -113,6 +112,38 @@ const safeStatus = (status) =>
   status || "Pending";
 
 
+
+const getTotalVehicleCount = (order) => {
+  const savedCount = Number(
+    order?.totalVehicleCount
+  );
+
+  if (
+    Number.isInteger(savedCount) &&
+    savedCount >= 0
+  ) {
+    return savedCount;
+  }
+
+  if (
+    Array.isArray(order?.vehicles)
+  ) {
+    return order.vehicles.reduce(
+      (total, vehicle) =>
+        total +
+        Number(vehicle?.quantity || 0),
+      0
+    );
+  }
+
+  return Number(
+    order?.requiredVehicles ||
+    order?.vehicleCount ||
+    0
+  );
+};
+
+
 /* =========================================================
    DETAIL FIELD
 ========================================================= */
@@ -123,16 +154,15 @@ const DetailField = ({
   full = false,
 }) => (
   <div
-    className={`approval-detail-field ${
-      full ? "full" : ""
-    }`}
+    className={`approval-detail-field ${full ? "full" : ""
+      }`}
   >
     <span>{label}</span>
 
     <strong>
       {value === "" ||
-      value === null ||
-      value === undefined
+        value === null ||
+        value === undefined
         ? "—"
         : value}
     </strong>
@@ -157,6 +187,11 @@ const Approvalmanagement = () => {
   ] = useState({});
 
   const [
+    vehicleRemarks,
+    setVehicleRemarks,
+  ] = useState({});
+
+  const [
     vehicleUpdatingKey,
     setVehicleUpdatingKey,
   ] = useState(null);
@@ -176,6 +211,11 @@ const Approvalmanagement = () => {
 
   const [error, setError] =
     useState("");
+
+  const [
+    activeRequestTab,
+    setActiveRequestTab,
+  ] = useState("order");
 
   const [statusFilter, setStatusFilter] =
     useState("All");
@@ -206,6 +246,18 @@ const Approvalmanagement = () => {
   const [isUpdating, setIsUpdating] =
     useState(false);
 
+  const [mdRemarks, setMdRemarks] =
+    useState({});
+
+  const [rowUpdatingId, setRowUpdatingId] =
+    useState(null);
+
+  const [expandedOrderRow, setExpandedOrderRow] =
+    useState(null);
+
+  const [expandedVehicleRow, setExpandedVehicleRow] =
+    useState(null);
+
 
   /* =========================================================
      FETCH APPROVALS
@@ -227,7 +279,7 @@ const Approvalmanagement = () => {
       if (!response.ok) {
         throw new Error(
           payload.message ||
-            "Unable to load approval requests."
+          "Unable to load approval requests."
         );
       }
 
@@ -256,14 +308,14 @@ const Approvalmanagement = () => {
         (a, b) => {
           const aTime = new Date(
             a.approvalRequestedAt ||
-              a.updatedAt ||
-              0
+            a.updatedAt ||
+            0
           ).getTime();
 
           const bTime = new Date(
             b.approvalRequestedAt ||
-              b.updatedAt ||
-              0
+            b.updatedAt ||
+            0
           ).getTime();
 
           return bTime - aTime;
@@ -297,7 +349,7 @@ const Approvalmanagement = () => {
 
       setError(
         fetchError.message ||
-          "Unable to load approvals."
+        "Unable to load approvals."
       );
 
       setApprovals([]);
@@ -452,7 +504,7 @@ const Approvalmanagement = () => {
           const matchesStatus =
             statusFilter === "All" ||
             status ===
-              statusFilter;
+            statusFilter;
 
           const searchable = [
             item.orderReferenceNumber,
@@ -542,9 +594,8 @@ const Approvalmanagement = () => {
                   order.trafficAllocatedAt ||
                   null,
 
-                key: `${order._id || order.tripId || order.id}-${
-                  vehicle.vehicleSubId || vehicleIndex
-                }`,
+                key: `${order._id || order.tripId || order.id}-${vehicle.vehicleSubId || vehicleIndex
+                  }`,
               });
             }
           );
@@ -555,20 +606,69 @@ const Approvalmanagement = () => {
         (a, b) =>
           new Date(
             b.vehicle.vehicleApprovalRequestedAt ||
-              b.order.trafficAllocatedAt ||
-              b.vehicle.quotationSubmittedAt ||
-              b.order.updatedAt ||
-              0
+            b.order.trafficAllocatedAt ||
+            b.vehicle.quotationSubmittedAt ||
+            b.order.updatedAt ||
+            0
           ).getTime() -
           new Date(
             a.vehicle.vehicleApprovalRequestedAt ||
-              a.order.trafficAllocatedAt ||
-              a.vehicle.quotationSubmittedAt ||
-              a.order.updatedAt ||
-              0
+            a.order.trafficAllocatedAt ||
+            a.vehicle.quotationSubmittedAt ||
+            a.order.updatedAt ||
+            0
           ).getTime()
       );
     }, [allOrders]);
+
+
+  const filteredVehicleApprovalRows =
+    useMemo(() => {
+      const search = searchText
+        .trim()
+        .toLowerCase();
+
+      return vehicleApprovalRows.filter((row) => {
+        const { order, vehicle } = row;
+
+        const status =
+          vehicle.vehicleApprovalStatus ||
+          (vehicle.quotationStatus === "Approved"
+            ? "Approved"
+            : vehicle.quotationStatus === "Rejected"
+              ? "Rejected"
+              : "Pending");
+
+        const matchesStatus =
+          statusFilter === "All" ||
+          status === statusFilter;
+
+        const searchable = [
+          order.tripId,
+          order.orderReferenceNumber,
+          order.id,
+          order.companyName,
+          order.customer,
+          order.client,
+          order.movementType,
+          order.siteLocation,
+          order.origin,
+          order.destination,
+          vehicle.vehicleType,
+          vehicle.configurationModel,
+          vehicle.vehicleSubId,
+          order.trafficAllocatedBy,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+
+        const matchesSearch =
+          !search || searchable.includes(search);
+
+        return matchesStatus && matchesSearch;
+      });
+    }, [vehicleApprovalRows, statusFilter, searchText]);
 
 
   /* =========================================================
@@ -691,6 +791,17 @@ const Approvalmanagement = () => {
   };
 
 
+  const handleVehicleRemarkChange = (
+    rowKey,
+    value
+  ) => {
+    setVehicleRemarks((previous) => ({
+      ...previous,
+      [rowKey]: value,
+    }));
+  };
+
+
   const updateVehicleApproval =
     async (
       row,
@@ -747,6 +858,19 @@ const Approvalmanagement = () => {
       ) {
         setError(
           "Selected transporter quotation was not found."
+        );
+        return;
+      }
+
+      const reviewRemark =
+        (vehicleRemarks[key] || "").trim();
+
+      if (
+        status === "Rejected" &&
+        !reviewRemark
+      ) {
+        setError(
+          "Enter MD remarks before rejecting the vehicle allocation."
         );
         return;
       }
@@ -818,7 +942,7 @@ const Approvalmanagement = () => {
 
                         status:
                           option.quotationId ===
-                          selectedQuotationId
+                            selectedQuotationId
                             ? "Approved"
                             : "Not Selected",
                       })
@@ -831,6 +955,7 @@ const Approvalmanagement = () => {
                     "",
 
                   vehicleApprovalRemarks:
+                    reviewRemark ||
                     "Approved by management",
 
                   vehicleRejectionReason:
@@ -869,13 +994,13 @@ const Approvalmanagement = () => {
                   ),
 
                 quotationRemark:
-                  "Vehicle allocation rejected by management.",
+                  reviewRemark,
 
                 vehicleApprovalRemarks:
-                  "",
+                  reviewRemark,
 
                 vehicleRejectionReason:
-                  "Vehicle allocation rejected by management.",
+                  reviewRemark,
               };
             }
           );
@@ -924,7 +1049,7 @@ const Approvalmanagement = () => {
         if (!response.ok) {
           throw new Error(
             result.message ||
-              `Unable to ${status.toLowerCase()} vehicle allocation.`
+            `Unable to ${status.toLowerCase()} vehicle allocation.`
           );
         }
 
@@ -937,6 +1062,12 @@ const Approvalmanagement = () => {
             return next;
           }
         );
+
+        setVehicleRemarks((previous) => {
+          const next = { ...previous };
+          delete next[key];
+          return next;
+        });
 
         await fetchApprovals();
 
@@ -951,11 +1082,11 @@ const Approvalmanagement = () => {
             }
 
             const freshOrder =
-              {
-                ...order,
-                vehicles:
-                  updatedVehicles,
-              };
+            {
+              ...order,
+              vehicles:
+                updatedVehicles,
+            };
 
             const freshRows =
               currentTrip.rows.map(
@@ -973,7 +1104,7 @@ const Approvalmanagement = () => {
                       freshOrder,
                     vehicle:
                       updatedVehicles[
-                        vehicleIndex
+                      vehicleIndex
                       ],
                   };
                 }
@@ -998,7 +1129,7 @@ const Approvalmanagement = () => {
 
         setError(
           vehicleError.message ||
-            "Unable to update vehicle approval."
+          "Unable to update vehicle approval."
         );
       } finally {
         setVehicleUpdatingKey(
@@ -1103,8 +1234,6 @@ const Approvalmanagement = () => {
 
       setError("");
 
-      document.body.style.overflow =
-        "hidden";
     };
 
 
@@ -1120,8 +1249,6 @@ const Approvalmanagement = () => {
 
       setError("");
 
-      document.body.style.overflow =
-        "";
     };
 
 
@@ -1139,7 +1266,7 @@ const Approvalmanagement = () => {
         "Pending"
         ? ""
         : item.approvalRemarks ||
-            ""
+        ""
     );
 
     setRejectionReason("");
@@ -1256,7 +1383,7 @@ const Approvalmanagement = () => {
       if (!response.ok) {
         throw new Error(
           result.message ||
-            "Unable to update approval."
+          "Unable to update approval."
         );
       }
 
@@ -1268,7 +1395,7 @@ const Approvalmanagement = () => {
         ...payload,
 
         ...(serverTrip &&
-        typeof serverTrip ===
+          typeof serverTrip ===
           "object"
           ? serverTrip
           : {}),
@@ -1281,7 +1408,7 @@ const Approvalmanagement = () => {
           previous.map(
             (item) =>
               item._id ===
-              approval._id
+                approval._id
                 ? savedTrip
                 : item
           )
@@ -1302,7 +1429,7 @@ const Approvalmanagement = () => {
 
       setError(
         updateError.message ||
-          "Unable to update approval."
+        "Unable to update approval."
       );
 
       return false;
@@ -1401,6 +1528,116 @@ const Approvalmanagement = () => {
 
 
   /* =========================================================
+     INLINE CLIENT RATE APPROVAL
+  ========================================================= */
+
+  const handleMdRemarkChange = (
+    id,
+    value
+  ) => {
+    setMdRemarks((previous) => ({
+      ...previous,
+      [id]: value,
+    }));
+
+    if (error) {
+      setError("");
+    }
+  };
+
+
+  const handleInlineApprove = async (
+    item
+  ) => {
+    const rowId = item?._id;
+
+    if (!rowId || rowUpdatingId) {
+      return;
+    }
+
+    const remark = String(
+      mdRemarks[rowId] ??
+      item.approvalRemarks ??
+      ""
+    ).trim();
+
+    if (!remark) {
+      setError(
+        "Please enter MD remarks/comments before approving."
+      );
+      return;
+    }
+
+    try {
+      setRowUpdatingId(rowId);
+      setError("");
+
+      await updateStatus(
+        item,
+        "Approved",
+        "",
+        remark
+      );
+
+      setMdRemarks((previous) => ({
+        ...previous,
+        [rowId]: remark,
+      }));
+
+      await fetchApprovals();
+    } finally {
+      setRowUpdatingId(null);
+    }
+  };
+
+
+  const handleInlineReject = async (
+    item
+  ) => {
+    const rowId = item?._id;
+
+    if (!rowId || rowUpdatingId) {
+      return;
+    }
+
+    const remark = String(
+      mdRemarks[rowId] ??
+      item.approvalRejectionReason ??
+      item.approvalRemarks ??
+      ""
+    ).trim();
+
+    if (!remark) {
+      setError(
+        "Please enter MD remarks/comments before rejecting."
+      );
+      return;
+    }
+
+    try {
+      setRowUpdatingId(rowId);
+      setError("");
+
+      await updateStatus(
+        item,
+        "Rejected",
+        remark,
+        remark
+      );
+
+      setMdRemarks((previous) => ({
+        ...previous,
+        [rowId]: remark,
+      }));
+
+      await fetchApprovals();
+    } finally {
+      setRowUpdatingId(null);
+    }
+  };
+
+
+  /* =========================================================
      UI
   ========================================================= */
 
@@ -1417,14 +1654,48 @@ const Approvalmanagement = () => {
             Approval Management
           </h1>
 
-          <p>
-            Review and approve Order
-            Finalization requests.
-          </p>
+        </div>
+      </div>
+
+      
+      {/* ================= REQUEST TABS + TOOLS ================= */}
+
+      <div className="approval-tabs-toolbar">
+
+        <div className="approval-request-tabs">
+
+          <button
+            type="button"
+            className={`approval-request-tab ${activeRequestTab === "order"
+                ? "active"
+                : ""
+              }`}
+            onClick={() => {
+              setActiveRequestTab("order");
+              setStatusFilter("All");
+            }}
+          >
+            Order Request
+          </button>
+
+          <button
+            type="button"
+            className={`approval-request-tab ${activeRequestTab === "vehicle"
+                ? "active"
+                : ""
+              }`}
+            onClick={() => {
+              setActiveRequestTab("vehicle");
+              setStatusFilter("All");
+            }}
+          >
+            Vehicle Request
+          </button>
+
         </div>
 
 
-        <div className="approval-header-tools">
+        <div className="approval-tabs-tools">
 
           <div className="approval-search">
             <Search size={16} />
@@ -1437,7 +1708,11 @@ const Approvalmanagement = () => {
                   event.target.value
                 )
               }
-              placeholder="Search order, customer or KAM..."
+              placeholder={
+                activeRequestTab === "order"
+                  ? "Search order, customer or KAM..."
+                  : "Search vehicle, customer or transporter..."
+              }
             />
           </div>
 
@@ -1469,1933 +1744,938 @@ const Approvalmanagement = () => {
           </select>
 
         </div>
-      </div>
-
-
-      {/* ================= SUMMARY ================= */}
-
-      <div className="approval-summary">
-
-        <button
-          type="button"
-          className={`approval-summary-card ${
-            statusFilter === "All"
-              ? "active"
-              : ""
-          }`}
-          onClick={() =>
-            setStatusFilter("All")
-          }
-        >
-          <div>
-            <span>
-              Total Requests
-            </span>
-
-            <small>
-              All submissions
-            </small>
-          </div>
-
-          <strong>
-            {counts.total}
-          </strong>
-        </button>
-
-
-        <button
-          type="button"
-          className={`approval-summary-card ${
-            statusFilter ===
-            "Pending"
-              ? "active"
-              : ""
-          }`}
-          onClick={() =>
-            setStatusFilter(
-              "Pending"
-            )
-          }
-        >
-          <div>
-            <span>
-              Pending
-            </span>
-
-            <small>
-              Awaiting review
-            </small>
-          </div>
-
-          <strong>
-            {counts.pending}
-          </strong>
-        </button>
-
-
-        <button
-          type="button"
-          className={`approval-summary-card ${
-            statusFilter ===
-            "Approved"
-              ? "active"
-              : ""
-          }`}
-          onClick={() =>
-            setStatusFilter(
-              "Approved"
-            )
-          }
-        >
-          <div>
-            <span>
-              Approved
-            </span>
-
-            <small>
-              Accepted orders
-            </small>
-          </div>
-
-          <strong>
-            {counts.approved}
-          </strong>
-        </button>
-
-
-        <button
-          type="button"
-          className={`approval-summary-card ${
-            statusFilter ===
-            "Rejected"
-              ? "active"
-              : ""
-          }`}
-          onClick={() =>
-            setStatusFilter(
-              "Rejected"
-            )
-          }
-        >
-          <div>
-            <span>
-              Rejected
-            </span>
-
-            <small>
-              Returned orders
-            </small>
-          </div>
-
-          <strong>
-            {counts.rejected}
-          </strong>
-        </button>
 
       </div>
 
 
-      {/* ================= TABLE ================= */}
+      {activeRequestTab === "order" && (
+        <div className="client-rate-card">
 
-      <div className="approval-table-card">
+          <div className="client-rate-heading">
 
-        <div className="approval-table-heading">
+            <div>
+              <h2>
+                📋 Client Order Finalization Rates
+                <span>
+                  (Agreed Rate & Terms)
+                </span>
+              </h2>
 
-          <div>
-            <h2>
-              Approval Requests
-            </h2>
+            
+            </div>
 
-            <p>
-              {
-                filteredApprovals.length
-              }{" "}
-              request(s)
-            </p>
+            <span className="client-rate-badge">
+              CLIENT RATES
+            </span>
+
           </div>
 
-        </div>
+          {error && (
+            <div className="client-rate-error">
+              {error}
+            </div>
+          )}
 
+          <div className="client-rate-table-wrap">
 
-        <div className="approval-table-wrap">
+            <table className="client-rate-table">
 
-          <table className="approval-table">
-
-            <thead>
-              <tr>
-                <th>S.No</th>
-
-                <th>
-                  Order Reference
-                </th>
-
-                <th>
-                  Trip / Order ID
-                </th>
-
-                <th>
-                  Client
-                </th>
-
-                <th>
-                  Agreed Rate
-                </th>
-
-                <th>
-                  Responsible KAM
-                </th>
-
-                <th>
-                  Requested At
-                </th>
-
-                <th>
-                  Status
-                </th>
-
-                <th />
-              </tr>
-            </thead>
-
-
-            <tbody>
-
-              {isLoading ? (
-
+              <thead>
                 <tr>
-                  <td
-                    colSpan="9"
-                    className="approval-empty"
-                  >
-                    <div className="approval-empty-state">
-
-                      <FileText
-                        size={28}
-                      />
-
-                      <strong>
-                        Loading approval
-                        requests...
-                      </strong>
-
-                      <span>
-                        Reading data
-                        from API.
-                      </span>
-
-                    </div>
-                  </td>
+                  <th className="row-expand-column" aria-label="Expand row"></th>
+                  <th>Customer</th>
+                  <th>Responsible KAM</th>
+                  <th>Vehicles</th>
+                  <th>Origin → Destination</th>
+                  <th>Movement Type</th>
+                  <th>Final Approved Rate</th>
+                  <th>Commercial Terms &amp; Payment SLAs</th>
+                  <th>MD Remarks</th>
+                  <th>Approval Action</th>
                 </tr>
+              </thead>
 
-              ) : error &&
-                !selectedApproval ? (
+              <tbody>
 
-                <tr>
-                  <td
-                    colSpan="9"
-                    className="approval-empty"
-                  >
-                    <div className="approval-empty-state">
+                {isLoading ? (
+                  <tr>
+                    <td
+                      colSpan="10"
+                      className="client-rate-empty"
+                    >
+                      Loading client rate approvals...
+                    </td>
 
-                      <FileText
-                        size={28}
-                      />
+                      <td>
+                        {getTotalVehicleCount(item)} NOS
+                      </td>
+                  </tr>
+                ) : filteredApprovals.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan="10"
+                      className="client-rate-empty"
+                    >
+                      No client rate approval requests found.
+                    </td>
+                  </tr>
+                ) : (
+                  filteredApprovals.map((item) => {
 
-                      <strong>
-                        Unable to load
-                        approval requests
-                      </strong>
+                    const status = safeStatus(
+                      item.approvalStatus
+                    );
 
-                      <span>
-                        {error}
-                      </span>
+                    const rowId =
+                      item._id ||
+                      item.tripId ||
+                      item.id;
 
-                    </div>
-                  </td>
-                </tr>
+                    const isRowUpdating =
+                      rowUpdatingId === item._id;
 
-              ) :
-              filteredApprovals.length ===
-              0 ? (
+                    const remarkValue =
+                      mdRemarks[item._id] ??
+                      (status === "Rejected"
+                        ? item.approvalRejectionReason ||
+                        item.approvalRemarks ||
+                        ""
+                        : item.approvalRemarks ||
+                        "");
 
-                <tr>
-                  <td
-                    colSpan="9"
-                    className="approval-empty"
-                  >
-                    <div className="approval-empty-state">
+                    const movement =
+                      item.movementClassification ||
+                      item.movementType ||
+                      "Others";
 
-                      <FileText
-                        size={28}
-                      />
+                    const normalizedMovement =
+                      String(movement)
+                        .toLowerCase();
 
-                      <strong>
-                        No approval
-                        requests found
-                      </strong>
+                    const movementClass =
+                      normalizedMovement.includes("crane")
+                        ? "crane"
+                        : normalizedMovement.includes("wtg")
+                          ? "wtg"
+                          : normalizedMovement.includes("intercart")
+                            ? "intercarting"
+                            : "others";
 
-                      <span>
-                        Requested orders
-                        will appear here.
-                      </span>
+                    const assignedKam =
+                      item.responsibleKam ||
+                      item.assignedKam ||
+                      item.responsibleKAM ||
+                      item.assignedKAM ||
+                      item.kamName ||
+                      "—";
 
-                    </div>
-                  </td>
-                </tr>
+                    const orderRoute =
+                      String(item.movementType || "")
+                        .toLowerCase()
+                        .includes("intercart")
+                        ? item.siteLocation || "—"
+                        : `${item.origin || "—"} → ${item.destination || "—"
+                        }`;
 
-              ) : (
-
-                filteredApprovals.map(
-                  (
-                    item,
-                    index
-                  ) => {
-                    const status =
-                      safeStatus(
-                        item.approvalStatus
-                      );
+                    const isExpanded =
+                      expandedOrderRow === rowId;
 
                     return (
-                      <tr
-                        key={
-                          item._id ||
-                          item.tripId
-                        }
-                        className="approval-clickable-row"
-                        onClick={() =>
-                          handleOpenApproval(
-                            item
-                          )
-                        }
-                      >
+                      <React.Fragment key={rowId}>
+                        <tr
+                          className={`approval-data-row expandable-main-row ${
+                            isExpanded ? "expanded" : ""
+                          }`}
+                          onClick={(event) => {
+                            if (
+                              event.target.closest(
+                                "button, textarea, select, input, a, label"
+                              )
+                            ) {
+                              return;
+                            }
 
-                        <td>
-                          <span className="approval-row-number">
-                            {index + 1}
-                          </span>
-                        </td>
+                            setExpandedOrderRow(
+                              isExpanded ? null : rowId
+                            );
+                          }}
+                        >
+                          <td className="row-expand-cell">
+                            <button
+                              type="button"
+                              className={`row-expand-button ${
+                                isExpanded ? "open" : ""
+                              }`}
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                setExpandedOrderRow(
+                                  isExpanded ? null : rowId
+                                );
+                              }}
+                              aria-expanded={isExpanded}
+                              aria-label={
+                                isExpanded
+                                  ? "Hide order details"
+                                  : "Show order details"
+                              }
+                              title={
+                                isExpanded
+                                  ? "Hide details"
+                                  : "Show details"
+                              }
+                            >
+                              <ChevronDown size={16} />
+                            </button>
+                          </td>
 
-
-                        <td>
-                          <strong className="approval-order-ref">
-                            {item.orderReferenceNumber ||
-                              "—"}
-                          </strong>
-                        </td>
-
-
-                        <td>
-                          {item.tripId ||
-                            item.id ||
-                            "—"}
-                        </td>
-
-
-                        <td>
-                          <div className="approval-client-cell">
-
-                            <strong>
-                              {item.client ||
+                          <td>
+                            <strong className="client-name">
+                              {item.companyName ||
+                                item.client ||
                                 item.customer ||
                                 "—"}
                             </strong>
+                          </td>
 
-                          </div>
-                        </td>
-
-
-                        <td>
-                          <strong className="approval-amount">
-
-                            {formatAmount(
-                              item.agreedRate
-                            )}
-
-                          </strong>
-                        </td>
-
-
-                        <td>
-                          {item.responsibleKam ||
-                            item.assignedKam ||
-                            "—"}
-                        </td>
-
-
-                        <td>
-                          <div className="approval-date-cell">
-
-                            <Clock3
-                              size={13}
-                            />
-
-                            <span>
-                              {formatDateTime(
-                                item.approvalRequestedAt
-                              )}
+                          <td>
+                            <span className="assigned-kam-cell">
+                              {assignedKam}
                             </span>
+                          </td>
 
-                          </div>
-                        </td>
+                          <td>
+                            <span className="approval-route-cell">
+                              {orderRoute}
+                            </span>
+                          </td>
 
+                          <td>
+                            <span
+                              className={`movement-chip ${movementClass}`}
+                            >
+                              {movement}
+                            </span>
+                          </td>
 
-                        <td>
-                          <span
-                            className={`approval-status ${status.toLowerCase()}`}
-                          >
-                            {status}
-                          </span>
-                        </td>
+                          <td>
+                            <strong className="client-agreed-rate">
+                              {formatAmount(
+                                item.agreedRate ??
+                                item.finalRate ??
+                                item.negotiatedRate
+                              )}
+                            </strong>
 
+                            {item.rateBasis && (
+                              <span className="rate-basis">
+                                {item.rateBasis}
+                              </span>
+                            )}
+                          </td>
 
-                        <td>
-                          <button
-                            type="button"
-                            className="approval-open-button"
-                            onClick={(
-                              event
-                            ) => {
-                              event.stopPropagation();
+                          <td>
+                            <div className="commercial-terms-cell">
+                              <div>
+                                <strong>Terms:</strong>{" "}
+                                {item.paymentTerms ||
+                                  item.commercialTerms ||
+                                  "—"}
+                              </div>
 
-                              handleOpenApproval(
-                                item
-                              );
-                            }}
-                            aria-label="Open approval request"
-                          >
-                            <ChevronRight
-                              size={17}
+                              {item.deliveryCommitments && (
+                                <div className="sla-line">
+                                  <strong>SLA:</strong>{" "}
+                                  {item.deliveryCommitments}
+                                </div>
+                              )}
+
+                              {item.clientConfirmationNotes && (
+                                <div className="sla-note">
+                                  {item.clientConfirmationNotes}
+                                </div>
+                              )}
+                            </div>
+                          </td>
+
+                          <td>
+                            <textarea
+                              className="md-remark-textarea"
+                              rows="3"
+                              value={remarkValue}
+                              disabled={isRowUpdating}
+                              placeholder={
+                                status === "Pending"
+                                  ? "Enter MD remarks..."
+                                  : "MD review comments"
+                              }
+                              onChange={(event) =>
+                                handleMdRemarkChange(
+                                  item._id,
+                                  event.target.value
+                                )
+                              }
                             />
-                          </button>
-                        </td>
+                          </td>
 
-                      </tr>
+                          <td>
+                            <div className="md-action-buttons">
+                              {status === "Approved" ? (
+                                <span className="md-status approved">
+                                  <Check size={13} />
+                                  Approved
+                                </span>
+                              ) : status === "Rejected" ? (
+                                <span className="md-status rejected">
+                                  <X size={13} />
+                                  Rejected
+                                </span>
+                              ) : (
+                                <>
+                                  <button
+                                    type="button"
+                                    className="md-reject-btn md-icon-action"
+                                    disabled={isRowUpdating}
+                                    onClick={() => handleInlineReject(item)}
+                                    title="Reject"
+                                    aria-label="Reject order"
+                                  >
+                                    <X size={15} />
+                                  </button>
+
+                                  <button
+                                    type="button"
+                                    className="md-approve-btn md-icon-action"
+                                    disabled={isRowUpdating}
+                                    onClick={() => handleInlineApprove(item)}
+                                    title="Approve"
+                                    aria-label="Approve order"
+                                  >
+                                    <Check size={15} />
+                                  </button>
+                                </>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+
+                        {isExpanded && (
+                          <tr className="approval-expanded-row order-expanded-row">
+                            <td colSpan="9">
+                              <div className="order-expand-compact">
+                                <div className="order-expand-section-head">
+                                  <div>
+                                    <span>ORDER FINALIZATION DETAILS</span>
+                                    <strong>
+                                      {item.companyName ||
+                                        item.client ||
+                                        item.customer ||
+                                        "Client Order"}
+                                    </strong>
+                                  </div>
+
+                                  <span
+                                    className={`md-status ${status.toLowerCase()}`}
+                                  >
+                                    {status === "Approved" && (
+                                      <Check size={11} />
+                                    )}
+                                    {status === "Rejected" && (
+                                      <X size={11} />
+                                    )}
+                                    {status}
+                                  </span>
+                                </div>
+
+                                <div className="order-balance-mini-grid">
+                                  <div className="order-balance-field">
+                                    <span>Order Ref</span>
+                                    <strong>
+                                      {item.orderReferenceNumber ||
+                                        item.tripId ||
+                                        item.id ||
+                                        "—"}
+                                    </strong>
+                                  </div>
+
+                                  <div className="order-balance-field">
+                                    <span>Rate Basis</span>
+                                    <strong>{item.rateBasis || "—"}</strong>
+                                  </div>
+
+                                  <div className="order-balance-field order-balance-confirmation">
+                                    <span>Client Confirmation</span>
+                                    <strong
+                                      title={item.clientConfirmationNotes || ""}
+                                    >
+                                      {item.clientConfirmationNotes || "—"}
+                                    </strong>
+                                  </div>
+
+                                  <div className="order-balance-field">
+                                    <span>Requested</span>
+                                    <strong>
+                                      {formatDateTime(
+                                        item.approvalRequestedAt
+                                      )}
+                                    </strong>
+                                  </div>
+
+                                  <div className="order-balance-field">
+                                    <span>Reviewed</span>
+                                    <strong>
+                                      {formatDateTime(
+                                        item.approvalReviewedAt
+                                      )}
+                                    </strong>
+                                  </div>
+
+                                  <div className="order-balance-field">
+                                    <span>Approval Status</span>
+                                    <strong>{status}</strong>
+                                  </div>
+
+                                  <div className="order-balance-field order-balance-remarks">
+                                    <span>MD Review Remarks</span>
+                                    <strong
+                                      title={
+                                        item.approvalRejectionReason ||
+                                        item.approvalRemarks ||
+                                        ""
+                                      }
+                                    >
+                                      {item.approvalRejectionReason ||
+                                        item.approvalRemarks ||
+                                        "—"}
+                                    </strong>
+                                  </div>
+                                </div>
+
+                                <div className="create-trip-mini-section">
+                                  <div className="create-trip-mini-head">
+                                    <div>
+                                      <span>CREATE TRIP</span>
+                                      <strong>Vehicle Request List</strong>
+                                    </div>
+
+                                    <span className="create-trip-mini-count">
+                                      {Array.isArray(item.vehicles)
+                                        ? item.vehicles.length
+                                        : 0}{" "}
+                                      Request
+                                      {Array.isArray(item.vehicles) &&
+                                      item.vehicles.length !== 1
+                                        ? "s"
+                                        : ""}
+                                    </span>
+                                  </div>
+
+                                  <div className="create-trip-mini-table-wrap">
+                                    <table className="create-trip-mini-table">
+                                      <thead>
+                                        <tr>
+                                          <th>#</th>
+                                          <th>Vehicle Type</th>
+                                          <th>Configuration</th>
+                                          <th>Classification</th>
+                                          <th>Qty</th>
+                                          <th>Weight</th>
+                                          <th>Dimensions (L × H × W)</th>
+                                          <th>Remarks</th>
+                                        </tr>
+                                      </thead>
+
+                                      <tbody>
+                                        {(!Array.isArray(item.vehicles) ||
+                                          item.vehicles.length === 0) && (
+                                          <tr>
+                                            <td
+                                              colSpan="8"
+                                              className="create-trip-mini-empty"
+                                            >
+                                              No Create Trip vehicle requests available.
+                                            </td>
+                                          </tr>
+                                        )}
+
+                                        {(Array.isArray(item.vehicles)
+                                          ? item.vehicles
+                                          : []
+                                        ).map((requestVehicle, requestIndex) => {
+                                          const requestDimensions = [
+                                            requestVehicle.length,
+                                            requestVehicle.height,
+                                            requestVehicle.width,
+                                          ];
+
+                                          const hasRequestDimensions =
+                                            requestDimensions.some(
+                                              (value) =>
+                                                value !== undefined &&
+                                                value !== null &&
+                                                value !== ""
+                                            );
+
+                                          return (
+                                            <tr
+                                              key={
+                                                requestVehicle.vehicleSubId ||
+                                                requestVehicle._id ||
+                                                `${rowId}-request-${requestIndex}`
+                                              }
+                                            >
+                                              <td>
+                                                {String(
+                                                  requestIndex + 1
+                                                ).padStart(2, "0")}
+                                              </td>
+                                              <td>
+                                                {requestVehicle.vehicleType ||
+                                                  "—"}
+                                              </td>
+                                              <td>
+                                                {requestVehicle.configurationModel ||
+                                                  "—"}
+                                              </td>
+                                              <td>
+                                                {requestVehicle.movementClassification ||
+                                                  "—"}
+                                              </td>
+                                              <td>
+                                                {requestVehicle.quantity || 1}
+                                              </td>
+                                              <td>
+                                                {requestVehicle.weight !== undefined &&
+                                                requestVehicle.weight !== null &&
+                                                requestVehicle.weight !== ""
+                                                  ? `${requestVehicle.weight} T`
+                                                  : "—"}
+                                              </td>
+                                              <td>
+                                                {hasRequestDimensions
+                                                  ? `${requestVehicle.length || "—"} × ${requestVehicle.height || "—"} × ${requestVehicle.width || "—"} FT`
+                                                  : "—"}
+                                              </td>
+                                              <td
+                                                className="create-trip-mini-remarks"
+                                                title={
+                                                  requestVehicle.remarks ||
+                                                  requestVehicle.remark ||
+                                                  requestVehicle.vehicleRemarks ||
+                                                  ""
+                                                }
+                                              >
+                                                {requestVehicle.remarks ||
+                                                  requestVehicle.remark ||
+                                                  requestVehicle.vehicleRemarks ||
+                                                  "—"}
+                                              </td>
+                                            </tr>
+                                          );
+                                        })}
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
                     );
-                  }
-                )
+                  })
+                )}
 
-              )}
+              </tbody>
 
-            </tbody>
+            </table>
 
-          </table>
-
-        </div>
-      </div>
-
-
-
-      {/* =====================================================
-          VEHICLE ALLOCATION APPROVAL - TRIP TABLE
-      ===================================================== */}
-
-      <div
-        className="approval-table-card"
-        style={{ marginTop: "22px" }}
-      >
-
-        <div className="approval-table-heading">
-
-          <div>
-            <h2>
-              Vehicle Allocation Approval
-            </h2>
-
-            <p>
-              {
-                vehicleApprovalTrips.length
-              }{" "}
-              trip request(s)
-            </p>
           </div>
 
         </div>
+      )}
 
 
-        <div className="approval-table-wrap">
+      {activeRequestTab === "vehicle" && (
+        <div className="client-rate-card vehicle-rate-card">
 
-          <table className="approval-table vehicle-trip-approval-table">
+          <div className="client-rate-heading vehicle-rate-heading">
+            <div>
+              <h2>
+                🚚 Vehicle Allocation Finalization
+                <span>(Transporter &amp; Rate Approval)</span>
+              </h2>
 
-            <thead>
-              <tr>
-                <th>S.No</th>
-                <th>Trip / Order ID</th>
-                <th>Customer</th>
-                <th>Route / Site</th>
-                <th>Vehicles</th>
-                <th>Traffic Allocator</th>
-                <th>Requested At</th>
-                <th>Status</th>
-                <th>Action</th>
-              </tr>
-            </thead>
+            </div>
 
+            <span className="client-rate-badge vehicle-rate-badge">
+              VEHICLE APPROVAL
+            </span>
+          </div>
 
-            <tbody>
+          {error && (
+            <div className="client-rate-error">
+              {error}
+            </div>
+          )}
 
-              {isLoading ? (
-
+          <div className="client-rate-table-wrap vehicle-rate-table-wrap">
+            <table className="client-rate-table vehicle-rate-table">
+              <thead>
                 <tr>
-                  <td
-                    colSpan="9"
-                    className="approval-empty"
-                  >
-                    Loading vehicle approvals...
-                  </td>
+                  <th className="row-expand-column" aria-label="Expand row"></th>
+                  <th>Customer</th>
+                  <th>Responsible KAM</th>
+                  <th>Vehicle Requirement</th>
+                  <th>Origin → Destination</th>
+                  <th>Transport Name</th>
+                  <th>Quotation Amount</th>
+                  <th>MD Remarks</th>
+                  <th>Approval Action</th>
                 </tr>
+              </thead>
 
-              ) :
-              vehicleApprovalTrips.length ===
-              0 ? (
-
-                <tr>
-                  <td
-                    colSpan="9"
-                    className="approval-empty"
-                  >
-                    <div className="approval-empty-state">
-
-                      <FileText
-                        size={28}
-                      />
-
-                      <strong>
-                        No vehicle approval requests
-                      </strong>
-
-                      <span>
-                        Traffic submitted trips
-                        will appear here.
-                      </span>
-
-                    </div>
-                  </td>
-                </tr>
-
-              ) : (
-
-                vehicleApprovalTrips.map(
-                  (
-                    trip,
-                    index
-                  ) => {
+              <tbody>
+                {isLoading ? (
+                  <tr>
+                    <td colSpan="9" className="client-rate-empty">
+                      Loading vehicle approvals...
+                    </td>
+                  </tr>
+                ) : filteredVehicleApprovalRows.length === 0 ? (
+                  <tr>
+                    <td colSpan="9" className="client-rate-empty">
+                      No vehicle approval requests found.
+                    </td>
+                  </tr>
+                ) : (
+                  filteredVehicleApprovalRows.map((row) => {
                     const {
                       order,
-                      vehicles,
-                    } = trip;
+                      vehicle,
+                      key,
+                    } = row;
 
-                    const totalQty =
-                      vehicles.reduce(
-                        (
-                          total,
-                          vehicle
-                        ) =>
-                          total +
-                          Number(
-                            vehicle.quantity ||
-                            0
-                          ),
-                        0
-                      );
+                    const options =
+                      Array.isArray(vehicle.transportOptions)
+                        ? vehicle.transportOptions
+                        : [];
 
-                    const statuses =
-                      vehicles.map(
-                        (vehicle) =>
-                          vehicle
-                            .vehicleApprovalStatus ||
-                          (
-                            vehicle
-                              .quotationStatus ===
-                              "Approved"
-                              ? "Approved"
-                              : vehicle
-                                  .quotationStatus ===
-                                  "Rejected"
-                                ? "Rejected"
-                                : "Pending"
-                          )
-                      );
+                    const vehicleStatus =
+                      vehicle.vehicleApprovalStatus ||
+                      (vehicle.quotationStatus === "Approved"
+                        ? "Approved"
+                        : vehicle.quotationStatus === "Rejected"
+                          ? "Rejected"
+                          : "Pending");
 
-                    let tripStatus =
-                      "Pending";
+                    const selectedValue =
+                      vehicleSelections[key] ||
+                      vehicle.approvedQuotationId ||
+                      vehicle.selectedTransport?.quotationId ||
+                      "";
 
-                    if (
-                      statuses.length &&
-                      statuses.every(
-                        (status) =>
-                          status ===
-                          "Approved"
-                      )
-                    ) {
-                      tripStatus =
-                        "Approved";
-                    } else if (
-                      statuses.length &&
-                      statuses.every(
-                        (status) =>
-                          status ===
-                          "Rejected"
-                      )
-                    ) {
-                      tripStatus =
-                        "Rejected";
-                    }
+                    const selectedOption =
+                      options.find(
+                        (option) =>
+                          option.quotationId === selectedValue
+                      ) || null;
+
+                    const isUpdating =
+                      vehicleUpdatingKey === key;
+
+                    const remarkValue =
+                      vehicleRemarks[key] ??
+                      (vehicleStatus === "Rejected"
+                        ? vehicle.vehicleRejectionReason ||
+                        vehicle.vehicleApprovalRemarks ||
+                        vehicle.quotationRemark ||
+                        ""
+                        : vehicle.vehicleApprovalRemarks ||
+                        "");
+
+                    const assignedKam =
+                      order.responsibleKam ||
+                      order.assignedKam ||
+                      order.responsibleKAM ||
+                      order.assignedKAM ||
+                      order.kamName ||
+                      "—";
 
                     const route =
-                      order.movementType ===
-                        "Intercarting"
-                        ? order.siteLocation ||
-                          "—"
-                        : `${
-                            order.origin ||
-                            "—"
-                          } → ${
-                            order.destination ||
-                            "—"
-                          }`;
+                      String(order.movementType || "")
+                        .toLowerCase()
+                        .includes("intercart")
+                        ? order.siteLocation || "—"
+                        : `${order.origin || "—"} → ${order.destination || "—"
+                        }`;
+
+                    const isExpanded =
+                      expandedVehicleRow === key;
+
+                    const displaySelectedOption =
+                      selectedOption ||
+                      options.find(
+                        (option) =>
+                          option.quotationId ===
+                          vehicle.approvedQuotationId
+                      ) ||
+                      null;
 
                     return (
+                      <React.Fragment key={key}>
+                        <tr
+                          className={`approval-data-row expandable-main-row ${
+                            isExpanded ? "expanded" : ""
+                          }`}
+                          onClick={(event) => {
+                            if (
+                              event.target.closest(
+                                "button, textarea, select, input, a, label"
+                              )
+                            ) {
+                              return;
+                            }
 
-                      <tr
-                        key={
-                          trip.key
-                        }
-                        className="approval-clickable-row"
-                        onClick={() =>
-                          handleOpenVehicleTrip(
-                            trip
-                          )
-                        }
-                      >
+                            setExpandedVehicleRow(
+                              isExpanded ? null : key
+                            );
+                          }}
+                        >
+                          <td className="row-expand-cell">
+                            <button
+                              type="button"
+                              className={`row-expand-button ${
+                                isExpanded ? "open" : ""
+                              }`}
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                setExpandedVehicleRow(
+                                  isExpanded ? null : key
+                                );
+                              }}
+                              aria-expanded={isExpanded}
+                              aria-label={
+                                isExpanded
+                                  ? "Hide vehicle details"
+                                  : "Show vehicle details"
+                              }
+                              title={
+                                isExpanded
+                                  ? "Hide details"
+                                  : "Show details"
+                              }
+                            >
+                              <ChevronDown size={16} />
+                            </button>
+                          </td>
 
-                        <td>
-                          <span className="approval-row-number">
-                            {index + 1}
-                          </span>
-                        </td>
-
-
-                        <td>
-                          <strong className="approval-order-ref">
-                            {order.tripId ||
-                              order.id ||
-                              "—"}
-                          </strong>
-                        </td>
-
-
-                        <td>
-                          <div className="approval-client-cell">
-                            <strong>
+                          <td>
+                            <strong className="client-name">
                               {order.companyName ||
                                 order.customer ||
                                 order.client ||
                                 "—"}
                             </strong>
+                          </td>
 
-                            <span>
-                              {order.companyName ||
-                                ""}
+                          <td>
+                            <span className="assigned-kam-cell">
+                              {assignedKam}
                             </span>
-                          </div>
-                        </td>
-
-
-                        <td>
-                          <span className="vehicle-trip-route">
-                            {route}
-                          </span>
-                        </td>
-
-
-                        <td>
-                          <div className="vehicle-trip-count">
-                            <strong>
-                              {totalQty}
-                            </strong>
-
-                            <span>
-                              NOS
-                            </span>
-                          </div>
-                        </td>
-
-
-                        <td>
-                          <strong className="vehicle-trip-allocator">
-                            {order
-                              .trafficAllocatedBy ||
-                              "—"}
-                          </strong>
-                        </td>
-
-
-                        <td>
-                          <div className="approval-date-cell">
-
-                            <Clock3
-                              size={13}
-                            />
-
-                            <span>
-                              {formatDateTime(
-                                order
-                                  .trafficAllocatedAt ||
-                                trip.rows?.[0]
-                                  ?.vehicle
-                                  ?.vehicleApprovalRequestedAt ||
-                                trip.rows?.[0]
-                                  ?.vehicle
-                                  ?.quotationSubmittedAt
-                              )}
-                            </span>
-
-                          </div>
-                        </td>
-
-
-                        <td>
-                          <span
-                            className={`approval-status ${tripStatus.toLowerCase()}`}
-                          >
-                            {tripStatus}
-                          </span>
-                        </td>
-
-
-                        <td>
-                          <button
-                            type="button"
-                            className="vehicle-review-button"
-                            onClick={(
-                              event
-                            ) => {
-                              event.stopPropagation();
-
-                              handleOpenVehicleTrip(
-                                trip
-                              );
-                            }}
-                          >
-                            Review
-
-                            <ChevronRight
-                              size={14}
-                            />
-                          </button>
-                        </td>
-
-                      </tr>
-                    );
-                  }
-                )
-
-              )}
-
-            </tbody>
-
-          </table>
-
-        </div>
-
-      </div>
-
-
-      {/* =====================================================
-          VEHICLE ALLOCATION APPROVAL - TRIP MODAL
-      ===================================================== */}
-
-      {selectedVehicleTrip &&
-        (() => {
-          const {
-            order,
-            rows,
-            vehicles,
-          } =
-            selectedVehicleTrip;
-
-          const totalQty =
-            vehicles.reduce(
-              (
-                total,
-                vehicle
-              ) =>
-                total +
-                Number(
-                  vehicle.quantity ||
-                  0
-                ),
-              0
-            );
-
-          const route =
-            order.movementType ===
-              "Intercarting"
-              ? order.siteLocation ||
-                "—"
-              : `${
-                  order.origin ||
-                  "—"
-                } → ${
-                  order.destination ||
-                  "—"
-                }`;
-
-          const placementDate =
-            order.placementDate ||
-            order.deploymentDate ||
-            rows?.[0]
-              ?.vehicle
-              ?.placementDate;
-
-          return (
-
-            <div
-              className="vehicle-trip-modal-overlay"
-              onMouseDown={(
-                event
-              ) => {
-                if (
-                  event.target ===
-                  event.currentTarget
-                ) {
-                  handleCloseVehicleTrip();
-                }
-              }}
-            >
-
-              <section
-                className="vehicle-trip-modal"
-                role="dialog"
-                aria-modal="true"
-                aria-label="Vehicle allocation approval trip details"
-              >
-
-
-                {/* HEADER */}
-
-                <div className="vehicle-trip-modal-header">
-
-
-                  <div className="vehicle-trip-modal-heading">
-
-                    <span>
-                      VEHICLE ALLOCATION APPROVAL
-                    </span>
-
-                    <h2>
-                      Vehicle Requirements
-                    </h2>
-
-                    <p>
-                      {order.tripId ||
-                        order.id ||
-                        "—"}
-                      {" • "}
-                      {order.client ||
-                        order.customer ||
-                        "—"}
-                    </p>
-
-                  </div>
-
-
-                  <div className="vehicle-trip-modal-header-actions">
-
-
-                    <div className="vehicle-trip-allocator-box">
-
-                      <span>
-                        TRAFFIC ALLOCATOR
-                      </span>
-
-                      <strong>
-                        {order
-                          .trafficAllocatedBy ||
-                          "—"}
-                      </strong>
-
-                      {order
-                        .trafficAllocatedAt && (
-
-                        <small>
-                          Allocation:{" "}
-                          {formatDateTime(
-                            order
-                              .trafficAllocatedAt
-                          )}
-                        </small>
-
-                      )}
-
-                    </div>
-
-
-                    <button
-                      type="button"
-                      className="vehicle-trip-modal-close"
-                      disabled={
-                        Boolean(
-                          vehicleUpdatingKey
-                        )
-                      }
-                      onClick={
-                        handleCloseVehicleTrip
-                      }
-                      aria-label="Close vehicle allocation approval"
-                    >
-                      <X
-                        size={18}
-                      />
-                    </button>
-
-                  </div>
-
-                </div>
-
-
-                {/* ORDER OVERVIEW */}
-
-                <div className="vehicle-trip-overview">
-
-
-                  <div>
-                    <span>
-                      Order ID
-                    </span>
-
-                    <strong>
-                      {order.tripId ||
-                        order.id ||
-                        "—"}
-                    </strong>
-                  </div>
-
-
-                  <div>
-                    <span>
-                      Client
-                    </span>
-
-                    <strong>
-                      {order.client ||
-                        order.customer ||
-                        "—"}
-                    </strong>
-                  </div>
-
-
-                  <div>
-                    <span>
-                      Route
-                    </span>
-
-                    <strong>
-                      {route}
-                    </strong>
-                  </div>
-
-
-                  <div>
-                    <span>
-                      Deployment
-                    </span>
-
-                    <strong>
-                      {formatDateTime(
-                        placementDate
-                      )}
-                    </strong>
-                  </div>
-
-
-                  <div>
-                    <span>
-                      Vehicle Qty
-                    </span>
-
-                    <strong>
-                      {totalQty} NOS
-                    </strong>
-                  </div>
-
-                </div>
-
-
-                {/* VEHICLES */}
-
-                <div className="vehicle-trip-modal-body">
-
-
-                  {error && (
-
-                    <div className="approval-form-error">
-                      {error}
-                    </div>
-
-                  )}
-
-
-                  {rows.map(
-                    (
-                      row,
-                      vehicleIndex
-                    ) => {
-                      const {
-                        vehicle,
-                        key,
-                      } = row;
-
-                      const vehicleStatus =
-                        vehicle
-                          .vehicleApprovalStatus ||
-                        (
-                          vehicle
-                            .quotationStatus ===
-                            "Approved"
-                            ? "Approved"
-                            : vehicle
-                                .quotationStatus ===
-                                "Rejected"
-                              ? "Rejected"
-                              : "Pending"
-                        );
-
-                      const options =
-                        Array.isArray(
-                          vehicle
-                            .transportOptions
-                        )
-                          ? vehicle
-                              .transportOptions
-                          : [];
-
-                      const selectedValue =
-                        vehicleSelections[
-                          key
-                        ] ||
-                        vehicle
-                          .approvedQuotationId ||
-                        vehicle
-                          .selectedTransport
-                          ?.quotationId ||
-                        "";
-
-                      const isUpdating =
-                        vehicleUpdatingKey ===
-                        key;
-
-                      return (
-
-                        <section
-                          className="vehicle-trip-card"
-                          key={
-                            key
-                          }
-                        >
-
-
-                          {/* VEHICLE HEADER */}
-
-                          <div className="vehicle-trip-card-header">
-
-
-                            <div className="vehicle-trip-card-title">
-
-
-                              <span className="vehicle-trip-number">
-
-                                {String(
-                                  vehicleIndex +
-                                  1
-                                ).padStart(
-                                  2,
-                                  "0"
-                                )}
-
+                          </td>
+
+                          <td>
+                            <div className="vehicle-requirement-cell">
+                              <strong>
+                                {vehicle.vehicleType || "Vehicle"}
+                              </strong>
+                              <span>
+                                {vehicle.quantity || 0} NOS
+                                {vehicle.configurationModel
+                                  ? ` • ${vehicle.configurationModel}`
+                                  : ""}
                               </span>
-
-
-                              <div>
-
-                                <h3>
-                                  {vehicle
-                                    .vehicleType ||
-                                    "Vehicle"}
-                                </h3>
-
-                                <p>
-                                  {vehicle.quantity ||
-                                    0}{" "}
-                                  NOS
-                                  {" • "}
-                                  Deployment:{" "}
-                                  {formatDateTime(
-                                    vehicle
-                                      .placementDate ||
-                                    placementDate
-                                  )}
-                                </p>
-
-                              </div>
-
                             </div>
+                          </td>
 
-
-                            <span
-                              className={`approval-status ${vehicleStatus.toLowerCase()}`}
-                            >
-                              {vehicleStatus}
+                          <td>
+                            <span className="vehicle-inline-route">
+                              {route}
                             </span>
+                          </td>
 
-                          </div>
-
-
-                          {/* QUOTATIONS */}
-
-                          <div className="vehicle-trip-quotation-wrap">
-
-                            <table className="vehicle-trip-quotation-table">
-
-
-                              <thead>
-
-                                <tr>
-                                  <th>Select</th>
-                                  <th>S.No</th>
-                                  <th>Transport Name</th>
-                                  <th>Contact Name</th>
-                                  <th>Contact Number</th>
-                                  <th>Quoted Amount</th>
-                                  <th>Status</th>
-                                </tr>
-
-                              </thead>
-
-
-                              <tbody>
-
-
-                                {options.length ===
-                                0 ? (
-
-                                  <tr>
-                                    <td
-                                      colSpan="7"
-                                      className="vehicle-no-quotation"
-                                    >
-                                      No transporter quotations submitted.
-                                    </td>
-                                  </tr>
-
-                                ) : (
-
-                                  options.map(
-                                    (
-                                      option,
-                                      optionIndex
-                                    ) => {
-                                      const optionId =
-                                        option
-                                          .quotationId ||
-                                        `${key}-${optionIndex}`;
-
-                                      const selected =
-                                        selectedValue ===
-                                        option
-                                          .quotationId;
-
-                                      return (
-
-                                        <tr
-                                          key={
-                                            optionId
-                                          }
-                                          className={
-                                            selected
-                                              ? "selected"
-                                              : ""
-                                          }
-                                          onClick={() => {
-                                            if (
-                                              vehicleStatus !==
-                                                "Approved" &&
-                                              !isUpdating
-                                            ) {
-                                              handleVehicleSelection(
-                                                key,
-                                                option
-                                                  .quotationId
-                                              );
-                                            }
-                                          }}
-                                        >
-
-
-                                          <td>
-                                            <input
-                                              type="radio"
-                                              name={`vehicle-${key}`}
-                                              checked={
-                                                selected
-                                              }
-                                              disabled={
-                                                vehicleStatus ===
-                                                  "Approved" ||
-                                                isUpdating
-                                              }
-                                              onChange={() =>
-                                                handleVehicleSelection(
-                                                  key,
-                                                  option
-                                                    .quotationId
-                                                )
-                                              }
-                                            />
-                                          </td>
-
-
-                                          <td>
-                                            {optionIndex +
-                                              1}
-                                          </td>
-
-
-                                          <td>
-                                            <strong>
-                                              {option
-                                                .transportName ||
-                                                "—"}
-                                            </strong>
-                                          </td>
-
-
-                                          <td>
-                                            {option
-                                              .contactName ||
-                                              "—"}
-                                          </td>
-
-
-                                          <td>
-                                            {option
-                                              .contactNumber ||
-                                              "—"}
-                                          </td>
-
-
-                                          <td>
-                                            <strong className="vehicle-quoted-amount">
-                                              {formatAmount(
-                                                option
-                                                  .amount
-                                              )}
-                                            </strong>
-                                          </td>
-
-
-                                          <td>
-                                            <span className="vehicle-option-status">
-                                              {option.status ||
-                                                "Submitted"}
-                                            </span>
-                                          </td>
-
-                                        </tr>
-                                      );
-                                    }
+                          <td>
+                            {options.length === 0 ? (
+                              <span className="vehicle-no-option-text">
+                                No quotations
+                              </span>
+                            ) : (
+                              <select
+                                className="vehicle-quotation-select"
+                                value={selectedValue}
+                                disabled={
+                                  isUpdating ||
+                                  vehicleStatus === "Approved"
+                                }
+                                onChange={(event) =>
+                                  handleVehicleSelection(
+                                    key,
+                                    event.target.value
                                   )
+                                }
+                              >
+                                <option value="">
+                                  Select transporter
+                                </option>
 
-                                )}
+                                {options.map((option, index) => (
+                                  <option
+                                    key={
+                                      option.quotationId ||
+                                      `${key}-${index}`
+                                    }
+                                    value={option.quotationId || ""}
+                                  >
+                                    {option.transportName ||
+                                      `Transporter ${index + 1}`}
+                                    {option.amount !== undefined &&
+                                    option.amount !== null &&
+                                    option.amount !== ""
+                                      ? ` - ${formatAmount(option.amount)}`
+                                      : ""}
+                                  </option>
+                                ))}
+                              </select>
+                            )}
 
-                              </tbody>
+                            {selectedOption && (
+                              <span className="vehicle-selected-contact">
+                                {selectedOption.contactName || ""}
+                                {selectedOption.contactNumber
+                                  ? `${selectedOption.contactName ? " • " : ""}${selectedOption.contactNumber}`
+                                  : ""}
+                              </span>
+                            )}
+                          </td>
 
-                            </table>
-
-                          </div>
-
-
-                          {/* ACTION */}
-
-                          <div className="vehicle-trip-card-footer">
-
-
-                            <span>
-                              Traffic Team submitted these quotations.
-                              Select the suitable transporter and approve the allocation.
-                            </span>
-
-
-                            <div className="vehicle-approval-actions">
-
-
-                              {vehicleStatus !==
-                                "Rejected" && (
-
-                                <button
-                                  type="button"
-                                  className="approval-reject-button"
-                                  disabled={
-                                    isUpdating
-                                  }
-                                  onClick={() =>
-                                    updateVehicleApproval(
-                                      row,
-                                      "Rejected"
+                          <td>
+                            <strong className="client-agreed-rate vehicle-selected-rate">
+                              {selectedOption
+                                ? formatAmount(selectedOption.amount)
+                                : vehicle.selectedTransport?.amount !==
+                                  undefined
+                                  ? formatAmount(
+                                      vehicle.selectedTransport.amount
                                     )
-                                  }
-                                >
-                                  <XCircle
-                                    size={14}
-                                  />
+                                  : "—"}
+                            </strong>
+                          </td>
 
-                                  {isUpdating
-                                    ? "Updating..."
-                                    : "Reject"}
-                                </button>
+                          <td>
+                            <textarea
+                              className="md-remark-textarea"
+                              rows="3"
+                              value={remarkValue}
+                              disabled={isUpdating}
+                              placeholder="Enter MD remarks..."
+                              onChange={(event) =>
+                                handleVehicleRemarkChange(
+                                  key,
+                                  event.target.value
+                                )
+                              }
+                            />
+                          </td>
 
+                          <td>
+                            <div className="md-action-buttons">
+                              {vehicleStatus === "Approved" ? (
+                                <span className="md-status approved">
+                                  <Check size={13} />
+                                  Approved
+                                </span>
+                              ) : vehicleStatus === "Rejected" ? (
+                                <span className="md-status rejected">
+                                  <X size={13} />
+                                  Rejected
+                                </span>
+                              ) : (
+                                <>
+                                  <button
+                                    type="button"
+                                    className="md-approve-btn md-icon-action"
+                                    disabled={
+                                      isUpdating || !selectedValue
+                                    }
+                                    onClick={() =>
+                                      updateVehicleApproval(
+                                        row,
+                                        "Approved"
+                                      )
+                                    }
+                                    title="Approve"
+                                    aria-label="Approve vehicle allocation"
+                                  >
+                                    <Check size={15} />
+                                  </button>
+
+                                  <button
+                                    type="button"
+                                    className="md-reject-btn md-icon-action"
+                                    disabled={isUpdating}
+                                    onClick={() =>
+                                      updateVehicleApproval(
+                                        row,
+                                        "Rejected"
+                                      )
+                                    }
+                                    title="Reject"
+                                    aria-label="Reject vehicle allocation"
+                                  >
+                                    <X size={15} />
+                                  </button>
+                                </>
                               )}
-
-
-                              {vehicleStatus !==
-                                "Approved" && (
-
-                                <button
-                                  type="button"
-                                  className="approval-approve-button"
-                                  disabled={
-                                    isUpdating ||
-                                    !selectedValue
-                                  }
-                                  onClick={() =>
-                                    updateVehicleApproval(
-                                      row,
-                                      "Approved"
-                                    )
-                                  }
-                                >
-                                  <Check
-                                    size={14}
-                                  />
-
-                                  {isUpdating
-                                    ? "Updating..."
-                                    : "Approve"}
-                                </button>
-
-                              )}
-
                             </div>
+                          </td>
+                        </tr>
 
-                          </div>
+                        {isExpanded && (
+                          <tr className="approval-expanded-row vehicle-only-expanded-row">
+                            <td colSpan="9">
+                              <div className="vehicle-request-only-compact">
+                                <div className="vehicle-request-only-head">
+                                  <div>
+                                    <span>REQUIRED VEHICLE DETAILS</span>
+                                    <strong>
+                                      {vehicle.vehicleType || "Vehicle Requirement"}
+                                    </strong>
+                                  </div>
+                                </div>
 
-                        </section>
-                      );
-                    }
-                  )}
-
-                </div>
-
-              </section>
-
-            </div>
-          );
-        })()}
-
-
-      {/* =====================================================
-          ORDER APPROVAL MODAL
-      ===================================================== */}
-
-      {selectedApproval && (() => {
-        const orderStatus =
-          safeStatus(
-            selectedApproval.approvalStatus
-          );
-
-        const routeValue =
-          selectedApproval.movementType ===
-          "Intercarting"
-            ? selectedApproval.siteLocation ||
-              "—"
-            : `${
-                selectedApproval.origin ||
-                "—"
-              } → ${
-                selectedApproval.destination ||
-                "—"
-              }`;
-
-        return (
-          <div
-            className="order-approval-modal-overlay"
-            onMouseDown={() =>
-              !isUpdating &&
-              handleCloseApproval()
-            }
-          >
-            <section
-              className="order-approval-modal"
-              role="dialog"
-              aria-modal="true"
-              aria-label="Order approval details"
-              onMouseDown={(event) =>
-                event.stopPropagation()
-              }
-            >
-              {/* HEADER */}
-              <div className="order-approval-modal-header">
-                <div className="order-approval-modal-title">
-                  <span>
-                    ORDER APPROVAL
-                  </span>
-
-                  <h2>
-                    Order Finalization Review
-                  </h2>
-
-                  <p>
-                    {selectedApproval.tripId ||
-                      selectedApproval.id ||
-                      "—"}
-                    {" • "}
-                    {selectedApproval.client ||
-                      selectedApproval.customer ||
-                      "—"}
-                  </p>
-                </div>
-
-                <div className="order-approval-header-right">
-                  <span
-                    className={`approval-status large ${orderStatus.toLowerCase()}`}
-                  >
-                    {orderStatus}
-                  </span>
-
-                  <button
-                    type="button"
-                    className="order-approval-close"
-                    disabled={isUpdating}
-                    onClick={
-                      handleCloseApproval
-                    }
-                  >
-                    <X size={18} />
-                  </button>
-                </div>
-              </div>
-
-              {/* OVERVIEW */}
-              <div className="order-approval-overview">
-                <div>
-                  <span>Order ID</span>
-                  <strong>
-                    {selectedApproval.tripId ||
-                      selectedApproval.id ||
-                      "—"}
-                  </strong>
-                </div>
-
-                <div>
-                  <span>Customer</span>
-                  <strong>
-                    {selectedApproval.client ||
-                      selectedApproval.customer ||
-                      "—"}
-                  </strong>
-                </div>
-
-                <div>
-                  <span>Responsible KAM</span>
-                  <strong>
-                    {selectedApproval.responsibleKam ||
-                      selectedApproval.assignedKam ||
-                      "—"}
-                  </strong>
-                </div>
-
-                <div>
-                  <span>Route</span>
-                  <strong>
-                    {routeValue}
-                  </strong>
-                </div>
-
-                <div>
-                  <span>Requested At</span>
-                  <strong>
-                    {formatDateTime(
-                      selectedApproval.approvalRequestedAt
-                    )}
-                  </strong>
-                </div>
-              </div>
-
-              {/* BODY */}
-              <div className="order-approval-modal-body">
-                {error && (
-                  <div className="approval-form-error">
-                    {error}
-                  </div>
-                )}
-
-                <section className="order-approval-card">
-                  <div className="order-approval-card-header">
-                    <div>
-                      <span className="order-approval-card-index">
-                        01
-                      </span>
-
-                      <div>
-                        <h3>
-                          Commercial Details
-                        </h3>
-                        <p>
-                          Review finalized commercial information before approval.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="order-approval-commercial-grid">
-                    <div>
-                      <span>
-                        Order Reference
-                      </span>
-                      <strong>
-                        {selectedApproval.orderReferenceNumber ||
-                          "—"}
-                      </strong>
-                    </div>
-
-                    <div>
-                      <span>
-                        Order Count / Lots
-                      </span>
-                      <strong>
-                        {selectedApproval.orderCount ??
-                          "—"}
-                      </strong>
-                    </div>
-
-                    <div>
-                      <span>Quoted Rate</span>
-                      <strong>
-                        {formatAmount(
-                          selectedApproval.quotedRate
+                                <div className="vehicle-request-only-grid">
+                                  <div><span>Vehicle Type</span><strong>{vehicle.vehicleType || "—"}</strong></div>
+                                  <div><span>Configuration</span><strong>{vehicle.configurationModel || "—"}</strong></div>
+                                  <div><span>Classification</span><strong>{vehicle.movementClassification || "—"}</strong></div>
+                                  <div><span>Quantity</span><strong>{vehicle.quantity || 1}</strong></div>
+                                  <div><span>Weight</span><strong>{vehicle.weight !== undefined && vehicle.weight !== null && vehicle.weight !== "" ? `${vehicle.weight} T` : "—"}</strong></div>
+                                  <div><span>Dimensions</span><strong>{[vehicle.length, vehicle.height, vehicle.width].some((value) => value !== undefined && value !== null && value !== "") ? `${vehicle.length || "—"} × ${vehicle.height || "—"} × ${vehicle.width || "—"} FT` : "—"}</strong></div>
+                                  <div className="vehicle-request-only-remarks"><span>Remarks</span><strong>{vehicle.remarks || vehicle.remark || vehicle.vehicleRemarks || "—"}</strong></div>
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
                         )}
-                      </strong>
-                    </div>
-
-                    <div>
-                      <span>
-                        Negotiated Rate
-                      </span>
-                      <strong>
-                        {formatAmount(
-                          selectedApproval.negotiatedRate
-                        )}
-                      </strong>
-                    </div>
-
-                    <div>
-                      <span>Final Rate</span>
-                      <strong>
-                        {formatAmount(
-                          selectedApproval.finalRate
-                        )}
-                      </strong>
-                    </div>
-
-                    <div>
-                      <span>Agreed Rate</span>
-                      <strong className="order-approval-highlight-amount">
-                        {formatAmount(
-                          selectedApproval.agreedRate
-                        )}
-                      </strong>
-                    </div>
-                  </div>
-                </section>
-
-                <section className="order-approval-card">
-                  <div className="order-approval-card-header">
-                    <div>
-                      <span className="order-approval-card-index">
-                        02
-                      </span>
-
-                      <div>
-                        <h3>
-                          Terms & Commitments
-                        </h3>
-                        <p>
-                          Client confirmation, payment and delivery commitments.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="order-approval-info-list">
-                    <div>
-                      <span>Payment Terms</span>
-                      <strong>
-                        {selectedApproval.paymentTerms ||
-                          "—"}
-                      </strong>
-                    </div>
-
-                    <div>
-                      <span>
-                        Commercial Terms & Payment SLAs
-                      </span>
-                      <strong>
-                        {selectedApproval.commercialTerms ||
-                          "—"}
-                      </strong>
-                    </div>
-
-                    <div>
-                      <span>
-                        Delivery Commitments & SLAs
-                      </span>
-                      <strong>
-                        {selectedApproval.deliveryCommitments ||
-                          "—"}
-                      </strong>
-                    </div>
-
-                    <div>
-                      <span>
-                        Client Confirmation Notes
-                      </span>
-                      <strong>
-                        {selectedApproval.clientConfirmationNotes ||
-                          "—"}
-                      </strong>
-                    </div>
-
-                    <div>
-                      <span>
-                        Commercial Remarks
-                      </span>
-                      <strong>
-                        {selectedApproval.commercialRemarks ||
-                          "—"}
-                      </strong>
-                    </div>
-                  </div>
-                </section>
-
-                {orderStatus ===
-                  "Rejected" && (
-                  <section className="order-approval-card order-approval-rejected-card">
-                    <div className="order-approval-card-header">
-                      <div>
-                        <span className="order-approval-card-index danger">
-                          !
-                        </span>
-
-                        <div>
-                          <h3>
-                            Rejection Details
-                          </h3>
-                          <p>
-                            This order approval request was rejected.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="order-approval-rejection-text">
-                      {selectedApproval.approvalRejectionReason ||
-                        "No rejection reason provided."}
-                    </div>
-                  </section>
-                )}
-
-                {selectedApproval.approvalRemarks &&
-                  orderStatus !==
-                    "Pending" && (
-                    <section className="order-approval-card">
-                      <div className="order-approval-card-header">
-                        <div>
-                          <span className="order-approval-card-index">
-                            03
-                          </span>
-
-                          <div>
-                            <h3>
-                              Approval Remark
-                            </h3>
-                            <p>
-                              Management review comment.
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="order-approval-existing-remark">
-                        {selectedApproval.approvalRemarks}
-                      </div>
-                    </section>
-                  )}
-
-                {orderStatus ===
-                  "Pending" && (
-                  <section className="order-approval-card order-approval-decision-card">
-                    <div className="order-approval-card-header">
-                      <div>
-                        <span className="order-approval-card-index">
-                          03
-                        </span>
-
-                        <div>
-                          <h3>
-                            Approval Decision
-                          </h3>
-                          <p>
-                            Add a management remark before approving the order.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="order-approval-remark-wrap">
-                      <label htmlFor="approvalRemarks">
-                        Approval Remark
-                        <span>*</span>
-                      </label>
-
-                      <textarea
-                        id="approvalRemarks"
-                        rows={3}
-                        value={
-                          approvalRemarks
-                        }
-                        onChange={(event) => {
-                          setApprovalRemarks(
-                            event.target.value
-                          );
-
-                          if (error) {
-                            setError("");
-                          }
-                        }}
-                        placeholder="Enter approval comment..."
-                        disabled={isUpdating}
-                      />
-                    </div>
-                  </section>
-                )}
-              </div>
-
-              {/* FOOTER */}
-              <div className="order-approval-modal-footer">
-                <div className="order-approval-footer-note">
-                  {orderStatus ===
-                  "Pending"
-                    ? "Review the finalized order information before making a decision."
-                    : `Reviewed: ${formatDateTime(
-                        selectedApproval.approvalReviewedAt
-                      )}`}
-                </div>
-
-                <div className="order-approval-actions">
-                  <button
-                    type="button"
-                    className="order-approval-close-button"
-                    disabled={isUpdating}
-                    onClick={
-                      handleCloseApproval
-                    }
-                  >
-                    Close
-                  </button>
-
-                  {orderStatus ===
-                    "Pending" && (
-                    <>
-                      <button
-                        type="button"
-                        className="order-approval-reject-button"
-                        disabled={isUpdating}
-                        onClick={
-                          handleOpenReject
-                        }
-                      >
-                        <XCircle
-                          size={15}
-                        />
-                        Reject
-                      </button>
-
-                      <button
-                        type="button"
-                        className="order-approval-approve-button"
-                        disabled={
-                          isUpdating ||
-                          !approvalRemarks.trim()
-                        }
-                        onClick={
-                          handleApprove
-                        }
-                      >
-                        <Check
-                          size={15}
-                        />
-
-                        {isUpdating
-                          ? "Approving..."
-                          : "Approve Order"}
-                      </button>
-                    </>
-                  )}
-                </div>
-              </div>
-            </section>
-          </div>
-        );
-      })()}
-
-
-      {/* =====================================================
-          REJECTION MODAL
-      ===================================================== */}
-
-      {rejectionModal && (
-
-        <div className="approval-reject-overlay">
-
-          <div className="approval-reject-modal">
-
-            <div className="approval-reject-heading">
-
-              <div>
-
-                <span>
-                  REJECT REQUEST
-                </span>
-
-                <h3>
-                  Rejection Reason
-                </h3>
-
-              </div>
-
-
-              <button
-                type="button"
-                disabled={
-                  isUpdating
-                }
-                onClick={() => {
-                  if (
-                    !isUpdating
-                  ) {
-                    setRejectionModal(
-                      false
+                      </React.Fragment>
                     );
-
-                    setRejectionReason(
-                      ""
-                    );
-
-                    setError("");
-                  }
-                }}
-              >
-                <X size={18} />
-              </button>
-
-            </div>
-
-
-            <p>
-              Enter a reason so the
-              KAM team knows why this
-              request was rejected.
-            </p>
-
-
-            {error && (
-              <div className="approval-form-error">
-                {error}
-              </div>
-            )}
-
-
-            <textarea
-              rows={5}
-              value={
-                rejectionReason
-              }
-              onChange={(
-                event
-              ) => {
-                setRejectionReason(
-                  event.target.value
-                );
-
-                if (error) {
-                  setError("");
-                }
-              }}
-              placeholder="Enter rejection reason..."
-              autoFocus
-              disabled={
-                isUpdating
-              }
-            />
-
-
-            <div className="approval-reject-actions">
-
-              <button
-                type="button"
-                className="approval-secondary-button"
-                disabled={
-                  isUpdating
-                }
-                onClick={() => {
-                  setRejectionModal(
-                    false
-                  );
-
-                  setRejectionReason(
-                    ""
-                  );
-
-                  setError("");
-                }}
-              >
-                Cancel
-              </button>
-
-
-              <button
-                type="button"
-                className="approval-reject-confirm"
-                disabled={
-                  isUpdating ||
-                  !rejectionReason.trim()
-                }
-                onClick={
-                  handleReject
-                }
-              >
-                {isUpdating
-                  ? "Rejecting..."
-                  : "Reject Request"}
-              </button>
-
-            </div>
-
+                  })
+                )}
+              </tbody>
+            </table>
           </div>
-
         </div>
-
       )}
+
 
     </div>
   );

@@ -223,11 +223,6 @@ const vehicleSchema = new Schema(
       default: "",
     },
 
-
-    /* =========================
-       TRAFFIC / QUOTATION
-    ========================= */
-
     placementDate: {
       type: Date,
       default: null,
@@ -260,11 +255,6 @@ const vehicleSchema = new Schema(
       trim: true,
       default: "",
     },
-
-
-    /* =========================
-       VEHICLE APPROVAL
-    ========================= */
 
     vehicleApprovalRequested: {
       type: Boolean,
@@ -334,7 +324,6 @@ const vehicleSchema = new Schema(
 
 const triptrackingSchema = new Schema(
   {
-
     /* =========================
        BASIC TRIP
     ========================= */
@@ -539,6 +528,16 @@ const triptrackingSchema = new Schema(
     ========================= */
 
     requiredVehicles: {
+      type: Number,
+      min: 0,
+      default: 0,
+    },
+
+    /* =========================================
+       MANUAL TOTAL VEHICLES
+    ========================================= */
+
+    totalVehicleCount: {
       type: Number,
       min: 0,
       default: 0,
