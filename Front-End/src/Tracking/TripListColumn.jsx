@@ -1,303 +1,418 @@
 import React from "react";
-
 import {
-  AlertTriangle,
-  CheckCircle2,
   ChevronRight,
-  CirclePause,
   MapPin,
-  Navigation,
   Truck,
 } from "lucide-react";
 
-import "../Tracking/TripListColumn.css";
-
+import "./TripListColumn.css";
 
 /* =========================================
-   VEHICLE STATUS COUNTS
-
-   Same status matching rules as VehicleColumn:
-   "Stopped" counts as a Breakdown.
+   HELPERS
 ========================================= */
 
-const getStatusCounts = (vehicles) => {
-  const list = Array.isArray(vehicles) ? vehicles : [];
+const safeArray = (value) =>
+  Array.isArray(value) ? value : [];
 
-  return {
-    moving: list.filter((v) => v.status === "Moving").length,
-    breakdown: list.filter(
-      (v) => v.status === "Breakdown" || v.status === "Stopped"
-    ).length,
-    idle: list.filter((v) => v.status === "Idle").length,
-    reached: list.filter((v) => v.status === "Reached").length,
-  };
+const safeText = (
+  value,
+  fallback = ""
+) => {
+  if (
+    value === null ||
+    value === undefined
+  ) {
+    return fallback;
+  }
+
+  return String(value);
 };
 
+/* =========================================
+   LATEST DAILY TRACKING
+========================================= */
 
-const TripListColumn = ({
-  trips = [],
-  selectedTrip,
-  onSelectTrip,
-}) => {
+const getLatestTracking = (
+  vehicle
+) => {
+  const tracking =
+    safeArray(
+      vehicle?.dailyTracking
+    );
+
+  if (!tracking.length) {
+    return null;
+  }
+
+  return tracking[
+    tracking.length - 1
+  ];
+};
+
+/* =========================================
+   VEHICLE STATUS
+========================================= */
+
+const getVehicleStatus = (
+  vehicle
+) => {
+  /*
+   * Tracking.jsx already provides a derived
+   * status for normalized allocatedVehicles.
+   *
+   * We still read dailyTracking directly here
+   * so this component also works if a raw
+   * TripOrder object is passed to it.
+   */
+  const latest =
+    getLatestTracking(
+      vehicle
+    );
+
   return (
-    <aside className="tracking-trip-panel">
-
-      {/* ================================
-          HEADER
-      ================================= */}
-
-      <div className="tracking-column-heading">
-
-        <div>
-          <h2>Trip List</h2>
-
-          <p>
-            {trips.length}{" "}
-            {trips.length === 1
-              ? "active trip"
-              : "active trips"}
-          </p>
-        </div>
-
-
-        <div className="tracking-column-heading-icon">
-          <Truck size={16} />
-        </div>
-
-      </div>
-
-
-      {/* ================================
-          TRIP LIST
-      ================================= */}
-
-      <div className="tracking-trip-list">
-
-        {trips.length > 0 ? (
-
-          trips.map((trip) => {
-
-            /* --------------------------
-               TRIP KEY
-            -------------------------- */
-
-            const tripKey =
-              trip.id ||
-              trip.tripId ||
-              String(
-                trip._id?.$oid ||
-                trip._id ||
-                ""
-              );
-
-            const selectedTripKey =
-              selectedTrip?.id ||
-              selectedTrip?.tripId ||
-              String(
-                selectedTrip?._id?.$oid ||
-                selectedTrip?._id ||
-                ""
-              );
-
-
-            const active =
-              selectedTripKey === tripKey;
-
-
-            /* --------------------------
-               VEHICLE COUNT
-            -------------------------- */
-
-            const vehicleCount =
-              Array.isArray(trip.vehicles)
-                ? trip.vehicles.length
-                : 0;
-
-
-            /* --------------------------
-               STATUS COUNTS
-            -------------------------- */
-
-            const statusCounts =
-              getStatusCounts(trip.vehicles);
-
-
-            return (
-
-              <button
-                type="button"
-                key={tripKey}
-                className={`tracking-trip-card ${active ? "active" : ""
-                  }`}
-                onClick={() =>
-                  onSelectTrip?.(trip)
-                }
-              >
-
-                {/* =========================
-                    CUSTOMER + MATERIAL
-                    + VEHICLE COUNT
-                ========================== */}
-
-                <div className="trip-primary-row">
-
-                  <div className="trip-primary-details">
-
-                    <strong className="trip-customer-name">
-                      {trip.customer || "-"}
-                    </strong>
-
-
-                    <span className="trip-primary-divider">
-                      •
-                    </span>
-
-
-                    <strong className="trip-material-name">
-                      {trip.materialType || "-"}
-                    </strong>
-
-                  </div>
-
-
-                  {/* VEHICLE COUNT */}
-
-                  <div
-                    className="trip-card-vehicle-count"
-                    title={`${vehicleCount} ${vehicleCount === 1
-                        ? "vehicle"
-                        : "vehicles"
-                      }`}
-                  >
-
-                    <Truck size={11} />
-
-                    <span>
-                      {vehicleCount}
-                    </span>
-
-                  </div>
-
-                </div>
-
-
-                {/* =========================
-                    VEHICLE STATUS STRIP
-                ========================== */}
-
-                <div className="trip-card-status-strip">
-
-                  <div className="trip-card-status-item moving">
-                    <Navigation size={11} />
-                    <strong>{statusCounts.moving}</strong>
-                    <span>Moving</span>
-                  </div>
-
-                  <div className="trip-card-status-item breakdown">
-                    <AlertTriangle size={11} />
-                    <strong>{statusCounts.breakdown}</strong>
-                    <span>Breakdown</span>
-                  </div>
-
-                  <div className="trip-card-status-item idle">
-                    <CirclePause size={11} />
-                    <strong>{statusCounts.idle}</strong>
-                    <span>Idle</span>
-                  </div>
-
-                  <div className="trip-card-status-item reached">
-                    <CheckCircle2 size={11} />
-                    <strong>{statusCounts.reached}</strong>
-                    <span>Reached</span>
-                  </div>
-
-                </div>
-
-
-                {/* =========================
-                    ROUTE
-                ========================== */}
-
-                <div className="trip-route">
-
-                  {/* ORIGIN */}
-
-                  <div className="trip-route-location">
-
-                    <MapPin size={12} />
-
-                    <span>
-                      {trip.origin || "-"}
-                    </span>
-
-                  </div>
-
-
-                  <ChevronRight
-                    size={12}
-                    className="trip-route-arrow"
-                  />
-
-
-                  {/* DESTINATION */}
-
-                  <div className="trip-route-location destination">
-
-                    <span>
-                      {trip.destination || "-"}
-                    </span>
-
-                  </div>
-
-
-                  {/* OPEN */}
-
-                  <span className="trip-open-icon">
-
-                    <ChevronRight size={14} />
-
-                  </span>
-
-                </div>
-
-              </button>
-
-            );
-
-          })
-
-        ) : (
-
-          /* ================================
-             EMPTY STATE
-          ================================= */
-
-          <div className="tracking-column-empty">
-
-            <div className="tracking-column-empty-icon">
-              <Truck size={22} />
-            </div>
-
-
-            <strong>
-              No Trips Found
-            </strong>
-
-
-            <p>
-              Try changing your search,
-              status or date filter.
-            </p>
-
-          </div>
-
-        )}
-
-      </div>
-
-    </aside>
+    safeText(
+      latest?.status ||
+        vehicle?.status,
+      "Idle"
+    ) || "Idle"
   );
 };
 
+/* =========================================
+   TRIP STATUS
+========================================= */
+
+const getTripStatus = (
+  trip
+) => {
+  const vehicles =
+    safeArray(
+      trip?.allocatedVehicles
+    );
+
+  if (!vehicles.length) {
+    return "Idle";
+  }
+
+  const statuses =
+    vehicles.map(
+      getVehicleStatus
+    );
+
+  if (
+    statuses.includes(
+      "Breakdown"
+    )
+  ) {
+    return "Breakdown";
+  }
+
+  if (
+    statuses.includes(
+      "Moving"
+    )
+  ) {
+    return "Moving";
+  }
+
+  if (
+    statuses.includes(
+      "Stopped"
+    )
+  ) {
+    return "Stopped";
+  }
+
+  if (
+    statuses.every(
+      (status) =>
+        status === "Reached"
+    )
+  ) {
+    return "Reached";
+  }
+
+  if (
+    statuses.includes(
+      "Reached"
+    )
+  ) {
+    return "Reached";
+  }
+
+  return "Idle";
+};
+
+/* =========================================
+   STATUS CLASS
+========================================= */
+
+const getStatusClass = (
+  status
+) =>
+  safeText(
+    status,
+    "Idle"
+  )
+    .toLowerCase()
+    .replaceAll(
+      " ",
+      "-"
+    );
+
+/* =========================================
+   TRIP ID
+========================================= */
+
+const getTripKey = (
+  trip,
+  index
+) =>
+  safeText(
+    trip?._id
+  ) ||
+  safeText(
+    trip?.id
+  ) ||
+  safeText(
+    trip?.tripId
+  ) ||
+  `trip-${index}`;
+
+/* =========================================
+   IS SELECTED
+========================================= */
+
+const isSameTrip = (
+  trip,
+  selectedTrip
+) => {
+  if (
+    !trip ||
+    !selectedTrip
+  ) {
+    return false;
+  }
+
+  if (
+    trip._id &&
+    selectedTrip._id
+  ) {
+    return (
+      String(trip._id) ===
+      String(
+        selectedTrip._id
+      )
+    );
+  }
+
+  if (
+    trip.id &&
+    selectedTrip.id
+  ) {
+    return (
+      String(trip.id) ===
+      String(
+        selectedTrip.id
+      )
+    );
+  }
+
+  return (
+    safeText(
+      trip.tripId
+    ) ===
+    safeText(
+      selectedTrip.tripId
+    )
+  );
+};
+
+/* =========================================
+   COMPONENT
+========================================= */
+
+const TripListColumn = ({
+  trips = [],
+  selectedTrip = null,
+  onSelectTrip,
+}) => {
+  const tripList =
+    safeArray(trips);
+
+  return (
+    <aside className="trip-list-column">
+      {/* HEADER */}
+
+      <div className="trip-list-header">
+        <div>
+          <h3>
+            Active Trips
+          </h3>
+
+          <span>
+            {tripList.length}{" "}
+            {tripList.length === 1
+              ? "active trip"
+              : "active trips"}
+          </span>
+        </div>
+      </div>
+
+      {/* LIST */}
+
+      <div className="trip-list-scroll">
+        {tripList.length ===
+        0 ? (
+          <div className="trip-list-empty">
+            <Truck
+              size={22}
+            />
+
+            <span>
+              No trips available
+            </span>
+          </div>
+        ) : (
+          tripList.map(
+            (
+              trip,
+              index
+            ) => {
+              const active =
+                isSameTrip(
+                  trip,
+                  selectedTrip
+                );
+
+              const vehicles =
+                safeArray(
+                  trip
+                    ?.allocatedVehicles
+                );
+
+              const tripStatus =
+                getTripStatus(
+                  trip
+                );
+
+              const origin =
+                safeText(
+                  trip?.origin,
+                  "-"
+                ) || "-";
+
+              const destination =
+                safeText(
+                  trip?.destination,
+                  "-"
+                ) || "-";
+
+              return (
+                <button
+                  type="button"
+                  key={getTripKey(
+                    trip,
+                    index
+                  )}
+                  className={`trip-list-item ${
+                    active
+                      ? "active"
+                      : ""
+                  }`}
+                  onClick={() =>
+                    onSelectTrip?.(
+                      trip
+                    )
+                  }
+                >
+                  {/* TOP */}
+
+                  <div className="trip-list-item-top">
+                    <div className="trip-list-trip-id">
+                      <Truck
+                        size={15}
+                      />
+
+                      <strong>
+                        {safeText(
+                          trip?.tripId,
+                          `Trip ${
+                            index +
+                            1
+                          }`
+                        )}
+                      </strong>
+                    </div>
+
+                    <ChevronRight
+                      size={17}
+                      className="trip-list-chevron"
+                    />
+                  </div>
+
+                  {/* CUSTOMER */}
+
+                  <div className="trip-list-customer">
+                    {safeText(
+                      trip?.customer,
+                      "Customer"
+                    )}
+                  </div>
+
+                  {/* ROUTE */}
+
+                  <div className="trip-list-route">
+                    <MapPin
+                      size={13}
+                    />
+
+                    <span>
+                      {origin}
+                    </span>
+
+                    <ChevronRight
+                      size={12}
+                    />
+
+                    <span>
+                      {destination}
+                    </span>
+                  </div>
+
+                  {/* META */}
+
+                  <div className="trip-list-meta">
+                    <span className="trip-list-vehicle-count">
+                      <Truck
+                        size={12}
+                      />
+
+                      {
+                        vehicles.length
+                      }{" "}
+                      {vehicles.length ===
+                      1
+                        ? "Vehicle"
+                        : "Vehicles"}
+                    </span>
+
+                    <span
+                      className={`trip-list-status ${getStatusClass(
+                        tripStatus
+                      )}`}
+                    >
+                      {tripStatus}
+                    </span>
+                  </div>
+                </button>
+              );
+            }
+          )
+        )}
+      </div>
+    </aside>
+  );
+};
 
 export default TripListColumn;

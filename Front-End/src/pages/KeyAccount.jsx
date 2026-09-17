@@ -1,3526 +1,3041 @@
-import React, {
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+  import React, {
+    useCallback,
+    useEffect,
+    useMemo,
+    useState,
+  } from "react";
 
-import "../pagescss/keyaccount.css";
+  import "../pagescss/keyaccount.css";
 
-import Tripcreatemodal from "../keyaccount/Tripcreatemodal";
-import Lifecyclemodal from "../keyaccount/Lifecyclemodal";
+  import Tripcreatemodal from "../keyaccount/Tripcreatemodal";
+  import Lifecyclemodal from "../keyaccount/Lifecyclemodal";
 
+  /* =========================================================
+    API
+  ========================================================= */
 
-/* =========================================================
-   VEHICLE TYPES
-========================================================= */
+  const API_BASE_URL = (
+    import.meta.env.VITE_API_URL ||
+    "http://localhost:5000"
+  ).replace(/\/+$/, "");
 
-const PRIMARY_VEHICLE_TYPES = [
-  "Open Truck",
-  "Trailer",
-  "Container Truck",
-  "Flatbed",
-  "Low Bed Trailer",
-  "Hydraulic Axle Trailer",
-  "Multi Axle Trailer",
-  "Tempo / LCV",
-  "Pickup Truck",
-  "Crane Mounted Truck",
-];
+  const TRIP_API_URL =
+    `${API_BASE_URL}/api/triporders`;
 
+  /* =========================================================
+    VEHICLE TYPES
+  ========================================================= */
 
-const EMPTY_WTG_VEHICLE = {
-  vehicleType: "",
-  configurationModel: "",
-  movementClassification: "",
-  quantity: "1",
-  weight: "",
-  length: "",
-  height: "",
-  width: "",
-};
+  const PRIMARY_VEHICLE_TYPES = [
+    "Open Truck",
+    "Trailer",
+    "Container Truck",
+    "Flatbed",
+    "Low Bed Trailer",
+    "Hydraulic Axle Trailer",
+    "Multi Axle Trailer",
+    "Tempo / LCV",
+    "Pickup Truck",
+    "Crane Mounted Truck",
+  ];
 
+  /* =========================================================
+    EMPTY VEHICLE REQUIREMENT
+  ========================================================= */
 
-const TRIP_ID_YEAR =
-  new Date().getFullYear();
+  const createEmptyVehicleRequirement = () => ({
+    requirementId: "",
+    vehicleType: "",
+    configuration: "",
+    classification: "",
+    quantity: "1",
+    weight: "",
 
-
-/* =========================================================
-   EMPTY TRIP FORM
-========================================================= */
-
-const createEmptyTripForm = (
-  tripId = ""
-) => ({
-  movementType: "",
-
-  client: "",
-  companyName: "",
-  clientContact: "",
-  clientEmail: "",
-  assignedKam: "",
-
-  tripId,
-
-  enquiryDate: "",
-  placementDate: "",
-  deploymentDate: "",
-
-  siteLocation: "",
-  period: "",
-  dieselScope: "",
-  totalQuantity: "",
-
-  // Manual total vehicles entered in Create / Edit Trip
-  totalVehicleCount: "",
-
-  origin: "",
-  destination: "",
-  estimatedDistance: "",
-
-  cargo: "",
-
-  weight: "",
-  length: "",
-  height: "",
-  width: "",
-
-  remark: "",
-
-  requiredVehicles: "",
-  primaryVehicleType: "",
-
-  vehicles: [
-    {
-      ...EMPTY_WTG_VEHICLE,
+    dimensions: {
+      length: "",
+      height: "",
+      width: "",
     },
-  ],
-});
+  });
 
+  /* =========================================================
+    EMPTY TRIP FORM
+  ========================================================= */
 
-/* =========================================================
-   API
-========================================================= */
+  const createEmptyTripForm = (
+    tripId = ""
+  ) => ({
+    tripId,
 
-const API_BASE_URL = (
-  import.meta.env.VITE_API_URL ||
-  "http://localhost:5000"
-).replace(/\/$/, "");
+    movementType: "",
 
+    customer: "",
+    contactPerson: "",
+    contactNumber: "",
+    email: "",
+    assignedKam: "",
 
-const TRIP_API_URL =
-  `${API_BASE_URL}/api/triptracking`;
+    enquiryDate: "",
+    placementDate: "",
 
+    origin: "",
+    destination: "",
+    distance: "",
+    totalVehicles: "",
 
-/* =========================================================
-   HELPERS
-========================================================= */
+    materialType: "",
+    remark: "",
 
-const extractTripList = (
-  payload
-) => {
+    siteLocation: "",
+    period: "",
+    dieselScope: "",
 
-  if (Array.isArray(payload)) {
-    return payload;
-  }
+    routeLocations: [],
 
-  if (
-    Array.isArray(
-      payload?.data
-    )
-  ) {
-    return payload.data;
-  }
+    vehicleRequirements: [
+      createEmptyVehicleRequirement(),
+    ],
+  });
 
-  if (
-    Array.isArray(
-      payload?.trips
-    )
-  ) {
-    return payload.trips;
-  }
+  /* =========================================================
+    DATE
+  ========================================================= */
 
-  return [];
-};
+  const toDateInput = (value) => {
+    if (!value) {
+      return "";
+    }
 
+    if (
+      typeof value === "object" &&
+      value.$date
+    ) {
+      return toDateInput(
+        value.$date
+      );
+    }
 
-const extractTrip = (
-  payload
-) =>
-  payload?.data ||
-  payload?.trip ||
-  payload;
+    const date = new Date(value);
 
+    if (
+      Number.isNaN(
+        date.getTime()
+      )
+    ) {
+      const text =
+        String(value);
 
-const toDateInput = (
-  value
-) => {
+      return text.length >= 10
+        ? text.slice(0, 10)
+        : text;
+    }
 
-  if (!value) {
-    return "";
-  }
+    const year =
+      date.getFullYear();
 
-  const text =
-    String(value);
+    const month =
+      String(
+        date.getMonth() + 1
+      ).padStart(2, "0");
 
-  return text.length >= 10
-    ? text.slice(0, 10)
-    : text;
-};
+    const day =
+      String(
+        date.getDate()
+      ).padStart(2, "0");
 
+    return `${year}-${month}-${day}`;
+  };
 
-const numberText = (
-  value
-) => {
+  /* =========================================================
+    NUMBER
+  ========================================================= */
 
-  if (
-    value === null ||
-    value === undefined ||
-    value === ""
-  ) {
-    return "";
-  }
+  const numberText = (value) => {
+    if (
+      value === null ||
+      value === undefined ||
+      value === ""
+    ) {
+      return "";
+    }
 
-  const match =
-    String(value).match(
-      /-?\d+(?:\.\d+)?/
+    const number =
+      Number(value);
+
+    return Number.isFinite(number)
+      ? String(number)
+      : "";
+  };
+
+  /* =========================================================
+    MONGO ID
+  ========================================================= */
+
+  const getMongoId = (value) => {
+    if (!value) {
+      return "";
+    }
+
+    if (
+      typeof value === "object"
+    ) {
+      return String(
+        value.$oid ||
+        value.toString?.() ||
+        ""
+      );
+    }
+
+    return String(value);
+  };
+
+  /* =========================================================
+    ORDER KEY
+  ========================================================= */
+
+  const getOrderKey = (order) =>
+    getMongoId(
+      order?._id
+    ) ||
+    String(
+      order?.tripId || ""
     );
 
-  return match
-    ? match[0]
-    : "";
-};
 
+  /* =========================================================
+    EDIT MOVEMENT TYPE
+  ========================================================= */
 
-/* =========================================================
-   STAGE CLASS
-========================================================= */
-
-const getStageClass = (
-  stage
-) =>
-  `stage-badge stage-${String(
-    stage || ""
-  )
-    .toLowerCase()
-    .replace(
-      /[^a-z0-9]+/g,
-      "-"
-    )}`;
-
-
-/* =========================================================
-   APPROVAL / ORDER STATUS
-========================================================= */
-
-const normalizeApprovalStatus = (
-  value
-) => {
-
-  const status =
-    String(
-      value || ""
+  const getEditableMovementType = (order = {}) => {
+    const normalized = String(
+      order?.movementType || ""
     )
       .trim()
       .toLowerCase();
 
-  if (
-    [
-      "approved",
-      "approve",
-      "accepted",
-    ].includes(status)
-  ) {
-    return "Approved";
-  }
+    if (
+      normalized === "wtg movement" ||
+      normalized === "wtg"
+    ) {
+      return "WTG Movement";
+    }
 
-  if (
-    [
-      "rejected",
-      "reject",
-      "declined",
-    ].includes(status)
-  ) {
-    return "Rejected";
-  }
+    if (
+      normalized === "intercarting" ||
+      normalized === "inter carting" ||
+      normalized === "inter-carting"
+    ) {
+      return "Intercarting";
+    }
 
-  return "Pending";
-};
+    if (
+      normalized === "crane" ||
+      normalized === "crane movement"
+    ) {
+      return "Crane";
+    }
 
+    if (normalized === "other") {
+      return "Other";
+    }
 
-const getOrderStatusClass = (
-  status
-) => {
+    if (
+      order?.dieselScope ||
+      order?.siteLocation ||
+      order?.period
+    ) {
+      return "Intercarting";
+    }
 
-  const normalized =
-    normalizeApprovalStatus(
-      status
-    );
+    const requirements = Array.isArray(
+      order?.vehicleRequirements
+    )
+      ? order.vehicleRequirements
+      : [];
 
-  return `order-status-badge order-status-${normalized.toLowerCase()}`;
-};
+    const vehicleText = requirements
+      .map((requirement) =>
+        String(
+          requirement?.vehicleType || ""
+        ).toLowerCase()
+      )
+      .join(" ");
 
+    if (vehicleText.includes("crane")) {
+      return "Crane";
+    }
 
-/* =========================================================
-   NEXT TRIP ID
-========================================================= */
+    const wtgKeywords = [
+      "low bed",
+      "hydraulic axle",
+      "multi axle",
+      "flatbed trailer",
+      "extendable trailer",
+      "modular hydraulic",
+      "spmt",
+    ];
 
-const getNextTripId = (
-  orders
-) => {
+    if (
+      wtgKeywords.some((keyword) =>
+        vehicleText.includes(keyword)
+      )
+    ) {
+      return "WTG Movement";
+    }
 
-  const prefix =
-    `${TRIP_ID_YEAR}-`;
+    return "Other";
+  };
 
-  const highestSequence =
-    orders.reduce(
-      (
-        highest,
+  /* =========================================================
+    STAGE CLASS
+  ========================================================= */
+
+  const getStageClass = (
+    stage
+  ) =>
+    `stage-badge stage-${String(
+      stage || ""
+    )
+      .toLowerCase()
+      .replace(
+        /[^a-z0-9]+/g,
+        "-"
+      )}`;
+
+  /* =========================================================
+    ORDER APPROVAL STATUS
+
+    IMPORTANT:
+    This is FIRST approval only.
+
+    Key Account
+          ↓
+    Approval Management
+          ↓
+    Traffic
+  ========================================================= */
+
+  const getDisplayOrderStatus = (
+    order
+  ) => {
+    const status =
+      order?.orderApproval
+        ?.status ||
+      "Pending";
+
+    if (
+      status === "Approved"
+    ) {
+      return "Approved";
+    }
+
+    if (
+      status === "Rejected"
+    ) {
+      return "Rejected";
+    }
+
+    return "Pending";
+  };
+
+  const getOrderStatusClass = (
+    order
+  ) => {
+    const status =
+      getDisplayOrderStatus(
         order
-      ) => {
+      );
 
-        const tripId =
-          String(
-            order.tripId ||
-            order.id ||
-            ""
-          ).trim();
+    return `order-status-badge order-status-${status.toLowerCase()}`;
+  };
+
+  /* =========================================================
+    NEXT TRIP ID
+  ========================================================= */
+
+  const getNextTripId = (orders = []) => {
+    const year = new Date().getFullYear();
+
+    // Common Order ID for every movement:
+    // 2026-1, 2026-2, 2026-3...
+    // Movement type is never included in the Order ID.
+    const pattern = new RegExp(`^${year}-(\\d+)$`);
+
+    const highestNumber = orders.reduce(
+      (highest, order) => {
+        const tripId = String(
+          order?.tripId || ""
+        ).trim();
+
+        const match = tripId.match(pattern);
+
+        if (!match) {
+          return highest;
+        }
+
+        const sequence = Number(match[1]);
 
         if (
-          !tripId.startsWith(
-            prefix
-          )
+          !Number.isInteger(sequence) ||
+          sequence < 1
         ) {
           return highest;
         }
 
-        const sequence =
-          Number(
-            tripId.slice(
-              prefix.length
-            )
-          );
-
-        return (
-          Number.isInteger(
-            sequence
-          ) &&
-          sequence > highest
-        )
-          ? sequence
-          : highest;
+        return Math.max(
+          highest,
+          sequence
+        );
       },
       0
     );
 
-  return `${TRIP_ID_YEAR}-${
-    highestSequence + 1
-  }`;
-};
+    return `${year}-${highestNumber + 1}`;
+  };
 
+  /* =========================================================
+    NORMALIZE VEHICLE REQUIREMENT
+  ========================================================= */
 
-/* =========================================================
-   DATABASE -> UI
-========================================================= */
-
-const mapDbTripToOrder = (
-  trip = {}
-) => {
-
-  const vehicles =
-    Array.isArray(
-      trip.vehicles
-    )
-      ? trip.vehicles
-      : [];
-
-  const firstVehicle =
-    vehicles[0] || {};
-
-
-  /*
-   * Approval Management can save any ONE
-   * of these fields.
-   *
-   * Preferred field:
-   * approvalStatus
-   *
-   * Supported fallbacks:
-   * orderStatus
-   * approvalDecision
-   * approval?.status
-   *
-   * If there is no value:
-   * Pending
-   */
-
-  const approvalStatus =
-    normalizeApprovalStatus(
-      trip.approvalStatus ||
-      trip.orderStatus ||
-      trip.approvalDecision ||
-      trip.approval?.status ||
-      "Pending"
-    );
-
-
-  return {
-
-    ...trip,
-
-    _id:
-      trip._id,
-
-    id:
-      trip.tripId ||
-      trip.id ||
-      trip._id,
-
-    tripId:
-      trip.tripId ||
-      trip.id ||
-      "",
-
-    movementType:
-      trip.movementType ||
-      "",
-
-    companyName:
-      trip.companyName ||
-      "",
-
-    client:
-      trip.client ||
-      trip.customer ||
-      "",
-
-    customer:
-      trip.customer ||
-      trip.client ||
-      "",
-
-    clientContact:
-      trip.clientContact ||
-      trip.clientPhone ||
-      trip.clientContactPerson ||
-      "",
-
-    clientPhone:
-      trip.clientPhone ||
-      trip.clientContact ||
-      "",
-
-    clientEmail:
-      trip.clientEmail ||
-      "",
-
-    assignedKam:
-      trip.assignedKam ||
-      "",
-
-    cargo:
-      trip.cargo ||
-      trip.materialType ||
-      "",
-
-    materialType:
-      trip.materialType ||
-      trip.cargo ||
-      "",
-
-    enquiryDate:
-      toDateInput(
-        trip.enquiryDate
-      ),
-
-    placementDate:
-      toDateInput(
-        trip.placementDate
-      ),
-
-    deploymentDate:
-      toDateInput(
-        trip.deploymentDate
-      ),
-
-    poDate:
-      toDateInput(
-        trip.poDate
-      ),
-
-    loadingDate:
-      toDateInput(
-        trip.loadingDate ||
-        firstVehicle.loadingDate
-      ),
-
-    origin:
-      trip.origin ||
-      "",
-
-    destination:
-      trip.destination ||
-      "",
-
-    estimatedDistance:
-      trip.estimatedDistance ??
-      trip.totalKm ??
-      "",
-
-    totalKm:
-      trip.totalKm ??
-      trip.estimatedDistance ??
-      "",
-
-    siteLocation:
-      trip.siteLocation ||
-      "",
-
-    period:
-      trip.period ||
-      "",
-
-    dieselScope:
-      trip.dieselScope ||
-      "",
-
-    totalQuantity:
-      trip.totalQuantity ??
-      "",
-
-    totalVehicleCount:
-      trip.totalVehicleCount ??
-      "",
-
-    weight:
-      trip.weight ??
-      firstVehicle.weight ??
-      "",
-
-    length:
-      trip.length ??
-      firstVehicle.length ??
-      "",
-
-    height:
-      trip.height ??
-      firstVehicle.height ??
-      "",
-
-    width:
-      trip.width ??
-      firstVehicle.width ??
-      "",
-
-    remark:
-      trip.remark ||
-      "",
-
-    instructions:
-      trip.instructions ||
-      "",
-
-    requiredVehicles:
-      trip.requiredVehicles ??
-      trip.vehicleCount ??
-      "",
-
-    primaryVehicleType:
-      trip.primaryVehicleType ||
-      trip.vehicleType ||
-      firstVehicle.vehicleType ||
+  const normalizeRequirement = (
+    requirement = {}
+  ) => ({
+    requirementId:
+      requirement.requirementId ||
       "",
 
     vehicleType:
-      trip.vehicleType ||
-      trip.primaryVehicleType ||
-      firstVehicle.vehicleType ||
+      requirement.vehicleType ||
       "",
 
-    vehicles,
-
-    /* NEW ORDER STATUS */
-
-    approvalStatus,
-
-    orderStatus:
-      approvalStatus,
-
-    stage:
-      trip.stage ||
-      trip.orderStage ||
-      "Client Enquiry",
-
-    role:
-      trip.role ||
-      trip.responsibleTeam ||
-      "Key Account Management Team",
-  };
-};
-
-
-/* =========================================================
-   MAIN COMPONENT
-========================================================= */
-
-const KeyAccount = () => {
-
-  const [
-    orders,
-    setOrders,
-  ] = useState([]);
-
-
-  const [
-    search,
-    setSearch,
-  ] = useState("");
-
-
-  const [
-    stageFilter,
-    setStageFilter,
-  ] = useState(
-    "All Stages"
-  );
-
-
-  const [
-    selectedOrderId,
-    setSelectedOrderId,
-  ] = useState(null);
-
-
-  const [
-    showTripModal,
-    setShowTripModal,
-  ] = useState(false);
-
-
-  const [
-    tripForm,
-    setTripForm,
-  ] = useState(
-    () =>
-      createEmptyTripForm()
-  );
-
-
-  const [
-    toast,
-    setToast,
-  ] = useState("");
-
-
-  const [
-    tripUpload,
-    setTripUpload,
-  ] = useState(null);
-
-
-  const [
-    editingOrderId,
-    setEditingOrderId,
-  ] = useState(null);
-
-
-  const [
-    isSaving,
-    setIsSaving,
-  ] = useState(false);
-
-
-  const [
-    isLoadingOrders,
-    setIsLoadingOrders,
-  ] = useState(true);
-
-
-
-  const [
-    openActionMenu,
-    setOpenActionMenu,
-  ] = useState(null);
-
-  /* =========================================================
-     LOAD ORDERS
-  ========================================================= */
-
-  const fetchTrips =
-    async () => {
-
-      try {
-
-        setIsLoadingOrders(
-          true
-        );
-
-
-        const response =
-          await fetch(
-            TRIP_API_URL
-          );
-
-
-        const payload =
-          await response
-            .json()
-            .catch(
-              () => ({})
-            );
-
-
-        if (!response.ok) {
-
-          throw new Error(
-            payload.message ||
-            "Unable to load trips."
-          );
-        }
-
-
-        setOrders(
-          extractTripList(
-            payload
-          ).map(
-            mapDbTripToOrder
-          )
-        );
-
-      } catch (error) {
-
-        console.error(
-          "Fetch Trips Error:",
-          error
-        );
-
-        setToast(
-          error.message ||
-          "Unable to load trips from database."
-        );
-
-      } finally {
-
-        setIsLoadingOrders(
-          false
-        );
-      }
-    };
-
-
-  useEffect(() => {
-
-    fetchTrips();
-
-  }, []);
-
-
-  /* =========================================================
-     TOAST
-  ========================================================= */
-
-  useEffect(() => {
-
-    if (!toast) {
-      return undefined;
-    }
-
-    const timer =
-      window.setTimeout(
-        () =>
-          setToast(""),
-        2600
-      );
-
-    return () =>
-      window.clearTimeout(
-        timer
-      );
-
-  }, [toast]);
-
-
-
-  /* =========================================================
-     ACTION MENU
-  ========================================================= */
-
-  useEffect(() => {
-    if (!openActionMenu) {
-      return undefined;
-    }
-
-    const handleDocumentClick = () => {
-      setOpenActionMenu(null);
-    };
-
-    document.addEventListener(
-      "click",
-      handleDocumentClick
-    );
-
-    return () => {
-      document.removeEventListener(
-        "click",
-        handleDocumentClick
-      );
-    };
-  }, [openActionMenu]);
-
-  /* =========================================================
-     SELECTED ORDER
-  ========================================================= */
-
-  const selectedOrder =
-    useMemo(
-      () =>
-        orders.find(
-          (order) =>
-            (
-              order._id ||
-              order.id
-            ) ===
-            selectedOrderId
-        ) ||
-        null,
-      [
-        orders,
-        selectedOrderId,
-      ]
-    );
-
-
-  /* =========================================================
-     STAGES
-  ========================================================= */
-
-  const stages =
-    useMemo(
-      () => [
-        "All Stages",
-
-        ...Array.from(
-          new Set(
-            orders.map(
-              (order) =>
-                order.stage
-            )
-          )
+    configuration:
+      requirement.configuration ||
+      "",
+
+    classification:
+      requirement.classification ||
+      "",
+
+    quantity:
+      numberText(
+        requirement.quantity ?? 1
+      ) || "1",
+
+    weight:
+      numberText(
+        requirement.weight
+      ),
+
+    dimensions: {
+      length:
+        numberText(
+          requirement
+            ?.dimensions
+            ?.length
         ),
-      ],
-      [orders]
-    );
 
+      height:
+        numberText(
+          requirement
+            ?.dimensions
+            ?.height
+        ),
+
+      width:
+        numberText(
+          requirement
+            ?.dimensions
+            ?.width
+        ),
+    },
+  });
 
   /* =========================================================
-     FILTER
+    DATABASE -> UI
   ========================================================= */
 
-  const filteredOrders =
-    useMemo(() => {
+  const mapDbTripToOrder = (
+    trip = {}
+  ) => {
+    const vehicleRequirements =
+      Array.isArray(
+        trip.vehicleRequirements
+      )
+        ? trip.vehicleRequirements.map(
+            normalizeRequirement
+          )
+        : [];
 
-      const searchText =
-        search
-          .trim()
-          .toLowerCase();
+    return {
+      ...trip,
 
+      _id:
+        getMongoId(
+          trip._id
+        ),
 
-      return orders.filter(
-        (order) => {
+      id:
+        trip.tripId ||
+        getMongoId(
+          trip._id
+        ),
 
-          const vehicleData =
-            Array.isArray(
-              order.vehicles
-            )
-              ? order.vehicles.flatMap(
-                  (
-                    vehicle
-                  ) => [
-                    vehicle.vehicleNumber,
-                    vehicle.vehicleType,
-                    vehicle.configurationModel,
-                    vehicle.movementClassification,
-                    vehicle.quantity,
-                    vehicle.weight,
-                    vehicle.driverName,
-                    vehicle.driverNumber,
-                  ]
-                )
-              : [];
+      tripId:
+        trip.tripId ||
+        "",
 
+      movementType:
+        trip.movementType ||
+        "",
 
-          const haystack = [
+      customer:
+        trip.customer ||
+        "",
 
-            order.id,
-            order.tripId,
+      contactPerson:
+        trip.contactPerson ||
+        "",
 
-            order.client,
-            order.companyName,
-            order.clientContact,
-            order.clientEmail,
+      contactNumber:
+        trip.contactNumber ||
+        "",
 
-            order.assignedKam,
+      email:
+        trip.email ||
+        "",
 
-            order.cargo,
-            order.weight,
+      assignedKam:
+        trip.assignedKam ||
+        "",
 
-            order.origin,
-            order.destination,
+      enquiryDate:
+        toDateInput(
+          trip.enquiryDate
+        ),
 
-            order.stage,
+      placementDate:
+        toDateInput(
+          trip.placementDate
+        ),
 
-            /* NEW */
-            order.approvalStatus,
+      origin:
+        trip.origin ||
+        "",
 
-            order.role,
-            order.vehicleType,
-            order.vendor,
-            order.movementType,
+      destination:
+        trip.destination ||
+        "",
 
-            order.enquiryDate,
-            order.placementDate,
-            order.deploymentDate,
+      distance:
+        trip.distance ?? "",
 
-            order.estimatedDistance,
+      totalVehicles:
+        trip.totalVehicles ?? "",
 
-            order.siteLocation,
-            order.period,
-            order.dieselScope,
-            order.totalQuantity,
+      routeLocations:
+        Array.isArray(
+          trip.routeLocations
+        )
+          ? trip.routeLocations
+          : [],
 
-            order.remark,
+      materialType:
+        trip.materialType ||
+        "",
 
-            ...vehicleData,
-          ]
-            .filter(Boolean)
-            .join(" ")
-            .toLowerCase();
+      remark:
+        trip.remark ||
+        "",
 
+      siteLocation:
+        trip.siteLocation ||
+        "",
 
-          const matchesSearch =
-            !searchText ||
-            haystack.includes(
-              searchText
-            );
+      period:
+        trip.period ||
+        "",
 
+      dieselScope:
+        trip.dieselScope ||
+        "",
 
-          const matchesStage =
-            stageFilter ===
-              "All Stages" ||
-            order.stage ===
-              stageFilter;
+      status:
+        trip.status ||
+        "Pending",
 
+      stage:
+        trip.stage ||
+        "Order Approval",
 
-          return (
-            matchesSearch &&
-            matchesStage
-          );
+      orderApproval: {
+        status:
+          trip.orderApproval
+            ?.status ||
+          "Pending",
+
+        approvedBy:
+          trip.orderApproval
+            ?.approvedBy ||
+          "",
+
+        approvedAt:
+          trip.orderApproval
+            ?.approvedAt ||
+          null,
+
+        remarks:
+          trip.orderApproval
+            ?.remarks ||
+          "",
+
+        rejectionReason:
+          trip.orderApproval
+            ?.rejectionReason ||
+          "",
+      },
+
+      vehicleRequirements,
+
+      trafficQuotations:
+        Array.isArray(
+          trip.trafficQuotations
+        )
+          ? trip.trafficQuotations
+          : [],
+
+      vehicleConfirmations:
+        Array.isArray(
+          trip.vehicleConfirmations
+        )
+          ? trip.vehicleConfirmations
+          : [],
+
+      allocatedVehicles:
+        Array.isArray(
+          trip.allocatedVehicles
+        )
+          ? trip.allocatedVehicles
+          : [],
+    };
+  };
+
+  /* =========================================================
+    API RESPONSE
+  ========================================================= */
+
+  const getResponseData = (
+    data
+  ) => {
+    if (
+      Array.isArray(data)
+    ) {
+      return data;
+    }
+
+    if (
+      Array.isArray(
+        data?.data
+      )
+    ) {
+      return data.data;
+    }
+
+    if (
+      Array.isArray(
+        data?.trips
+      )
+    ) {
+      return data.trips;
+    }
+
+    if (
+      data?.data &&
+      typeof data.data ===
+        "object"
+    ) {
+      return data.data;
+    }
+
+    if (
+      data?.trip &&
+      typeof data.trip ===
+        "object"
+    ) {
+      return data.trip;
+    }
+
+    return data;
+  };
+
+  /* =========================================================
+    API REQUEST
+  ========================================================= */
+
+  const apiRequest = async (
+    url,
+    options = {}
+  ) => {
+    const response =
+      await fetch(
+        url,
+        {
+          ...options,
+
+          headers: {
+            "Content-Type":
+              "application/json",
+
+            ...(options.headers ||
+              {}),
+          },
         }
       );
 
-    }, [
-      orders,
-      search,
-      stageFilter,
-    ]);
+    let data = null;
 
+    try {
+      data =
+        await response.json();
+    } catch {
+      data = null;
+    }
+
+    if (!response.ok) {
+      throw new Error(
+        data?.message ||
+        data?.error ||
+        `Request failed with status ${response.status}`
+      );
+    }
+
+    return getResponseData(
+      data
+    );
+  };
 
   /* =========================================================
-     STATS
+    MAIN COMPONENT
   ========================================================= */
 
-  const stats =
-    useMemo(() => {
+  const KeyAccount = () => {
+    const [
+      orders,
+      setOrders,
+    ] = useState([]);
 
-      const active =
-        orders.filter(
-          (order) =>
-            [
-              "Vehicle Assigned",
-              "Trip Started",
-              "Delivery In Progress",
-            ].includes(
-              order.stage
-            )
-        ).length;
+    const [
+      search,
+      setSearch,
+    ] = useState("");
 
+    const [
+      stageFilter,
+      setStageFilter,
+    ] = useState(
+      "All Stages"
+    );
 
-      const vendorPending =
-        orders.filter(
-          (order) =>
-            order.stage ===
-            "Vendor Finalization"
-        ).length;
+    const [
+      selectedOrderId,
+      setSelectedOrderId,
+    ] = useState(null);
 
+    const [
+      showTripModal,
+      setShowTripModal,
+    ] = useState(false);
 
-      const documentation =
-        orders.filter(
-          (order) =>
-            [
-              "Documentation",
-              "PO Documents",
-            ].includes(
-              order.stage
-            )
-        ).length;
+    const [
+      tripForm,
+      setTripForm,
+    ] = useState(
+      () =>
+        createEmptyTripForm()
+    );
 
+    const [
+      toast,
+      setToast,
+    ] = useState("");
 
-      return {
+    const [
+      tripUpload,
+      setTripUpload,
+    ] = useState(null);
 
-        total:
-          orders.length,
+    const [
+      editingOrderId,
+      setEditingOrderId,
+    ] = useState(null);
 
-        active,
+    const [
+      isSaving,
+      setIsSaving,
+    ] = useState(false);
 
-        vendorPending,
+    const [
+      isLoadingOrders,
+      setIsLoadingOrders,
+    ] = useState(true);
 
-        documentation,
+    const [
+      openActionMenu,
+      setOpenActionMenu,
+    ] = useState(null);
+
+    const [
+      actionMenuPosition,
+      setActionMenuPosition,
+    ] = useState(null);
+
+    /* =======================================================
+      LOAD ORDERS
+    ======================================================= */
+
+    const loadOrders =
+      useCallback(
+        async () => {
+          setIsLoadingOrders(
+            true
+          );
+
+          try {
+            const data =
+              await apiRequest(
+                TRIP_API_URL
+              );
+
+            const list =
+              Array.isArray(data)
+                ? data
+                : [];
+
+            setOrders(
+              list.map(
+                mapDbTripToOrder
+              )
+            );
+          } catch (error) {
+            console.error(
+              "Load trip orders error:",
+              error
+            );
+
+            setOrders([]);
+
+            setToast(
+              error.message ||
+              "Unable to load orders."
+            );
+          } finally {
+            setIsLoadingOrders(
+              false
+            );
+          }
+        },
+        []
+      );
+
+    useEffect(() => {
+      loadOrders();
+    }, [loadOrders]);
+
+    /* =======================================================
+      TOAST
+    ======================================================= */
+
+    useEffect(() => {
+      if (!toast) {
+        return undefined;
+      }
+
+      const timer =
+        window.setTimeout(
+          () =>
+            setToast(""),
+          3000
+        );
+
+      return () =>
+        window.clearTimeout(
+          timer
+        );
+    }, [toast]);
+
+    /* =======================================================
+      ACTION MENU
+    ======================================================= */
+
+    useEffect(() => {
+      if (!openActionMenu) {
+        return undefined;
+      }
+
+      const closeMenu = () => {
+        setOpenActionMenu(null);
+        setActionMenuPosition(null);
       };
 
-    }, [orders]);
-
-
-  /* =========================================================
-     OPEN ORDER
-  ========================================================= */
-
-  const handleOrderClick =
-    (order) => {
-
-      setSelectedOrderId(
-        order._id ||
-        order.id
-      );
-    };
-
-
-  const handleBackFromDetail =
-    () => {
-
-      setSelectedOrderId(
-        null
-      );
-    };
-
-
-  /* =========================================================
-     NEW TRIP
-  ========================================================= */
-
-  const handleOpenTripModal =
-    () => {
-
-      setEditingOrderId(
-        null
+      document.addEventListener(
+        "click",
+        closeMenu
       );
 
-      setTripForm(
-        createEmptyTripForm(
-          getNextTripId(
-            orders
-          )
-        )
+      window.addEventListener(
+        "resize",
+        closeMenu
       );
 
-      setTripUpload(
-        null
-      );
-
-      setShowTripModal(
+      window.addEventListener(
+        "scroll",
+        closeMenu,
         true
       );
-    };
 
+      return () => {
+        document.removeEventListener(
+          "click",
+          closeMenu
+        );
 
-  /* =========================================================
-     EDIT TRIP
-  ========================================================= */
+        window.removeEventListener(
+          "resize",
+          closeMenu
+        );
 
-  const handleEditTrip =
-    (order) => {
+        window.removeEventListener(
+          "scroll",
+          closeMenu,
+          true
+        );
+      };
+    }, [openActionMenu]);
 
-      setEditingOrderId(
-        order._id ||
-        null
+    /* =======================================================
+      SELECTED ORDER
+    ======================================================= */
+
+    const selectedOrder =
+      useMemo(
+        () =>
+          orders.find(
+            (order) =>
+              getOrderKey(
+                order
+              ) ===
+              selectedOrderId
+          ) || null,
+        [
+          orders,
+          selectedOrderId,
+        ]
       );
 
-      setTripUpload(
-        null
+    /* =======================================================
+      STAGES
+    ======================================================= */
+
+    const stages =
+      useMemo(
+        () => [
+          "All Stages",
+
+          ...Array.from(
+            new Set(
+              orders
+                .map(
+                  (order) =>
+                    order.stage
+                )
+                .filter(Boolean)
+            )
+          ),
+        ],
+        [orders]
       );
 
+    /* =======================================================
+      FILTER
+    ======================================================= */
 
-      setTripForm({
+    const filteredOrders =
+      useMemo(() => {
+        const searchText =
+          search
+            .trim()
+            .toLowerCase();
 
-        ...createEmptyTripForm(
-          order.tripId ||
-          order.id ||
-          ""
-        ),
-
-        movementType:
-          order.movementType ||
-          "",
-
-        client:
-          order.client ||
-          order.customer ||
-          "",
-
-        companyName:
-          order.companyName ||
-          "",
-
-        clientContact:
-          order.clientContact ||
-          order.clientPhone ||
-          "",
-
-        clientEmail:
-          order.clientEmail ||
-          "",
-
-        assignedKam:
-          order.assignedKam ||
-          "",
-
-        tripId:
-          order.tripId ||
-          order.id ||
-          "",
-
-        enquiryDate:
-          toDateInput(
-            order.enquiryDate
-          ),
-
-        placementDate:
-          toDateInput(
-            order.placementDate
-          ),
-
-        deploymentDate:
-          toDateInput(
-            order.deploymentDate
-          ),
-
-        siteLocation:
-          order.siteLocation ||
-          "",
-
-        period:
-          order.period ||
-          "",
-
-        dieselScope:
-          order.dieselScope ||
-          "",
-
-        totalQuantity:
-          order.totalQuantity ??
-          "",
-
-        totalVehicleCount:
-          order.totalVehicleCount ??
-          "",
-
-        origin:
-          order.origin ||
-          "",
-
-        destination:
-          order.destination ||
-          "",
-
-        estimatedDistance:
-          order.estimatedDistance ??
-          order.totalKm ??
-          "",
-
-        cargo:
-          order.cargo ||
-          order.materialType ||
-          "",
-
-        weight:
-          numberText(
-            order.weight ??
-            order.vehicles?.[0]
-              ?.weight
-          ),
-
-        length:
-          order.length ??
-          order.vehicles?.[0]
-            ?.length ??
-          "",
-
-        height:
-          order.height ??
-          order.vehicles?.[0]
-            ?.height ??
-          "",
-
-        width:
-          order.width ??
-          order.vehicles?.[0]
-            ?.width ??
-          "",
-
-        remark:
-          order.remark ||
-          order.instructions ||
-          "",
-
-        requiredVehicles:
-          order.requiredVehicles ??
-          order.vehicleCount ??
-          "",
-
-        primaryVehicleType:
-          order.primaryVehicleType ||
-          order.vehicleType ||
-          order.vehicles?.[0]
-            ?.vehicleType ||
-          "",
-
-        vehicles:
-          Array.isArray(
-            order.vehicles
-          ) &&
-          order.vehicles.length
-            ? order.vehicles.map(
-                (
-                  vehicle
-                ) => ({
-
-                  ...EMPTY_WTG_VEHICLE,
-
-                  ...vehicle,
-
-                  quantity:
-                    String(
-                      vehicle.quantity ??
-                      1
-                    ),
-
-                  weight:
-                    String(
-                      vehicle.weight ??
-                      ""
-                    ),
-
-                  length:
-                    vehicle.length ??
-                    "",
-
-                  height:
-                    vehicle.height ??
-                    "",
-
-                  width:
-                    vehicle.width ??
-                    "",
-                })
+        return orders.filter(
+          (order) => {
+            const requirementData =
+              Array.isArray(
+                order
+                  .vehicleRequirements
               )
-            : [
-                {
-                  ...EMPTY_WTG_VEHICLE,
-                },
-              ],
-      });
+                ? order
+                    .vehicleRequirements
+                    .flatMap(
+                      (
+                        requirement
+                      ) => [
+                        requirement
+                          .requirementId,
 
+                        requirement
+                          .vehicleType,
 
-      setShowTripModal(
-        true
-      );
-    };
-  /* =========================================================
-     CLOSE MODAL
-  ========================================================= */
+                        requirement
+                          .configuration,
 
-  const handleCloseTripModal =
-    () => {
+                        requirement
+                          .classification,
 
-      if (isSaving) {
-        return;
-      }
+                        requirement
+                          .quantity,
 
-      setShowTripModal(
-        false
-      );
+                        requirement
+                          .weight,
+                      ]
+                    )
+                : [];
 
-      setEditingOrderId(
-        null
-      );
+            const haystack = [
+              order.tripId,
+              order.movementType,
 
-      setTripForm(
-        createEmptyTripForm()
-      );
+              order.customer,
+              order.contactPerson,
+              order.contactNumber,
+              order.email,
 
-      setTripUpload(
-        null
-      );
-    };
+              order.assignedKam,
 
+              order.materialType,
 
-  const handleTripOverlayClick =
-    (event) => {
+              order.origin,
+              order.destination,
+              order.distance,
+              order.totalVehicles,
 
-      if (
-        event.target ===
-        event.currentTarget
-      ) {
-        handleCloseTripModal();
-      }
-    };
+              order.stage,
+              order.status,
 
+              order.orderApproval
+                ?.status,
 
-  /* =========================================================
-     FORM INPUT
-  ========================================================= */
+              order.enquiryDate,
+              order.placementDate,
 
-  const handleTripFieldChange =
-    (field) =>
-    (event) => {
+              order.siteLocation,
+              order.period,
+              order.dieselScope,
 
-      setTripForm(
-        (previous) => ({
+              order.remark,
 
-          ...previous,
+              ...requirementData,
+            ]
+              .filter(
+                (value) =>
+                  value !==
+                    undefined &&
+                  value !== null
+              )
+              .join(" ")
+              .toLowerCase();
 
-          [field]:
-            event.target.value,
-        })
-      );
-    };
+            const matchesSearch =
+              !searchText ||
+              haystack.includes(
+                searchText
+              );
 
+            const matchesStage =
+              stageFilter ===
+                "All Stages" ||
+              order.stage ===
+                stageFilter;
 
-  const handleMovementTypeChange =
-    (event) => {
-
-      const movementType =
-        event.target.value;
-
-      setTripForm(
-        (previous) => ({
-
-          ...previous,
-
-          movementType,
-
-          requiredVehicles:
-            movementType ===
-              "Crane"
-              ? previous
-                  .requiredVehicles ||
-                "1"
-              : previous
-                  .requiredVehicles,
-        })
-      );
-
-      setTripUpload(
-        null
-      );
-    };
-
-
-  const handleTripFileChange =
-    (event) => {
-
-      setTripUpload(
-        event.target
-          .files?.[0] ||
-        null
-      );
-    };
-
-
-  /* =========================================================
-     VEHICLES
-  ========================================================= */
-
-  const handleWtgVehicleFieldChange =
-    (
-      index,
-      field
-    ) =>
-    (event) => {
-
-      const value =
-        event.target.value;
-
-      setTripForm(
-        (previous) => ({
-
-          ...previous,
-
-          vehicles:
-            previous.vehicles.map(
-              (
-                vehicle,
-                vehicleIndex
-              ) =>
-                vehicleIndex ===
-                index
-                  ? {
-
-                      ...vehicle,
-
-                      [field]:
-                        value,
-                    }
-                  : vehicle
-            ),
-        })
-      );
-    };
-
-
-  const handleAddWtgVehicle =
-    () => {
-
-      setTripForm(
-        (previous) => ({
-
-          ...previous,
-
-          vehicles: [
-            ...(
-              previous
-                .vehicles.length
-                ? previous.vehicles
-                : [
-                    {
-                      ...EMPTY_WTG_VEHICLE,
-                    },
-                  ]
-            ),
-
-            {
-              ...EMPTY_WTG_VEHICLE,
-            },
-          ],
-        })
-      );
-    };
-
-
-  const handleRemoveWtgVehicle =
-    (index) => {
-
-      setTripForm(
-        (previous) => {
-
-          if (
-            previous
-              .vehicles.length <=
-            1
-          ) {
-            return previous;
+            return (
+              matchesSearch &&
+              matchesStage
+            );
           }
-
-          return {
-
-            ...previous,
-
-            vehicles:
-              previous.vehicles.filter(
-                (
-                  _,
-                  vehicleIndex
-                ) =>
-                  vehicleIndex !==
-                  index
-              ),
-          };
-        }
-      );
-    };
-
-
-  /* =========================================================
-     CREATE / UPDATE TRIP
-  ========================================================= */
-
-  const handleCreateTrip =
-    async () => {
-
-      const isWTG =
-        tripForm.movementType ===
-        "WTG Movement";
-
-
-      const isIntercarting =
-        tripForm.movementType ===
-          "Intercarting" ||
-        tripForm.movementType ===
-          "Other";
-
-
-      const isCrane =
-        tripForm.movementType ===
-        "Crane";
-
-
-      if (
-        !tripForm.movementType
-      ) {
-
-        setToast(
-          "Please select a movement type."
         );
+      }, [
+        orders,
+        search,
+        stageFilter,
+      ]);
 
-        return;
-      }
+    /* =======================================================
+      STATS
+    ======================================================= */
 
+    const stats =
+      useMemo(() => {
+        const active =
+          orders.filter(
+            (order) =>
+              Array.isArray(
+                order
+                  .allocatedVehicles
+              ) &&
+              order
+                .allocatedVehicles
+                .length > 0
+          ).length;
 
-      if (
-        !String(
-          tripForm.tripId
-        ).trim()
-      ) {
+        const approvalPending =
+          orders.filter(
+            (order) =>
+              (
+                order
+                  .orderApproval
+                  ?.status ||
+                "Pending"
+              ) === "Pending"
+          ).length;
 
-        setToast(
-          "Trip ID is required."
-        );
+        const quotationPending =
+          orders.filter(
+            (order) => {
+              if (
+                order
+                  .orderApproval
+                  ?.status !==
+                "Approved"
+              ) {
+                return false;
+              }
 
-        return;
-      }
-
-
-      const commonFields = [
-
-        tripForm.companyName,
-        tripForm.client,
-        tripForm.clientContact,
-        tripForm.clientEmail,
-        tripForm.enquiryDate,
-      ];
-
-
-      if (
-        commonFields.some(
-          (value) =>
-            !String(
-              value ?? ""
-            ).trim()
-        )
-      ) {
-
-        setToast(
-          "Please complete all required client details."
-        );
-
-        return;
-      }
-
-
-      if (
-        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
-          String(
-            tripForm.clientEmail
-          ).trim()
-        )
-      ) {
-
-        setToast(
-          "Please enter a valid client email address."
-        );
-
-        return;
-      }
-
-
-      /* =========================
-         WTG VALIDATION
-      ========================= */
-
-      if (isWTG) {
-
-        const required = [
-
-          tripForm.placementDate,
-          tripForm.assignedKam,
-          tripForm.origin,
-          tripForm.destination,
-          tripForm.estimatedDistance,
-          tripForm.cargo,
-        ];
-
-
-        if (
-          required.some(
-            (value) =>
-              !String(
-                value ?? ""
-              ).trim()
-          )
-        ) {
-
-          setToast(
-            "Please complete all required WTG trip fields."
-          );
-
-          return;
-        }
-
-
-        const invalidVehicle =
-          tripForm.vehicles.some(
-            (vehicle) => {
-
-              const values = [
-
-                vehicle.vehicleType,
-                vehicle.configurationModel,
-                vehicle.movementClassification,
-                vehicle.quantity,
-                vehicle.weight,
-                vehicle.length,
-                vehicle.height,
-                vehicle.width,
-              ];
-
+              const confirmations =
+                Array.isArray(
+                  order
+                    .vehicleConfirmations
+                )
+                  ? order
+                      .vehicleConfirmations
+                  : [];
 
               return (
-
-                values.some(
-                  (value) =>
-                    !String(
-                      value ?? ""
-                    ).trim()
-                ) ||
-
-                !Number.isInteger(
-                  Number(
-                    vehicle.quantity
-                  )
-                ) ||
-
-                Number(
-                  vehicle.quantity
-                ) < 1 ||
-
-                [
-                  vehicle.weight,
-                  vehicle.length,
-                  vehicle.height,
-                  vehicle.width,
-                ].some(
-                  (value) =>
-                    !Number.isFinite(
-                      Number(value)
-                    ) ||
-                    Number(value) <=
-                      0
+                !confirmations.some(
+                  (
+                    confirmation
+                  ) =>
+                    confirmation
+                      .status ===
+                    "Approved"
                 )
               );
             }
+          ).length;
+
+        return {
+          total:
+            orders.length,
+
+          active,
+
+          approvalPending,
+
+          quotationPending,
+        };
+      }, [orders]);
+
+    /* =======================================================
+      OPEN ORDER
+    ======================================================= */
+
+    const handleOrderClick =
+      (order) => {
+        setSelectedOrderId(
+          getOrderKey(
+            order
+          )
+        );
+      };
+
+    const handleBackFromDetail =
+      () => {
+        setSelectedOrderId(
+          null
+        );
+      };
+
+    /* =======================================================
+      NEW TRIP
+    ======================================================= */
+
+    const handleOpenTripModal =
+      () => {
+        setEditingOrderId(
+          null
+        );
+
+        setTripForm(
+          createEmptyTripForm(
+            getNextTripId(
+              orders
+            )
+          )
+        );
+
+        setTripUpload(
+          null
+        );
+
+        setShowTripModal(
+          true
+        );
+      };
+
+    /* =======================================================
+      EDIT TRIP
+
+      All orders can be edited.
+    ======================================================= */
+
+    const handleEditTrip =
+      (order) => {
+
+        const orderId =
+          getMongoId(
+            order._id
           );
 
-
-        if (invalidVehicle) {
-
+        if (!orderId) {
           setToast(
-            "Complete Vehicle Type, Configuration, Classification, Quantity, Weight and L × H × W for every WTG vehicle."
+            "Order database ID is missing."
           );
 
           return;
         }
-      }
 
+        setEditingOrderId(
+          orderId
+        );
 
-      /* =========================
-         INTERCARTING / OTHER
-      ========================= */
+        setTripUpload(
+          null
+        );
 
-      if (isIntercarting) {
+        setTripForm({
+          ...createEmptyTripForm(
+            order.tripId || ""
+          ),
 
-        const required = [
+          tripId:
+            order.tripId || "",
 
-          tripForm.siteLocation,
-          tripForm.period,
-          tripForm.dieselScope,
-          tripForm.totalQuantity,
-          tripForm.deploymentDate,
-          tripForm.assignedKam,
+          movementType:
+            getEditableMovementType(
+              order
+            ),
+
+          customer:
+            order.customer ||
+            "",
+
+          contactPerson:
+            order.contactPerson ||
+            "",
+
+          contactNumber:
+            order.contactNumber ||
+            "",
+
+          email:
+            order.email ||
+            "",
+
+          assignedKam:
+            order.assignedKam ||
+            "",
+
+          enquiryDate:
+            toDateInput(
+              order.enquiryDate
+            ),
+
+          placementDate:
+            toDateInput(
+              order.placementDate
+            ),
+
+          origin:
+            order.origin || "",
+
+          destination:
+            order.destination ||
+            "",
+
+          distance:
+            numberText(
+              order.distance
+            ),
+
+          totalVehicles:
+            numberText(
+              order.totalVehicles
+            ),
+
+          materialType:
+            order.materialType ||
+            "",
+
+          remark:
+            order.remark || "",
+
+          siteLocation:
+            order.siteLocation ||
+            "",
+
+          period:
+            order.period || "",
+
+          dieselScope:
+            order.dieselScope ||
+            "",
+
+          routeLocations:
+            Array.isArray(
+              order.routeLocations
+            )
+              ? [
+                  ...order
+                    .routeLocations,
+                ]
+              : [],
+
+          vehicleRequirements:
+            Array.isArray(
+              order
+                .vehicleRequirements
+            ) &&
+            order
+              .vehicleRequirements
+              .length
+              ? order
+                  .vehicleRequirements
+                  .map(
+                    normalizeRequirement
+                  )
+              : [
+                  createEmptyVehicleRequirement(),
+                ],
+        });
+
+        setShowTripModal(
+          true
+        );
+      };
+
+    /* =======================================================
+      CLOSE MODAL
+    ======================================================= */
+
+    const handleCloseTripModal =
+      () => {
+        if (isSaving) {
+          return;
+        }
+
+        setShowTripModal(
+          false
+        );
+
+        setEditingOrderId(
+          null
+        );
+
+        setTripForm(
+          createEmptyTripForm()
+        );
+
+        setTripUpload(
+          null
+        );
+      };
+
+    const handleTripOverlayClick =
+      (event) => {
+        if (
+          event.target ===
+          event.currentTarget
+        ) {
+          handleCloseTripModal();
+        }
+      };
+
+    /* =======================================================
+      FORM FIELD
+    ======================================================= */
+
+    const handleTripFieldChange =
+      (field) =>
+      (event) => {
+        setTripForm(
+          (previous) => ({
+            ...previous,
+
+            [field]:
+              event.target.value,
+          })
+        );
+      };
+
+    const handleMovementTypeChange =
+      (event) => {
+        const movementType =
+          event.target.value;
+
+        setTripForm(
+          (previous) => ({
+            ...previous,
+            movementType,
+          })
+        );
+
+        setTripUpload(
+          null
+        );
+      };
+
+    const handleTripFileChange =
+      (event) => {
+        setTripUpload(
+          event.target
+            .files?.[0] ||
+          null
+        );
+      };
+
+    /* =======================================================
+      REQUIREMENT FIELD
+    ======================================================= */
+
+    const handleWtgVehicleFieldChange =
+      (
+        index,
+        field
+      ) =>
+      (event) => {
+        const value =
+          event.target.value;
+
+        setTripForm(
+          (previous) => ({
+            ...previous,
+
+            vehicleRequirements:
+              previous
+                .vehicleRequirements
+                .map(
+                  (
+                    requirement,
+                    requirementIndex
+                  ) => {
+                    if (
+                      requirementIndex !==
+                      index
+                    ) {
+                      return requirement;
+                    }
+
+                    if (
+                      [
+                        "length",
+                        "height",
+                        "width",
+                      ].includes(
+                        field
+                      )
+                    ) {
+                      return {
+                        ...requirement,
+
+                        dimensions: {
+                          ...requirement
+                            .dimensions,
+
+                          [field]:
+                            value,
+                        },
+                      };
+                    }
+
+                    return {
+                      ...requirement,
+
+                      [field]:
+                        value,
+                    };
+                  }
+                ),
+          })
+        );
+      };
+
+    /* =======================================================
+      ADD REQUIREMENT
+    ======================================================= */
+
+    const handleAddWtgVehicle =
+      () => {
+        setTripForm(
+          (previous) => ({
+            ...previous,
+
+            vehicleRequirements: [
+              ...previous
+                .vehicleRequirements,
+
+              createEmptyVehicleRequirement(),
+            ],
+          })
+        );
+      };
+
+    /* =======================================================
+      REMOVE REQUIREMENT
+    ======================================================= */
+
+    const handleRemoveWtgVehicle =
+      (index) => {
+        setTripForm(
+          (previous) => {
+            if (
+              previous
+                .vehicleRequirements
+                .length <= 1
+            ) {
+              return previous;
+            }
+
+            return {
+              ...previous,
+
+              vehicleRequirements:
+                previous
+                  .vehicleRequirements
+                  .filter(
+                    (
+                      _,
+                      requirementIndex
+                    ) =>
+                      requirementIndex !==
+                      index
+                  ),
+            };
+          }
+        );
+      };
+
+    /* =======================================================
+      VALIDATION
+    ======================================================= */
+
+    const validateTripForm =
+      () => {
+        const requiredFields = [
+          tripForm.tripId,
+          tripForm.movementType,
+          tripForm.customer,
+          tripForm.contactPerson,
+          tripForm.contactNumber,
+          tripForm.email,
+          tripForm.enquiryDate,
         ];
 
-
         if (
-          required.some(
+          requiredFields.some(
             (value) =>
               !String(
                 value ?? ""
               ).trim()
           )
         ) {
-
-          setToast(
-            "Please complete all required Intercarting / Other fields."
+          return (
+            "Please complete all required customer and order details."
           );
-
-          return;
         }
 
+        if (
+          !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+            String(
+              tripForm.email
+            ).trim()
+          )
+        ) {
+          return (
+            "Please enter a valid email address."
+          );
+        }
 
-        const invalidVehicle =
-          tripForm.vehicles.some(
-            (vehicle) =>
-              [
-                vehicle.vehicleType,
-                vehicle.configurationModel,
-                vehicle.movementClassification,
-                vehicle.quantity,
-                vehicle.weight,
-              ].some(
-                (value) =>
+        if (
+          tripForm.movementType ===
+            "WTG Movement"
+        ) {
+          const totalVehicles =
+            Number(
+              tripForm.totalVehicles
+            );
+
+          if (
+            !Number.isInteger(
+              totalVehicles
+            ) ||
+            totalVehicles < 1
+          ) {
+            return (
+              "Please enter a valid Total Vehicles value."
+            );
+          }
+        }
+
+        if (
+          !Array.isArray(
+            tripForm
+              .vehicleRequirements
+          ) ||
+          !tripForm
+            .vehicleRequirements
+            .length
+        ) {
+          return (
+            "Add at least one vehicle requirement."
+          );
+        }
+
+        const invalidRequirement =
+          tripForm
+            .vehicleRequirements
+            .some(
+              (requirement) => {
+                if (
                   !String(
-                    value ?? ""
+                    requirement
+                      .vehicleType ||
+                    ""
                   ).trim()
-              ) ||
+                ) {
+                  return true;
+                }
 
-              Number(
-                vehicle.quantity
-              ) < 1 ||
+                const quantity =
+                  Number(
+                    requirement.quantity
+                  );
 
-              Number(
-                vehicle.weight
-              ) <= 0
-          );
+                if (
+                  !Number.isInteger(
+                    quantity
+                  ) ||
+                  quantity < 1
+                ) {
+                  return true;
+                }
 
+                if (
+                  requirement.weight !==
+                    "" &&
+                  (
+                    !Number.isFinite(
+                      Number(
+                        requirement
+                          .weight
+                      )
+                    ) ||
+                    Number(
+                      requirement.weight
+                    ) < 0
+                  )
+                ) {
+                  return true;
+                }
 
-        if (invalidVehicle) {
-
-          setToast(
-            "Complete vehicle details for every vehicle row."
-          );
-
-          return;
-        }
-      }
-
-
-      /* =========================
-         CRANE
-      ========================= */
-
-      if (isCrane) {
-
-        const required = [
-
-          tripForm.placementDate,
-          tripForm.assignedKam,
-          tripForm.origin,
-          tripForm.destination,
-          tripForm.estimatedDistance,
-          tripForm.cargo,
-          tripForm.requiredVehicles,
-          tripForm.primaryVehicleType,
-          tripForm.weight,
-        ];
-
+                return false;
+              }
+            );
 
         if (
-          required.some(
-            (value) =>
-              !String(
-                value ?? ""
-              ).trim()
-          )
+          invalidRequirement
         ) {
-
-          setToast(
-            "Please complete all required Crane fields."
+          return (
+            "Please enter a valid Vehicle Type, Quantity and Weight for every vehicle requirement."
           );
-
-          return;
         }
-      }
 
+        return "";
+      };
 
-      /* =========================
-         DUPLICATE CHECK
-      ========================= */
+    /* =======================================================
+      BUILD REQUIREMENTS
+    ======================================================= */
 
-      const duplicate =
-        orders.some(
-          (order) =>
-            order._id !==
-              editingOrderId &&
-            String(
-              order.tripId ||
-              order.id
-            )
-              .trim()
-              .toLowerCase() ===
-            String(
-              tripForm.tripId
-            )
-              .trim()
-              .toLowerCase()
-        );
-
-
-      if (duplicate) {
-
-        setToast(
-          "Trip ID already exists."
-        );
-
-        return;
-      }
-
-
-      const existing =
-        editingOrderId
-          ? orders.find(
-              (order) =>
-                order._id ===
-                editingOrderId
-            )
-          : null;
-
-
-      const usesVehicleRows =
-        isWTG ||
-        isIntercarting;
-
-
-      let vehicles = [];
-
-
-      if (usesVehicleRows) {
-
-        vehicles =
-          tripForm.vehicles.map(
+    const buildVehicleRequirements =
+      () =>
+        tripForm
+          .vehicleRequirements
+          .map(
             (
-              vehicle,
+              requirement,
               index
             ) => ({
-
-              ...vehicle,
-
-              vehicleSubId:
-                vehicle.vehicleSubId ||
-                `${tripForm.tripId}-V${
+              requirementId:
+                requirement
+                  .requirementId ||
+                `${tripForm.tripId}-REQ-${
                   index + 1
                 }`,
 
-              vehicleNumber:
-                vehicle.vehicleNumber ||
-                "",
-
               vehicleType:
                 String(
-                  vehicle.vehicleType ||
+                  requirement
+                    .vehicleType ||
                   ""
                 ).trim(),
 
-              configurationModel:
+              configuration:
                 String(
-                  vehicle.configurationModel ||
+                  requirement
+                    .configuration ||
                   ""
                 ).trim(),
 
-              movementClassification:
+              classification:
                 String(
-                  vehicle.movementClassification ||
+                  requirement
+                    .classification ||
                   ""
                 ).trim(),
 
               quantity:
                 Number(
-                  vehicle.quantity
+                  requirement.quantity ||
+                  1
                 ),
 
               weight:
                 Number(
-                  vehicle.weight
+                  requirement.weight ||
+                  0
                 ),
 
-              length:
-                isWTG
-                  ? Number(
-                      vehicle.length
-                    )
-                  : null,
+              dimensions: {
+                length:
+                  requirement
+                    .dimensions
+                    ?.length ===
+                    "" ||
+                  requirement
+                    .dimensions
+                    ?.length ===
+                    undefined
+                    ? null
+                    : Number(
+                        requirement
+                          .dimensions
+                          .length
+                      ),
 
-              height:
-                isWTG
-                  ? Number(
-                      vehicle.height
-                    )
-                  : null,
+                height:
+                  requirement
+                    .dimensions
+                    ?.height ===
+                    "" ||
+                  requirement
+                    .dimensions
+                    ?.height ===
+                    undefined
+                    ? null
+                    : Number(
+                        requirement
+                          .dimensions
+                          .height
+                      ),
 
-              width:
-                isWTG
-                  ? Number(
-                      vehicle.width
-                    )
-                  : null,
+                width:
+                  requirement
+                    .dimensions
+                    ?.width ===
+                    "" ||
+                  requirement
+                    .dimensions
+                    ?.width ===
+                    undefined
+                    ? null
+                    : Number(
+                        requirement
+                          .dimensions
+                          .width
+                      ),
+              },
             })
           );
 
-      } else {
+    /* =======================================================
+      BUILD PAYLOAD
 
-        const oldVehicle =
-          existing
-            ?.vehicles?.[0] ||
-          {};
+      IMPORTANT:
+      No orderApproval.
+      No trafficQuotations.
+      No vehicleConfirmations.
+      No allocatedVehicles.
+      No workflow status manipulation.
 
+      Backend controls workflow.
+    ======================================================= */
 
-        vehicles = [
-          {
-
-            ...oldVehicle,
-
-            vehicleSubId:
-              oldVehicle
-                .vehicleSubId ||
-              `${tripForm.tripId}-V1`,
-
-            vehicleType:
-              tripForm
-                .primaryVehicleType
-                .trim(),
-
-            quantity:
-              Number(
-                tripForm.requiredVehicles
-              ),
-
-            weight:
-              Number(
-                tripForm.weight
-              ),
-          },
-        ];
-      }
-
-
-      const requiredVehicleCount =
-        usesVehicleRows
-          ? vehicles.reduce(
-              (
-                total,
-                vehicle
-              ) =>
-                total +
-                Number(
-                  vehicle.quantity ||
-                  0
-                ),
-              0
-            )
-          : Number(
-              tripForm.requiredVehicles
-            );
-
-
-      const firstVehicle =
-        vehicles[0] || {};
-
-
-      const uploadMeta =
-        tripUpload
-          ? {
-
-              name:
-                tripUpload.name,
-
-              type:
-                tripUpload.type,
-
-              size:
-                tripUpload.size,
-
-              lastModified:
-                tripUpload
-                  .lastModified,
-            }
-          : existing?.document ||
-            null;
-
-
-      /* =====================================================
-         PAYLOAD
-
-         IMPORTANT:
-         New orders = Pending.
-
-         Existing order status is preserved, so editing
-         the order from Key Account will NOT reset an
-         Approved/Rejected order back to Pending.
-      ===================================================== */
-
-      const currentApprovalStatus =
-        existing
-          ? normalizeApprovalStatus(
-              existing.approvalStatus ||
-              existing.orderStatus ||
-              "Pending"
-            )
-          : "Pending";
-
-
-      const payload = {
-
-        ...(existing || {}),
-
+    const buildTripPayload =
+      () => ({
         tripId:
-          tripForm.tripId.trim(),
+          tripForm
+            .tripId
+            .trim()
+            .toUpperCase(),
 
         movementType:
-          tripForm.movementType,
-
-        companyName:
-          tripForm.companyName.trim(),
+          tripForm
+            .movementType
+            .trim(),
 
         customer:
-          tripForm.client.trim(),
+          tripForm
+            .customer
+            .trim(),
 
-        client:
-          tripForm.client.trim(),
+        contactPerson:
+          tripForm
+            .contactPerson
+            .trim(),
 
-        clientContact:
-          tripForm.clientContact.trim(),
+        contactNumber:
+          tripForm
+            .contactNumber
+            .trim(),
 
-        clientPhone:
-          tripForm.clientContact.trim(),
-
-        clientContactPerson:
-          tripForm.clientContact.trim(),
-
-        clientEmail:
-          tripForm.clientEmail.trim(),
+        email:
+          tripForm
+            .email
+            .trim(),
 
         assignedKam:
-          tripForm.assignedKam.trim(),
-
-        materialType:
-          isIntercarting
-            ? tripForm.movementType
-            : tripForm.cargo.trim(),
-
-        cargo:
-          isIntercarting
-            ? tripForm.movementType
-            : tripForm.cargo.trim(),
+          tripForm
+            .assignedKam
+            .trim(),
 
         enquiryDate:
           tripForm.enquiryDate ||
           null,
 
         placementDate:
-          isIntercarting
-            ? tripForm.deploymentDate ||
-              null
-            : tripForm.placementDate ||
-              null,
-
-        deploymentDate:
-          isIntercarting
-            ? tripForm.deploymentDate ||
-              null
-            : null,
-
-        siteLocation:
-          isIntercarting
-            ? tripForm
-                .siteLocation
-                .trim()
-            : "",
-
-        period:
-          isIntercarting
-            ? tripForm.period.trim()
-            : "",
-
-        dieselScope:
-          isIntercarting
-            ? tripForm.dieselScope
-            : "",
-
-        totalQuantity:
-          isIntercarting
-            ? Number(
-                tripForm
-                  .totalQuantity
-              )
-            : 0,
-
-        // Manual count used across Lifecycle, Traffic and Approval pages
-        totalVehicleCount:
-          Number(
-            tripForm.totalVehicleCount
-          ),
+          tripForm.placementDate ||
+          null,
 
         origin:
-          isIntercarting
-            ? tripForm
-                .siteLocation
-                .trim()
-            : tripForm
-                .origin
-                .trim(),
+          tripForm
+            .origin
+            .trim(),
 
         destination:
-          isIntercarting
-            ? ""
-            : tripForm
-                .destination
-                .trim(),
+          tripForm
+            .destination
+            .trim(),
 
-        estimatedDistance:
-          isIntercarting
-            ? 0
-            : Number(
-                tripForm
-                  .estimatedDistance ||
-                0
-              ),
-
-        totalKm:
-          isIntercarting
-            ? 0
-            : Number(
-                tripForm
-                  .estimatedDistance ||
-                0
-              ),
-
-        weight:
+        distance:
           Number(
-            firstVehicle.weight ||
-            tripForm.weight ||
+            tripForm.distance ||
             0
           ),
 
-        length:
-          isWTG
-            ? Number(
-                firstVehicle.length ||
-                0
-              )
-            : null,
+        totalVehicles:
+          tripForm.totalVehicles ===
+            "" ||
+          tripForm.totalVehicles ===
+            null ||
+          tripForm.totalVehicles ===
+            undefined
+            ? 0
+            : Number(
+                tripForm.totalVehicles
+              ),
 
-        height:
-          isWTG
-            ? Number(
-                firstVehicle.height ||
-                0
-              )
-            : null,
+        routeLocations:
+          Array.isArray(
+            tripForm.routeLocations
+          )
+            ? tripForm
+                .routeLocations
+                .map(
+                  (location) =>
+                    typeof location ===
+                      "string"
+                      ? location.trim()
+                      : String(
+                          location?.name ||
+                          ""
+                        ).trim()
+                )
+                .filter(Boolean)
+            : [],
 
-        width:
-          isWTG
-            ? Number(
-                firstVehicle.width ||
-                0
-              )
-            : null,
-
-        configurationModel:
-          firstVehicle
-            .configurationModel ||
-          "",
-
-        movementClassification:
-          firstVehicle
-            .movementClassification ||
-          "",
+        materialType:
+          tripForm
+            .materialType
+            .trim(),
 
         remark:
-          tripForm.remark.trim(),
-
-        instructions:
-          tripForm.remark.trim(),
-
-        vehicles,
-
-        requiredVehicles:
-          requiredVehicleCount,
-
-        vehicleCount:
-          requiredVehicleCount,
-
-        primaryVehicleType:
-          firstVehicle
-            .vehicleType ||
           tripForm
-            .primaryVehicleType
+            .remark
             .trim(),
 
-        vehicleType:
-          firstVehicle
-            .vehicleType ||
+        siteLocation:
           tripForm
-            .primaryVehicleType
+            .siteLocation
             .trim(),
 
-        document:
-          uploadMeta,
+        period:
+          tripForm
+            .period
+            .trim(),
 
-        documentName:
-          uploadMeta?.name ||
-          existing?.documentName ||
-          "",
+        dieselScope:
+          tripForm
+            .dieselScope
+            .trim(),
 
-        loadingDate:
-          isIntercarting
-            ? tripForm.deploymentDate ||
-              null
-            : tripForm.placementDate ||
-              null,
+        vehicleRequirements:
+          buildVehicleRequirements(),
+      });
 
+    /* =======================================================
+      CREATE / UPDATE
+    ======================================================= */
 
-        /* ===============================================
-           NEW ORDER APPROVAL STATUS
-        =============================================== */
+    const handleCreateTrip =
+      async () => {
+        if (isSaving) {
+          return;
+        }
 
-        approvalStatus:
-          currentApprovalStatus,
+        const validationError =
+          validateTripForm();
 
-        orderStatus:
-          currentApprovalStatus,
+        if (validationError) {
+          setToast(
+            validationError
+          );
 
+          return;
+        }
 
-        /* ===============================================
-           WORKFLOW
-        =============================================== */
+        const duplicate =
+          orders.some(
+            (order) =>
+              getMongoId(
+                order._id
+              ) !==
+                editingOrderId &&
+              String(
+                order.tripId || ""
+              )
+                .trim()
+                .toLowerCase() ===
+              String(
+                tripForm.tripId ||
+                ""
+              )
+                .trim()
+                .toLowerCase()
+          );
 
-        orderStage:
-          existing?.orderStage ||
-          existing?.stage ||
-          "Client Enquiry",
+        if (duplicate) {
+          setToast(
+            "Trip ID already exists."
+          );
 
-        responsibleTeam:
-          existing
-            ?.responsibleTeam ||
-          existing?.role ||
-          "Key Account Management Team",
+          return;
+        }
 
-        stage:
-          existing?.stage ||
-          existing?.orderStage ||
-          "Client Enquiry",
-
-        role:
-          existing?.role ||
-          existing
-            ?.responsibleTeam ||
-          "Key Account Management Team",
-      };
-
-
-      delete payload._id;
-      delete payload.id;
-      delete payload.__v;
-      delete payload.createdAt;
-      delete payload.updatedAt;
-
-
-      try {
+        const payload =
+          buildTripPayload();
 
         setIsSaving(
           true
         );
 
+        try {
+          let savedData;
 
-        const url =
-          editingOrderId
-            ? `${TRIP_API_URL}/${editingOrderId}`
-            : TRIP_API_URL;
+          if (
+            editingOrderId
+          ) {
+            savedData =
+              await apiRequest(
+                `${TRIP_API_URL}/${editingOrderId}`,
+                {
+                  method: "PUT",
 
+                  body:
+                    JSON.stringify(
+                      payload
+                    ),
+                }
+              );
+          } else {
+            savedData =
+              await apiRequest(
+                TRIP_API_URL,
+                {
+                  method: "POST",
 
-        const response =
-          await fetch(
-            url,
-            {
-              method:
-                editingOrderId
-                  ? "PUT"
-                  : "POST",
+                  body:
+                    JSON.stringify(
+                      payload
+                    ),
+                }
+              );
+          }
 
-              headers: {
-                "Content-Type":
-                  "application/json",
-              },
-
-              body:
-                JSON.stringify(
-                  payload
-                ),
-            }
-          );
-
-
-        const result =
-          await response
-            .json()
-            .catch(
-              () => ({})
+          const savedOrder =
+            mapDbTripToOrder(
+              savedData
             );
 
-
-        if (!response.ok) {
-
-          throw new Error(
-            result.message ||
-            "Unable to save trip."
-          );
-        }
-
-
-        const savedOrder =
-          mapDbTripToOrder(
-            extractTrip(
-              result
-            )
-          );
-
-
-        setOrders(
-          (previous) =>
-            editingOrderId
-              ? previous.map(
+          setOrders(
+            (previous) => {
+              if (
+                editingOrderId
+              ) {
+                return previous.map(
                   (order) =>
-                    order._id ===
+                    getMongoId(
+                      order._id
+                    ) ===
                     editingOrderId
                       ? savedOrder
                       : order
-                )
-              : [
-                  savedOrder,
-                  ...previous,
-                ]
-        );
+                );
+              }
 
-
-        setSelectedOrderId(
-          savedOrder._id ||
-          savedOrder.id
-        );
-
-
-        setShowTripModal(
-          false
-        );
-
-
-        setEditingOrderId(
-          null
-        );
-
-
-        setTripForm(
-          createEmptyTripForm()
-        );
-
-
-        setTripUpload(
-          null
-        );
-
-
-        setToast(
-          `${savedOrder.tripId} ${
-            editingOrderId
-              ? "updated"
-              : "created"
-          } successfully.`
-        );
-
-      } catch (error) {
-
-        console.error(
-          "Save Trip Error:",
-          error
-        );
-
-        setToast(
-          error.message ||
-          "Unable to save trip."
-        );
-
-      } finally {
-
-        setIsSaving(
-          false
-        );
-      }
-    };
-
-
-  /* =========================================================
-     UPDATE LIFECYCLE
-  ========================================================= */
-
-  const handleUpdateOrder =
-    async (
-      updatedOrder,
-      message =
-        "Order updated."
-    ) => {
-
-      const mongoId =
-        updatedOrder._id;
-
-
-      if (!mongoId) {
-
-        setToast(
-          "Database ID missing."
-        );
-
-        throw new Error(
-          "Database ID missing."
-        );
-      }
-
-
-      const currentApprovalStatus =
-        normalizeApprovalStatus(
-          updatedOrder.approvalStatus ||
-          updatedOrder.orderStatus ||
-          updatedOrder.approvalDecision ||
-          updatedOrder.approval?.status ||
-          "Pending"
-        );
-
-
-      const payload = {
-
-        ...updatedOrder,
-
-        customer:
-          updatedOrder.client ||
-          updatedOrder.customer ||
-          "",
-
-        client:
-          updatedOrder.client ||
-          updatedOrder.customer ||
-          "",
-
-        clientPhone:
-          updatedOrder.clientPhone ||
-          updatedOrder.clientContact ||
-          "",
-
-        clientContact:
-          updatedOrder.clientContact ||
-          updatedOrder.clientPhone ||
-          "",
-
-        materialType:
-          updatedOrder.cargo ||
-          updatedOrder.materialType ||
-          "",
-
-        cargo:
-          updatedOrder.cargo ||
-          updatedOrder.materialType ||
-          "",
-
-
-        /* PRESERVE APPROVAL */
-
-        approvalStatus:
-          currentApprovalStatus,
-
-        orderStatus:
-          currentApprovalStatus,
-
-
-        orderStage:
-          updatedOrder.stage ||
-          updatedOrder.orderStage ||
-          "Client Enquiry",
-
-        responsibleTeam:
-          updatedOrder.role ||
-          updatedOrder.responsibleTeam ||
-          "Key Account Management Team",
-      };
-
-
-      delete payload._id;
-      delete payload.id;
-      delete payload.__v;
-      delete payload.createdAt;
-      delete payload.updatedAt;
-
-
-      try {
-
-        const response =
-          await fetch(
-            `${TRIP_API_URL}/${mongoId}`,
-            {
-              method: "PUT",
-
-              headers: {
-                "Content-Type":
-                  "application/json",
-              },
-
-              body:
-                JSON.stringify(
-                  payload
-                ),
+              return [
+                savedOrder,
+                ...previous,
+              ];
             }
           );
 
+          setSelectedOrderId(
+            getOrderKey(
+              savedOrder
+            )
+          );
 
-        const result =
-          await response
-            .json()
-            .catch(
-              () => ({})
-            );
+          setToast(
+            editingOrderId
+              ? `${savedOrder.tripId} updated successfully.`
+              : `${savedOrder.tripId} created and sent for approval.`
+          );
 
+          setShowTripModal(
+            false
+          );
 
-        if (!response.ok) {
+          setEditingOrderId(
+            null
+          );
 
-          throw new Error(
-            result.message ||
-            "Unable to update order."
+          setTripForm(
+            createEmptyTripForm()
+          );
+
+          setTripUpload(
+            null
+          );
+        } catch (error) {
+          console.error(
+            "Save trip order error:",
+            error
+          );
+
+          setToast(
+            error.message ||
+            "Unable to save order."
+          );
+        } finally {
+          setIsSaving(
+            false
           );
         }
+      };
 
+    /* =======================================================
+      DELETE
+    ======================================================= */
 
-        const savedOrder =
-          mapDbTripToOrder(
-            extractTrip(
-              result
-            )
+    const handleDeleteTrip =
+      async (order) => {
+        const orderId =
+          getMongoId(
+            order?._id
           );
 
+        if (!orderId) {
+          setToast(
+            "Order database ID is missing."
+          );
 
-        setOrders(
-          (previous) =>
-            previous.map(
-              (order) =>
-                order._id ===
-                mongoId
-                  ? savedOrder
-                  : order
-            )
-        );
+          return;
+        }
 
+        const tripLabel =
+          order.tripId ||
+          "this trip";
 
-        setToast(
-          message
-        );
+        const confirmed =
+          window.confirm(
+            `Are you sure you want to delete ${tripLabel}?`
+          );
 
+        if (!confirmed) {
+          return;
+        }
 
-        return savedOrder;
-
-      } catch (error) {
-
-        console.error(
-          "Update Order Error:",
-          error
-        );
-
-        setToast(
-          error.message ||
-          "Unable to update order."
-        );
-
-        throw error;
-      }
-    };
-
-
-  /* =========================================================
-     DELETE TRIP
-  ========================================================= */
-
-  const handleDeleteTrip =
-    async (
-      order
-    ) => {
-
-      const mongoId =
-        order?._id;
-
-
-      if (!mongoId) {
-
-        setToast(
-          "Database ID missing."
-        );
-
-        return;
-      }
-
-
-      const tripLabel =
-        order.tripId ||
-        order.id ||
-        "this trip";
-
-
-      const confirmed =
-        window.confirm(
-          `Are you sure you want to delete ${tripLabel}?`
-        );
-
-
-      if (!confirmed) {
-        return;
-      }
-
-
-      try {
-
-        const response =
-          await fetch(
-            `${TRIP_API_URL}/${mongoId}`,
+        try {
+          await apiRequest(
+            `${TRIP_API_URL}/${orderId}`,
             {
               method:
                 "DELETE",
             }
           );
 
+          setOrders(
+            (previous) =>
+              previous.filter(
+                (item) =>
+                  getMongoId(
+                    item._id
+                  ) !==
+                  orderId
+              )
+          );
 
-        const result =
-          await response
-            .json()
-            .catch(
-              () => ({})
+          if (
+            selectedOrderId ===
+            getOrderKey(
+              order
+            )
+          ) {
+            setSelectedOrderId(
+              null
+            );
+          }
+
+          if (
+            editingOrderId ===
+            orderId
+          ) {
+            setShowTripModal(
+              false
             );
 
+            setEditingOrderId(
+              null
+            );
+          }
 
-        if (!response.ok) {
+          setToast(
+            `${tripLabel} deleted successfully.`
+          );
+        } catch (error) {
+          console.error(
+            "Delete trip error:",
+            error
+          );
 
-          throw new Error(
-            result.message ||
-            "Unable to delete trip."
+          setToast(
+            error.message ||
+            "Unable to delete order."
           );
         }
+      };
 
+    /* =======================================================
+      CLEAR FILTER
+    ======================================================= */
 
-        setOrders(
-          (previous) =>
-            previous.filter(
-              (item) =>
-                item._id !==
-                mongoId
-            )
+    const handleClearFilters =
+      () => {
+        setSearch("");
+
+        setStageFilter(
+          "All Stages"
         );
+      };
 
+    /* =======================================================
+      PAGE
+    ======================================================= */
 
-        if (
-          selectedOrderId ===
-          mongoId
-        ) {
-          setSelectedOrderId(
-            null
-          );
-        }
+    return (
+      <div className="key-account-page">
 
-
-        if (
-          editingOrderId ===
-          mongoId
-        ) {
-          handleCloseTripModal();
-        }
-
-
-        setToast(
-          `${tripLabel} deleted successfully.`
-        );
-
-      } catch (error) {
-
-        console.error(
-          "Delete Trip Error:",
-          error
-        );
-
-        setToast(
-          error.message ||
-          "Unable to delete trip."
-        );
-      }
-    };
-
-
-  /* =========================================================
-     CLEAR FILTER
-  ========================================================= */
-
-  const handleClearFilters =
-    () => {
-
-      setSearch("");
-
-      setStageFilter(
-        "All Stages"
-      );
-    };
-
-
-  /* =========================================================
-     PAGE
-  ========================================================= */
-
-  return (
-
-    <div className="key-account-page">
-
-      {toast && (
-        <div className="kam-toast">
-          {toast}
-        </div>
-      )}
-
-
-      <div className="key-account-shell">
-
-        {/* PAGE HEADER */}
-
-        <section className="kam-page-heading">
-
-          <div>
-
-            <h1>
-              Order Management
-            </h1>
-
-            <p>
-              Manage customer orders,
-              commercial workflow,
-              vendor finalization and
-              trip readiness from one
-              operational workspace.
-            </p>
-
+        {toast && (
+          <div className="kam-toast">
+            {toast}
           </div>
+        )}
 
-
-          <button
-            type="button"
-            className="new-trip-button"
-            onClick={
-              handleOpenTripModal
-            }
-          >
-
-            <span className="new-trip-plus">
-              +
-            </span>
-
-            New Trip
-
-          </button>
-
-        </section>
-
-
-        {/* STATS */}
-
-        <section className="kam-stat-grid">
-
-          <SummaryCard
-            label="Total Orders"
-            value={
-              stats.total
-            }
-            caption="All running orders"
-            icon="01"
-          />
-
-
-          <SummaryCard
-            label="Active Movement"
-            value={
-              stats.active
-            }
-            caption="Assigned / in transit"
-            icon="02"
-          />
-
-
-          <SummaryCard
-            label="Vendor Pending"
-            value={
-              stats.vendorPending
-            }
-            caption="Awaiting finalization"
-            icon="03"
-          />
-
-
-          <SummaryCard
-            label="Documentation"
-            value={
-              stats.documentation
-            }
-            caption="Documents in process"
-            icon="04"
-          />
-
-        </section>
-
-
-        {/* ORDER LIST */}
-
-        <section className="key-account-container">
-
-          <div className="key-account-header">
-
-            <div className="key-account-header-left">
-
-              <h2>
-                Running Order List
-              </h2>
-
-            </div>
-
-
-            <div className="kam-header-indicator">
-
-              <span className="kam-status-dot" />
-
-              Live workspace
-
-            </div>
-
-          </div>
-
-
-          {/* FILTER */}
-
-          <div className="key-account-filters">
-
-            <div className="key-search-box">
-
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-
-                <circle
-                  cx="11"
-                  cy="11"
-                  r="7"
-                />
-
-                <path
-                  d="M16 16l4 4"
-                />
-
-              </svg>
-
-
-              <input
-                type="text"
-                placeholder="Search order, customer, cargo, route, status..."
-                value={
-                  search
-                }
-                onChange={
-                  (event) =>
-                    setSearch(
-                      event.target.value
-                    )
-                }
-              />
-
-            </div>
-
-
-            <div className="key-stage-select">
-
-              <select
-                value={
-                  stageFilter
-                }
-                onChange={
-                  (event) =>
-                    setStageFilter(
-                      event.target.value
-                    )
-                }
-              >
-
-                {stages.map(
-                  (stage) => (
-
-                    <option
-                      key={stage}
-                      value={stage}
-                    >
-                      {stage}
-                    </option>
-
-                  )
-                )}
-
-              </select>
-
-
-              <svg
-                className="select-arrow"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-
-                <path
-                  d="M6 9l6 6 6-6"
-                />
-
-              </svg>
-
-            </div>
-
-
-            {(
-              search ||
-              stageFilter !==
-                "All Stages"
-            ) && (
-
-              <button
-                type="button"
-                className="kam-clear-filter"
-                onClick={
-                  handleClearFilters
-                }
-              >
-                Clear
-              </button>
-
-            )}
-
-
-            <div className="order-count">
-
-              <strong>
-                {
-                  filteredOrders.length
-                }
-              </strong>
-
-              <span>
-                of {orders.length} orders
-              </span>
-
-            </div>
-
-          </div>
-
+        <div className="key-account-shell">
 
           {/* =================================================
-              TABLE
+              HEADER
           ================================================= */}
 
-          <div className="key-account-table-wrapper">
+          <section className="kam-page-heading">
 
-            <table className="key-account-table">
+            <div>
+              <h1>
+                Order Management
+              </h1>
 
-              <thead>
+              <p>
+                Manage customer orders,
+                vehicle requirements,
+                approvals and trip
+                readiness from one
+                operational workspace.
+              </p>
+            </div>
 
-                <tr>
+            <button
+              type="button"
+              className="new-trip-button"
+              onClick={
+                handleOpenTripModal
+              }
+            >
+              <span className="new-trip-plus">
+                +
+              </span>
 
-                  <th>
-                    ORDER ID
-                  </th>
+              New Trip
+            </button>
 
-                  <th>
-                    CUSTOMER
-                  </th>
+          </section>
 
-                  <th>
-                    CARGO TYPE &amp; WEIGHT
-                  </th>
+          {/* =================================================
+              STATS
+          ================================================= */}
 
-                  <th>
-                    ROUTE
-                  </th>
+          <section className="kam-stat-grid">
 
-                  <th>
-                    STAGE
-                  </th>
+            <SummaryCard
+              label="Total Orders"
+              value={
+                stats.total
+              }
+              caption="All orders"
+              icon="01"
+            />
 
-                  {/* NEW */}
+            <SummaryCard
+              label="Active Movement"
+              value={
+                stats.active
+              }
+              caption="Vehicles in tracking"
+              icon="02"
+            />
 
-                  <th>
-                    ORDER STATUS
-                  </th>
+            <SummaryCard
+              label="Approval Pending"
+              value={
+                stats.approvalPending
+              }
+              caption="Awaiting order approval"
+              icon="03"
+            />
 
-                  <th>
-                    ASSIGNED KAM
-                  </th>
+            <SummaryCard
+              label="Quotation Pending"
+              value={
+                stats.quotationPending
+              }
+              caption="Awaiting transporter confirmation"
+              icon="04"
+            />
 
-                  <th className="kam-actions-column">
-                    ACTION
-                  </th>
+          </section>
 
-                </tr>
+          {/* =================================================
+              ORDER LIST
+          ================================================= */}
 
-              </thead>
+          <section className="key-account-container">
 
+            <div className="key-account-header">
 
-              <tbody>
+              <div className="key-account-header-left">
+                <h2>
+                  Running Order List
+                </h2>
+              </div>
 
-                {filteredOrders.length >
-                0 ? (
+              <div className="kam-header-indicator">
+                <span className="kam-status-dot" />
+                Live workspace
+              </div>
 
-                  filteredOrders.map(
-                    (order) => (
+            </div>
 
-                      <tr
-                        key={
-                          order._id ||
-                          order.id
-                        }
-                        className="key-account-row"
-                        onClick={() =>
-                          handleOrderClick(
-                            order
-                          )
-                        }
+            {/* ===============================================
+                FILTERS
+            =============================================== */}
+
+            <div className="key-account-filters">
+
+              <div className="key-search-box">
+
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <circle
+                    cx="11"
+                    cy="11"
+                    r="7"
+                  />
+
+                  <path
+                    d="M16 16l4 4"
+                  />
+                </svg>
+
+                <input
+                  type="text"
+                  placeholder="Search order, customer, material, route, status..."
+                  value={
+                    search
+                  }
+                  onChange={
+                    (event) =>
+                      setSearch(
+                        event.target.value
+                      )
+                  }
+                />
+
+              </div>
+
+              <div className="key-stage-select">
+
+                <select
+                  value={
+                    stageFilter
+                  }
+                  onChange={
+                    (event) =>
+                      setStageFilter(
+                        event.target.value
+                      )
+                  }
+                >
+                  {stages.map(
+                    (stage) => (
+                      <option
+                        key={stage}
+                        value={stage}
                       >
+                        {stage}
+                      </option>
+                    )
+                  )}
+                </select>
 
-                        {/* ORDER ID */}
+                <svg
+                  className="select-arrow"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path
+                    d="M6 9l6 6 6-6"
+                  />
+                </svg>
 
-                        <td>
+              </div>
 
-                          <div className="order-id">
-                            {order.id}
-                          </div>
+              {(
+                search ||
+                stageFilter !==
+                  "All Stages"
+              ) && (
+                <button
+                  type="button"
+                  className="kam-clear-filter"
+                  onClick={
+                    handleClearFilters
+                  }
+                >
+                  Clear
+                </button>
+              )}
 
-                        </td>
+              <div className="order-count">
+
+                <strong>
+                  {
+                    filteredOrders.length
+                  }
+                </strong>
+
+                <span>
+                  of {orders.length} orders
+                </span>
+
+              </div>
+
+            </div>
+
+            {/* ===============================================
+                TABLE
+            =============================================== */}
+
+            <div className="key-account-table-wrapper">
+
+              <table className="key-account-table">
+
+                <thead>
+                  <tr>
+
+                    <th>
+                      ORDER ID
+                    </th>
+
+                    <th>
+                      CUSTOMER
+                    </th>
+
+                    <th>
+                      MATERIAL &amp; WEIGHT
+                    </th>
+
+                    <th>
+    MOVEMENT
+  </th>
+
+                    <th>
+                      ROUTE
+                    </th>
+
+                    <th>
+                      STAGE
+                    </th>
+
+                    <th>
+                      ORDER STATUS
+                    </th>
+
+                    <th>
+                      ASSIGNED KAM
+                    </th>
+
+                    <th className="kam-actions-column">
+                      ACTION
+                    </th>
+
+                  </tr>
+                </thead>
+
+                <tbody>
+
+                  {filteredOrders.length >
+                  0 ? (
+
+                    filteredOrders.map(
+                      (order, index) => {
+                        const firstRequirement =
+                          order
+                            .vehicleRequirements
+                            ?.[0] ||
+                          {};
+
+                        const orderStatus =
+                          getDisplayOrderStatus(
+                            order
+                          );
+
+                        const menuId =
+                          getOrderKey(
+                            order
+                          );
 
 
-                        {/* CUSTOMER */}
+                        return (
+                          <tr
+                            key={
+                              menuId
+                            }
+                            className="key-account-row"
+                            onClick={() =>
+                              handleOrderClick(
+                                order
+                              )
+                            }
+                          >
 
-                        <td>
+                            {/* ORDER ID */}
 
-                          <div className="client-name">
+                            <td>
+                              <div className="order-id">
+                                {order.tripId}
+                              </div>
+                            </td>
 
-                            {order.companyName ||
-                              order.customer ||
-                              "—"}
+                            {/* CUSTOMER */}
 
-                          </div>
+                            <td>
 
+                              <div className="client-name">
+                                {order.customer ||
+                                  "—"}
+                              </div>
 
-                          {order.client && (
+                              {order.contactPerson && (
+                                <span className="order-subtext">
+                                  Contact Person:{" "}
+                                  {
+                                    order.contactPerson
+                                  }
+                                </span>
+                              )}
 
-                            <span className="order-subtext">
+                            </td>
 
-                              Contact Person: {
-                                order.client
-                              }
+                            {/* MATERIAL */}
 
-                            </span>
+                            <td>
 
-                          )}
+                              <div className="cargo-name">
+                                {order.materialType ||
+                                  "—"}
+                              </div>
 
-                        </td>
+                              {firstRequirement
+                                .weight !==
+                                "" &&
+                                firstRequirement
+                                  .weight !==
+                                  null &&
+                                firstRequirement
+                                  .weight !==
+                                  undefined && (
 
+                                <div className="cargo-weight">
+                                  {
+                                    firstRequirement
+                                      .weight
+                                  }{" "}
+                                  TON
+                                </div>
 
-                        {/* CARGO */}
+                              )}
 
-                        <td>
+                            </td>
 
-                          <div className="cargo-name">
+                          {/* MOVEMENT */}
 
-                            {[
-                              "Intercarting",
-                              "Other",
-                            ].includes(
-                              order.movementType
-                            )
-                              ? `${
-                                  order.movementType
-                                } · ${
-                                  order.totalQuantity ||
-                                  0
-                                } Nos`
-                              : order.cargo ||
-                                "—"}
-
-                          </div>
-
-
-                          {order.weight !==
-                            "" &&
-                            order.weight !==
-                              null &&
-                            order.weight !==
-                              undefined && (
-
-                            <div className="cargo-weight">
-
-                              {order.weight} TON
-
+                          <td>
+                            <div
+                              className={`kam-movement-type kam-movement-${String(
+                                order.movementType || "other"
+                              )
+                                .toLowerCase()
+                                .replace(/[^a-z0-9]+/g, "-")}`}
+                            >
+                              {order.movementType || "—"}
                             </div>
+                          </td>
 
-                          )}
-
-                        </td>
+                            
 
 
-                        {/* ROUTE */}
+                            {/* ROUTE */}
 
-                        <td>
-
-                          {[
-                            "Intercarting",
-                            "Other",
-                          ].includes(
-                            order.movementType
-                          ) ? (
-
-                            <span>
-
-                              {order.siteLocation ||
-                                "—"}
-
-                            </span>
-
-                          ) : (
-
-                            <>
+                            <td>
 
                               <span>
                                 {order.origin ||
                                   "—"}
                               </span>
 
-
                               <span className="route-arrow">
                                 →
                               </span>
-
 
                               <span>
                                 {order.destination ||
                                   "—"}
                               </span>
 
-                            </>
+                            </td>
 
-                          )}
+                            {/* STAGE */}
 
-                        </td>
+                            <td>
 
-
-                        {/* STAGE */}
-
-                        <td>
-
-                          <span
-                            className={
-                              getStageClass(
-                                order.stage
-                              )
-                            }
-                          >
-
-                            <span className="stage-dot" />
-
-                            {order.stage}
-
-                          </span>
-
-                        </td>
-
-
-                        {/* =====================================
-                            NEW ORDER STATUS
-                        ===================================== */}
-
-                        <td>
-
-                          <span
-                            className={
-                              getOrderStatusClass(
-                                order.approvalStatus
-                              )
-                            }
-                          >
-
-                            <span className="order-status-dot" />
-
-                            {
-                              normalizeApprovalStatus(
-                                order.approvalStatus
-                              )
-                            }
-
-                          </span>
-
-                        </td>
-
-
-                        {/* KEY ACCOUNT */}
-
-                        <td>
-
-                          <div className="role-responsible">
-
-                            {order.assignedKam ||
-                              order.role ||
-                              "—"}
-
-                          </div>
-
-                        </td>
-
-
-                        {/* ACTION */}
-
-                        <td
-                          className="kam-actions-cell"
-                          onClick={
-                            (event) =>
-                              event.stopPropagation()
-                          }
-                        >
-
-                          <div className="kam-action-menu-wrap">
-
-                            <button
-                              type="button"
-                              className={`kam-three-dot-btn ${
-                                openActionMenu ===
-                                (order._id || order.id)
-                                  ? "active"
-                                  : ""
-                              }`}
-                              aria-label={`Actions for ${
-                                order.tripId ||
-                                order.id
-                              }`}
-                              aria-expanded={
-                                openActionMenu ===
-                                (order._id || order.id)
-                              }
-                              onClick={
-                                (event) => {
-                                  event.stopPropagation();
-
-                                  const menuId =
-                                    order._id ||
-                                    order.id;
-
-                                  setOpenActionMenu(
-                                    (current) =>
-                                      current === menuId
-                                        ? null
-                                        : menuId
-                                  );
-                                }
-                              }
-                            >
-                              <span />
-                              <span />
-                              <span />
-                            </button>
-
-
-                            {openActionMenu ===
-                              (order._id || order.id) && (
-
-                              <div
-                                className="kam-action-dropdown"
-                                role="menu"
-                                onClick={
-                                  (event) =>
-                                    event.stopPropagation()
+                              <span
+                                className={
+                                  getStageClass(
+                                    order.stage
+                                  )
                                 }
                               >
+                                <span className="stage-dot" />
+
+                                {order.stage ||
+                                  "Order Approval"}
+                              </span>
+
+                            </td>
+
+                            {/* ORDER STATUS */}
+
+                            <td>
+
+                              <span
+                                className={
+                                  getOrderStatusClass(
+                                    order
+                                  )
+                                }
+                              >
+                                <span className="order-status-dot" />
+
+                                {
+                                  orderStatus
+                                }
+                              </span>
+
+                            </td>
+
+                            {/* ASSIGNED KAM */}
+
+                            <td>
+                              <div className="role-responsible">
+                                {order.assignedKam ||
+                                  "—"}
+                              </div>
+                            </td>
+
+                            {/* ACTION */}
+
+                            <td
+                              className="kam-actions-cell"
+                              onClick={
+                                (event) =>
+                                  event.stopPropagation()
+                              }
+                            >
+
+                              <div className="kam-action-menu-wrap">
 
                                 <button
                                   type="button"
-                                  className="kam-dropdown-item"
-                                  role="menuitem"
-                                  onClick={
-                                    (event) => {
-                                      event.stopPropagation();
-
-                                      setOpenActionMenu(
-                                        null
-                                      );
-
-                                      handleEditTrip(
-                                        order
-                                      );
-                                    }
+                                  className={`kam-three-dot-btn ${
+                                    openActionMenu ===
+                                    menuId
+                                      ? "active"
+                                      : ""
+                                  }`}
+                                  aria-label={`Actions for ${order.tripId}`}
+                                  aria-expanded={
+                                    openActionMenu ===
+                                    menuId
                                   }
-                                >
-                                  <span className="kam-action-item-icon">
-                                    <svg
-                                      viewBox="0 0 24 24"
-                                      fill="none"
-                                      stroke="currentColor"
-                                      strokeWidth="2"
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      aria-hidden="true"
-                                    >
-                                      <path d="M12 20h9" />
-                                      <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
-                                    </svg>
-                                  </span>
+                                  onClick={(event) => {
+                                    event.stopPropagation();
 
-                                  <span className="kam-action-item-text">
-                                    <strong>Edit</strong>
-                                  </span>
+                                    if (openActionMenu === menuId) {
+                                      setOpenActionMenu(null);
+                                      setActionMenuPosition(null);
+                                      return;
+                                    }
+
+                                    const rect =
+                                      event.currentTarget.getBoundingClientRect();
+
+                                    const menuWidth = 122;
+                                    const menuHeight = 72;
+                                    const gap = 6;
+                                    const edge = 10;
+
+                                    const spaceBelow =
+                                      window.innerHeight - rect.bottom;
+
+                                    const openUp =
+                                      spaceBelow < menuHeight + gap + edge &&
+                                      rect.top > menuHeight + gap + edge;
+
+                                    const top = openUp
+                                      ? Math.max(
+                                          edge,
+                                          rect.top - menuHeight - gap
+                                        )
+                                      : Math.min(
+                                          window.innerHeight - menuHeight - edge,
+                                          rect.bottom + gap
+                                        );
+
+                                    const left = Math.min(
+                                      window.innerWidth - menuWidth - edge,
+                                      Math.max(
+                                        edge,
+                                        rect.right - menuWidth
+                                      )
+                                    );
+
+                                    setActionMenuPosition({
+                                      top,
+                                      left,
+                                      openUp,
+                                    });
+
+                                    setOpenActionMenu(menuId);
+                                  }}
+                                >
+                                  <span />
+                                  <span />
+                                  <span />
                                 </button>
 
+                                {openActionMenu ===
+                                  menuId && (
 
-                                <button
-                                  type="button"
-                                  className="kam-dropdown-item kam-dropdown-delete"
-                                  role="menuitem"
-                                  onClick={
-                                    (event) => {
-                                      event.stopPropagation();
-
-                                      setOpenActionMenu(
-                                        null
-                                      );
-
-                                      handleDeleteTrip(
-                                        order
-                                      );
+                                  <div
+                                    className={`kam-action-dropdown kam-action-dropdown-fixed ${
+                                      actionMenuPosition?.openUp
+                                        ? "kam-action-dropdown-up"
+                                        : ""
+                                    }`}
+                                    style={{
+                                      top: actionMenuPosition?.top ?? 0,
+                                      left: actionMenuPosition?.left ?? 0,
+                                    }}
+                                    role="menu"
+                                    onClick={
+                                      (event) =>
+                                        event.stopPropagation()
                                     }
-                                  }
-                                >
-                                  <span className="kam-action-item-icon">
-                                    <svg
-                                      viewBox="0 0 24 24"
-                                      fill="none"
-                                      stroke="currentColor"
-                                      strokeWidth="2"
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      aria-hidden="true"
-                                    >
-                                      <path d="M3 6h18" />
-                                      <path d="M8 6V4h8v2" />
-                                      <path d="M19 6l-1 14H6L5 6" />
-                                      <path d="M10 11v5" />
-                                      <path d="M14 11v5" />
-                                    </svg>
-                                  </span>
+                                  >
 
-                                  <span className="kam-action-item-text">
-                                    <strong>Delete</strong>
-                                  </span>
-                                </button>
+                                    {/* EDIT */}
+
+                                    <button
+                                      type="button"
+                                      className="kam-dropdown-item"
+                                      role="menuitem"
+                                      onClick={
+                                        (event) => {
+                                          event.stopPropagation();
+
+                                          setOpenActionMenu(
+                                            null
+                                          );
+
+                                          handleEditTrip(
+                                            order
+                                          );
+                                        }
+                                      }
+                                    >
+
+                                      <span className="kam-action-item-icon">
+
+                                        <svg
+                                          viewBox="0 0 24 24"
+                                          fill="none"
+                                          stroke="currentColor"
+                                          strokeWidth="2"
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          aria-hidden="true"
+                                        >
+                                          <path
+                                            d="M12 20h9"
+                                          />
+
+                                          <path
+                                            d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"
+                                          />
+                                        </svg>
+
+                                      </span>
+
+                                      <span className="kam-action-item-text">
+                                        <strong>
+                                          Edit
+                                        </strong>
+                                      </span>
+
+                                    </button>
+
+                                    {/* DELETE */}
+
+                                    <button
+                                      type="button"
+                                      className="kam-dropdown-item kam-dropdown-delete"
+                                      role="menuitem"
+                                      onClick={
+                                        (event) => {
+                                          event.stopPropagation();
+
+                                          setOpenActionMenu(
+                                            null
+                                          );
+
+                                          handleDeleteTrip(
+                                            order
+                                          );
+                                        }
+                                      }
+                                    >
+
+                                      <span className="kam-action-item-icon">
+
+                                        <svg
+                                          viewBox="0 0 24 24"
+                                          fill="none"
+                                          stroke="currentColor"
+                                          strokeWidth="2"
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          aria-hidden="true"
+                                        >
+                                          <path
+                                            d="M3 6h18"
+                                          />
+
+                                          <path
+                                            d="M8 6V4h8v2"
+                                          />
+
+                                          <path
+                                            d="M19 6l-1 14H6L5 6"
+                                          />
+
+                                          <path
+                                            d="M10 11v5"
+                                          />
+
+                                          <path
+                                            d="M14 11v5"
+                                          />
+                                        </svg>
+
+                                      </span>
+
+                                      <span className="kam-action-item-text">
+                                        <strong>
+                                          Delete
+                                        </strong>
+                                      </span>
+
+                                    </button>
+
+                                  </div>
+
+                                )}
 
                               </div>
-                            )}
 
-                          </div>
+                            </td>
 
-                        </td>
-
-                      </tr>
-
+                          </tr>
+                        );
+                      }
                     )
-                  )
 
-                ) : (
+                  ) : (
 
-                  <tr>
+                    <tr>
 
-                    <td
-                      colSpan="8"
-                      className="no-orders"
-                    >
+                      <td
+                        colSpan="9"
+                        className="no-orders"
+                      >
 
-                      <div className="no-orders-icon">
-                        ⌕
-                      </div>
+                        <div className="no-orders-icon">
+                          ⌕
+                        </div>
 
+                        <strong>
+                          {isLoadingOrders
+                            ? "Loading orders..."
+                            : "No matching orders found"}
+                        </strong>
 
-                      <strong>
+                        <span>
+                          {isLoadingOrders
+                            ? "Loading orders from the server."
+                            : "Try changing search or stage filter."}
+                        </span>
 
-                        {isLoadingOrders
-                          ? "Loading orders..."
-                          : "No matching orders found"}
+                      </td>
 
-                      </strong>
+                    </tr>
 
+                  )}
 
-                      <span>
+                </tbody>
 
-                        {isLoadingOrders
-                          ? "Reading trip data from database."
-                          : "Try changing search or stage filter."}
+              </table>
 
-                      </span>
+            </div>
 
-                    </td>
+          </section>
 
-                  </tr>
+        </div>
 
-                )}
+        {/* ===================================================
+            READ-ONLY ORDER LIFECYCLE
 
-              </tbody>
+            No onUpdate.
+            Lifecyclemodal will be converted to read-only.
+        =================================================== */}
 
-            </table>
+        {selectedOrder && (
 
-          </div>
+          <Lifecyclemodal
+            key={
+              getOrderKey(
+                selectedOrder
+              )
+            }
+            order={
+              selectedOrder
+            }
+            onClose={
+              handleBackFromDetail
+            }
+            primaryVehicleTypes={
+              PRIMARY_VEHICLE_TYPES
+            }
+          />
 
-        </section>
+        )}
 
-      </div>
+        {/* ===================================================
+            CREATE / EDIT
+        =================================================== */}
 
-
-      {/* =====================================================
-          ORDER LIFECYCLE
-      ===================================================== */}
-
-      {selectedOrder && (
-
-        <Lifecyclemodal
-          key={
-            selectedOrder._id ||
-            selectedOrder.id
+        <Tripcreatemodal
+          showTripModal={
+            showTripModal
           }
-          order={
-            selectedOrder
+
+          tripForm={
+            tripForm
           }
-          onClose={
-            handleBackFromDetail
+
+          tripUpload={
+            tripUpload
           }
-          onUpdate={
-            handleUpdateOrder
-          }
+
           primaryVehicleTypes={
             PRIMARY_VEHICLE_TYPES
           }
+
+          handleTripOverlayClick={
+            handleTripOverlayClick
+          }
+
+          handleMovementTypeChange={
+            handleMovementTypeChange
+          }
+
+          handleCloseTripModal={
+            handleCloseTripModal
+          }
+
+          handleTripFieldChange={
+            handleTripFieldChange
+          }
+
+          handleAddWtgVehicle={
+            handleAddWtgVehicle
+          }
+
+          handleWtgVehicleFieldChange={
+            handleWtgVehicleFieldChange
+          }
+
+          handleRemoveWtgVehicle={
+            handleRemoveWtgVehicle
+          }
+
+          handleTripFileChange={
+            handleTripFileChange
+          }
+
+          handleCreateTrip={
+            handleCreateTrip
+          }
+
+          isEditing={
+            Boolean(
+              editingOrderId
+            )
+          }
+
+          isSaving={
+            isSaving
+          }
         />
 
-      )}
+      </div>
+    );
+  };
 
+  /* =========================================================
+    SUMMARY CARD
+  ========================================================= */
 
-      {/* =====================================================
-          CREATE / EDIT
-      ===================================================== */}
+  const SummaryCard = ({
+    label,
+    value,
+    caption,
+    icon,
+  }) => (
+    <article className="kam-stat-card">
 
-      <Tripcreatemodal
-        showTripModal={
-          showTripModal
-        }
+      <div className="kam-stat-icon">
+        {icon}
+      </div>
 
-        tripForm={
-          tripForm
-        }
+      <div>
 
-        tripUpload={
-          tripUpload
-        }
+        <span className="kam-stat-label">
+          {label}
+        </span>
 
-        primaryVehicleTypes={
-          PRIMARY_VEHICLE_TYPES
-        }
+        <strong className="kam-stat-value">
+          {value}
+        </strong>
 
-        handleTripOverlayClick={
-          handleTripOverlayClick
-        }
+        <span className="kam-stat-caption">
+          {caption}
+        </span>
 
-        handleMovementTypeChange={
-          handleMovementTypeChange
-        }
+      </div>
 
-        handleCloseTripModal={
-          handleCloseTripModal
-        }
-
-        handleTripFieldChange={
-          handleTripFieldChange
-        }
-
-        handleAddWtgVehicle={
-          handleAddWtgVehicle
-        }
-
-        handleWtgVehicleFieldChange={
-          handleWtgVehicleFieldChange
-        }
-
-        handleRemoveWtgVehicle={
-          handleRemoveWtgVehicle
-        }
-
-        handleTripFileChange={
-          handleTripFileChange
-        }
-
-        handleCreateTrip={
-          handleCreateTrip
-        }
-
-        isEditing={
-          Boolean(
-            editingOrderId
-          )
-        }
-
-        isSaving={
-          isSaving
-        }
-      />
-
-    </div>
+    </article>
   );
-};
 
-
-/* =========================================================
-   SUMMARY CARD
-========================================================= */
-
-const SummaryCard = ({
-  label,
-  value,
-  caption,
-  icon,
-}) => (
-
-  <article className="kam-stat-card">
-
-    <div className="kam-stat-icon">
-      {icon}
-    </div>
-
-    <div>
-
-      <span className="kam-stat-label">
-        {label}
-      </span>
-
-      <strong className="kam-stat-value">
-        {value}
-      </strong>
-
-      <span className="kam-stat-caption">
-        {caption}
-      </span>
-
-    </div>
-
-  </article>
-);
-
-
-export default KeyAccount;  
+  export default KeyAccount;

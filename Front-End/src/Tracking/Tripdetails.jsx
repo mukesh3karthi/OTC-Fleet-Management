@@ -24,7 +24,6 @@ import {
 
 import "./Tripdetails.css";
 
-
 /* =========================================
    API
 ========================================= */
@@ -36,8 +35,83 @@ const API_BASE_URL = (
 ).replace(/\/+$/, "");
 
 const API_URL =
-  `${API_BASE_URL}/api/triptracking`;
+  `${API_BASE_URL}/api/triporders`;
 
+/* =========================================
+   HELPERS
+========================================= */
+
+const safeArray = (value) =>
+  Array.isArray(value)
+    ? value
+    : [];
+
+const safeText = (
+  value,
+  fallback = "-"
+) => {
+  if (
+    value === null ||
+    value === undefined ||
+    value === ""
+  ) {
+    return fallback;
+  }
+
+  if (
+    typeof value === "object"
+  ) {
+    if (value.$oid) {
+      return String(value.$oid);
+    }
+
+    if (value.$date) {
+      return String(value.$date);
+    }
+
+    return fallback;
+  }
+
+  return String(value);
+};
+
+/* =========================================
+   RESPONSE
+========================================= */
+
+const extractTrips = (result) => {
+  if (
+    Array.isArray(result)
+  ) {
+    return result;
+  }
+
+  if (
+    Array.isArray(
+      result?.data
+    )
+  ) {
+    return result.data;
+  }
+
+  if (
+    Array.isArray(
+      result?.trips
+    )
+  ) {
+    return result.trips;
+  }
+
+  if (
+    Array.isArray(
+      result?.orders
+    )
+  ) {
+    return result.orders;
+  }
+
+  return [];
+};
 
 /* =========================================
    NORMALIZE TRIP
@@ -47,26 +121,199 @@ const normalizeTrip = (
   trip,
   index
 ) => {
-  const vehicles =
-    Array.isArray(
-      trip.vehicles
-    )
-      ? trip.vehicles
-      : [];
+  const allocatedVehicles =
+    safeArray(
+      trip?.allocatedVehicles
+    );
+
+  const vehicleRequirements =
+    safeArray(
+      trip?.vehicleRequirements
+    );
+
+  const trafficQuotations =
+    safeArray(
+      trip?.trafficQuotations
+    );
+
+  const vehicleConfirmations =
+    safeArray(
+      trip?.vehicleConfirmations
+    );
 
   return {
     ...trip,
 
     id:
-      trip._id ||
-      trip.id ||
-      trip.tripId ||
+      safeText(
+        trip?._id,
+        ""
+      ) ||
+      safeText(
+        trip?.tripId,
+        ""
+      ) ||
       `trip-${index}`,
 
-    vehicles,
+    allocatedVehicles,
+    vehicleRequirements,
+    trafficQuotations,
+    vehicleConfirmations,
   };
 };
 
+/* =========================================
+   LATEST TRACKING
+========================================= */
+
+const getLatestTracking = (
+  vehicle
+) => {
+  const tracking =
+    safeArray(
+      vehicle?.dailyTracking
+    );
+
+  if (!tracking.length) {
+    return null;
+  }
+
+  return tracking[
+    tracking.length - 1
+  ];
+};
+
+/* =========================================
+   TRIP STATUS
+========================================= */
+
+const getTripStatus = (
+  trip
+) => {
+  const vehicles =
+    safeArray(
+      trip?.allocatedVehicles
+    );
+
+  if (!vehicles.length) {
+    return "Pending";
+  }
+
+  const statuses =
+    vehicles.map(
+      (vehicle) =>
+        safeText(
+          getLatestTracking(
+            vehicle
+          )?.status,
+          "Idle"
+        )
+    );
+
+  if (
+    statuses.length > 0 &&
+    statuses.every(
+      (status) =>
+        status
+          .trim()
+          .toLowerCase() ===
+        "reached"
+    )
+  ) {
+    return "Reached";
+  }
+
+  if (
+    statuses.some(
+      (status) =>
+        status
+          .trim()
+          .toLowerCase() ===
+        "breakdown"
+    )
+  ) {
+    return "Breakdown";
+  }
+
+  if (
+    statuses.some(
+      (status) =>
+        status
+          .trim()
+          .toLowerCase() ===
+        "moving"
+    )
+  ) {
+    return "Moving";
+  }
+
+  if (
+    statuses.some(
+      (status) =>
+        status
+          .trim()
+          .toLowerCase() ===
+        "stopped"
+    )
+  ) {
+    return "Stopped";
+  }
+
+  return "Idle";
+};
+
+/* =========================================
+   STATUS CLASS
+========================================= */
+
+const getStatusClass = (
+  status
+) => {
+  const value =
+    String(
+      status || ""
+    )
+      .trim()
+      .toLowerCase();
+
+  if (
+    value === "moving"
+  ) {
+    return "moving";
+  }
+
+  if (
+    value === "idle"
+  ) {
+    return "idle";
+  }
+
+  if (
+    value === "stopped"
+  ) {
+    return "stopped";
+  }
+
+  if (
+    value === "breakdown"
+  ) {
+    return "breakdown";
+  }
+
+  if (
+    value === "reached"
+  ) {
+    return "reached";
+  }
+
+  if (
+    value === "confirmed"
+  ) {
+    return "confirmed";
+  }
+
+  return "pending";
+};
 
 /* =========================================
    FORMAT DATE
@@ -100,7 +347,6 @@ const formatDate = (
   );
 };
 
-
 /* =========================================
    COMPONENT
 ========================================= */
@@ -109,38 +355,33 @@ const Tripdetails = () => {
   const navigate =
     useNavigate();
 
-
-  /* =========================================
+  /* =====================================
      STATE
-  ========================================= */
+  ===================================== */
 
   const [
     trips,
     setTrips,
   ] = useState([]);
 
-
   const [
     loading,
     setLoading,
   ] = useState(true);
-
 
   const [
     error,
     setError,
   ] = useState("");
 
-
   const [
     refreshing,
     setRefreshing,
   ] = useState(false);
 
-
-  /* =========================================
+  /* =====================================
      FETCH TRIPS
-  ========================================= */
+  ===================================== */
 
   const fetchTrips =
     useCallback(
@@ -148,7 +389,9 @@ const Tripdetails = () => {
         manualRefresh = false
       ) => {
         try {
-          if (manualRefresh) {
+          if (
+            manualRefresh
+          ) {
             setRefreshing(
               true
             );
@@ -160,12 +403,12 @@ const Tripdetails = () => {
 
           setError("");
 
-
           const response =
             await fetch(
               API_URL,
               {
-                method: "GET",
+                method:
+                  "GET",
 
                 headers: {
                   Accept:
@@ -174,59 +417,52 @@ const Tripdetails = () => {
               }
             );
 
+          let result = {};
 
-          const result =
-            await response.json();
-
+          try {
+            result =
+              await response.json();
+          } catch {
+            result = {};
+          }
 
           if (!response.ok) {
             throw new Error(
-              result.message ||
-              "Unable to load trips."
+              result?.message ||
+                "Unable to load trips."
             );
           }
 
-
-          let databaseTrips =
-            [];
-
-
-          if (
-            Array.isArray(
+          const databaseTrips =
+            extractTrips(
               result
-            )
-          ) {
-            databaseTrips =
-              result;
-
-          } else if (
-            Array.isArray(
-              result.data
-            )
-          ) {
-            databaseTrips =
-              result.data;
-
-          } else if (
-            Array.isArray(
-              result.trips
-            )
-          ) {
-            databaseTrips =
-              result.trips;
-          }
-
-
-          const normalizedTrips =
-            databaseTrips.map(
-              normalizeTrip
             );
 
+          /*
+            Tracking trip list should
+            contain orders that have
+            actual allocated vehicles.
+
+            The order remains stored in
+            TripOrder as the single
+            source of truth.
+          */
+
+          const trackingTrips =
+            databaseTrips
+              .map(
+                normalizeTrip
+              )
+              .filter(
+                (trip) =>
+                  trip
+                    .allocatedVehicles
+                    .length > 0
+              );
 
           setTrips(
-            normalizedTrips
+            trackingTrips
           );
-
         } catch (
           fetchError
         ) {
@@ -236,13 +472,13 @@ const Tripdetails = () => {
           );
 
           setError(
-            fetchError.message ||
-            "Unable to load trips."
+            fetchError?.message ||
+              "Unable to load trips."
           );
 
+          setTrips([]);
         } finally {
           setLoading(false);
-
           setRefreshing(
             false
           );
@@ -251,45 +487,41 @@ const Tripdetails = () => {
       []
     );
 
-
-  /* =========================================
+  /* =====================================
      INITIAL LOAD
-  ========================================= */
+  ===================================== */
 
   useEffect(() => {
     fetchTrips();
-  }, [
-    fetchTrips,
-  ]);
+  }, [fetchTrips]);
 
-
-  /* =========================================
-     CREATE TRIP
-  ========================================= */
+  /* =====================================
+     TRACKING INPUT
+  ===================================== */
 
   const handleCreateTrip =
     () => {
+      /*
+        Orders are no longer created
+        from Tracking.
+
+        This button now opens Tracking
+        Input where approved requirements
+        can receive actual vehicles.
+      */
+
       navigate(
         "/tracking-input"
       );
     };
 
-
-  /* =========================================
-     EDIT TRIP
-  ========================================= */
+  /* =====================================
+     EDIT / MANAGE TRIP
+  ===================================== */
 
   const handleEditTrip = (
     trip
   ) => {
-    /*
-      We pass the selected trip
-      through route state.
-
-      Later Trackinginput.jsx can
-      detect edit mode and prefill it.
-    */
-
     navigate(
       "/tracking-input",
       {
@@ -300,8 +532,7 @@ const Tripdetails = () => {
             trip.tripId,
 
           mongoId:
-            trip._id ||
-            trip.id,
+            trip._id,
 
           trip,
         },
@@ -309,10 +540,9 @@ const Tripdetails = () => {
     );
   };
 
-
-  /* =========================================
+  /* =====================================
      BACK
-  ========================================= */
+  ===================================== */
 
   const handleBack =
     () => {
@@ -321,20 +551,17 @@ const Tripdetails = () => {
       );
     };
 
-
-  /* =========================================
+  /* =====================================
      RENDER
-  ========================================= */
+  ===================================== */
 
   return (
     <main className="trip-list-page">
-
-      {/* =====================================
+      {/* =================================
           TOP ACTION BAR
-      ===================================== */}
+      ================================= */}
 
       <div className="trip-page-actions">
-
         <button
           type="button"
           className="trip-back-button"
@@ -351,7 +578,6 @@ const Tripdetails = () => {
           </span>
         </button>
 
-
         <button
           type="button"
           className="trip-create-button"
@@ -364,41 +590,32 @@ const Tripdetails = () => {
           />
 
           <span>
-            Create Trip
+            Tracking Input
           </span>
         </button>
-
       </div>
 
-
-      {/* =====================================
+      {/* =================================
           PAGE HEADING
-      ===================================== */}
+      ================================= */}
 
       <header className="trip-page-header">
-
         <div>
-
           <span className="trip-page-eyebrow">
             FLEET OPERATIONS
           </span>
-
 
           <h1>
             Trip List
           </h1>
 
-
           <p>
             View and manage all
             vehicle tracking trips.
           </p>
-
         </div>
 
-
         <div className="trip-page-header-actions">
-
           <span className="trip-total-badge">
             <Truck
               size={14}
@@ -411,7 +628,6 @@ const Tripdetails = () => {
               : " Trips"}
           </span>
 
-
           <button
             type="button"
             className="trip-refresh-button"
@@ -419,9 +635,7 @@ const Tripdetails = () => {
               refreshing
             }
             onClick={() =>
-              fetchTrips(
-                true
-              )
+              fetchTrips(true)
             }
             aria-label="Refresh trips"
           >
@@ -434,15 +648,12 @@ const Tripdetails = () => {
               }
             />
           </button>
-
         </div>
-
       </header>
 
-
-      {/* =====================================
+      {/* =================================
           ERROR
-      ===================================== */}
+      ================================= */}
 
       {error && (
         <div className="trip-page-error">
@@ -450,19 +661,12 @@ const Tripdetails = () => {
         </div>
       )}
 
-
-      {/* =====================================
+      {/* =================================
           LIST CARD
-      ===================================== */}
+      ================================= */}
 
       <section className="trip-table-card">
-
-        {/* =================================
-            LIST HEADER
-        ================================= */}
-
         <div className="trip-table-header">
-
           <div>
             <h2>
               All Trips
@@ -473,16 +677,13 @@ const Tripdetails = () => {
               consignment overview.
             </p>
           </div>
-
         </div>
 
-
-        {/* =================================
+        {/* =============================
             DESKTOP COLUMN TITLES
-        ================================= */}
+        ============================= */}
 
         <div className="trip-list-column-head">
-
           <span>
             Trip
           </span>
@@ -514,20 +715,15 @@ const Tripdetails = () => {
           <span className="trip-action-heading">
             Action
           </span>
-
         </div>
 
-
-        {/* =================================
+        {/* =============================
             BODY
-        ================================= */}
+        ============================= */}
 
         <div className="trip-full-list">
-
           {loading ? (
-
             <div className="trip-page-loading">
-
               <RefreshCw
                 size={20}
                 className="spin"
@@ -536,26 +732,29 @@ const Tripdetails = () => {
               <span>
                 Loading trips...
               </span>
-
             </div>
-
-          ) : trips.length > 0 ? (
-
+          ) : trips.length >
+            0 ? (
             trips.map(
               (
                 trip,
                 index
               ) => {
-
                 const vehicleCount =
-                  Array.isArray(
-                    trip.vehicles
-                  )
-                    ? trip
-                        .vehicles
-                        .length
-                    : 0;
+                  safeArray(
+                    trip
+                      .allocatedVehicles
+                  ).length;
 
+                const tripStatus =
+                  getTripStatus(
+                    trip
+                  );
+
+                const statusClass =
+                  getStatusClass(
+                    tripStatus
+                  );
 
                 return (
                   <article
@@ -564,117 +763,103 @@ const Tripdetails = () => {
                     }
                     className="trip-full-row"
                   >
-
-                    {/* =============================
+                    {/* =====================
                         TRIP
-                    ============================= */}
+                    ===================== */}
 
                     <div className="trip-row-main">
-
                       <span className="trip-mobile-label">
                         Trip
                       </span>
 
-
                       <div className="trip-id-box">
-
                         <div className="trip-id-icon">
                           <Route
-                            size={16}
+                            size={
+                              16
+                            }
                           />
                         </div>
 
-
                         <div>
                           <strong>
-                            {trip.tripId ||
-                              "-"}
+                            {safeText(
+                              trip.tripId
+                            )}
                           </strong>
 
                           <small>
-                            #{index + 1}
+                            #
+                            {index +
+                              1}
                           </small>
                         </div>
-
                       </div>
-
                     </div>
 
-
-                    {/* =============================
+                    {/* =====================
                         CUSTOMER
-                    ============================= */}
+                    ===================== */}
 
                     <div className="trip-row-cell">
-
                       <span className="trip-mobile-label">
                         Customer
                       </span>
 
-
                       <div className="trip-cell-with-icon">
-
                         <UserRound
                           size={14}
                         />
 
                         <strong>
-                          {trip.customer ||
-                            "-"}
+                          {safeText(
+                            trip.customer
+                          )}
                         </strong>
-
                       </div>
-
                     </div>
 
-
-                    {/* =============================
+                    {/* =====================
                         MATERIAL
-                    ============================= */}
+                    ===================== */}
 
                     <div className="trip-row-cell">
-
                       <span className="trip-mobile-label">
                         Material
                       </span>
 
-
                       <div className="trip-cell-with-icon">
-
                         <Package
                           size={14}
                         />
 
                         <span>
-                          {trip.materialType ||
-                            "-"}
+                          {safeText(
+                            trip
+                              .materialType
+                          )}
                         </span>
-
                       </div>
-
                     </div>
 
-
-                    {/* =============================
+                    {/* =====================
                         ROUTE
-                    ============================= */}
+                    ===================== */}
 
                     <div className="trip-row-cell trip-route-cell">
-
                       <span className="trip-mobile-label">
                         Route
                       </span>
 
-
                       <div className="trip-row-route">
-
                         <MapPin
                           size={14}
                         />
 
                         <span>
-                          {trip.origin ||
-                            "-"}
+                          {safeText(
+                            trip.origin
+                          )}
                         </span>
 
                         <ChevronRight
@@ -682,104 +867,79 @@ const Tripdetails = () => {
                         />
 
                         <span>
-                          {trip.destination ||
-                            "-"}
+                          {safeText(
+                            trip
+                              .destination
+                          )}
                         </span>
-
                       </div>
-
                     </div>
 
-
-                    {/* =============================
+                    {/* =====================
                         VEHICLES
-                    ============================= */}
+                    ===================== */}
 
                     <div className="trip-row-cell">
-
                       <span className="trip-mobile-label">
                         Vehicles
                       </span>
 
-
                       <span className="trip-row-vehicle-count">
-
                         <Truck
                           size={14}
                         />
 
                         {vehicleCount}
-
                       </span>
-
                     </div>
 
-
-                    {/* =============================
+                    {/* =====================
                         STATUS
-                    ============================= */}
+                    ===================== */}
 
                     <div className="trip-row-cell">
-
                       <span className="trip-mobile-label">
                         Status
                       </span>
 
-
                       <span
-                        className={`trip-status-badge ${
-                          String(
-                            trip.tripStatus ||
-                            "Active"
-                          )
-                            .toLowerCase()
-                        }`}
+                        className={`trip-status-badge ${statusClass}`}
                       >
-                        {trip.tripStatus ||
-                          "Active"}
+                        {tripStatus}
                       </span>
-
                     </div>
 
-
-                    {/* =============================
+                    {/* =====================
                         CREATED DATE
-                    ============================= */}
+                    ===================== */}
 
                     <div className="trip-row-cell">
-
                       <span className="trip-mobile-label">
                         Created
                       </span>
 
-
                       <div className="trip-date-cell">
-
                         <CalendarDays
                           size={13}
                         />
 
                         <span>
                           {formatDate(
-                            trip.createdAt
+                            trip
+                              .createdAt
                           )}
                         </span>
-
                       </div>
-
                     </div>
 
-
-                    {/* =============================
-                        EDIT
-                    ============================= */}
+                    {/* =====================
+                        MANAGE
+                    ===================== */}
 
                     <div className="trip-row-actions">
-
                       <span className="trip-mobile-label">
                         Action
                       </span>
-
 
                       <button
                         type="button"
@@ -798,36 +958,30 @@ const Tripdetails = () => {
                           Edit
                         </span>
                       </button>
-
                     </div>
-
                   </article>
                 );
               }
             )
-
           ) : (
-
             <div className="trip-empty-state">
-
               <div className="trip-empty-icon">
                 <Truck
                   size={24}
                 />
               </div>
 
-
               <strong>
                 No Trips Found
               </strong>
 
-
               <p>
-                Create your first
-                tracking trip to
-                get started.
+                Trips will appear
+                here after actual
+                vehicles are
+                allocated in
+                Tracking Input.
               </p>
-
 
               <button
                 type="button"
@@ -839,20 +993,14 @@ const Tripdetails = () => {
                   size={15}
                 />
 
-                Create Trip
+                Tracking Input
               </button>
-
             </div>
-
           )}
-
         </div>
-
       </section>
-
     </main>
   );
 };
-
 
 export default Tripdetails;

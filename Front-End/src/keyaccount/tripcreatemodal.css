@@ -2033,3 +2033,166 @@
     width: 100%;
   }
 }
+
+
+/* =========================================================
+   INTERCARTING / OTHER — MATCH WTG VEHICLE ROW DESIGN
+   WTG styles above remain unchanged.
+========================================================= */
+
+.intercarting-vehicle-rows {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px !important;
+}
+
+/*
+  One vehicle = one row:
+  No. | Vehicle Type | Configuration | Classification |
+  Quantity | Weight | Dimensions | Remove
+*/
+.intercarting-vehicle-row {
+  width: 100% !important;
+  display: grid !important;
+  grid-template-columns:
+    28px
+    minmax(150px, 1.05fr)
+    minmax(150px, 1.05fr)
+    minmax(175px, 1.15fr)
+    minmax(105px, 0.62fr)
+    minmax(120px, 0.72fr)
+    minmax(215px, 1.28fr)
+    28px !important;
+  column-gap: 10px !important;
+  row-gap: 0 !important;
+  align-items: end !important;
+  padding: 6px 0 !important;
+  min-height: 64px !important;
+}
+
+/* Same label rhythm as the WTG row */
+.intercarting-vehicle-row .trip-field-group > label {
+  height: 20px !important;
+  min-height: 20px !important;
+  display: flex !important;
+  align-items: flex-end !important;
+  margin: 0 0 5px !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 8px !important;
+  line-height: 1 !important;
+}
+
+/* Rows 2+ keep the label space so every input remains vertically aligned */
+.intercarting-vehicle-row-compact .trip-field-group > label {
+  display: flex !important;
+  visibility: hidden !important;
+  height: 20px !important;
+  min-height: 20px !important;
+  margin: 0 0 5px !important;
+}
+
+/* Match WTG compact input height */
+.intercarting-vehicle-row .wtg-suggest-input input,
+.intercarting-vehicle-row .trip-select-wrap select,
+.intercarting-vehicle-row .wtg-quantity-control,
+.intercarting-vehicle-row .wtg-weight-control,
+.intercarting-vehicle-row .wtg-dimensions-control {
+  height: 40px !important;
+  min-height: 40px !important;
+  border-radius: 9px !important;
+}
+
+.intercarting-vehicle-row .wtg-suggest-input input,
+.intercarting-vehicle-row .trip-select-wrap select {
+  padding-left: 10px !important;
+  padding-right: 26px !important;
+  font-size: 10px !important;
+}
+
+.intercarting-vehicle-row .wtg-quantity-control input,
+.intercarting-vehicle-row .wtg-weight-control input {
+  padding: 0 8px !important;
+  font-size: 10px !important;
+}
+
+.intercarting-vehicle-row .wtg-quantity-control > span,
+.intercarting-vehicle-row .wtg-weight-control > span {
+  min-width: 38px !important;
+  padding: 0 5px !important;
+  font-size: 7px !important;
+}
+
+/* Dimension control is displayed for every movement in the same WTG format */
+.intercarting-vehicle-row .wtg-dimension-part input {
+  padding: 0 2px !important;
+  font-size: 9px !important;
+}
+
+.intercarting-vehicle-row .wtg-dimension-separator {
+  flex-basis: 14px !important;
+  font-size: 8px !important;
+}
+
+.intercarting-vehicle-row .wtg-dimensions-unit {
+  min-width: 30px !important;
+  font-size: 7px !important;
+}
+
+/* Number and delete action stay on the same input line */
+.intercarting-vehicle-index {
+  width: 28px !important;
+  height: 40px !important;
+  align-self: end !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  color: #07867e;
+  font-size: 10px !important;
+  font-weight: 800;
+}
+
+.intercarting-vehicle-row .wtg-remove-vehicle-btn {
+  width: 28px !important;
+  height: 40px !important;
+  align-self: end !important;
+  justify-self: center !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Clean row separation for multiple vehicles */
+.intercarting-vehicle-row + .intercarting-vehicle-row {
+  border-top: 1px solid #edf2f4;
+}
+
+/* Prevent horizontal overflow in normal desktop/laptop viewport */
+.intercarting-vehicle-rows,
+.intercarting-vehicle-row {
+  max-width: 100% !important;
+  overflow-x: hidden !important;
+}
+
+@media (max-width: 1450px) and (min-width: 901px) {
+  .intercarting-vehicle-row {
+    grid-template-columns:
+      24px
+      minmax(125px, 1fr)
+      minmax(125px, 1fr)
+      minmax(145px, 1.08fr)
+      minmax(82px, 0.55fr)
+      minmax(95px, 0.62fr)
+      minmax(165px, 1.08fr)
+      26px !important;
+    column-gap: 6px !important;
+  }
+
+  .intercarting-vehicle-row .wtg-suggest-input input,
+  .intercarting-vehicle-row .trip-select-wrap select {
+    font-size: 9px !important;
+  }
+}

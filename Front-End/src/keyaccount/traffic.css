@@ -2105,3 +2105,14 @@
     width: 100%;
   }
 }
+
+
+/* QUOTATION ROW - ALLOCATED BY */
+.traffic-allocator-input { width:100%; min-width:150px; height:34px; padding:0 10px; border:1px solid #cad8dc; border-radius:6px; outline:none; background:#fff; color:#294c59; font-family:inherit; font-size:10px; font-weight:600; }
+.traffic-allocator-input:focus { border-color:#6ea7a1; box-shadow:0 0 0 3px rgba(15,118,110,.06); }
+.traffic-allocator-name { color:#294b59; font-size:10px; font-weight:800; }
+.traffic-quotation-table th:nth-child(2){width:23%;}
+.traffic-quotation-table th:nth-child(3){width:18%;}
+.traffic-quotation-table th:nth-child(4){width:20%;}
+.traffic-quotation-table th:nth-child(5){width:16%;}
+.traffic-quotation-table th:nth-child(6){width:70px;text-align:center;}

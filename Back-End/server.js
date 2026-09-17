@@ -48,9 +48,14 @@ const ownvehicleRoutes =
     "./routes/ownvehicleRoutes"
   );
 
-const triptrackingRoutes =
+/*
+  IMPORTANT:
+  Route file name is triporderRoute.js
+*/
+
+const triporderRoutes =
   require(
-    "./routes/triptrackingRoutes"
+    "./routes/triporderRoute"
   );
 
 
@@ -364,6 +369,11 @@ app.use(
    API ROUTES
 ========================================== */
 
+
+/* ------------------------------------------
+   AUTH
+------------------------------------------ */
+
 app.use(
 
   "/api/auth",
@@ -372,6 +382,10 @@ app.use(
 
 );
 
+
+/* ------------------------------------------
+   VEHICLES
+------------------------------------------ */
 
 app.use(
 
@@ -382,6 +396,10 @@ app.use(
 );
 
 
+/* ------------------------------------------
+   OWN VEHICLES
+------------------------------------------ */
+
 app.use(
 
   "/api/ownvehicles",
@@ -391,11 +409,29 @@ app.use(
 );
 
 
+/* ------------------------------------------
+   TRIP ORDERS
+
+   KEY ACCOUNT
+       ↓
+   ORDER FINALIZATION
+       ↓
+   FIRST APPROVAL
+       ↓
+   TRAFFIC QUOTATION
+       ↓
+   SECOND APPROVAL
+       ↓
+   VEHICLE ALLOCATION
+       ↓
+   TRACKING
+------------------------------------------ */
+
 app.use(
 
-  "/api/triptracking",
+  "/api/triporders",
 
-  triptrackingRoutes
+  triporderRoutes
 
 );
 
@@ -458,8 +494,78 @@ app.get(
             "/api/ownvehicles",
 
 
-          tripTracking:
-            "/api/triptracking",
+          tripOrders:
+            "/api/triporders",
+
+
+          tripOrderWorkflow: {
+
+            getAll:
+              "/api/triporders",
+
+            create:
+              "/api/triporders",
+
+            getByMongoId:
+              "/api/triporders/:id",
+
+            getByTripId:
+              "/api/triporders/trip/:tripId",
+
+            update:
+              "/api/triporders/:id",
+
+            delete:
+              "/api/triporders/:id",
+
+
+            /*
+              KEY ACCOUNT
+              ORDER FINALIZATION
+            */
+
+            orderFinalization:
+              "/api/triporders/:id/order-finalization",
+
+
+            /*
+              FIRST APPROVAL
+            */
+
+            orderApproval:
+              "/api/triporders/:id/order-approval",
+
+
+            /*
+              TRAFFIC
+            */
+
+            quotations:
+              "/api/triporders/:id/quotations",
+
+
+            /*
+              SECOND APPROVAL
+            */
+
+            confirmQuotation:
+              "/api/triporders/:id/confirm-quotation",
+
+
+            /*
+              TRACKING INPUT
+            */
+
+            allocateVehicle:
+              "/api/triporders/:id/allocated-vehicles",
+
+            updateAllocatedVehicle:
+              "/api/triporders/:id/allocated-vehicles/:allocationId",
+
+            dailyTracking:
+              "/api/triporders/:id/allocated-vehicles/:allocationId/tracking",
+
+          },
 
 
           ownVehicleAssets: {
@@ -546,7 +652,8 @@ app.get(
       .status(200)
       .json({
 
-        success: true,
+        success:
+          true,
 
         folder:
           ownVehicleFolder,
@@ -761,6 +868,7 @@ const startServer =
 
           console.log("");
 
+
           console.log(
             "=========================================="
           );
@@ -814,6 +922,11 @@ const startServer =
 
 
           console.log(
+            `Trip Orders        : http://localhost:${PORT}/api/triporders`
+          );
+
+
+          console.log(
             `Own Vehicles       : http://localhost:${PORT}/api/ownvehicles`
           );
 
@@ -830,6 +943,66 @@ const startServer =
 
           console.log(
             `Static Uploads     : http://localhost:${PORT}/uploads/ownvehicles/FILE_NAME`
+          );
+
+
+          console.log(
+            "------------------------------------------"
+          );
+
+
+          console.log(
+            "Trip Order Workflow APIs"
+          );
+
+
+          console.log(
+            "------------------------------------------"
+          );
+
+
+          console.log(
+            `Get Trips          : GET  http://localhost:${PORT}/api/triporders`
+          );
+
+
+          console.log(
+            `Create Trip        : POST http://localhost:${PORT}/api/triporders`
+          );
+
+
+          console.log(
+            `Order Finalization : PUT  http://localhost:${PORT}/api/triporders/:id/order-finalization`
+          );
+
+
+          console.log(
+            `Order Approval     : PUT  http://localhost:${PORT}/api/triporders/:id/order-approval`
+          );
+
+
+          console.log(
+            `Add Quotation      : POST http://localhost:${PORT}/api/triporders/:id/quotations`
+          );
+
+
+          console.log(
+            `Confirm Quotation  : PUT  http://localhost:${PORT}/api/triporders/:id/confirm-quotation`
+          );
+
+
+          console.log(
+            `Allocate Vehicle   : POST http://localhost:${PORT}/api/triporders/:id/allocated-vehicles`
+          );
+
+
+          console.log(
+            `Update Vehicle     : PUT  http://localhost:${PORT}/api/triporders/:id/allocated-vehicles/:allocationId`
+          );
+
+
+          console.log(
+            `Daily Tracking     : POST http://localhost:${PORT}/api/triporders/:id/allocated-vehicles/:allocationId/tracking`
           );
 
 

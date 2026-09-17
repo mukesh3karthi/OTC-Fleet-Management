@@ -1,8 +1,4 @@
-import React, {
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import React, { useState } from "react";
 
 import {
   AlertTriangle,
@@ -10,7 +6,6 @@ import {
   ChevronDown,
   ChevronUp,
   CirclePause,
-  FileText,
   MessageSquareText,
   Navigation,
   Package,
@@ -21,15 +16,14 @@ import {
 
 import "./VehicleColumn.css";
 
+/* =========================================================
+   HELPERS
+========================================================= */
 
-/* =========================================
-   SAFE TEXT
-========================================= */
+const safeArray = (value) =>
+  Array.isArray(value) ? value : [];
 
-const safeText = (
-  value,
-  fallback = "-"
-) => {
+const safeText = (value, fallback = "-") => {
   if (
     value === null ||
     value === undefined ||
@@ -38,49 +32,22 @@ const safeText = (
     return fallback;
   }
 
-  if (
-    typeof value === "object"
-  ) {
-    /*
-      MongoDB ObjectId
-    */
-
+  if (typeof value === "object") {
     if (value.$oid) {
-      return String(
-        value.$oid
-      );
+      return String(value.$oid);
     }
 
-    /*
-      MongoDB Extended JSON date
-
-      {
-        $date: "2026-08-01..."
-      }
-    */
-
     if (value.$date) {
-      return String(
-        value.$date
-      );
+      return String(value.$date);
     }
 
     return fallback;
   }
 
-  return String(
-    value
-  );
+  return String(value);
 };
 
-
-/* =========================================
-   SAFE DATE VALUE
-========================================= */
-
-const getSafeDateValue = (
-  value
-) => {
+const getSafeDateValue = (value) => {
   if (
     value === null ||
     value === undefined ||
@@ -89,49 +56,20 @@ const getSafeDateValue = (
     return null;
   }
 
-  /*
-    MongoDB Extended JSON
-
-    {
-      "$date":
-      "2026-08-01T09:00:00.000Z"
-    }
-  */
-
   if (
     typeof value === "object" &&
     !Array.isArray(value)
   ) {
-    if (
-      value.$date !== undefined
-    ) {
-      return getSafeDateValue(
-        value.$date
-      );
+    if (value.$date !== undefined) {
+      return getSafeDateValue(value.$date);
     }
 
-    /*
-      {
-        "$numberLong": "..."
-      }
-    */
+    if (value.$numberLong !== undefined) {
+      const timestamp = Number(value.$numberLong);
 
-    if (
-      value.$numberLong !==
-      undefined
-    ) {
-      const timestamp =
-        Number(
-          value.$numberLong
-        );
-
-      if (
-        Number.isFinite(
-          timestamp
-        )
-      ) {
-        return timestamp;
-      }
+      return Number.isFinite(timestamp)
+        ? timestamp
+        : null;
     }
 
     return null;
@@ -140,96 +78,49 @@ const getSafeDateValue = (
   return value;
 };
 
-
-/* =========================================
-   FORMAT DATE
-========================================= */
-
-const formatDate = (
-  value
-) => {
-  const safeValue =
-    getSafeDateValue(
-      value
-    );
+const formatDate = (value) => {
+  const safeValue = getSafeDateValue(value);
 
   if (!safeValue) {
     return "-";
   }
 
-  const date =
-    new Date(
-      safeValue
-    );
+  const date = new Date(safeValue);
 
-  if (
-    Number.isNaN(
-      date.getTime()
-    )
-  ) {
+  if (Number.isNaN(date.getTime())) {
     return "-";
   }
 
-  return date.toLocaleDateString(
-    "en-GB",
-    {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    }
-  );
+  return date.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 };
 
-
-/* =========================================
-   LAST UPDATED
-========================================= */
-
-const formatLastUpdated = (
-  value
-) => {
-  const safeValue =
-    getSafeDateValue(
-      value
-    );
+const formatLastUpdated = (value) => {
+  const safeValue = getSafeDateValue(value);
 
   if (!safeValue) {
     return "-";
   }
 
-  const date =
-    new Date(
-      safeValue
-    );
+  const date = new Date(safeValue);
 
-  if (
-    Number.isNaN(
-      date.getTime()
-    )
-  ) {
+  if (Number.isNaN(date.getTime())) {
     return "-";
   }
 
-  return date.toLocaleString(
-    "en-IN",
-    {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    }
-  );
+  return date.toLocaleString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 };
 
-
-/* =========================================
-   KM
-========================================= */
-
-const formatKm = (
-  value
-) => {
+const formatKm = (value) => {
   if (
     value === null ||
     value === undefined ||
@@ -238,16 +129,9 @@ const formatKm = (
     return "-";
   }
 
-  const numericValue =
-    Number(
-      value
-    );
+  const numericValue = Number(value);
 
-  if (
-    Number.isNaN(
-      numericValue
-    )
-  ) {
+  if (!Number.isFinite(numericValue)) {
     return "-";
   }
 
@@ -256,14 +140,7 @@ const formatKm = (
   )} km`;
 };
 
-
-/* =========================================
-   DAYS
-========================================= */
-
-const formatDays = (
-  value
-) => {
+const formatDays = (value) => {
   if (
     value === null ||
     value === undefined ||
@@ -272,29 +149,255 @@ const formatDays = (
     return "-";
   }
 
-  const numericValue =
-    Number(
-      value
-    );
+  const numericValue = Number(value);
 
-  if (
-    Number.isNaN(
-      numericValue
-    )
-  ) {
+  if (!Number.isFinite(numericValue)) {
     return "-";
   }
 
-  return `${numericValue} ${numericValue === 1
-    ? "Day"
-    : "Days"
-    }`;
+  return `${numericValue} ${
+    numericValue === 1 ? "Day" : "Days"
+  }`;
 };
 
+/* =========================================================
+   ALLOCATED VEHICLE HELPERS
+========================================================= */
 
-/* =========================================
+const getVehicleId = (vehicle) => {
+  if (!vehicle) {
+    return "";
+  }
+
+  return (
+    safeText(vehicle.allocationId, "") ||
+    safeText(vehicle._id, "") ||
+    safeText(vehicle.vehicleNumber, "")
+  );
+};
+
+const getLatestTracking = (vehicle) => {
+  const dailyTracking = safeArray(
+    vehicle?.dailyTracking
+  );
+
+  if (!dailyTracking.length) {
+    return null;
+  }
+
+  return dailyTracking[
+    dailyTracking.length - 1
+  ];
+};
+
+const getVehicleStatus = (vehicle) => {
+  const latestTracking =
+    getLatestTracking(vehicle);
+
+  return safeText(
+    latestTracking?.status,
+    "Idle"
+  );
+};
+
+/* =========================================================
+   REQUIREMENT
+========================================================= */
+
+const getRequirement = (trip, vehicle) => {
+  if (!trip || !vehicle) {
+    return null;
+  }
+
+  return (
+    safeArray(
+      trip.vehicleRequirements
+    ).find(
+      (requirement) =>
+        safeText(
+          requirement.requirementId,
+          ""
+        ) ===
+        safeText(
+          vehicle.requirementId,
+          ""
+        )
+    ) || null
+  );
+};
+
+/* =========================================================
+   CONFIRMATION
+========================================================= */
+
+const getConfirmation = (trip, vehicle) => {
+  if (!trip || !vehicle) {
+    return null;
+  }
+
+  const confirmations = safeArray(
+    trip.vehicleConfirmations
+  );
+
+  if (vehicle.confirmationId) {
+    const confirmation =
+      confirmations.find(
+        (item) =>
+          safeText(
+            item.confirmationId,
+            ""
+          ) ===
+          safeText(
+            vehicle.confirmationId,
+            ""
+          )
+      );
+
+    if (confirmation) {
+      return confirmation;
+    }
+  }
+
+  return (
+    confirmations.find(
+      (item) =>
+        safeText(
+          item.requirementId,
+          ""
+        ) ===
+          safeText(
+            vehicle.requirementId,
+            ""
+          ) &&
+        item.status === "Approved"
+    ) || null
+  );
+};
+
+/* =========================================================
+   QUOTATION / TRANSPORTER
+========================================================= */
+
+const getQuotation = (trip, vehicle) => {
+  if (!trip || !vehicle) {
+    return null;
+  }
+
+  const quotations = safeArray(
+    trip.trafficQuotations
+  );
+
+  if (vehicle.quotationId) {
+    const quotation = quotations.find(
+      (item) =>
+        safeText(
+          item.quotationId,
+          ""
+        ) ===
+        safeText(
+          vehicle.quotationId,
+          ""
+        )
+    );
+
+    if (quotation) {
+      return quotation;
+    }
+  }
+
+  const confirmation =
+    getConfirmation(trip, vehicle);
+
+  if (!confirmation?.quotationId) {
+    return null;
+  }
+
+  return (
+    quotations.find(
+      (item) =>
+        safeText(
+          item.quotationId,
+          ""
+        ) ===
+        safeText(
+          confirmation.quotationId,
+          ""
+        )
+    ) || null
+  );
+};
+
+/* =========================================================
+   DETAIL ROW
+========================================================= */
+
+const DetailRow = ({
+  label,
+  value,
+  halting = false,
+}) => (
+  <div className="simple-detail-row">
+    <span className="simple-detail-label">
+      {label}
+    </span>
+
+    <span className="simple-detail-colon">
+      :
+    </span>
+
+    <strong
+      className={`simple-detail-value ${
+        halting ? "halting" : ""
+      }`}
+    >
+      {safeText(value)}
+    </strong>
+  </div>
+);
+
+/* =========================================================
+   PERSON SECTION
+========================================================= */
+
+const PersonSection = ({
+  className = "",
+  icon,
+  title,
+  rows = [],
+}) => (
+  <div
+    className={`lr-person-section ${className}`}
+  >
+    <div className="lr-person-heading">
+      {icon}
+
+      <strong>{title}</strong>
+    </div>
+
+    <div className="lr-person-content">
+      {rows.map(([label, value]) => (
+        <div
+          className="lr-person-row"
+          key={label}
+        >
+          <span>{label}</span>
+
+          <span className="lr-person-colon">
+            :
+          </span>
+
+          <strong>
+            {safeText(value)}
+          </strong>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+/* =========================================================
    COMPONENT
-========================================= */
+========================================================= */
 
 const VehicleColumn = ({
   trip,
@@ -307,24 +410,15 @@ const VehicleColumn = ({
     setShowExtraVehicles,
   ] = useState(false);
 
-  const vehicleDropdownRef = useRef(null);
-
-
-  /* =====================================
+  /* =======================================================
      EMPTY TRIP
-  ===================================== */
+  ======================================================= */
 
   if (!trip) {
     return (
-      <section
-        className="vehicle-column-panel"
-      >
-        <div
-          className="vehicle-column-empty"
-        >
-          <div
-            className="vehicle-column-empty-icon"
-          >
+      <section className="vehicle-column-panel">
+        <div className="vehicle-column-empty">
+          <div className="vehicle-column-empty-icon">
             <Truck size={24} />
           </div>
 
@@ -333,172 +427,108 @@ const VehicleColumn = ({
           </strong>
 
           <p>
-            Select a trip to view
-            vehicle information.
+            Select a trip to view vehicle
+            information.
           </p>
         </div>
       </section>
     );
   }
 
+  /* =======================================================
+     ALLOCATED VEHICLES
+  ======================================================= */
 
-  /* =====================================
-     VEHICLES
-  ===================================== */
-
-  const vehicles =
-    Array.isArray(
-      trip.vehicles
-    )
-      ? trip.vehicles
-      : [];
-
-
-  const visibleVehicles =
-    vehicles.slice(0, 5);
-
-
-  const extraVehicles =
-    vehicles.slice(5);
-
-
-  /* =====================================
-     CLOSE EXTRA VEHICLE DROPDOWN
-  ===================================== */
-
-  useEffect(() => {
-    if (!showExtraVehicles) return;
-
-    const handlePointerDown = (event) => {
-      if (
-        vehicleDropdownRef.current &&
-        !vehicleDropdownRef.current.contains(event.target)
-      ) {
-        setShowExtraVehicles(false);
-      }
-    };
-
-    const handleKeyDown = (event) => {
-      if (event.key === "Escape") {
-        setShowExtraVehicles(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handlePointerDown);
-    window.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      document.removeEventListener("mousedown", handlePointerDown);
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [showExtraVehicles]);
-
-
-  /* =====================================
-     VEHICLE ID
-  ===================================== */
-
-  const getVehicleId = (
-    vehicle
-  ) => {
-    if (!vehicle) {
-      return "";
-    }
-
-    return (
-      safeText(
-        vehicle._id,
-        ""
-      ) ||
-      safeText(
-        vehicle.id,
-        ""
-      ) ||
-      safeText(
-        vehicle.vehicleSubId,
-        ""
-      ) ||
-      safeText(
-        vehicle.vehicleNumber,
-        ""
-      )
-    );
-  };
-
-
-  /* =====================================
-     SELECTED VEHICLE ID
-  ===================================== */
+  const vehicles = safeArray(
+    trip.allocatedVehicles
+  );
 
   const selectedVehicleId =
-    typeof selectedVehicle ===
-      "object"
-      ? getVehicleId(
-        selectedVehicle
-      )
+    typeof selectedVehicle === "object"
+      ? getVehicleId(selectedVehicle)
       : safeText(
-        selectedVehicle,
-        ""
-      );
-
-
-  /* =====================================
-     ACTIVE VEHICLE
-  ===================================== */
+          selectedVehicle,
+          ""
+        );
 
   const activeVehicle =
     vehicles.find(
-      (
-        vehicle
-      ) =>
-        getVehicleId(
-          vehicle
-        ) ===
+      (vehicle) =>
+        getVehicleId(vehicle) ===
         selectedVehicleId
     ) ||
-    (
-      typeof selectedVehicle ===
-        "object"
-        ? selectedVehicle
-        : null
-    ) ||
+    (typeof selectedVehicle === "object"
+      ? selectedVehicle
+      : null) ||
     vehicles[0] ||
     null;
 
+  /* =======================================================
+     VEHICLE SELECTOR
+  ======================================================= */
 
-  /* =====================================
-     STATUS ICON
-  ===================================== */
+  const VISIBLE_VEHICLE_COUNT = 5;
+
+  const visibleVehicles =
+    vehicles.slice(
+      0,
+      VISIBLE_VEHICLE_COUNT
+    );
+
+  const extraVehicles =
+    vehicles.slice(
+      VISIBLE_VEHICLE_COUNT
+    );
+
+  const selectedExtraVehicle =
+    extraVehicles.find(
+      (vehicle) =>
+        getVehicleId(vehicle) ===
+        selectedVehicleId
+    ) || null;
+
+  const handleVehicleSelect = (
+    vehicle
+  ) => {
+    const vehicleId =
+      getVehicleId(vehicle);
+
+    if (!vehicleId) {
+      return;
+    }
+
+    onSelectVehicle?.(vehicleId);
+
+    setShowExtraVehicles(false);
+  };
+
+  /* =======================================================
+     STATUS
+  ======================================================= */
 
   const getVehicleStatusIcon = (
     status
   ) => {
-    if (
-      status ===
-      "Moving"
-    ) {
+    if (status === "Moving") {
       return (
         <Navigation size={10} />
       );
     }
 
     if (
-      status ===
-      "Breakdown" ||
-      status ===
-      "Stopped"
+      status === "Breakdown" ||
+      status === "Stopped"
     ) {
       return (
         <AlertTriangle size={10} />
       );
     }
 
-    if (
-      status ===
-      "Reached"
-    ) {
+    if (status === "Reached") {
       return (
-        <CheckCircle2 size={10} />
+        <CheckCircle2
+          size={10}
+        />
       );
     }
 
@@ -507,18 +537,10 @@ const VehicleColumn = ({
     );
   };
 
-
-  /* =====================================
-     STATUS CLASS
-  ===================================== */
-
   const getVehicleStatusClass = (
     status
   ) => {
-    if (
-      status ===
-      "Stopped"
-    ) {
+    if (status === "Stopped") {
       return "breakdown";
     }
 
@@ -526,1569 +548,1135 @@ const VehicleColumn = ({
       typeof getStatusClass ===
       "function"
     ) {
-      return getStatusClass(
-        status
-      );
+      return getStatusClass(status);
     }
 
-    return String(
-      status || ""
+    return safeText(
+      status,
+      "Idle"
     )
       .toLowerCase()
-      .replaceAll(
-        " ",
-        "-"
-      );
+      .replaceAll(" ", "-");
   };
 
+  /* =======================================================
+     ACTIVE VEHICLE DATA
+  ======================================================= */
 
-  /* =====================================
-     DISTANCE
-  ===================================== */
+  const latestTracking =
+    getLatestTracking(activeVehicle);
 
-  const totalKm =
-    Number(
-      trip.totalKm ??
-      trip.totalDistance ??
-      0
-    ) || 0;
-
-
-  const kmCovered =
-    Number(
-      activeVehicle?.kmCovered ??
-      activeVehicle?.runningKm ??
-      trip.kmCovered ??
-      trip.coveredKm ??
-      0
-    ) || 0;
-
-
-  const balanceFromData =
-    trip.balanceKm ??
-    activeVehicle?.balanceKm;
-
-
-  const balanceKm =
-    balanceFromData !==
-      undefined &&
-      balanceFromData !==
-      null &&
-      balanceFromData !== ""
-      ? Number(
-        balanceFromData
-      ) || 0
-      : Math.max(
-        totalKm -
-        kmCovered,
-        0
-      );
-
-
-  /* =====================================
-     MOVEMENT
-  ===================================== */
-
-  const currentPosition =
-    safeText(
+  const requirement =
+    getRequirement(
+      trip,
       activeVehicle
-        ?.currentPosition ||
-      activeVehicle
-        ?.currentLocation ||
-      trip.currentPosition
     );
 
-
-  const yesterdayPosition =
-    safeText(
+  const quotation =
+    getQuotation(
+      trip,
       activeVehicle
-        ?.yesterdayPosition ||
-      trip.yesterdayPosition
     );
 
-
-  const runningKm =
-    activeVehicle
-      ?.runningKm ??
-    trip.runningKm ??
-    null;
-
-
-  const currentDay =
-    activeVehicle
-      ?.currentDay ??
-    trip.currentDay ??
-    null;
-
-
-  /* =====================================
-     TRIP DETAILS
-  ===================================== */
-
-  const lsp =
-    safeText(
-      trip.lsp ||
-      trip.logisticsServiceProvider
-    );
-
-
-  const transitDays =
-    trip.estimatedTransitDays ??
-    trip.transitDays ??
-    null;
-
-
-  /* =====================================
-     LOADING
-  ===================================== */
-
-  const loadingStatus =
-    safeText(
+  const vehicleStatus =
+    getVehicleStatus(
       activeVehicle
-        ?.loadingStatus,
-      "Pending"
     );
-
-
-  const loadingPointInDate =
-    formatDate(
-      activeVehicle
-        ?.loadingPointInDate
-    );
-
-
-  const loadingDate =
-    formatDate(
-      activeVehicle
-        ?.loadingDate
-    );
-
-
-  const loadingPointOutDate =
-    formatDate(
-      activeVehicle
-        ?.loadingPointOutDate
-    );
-
-
-  const loadingHaltingDays =
-    activeVehicle
-      ?.loadingHaltingDays ??
-    null;
-
-
-  const loadingRemarks =
-    safeText(
-      activeVehicle
-        ?.loadingRemarks
-    );
-
-
-  /* =====================================
-     UNLOADING
-  ===================================== */
-
-  const unloadingStatus =
-    safeText(
-      activeVehicle
-        ?.unloadingStatus,
-      "Pending"
-    );
-
-
-  const unloadingPointInDate =
-    formatDate(
-      activeVehicle
-        ?.unloadingPointInDate
-    );
-
-
-  const unloadingDate =
-    formatDate(
-      activeVehicle
-        ?.unloadingDate
-    );
-
-
-  const unloadingPointOutDate =
-    formatDate(
-      activeVehicle
-        ?.unloadingPointOutDate
-    );
-
-
-  const unloadingHaltingDays =
-    activeVehicle
-      ?.unloadingHaltingDays ??
-    null;
-
-
-  const unloadingRemarks =
-    safeText(
-      activeVehicle
-        ?.unloadingRemarks
-    );
-
-
-  /* =====================================
-     LR
-  ===================================== */
 
   const vehicleNumber =
     safeText(
-      activeVehicle
-        ?.vehicleNumber
+      activeVehicle?.vehicleNumber
     );
 
+  /* =======================================================
+     DISTANCE
+  ======================================================= */
 
-  const lrNo =
-    safeText(
-      activeVehicle
-        ?.lrNo
+  const totalKm =
+    Number(trip.distance) || 0;
+
+  /*
+   * todayKm represents the latest cumulative
+   * travelled KM.
+   */
+  const kmCovered =
+    Number(
+      latestTracking?.todayKm
+    ) || 0;
+
+  const balanceKm =
+    Math.max(
+      totalKm - kmCovered,
+      0
     );
 
+  /* =======================================================
+     MOVEMENT
+  ======================================================= */
 
-  const lrStatus =
+  const currentPosition =
     safeText(
-      activeVehicle
-        ?.lrStatus
+      latestTracking?.currentLocation
     );
 
-
-  const lrRemarks =
+  const yesterdayPosition =
     safeText(
-      activeVehicle
-        ?.lrRemarks
+      latestTracking
+        ?.yesterdayLocation
     );
 
+  const yesterdayKm =
+    latestTracking?.yesterdayKm ??
+    null;
 
-  const lrSignature =
-    safeText(
-      activeVehicle
-        ?.lrSignature
+  const todayKm =
+    latestTracking?.todayKm ??
+    null;
+
+  const runningKm =
+    latestTracking?.runningKm ??
+    null;
+
+  const currentDay =
+    latestTracking?.day ??
+    null;
+
+  const speed =
+    latestTracking?.speed ??
+    null;
+
+  const lastUpdated =
+    formatLastUpdated(
+      latestTracking?.updatedAt
     );
 
+  /* =======================================================
+     REQUIREMENT DETAILS
+  ======================================================= */
 
-  /* =====================================
-     POD
-  ===================================== */
-
-  const podStatus =
+  const vehicleType =
     safeText(
-      activeVehicle
-        ?.podStatus,
+      requirement?.vehicleType
+    );
+
+  const configuration =
+    safeText(
+      requirement?.configuration
+    );
+
+  const classification =
+    safeText(
+      requirement?.classification
+    );
+
+  const transporter =
+    safeText(
+      quotation?.transporter
+    );
+
+  /*
+   * IMPORTANT:
+   * Quotation amount is intentionally NOT
+   * displayed anywhere in Tracking UI.
+   */
+
+  /* =======================================================
+     LOADING
+  ======================================================= */
+
+  const loading =
+    activeVehicle?.loading || {};
+
+  const loadingStatus =
+    safeText(
+      loading.status,
       "Pending"
     );
 
-
-  const courierName =
-    safeText(
-      activeVehicle
-        ?.courierName ||
-      activeVehicle
-        ?.podCourierName
-    );
-
-
-  const trackingId =
-    safeText(
-      activeVehicle
-        ?.trackingId ||
-      activeVehicle
-        ?.podTrackingId
-    );
-
-
-  const podCourierDate =
+  const loadingPointInDate =
     formatDate(
-      activeVehicle
-        ?.podCourierDate
+      loading.pointInDate
     );
 
+  const loadingDate =
+    formatDate(
+      loading.loadingDate
+    );
 
-  const podRemarks =
+  const loadingPointOutDate =
+    formatDate(
+      loading.pointOutDate
+    );
+
+  const loadingHaltingDays =
+    loading.haltingDays ??
+    null;
+
+  const loadingRemarks =
     safeText(
-      activeVehicle
-        ?.podRemarks
+      loading.remarks
     );
 
+  /* =======================================================
+     UNLOADING
+  ======================================================= */
 
-  /* =====================================
+  const unloading =
+    activeVehicle?.unloading || {};
+
+  const unloadingStatus =
+    safeText(
+      unloading.status,
+      "Pending"
+    );
+
+  const unloadingPointInDate =
+    formatDate(
+      unloading.pointInDate
+    );
+
+  const unloadingDate =
+    formatDate(
+      unloading.unloadingDate
+    );
+
+  const unloadingPointOutDate =
+    formatDate(
+      unloading.pointOutDate
+    );
+
+  const unloadingHaltingDays =
+    unloading.haltingDays ??
+    null;
+
+  const unloadingRemarks =
+    safeText(
+      unloading.remarks
+    );
+
+  /* =======================================================
      DRIVER
-  ===================================== */
+  ======================================================= */
+
+  const driver =
+    activeVehicle?.driver || {};
 
   const driverName =
-    safeText(
-      activeVehicle
-        ?.driverName ||
-      trip.driverName
-    );
-
+    safeText(driver.name);
 
   const driverNumber =
     safeText(
-      activeVehicle
-        ?.driverNumber ||
-      activeVehicle
-        ?.driverPhone ||
-      trip.driverNumber ||
-      trip.driverPhone
+      driver.contactNumber
     );
 
-
-  /* =====================================
+  /* =======================================================
      ESCORT
-  ===================================== */
+  ======================================================= */
+
+  const escort =
+    activeVehicle?.escort || {};
 
   const escortVehicleNumber =
     safeText(
-      trip.escortVehicleNumber
+      escort.vehicleNumber
     );
-
 
   const escortName =
-    safeText(
-      trip.escortName
-    );
-
+    safeText(escort.name);
 
   const escortContactNumber =
     safeText(
-      trip.escortContactNumber ||
-      trip.escortPhone
+      escort.contactNumber
     );
 
-
-  /* =====================================
+  /* =======================================================
      SUPERVISOR
-  ===================================== */
+  ======================================================= */
+
+  const supervisor =
+    activeVehicle?.supervisor || {};
 
   const supervisorName =
     safeText(
-      trip.supervisorName
+      supervisor.name
     );
-
 
   const supervisorContact =
     safeText(
-      trip.supervisorContact ||
-      trip.supervisorPhone
+      supervisor.contactNumber
     );
 
+  /* =======================================================
+     CUSTOMER
+  ======================================================= */
 
-  /* =====================================
-     CLIENT
-  ===================================== */
+  const customerName =
+    safeText(trip.customer);
 
-  const clientName =
+  const customerContact =
     safeText(
-      trip.customer
-    );
-
-
-  const clientContact =
-    safeText(
-      trip.clientContactPerson ||
-      trip.customerContactPerson ||
       trip.contactPerson
     );
 
-
-  const clientPhone =
+  const customerPhone =
     safeText(
-      trip.clientPhone ||
-      trip.customerPhone ||
       trip.contactNumber
     );
 
-
-  /* =====================================
-     TRANSPORTER
-  ===================================== */
-
-  const transporterContact =
-    safeText(
-      trip.transporterContactPerson ||
-      trip.lspContactPerson
-    );
-
-
-  const transporterPhone =
-    safeText(
-      trip.transporterPhone ||
-      trip.lspPhone
-    );
-
-
-  /* =====================================
+  /* =======================================================
      RENDER
-  ===================================== */
+  ======================================================= */
 
   return (
-    <section
-      className="vehicle-column-panel"
-    >
+    <section className="vehicle-column-panel">
+      {/* =====================================
+          VEHICLE SELECTOR
+      ===================================== */}
 
-      {/* =================================
-          VEHICLE LIST
-      ================================= */}
-
-      <div className="vehicle-selector-shell">
+      <div className="vehicle-selector-row">
         {vehicles.length > 0 ? (
-          <div className="vehicle-selector-row">
-            <div className="vehicle-visible-list">
-              {visibleVehicles.map((vehicle, index) => {
-                const vehicleId = getVehicleId(vehicle);
+          <>
+            <div className="vehicle-visible-tabs">
+              {visibleVehicles.map(
+                (vehicle, index) => {
+                  const vehicleId =
+                    getVehicleId(
+                      vehicle
+                    );
 
-                const active = selectedVehicleId
-                  ? selectedVehicleId === vehicleId
-                  : index === 0;
+                  const active =
+                    selectedVehicleId
+                      ? selectedVehicleId ===
+                        vehicleId
+                      : index === 0;
 
-                return (
-                  <button
-                    type="button"
-                    key={vehicleId || index}
-                    className={`vehicle-number-card ${active ? "active" : ""}`}
-                    onClick={() => {
-                      onSelectVehicle?.(vehicleId);
-                      setShowExtraVehicles(false);
-                    }}
-                    title={safeText(
-                      vehicle.vehicleNumber,
-                      `Vehicle ${index + 1}`
-                    )}
-                  >
-                    {safeText(
-                      vehicle.vehicleNumber,
-                      `Vehicle ${index + 1}`
-                    )}
-                  </button>
-                );
-              })}
+                  const status =
+                    getVehicleStatus(
+                      vehicle
+                    );
+
+                  return (
+                    <button
+                      type="button"
+                      key={
+                        vehicleId ||
+                        index
+                      }
+                      className={`vehicle-number-card ${
+                        active
+                          ? "active"
+                          : ""
+                      }`}
+                      onClick={() =>
+                        handleVehicleSelect(
+                          vehicle
+                        )
+                      }
+                      title={safeText(
+                        vehicle.vehicleNumber,
+                        `Vehicle ${
+                          index + 1
+                        }`
+                      )}
+                    >
+                      <span>
+                        {safeText(
+                          vehicle.vehicleNumber,
+                          `Vehicle ${
+                            index + 1
+                          }`
+                        )}
+                      </span>
+
+                      <span
+                        className={`vehicle-mini-status ${getVehicleStatusClass(
+                          status
+                        )}`}
+                      >
+                        {getVehicleStatusIcon(
+                          status
+                        )}
+
+                        {status}
+                      </span>
+                    </button>
+                  );
+                }
+              )}
             </div>
 
-            {extraVehicles.length > 0 && (
-              <div
-                className="vehicle-dropdown"
-                ref={vehicleDropdownRef}
-              >
+            {extraVehicles.length >
+              0 && (
+              <div className="vehicle-more-dropdown">
                 <button
                   type="button"
-                  className={`vehicle-dropdown-trigger ${
-                    showExtraVehicles ? "open" : ""
+                  className={`vehicle-more-button ${
+                    selectedExtraVehicle
+                      ? "active"
+                      : ""
                   }`}
                   onClick={() =>
-                    setShowExtraVehicles((previous) => !previous)
+                    setShowExtraVehicles(
+                      (current) =>
+                        !current
+                    )
                   }
-                  aria-label="Show more vehicles"
-                  aria-expanded={showExtraVehicles}
-                  title="Show more vehicles"
+                  aria-expanded={
+                    showExtraVehicles
+                  }
+                  aria-haspopup="listbox"
                 >
-                  <ChevronDown size={17} />
+                  <span className="vehicle-more-button-text">
+                    {selectedExtraVehicle
+                      ? safeText(
+                          selectedExtraVehicle.vehicleNumber,
+                          "More Vehicles"
+                        )
+                      : `More (${extraVehicles.length})`}
+                  </span>
+
+                  {showExtraVehicles ? (
+                    <ChevronUp
+                      size={15}
+                    />
+                  ) : (
+                    <ChevronDown
+                      size={15}
+                    />
+                  )}
                 </button>
 
                 {showExtraVehicles && (
                   <div
-                    className="vehicle-dropdown-menu"
-                    role="menu"
+                    className="vehicle-more-menu"
+                    role="listbox"
                   >
-                    <div className="vehicle-dropdown-top">
-                      <strong>Additional Vehicles</strong>
-                      <span>{extraVehicles.length}</span>
-                    </div>
+                    {extraVehicles.map(
+                      (
+                        vehicle,
+                        index
+                      ) => {
+                        const vehicleId =
+                          getVehicleId(
+                            vehicle
+                          );
 
-                    <div className="vehicle-dropdown-list">
-                      {extraVehicles.map((vehicle, index) => {
-                        const vehicleId = getVehicleId(vehicle);
-                        const active = selectedVehicleId === vehicleId;
+                        const active =
+                          selectedVehicleId ===
+                          vehicleId;
+
+                        const status =
+                          getVehicleStatus(
+                            vehicle
+                          );
 
                         return (
                           <button
                             type="button"
-                            role="menuitem"
-                            key={vehicleId || `extra-${index}`}
-                            className={`vehicle-dropdown-item ${
-                              active ? "active" : ""
+                            role="option"
+                            aria-selected={
+                              active
+                            }
+                            key={
+                              vehicleId ||
+                              `extra-${index}`
+                            }
+                            className={`vehicle-more-option ${
+                              active
+                                ? "active"
+                                : ""
                             }`}
-                            onClick={() => {
-                              onSelectVehicle?.(vehicleId);
-                              setShowExtraVehicles(false);
-                            }}
+                            onClick={() =>
+                              handleVehicleSelect(
+                                vehicle
+                              )
+                            }
                           >
-                            <span className="vehicle-dropdown-truck">
-                              <Truck size={14} />
+                            <span>
+                              {safeText(
+                                vehicle.vehicleNumber,
+                                `Vehicle ${
+                                  VISIBLE_VEHICLE_COUNT +
+                                  index +
+                                  1
+                                }`
+                              )}
                             </span>
 
-                            <span className="vehicle-dropdown-text">
-                              <strong>
-                                {safeText(
-                                  vehicle.vehicleNumber,
-                                  `Vehicle ${index + 6}`
-                                )}
-                              </strong>
-                            </span>
+                            <span
+                              className={`vehicle-mini-status ${getVehicleStatusClass(
+                                status
+                              )}`}
+                            >
+                              {getVehicleStatusIcon(
+                                status
+                              )}
 
-                            {active && (
-                              <CheckCircle2
-                                size={15}
-                                className="vehicle-dropdown-check"
-                              />
-                            )}
+                              {status}
+                            </span>
                           </button>
                         );
-                      })}
-                    </div>
+                      }
+                    )}
                   </div>
                 )}
               </div>
             )}
-          </div>
+          </>
         ) : (
           <div className="vehicle-mini-empty">
-            No vehicles found.
+            No allocated vehicles found.
           </div>
         )}
       </div>
 
-      {/* =================================
-          ROUTE
-      ================================= */}
-
-      <div
-        className="trip-route-card"
-      >
-
-        <div
-          className="trip-route-point"
-        >
-          <span>
-            Origin
-          </span>
+      {!activeVehicle ? (
+        <div className="vehicle-column-empty">
+          <div className="vehicle-column-empty-icon">
+            <Truck size={24} />
+          </div>
 
           <strong>
-            {safeText(
-              trip.origin
-            )}
+            No Vehicle Allocated
           </strong>
+
+          <p>
+            Actual vehicles will appear here
+            after allocation in Tracking Input.
+          </p>
         </div>
+      ) : (
+        <>
+          {/* =================================
+              CURRENT STATUS
+          ================================= */}
 
-
-        <div
-          className="trip-route-direction"
-        >
-          <span
-            className="route-line"
-          />
-
-          <div
-            className="route-center-content"
-          >
-            <span
-              className="route-material-name"
+          <div className="vehicle-status-strip">
+            <div
+              className={`status-item ${getVehicleStatusClass(
+                vehicleStatus
+              )}`}
             >
-              {safeText(
-                trip.materialType
+              {getVehicleStatusIcon(
+                vehicleStatus
               )}
-            </span>
 
-            <span
-              className="route-vehicle-icon"
-            >
-              <Truck size={13} />
-            </span>
-          </div>
-
-          <span
-            className="route-line"
-          />
-        </div>
-
-
-        <div
-          className="trip-route-point destination"
-        >
-          <span>
-            Destination
-          </span>
-
-          <strong>
-            {safeText(
-              trip.destination
-            )}
-          </strong>
-        </div>
-
-      </div>
-
-
-      {/* =================================
-          DISTANCE
-      ================================= */}
-
-      <div
-        className="trip-distance-summary"
-      >
-
-        <div
-          className="distance-summary-item total"
-        >
-          <span>
-            Total KM
-          </span>
-
-          <strong>
-            {formatKm(
-              totalKm
-            )}
-          </strong>
-        </div>
-
-
-        <div
-          className="distance-summary-item covered"
-        >
-          <span>
-            KM Covered
-          </span>
-
-          <strong>
-            {formatKm(
-              kmCovered
-            )}
-          </strong>
-        </div>
-
-
-        <div
-          className="distance-summary-item balance"
-        >
-          <span>
-            Balance
-          </span>
-
-          <strong>
-            {formatKm(
-              balanceKm
-            )}
-          </strong>
-        </div>
-
-      </div>
-
-
-      {/* =================================
-          MOVEMENT
-      ================================= */}
-
-      <div
-        className="movement-card-section"
-      >
-
-        <div
-          className="movement-heading-row"
-        >
-
-          <span
-            className="section-heading-icon blue"
-          >
-            <Navigation size={12} />
-          </span>
-
-
-          <div
-            className="movement-heading-content"
-          >
-
-            <div
-              className="movement-title-line"
-            >
-              <strong>
-                Movement Status
-              </strong>
-
-              <span
-                className="movement-vehicle-badge"
-              >
-                {vehicleNumber}
-              </span>
-            </div>
-
-            <span
-              className="movement-heading-subtitle"
-            >
-              Current vehicle movement
-            </span>
-
-          </div>
-
-        </div>
-
-
-        <div
-          className="movement-card-grid"
-        >
-
-          <div
-            className="movement-info-card"
-          >
-            <span>
-              Current Position
-            </span>
-
-            <strong>
-              {currentPosition}
-            </strong>
-          </div>
-
-
-          <div
-            className="movement-info-card"
-          >
-            <span>
-              Yesterday Position
-            </span>
-
-            <strong>
-              {yesterdayPosition}
-            </strong>
-          </div>
-
-
-          <div
-            className="movement-info-card"
-          >
-            <span>
-              Running KM
-            </span>
-
-            <strong>
-              {formatKm(
-                runningKm
-              )}
-            </strong>
-          </div>
-
-
-          <div
-            className="movement-info-card"
-          >
-            <span>
-              Current Day
-            </span>
-
-            <strong>
-              {currentDay ===
-                null ||
-                currentDay ===
-                undefined
-                ? "-"
-                : `Day ${currentDay}`}
-            </strong>
-          </div>
-
-        </div>
-
-      </div>
-
-
-      {/* =================================
-          TRIP DETAILS
-      ================================= */}
-
-
-
-      {/* TRANSIT */}
-
-      <div
-        className="transit-day-row"
-      >
-        <div>
-          <Route size={12} />
-
-          <span>
-            Estimated Transit
-          </span>
-        </div>
-
-        <strong>
-          {formatDays(
-            transitDays
-          )}
-        </strong>
-      </div>
-
-
-      {/* =================================
-            LOADING + UNLOADING
-        ================================= */}
-
-      <div
-        className="operation-details-section"
-      >
-
-        <div
-          className="operation-main-grid"
-        >
-
-          {/* LOADING */}
-
-          <div
-            className="simple-operation-card loading-card"
-          >
-
-            <div
-              className="simple-operation-header"
-            >
-
-              <div
-                className="simple-operation-title"
-              >
-                <span
-                  className="simple-operation-icon loading"
-                >
-                  <Truck size={13} />
-                </span>
-
-                <div>
-                  <strong>
-                    Loading Point
-                  </strong>
-
-                  <span>
-                    Dispatch information
-                  </span>
-                </div>
-              </div>
-
-
-              <span
-                className="simple-operation-status loading"
-              >
-                {loadingStatus}
-              </span>
-
-            </div>
-
-
-            <div
-              className="simple-operation-details"
-            >
-
-              <DetailRow
-                label="LP In Date"
-                value={
-                  loadingPointInDate
-                }
-              />
-
-              <DetailRow
-                label="Loading Date"
-                value={
-                  loadingDate
-                }
-              />
-
-              <DetailRow
-                label="LP Out Date"
-                value={
-                  loadingPointOutDate
-                }
-              />
-
-              <DetailRow
-                label="Halting Days"
-                value={
-                  formatDays(
-                    loadingHaltingDays
-                  )
-                }
-                halting
-              />
-
-
-              <div
-                className="simple-remarks-box"
-              >
-                <div
-                  className="simple-remarks-heading"
-                >
-                  <MessageSquareText
-                    size={10}
-                  />
-
-                  <span>
-                    Remarks
-                  </span>
-                </div>
-
-                <div
-                  className="simple-remarks-value"
-                >
-                  {loadingRemarks}
-                </div>
-              </div>
-
-            </div>
-
-          </div>
-
-
-          {/* UNLOADING */}
-
-          <div
-            className="simple-operation-card unloading-card"
-          >
-
-            <div
-              className="simple-operation-header"
-            >
-
-              <div
-                className="simple-operation-title"
-              >
-                <span
-                  className="simple-operation-icon unloading"
-                >
-                  <PackageCheck
-                    size={13}
-                  />
-                </span>
-
-                <div>
-                  <strong>
-                    Unloading Point
-                  </strong>
-
-                  <span>
-                    Delivery information
-                  </span>
-                </div>
-              </div>
-
-
-              <span
-                className="simple-operation-status unloading"
-              >
-                {unloadingStatus}
-              </span>
-
-            </div>
-
-
-            <div
-              className="simple-operation-details"
-            >
-
-              <DetailRow
-                label="UP In Date"
-                value={
-                  unloadingPointInDate
-                }
-              />
-
-              <DetailRow
-                label="Unloading Date"
-                value={
-                  unloadingDate
-                }
-              />
-
-              <DetailRow
-                label="UP Out Date"
-                value={
-                  unloadingPointOutDate
-                }
-              />
-
-              <DetailRow
-                label="Halting Days"
-                value={
-                  formatDays(
-                    unloadingHaltingDays
-                  )
-                }
-                halting
-              />
-
-
-              <div
-                className="simple-remarks-box"
-              >
-                <div
-                  className="simple-remarks-heading"
-                >
-                  <MessageSquareText
-                    size={10}
-                  />
-
-                  <span>
-                    Remarks
-                  </span>
-                </div>
-
-                <div
-                  className="simple-remarks-value"
-                >
-                  {unloadingRemarks}
-                </div>
-              </div>
-
-            </div>
-
-          </div>
-
-        </div>
-
-      </div>
-
-
-      {/* CLIENT */}
-
-      <div
-        className="trip-detail-group client-group"
-      >
-
-        <div
-          className="trip-detail-group-title"
-        >
-          <span
-            className="trip-detail-group-icon client"
-          >
-            <Package size={12} />
-          </span>
-
-          <strong>
-            Client Details
-          </strong>
-        </div>
-
-
-        <div
-          className="trip-detail-row"
-        >
-          <span
-            className="trip-detail-label"
-          >
-            Client Name
-          </span>
-
-          <span
-            className="trip-detail-colon"
-          >
-            :
-          </span>
-
-          <strong
-            className="trip-detail-value"
-          >
-            {clientName}
-          </strong>
-        </div>
-
-
-        <div
-          className="trip-detail-row"
-        >
-          <span
-            className="trip-detail-label"
-          >
-            Contact Person
-          </span>
-
-          <span
-            className="trip-detail-colon"
-          >
-            :
-          </span>
-
-          <strong
-            className="trip-detail-value"
-          >
-            {clientContact}
-          </strong>
-        </div>
-
-
-        <div
-          className="trip-detail-row"
-        >
-          <span
-            className="trip-detail-label"
-          >
-            Phone No.
-          </span>
-
-          <span
-            className="trip-detail-colon"
-          >
-            :
-          </span>
-
-          <strong
-            className="trip-detail-value"
-          >
-            {clientPhone}
-          </strong>
-        </div>
-
-      </div>
-
-
-      {/* TRANSPORTER */}
-
-      <div
-        className="trip-detail-group transporter-group"
-      >
-
-        <div
-          className="trip-detail-group-title"
-        >
-          <span
-            className="trip-detail-group-icon transporter"
-          >
-            <Truck size={12} />
-          </span>
-
-          <strong>
-            Transporter Details
-          </strong>
-        </div>
-
-
-        <div
-          className="trip-detail-row"
-        >
-          <span
-            className="trip-detail-label"
-          >
-            Transporter
-          </span>
-
-          <span
-            className="trip-detail-colon"
-          >
-            :
-          </span>
-
-          <strong
-            className="trip-detail-value"
-          >
-            {lsp}
-          </strong>
-        </div>
-
-
-        <div
-          className="trip-detail-row"
-        >
-          <span
-            className="trip-detail-label"
-          >
-            Contact Person
-          </span>
-
-          <span
-            className="trip-detail-colon"
-          >
-            :
-          </span>
-
-          <strong
-            className="trip-detail-value"
-          >
-            {transporterContact}
-          </strong>
-        </div>
-
-
-        <div
-          className="trip-detail-row"
-        >
-          <span
-            className="trip-detail-label"
-          >
-            Phone No.
-          </span>
-
-          <span
-            className="trip-detail-colon"
-          >
-            :
-          </span>
-
-          <strong
-            className="trip-detail-value"
-          >
-            {transporterPhone}
-          </strong>
-        </div>
-
-      </div>
-
-
-
-
-
-      {/* =================================
-            LR & POD
-        ================================= */}
-
-      <div
-        className="lr-pod-card"
-      >
-
-        <div
-          className="lr-pod-heading"
-        >
-          <FileText size={12} />
-
-          <strong>
-            LR & POD Details
-          </strong>
-        </div>
-
-
-        <div
-          className="lr-primary-grid"
-        >
-
-          <PrimaryItem
-            label="Vehicle No."
-            value={
-              vehicleNumber
-            }
-          />
-
-          <PrimaryItem
-            label="LR No."
-            value={
-              lrNo
-            }
-          />
-
-          <PrimaryItem
-            label="LR Status"
-            value={
-              lrStatus
-            }
-          />
-
-          <PrimaryItem
-            label="LR Signature date"
-            value={
-              lrSignature
-            }
-          />
-
-        </div>
-
-
-        <div
-          className="lr-remarks-box"
-        >
-          <div
-            className="lr-remarks-label"
-          >
-            <MessageSquareText
-              size={10}
-            />
-
-            <span>
-              LR Remarks
-            </span>
-          </div>
-
-          <div
-            className="lr-remarks-value"
-          >
-            {lrRemarks}
-          </div>
-        </div>
-
-
-        <div
-          className="pod-details-grid"
-        >
-
-          <PrimaryItem
-            pod
-            label="POD Status"
-            value={
-              podStatus
-            }
-          />
-
-          <PrimaryItem
-            pod
-            label="Courier Name"
-            value={
-              courierName
-            }
-          />
-
-          <PrimaryItem
-            pod
-            label="Tracking ID"
-            value={
-              trackingId
-            }
-          />
-
-          <PrimaryItem
-            pod
-            label="Courier Date"
-            value={
-              podCourierDate
-            }
-          />
-
-        </div>
-
-
-        {/* DRIVER */}
-
-        <PersonSection
-          className="driver-section"
-          icon={
-            <Truck size={11} />
-          }
-          title="Driver Details"
-          rows={[
-            [
-              "Driver Name",
-              driverName,
-            ],
-            [
-              "Driver Number",
-              driverNumber,
-            ],
-          ]}
-        />
-
-
-        {/* ESCORT */}
-
-        <PersonSection
-          className="escort-section"
-          icon={
-            <Navigation
-              size={11}
-            />
-          }
-          title="Escort Details"
-          rows={[
-            [
-              "Vehicle Number",
-              escortVehicleNumber,
-            ],
-            [
-              "Name",
-              escortName,
-            ],
-            [
-              "Contact Number",
-              escortContactNumber,
-            ],
-          ]}
-        />
-
-
-        {/* SUPERVISOR */}
-
-        <PersonSection
-          className="supervisor-section"
-          icon={
-            <CheckCircle2
-              size={11}
-            />
-          }
-          title="Supervisor Details"
-          rows={[
-            [
-              "Name",
-              supervisorName,
-            ],
-            [
-              "Contact",
-              supervisorContact,
-            ],
-          ]}
-        />
-
-
-        {/* POD REMARKS */}
-
-        <div
-          className="pod-remarks-box"
-        >
-          <div
-            className="pod-remarks-label"
-          >
-            <MessageSquareText
-              size={10}
-            />
-
-            <span>
-              Remarks
-            </span>
-          </div>
-
-          <div
-            className="pod-remarks-value"
-          >
-            {podRemarks}
-          </div>
-        </div>
-
-      </div>
-
-
-
-    </section>
-  );
-};
-
-
-/* =========================================
-   DETAIL ROW
-========================================= */
-
-const DetailRow = ({
-  label,
-  value,
-  halting = false,
-}) => {
-  return (
-    <div
-      className="simple-detail-row"
-    >
-      <span
-        className="simple-detail-label"
-      >
-        {label}
-      </span>
-
-      <span
-        className="simple-detail-colon"
-      >
-        :
-      </span>
-
-      <strong
-        className={
-          `simple-detail-value ${halting
-            ? "halting"
-            : ""
-          }`
-        }
-      >
-        {safeText(
-          value
-        )}
-      </strong>
-    </div>
-  );
-};
-
-
-/* =========================================
-   PRIMARY ITEM
-========================================= */
-
-const PrimaryItem = ({
-  label,
-  value,
-  pod = false,
-}) => {
-  return (
-    <div
-      className={
-        pod
-          ? "pod-detail-item"
-          : "lr-primary-item"
-      }
-    >
-      <span>
-        {label}
-      </span>
-
-      <strong>
-        {safeText(
-          value
-        )}
-      </strong>
-    </div>
-  );
-};
-
-
-/* =========================================
-   PERSON SECTION
-========================================= */
-
-const PersonSection = ({
-  className = "",
-  icon,
-  title,
-  rows = [],
-}) => {
-  return (
-    <div
-      className={
-        `lr-person-section ${className}`
-      }
-    >
-
-      <div
-        className="lr-person-heading"
-      >
-        {icon}
-
-        <strong>
-          {title}
-        </strong>
-      </div>
-
-
-      <div
-        className="lr-person-content"
-      >
-
-        {rows.map(
-          (
-            [
-              label,
-              value,
-            ]
-          ) => (
-            <div
-              className="lr-person-row"
-              key={label}
-            >
               <span>
-                {label}
+                Current Status
               </span>
 
-              <span
-                className="lr-person-colon"
-              >
-                :
+              <strong>
+                {vehicleStatus}
+              </strong>
+            </div>
+
+            <div className="status-item">
+              <Navigation
+                size={11}
+              />
+
+              <span>
+                Current Location
+              </span>
+
+              <strong>
+                {currentPosition}
+              </strong>
+            </div>
+
+            <div className="status-item">
+              <Route size={11} />
+
+              <span>
+                Last Updated
+              </span>
+
+              <strong>
+                {lastUpdated}
+              </strong>
+            </div>
+          </div>
+
+          {/* =================================
+              ROUTE
+          ================================= */}
+
+          <div className="trip-route-card">
+            <div className="trip-route-point">
+              <span>
+                Origin
               </span>
 
               <strong>
                 {safeText(
-                  value
+                  trip.origin
                 )}
               </strong>
             </div>
-          )
-        )}
 
-      </div>
+            <div className="trip-route-direction">
+              <span className="route-line" />
 
-    </div>
+              <div className="route-center-content">
+                <span className="route-material-name">
+                  {safeText(
+                    trip.materialType
+                  )}
+                </span>
+
+                <span className="route-vehicle-icon">
+                  <Truck
+                    size={13}
+                  />
+                </span>
+              </div>
+
+              <span className="route-line" />
+            </div>
+
+            <div className="trip-route-point destination">
+              <span>
+                Destination
+              </span>
+
+              <strong>
+                {safeText(
+                  trip.destination
+                )}
+              </strong>
+            </div>
+          </div>
+
+          {/* =================================
+              DISTANCE
+          ================================= */}
+
+          <div className="trip-distance-summary">
+            <div className="distance-summary-item total">
+              <span>
+                Total KM
+              </span>
+
+              <strong>
+                {formatKm(
+                  totalKm
+                )}
+              </strong>
+            </div>
+
+            <div className="distance-summary-item covered">
+              <span>
+                KM Covered
+              </span>
+
+              <strong>
+                {formatKm(
+                  kmCovered
+                )}
+              </strong>
+            </div>
+
+            <div className="distance-summary-item balance">
+              <span>
+                Balance
+              </span>
+
+              <strong>
+                {formatKm(
+                  balanceKm
+                )}
+              </strong>
+            </div>
+          </div>
+
+          {/* =================================
+              MOVEMENT
+          ================================= */}
+
+          <div className="movement-card-section">
+            <div className="movement-heading-row">
+              <span className="section-heading-icon blue">
+                <Navigation
+                  size={12}
+                />
+              </span>
+
+              <div className="movement-heading-content">
+                <div className="movement-title-line">
+                  <strong>
+                    Movement Status
+                  </strong>
+
+                  <span className="movement-vehicle-badge">
+                    {vehicleNumber}
+                  </span>
+                </div>
+
+                <span className="movement-heading-subtitle">
+                  Latest daily movement
+                </span>
+              </div>
+            </div>
+
+            <div className="movement-card-grid">
+              <div className="movement-info-card">
+                <span>
+                  Current Position
+                </span>
+
+                <strong>
+                  {currentPosition}
+                </strong>
+              </div>
+
+              <div className="movement-info-card">
+                <span>
+                  Yesterday Position
+                </span>
+
+                <strong>
+                  {yesterdayPosition}
+                </strong>
+              </div>
+
+              <div className="movement-info-card">
+                <span>
+                  Yesterday KM
+                </span>
+
+                <strong>
+                  {formatKm(
+                    yesterdayKm
+                  )}
+                </strong>
+              </div>
+
+              <div className="movement-info-card">
+                <span>
+                  Today KM
+                </span>
+
+                <strong>
+                  {formatKm(
+                    todayKm
+                  )}
+                </strong>
+              </div>
+
+              <div className="movement-info-card">
+                <span>
+                  Running KM
+                </span>
+
+                <strong>
+                  {formatKm(
+                    runningKm
+                  )}
+                </strong>
+              </div>
+
+              <div className="movement-info-card">
+                <span>
+                  Current Day
+                </span>
+
+                <strong>
+                  {currentDay ===
+                    null ||
+                  currentDay ===
+                    undefined
+                    ? "-"
+                    : `Day ${currentDay}`}
+                </strong>
+              </div>
+
+              <div className="movement-info-card">
+                <span>
+                  Speed
+                </span>
+
+                <strong>
+                  {speed === null ||
+                  speed ===
+                    undefined ||
+                  speed === ""
+                    ? "-"
+                    : `${speed} km/h`}
+                </strong>
+              </div>
+
+              <div className="movement-info-card">
+                <span>
+                  Status
+                </span>
+
+                <strong>
+                  {vehicleStatus}
+                </strong>
+              </div>
+            </div>
+          </div>
+
+          {/* =================================
+              REQUIREMENT
+          ================================= */}
+
+          <div className="trip-detail-group client-group">
+            <div className="trip-detail-group-title">
+              <span className="trip-detail-group-icon client">
+                <Truck
+                  size={12}
+                />
+              </span>
+
+              <strong>
+                Vehicle Requirement
+              </strong>
+            </div>
+
+            <TripDetailRow
+              label="Vehicle Type"
+              value={vehicleType}
+            />
+
+            <TripDetailRow
+              label="Configuration"
+              value={
+                configuration
+              }
+            />
+
+            <TripDetailRow
+              label="Classification"
+              value={
+                classification
+              }
+            />
+
+            <TripDetailRow
+              label="Vehicle Number"
+              value={
+                vehicleNumber
+              }
+            />
+          </div>
+
+          {/* =================================
+              TRANSPORTER
+          ================================= */}
+
+          <div className="trip-detail-group transporter-group">
+            <div className="trip-detail-group-title">
+              <span className="trip-detail-group-icon transporter">
+                <Truck
+                  size={12}
+                />
+              </span>
+
+              <strong>
+                Transporter Details
+              </strong>
+            </div>
+
+            <TripDetailRow
+              label="Transporter"
+              value={transporter}
+            />
+          </div>
+
+          {/* =================================
+              CUSTOMER
+          ================================= */}
+
+          <div className="trip-detail-group client-group">
+            <div className="trip-detail-group-title">
+              <span className="trip-detail-group-icon client">
+                <Package
+                  size={12}
+                />
+              </span>
+
+              <strong>
+                Customer Details
+              </strong>
+            </div>
+
+            <TripDetailRow
+              label="Customer Name"
+              value={
+                customerName
+              }
+            />
+
+            <TripDetailRow
+              label="Contact Person"
+              value={
+                customerContact
+              }
+            />
+
+            <TripDetailRow
+              label="Phone No."
+              value={
+                customerPhone
+              }
+            />
+          </div>
+
+          {/* =================================
+              LOADING + UNLOADING
+          ================================= */}
+
+          <div className="operation-details-section">
+            <div className="operation-main-grid">
+              {/* LOADING */}
+
+              <div className="simple-operation-card loading-card">
+                <div className="simple-operation-header">
+                  <div className="simple-operation-title">
+                    <span className="simple-operation-icon loading">
+                      <Truck
+                        size={13}
+                      />
+                    </span>
+
+                    <div>
+                      <strong>
+                        Loading Point
+                      </strong>
+
+                      <span>
+                        Dispatch information
+                      </span>
+                    </div>
+                  </div>
+
+                  <span className="simple-operation-status loading">
+                    {loadingStatus}
+                  </span>
+                </div>
+
+                <div className="simple-operation-details">
+                  <DetailRow
+                    label="LP In Date"
+                    value={
+                      loadingPointInDate
+                    }
+                  />
+
+                  <DetailRow
+                    label="Loading Date"
+                    value={
+                      loadingDate
+                    }
+                  />
+
+                  <DetailRow
+                    label="LP Out Date"
+                    value={
+                      loadingPointOutDate
+                    }
+                  />
+
+                  <DetailRow
+                    label="Halting Days"
+                    value={formatDays(
+                      loadingHaltingDays
+                    )}
+                    halting
+                  />
+
+                  <div className="simple-remarks-box">
+                    <div className="simple-remarks-heading">
+                      <MessageSquareText
+                        size={10}
+                      />
+
+                      <span>
+                        Remarks
+                      </span>
+                    </div>
+
+                    <div className="simple-remarks-value">
+                      {loadingRemarks}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* UNLOADING */}
+
+              <div className="simple-operation-card unloading-card">
+                <div className="simple-operation-header">
+                  <div className="simple-operation-title">
+                    <span className="simple-operation-icon unloading">
+                      <PackageCheck
+                        size={13}
+                      />
+                    </span>
+
+                    <div>
+                      <strong>
+                        Unloading Point
+                      </strong>
+
+                      <span>
+                        Delivery information
+                      </span>
+                    </div>
+                  </div>
+
+                  <span className="simple-operation-status unloading">
+                    {unloadingStatus}
+                  </span>
+                </div>
+
+                <div className="simple-operation-details">
+                  <DetailRow
+                    label="UP In Date"
+                    value={
+                      unloadingPointInDate
+                    }
+                  />
+
+                  <DetailRow
+                    label="Unloading Date"
+                    value={
+                      unloadingDate
+                    }
+                  />
+
+                  <DetailRow
+                    label="UP Out Date"
+                    value={
+                      unloadingPointOutDate
+                    }
+                  />
+
+                  <DetailRow
+                    label="Halting Days"
+                    value={formatDays(
+                      unloadingHaltingDays
+                    )}
+                    halting
+                  />
+
+                  <div className="simple-remarks-box">
+                    <div className="simple-remarks-heading">
+                      <MessageSquareText
+                        size={10}
+                      />
+
+                      <span>
+                        Remarks
+                      </span>
+                    </div>
+
+                    <div className="simple-remarks-value">
+                      {unloadingRemarks}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* =================================
+              DRIVER / ESCORT / SUPERVISOR
+          ================================= */}
+
+          <div className="lr-pod-card">
+            <PersonSection
+              className="driver-section"
+              icon={
+                <Truck
+                  size={11}
+                />
+              }
+              title="Driver Details"
+              rows={[
+                [
+                  "Driver Name",
+                  driverName,
+                ],
+                [
+                  "Driver Number",
+                  driverNumber,
+                ],
+              ]}
+            />
+
+            <PersonSection
+              className="escort-section"
+              icon={
+                <Navigation
+                  size={11}
+                />
+              }
+              title="Escort Details"
+              rows={[
+                [
+                  "Vehicle Number",
+                  escortVehicleNumber,
+                ],
+                [
+                  "Name",
+                  escortName,
+                ],
+                [
+                  "Contact Number",
+                  escortContactNumber,
+                ],
+              ]}
+            />
+
+            <PersonSection
+              className="supervisor-section"
+              icon={
+                <CheckCircle2
+                  size={11}
+                />
+              }
+              title="Supervisor Details"
+              rows={[
+                [
+                  "Name",
+                  supervisorName,
+                ],
+                [
+                  "Contact",
+                  supervisorContact,
+                ],
+              ]}
+            />
+          </div>
+        </>
+      )}
+    </section>
   );
 };
 
+/* =========================================================
+   TRIP DETAIL ROW
+========================================================= */
+
+const TripDetailRow = ({
+  label,
+  value,
+}) => (
+  <div className="trip-detail-row">
+    <span className="trip-detail-label">
+      {label}
+    </span>
+
+    <span className="trip-detail-colon">
+      :
+    </span>
+
+    <strong className="trip-detail-value">
+      {safeText(value)}
+    </strong>
+  </div>
+);
 
 export default VehicleColumn;

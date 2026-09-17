@@ -16,34 +16,23 @@ import {
   X,
 } from "lucide-react";
 
-import TripListColumn
-  from "../Tracking/TripListColumn";
-
-import VehicleColumn
-  from "../Tracking/VehicleColumn";
-
-import TrackingMapColumn
-  from "../Tracking/TrackingMapColumn";
+import TripListColumn from "../Tracking/TripListColumn";
+import VehicleColumn from "../Tracking/VehicleColumn";
+import TrackingMapColumn from "../Tracking/TrackingMapColumn";
 
 import "../pagescss/tracking.css";
-
 
 /* =========================================
    API
 ========================================= */
 
-const API_BASE_URL =
-  (
-    import.meta.env.VITE_API_URL ||
-    "http://localhost:5000"
-  ).replace(
-    /\/+$/,
-    ""
-  );
+const API_BASE_URL = (
+  import.meta.env.VITE_API_URL ||
+  "http://localhost:5000"
+).replace(/\/+$/, "");
 
 const API_URL =
-  `${API_BASE_URL}/api/triptracking`;
-
+  `${API_BASE_URL}/api/triporders`;
 
 /* =========================================
    STATUS FILTERS
@@ -58,320 +47,17 @@ const statusOptions = [
   "Reached",
 ];
 
-
 /* =========================================
-   NORMALIZE MONGODB DATE
+   HELPERS
 ========================================= */
 
-const normalizeDateValue = (
-  value
-) => {
+const safeArray = (value) =>
+  Array.isArray(value) ? value : [];
 
-  if (
-    value === null ||
-    value === undefined ||
-    value === ""
-  ) {
-    return null;
-  }
-
-
-  /* MongoDB Extended JSON */
-
-  if (
-    typeof value === "object" &&
-    !Array.isArray(value) &&
-    !(value instanceof Date)
-  ) {
-
-    if (
-      value.$date !== undefined
-    ) {
-
-      return normalizeDateValue(
-        value.$date
-      );
-
-    }
-
-
-    if (
-      value.$numberLong !==
-      undefined
-    ) {
-
-      const timestamp =
-        Number(
-          value.$numberLong
-        );
-
-      if (
-        Number.isFinite(
-          timestamp
-        )
-      ) {
-
-        try {
-
-          return new Date(
-            timestamp
-          ).toISOString();
-
-        } catch {
-
-          return null;
-
-        }
-
-      }
-
-    }
-
-
-    return null;
-
-  }
-
-
-  /* JavaScript Date */
-
-  if (
-    value instanceof Date
-  ) {
-
-    if (
-      Number.isNaN(
-        value.getTime()
-      )
-    ) {
-      return null;
-    }
-
-    return value.toISOString();
-
-  }
-
-
-  /* Timestamp */
-
-  if (
-    typeof value === "number"
-  ) {
-
-    const date =
-      new Date(
-        value
-      );
-
-    return Number.isNaN(
-      date.getTime()
-    )
-      ? null
-      : date.toISOString();
-
-  }
-
-
-  /* String */
-
-  if (
-    typeof value === "string"
-  ) {
-
-    const text =
-      value.trim();
-
-    return text || null;
-
-  }
-
-
-  return null;
-
-};
-
-
-/* =========================================
-   CLEAN ALL MONGODB VALUES
-========================================= */
-
-const cleanMongoValue = (
-  value
-) => {
-
-  if (
-    value === null ||
-    value === undefined
-  ) {
-    return value;
-  }
-
-
-  /* ARRAY */
-
-  if (
-    Array.isArray(value)
-  ) {
-
-    return value.map(
-      (item) =>
-        cleanMongoValue(item)
-    );
-
-  }
-
-
-  /* JAVASCRIPT DATE */
-
-  if (
-    value instanceof Date
-  ) {
-
-    return Number.isNaN(
-      value.getTime()
-    )
-      ? null
-      : value.toISOString();
-
-  }
-
-
-  /* OBJECT */
-
-  if (
-    typeof value === "object"
-  ) {
-
-    /* MongoDB ObjectId */
-
-    if (
-      value.$oid !== undefined
-    ) {
-
-      return String(
-        value.$oid
-      );
-
-    }
-
-
-    /* MongoDB Date */
-
-    if (
-      value.$date !== undefined
-    ) {
-
-      return cleanMongoValue(
-        value.$date
-      );
-
-    }
-
-
-    /* MongoDB NumberLong */
-
-    if (
-      value.$numberLong !==
-      undefined
-    ) {
-
-      const numericValue =
-        Number(
-          value.$numberLong
-        );
-
-      return Number.isFinite(
-        numericValue
-      )
-        ? numericValue
-        : String(
-            value.$numberLong
-          );
-
-    }
-
-
-    /* MongoDB NumberInt */
-
-    if (
-      value.$numberInt !==
-      undefined
-    ) {
-
-      const numericValue =
-        Number(
-          value.$numberInt
-        );
-
-      return Number.isFinite(
-        numericValue
-      )
-        ? numericValue
-        : 0;
-
-    }
-
-
-    /* MongoDB NumberDouble */
-
-    if (
-      value.$numberDouble !==
-      undefined
-    ) {
-
-      const numericValue =
-        Number(
-          value.$numberDouble
-        );
-
-      return Number.isFinite(
-        numericValue
-      )
-        ? numericValue
-        : 0;
-
-    }
-
-
-    /* NORMAL OBJECT */
-
-    const cleanedObject = {};
-
-    Object.entries(
-      value
-    ).forEach(
-      ([
-        key,
-        itemValue,
-      ]) => {
-
-        cleanedObject[key] =
-          cleanMongoValue(
-            itemValue
-          );
-
-      }
-    );
-
-    return cleanedObject;
-
-  }
-
-
-  return value;
-
-};
-
-
-/* =========================================
-   NORMALIZE TEXT
-========================================= */
-
-const normalizeTextValue = (
+const safeText = (
   value,
   fallback = ""
 ) => {
-
   if (
     value === null ||
     value === undefined
@@ -379,100 +65,13 @@ const normalizeTextValue = (
     return fallback;
   }
 
-
-  if (
-    value instanceof Date
-  ) {
-
-    return Number.isNaN(
-      value.getTime()
-    )
-      ? fallback
-      : value.toISOString();
-
-  }
-
-
-  if (
-    Array.isArray(value)
-  ) {
-
-    return value
-      .map(
-        (item) =>
-          normalizeTextValue(
-            item,
-            ""
-          )
-      )
-      .filter(Boolean)
-      .join(", ");
-
-  }
-
-
-  if (
-    typeof value === "object"
-  ) {
-
-    if (
-      value.$date !== undefined
-    ) {
-
-      return (
-        normalizeDateValue(
-          value.$date
-        ) ||
-        fallback
-      );
-
-    }
-
-
-    if (
-      value.$oid !== undefined
-    ) {
-
-      return String(
-        value.$oid
-      );
-
-    }
-
-
-    if (
-      value.$numberLong !==
-      undefined
-    ) {
-
-      return String(
-        value.$numberLong
-      );
-
-    }
-
-
-    return fallback;
-
-  }
-
-
-  return String(
-    value
-  );
-
+  return String(value);
 };
-
-
-/* =========================================
-   NORMALIZE NUMBER
-========================================= */
 
 const normalizeNumber = (
   value,
   fallback = 0
 ) => {
-
   if (
     value === null ||
     value === undefined ||
@@ -481,30 +80,16 @@ const normalizeNumber = (
     return fallback;
   }
 
+  const number = Number(value);
 
-  const number =
-    Number(
-      value
-    );
-
-
-  return Number.isFinite(
-    number
-  )
+  return Number.isFinite(number)
     ? number
     : fallback;
-
 };
-
-
-/* =========================================
-   NORMALIZE NULLABLE NUMBER
-========================================= */
 
 const normalizeNullableNumber = (
   value
 ) => {
-
   if (
     value === null ||
     value === undefined ||
@@ -513,319 +98,511 @@ const normalizeNullableNumber = (
     return null;
   }
 
+  const number = Number(value);
 
-  const number =
-    Number(
-      value
-    );
-
-
-  return Number.isFinite(
-    number
-  )
+  return Number.isFinite(number)
     ? number
     : null;
-
 };
 
-
-/* =========================================
-   NORMALIZE ID
-========================================= */
-
-const normalizeId = (
-  value,
-  fallback = ""
-) => {
-
-  if (
-    value === null ||
-    value === undefined
-  ) {
-    return fallback;
+const normalizeDate = (value) => {
+  if (!value) {
+    return null;
   }
 
+  const date = new Date(value);
 
   if (
-    typeof value === "object" &&
-    !Array.isArray(value)
+    Number.isNaN(
+      date.getTime()
+    )
   ) {
+    return null;
+  }
 
-    if (
-      value.$oid !== undefined
-    ) {
+  return date.toISOString();
+};
 
-      return String(
-        value.$oid
+const getResponseArray = (
+  payload
+) => {
+  if (Array.isArray(payload)) {
+    return payload;
+  }
+
+  if (
+    Array.isArray(
+      payload?.data
+    )
+  ) {
+    return payload.data;
+  }
+
+  if (
+    Array.isArray(
+      payload?.trips
+    )
+  ) {
+    return payload.trips;
+  }
+
+  return [];
+};
+
+/* =========================================
+   LATEST TRACKING
+========================================= */
+
+const getLatestTracking = (
+  allocation
+) => {
+  const history =
+    safeArray(
+      allocation?.dailyTracking
+    );
+
+  if (!history.length) {
+    return null;
+  }
+
+  return history[
+    history.length - 1
+  ];
+};
+
+/* =========================================
+   RESOLVE REQUIREMENT
+========================================= */
+
+const getRequirement = (
+  trip,
+  requirementId
+) =>
+  safeArray(
+    trip?.vehicleRequirements
+  ).find(
+    (requirement) =>
+      requirement.requirementId ===
+      requirementId
+  ) || null;
+
+/* =========================================
+   RESOLVE CONFIRMATION
+========================================= */
+
+const getConfirmation = (
+  trip,
+  allocation
+) => {
+  const confirmations =
+    safeArray(
+      trip?.vehicleConfirmations
+    );
+
+  if (
+    allocation?.confirmationId
+  ) {
+    const direct =
+      confirmations.find(
+        (confirmation) =>
+          confirmation.confirmationId ===
+          allocation.confirmationId
       );
 
+    if (direct) {
+      return direct;
     }
-
-
-    return fallback;
-
   }
 
-
-  return String(
-    value
+  return (
+    confirmations.find(
+      (confirmation) =>
+        confirmation.requirementId ===
+          allocation?.requirementId &&
+        confirmation.status ===
+          "Approved"
+    ) || null
   );
-
 };
 
-
 /* =========================================
-   NORMALIZE VEHICLE
+   RESOLVE QUOTATION
 ========================================= */
 
-const normalizeVehicle = (
-  vehicle = {},
+const getQuotation = (
+  trip,
+  allocation
+) => {
+  const confirmation =
+    getConfirmation(
+      trip,
+      allocation
+    );
+
+  const quotationId =
+    allocation?.quotationId ||
+    confirmation?.quotationId;
+
+  if (!quotationId) {
+    return null;
+  }
+
+  return (
+    safeArray(
+      trip?.trafficQuotations
+    ).find(
+      (quotation) =>
+        quotation.quotationId ===
+        quotationId
+    ) || null
+  );
+};
+
+/* =========================================
+   NORMALIZE ALLOCATION
+========================================= */
+
+const normalizeAllocation = (
+  allocation = {},
+  trip = {},
   index = 0
 ) => {
+  const latest =
+    getLatestTracking(
+      allocation
+    );
 
-  const vehicleId =
-    normalizeId(
-      vehicle.id
-    ) ||
-    normalizeId(
-      vehicle._id
-    ) ||
-    normalizeTextValue(
-      vehicle.vehicleSubId
-    ) ||
-    normalizeTextValue(
-      vehicle.vehicleNumber
-    ) ||
-    `vehicle-${index}`;
+  const requirement =
+    getRequirement(
+      trip,
+      allocation.requirementId
+    );
 
+  const quotation =
+    getQuotation(
+      trip,
+      allocation
+    );
+
+  const allocationId =
+    safeText(
+      allocation.allocationId
+    ) ||
+    safeText(
+      allocation._id
+    ) ||
+    `allocation-${index}`;
 
   return {
+    ...allocation,
 
-    ...vehicle,
+    id: allocationId,
 
-    /* ID */
+    allocationId,
 
-    id:
-      vehicleId,
-
-    _id:
-      normalizeId(
-        vehicle._id
+    requirementId:
+      safeText(
+        allocation.requirementId
       ),
 
-    vehicleSubId:
-      normalizeTextValue(
-        vehicle.vehicleSubId
+    confirmationId:
+      safeText(
+        allocation.confirmationId
+      ),
+
+    quotationId:
+      safeText(
+        allocation.quotationId
       ),
 
     vehicleNumber:
-      normalizeTextValue(
-        vehicle.vehicleNumber
+      safeText(
+        allocation.vehicleNumber
       ),
 
+    /* Requirement information */
 
-    /* POSITION */
-
-    currentLocation:
-      normalizeTextValue(
-        vehicle.currentLocation ||
-        vehicle.currentPosition
+    vehicleType:
+      safeText(
+        requirement?.vehicleType
       ),
 
-    currentPosition:
-      normalizeTextValue(
-        vehicle.currentPosition ||
-        vehicle.currentLocation
+    configuration:
+      safeText(
+        requirement?.configuration
       ),
 
-    yesterdayPosition:
-      normalizeTextValue(
-        vehicle.yesterdayPosition
+    classification:
+      safeText(
+        requirement?.classification
       ),
 
+    /* Transporter
+       Resolved only for child UI convenience.
+       Amount is intentionally NOT exposed here.
+    */
 
-    /* MOVEMENT */
-
-    runningKm:
-      normalizeNumber(
-        vehicle.runningKm
+    transporter:
+      safeText(
+        quotation?.transporter
       ),
 
-    status:
-      normalizeTextValue(
-        vehicle.status,
-        "Moving"
-      ) ||
-      "Moving",
+    /* Driver */
 
-    currentDay:
-      normalizeNullableNumber(
-        vehicle.currentDay
+    driver:
+      allocation.driver || {
+        name: "",
+        contactNumber: "",
+      },
+
+    driverName:
+      safeText(
+        allocation?.driver?.name
       ),
 
-    speed:
-      normalizeNumber(
-        vehicle.speed
+    driverNumber:
+      safeText(
+        allocation
+          ?.driver
+          ?.contactNumber
       ),
 
+    /* Escort */
 
-    /* MAP */
+    escort:
+      allocation.escort || {
+        vehicleNumber: "",
+        name: "",
+        contactNumber: "",
+      },
 
-    latitude:
-      normalizeNullableNumber(
-        vehicle.latitude
+    escortVehicleNumber:
+      safeText(
+        allocation
+          ?.escort
+          ?.vehicleNumber
       ),
 
-    longitude:
-      normalizeNullableNumber(
-        vehicle.longitude
+    escortName:
+      safeText(
+        allocation
+          ?.escort
+          ?.name
       ),
 
-    lastUpdated:
-      normalizeDateValue(
-        vehicle.lastUpdated
+    escortContactNumber:
+      safeText(
+        allocation
+          ?.escort
+          ?.contactNumber
       ),
 
+    /* Supervisor */
 
-    /* LOADING */
+    supervisor:
+      allocation.supervisor || {
+        name: "",
+        contactNumber: "",
+      },
+
+    supervisorName:
+      safeText(
+        allocation
+          ?.supervisor
+          ?.name
+      ),
+
+    supervisorContact:
+      safeText(
+        allocation
+          ?.supervisor
+          ?.contactNumber
+      ),
+
+    /* Loading */
+
+    loading:
+      allocation.loading || {},
 
     loadingStatus:
-      normalizeTextValue(
-        vehicle.loadingStatus,
+      safeText(
+        allocation
+          ?.loading
+          ?.status,
         "Pending"
-      ) ||
-      "Pending",
+      ) || "Pending",
 
     loadingPointInDate:
-      normalizeDateValue(
-        vehicle.loadingPointInDate
+      normalizeDate(
+        allocation
+          ?.loading
+          ?.pointInDate
       ),
 
     loadingDate:
-      normalizeDateValue(
-        vehicle.loadingDate
+      normalizeDate(
+        allocation
+          ?.loading
+          ?.loadingDate
       ),
 
     loadingPointOutDate:
-      normalizeDateValue(
-        vehicle.loadingPointOutDate
+      normalizeDate(
+        allocation
+          ?.loading
+          ?.pointOutDate
       ),
 
     loadingHaltingDays:
       normalizeNumber(
-        vehicle.loadingHaltingDays
+        allocation
+          ?.loading
+          ?.haltingDays
       ),
 
     loadingRemarks:
-      normalizeTextValue(
-        vehicle.loadingRemarks
+      safeText(
+        allocation
+          ?.loading
+          ?.remarks
       ),
 
+    /* Unloading */
 
-    /* UNLOADING */
+    unloading:
+      allocation.unloading || {},
 
     unloadingStatus:
-      normalizeTextValue(
-        vehicle.unloadingStatus,
+      safeText(
+        allocation
+          ?.unloading
+          ?.status,
         "Pending"
-      ) ||
-      "Pending",
+      ) || "Pending",
 
     unloadingPointInDate:
-      normalizeDateValue(
-        vehicle.unloadingPointInDate
+      normalizeDate(
+        allocation
+          ?.unloading
+          ?.pointInDate
       ),
 
     unloadingDate:
-      normalizeDateValue(
-        vehicle.unloadingDate
+      normalizeDate(
+        allocation
+          ?.unloading
+          ?.unloadingDate
       ),
 
     unloadingPointOutDate:
-      normalizeDateValue(
-        vehicle.unloadingPointOutDate
+      normalizeDate(
+        allocation
+          ?.unloading
+          ?.pointOutDate
       ),
 
     unloadingHaltingDays:
       normalizeNumber(
-        vehicle.unloadingHaltingDays
+        allocation
+          ?.unloading
+          ?.haltingDays
       ),
 
     unloadingRemarks:
-      normalizeTextValue(
-        vehicle.unloadingRemarks
+      safeText(
+        allocation
+          ?.unloading
+          ?.remarks
       ),
 
+    /* Latest movement derived from dailyTracking */
 
-    /* LR */
-
-    lrNo:
-      normalizeTextValue(
-        vehicle.lrNo
+    dailyTracking:
+      safeArray(
+        allocation.dailyTracking
       ),
 
-    lrStatus:
-      normalizeTextValue(
-        vehicle.lrStatus
+    latestTracking:
+      latest,
+
+    status:
+      safeText(
+        latest?.status,
+        "Idle"
+      ) || "Idle",
+
+    currentLocation:
+      safeText(
+        latest?.currentLocation
       ),
 
-    lrRemarks:
-      normalizeTextValue(
-        vehicle.lrRemarks
+    currentPosition:
+      safeText(
+        latest?.currentLocation
       ),
 
-    lrSignature:
-      normalizeTextValue(
-        vehicle.lrSignature
+    yesterdayLocation:
+      safeText(
+        latest?.yesterdayLocation
       ),
 
-
-    /* POD */
-
-    podStatus:
-      normalizeTextValue(
-        vehicle.podStatus,
-        "Pending"
-      ) ||
-      "Pending",
-
-    courierName:
-      normalizeTextValue(
-        vehicle.courierName
+    yesterdayPosition:
+      safeText(
+        latest?.yesterdayLocation
       ),
 
-    trackingId:
-      normalizeTextValue(
-        vehicle.trackingId
+    yesterdayKm:
+      normalizeNumber(
+        latest?.yesterdayKm
       ),
 
-    podCourierDate:
-      normalizeDateValue(
-        vehicle.podCourierDate
+    todayKm:
+      normalizeNumber(
+        latest?.todayKm
       ),
 
-    podRemarks:
-      normalizeTextValue(
-        vehicle.podRemarks
+    runningKm:
+      normalizeNumber(
+        latest?.runningKm
       ),
 
-
-    /* DRIVER */
-
-    driverName:
-      normalizeTextValue(
-        vehicle.driverName
+    currentDay:
+      normalizeNullableNumber(
+        latest?.day
       ),
 
-    driverNumber:
-      normalizeTextValue(
-        vehicle.driverNumber
+    latitude:
+      normalizeNullableNumber(
+        latest?.latitude
       ),
 
+    longitude:
+      normalizeNullableNumber(
+        latest?.longitude
+      ),
+
+    speed:
+      normalizeNumber(
+        latest?.speed
+      ),
+
+    remarks:
+      safeText(
+        latest?.remarks
+      ),
+
+    updatedBy:
+      safeText(
+        latest?.updatedBy
+      ),
+
+    lastUpdated:
+      normalizeDate(
+        latest?.updatedAt ||
+        latest?.date
+      ),
   };
-
 };
-
 
 /* =========================================
    NORMALIZE TRIP
@@ -835,241 +612,207 @@ const normalizeTrip = (
   trip = {},
   index = 0
 ) => {
-
-  const vehicles =
-    Array.isArray(
-      trip.vehicles
-    )
-      ? trip.vehicles.map(
-          (
-            vehicle,
-            vehicleIndex
-          ) =>
-            normalizeVehicle(
-              vehicle,
-              vehicleIndex
-            )
-        )
-      : [];
-
-
-  const tripId =
-    normalizeTextValue(
-      trip.tripId
-    );
-
-
   const id =
-    normalizeId(
-      trip.id
-    ) ||
-    normalizeId(
-      trip._id
-    ) ||
-    tripId ||
+    safeText(trip._id) ||
+    safeText(trip.tripId) ||
     `trip-${index}`;
 
+  const allocations =
+    safeArray(
+      trip.allocatedVehicles
+    ).map(
+      (
+        allocation,
+        allocationIndex
+      ) =>
+        normalizeAllocation(
+          allocation,
+          trip,
+          allocationIndex
+        )
+    );
+
+  const placementDate =
+    normalizeDate(
+      trip.placementDate
+    );
+
+  const enquiryDate =
+    normalizeDate(
+      trip.enquiryDate
+    );
 
   const createdAt =
-    normalizeDateValue(
+    normalizeDate(
       trip.createdAt
     );
 
-
   const updatedAt =
-    normalizeDateValue(
+    normalizeDate(
       trip.updatedAt
     );
 
-
-  const providedTripDate =
-    normalizeDateValue(
-      trip.tripDate
-    );
-
-
-  const rawTripDate =
-    providedTripDate ||
-    createdAt ||
-    "";
-
+  /*
+   * Date used by the existing Tracking date filter.
+   * Placement Date is the canonical operational date.
+   * If not available, Enquiry/Created date is fallback.
+   */
+  const filterDateSource =
+    placementDate ||
+    enquiryDate ||
+    createdAt;
 
   const tripDate =
-    rawTripDate
-      ? String(
-          rawTripDate
-        ).slice(
+    filterDateSource
+      ? filterDateSource.slice(
           0,
           10
         )
       : "";
 
-
-  const routeLocations =
-    Array.isArray(
-      trip.routeLocations
-    )
-      ? trip.routeLocations
-          .map(
-            (location) =>
-              normalizeTextValue(
-                location
-              )
-          )
-          .filter(Boolean)
-      : [];
-
-
   return {
-
     ...trip,
-
-    /* ID */
 
     id,
 
     _id:
-      normalizeId(
+      safeText(
         trip._id
       ),
 
-    tripId,
+    tripId:
+      safeText(
+        trip.tripId
+      ),
 
-
-    /* CLIENT */
+    movementType:
+      safeText(
+        trip.movementType
+      ),
 
     customer:
-      normalizeTextValue(
+      safeText(
         trip.customer
       ),
 
-    clientContactPerson:
-      normalizeTextValue(
-        trip.clientContactPerson
+    contactPerson:
+      safeText(
+        trip.contactPerson
       ),
 
-    clientPhone:
-      normalizeTextValue(
-        trip.clientPhone
+    contactNumber:
+      safeText(
+        trip.contactNumber
       ),
 
+    email:
+      safeText(
+        trip.email
+      ),
 
-    /* MATERIAL */
+    assignedKam:
+      safeText(
+        trip.assignedKam
+      ),
 
     materialType:
-      normalizeTextValue(
+      safeText(
         trip.materialType
       ),
 
-
-    /* TRANSPORTER */
-
-    lsp:
-      normalizeTextValue(
-        trip.lsp
-      ),
-
-    transporterContactPerson:
-      normalizeTextValue(
-        trip.transporterContactPerson
-      ),
-
-    transporterPhone:
-      normalizeTextValue(
-        trip.transporterPhone
-      ),
-
-
-    /* ROUTE */
-
     origin:
-      normalizeTextValue(
+      safeText(
         trip.origin
       ),
 
     destination:
-      normalizeTextValue(
+      safeText(
         trip.destination
       ),
 
-    routeLocations,
-
-
-    /* ESCORT */
-
-    escortVehicleNumber:
-      normalizeTextValue(
-        trip.escortVehicleNumber
-      ),
-
-    escortName:
-      normalizeTextValue(
-        trip.escortName
-      ),
-
-    escortContactNumber:
-      normalizeTextValue(
-        trip.escortContactNumber
-      ),
-
-
-    /* SUPERVISOR */
-
-    supervisorName:
-      normalizeTextValue(
-        trip.supervisorName
-      ),
-
-    supervisorContact:
-      normalizeTextValue(
-        trip.supervisorContact
-      ),
-
-
-    /* TRIP VALUES */
-
-    estimatedTransitDays:
+    distance:
       normalizeNumber(
-        trip.estimatedTransitDays
+        trip.distance
       ),
 
-    totalKm:
-      normalizeNumber(
-        trip.totalKm
+    routeLocations:
+      safeArray(
+        trip.routeLocations
+      )
+        .map(
+          (location) =>
+            safeText(
+              location
+            ).trim()
+        )
+        .filter(Boolean),
+
+    remark:
+      safeText(
+        trip.remark
       ),
 
-    tripStatus:
-      normalizeTextValue(
-        trip.tripStatus,
-        "Active"
-      ) ||
-      "Active",
+    siteLocation:
+      safeText(
+        trip.siteLocation
+      ),
 
+    period:
+      safeText(
+        trip.period
+      ),
 
-    /* VEHICLES */
+    dieselScope:
+      safeText(
+        trip.dieselScope
+      ),
 
-    vehicles,
+    status:
+      safeText(
+        trip.status,
+        "Pending"
+      ),
 
+    stage:
+      safeText(
+        trip.stage
+      ),
 
-    /* DATES */
+    orderApproval:
+      trip.orderApproval || {},
 
+    vehicleRequirements:
+      safeArray(
+        trip.vehicleRequirements
+      ),
+
+    trafficQuotations:
+      safeArray(
+        trip.trafficQuotations
+      ),
+
+    vehicleConfirmations:
+      safeArray(
+        trip.vehicleConfirmations
+      ),
+
+    allocatedVehicles:
+      allocations,
+
+    placementDate,
+    enquiryDate,
     createdAt,
-
     updatedAt,
 
     tripDate,
-
   };
-
 };
-
 
 /* =========================================
    TRACKING COMPONENT
 ========================================= */
 
 const Tracking = () => {
-
   /* =====================================
      STATE
   ===================================== */
@@ -1079,719 +822,512 @@ const Tracking = () => {
     setTrips,
   ] = useState([]);
 
-
   const [
     loading,
     setLoading,
   ] = useState(true);
-
 
   const [
     apiError,
     setApiError,
   ] = useState("");
 
-
   const [
     searchTerm,
     setSearchTerm,
   ] = useState("");
 
-
   const [
     movementFilter,
     setMovementFilter,
-  ] = useState(
-    "All"
-  );
-
+  ] = useState("All");
 
   const [
     selectedDate,
     setSelectedDate,
   ] = useState("");
 
-
   const [
     selectedTripId,
     setSelectedTripId,
-  ] = useState(
-    null
-  );
-
+  ] = useState(null);
 
   const [
     selectedVehicleId,
     setSelectedVehicleId,
-  ] = useState(
-    null
-  );
-
+  ] = useState(null);
 
   /* =====================================
      FETCH TRIPS
   ===================================== */
 
   const fetchTrips =
-    useCallback(
-      async () => {
+    useCallback(async () => {
+      try {
+        setLoading(true);
+        setApiError("");
 
-        try {
+        const response =
+          await fetch(
+            API_URL,
+            {
+              method: "GET",
 
-          setLoading(
-            true
-          );
-
-          setApiError(
-            ""
-          );
-
-
-          const response =
-            await fetch(
-              API_URL,
-              {
-
-                method:
-                  "GET",
-
-                headers: {
-
-                  Accept:
-                    "application/json",
-
-                },
-
-              }
-            );
-
-
-          if (
-            !response.ok
-          ) {
-
-            const errorData =
-              await response
-                .json()
-                .catch(
-                  () => ({})
-                );
-
-
-            throw new Error(
-              errorData.message ||
-              `Unable to load trips (${response.status})`
-            );
-
-          }
-
-
-          const result =
-            await response.json();
-
-
-          console.log(
-            "Trip API Response:",
-            result
-          );
-
-
-          let databaseTrips =
-            [];
-
-
-          if (
-            Array.isArray(
-              result
-            )
-          ) {
-
-            databaseTrips =
-              result;
-
-          } else if (
-            Array.isArray(
-              result?.data
-            )
-          ) {
-
-            databaseTrips =
-              result.data;
-
-          } else if (
-            Array.isArray(
-              result?.trips
-            )
-          ) {
-
-            databaseTrips =
-              result.trips;
-
-          }
-
-
-          /* =================================
-             IMPORTANT FIX:
-             CLEAN MONGODB OBJECTS FIRST
-          ================================= */
-
-          const normalizedTrips =
-            databaseTrips.map(
-              (
-                trip,
-                index
-              ) => {
-
-                const cleanedTrip =
-                  cleanMongoValue(
-                    trip
-                  );
-
-
-                return normalizeTrip(
-                  cleanedTrip,
-                  index
-                );
-
-              }
-            );
-
-
-          console.log(
-            "Normalized Trips:",
-            normalizedTrips
-          );
-
-
-          setTrips(
-            normalizedTrips
-          );
-
-
-          /* KEEP SELECTED TRIP */
-
-          setSelectedTripId(
-            (
-              previousId
-            ) => {
-
-              if (
-                normalizedTrips.length ===
-                0
-              ) {
-
-                return null;
-
-              }
-
-
-              const exists =
-                normalizedTrips.some(
-                  (
-                    trip
-                  ) =>
-                    trip.id ===
-                    previousId
-                );
-
-
-              if (
-                exists
-              ) {
-
-                return previousId;
-
-              }
-
-
-              return normalizedTrips[0]
-                .id;
-
+              headers: {
+                Accept:
+                  "application/json",
+              },
             }
           );
 
-        } catch (
-          error
-        ) {
+        const result =
+          await response
+            .json()
+            .catch(
+              () => ({})
+            );
 
-          console.error(
-            "Fetch Trips Error:",
-            error
+        if (!response.ok) {
+          throw new Error(
+            result?.message ||
+              `Unable to load trips (${response.status})`
           );
-
-
-          setTrips(
-            []
-          );
-
-          setSelectedTripId(
-            null
-          );
-
-          setSelectedVehicleId(
-            null
-          );
-
-
-          setApiError(
-            error?.message ||
-            "Unable to load trips."
-          );
-
-        } finally {
-
-          setLoading(
-            false
-          );
-
         }
 
-      },
-      []
-    );
+        const databaseTrips =
+          getResponseArray(
+            result
+          );
 
+        /*
+         * Tracking Page should contain
+         * operational trips only.
+         *
+         * A trip becomes operational after
+         * at least one actual vehicle has
+         * been allocated in Tracking Input.
+         */
+        const normalizedTrips =
+          databaseTrips
+            .filter(
+              (trip) =>
+                safeArray(
+                  trip.allocatedVehicles
+                ).length > 0
+            )
+            .map(
+              (
+                trip,
+                index
+              ) =>
+                normalizeTrip(
+                  trip,
+                  index
+                )
+            );
+
+        setTrips(
+          normalizedTrips
+        );
+
+        setSelectedTripId(
+          (previousId) => {
+            if (
+              normalizedTrips.length ===
+              0
+            ) {
+              return null;
+            }
+
+            const exists =
+              normalizedTrips.some(
+                (trip) =>
+                  trip.id ===
+                  previousId
+              );
+
+            if (exists) {
+              return previousId;
+            }
+
+            return normalizedTrips[0]
+              .id;
+          }
+        );
+      } catch (error) {
+        console.error(
+          "Fetch Trips Error:",
+          error
+        );
+
+        setTrips([]);
+
+        setSelectedTripId(
+          null
+        );
+
+        setSelectedVehicleId(
+          null
+        );
+
+        setApiError(
+          error?.message ||
+            "Unable to load trips."
+        );
+      } finally {
+        setLoading(false);
+      }
+    }, []);
 
   /* =====================================
      INITIAL LOAD
   ===================================== */
 
-  useEffect(
-    () => {
-
-      fetchTrips();
-
-    },
-    [
-      fetchTrips,
-    ]
-  );
-
+  useEffect(() => {
+    fetchTrips();
+  }, [fetchTrips]);
 
   /* =====================================
      REFRESH WHEN WINDOW GETS FOCUS
   ===================================== */
 
-  useEffect(
-    () => {
+  useEffect(() => {
+    const handleFocus =
+      () => {
+        fetchTrips();
+      };
 
-      const handleFocus =
-        () => {
+    window.addEventListener(
+      "focus",
+      handleFocus
+    );
 
-          fetchTrips();
-
-        };
-
-
-      window.addEventListener(
+    return () => {
+      window.removeEventListener(
         "focus",
         handleFocus
       );
-
-
-      return () => {
-
-        window.removeEventListener(
-          "focus",
-          handleFocus
-        );
-
-      };
-
-    },
-    [
-      fetchTrips,
-    ]
-  );
-
+    };
+  }, [fetchTrips]);
 
   /* =====================================
      STATUS COUNTS
   ===================================== */
 
   const statusCounts =
-    useMemo(
-      () => {
+    useMemo(() => {
+      const counts = {
+        All: trips.length,
+        Moving: 0,
+        Idle: 0,
+        Stopped: 0,
+        Breakdown: 0,
+        Reached: 0,
+      };
 
-        const counts = {
-
-          All:
-            trips.length,
-
-          Moving:
-            0,
-
-          Idle:
-            0,
-
-          Stopped:
-            0,
-
-          Breakdown:
-            0,
-
-          Reached:
-            0,
-
-        };
-
-
-        trips.forEach(
-          (
-            trip
-          ) => {
-
-            const vehicles =
-              Array.isArray(
-                trip.vehicles
+      trips.forEach(
+        (trip) => {
+          const statuses =
+            new Set(
+              safeArray(
+                trip.allocatedVehicles
+              ).map(
+                (vehicle) =>
+                  vehicle.status ||
+                  "Idle"
               )
-                ? trip.vehicles
-                : [];
-
-
-            const tripStatuses =
-              new Set(
-                vehicles.map(
-                  (
-                    vehicle
-                  ) =>
-                    vehicle.status
-                )
-              );
-
-
-            [
-              "Moving",
-              "Idle",
-              "Stopped",
-              "Breakdown",
-              "Reached",
-            ].forEach(
-              (
-                status
-              ) => {
-
-                if (
-                  tripStatuses.has(
-                    status
-                  )
-                ) {
-
-                  counts[
-                    status
-                  ] += 1;
-
-                }
-
-              }
             );
 
-          }
-        );
+          [
+            "Moving",
+            "Idle",
+            "Stopped",
+            "Breakdown",
+            "Reached",
+          ].forEach(
+            (status) => {
+              if (
+                statuses.has(
+                  status
+                )
+              ) {
+                counts[
+                  status
+                ] += 1;
+              }
+            }
+          );
+        }
+      );
 
-
-        return counts;
-
-      },
-      [
-        trips,
-      ]
-    );
-
+      return counts;
+    }, [trips]);
 
   /* =====================================
      FILTER TRIPS
   ===================================== */
 
   const filteredTrips =
-    useMemo(
-      () => {
+    useMemo(() => {
+      const search =
+        searchTerm
+          .trim()
+          .toLowerCase();
 
-        const search =
-          searchTerm
-            .trim()
-            .toLowerCase();
-
-
-        return trips.filter(
-          (
-            trip
-          ) => {
-
-            const vehicles =
-              Array.isArray(
-                trip.vehicles
-              )
-                ? trip.vehicles
-                : [];
-
-
-            /* SEARCH */
-
-            const searchFields = [
-
-              trip.tripId,
-
-              trip.customer,
-
-              trip.materialType,
-
-              trip.origin,
-
-              trip.destination,
-
-              trip.lsp,
-
-              trip.clientContactPerson,
-
-              trip.transporterContactPerson,
-
-              trip.supervisorName,
-
-              trip.escortName,
-
-              ...vehicles.map(
-                (
-                  vehicle
-                ) =>
-                  vehicle.vehicleNumber
-              ),
-
-              ...vehicles.map(
-                (
-                  vehicle
-                ) =>
-                  vehicle.driverName
-              ),
-
-              ...vehicles.map(
-                (
-                  vehicle
-                ) =>
-                  vehicle.lrNo
-              ),
-
-              ...vehicles.map(
-                (
-                  vehicle
-                ) =>
-                  vehicle.currentPosition
-              ),
-
-            ];
-
-
-            const matchesSearch =
-              !search ||
-              searchFields.some(
-                (
-                  value
-                ) =>
-
-                  String(
-                    value ||
-                    ""
-                  )
-                    .toLowerCase()
-                    .includes(
-                      search
-                    )
-              );
-
-
-            /* DATE */
-
-            const matchesDate =
-              !selectedDate ||
-              trip.tripDate ===
-              selectedDate;
-
-
-            /* STATUS */
-
-            const matchesStatus =
-              movementFilter ===
-                "All" ||
-              vehicles.some(
-                (
-                  vehicle
-                ) =>
-                  vehicle.status ===
-                  movementFilter
-              );
-
-
-            return (
-
-              matchesSearch &&
-
-              matchesDate &&
-
-              matchesStatus
-
+      return trips.filter(
+        (trip) => {
+          const vehicles =
+            safeArray(
+              trip.allocatedVehicles
             );
 
-          }
-        );
+          /* SEARCH */
 
-      },
-      [
+          const searchFields = [
+            trip.tripId,
+            trip.customer,
+            trip.contactPerson,
+            trip.contactNumber,
+            trip.email,
+            trip.assignedKam,
+            trip.materialType,
+            trip.origin,
+            trip.destination,
+            trip.siteLocation,
 
-        trips,
+            ...vehicles.map(
+              (vehicle) =>
+                vehicle.vehicleNumber
+            ),
 
-        searchTerm,
+            ...vehicles.map(
+              (vehicle) =>
+                vehicle.vehicleType
+            ),
 
-        selectedDate,
+            ...vehicles.map(
+              (vehicle) =>
+                vehicle.transporter
+            ),
 
-        movementFilter,
+            ...vehicles.map(
+              (vehicle) =>
+                vehicle.driverName
+            ),
 
-      ]
-    );
+            ...vehicles.map(
+              (vehicle) =>
+                vehicle.driverNumber
+            ),
 
+            ...vehicles.map(
+              (vehicle) =>
+                vehicle.escortName
+            ),
+
+            ...vehicles.map(
+              (vehicle) =>
+                vehicle.supervisorName
+            ),
+
+            ...vehicles.map(
+              (vehicle) =>
+                vehicle.currentLocation
+            ),
+          ];
+
+          const matchesSearch =
+            !search ||
+            searchFields.some(
+              (value) =>
+                safeText(
+                  value
+                )
+                  .toLowerCase()
+                  .includes(
+                    search
+                  )
+            );
+
+          /* DATE */
+
+          const matchesDate =
+            !selectedDate ||
+            trip.tripDate ===
+              selectedDate ||
+            vehicles.some(
+              (vehicle) =>
+                safeArray(
+                  vehicle.dailyTracking
+                ).some(
+                  (tracking) => {
+                    const date =
+                      normalizeDate(
+                        tracking.date
+                      );
+
+                    return (
+                      date?.slice(
+                        0,
+                        10
+                      ) ===
+                      selectedDate
+                    );
+                  }
+                )
+            );
+
+          /* STATUS */
+
+          const matchesStatus =
+            movementFilter ===
+              "All" ||
+            vehicles.some(
+              (vehicle) =>
+                (
+                  vehicle.status ||
+                  "Idle"
+                ) ===
+                movementFilter
+            );
+
+          return (
+            matchesSearch &&
+            matchesDate &&
+            matchesStatus
+          );
+        }
+      );
+    }, [
+      trips,
+      searchTerm,
+      selectedDate,
+      movementFilter,
+    ]);
 
   /* =====================================
      SELECTED TRIP
   ===================================== */
 
   const selectedTrip =
-    filteredTrips.find(
-      (
-        trip
-      ) =>
-        trip.id ===
-        selectedTripId
-    ) ||
-    filteredTrips[0] ||
-    null;
-
+    useMemo(
+      () =>
+        filteredTrips.find(
+          (trip) =>
+            trip.id ===
+            selectedTripId
+        ) ||
+        filteredTrips[0] ||
+        null,
+      [
+        filteredTrips,
+        selectedTripId,
+      ]
+    );
 
   /* =====================================
      KEEP SELECTED TRIP VALID
   ===================================== */
 
-  useEffect(
-    () => {
+  useEffect(() => {
+    if (
+      filteredTrips.length ===
+      0
+    ) {
+      setSelectedTripId(
+        null
+      );
 
-      if (
-        filteredTrips.length ===
-        0
-      ) {
+      return;
+    }
 
-        setSelectedTripId(
-          null
-        );
+    const exists =
+      filteredTrips.some(
+        (trip) =>
+          trip.id ===
+          selectedTripId
+      );
 
-        return;
-
-      }
-
-
-      const exists =
-        filteredTrips.some(
-          (
-            trip
-          ) =>
-            trip.id ===
-            selectedTripId
-        );
-
-
-      if (
-        !exists
-      ) {
-
-        setSelectedTripId(
-          filteredTrips[0]
-            .id
-        );
-
-      }
-
-    },
-    [
-
-      filteredTrips,
-
-      selectedTripId,
-
-    ]
-  );
-
+    if (!exists) {
+      setSelectedTripId(
+        filteredTrips[0].id
+      );
+    }
+  }, [
+    filteredTrips,
+    selectedTripId,
+  ]);
 
   /* =====================================
-     KEEP VEHICLE VALID
+     KEEP SELECTED VEHICLE VALID
   ===================================== */
 
-  useEffect(
-    () => {
-
-      if (
-        !selectedTrip ||
-        !selectedTrip
-          .vehicles?.length
-      ) {
-
-        setSelectedVehicleId(
-          null
-        );
-
-        return;
-
-      }
-
-
-      const vehicleExists =
+  useEffect(() => {
+    const vehicles =
+      safeArray(
         selectedTrip
-          .vehicles
-          .some(
-            (
-              vehicle
-            ) =>
-              vehicle.id ===
-              selectedVehicleId
-          );
+          ?.allocatedVehicles
+      );
 
+    if (
+      !selectedTrip ||
+      vehicles.length === 0
+    ) {
+      setSelectedVehicleId(
+        null
+      );
 
-      if (
-        !vehicleExists
-      ) {
+      return;
+    }
 
-        setSelectedVehicleId(
-          selectedTrip
-            .vehicles[0]
-            .id
-        );
+    const vehicleExists =
+      vehicles.some(
+        (vehicle) =>
+          vehicle.allocationId ===
+            selectedVehicleId ||
+          vehicle.id ===
+            selectedVehicleId
+      );
 
-      }
-
-    },
-    [
-
-      selectedTrip,
-
-      selectedVehicleId,
-
-    ]
-  );
-
+    if (!vehicleExists) {
+      setSelectedVehicleId(
+        vehicles[0]
+          .allocationId ||
+          vehicles[0].id
+      );
+    }
+  }, [
+    selectedTrip,
+    selectedVehicleId,
+  ]);
 
   /* =====================================
      SELECTED VEHICLE
   ===================================== */
 
   const selectedVehicle =
-    selectedTrip
-      ?.vehicles
-      ?.find(
-        (
-          vehicle
-        ) =>
-          vehicle.id ===
-          selectedVehicleId
-      ) ||
-    selectedTrip
-      ?.vehicles?.[0] ||
-    null;
+    useMemo(() => {
+      const vehicles =
+        safeArray(
+          selectedTrip
+            ?.allocatedVehicles
+        );
 
+      return (
+        vehicles.find(
+          (vehicle) =>
+            vehicle.allocationId ===
+              selectedVehicleId ||
+            vehicle.id ===
+              selectedVehicleId
+        ) ||
+        vehicles[0] ||
+        null
+      );
+    }, [
+      selectedTrip,
+      selectedVehicleId,
+    ]);
 
   /* =====================================
      STATUS CLASS
@@ -1799,20 +1335,16 @@ const Tracking = () => {
 
   const getStatusClass = (
     status
-  ) => {
-
-    return String(
-      status ||
-      ""
+  ) =>
+    safeText(
+      status,
+      "Idle"
     )
       .toLowerCase()
       .replaceAll(
         " ",
         "-"
       );
-
-  };
-
 
   /* =====================================
      STATUS ICON
@@ -1821,71 +1353,53 @@ const Tracking = () => {
   const getStatusIcon = (
     status
   ) => {
-
     if (
-      status ===
-      "Moving"
+      status === "Moving"
     ) {
-
       return (
         <Navigation
           size={13}
         />
       );
-
     }
 
-
     if (
-      status ===
-      "Reached"
+      status === "Reached"
     ) {
-
       return (
         <CheckCircle2
           size={13}
         />
       );
-
     }
 
-
     if (
-      status ===
-      "Idle"
+      status === "Idle"
     ) {
-
       return (
         <Clock3
           size={13}
         />
       );
-
     }
-
 
     if (
       status ===
       "Breakdown"
     ) {
-
       return (
         <CircleAlert
           size={13}
         />
       );
-
     }
-
 
     return (
       <CirclePause
         size={13}
       />
     );
-
   };
-
 
   /* =====================================
      SELECT TRIP
@@ -1894,41 +1408,60 @@ const Tracking = () => {
   const handleTripSelect = (
     trip
   ) => {
-
-    if (
-      !trip
-    ) {
+    if (!trip) {
       return;
     }
-
 
     setSelectedTripId(
       trip.id
     );
 
-
-    if (
-      Array.isArray(
-        trip.vehicles
-      ) &&
-      trip.vehicles.length
-    ) {
-
-      setSelectedVehicleId(
-        trip.vehicles[0]
-          .id
+    const vehicles =
+      safeArray(
+        trip.allocatedVehicles
       );
 
+    if (vehicles.length) {
+      setSelectedVehicleId(
+        vehicles[0]
+          .allocationId ||
+          vehicles[0].id
+      );
     } else {
-
       setSelectedVehicleId(
         null
       );
-
     }
-
   };
 
+  /* =====================================
+     SELECT VEHICLE
+  ===================================== */
+
+  const handleVehicleSelect = (
+    vehicleOrId
+  ) => {
+    if (!vehicleOrId) {
+      return;
+    }
+
+    if (
+      typeof vehicleOrId ===
+      "string"
+    ) {
+      setSelectedVehicleId(
+        vehicleOrId
+      );
+
+      return;
+    }
+
+    setSelectedVehicleId(
+      vehicleOrId.allocationId ||
+        vehicleOrId.id ||
+        null
+    );
+  };
 
   /* =====================================
      CLEAR FILTERS
@@ -1936,97 +1469,49 @@ const Tracking = () => {
 
   const clearAllFilters =
     () => {
-
-      setSearchTerm(
-        ""
-      );
-
+      setSearchTerm("");
       setMovementFilter(
         "All"
       );
-
-      setSelectedDate(
-        ""
-      );
-
+      setSelectedDate("");
     };
-
 
   /* =====================================
      RENDER
   ===================================== */
 
   return (
+    <main className="tracking-page">
+      {/* HEADER */}
 
-    <main
-      className="tracking-page"
-    >
-
-
-      {/* =================================
-          HEADER
-      ================================= */}
-
-      <header
-        className="tracking-header"
-      >
-
-        <div
-          className="tracking-header-content"
-        />
-
+      <header className="tracking-header">
+        <div className="tracking-header-content" />
       </header>
 
-
-      {/* =================================
-          API ERROR
-      ================================= */}
+      {/* API ERROR */}
 
       {apiError && (
-
-        <div
-          className="tracking-api-error"
-        >
-
+        <div className="tracking-api-error">
           {apiError}
-
         </div>
-
       )}
 
+      {/* TOOLBAR */}
 
-      {/* =================================
-          TOOLBAR
-      ================================= */}
+      <section className="tracking-toolbar">
+        {/* STATUS FILTER */}
 
-      <section
-        className="tracking-toolbar"
-      >
-
-
-{/* STATUS FILTER */}
-
-        <div
-          className="tracking-status-filter"
-        >
-
+        <div className="tracking-status-filter">
           {statusOptions.map(
-            (
-              status
-            ) => {
-
+            (status) => {
               const active =
                 movementFilter ===
                 status;
 
-
               return (
-
                 <button
                   type="button"
-                  key={
-                    status
-                  }
+                  key={status}
                   className={
                     active
                       ? "active"
@@ -2038,52 +1523,35 @@ const Tracking = () => {
                     )
                   }
                 >
-
                   {status !==
                     "All" &&
-
                     getStatusIcon(
                       status
                     )}
-
 
                   <span>
                     {status}
                   </span>
 
-
-                  <small
-                    className="tracking-status-count"
-                  >
-
+                  <small className="tracking-status-count">
                     {
                       statusCounts[
                         status
                       ]
                     }
-
                   </small>
-
                 </button>
-
               );
-
             }
           )}
-
         </div>
-        
 
         {/* SEARCH */}
 
-        <div
-          className="tracking-search"
-        >
-
+        <div className="tracking-search">
           <Search
             size={18}
           />
-
 
           <input
             type="search"
@@ -2094,18 +1562,14 @@ const Tracking = () => {
             onChange={(
               event
             ) =>
-
               setSearchTerm(
                 event.target
                   .value
               )
-
             }
           />
 
-
           {searchTerm && (
-
             <button
               type="button"
               className="tracking-search-clear"
@@ -2116,28 +1580,19 @@ const Tracking = () => {
               }
               aria-label="Clear search"
             >
-
               <X
                 size={15}
               />
-
             </button>
-
           )}
-
         </div>
-
 
         {/* DATE FILTER */}
 
-        <label
-          className="tracking-date"
-        >
-
+        <label className="tracking-date">
           <CalendarDays
             size={17}
           />
-
 
           <input
             type="date"
@@ -2146,147 +1601,99 @@ const Tracking = () => {
             }
             onChange={(
               event
-            ) => {
-
+            ) =>
               setSelectedDate(
                 event.target
                   .value
-              );
-
-            }}
+              )
+            }
           />
 
-
           {selectedDate && (
-
             <button
               type="button"
               className="tracking-date-clear"
               onClick={(
                 event
               ) => {
-
                 event.preventDefault();
-
                 event.stopPropagation();
 
                 setSelectedDate(
                   ""
                 );
-
               }}
               aria-label="Clear selected date"
             >
-
               <X
                 size={14}
               />
-
             </button>
-
           )}
-
         </label>
-
       </section>
 
-
-      {/* =================================
-          CONTENT
-      ================================= */}
+      {/* CONTENT */}
 
       {loading ? (
-
-        <div
-          className="tracking-loading-state"
-        >
-
+        <div className="tracking-loading-state">
           Loading trips...
-
         </div>
-
       ) : filteredTrips.length ===
         0 ? (
-
-        <div
-          className="tracking-no-results"
-        >
-
-
-          <div
-            className="tracking-no-results-icon"
-          >
-
+        <div className="tracking-no-results">
+          <div className="tracking-no-results-icon">
             {movementFilter ===
             "Breakdown" ? (
-
               <CircleAlert
                 size={26}
               />
-
             ) : (
-
               <Search
                 size={26}
               />
-
             )}
-
           </div>
 
-
           <strong>
-
             {selectedDate
-
               ? "No Trips Found On This Date"
-
               : movementFilter !==
                   "All"
-
                 ? `No ${movementFilter} Trips Found`
-
                 : "No Trips Found"}
-
           </strong>
 
-
           <p>
-
-            {selectedDate
-
-              ? `No trip records are available for ${selectedDate}.`
-
-              : movementFilter ===
-                  "Breakdown"
-
-                ? "There are currently no trips containing a vehicle with Breakdown status."
-
-                : "Try changing the status, search text or date filter."}
-
+            {apiError
+              ? "Unable to load tracking data from the server."
+              : selectedDate
+                ? `No trip records are available for ${selectedDate}.`
+                : movementFilter ===
+                    "Breakdown"
+                  ? "There are currently no trips containing a vehicle with Breakdown status."
+                  : trips.length ===
+                      0
+                    ? "No allocated vehicles are available in Tracking yet."
+                    : "Try changing the status, search text or date filter."}
           </p>
 
-
-          <button
-            type="button"
-            onClick={
-              clearAllFilters
-            }
-          >
-
-            Show All Trips
-
-          </button>
-
+          {(searchTerm ||
+            selectedDate ||
+            movementFilter !==
+              "All") && (
+            <button
+              type="button"
+              onClick={
+                clearAllFilters
+              }
+            >
+              Show All Trips
+            </button>
+          )}
         </div>
-
       ) : (
-
-        <section
-          className="tracking-layout"
-        >
-
-
+        <section className="tracking-layout">
           {/* TRIP LIST */}
 
           <TripListColumn
@@ -2301,7 +1708,6 @@ const Tracking = () => {
             }
           />
 
-
           {/* VEHICLE DETAILS */}
 
           <VehicleColumn
@@ -2312,7 +1718,7 @@ const Tracking = () => {
               selectedVehicle
             }
             onSelectVehicle={
-              setSelectedVehicleId
+              handleVehicleSelect
             }
             getStatusClass={
               getStatusClass
@@ -2321,7 +1727,6 @@ const Tracking = () => {
               getStatusIcon
             }
           />
-
 
           {/* MAP */}
 
@@ -2333,23 +1738,16 @@ const Tracking = () => {
               selectedVehicle
             }
             onSelectVehicle={
-              setSelectedVehicleId
+              handleVehicleSelect
             }
             getStatusClass={
               getStatusClass
             }
           />
-
-
         </section>
-
       )}
-
     </main>
-
   );
-
 };
-
 
 export default Tracking;

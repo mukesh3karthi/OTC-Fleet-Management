@@ -603,42 +603,106 @@
   padding-right: 12px;
 }
 
-/* BALANCED VIEWPORT WIDTHS */
+/* BALANCED VIEWPORT WIDTHS - 9 COLUMNS */
 
 .key-account-table th:nth-child(1),
 .key-account-table td:nth-child(1) {
-  width: 9%;
+  width: 8%;
 }
 
 .key-account-table th:nth-child(2),
 .key-account-table td:nth-child(2) {
-  width: 15%;
+  width: 13%;
 }
 
 .key-account-table th:nth-child(3),
 .key-account-table td:nth-child(3) {
-  width: 17%;
+  width: 12%;
 }
 
 .key-account-table th:nth-child(4),
 .key-account-table td:nth-child(4) {
-  width: 20%;
+  width: 14%;
 }
 
 .key-account-table th:nth-child(5),
 .key-account-table td:nth-child(5) {
-  width: 15%;
+  width: 17%;
 }
 
 .key-account-table th:nth-child(6),
 .key-account-table td:nth-child(6) {
-  width: 14%;
+  width: 11%;
 }
 
 .key-account-table th:nth-child(7),
 .key-account-table td:nth-child(7) {
   width: 10%;
 }
+
+.key-account-table th:nth-child(8),
+.key-account-table td:nth-child(8) {
+  width: 9%;
+}
+
+.key-account-table th:nth-child(9),
+.key-account-table td:nth-child(9) {
+  width: 6%;
+}
+
+
+/* MOVEMENT TYPE */
+
+.kam-movement-type {
+  width: fit-content;
+  max-width: 100%;
+  min-height: 25px;
+  padding: 4px 8px;
+
+  display: inline-flex;
+  align-items: center;
+
+  overflow: hidden;
+
+  border: 1px solid #cfe3e6;
+  border-radius: 999px;
+
+  background: #f1f8f8;
+
+  color: #17606a;
+
+  font-size: 9.4px;
+  font-weight: 850;
+  line-height: 1;
+
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.kam-movement-wtg-movement {
+  border-color: #cce6e2;
+  background: #edf8f6;
+  color: #087e76;
+}
+
+.kam-movement-intercarting {
+  border-color: #d3e2f2;
+  background: #f0f6fc;
+  color: #286e9b;
+}
+
+.kam-movement-crane {
+  border-color: #ead9f7;
+  background: #f8f1fc;
+  color: #7650a6;
+}
+
+.kam-movement-other {
+  border-color: #e1e6e9;
+  background: #f6f8f9;
+  color: #617985;
+}
+
 
 /* BODY */
 
@@ -755,7 +819,7 @@
 
 /* ROUTE */
 
-.key-account-table td:nth-child(4) {
+.key-account-table td:nth-child(5) {
   overflow: hidden;
   color: #294a5a;
   font-weight: 650;
@@ -1552,3 +1616,490 @@
   min-width: 50px;
 }
 
+/* =========================================================
+   FINAL PROFESSIONAL TABLE ALIGNMENT
+   Keeps the existing 9-column JSX structure and functionality.
+========================================================= */
+
+.key-account-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.key-account-table {
+  width: 100%;
+  min-width: 1320px;
+  table-layout: fixed;
+}
+
+/* ORDER ID */
+.key-account-table th:nth-child(1),
+.key-account-table td:nth-child(1) {
+  width: 105px;
+}
+
+/* CUSTOMER */
+.key-account-table th:nth-child(2),
+.key-account-table td:nth-child(2) {
+  width: 170px;
+}
+
+/* MOVEMENT */
+.key-account-table th:nth-child(3),
+.key-account-table td:nth-child(3) {
+  width: 145px;
+}
+
+/* MATERIAL & WEIGHT */
+.key-account-table th:nth-child(4),
+.key-account-table td:nth-child(4) {
+  width: 205px;
+}
+
+/* ROUTE */
+.key-account-table th:nth-child(5),
+.key-account-table td:nth-child(5) {
+  width: 170px;
+}
+
+/* STAGE */
+.key-account-table th:nth-child(6),
+.key-account-table td:nth-child(6) {
+  width: 155px;
+}
+
+/* ORDER STATUS */
+.key-account-table th:nth-child(7),
+.key-account-table td:nth-child(7) {
+  width: 145px;
+}
+
+/* ASSIGNED KAM */
+.key-account-table th:nth-child(8),
+.key-account-table td:nth-child(8) {
+  width: 150px;
+}
+
+/* ACTION */
+.key-account-table th:nth-child(9),
+.key-account-table td:nth-child(9) {
+  width: 75px;
+}
+
+.key-account-table th,
+.key-account-table td {
+  padding-left: 14px;
+  padding-right: 14px;
+  vertical-align: middle;
+}
+
+.key-account-table th {
+  height: 44px;
+  font-size: 9.5px;
+  line-height: 1;
+}
+
+.key-account-table td {
+  height: 66px;
+}
+
+/* Keep every header aligned with its own data column */
+.key-account-table th:nth-child(9),
+.key-account-table td:nth-child(9) {
+  padding-left: 8px;
+  padding-right: 8px;
+  text-align: center !important;
+}
+
+/* Movement badge stays inside Movement column */
+.kam-movement-type {
+  max-width: 125px;
+}
+
+/* Customer */
+.client-name,
+.order-subtext {
+  max-width: 145px;
+}
+
+/* Material */
+.cargo-name,
+.cargo-weight {
+  max-width: 175px;
+}
+
+/* Route: allow two clean lines instead of squeezing columns */
+.key-account-table td:nth-child(5) {
+  overflow: visible;
+  white-space: normal;
+  text-overflow: clip;
+  line-height: 1.25;
+}
+
+/* Stage */
+.stage-badge {
+  max-width: 135px;
+}
+
+/* Assigned KAM */
+.role-responsible {
+  max-width: 125px;
+}
+
+/* Header text never overlaps neighboring columns */
+.key-account-table th {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Responsive desktop widths */
+@media (max-width: 1450px) and (min-width: 801px) {
+  .key-account-table {
+    min-width: 1250px;
+  }
+
+  .key-account-table th,
+  .key-account-table td {
+    padding-left: 11px;
+    padding-right: 11px;
+  }
+}
+
+/* =========================================================
+   FINAL FULL-VIEWPORT TABLE FIT
+   All 9 columns remain visible without horizontal scrolling.
+========================================================= */
+
+.key-account-table-wrapper {
+  width: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.key-account-table {
+  width: 100%;
+  min-width: 0 !important;
+  table-layout: fixed;
+}
+
+/* Fit all 9 columns inside available viewport */
+.key-account-table th:nth-child(1),
+.key-account-table td:nth-child(1) { width: 8%; }
+
+.key-account-table th:nth-child(2),
+.key-account-table td:nth-child(2) { width: 13%; }
+
+.key-account-table th:nth-child(3),
+.key-account-table td:nth-child(3) { width: 11%; }
+
+.key-account-table th:nth-child(4),
+.key-account-table td:nth-child(4) { width: 14%; }
+
+.key-account-table th:nth-child(5),
+.key-account-table td:nth-child(5) { width: 14%; }
+
+.key-account-table th:nth-child(6),
+.key-account-table td:nth-child(6) { width: 12%; }
+
+.key-account-table th:nth-child(7),
+.key-account-table td:nth-child(7) { width: 11%; }
+
+.key-account-table th:nth-child(8),
+.key-account-table td:nth-child(8) { width: 11%; }
+
+.key-account-table th:nth-child(9),
+.key-account-table td:nth-child(9) { width: 6%; }
+
+.key-account-table th,
+.key-account-table td {
+  padding-left: 9px;
+  padding-right: 9px;
+}
+
+.key-account-table th {
+  font-size: 9px;
+  letter-spacing: 0.035em;
+}
+
+.key-account-table td {
+  font-size: 11px;
+}
+
+/* Keep content clean inside its allocated column */
+.order-id {
+  min-width: 0;
+  max-width: 100%;
+  padding-left: 7px;
+  padding-right: 7px;
+}
+
+.client-name,
+.order-subtext,
+.cargo-name,
+.cargo-weight,
+.role-responsible {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.kam-movement-type,
+.stage-badge,
+.order-status-badge {
+  max-width: 100%;
+}
+
+.key-account-table td:nth-child(5) {
+  overflow: hidden;
+  white-space: normal;
+  text-overflow: clip;
+  line-height: 1.25;
+}
+
+.kam-actions-column,
+.kam-actions-cell {
+  text-align: center !important;
+}
+
+.kam-three-dot-btn {
+  width: 28px;
+  height: 28px;
+}
+
+/* Keep full table visible on normal laptop/desktop screens */
+@media (max-width: 1280px) and (min-width: 801px) {
+  .key-account-shell {
+    width: calc(100% - 8px);
+  }
+
+  .key-account-table th,
+  .key-account-table td {
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+
+  .key-account-table th {
+    font-size: 8.2px;
+  }
+
+  .key-account-table td {
+    font-size: 10.3px;
+  }
+
+  .kam-movement-type,
+  .stage-badge,
+  .order-status-badge {
+    padding-left: 6px;
+    padding-right: 6px;
+    font-size: 8.5px;
+  }
+}
+
+
+/* =========================================================
+   FINAL ACTION DROPDOWN FIX
+   Bottom rows open upward
+========================================================= */
+
+.kam-action-dropdown-up {
+  top: auto;
+  bottom: calc(100% + 7px);
+  animation: kamActionMenuOpenUp 0.14s ease-out;
+}
+
+.kam-action-dropdown-up::before {
+  top: auto;
+  bottom: -5px;
+  border-top: 0;
+  border-left: 0;
+  border-right: 1px solid #d9e4e8;
+  border-bottom: 1px solid #d9e4e8;
+}
+
+@keyframes kamActionMenuOpenUp {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+
+/* =========================================================
+   FINAL ACTION MENU - VIEWPORT SAFE
+   Uses position: fixed from KeyAccount.jsx.
+   This prevents clipping inside the scrollable table.
+========================================================= */
+
+.kam-actions-cell {
+  position: relative;
+  overflow: visible;
+  text-align: center;
+}
+
+.kam-action-menu-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.kam-three-dot-btn {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2.5px;
+  border: 1px solid #b9d5ef;
+  border-radius: 8px;
+  background: #f6faff;
+  color: #1768b2;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(23, 104, 178, 0.04);
+  transition: border-color 0.15s ease, background 0.15s ease,
+    color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.kam-three-dot-btn span {
+  width: 2.5px;
+  height: 2.5px;
+  flex: 0 0 2.5px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.kam-three-dot-btn:hover,
+.kam-three-dot-btn.active {
+  border-color: #83b7e5;
+  background: #edf6ff;
+  color: #075ca8;
+  box-shadow: 0 3px 8px rgba(23, 104, 178, 0.09);
+}
+
+.kam-action-dropdown.kam-action-dropdown-fixed {
+  position: fixed;
+  right: auto;
+  bottom: auto;
+  z-index: 10000;
+  width: 122px;
+  padding: 3px 0;
+  overflow: hidden;
+  border: 1px solid #e1e7ec;
+  border-radius: 8px;
+  background: #ffffff;
+  text-align: left;
+  box-shadow: 0 9px 22px rgba(15, 35, 55, 0.11),
+    0 2px 5px rgba(15, 35, 55, 0.04);
+  animation: kamFixedMenuDown 0.13s ease-out;
+}
+
+.kam-action-dropdown.kam-action-dropdown-fixed::before {
+  display: none;
+}
+
+.kam-action-dropdown.kam-action-dropdown-fixed.kam-action-dropdown-up {
+  bottom: auto;
+  animation: kamFixedMenuUp 0.13s ease-out;
+}
+
+.kam-action-dropdown.kam-action-dropdown-fixed button,
+.kam-action-dropdown.kam-action-dropdown-fixed .kam-dropdown-item {
+  width: 100%;
+  min-height: 32px;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border: 0;
+  border-radius: 0;
+  outline: 0;
+  background: #ffffff;
+  color: #334155;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.14s ease, color 0.14s ease;
+}
+
+.kam-action-dropdown.kam-action-dropdown-fixed button:hover,
+.kam-action-dropdown.kam-action-dropdown-fixed .kam-dropdown-item:hover {
+  background: #f5f8fa;
+  color: #172b3a;
+}
+
+.kam-action-dropdown.kam-action-dropdown-fixed .kam-action-item-icon {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+  display: grid;
+  place-items: center;
+  border-radius: 0;
+  background: transparent;
+  color: #425b6b;
+}
+
+.kam-action-dropdown.kam-action-dropdown-fixed .kam-action-item-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.kam-action-dropdown.kam-action-dropdown-fixed .kam-action-item-text {
+  min-width: 0;
+  display: block;
+}
+
+.kam-action-dropdown.kam-action-dropdown-fixed .kam-action-item-text strong {
+  color: inherit;
+  font-size: 11px;
+  font-weight: 650;
+  line-height: 1;
+}
+
+.kam-action-dropdown.kam-action-dropdown-fixed .kam-action-item-text small {
+  display: none;
+}
+
+.kam-action-dropdown.kam-action-dropdown-fixed .kam-dropdown-delete {
+  color: #dc2626;
+}
+
+.kam-action-dropdown.kam-action-dropdown-fixed
+  .kam-dropdown-delete
+  .kam-action-item-icon {
+  color: #dc2626;
+}
+
+.kam-action-dropdown.kam-action-dropdown-fixed .kam-dropdown-delete:hover {
+  background: #fff5f5;
+  color: #c91f1f;
+}
+
+@keyframes kamFixedMenuDown {
+  from {
+    opacity: 0;
+    transform: translateY(-3px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes kamFixedMenuUp {
+  from {
+    opacity: 0;
+    transform: translateY(3px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
