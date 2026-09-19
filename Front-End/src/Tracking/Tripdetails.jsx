@@ -453,12 +453,31 @@ const Tripdetails = () => {
               .map(
                 normalizeTrip
               )
-              .filter(
-                (trip) =>
-                  trip
-                    .allocatedVehicles
-                    .length > 0
-              );
+              .filter((trip) => {
+                const stage =
+                  safeText(
+                    trip?.stage,
+                    ""
+                  )
+                    .trim()
+                    .toLowerCase();
+
+                const orderPlacedStatus =
+                  safeText(
+                    trip?.orderPlaced?.status,
+                    ""
+                  )
+                    .trim()
+                    .toLowerCase();
+
+                return (
+                  orderPlacedStatus === "completed" ||
+                  stage === "tracking" ||
+                  stage === "trip complete" ||
+                  stage === "trip completed" ||
+                  stage === "completed"
+                );
+              });
 
           setTrips(
             trackingTrips
@@ -578,21 +597,7 @@ const Tripdetails = () => {
           </span>
         </button>
 
-        <button
-          type="button"
-          className="trip-create-button"
-          onClick={
-            handleCreateTrip
-          }
-        >
-          <Plus
-            size={16}
-          />
 
-          <span>
-            Tracking Input
-          </span>
-        </button>
       </div>
 
       {/* =================================

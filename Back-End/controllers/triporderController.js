@@ -1062,6 +1062,148 @@ const saveOrderFinalization = async (
   }
 };
 
+/* =========================================================
+   SAVE / DOWNLOAD PO DOCUMENT
+========================================================= */
+
+const savePoDocument = async (req, res) => {
+  try {
+    const result = await getTripDocument(req.params.id);
+
+    if (result.error) {
+      return sendError(res, result.status, result.error);
+    }
+
+    const trip = result.trip;
+    const poNumber = cleanString(req.body.poNumber);
+    const validityRaw = cleanString(req.body.poValidityPeriod);
+    const billingGstin = cleanUpperString(req.body.billingGstin);
+
+    if (!poNumber) {
+      return sendError(res, 400, "PO Number is required.");
+    }
+
+    const poValidityPeriod = new Date(validityRaw);
+
+    if (!validityRaw || Number.isNaN(poValidityPeriod.getTime())) {
+      return sendError(res, 400, "A valid PO Validity Period is required.");
+    }
+
+    const gstinPattern =
+      /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/;
+
+    if (!gstinPattern.test(billingGstin)) {
+      return sendError(
+        res,
+        400,
+        "Enter a valid 15-character Billing GSTIN."
+      );
+    }
+
+    if (!req.file && !trip.poDocument?.fileName) {
+      return sendError(res, 400, "Select a PO document before saving.");
+    }
+
+    trip.poDocument.poNumber = poNumber;
+    trip.poDocument.poValidityPeriod = poValidityPeriod;
+    trip.poDocument.billingGstin = billingGstin;
+    trip.poDocument.status = "Completed";
+    trip.poDocument.documentName =
+      cleanString(req.body.documentName) ||
+      req.file?.originalname ||
+      "PO Document";
+    trip.poDocument.uploadedBy =
+      cleanString(req.body.uploadedBy) || "Key Account";
+    trip.poDocument.uploadedAt = new Date();
+
+    if (req.file) {
+      trip.poDocument.fileName = req.file.originalname;
+      trip.poDocument.mimeType = req.file.mimetype;
+      trip.poDocument.fileSize = req.file.size;
+      trip.poDocument.fileData = req.file.buffer;
+    }
+
+    trip.markModified("poDocument");
+
+    /*
+     * PO SAVE WORKFLOW
+     *
+     * Vendor/vehicle approval already complete:
+     *   PO Document -> Order Placed
+     *
+     * Vendor/vehicle approval still pending:
+     *   PO Document -> Vendor Finalization
+     */
+    const requirements = getRequirements(trip);
+    const approvedConfirmations = getConfirmations(trip).filter(
+      (confirmation) => confirmation?.status === "Approved"
+    );
+
+    const vendorApprovalCompleted =
+      requirements.length > 0 &&
+      requirements.every((requirement) =>
+        approvedConfirmations.some(
+          (confirmation) =>
+            confirmation?.requirementId === requirement?.requirementId
+        )
+      );
+
+    trip.stage = vendorApprovalCompleted
+      ? "Order Placed"
+      : "Vendor Finalization";
+
+    await trip.save();
+
+    const savedTrip = await TripOrder.findById(trip._id).lean();
+
+    return sendSuccess(
+      res,
+      200,
+      "PO document saved successfully.",
+      savedTrip
+    );
+  } catch (error) {
+    console.error("Save PO Document Error:", error);
+    return sendError(res, 500, "Unable to save PO document.", error);
+  }
+};
+
+const downloadPoDocument = async (req, res) => {
+  try {
+    if (!isValidMongoId(req.params.id)) {
+      return sendError(res, 400, "Invalid order database ID.");
+    }
+
+    const trip = await TripOrder.findById(req.params.id).select(
+      "+poDocument.fileData"
+    );
+
+    if (!trip) {
+      return sendError(res, 404, "Order not found.");
+    }
+
+    if (!trip.poDocument?.fileData) {
+      return sendError(res, 404, "PO document file not found.");
+    }
+
+    res.setHeader(
+      "Content-Type",
+      trip.poDocument.mimeType || "application/octet-stream"
+    );
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${String(
+        trip.poDocument.fileName || "po-document"
+      ).replace(/"/g, "")}"`
+    );
+
+    return res.send(trip.poDocument.fileData);
+  } catch (error) {
+    console.error("Download PO Document Error:", error);
+    return sendError(res, 500, "Unable to download PO document.", error);
+  }
+};
+
 const approveOrder = async (
   req,
   res
@@ -2880,6 +3022,111 @@ const addDailyTracking = async (
   }
 };
 
+
+/* =========================================================
+   PLACE ORDER
+   KEY ACCOUNT -> TRACKING
+========================================================= */
+
+const placeOrder = async (req, res) => {
+  try {
+    const result = await getTripDocument(req.params.id);
+
+    if (result.error) {
+      return sendError(
+        res,
+        result.status,
+        result.error
+      );
+    }
+
+    const trip = result.trip;
+
+    const poCompleted =
+      trip.poDocument?.status === "Completed" &&
+      Boolean(cleanString(trip.poDocument?.poNumber)) &&
+      Boolean(trip.poDocument?.fileName);
+
+    if (!poCompleted) {
+      return sendError(
+        res,
+        400,
+        "Complete the PO Document before placing the order."
+      );
+    }
+
+    const requirements = getRequirements(trip);
+
+    if (!requirements.length) {
+      return sendError(
+        res,
+        400,
+        "No vehicle requirements found."
+      );
+    }
+
+    const confirmations = getConfirmations(trip);
+
+    const allRequirementsApproved =
+      requirements.every((requirement) =>
+        confirmations.some(
+          (confirmation) =>
+            confirmation.requirementId === requirement.requirementId &&
+            confirmation.status === "Approved"
+        )
+      );
+
+    if (!allRequirementsApproved) {
+      return sendError(
+        res,
+        400,
+        "All vehicle requirements must have an approved transporter before placing the order."
+      );
+    }
+
+    const placedBy =
+      cleanString(req.body?.orderPlaced?.placedBy) ||
+      cleanString(req.body?.placedBy) ||
+      "Key Account";
+
+    trip.orderPlaced = {
+      status: "Completed",
+      placedBy,
+      placedAt: new Date(),
+    };
+
+    trip.stage = "Tracking";
+    trip.status = "Tracking";
+
+    trip.markModified("orderPlaced");
+
+    await trip.save();
+
+    const updatedTrip = await TripOrder.findById(
+      trip._id
+    ).lean();
+
+    return sendSuccess(
+      res,
+      200,
+      "Order placed successfully and moved to Tracking.",
+      updatedTrip
+    );
+  } catch (error) {
+    console.error(
+      "Place Order Error:",
+      error
+    );
+
+    return sendError(
+      res,
+      500,
+      "Unable to place order.",
+      error
+    );
+  }
+};
+
 const deleteTrip = async (
   req,
   res
@@ -2963,6 +3210,10 @@ module.exports = {
   updateTrip,
 
   saveOrderFinalization,
+  savePoDocument,
+  downloadPoDocument,
+
+  placeOrder,
 
   approveOrder,
 

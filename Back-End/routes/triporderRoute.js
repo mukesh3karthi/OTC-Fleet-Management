@@ -1,4 +1,5 @@
 const express = require("express");
+const multer = require("multer");
 
 const router = express.Router();
 
@@ -8,279 +9,105 @@ const {
   getTripById,
   getTripByTripId,
   updateTrip,
-
-  // Key Account - Order Finalization
   saveOrderFinalization,
-
-  // First Approval Management
+  savePoDocument,
+  downloadPoDocument,
+  placeOrder,
   approveOrder,
-
-  // Traffic
   addTrafficQuotation,
-
-  // Second Approval Management
   confirmVehicleQuotation,
-
-  // Tracking Input
   allocateVehicle,
   updateAllocatedVehicle,
   addDailyTracking,
-
-  // Delete
   deleteTrip,
 } = require("../controllers/triporderController");
 
-/* =========================================================
-   CREATE ORDER / TRIP
-   KEY ACCOUNT
+const allowedPoMimeTypes = new Set([
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "image/jpeg",
+  "image/png",
+]);
 
-   POST /api/triporders
-========================================================= */
+const poUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 10 * 1024 * 1024,
+    files: 1,
+  },
+  fileFilter: (req, file, callback) => {
+    if (!allowedPoMimeTypes.has(file.mimetype)) {
+      return callback(
+        new Error("Only PDF, Word, JPG and PNG files are allowed.")
+      );
+    }
 
-router.post(
-  "/",
-  createTrip
+    return callback(null, true);
+  },
+});
+
+const uploadPoDocument = (req, res, next) => {
+  poUpload.single("document")(req, res, (error) => {
+    if (!error) return next();
+
+    const message =
+      error.code === "LIMIT_FILE_SIZE"
+        ? "PO document must be 10 MB or smaller."
+        : error.message || "Unable to upload PO document.";
+
+    return res.status(400).json({
+      success: false,
+      message,
+    });
+  });
+};
+
+router.post("/", createTrip);
+router.get("/", getAllTrips);
+router.get("/trip/:tripId", getTripByTripId);
+
+router.put("/:id/order-finalization", saveOrderFinalization);
+router.put("/:id/order-approval", approveOrder);
+router.post("/:id/quotations", addTrafficQuotation);
+router.put("/:id/confirm-quotation", confirmVehicleQuotation);
+
+/* PO fields and the uploaded file are stored in MongoDB. */
+router.put(
+  "/:id/po-document",
+  uploadPoDocument,
+  savePoDocument
 );
-
-/* =========================================================
-   GET ALL ORDERS / TRIPS
-
-   GET /api/triporders
-========================================================= */
 
 router.get(
-  "/",
-  getAllTrips
+  "/:id/po-document/file",
+  downloadPoDocument
 );
 
-/* =========================================================
-   GET ORDER BY BUSINESS TRIP ID
-
-   GET /api/triporders/trip/:tripId
-
-   IMPORTANT:
-   Keep this route BEFORE /:id
-========================================================= */
-
-router.get(
-  "/trip/:tripId",
-  getTripByTripId
-);
-
-/* =========================================================
-   KEY ACCOUNT - ORDER FINALIZATION
-
-   PUT /api/triporders/:id/order-finalization
-
-   BODY:
-
-   {
-     quotedRate,
-     finalRate,
-     commercialTerms,
-     deliveryCommitments,
-     clientConfirmationNotes,
-     updatedBy,
-     requestApproval
-   }
-
-   requestApproval: false
-   -> Save Changes only
-
-   requestApproval: true
-   -> Save + Request for Approval
-========================================================= */
-
+/* Final Key Account verification -> release order to Tracking. */
 router.put(
-  "/:id/order-finalization",
-  saveOrderFinalization
+  "/:id/order-placed",
+  placeOrder
 );
-
-/* =========================================================
-   FIRST APPROVAL MANAGEMENT
-
-   PUT /api/triporders/:id/order-approval
-
-   BODY:
-
-   {
-     status: "Approved" | "Rejected",
-     approvedBy,
-     remarks,
-     rejectionReason
-   }
-========================================================= */
-
-router.put(
-  "/:id/order-approval",
-  approveOrder
-);
-
-/* =========================================================
-   TRAFFIC QUOTATION
-
-   POST /api/triporders/:id/quotations
-
-   BODY:
-
-   {
-     requirementId,
-     transporter,
-     amount,
-     quotedBy,
-     remarks
-   }
-========================================================= */
-
-router.post(
-  "/:id/quotations",
-  addTrafficQuotation
-);
-
-/* =========================================================
-   SECOND APPROVAL MANAGEMENT
-   APPROVE / REJECT TRANSPORTER QUOTATION
-
-   PUT /api/triporders/:id/confirm-quotation
-
-   BODY:
-
-   {
-     requirementId,
-     quotationId,
-     status: "Approved" | "Rejected",
-     confirmedBy,
-     remarks,
-     rejectionReason
-   }
-========================================================= */
-
-router.put(
-  "/:id/confirm-quotation",
-  confirmVehicleQuotation
-);
-
-/* =========================================================
-   TRACKING INPUT
-   ALLOCATE ACTUAL VEHICLE
-
-   POST /api/triporders/:id/allocated-vehicles
-
-   BODY:
-
-   {
-     requirementId,
-     confirmationId,
-     quotationId,
-     vehicleNumber,
-
-     driver: {
-       name,
-       contactNumber
-     },
-
-     escort: {
-       vehicleNumber,
-       name,
-       contactNumber
-     },
-
-     supervisor: {
-       name,
-       contactNumber
-     },
-
-     loading: {
-       status,
-       pointInDate,
-       loadingDate,
-       pointOutDate,
-       haltingDays,
-       remarks
-     },
-
-     unloading: {
-       status,
-       pointInDate,
-       unloadingDate,
-       pointOutDate,
-       haltingDays,
-       remarks
-     }
-   }
-========================================================= */
 
 router.post(
   "/:id/allocated-vehicles",
   allocateVehicle
 );
 
-/* =========================================================
-   TRACKING INPUT
-   UPDATE ALLOCATED VEHICLE
-
-   PUT
-   /api/triporders/:id/allocated-vehicles/:allocationId
-========================================================= */
-
 router.put(
   "/:id/allocated-vehicles/:allocationId",
   updateAllocatedVehicle
 );
-
-/* =========================================================
-   TRACKING INPUT
-   ADD DAILY TRACKING
-
-   POST
-   /api/triporders/:id/allocated-vehicles/:allocationId/tracking
-========================================================= */
 
 router.post(
   "/:id/allocated-vehicles/:allocationId/tracking",
   addDailyTracking
 );
 
-/* =========================================================
-   GET ORDER BY MONGODB ID
-
-   GET /api/triporders/:id
-
-   IMPORTANT:
-   Generic /:id route must remain BELOW
-   all specific routes.
-========================================================= */
-
-router.get(
-  "/:id",
-  getTripById
-);
-
-/* =========================================================
-   UPDATE ORDER
-   KEY ACCOUNT
-
-   PUT /api/triporders/:id
-========================================================= */
-
-router.put(
-  "/:id",
-  updateTrip
-);
-
-/* =========================================================
-   DELETE ORDER
-
-   DELETE /api/triporders/:id
-========================================================= */
-
-router.delete(
-  "/:id",
-  deleteTrip
-);
-
-/* =========================================================
-   EXPORT ROUTER
-========================================================= */
+/* Generic /:id routes must stay below every specific route. */
+router.get("/:id", getTripById);
+router.put("/:id", updateTrip);
+router.delete("/:id", deleteTrip);
 
 module.exports = router;

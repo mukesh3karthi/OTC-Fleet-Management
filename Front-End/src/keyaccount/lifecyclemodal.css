@@ -4178,6 +4178,41 @@ cursor: not-allowed;
   flex-shrink: 0;
 }
 
+/* Status badge */
+.approval-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 72px;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+.approval-status.approved {
+  border: 1px solid #a7ddd1;
+  background: #eaf8f4;
+  color: #087a68;
+}
+
+.approval-status.pending {
+  border: 1px solid #ead6a4;
+  background: #fff8e8;
+  color: #946a08;
+}
+
+.approval-status.rejected {
+  border: 1px solid #efc2c2;
+  background: #fff1f1;
+  color: #b23b3b;
+}
+
 
 /* =========================================================
    ORDER DETAIL GRID
@@ -6859,6 +6894,1838 @@ input:focus-visible {
   }
 
   .kam-save-finalization-btn {
+    width: 100%;
+  }
+}
+/* =========================================================
+   PO DOCUMENT — PROFESSIONAL FORM OVERRIDES
+   Keep this section at the end of lifecyclemodal.css.
+========================================================= */
+
+.kam-step-page-po-document .kam-client-vehicle-section {
+  overflow: hidden;
+  border: 1px solid #d5e3e8;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 10px 28px rgba(15, 54, 70, 0.07);
+}
+
+.kam-step-page-po-document .kam-client-trip-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+  padding: 22px;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdfe 100%);
+}
+
+.kam-step-page-po-document .kam-client-trip-field {
+  min-width: 0;
+}
+
+.kam-step-page-po-document .kam-client-trip-field > span {
+  display: block;
+  margin: 0 0 8px;
+  color: #38586a;
+  font-size: 10px;
+  line-height: 1.2;
+  font-weight: 800;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+}
+
+.kam-step-page-po-document .kam-client-trip-field > span > em {
+  margin-left: 4px;
+  color: #d14343;
+  font-style: normal;
+  font-size: 12px;
+}
+
+.kam-step-page-po-document .kam-client-trip-field > input[type="text"],
+.kam-step-page-po-document .kam-client-trip-field > input[type="date"],
+.kam-step-page-po-document .kam-client-trip-field > select {
+  width: 100%;
+  height: 50px;
+  padding: 0 15px;
+  border: 1px solid #cadce3;
+  border-radius: 11px;
+  outline: none;
+  background: #f8fbfc;
+  color: #173a4c;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  box-shadow: 0 1px 2px rgba(15, 54, 70, 0.03);
+  transition: border-color 160ms ease, background 160ms ease,
+    box-shadow 160ms ease, transform 160ms ease;
+  box-sizing: border-box;
+}
+
+.kam-step-page-po-document .kam-client-trip-field > select {
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 42px;
+  background-color: #f8fbfc;
+  background-image:
+    linear-gradient(45deg, transparent 50%, #557381 50%),
+    linear-gradient(135deg, #557381 50%, transparent 50%);
+  background-position:
+    calc(100% - 19px) 22px,
+    calc(100% - 14px) 22px;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+
+.kam-step-page-po-document .kam-client-trip-field > input[type="text"]:hover,
+.kam-step-page-po-document .kam-client-trip-field > input[type="date"]:hover,
+.kam-step-page-po-document .kam-client-trip-field > select:hover {
+  border-color: #9ebfc8;
+  background-color: #ffffff;
+}
+
+.kam-step-page-po-document .kam-client-trip-field > input[type="text"]:focus,
+.kam-step-page-po-document .kam-client-trip-field > input[type="date"]:focus,
+.kam-step-page-po-document .kam-client-trip-field > select:focus {
+  border-color: #0a9188;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 4px rgba(10, 145, 136, 0.12);
+}
+
+.kam-step-page-po-document .kam-client-trip-field > input::placeholder {
+  color: #96aab5;
+  font-weight: 550;
+}
+
+.kam-step-page-po-document
+  .kam-client-trip-field
+  > input[name="billingGstin"] {
+  text-transform: uppercase;
+  letter-spacing: 0.045em;
+}
+
+.kam-step-page-po-document .kam-po-upload-field {
+  grid-column: 1 / -1;
+  position: relative;
+  padding: 17px 18px 15px;
+  border: 1px dashed #9fc6ca;
+  border-radius: 13px;
+  background: linear-gradient(135deg, #f4fbfb 0%, #f8fcfd 100%);
+  transition: border-color 160ms ease, background 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.kam-step-page-po-document .kam-po-upload-field:hover,
+.kam-step-page-po-document .kam-po-upload-field:focus-within {
+  border-color: #0a9188;
+  background: #f1fbfa;
+  box-shadow: 0 0 0 4px rgba(10, 145, 136, 0.08);
+}
+
+.kam-step-page-po-document .kam-po-upload-field > input[type="file"] {
+  width: 100%;
+  min-height: 44px;
+  padding: 5px 6px;
+  border: 1px solid #d2e2e7;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #496877;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.kam-step-page-po-document
+  .kam-po-upload-field
+  > input[type="file"]::file-selector-button {
+  height: 32px;
+  margin-right: 12px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 8px;
+  background: #e4f5f3;
+  color: #087a74;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 160ms ease, color 160ms ease;
+}
+
+.kam-step-page-po-document
+  .kam-po-upload-field
+  > input[type="file"]:hover::file-selector-button {
+  background: #0b8c84;
+  color: #ffffff;
+}
+
+.kam-step-page-po-document .kam-po-upload-field > small {
+  display: block;
+  margin-top: 8px;
+  color: #6e8793;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.kam-step-page-po-document .kam-form-success,
+.kam-step-page-po-document .kam-form-error {
+  margin: 0 22px 18px;
+  padding: 11px 14px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.kam-step-page-po-document .kam-form-success {
+  border: 1px solid #bde5d5;
+  background: #edf9f4;
+  color: #167253;
+}
+
+.kam-step-page-po-document .kam-form-error {
+  border: 1px solid #f0c7c7;
+  background: #fff4f4;
+  color: #b13c3c;
+}
+
+.kam-footer-action-buttons .kam-request-approval-btn {
+  min-width: 108px;
+  height: 44px;
+  padding: 0 20px;
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  border-radius: 11px;
+  background: #ffffff;
+  color: #087d77;
+  font-size: 13px;
+  font-weight: 800;
+  box-shadow: 0 5px 14px rgba(3, 35, 48, 0.13);
+}
+
+.kam-footer-action-buttons .kam-request-approval-btn:hover:not(:disabled) {
+  border-color: #ffffff;
+  background: #e9f8f6;
+  color: #066c67;
+  transform: translateY(-1px);
+  box-shadow: 0 7px 18px rgba(3, 35, 48, 0.18);
+}
+
+@media (max-width: 1050px) {
+  .kam-step-page-po-document .kam-client-trip-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .kam-step-page-po-document .kam-client-trip-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    padding: 16px;
+  }
+
+  .kam-step-page-po-document .kam-po-upload-field {
+    grid-column: 1;
+  }
+
+  .kam-footer-action-buttons .kam-request-approval-btn {
+    min-width: 0;
+    padding: 0 14px;
+  }
+}
+
+/* =========================================================
+   PO DOCUMENT — VIEWPORT FIT + PROFESSIONAL FOOTER
+   Final overrides: keep this block at the end of this file.
+========================================================= */
+
+.kam-workflow-modal {
+  width: min(96vw, 1720px);
+  min-width: 0;
+  max-width: 1720px;
+  height: min(94vh, 900px);
+  min-height: 620px;
+  max-height: 94vh;
+}
+
+.kam-workflow-content {
+  padding: 12px 16px 14px;
+  overscroll-behavior: contain;
+}
+
+.kam-step-page-po-document {
+  min-height: 0;
+}
+
+.kam-step-page-po-document .kam-client-vehicle-section {
+  border-radius: 14px;
+  box-shadow: 0 8px 24px rgba(15, 54, 70, 0.06);
+}
+
+.kam-step-page-po-document .kam-section-heading {
+  min-height: 54px;
+  padding: 12px 20px;
+}
+
+.kam-step-page-po-document .kam-client-trip-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px 16px;
+  padding: 16px 20px 18px;
+}
+
+.kam-step-page-po-document .kam-client-trip-field > span {
+  margin-bottom: 7px;
+  font-size: 9px;
+  letter-spacing: 0.065em;
+}
+
+.kam-step-page-po-document .kam-client-trip-field > input[type="text"],
+.kam-step-page-po-document .kam-client-trip-field > input[type="date"],
+.kam-step-page-po-document .kam-client-trip-field > select {
+  height: 44px;
+  padding: 0 14px;
+  border-radius: 10px;
+  font-size: 12px;
+}
+
+.kam-step-page-po-document .kam-client-trip-field > select {
+  background-position:
+    calc(100% - 19px) 19px,
+    calc(100% - 14px) 19px;
+}
+
+.kam-step-page-po-document .kam-po-upload-field {
+  grid-column: 1 / -1;
+  padding: 13px 16px 12px;
+  border-radius: 12px;
+}
+
+.kam-step-page-po-document .kam-po-upload-field > span {
+  margin-bottom: 7px;
+}
+
+.kam-step-page-po-document .kam-po-upload-field > input[type="file"] {
+  min-height: 40px;
+  padding: 4px 5px;
+}
+
+.kam-step-page-po-document
+  .kam-po-upload-field
+  > input[type="file"]::file-selector-button {
+  height: 30px;
+  padding: 0 15px;
+}
+
+.kam-step-page-po-document .kam-po-upload-field > small {
+  margin-top: 6px;
+  font-size: 10px;
+}
+
+.kam-actions.kam-workflow-footer {
+  height: 68px;
+  min-height: 68px;
+  flex-basis: 68px;
+  padding: 10px 22px;
+  border-top: 1px solid rgba(255, 255, 255, 0.13);
+  background: linear-gradient(100deg, #07384b 0%, #075666 48%, #07877d 100%);
+  box-shadow: 0 -10px 26px rgba(8, 42, 55, 0.12);
+}
+
+.kam-actions.kam-workflow-footer .kam-readonly-field {
+  height: 40px;
+  min-height: 40px;
+  padding: 0 15px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.09);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.kam-footer-action-buttons {
+  gap: 10px;
+}
+
+.kam-footer-action-buttons .kam-request-approval-btn,
+.kam-footer-action-buttons .kam-footer-close-btn {
+  height: 44px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.kam-footer-action-buttons .kam-po-save-btn {
+  min-width: 124px;
+  border-color: rgba(255, 255, 255, 0.5);
+  background: #ffffff;
+  color: #08786f;
+}
+
+.kam-footer-action-buttons .kam-po-next-btn {
+  min-width: 126px;
+  border-color: #0a8c82;
+  background: #0a8c82;
+  color: #ffffff;
+  box-shadow: 0 6px 16px rgba(3, 51, 56, 0.24);
+}
+
+.kam-footer-action-buttons .kam-po-next-btn:hover:not(:disabled) {
+  border-color: #0a776f;
+  background: #0a776f;
+  color: #ffffff;
+}
+
+.kam-footer-action-buttons .kam-footer-close-btn {
+  min-width: 96px;
+  border-color: rgba(255, 255, 255, 0.38);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+@media (max-height: 760px) and (min-width: 901px) {
+  .kam-workflow-modal {
+    height: 96vh;
+    min-height: 0;
+    max-height: 96vh;
+  }
+
+  .kam-common-step-details {
+    margin-bottom: 9px;
+  }
+
+  .kam-common-step-details .kam-common-step-item {
+    min-height: 50px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
+  .kam-step-page-po-document .kam-client-trip-grid {
+    gap: 10px 14px;
+    padding-top: 13px;
+    padding-bottom: 14px;
+  }
+
+  .kam-step-page-po-document .kam-client-trip-field > input[type="text"],
+  .kam-step-page-po-document .kam-client-trip-field > input[type="date"],
+  .kam-step-page-po-document .kam-client-trip-field > select {
+    height: 40px;
+  }
+}
+
+@media (max-width: 1050px) {
+  .kam-step-page-po-document .kam-client-trip-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .kam-workflow-modal-overlay {
+    padding: 0;
+  }
+
+  .kam-workflow-modal {
+    width: 100vw;
+    height: 100dvh;
+    min-height: 0;
+    max-height: 100dvh;
+    border-radius: 0;
+  }
+
+  .kam-step-page-po-document .kam-client-trip-grid {
+    grid-template-columns: 1fr;
+    padding: 14px;
+  }
+
+  .kam-actions.kam-workflow-footer {
+    height: auto;
+    min-height: 72px;
+    flex-basis: auto;
+    padding: 9px 12px;
+  }
+
+  .kam-actions.kam-workflow-footer .kam-readonly-field {
+    display: none;
+  }
+
+  .kam-footer-action-buttons {
+    width: 100%;
+  }
+
+  .kam-footer-action-buttons .kam-request-approval-btn,
+  .kam-footer-action-buttons .kam-footer-close-btn {
+    min-width: 0;
+    flex: 1 1 0;
+    padding: 0 10px;
+  }
+}
+
+
+/* =========================================================
+   PO DOCUMENT
+   COMPACT PROFESSIONAL VIEWPORT DESIGN
+   KEEP THIS AT THE VERY END OF lifecyclemodal.css
+========================================================= */
+
+/* =========================
+   MODAL VIEWPORT
+========================= */
+
+.kam-workflow-modal {
+  width: min(96vw, 1540px);
+  height: 94vh;
+  max-height: 94vh;
+  min-height: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  overflow: hidden;
+
+  border-radius: 16px;
+}
+
+/* Main scrolling content */
+
+.kam-workflow-content {
+  min-height: 0;
+  flex: 1;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  padding: 10px 16px 12px;
+}
+
+/* =========================
+   PO PAGE
+========================= */
+
+.kam-step-page-po-document {
+  width: 100%;
+  min-height: 0;
+}
+
+/* PO white card */
+
+.kam-step-page-po-document .kam-client-vehicle-section {
+  width: 100%;
+  margin: 0;
+
+  overflow: hidden;
+
+  border: 1px solid #d8e4e8;
+  border-radius: 12px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 4px 14px rgba(15, 54, 70, 0.045);
+}
+
+/* =========================
+   PO SECTION HEADER
+========================= */
+
+.kam-step-page-po-document .kam-client-vehicle-heading {
+  min-height: 48px;
+
+  padding: 9px 16px;
+
+  display: flex;
+  align-items: center;
+
+  border-bottom: 1px solid #e3eaed;
+
+  background:
+    linear-gradient(
+      90deg,
+      #f7fbfb 0%,
+      #ffffff 75%
+    );
+}
+
+.kam-step-page-po-document
+  .kam-client-vehicle-heading h3 {
+  margin: 0;
+
+  color: #12394b;
+
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.kam-step-page-po-document
+  .kam-client-vehicle-heading p {
+  margin: 2px 0 0;
+
+  color: #718792;
+
+  font-size: 8.5px;
+  font-weight: 550;
+}
+
+/* =========================
+   PO FORM GRID
+========================= */
+
+.kam-step-page-po-document .kam-client-trip-grid {
+  width: 100%;
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+
+  gap: 11px 14px;
+
+  padding: 14px 16px 15px;
+
+  background: #ffffff;
+}
+
+/* =========================
+   FIELD
+========================= */
+
+.kam-step-page-po-document
+  .kam-client-trip-field {
+  min-width: 0;
+}
+
+/* Label */
+
+.kam-step-page-po-document
+  .kam-client-trip-field > span {
+  display: block;
+
+  margin: 0 0 5px;
+
+  color: #536f7c;
+
+  font-size: 8px;
+  line-height: 1.2;
+
+  font-weight: 850;
+
+  letter-spacing: 0.055em;
+
+  text-transform: uppercase;
+}
+
+.kam-step-page-po-document
+  .kam-client-trip-field > span > em {
+  margin-left: 3px;
+
+  color: #d04b4b;
+
+  font-style: normal;
+}
+
+/* =========================
+   INPUTS
+========================= */
+
+.kam-step-page-po-document
+  .kam-client-trip-field
+  > input[type="text"],
+
+.kam-step-page-po-document
+  .kam-client-trip-field
+  > input[type="date"],
+
+.kam-step-page-po-document
+  .kam-client-trip-field
+  > select {
+
+  width: 100%;
+  height: 36px;
+
+  padding: 0 10px;
+
+  box-sizing: border-box;
+
+  border: 1px solid #cbdce2;
+  border-radius: 7px;
+
+  outline: none;
+
+  background: #fbfcfd;
+
+  color: #173b4d;
+
+  font-family: inherit;
+
+  font-size: 10.5px;
+  font-weight: 650;
+
+  transition:
+    border-color 0.16s ease,
+    box-shadow 0.16s ease,
+    background 0.16s ease;
+}
+
+/* Placeholder */
+
+.kam-step-page-po-document
+  .kam-client-trip-field
+  > input::placeholder {
+  color: #9aadb5;
+  font-weight: 500;
+}
+
+/* Hover */
+
+.kam-step-page-po-document
+  .kam-client-trip-field
+  > input:hover,
+
+.kam-step-page-po-document
+  .kam-client-trip-field
+  > select:hover {
+
+  border-color: #a9c3cb;
+
+  background: #ffffff;
+}
+
+/* Focus */
+
+.kam-step-page-po-document
+  .kam-client-trip-field
+  > input:focus,
+
+.kam-step-page-po-document
+  .kam-client-trip-field
+  > select:focus {
+
+  border-color: #15958b;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 0 0 2px
+    rgba(21, 149, 139, 0.09);
+}
+
+/* =========================
+   SELECT
+========================= */
+
+.kam-step-page-po-document
+  .kam-client-trip-field
+  > select {
+
+  appearance: none;
+  -webkit-appearance: none;
+
+  cursor: pointer;
+
+  padding-right: 28px;
+
+  background-image:
+    linear-gradient(
+      45deg,
+      transparent 50%,
+      #647f8b 50%
+    ),
+    linear-gradient(
+      135deg,
+      #647f8b 50%,
+      transparent 50%
+    );
+
+  background-position:
+    calc(100% - 15px) 15px,
+    calc(100% - 11px) 15px;
+
+  background-size:
+    4px 4px,
+    4px 4px;
+
+  background-repeat: no-repeat;
+}
+
+/* GSTIN */
+
+.kam-step-page-po-document
+  input[name="billingGstin"] {
+
+  text-transform: uppercase;
+
+  letter-spacing: 0.035em;
+}
+
+/* =========================
+   FILE UPLOAD
+========================= */
+
+.kam-step-page-po-document
+  .kam-po-upload-field {
+
+  grid-column: 1 / -1;
+
+  padding: 10px 12px;
+
+  border: 1px dashed #b5cfd4;
+  border-radius: 9px;
+
+  background: #f8fbfb;
+
+  transition:
+    border-color 0.16s ease,
+    background 0.16s ease;
+}
+
+.kam-step-page-po-document
+  .kam-po-upload-field:hover,
+
+.kam-step-page-po-document
+  .kam-po-upload-field:focus-within {
+
+  border-color: #168e86;
+
+  background: #f3faf9;
+}
+
+.kam-step-page-po-document
+  .kam-po-upload-field
+  > input[type="file"] {
+
+  width: 100%;
+
+  min-height: 34px;
+
+  padding: 3px 4px;
+
+  box-sizing: border-box;
+
+  border: 1px solid #d6e3e7;
+  border-radius: 7px;
+
+  background: #ffffff;
+
+  color: #536f7c;
+
+  font-family: inherit;
+
+  font-size: 10px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+/* Choose file button */
+
+.kam-step-page-po-document
+  .kam-po-upload-field
+  > input[type="file"]
+  ::file-selector-button {
+
+  height: 27px;
+
+  margin-right: 9px;
+
+  padding: 0 12px;
+
+  border: 0;
+
+  border-radius: 6px;
+
+  background: #e7f5f3;
+
+  color: #087970;
+
+  font-family: inherit;
+
+  font-size: 9.5px;
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+/* Correct browser selector */
+
+.kam-step-page-po-document
+  .kam-po-upload-field
+  > input[type="file"]::file-selector-button {
+
+  height: 27px;
+
+  margin-right: 9px;
+
+  padding: 0 12px;
+
+  border: 0;
+
+  border-radius: 6px;
+
+  background: #e7f5f3;
+
+  color: #087970;
+
+  font-family: inherit;
+
+  font-size: 9.5px;
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+.kam-step-page-po-document
+  .kam-po-upload-field
+  > input[type="file"]:hover
+  ::file-selector-button {
+
+  background: #d9efec;
+}
+
+/* File description */
+
+.kam-step-page-po-document
+  .kam-po-upload-field > small {
+
+  display: block;
+
+  margin-top: 4px;
+
+  color: #7b9099;
+
+  font-size: 8.5px;
+  font-weight: 550;
+}
+
+/* =========================
+   SUCCESS / ERROR
+========================= */
+
+.kam-step-page-po-document
+  .kam-form-success,
+
+.kam-step-page-po-document
+  .kam-form-error {
+
+  margin: 0 16px 10px;
+
+  padding: 7px 10px;
+
+  border-radius: 7px;
+
+  font-size: 9.5px;
+  font-weight: 700;
+}
+
+.kam-step-page-po-document
+  .kam-form-success {
+
+  border: 1px solid #b9e0d1;
+
+  background: #eef8f4;
+
+  color: #187056;
+}
+
+.kam-step-page-po-document
+  .kam-form-error {
+
+  border: 1px solid #ecc7c7;
+
+  background: #fff5f5;
+
+  color: #ad4040;
+}
+
+/* =========================================================
+   PROFESSIONAL FIXED FOOTER
+========================================================= */
+
+.kam-actions.kam-workflow-footer {
+
+  position: relative;
+
+  bottom: auto;
+
+  width: 100%;
+
+  min-height: 56px;
+  height: 56px;
+
+  flex: 0 0 56px;
+
+  margin: 0;
+
+  padding: 7px 16px;
+
+  box-sizing: border-box;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 12px;
+
+  border-top:
+    1px solid
+    rgba(255, 255, 255, 0.14);
+
+  background:
+    linear-gradient(
+      105deg,
+      #0a3447 0%,
+      #0b4e5b 55%,
+      #087b73 100%
+    );
+
+  box-shadow:
+    0 -5px 16px
+    rgba(10, 44, 58, 0.08);
+
+  z-index: 20;
+}
+
+/* Left footer info */
+
+.kam-actions.kam-workflow-footer
+  .kam-readonly-field {
+
+  min-height: 34px;
+  height: 34px;
+
+  padding: 0 11px;
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.18);
+
+  border-radius: 7px;
+
+  background:
+    rgba(255, 255, 255, 0.07);
+
+  color: #dbe9ec;
+
+  font-size: 9.5px;
+}
+
+/* =========================
+   FOOTER BUTTON CONTAINER
+========================= */
+
+.kam-footer-action-buttons {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: flex-end;
+
+  gap: 7px;
+}
+
+/* ALL FOOTER BUTTONS */
+
+.kam-footer-action-buttons
+  .kam-request-approval-btn,
+
+.kam-footer-action-buttons
+  .kam-footer-close-btn {
+
+  width: auto;
+
+  min-width: 86px;
+
+  height: 34px;
+  min-height: 34px;
+
+  padding: 0 12px;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 5px;
+
+  border-radius: 7px;
+
+  font-family: inherit;
+
+  font-size: 9.5px;
+
+  font-weight: 800;
+
+  letter-spacing: 0.01em;
+
+  cursor: pointer;
+
+  transition:
+    background 0.16s ease,
+    border-color 0.16s ease,
+    transform 0.16s ease,
+    box-shadow 0.16s ease;
+}
+
+/* =========================
+   SAVE PO
+========================= */
+
+.kam-footer-action-buttons
+  .kam-po-save-btn {
+
+  min-width: 96px;
+
+  border: 1px solid #ffffff;
+
+  background: #ffffff;
+
+  color: #087970;
+
+  box-shadow:
+    0 2px 7px
+    rgba(2, 37, 48, 0.12);
+}
+
+.kam-footer-action-buttons
+  .kam-po-save-btn:hover:not(:disabled) {
+
+  background: #edf9f7;
+
+  border-color: #edf9f7;
+
+  transform: translateY(-1px);
+}
+
+/* =========================
+   NEXT
+========================= */
+
+.kam-footer-action-buttons
+  .kam-po-next-btn {
+
+  min-width: 88px;
+
+  border: 1px solid #17a197;
+
+  background: #118d84;
+
+  color: #ffffff;
+
+  box-shadow:
+    0 3px 9px
+    rgba(3, 51, 56, 0.18);
+}
+
+.kam-footer-action-buttons
+  .kam-po-next-btn:hover:not(:disabled) {
+
+  background: #087b73;
+
+  border-color: #087b73;
+
+  transform: translateY(-1px);
+}
+
+/* =========================
+   CLOSE
+========================= */
+
+.kam-footer-action-buttons
+  .kam-footer-close-btn {
+
+  min-width: 74px;
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.32);
+
+  background:
+    rgba(255, 255, 255, 0.07);
+
+  color: #ffffff;
+
+  box-shadow: none;
+}
+
+.kam-footer-action-buttons
+  .kam-footer-close-btn:hover {
+
+  border-color:
+    rgba(255, 255, 255, 0.5);
+
+  background:
+    rgba(255, 255, 255, 0.13);
+}
+
+/* Disabled */
+
+.kam-footer-action-buttons button:disabled {
+
+  opacity: 0.55;
+
+  cursor: not-allowed;
+
+  transform: none !important;
+
+  box-shadow: none;
+}
+
+/* =========================================================
+   SHORT DESKTOP SCREEN
+========================================================= */
+
+@media
+(max-height: 780px)
+and
+(min-width: 900px) {
+
+  .kam-workflow-modal {
+    height: 96vh;
+    max-height: 96vh;
+  }
+
+  .kam-workflow-content {
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
+  .kam-step-page-po-document
+    .kam-client-vehicle-heading {
+
+    min-height: 43px;
+
+    padding: 7px 14px;
+  }
+
+  .kam-step-page-po-document
+    .kam-client-trip-grid {
+
+    gap: 8px 12px;
+
+    padding: 10px 14px 11px;
+  }
+
+  .kam-step-page-po-document
+    .kam-client-trip-field > span {
+
+    margin-bottom: 4px;
+
+    font-size: 7.5px;
+  }
+
+  .kam-step-page-po-document
+    .kam-client-trip-field
+    > input[type="text"],
+
+  .kam-step-page-po-document
+    .kam-client-trip-field
+    > input[type="date"],
+
+  .kam-step-page-po-document
+    .kam-client-trip-field
+    > select {
+
+    height: 32px;
+
+    font-size: 10px;
+  }
+
+  .kam-step-page-po-document
+    .kam-po-upload-field {
+
+    padding: 7px 10px;
+  }
+
+  .kam-actions.kam-workflow-footer {
+
+    height: 52px;
+
+    min-height: 52px;
+
+    flex-basis: 52px;
+  }
+
+  .kam-footer-action-buttons
+    .kam-request-approval-btn,
+
+  .kam-footer-action-buttons
+    .kam-footer-close-btn {
+
+    height: 32px;
+
+    min-height: 32px;
+  }
+}
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 1050px) {
+
+  .kam-step-page-po-document
+    .kam-client-trip-grid {
+
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 640px) {
+
+  .kam-workflow-modal-overlay {
+    padding: 0;
+  }
+
+  .kam-workflow-modal {
+
+    width: 100vw;
+
+    height: 100dvh;
+
+    max-height: 100dvh;
+
+    border-radius: 0;
+  }
+
+  .kam-workflow-content {
+
+    padding: 10px;
+  }
+
+  .kam-step-page-po-document
+    .kam-client-trip-grid {
+
+    grid-template-columns: 1fr;
+
+    gap: 10px;
+
+    padding: 12px;
+  }
+
+  .kam-step-page-po-document
+    .kam-po-upload-field {
+
+    grid-column: 1;
+  }
+
+  .kam-actions.kam-workflow-footer {
+
+    height: auto;
+
+    min-height: 58px;
+
+    padding: 7px 9px;
+  }
+
+  .kam-actions.kam-workflow-footer
+    .kam-readonly-field {
+
+    display: none;
+  }
+
+  .kam-footer-action-buttons {
+
+    width: 100%;
+
+    justify-content: flex-end;
+  }
+
+  .kam-footer-action-buttons
+    .kam-request-approval-btn,
+
+  .kam-footer-action-buttons
+    .kam-footer-close-btn {
+
+    min-width: 0;
+
+    height: 34px;
+
+    padding: 0 10px;
+
+    font-size: 9px;
+  }
+}
+/* =========================================================
+   PO DOCUMENT - MEDIUM LARGE PROFESSIONAL VIEW
+   Add at END of lifecyclemodal.css
+========================================================= */
+
+/* PO CARD */
+.kam-step-page-po-document .kam-client-vehicle-section {
+  min-height: 410px;
+  border-radius: 14px;
+}
+
+/* PO HEADER */
+.kam-step-page-po-document .kam-client-vehicle-heading {
+  min-height: 62px;
+  padding: 12px 18px;
+}
+
+.kam-step-page-po-document
+  .kam-client-vehicle-heading h3 {
+  font-size: 15px;
+  font-weight: 850;
+}
+
+.kam-step-page-po-document
+  .kam-client-vehicle-heading p {
+  margin-top: 3px;
+  font-size: 10px;
+}
+
+/* =========================
+   PO FORM GRID
+========================= */
+
+.kam-step-page-po-document .kam-client-trip-grid {
+  padding: 18px 18px 20px;
+
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+
+  gap: 16px 15px;
+}
+
+/* =========================
+   LABELS
+========================= */
+
+.kam-step-page-po-document
+  .kam-client-trip-field > span {
+  margin-bottom: 7px;
+
+  font-size: 9px;
+  font-weight: 850;
+}
+
+/* =========================
+   INPUT / DATE / SELECT
+========================= */
+
+.kam-step-page-po-document
+  .kam-client-trip-field
+  > input[type="text"],
+
+.kam-step-page-po-document
+  .kam-client-trip-field
+  > input[type="date"],
+
+.kam-step-page-po-document
+  .kam-client-trip-field
+  > select {
+
+  height: 44px;
+
+  padding: 0 13px;
+
+  border-radius: 9px;
+
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+/* =========================
+   UPLOAD SECTION
+========================= */
+
+.kam-step-page-po-document
+  .kam-po-upload-field {
+
+  grid-column: 1 / -1;
+
+  min-height: 92px;
+
+  padding: 12px 14px;
+
+  border-radius: 10px;
+}
+
+/* Upload label */
+
+.kam-step-page-po-document
+  .kam-po-upload-field > span {
+
+  margin-bottom: 7px;
+
+  font-size: 9px;
+}
+
+/* File input */
+
+.kam-step-page-po-document
+  .kam-po-upload-field
+  > input[type="file"] {
+
+  min-height: 43px;
+
+  padding: 4px 5px;
+
+  border-radius: 8px;
+
+  font-size: 10.5px;
+}
+
+/* Choose File */
+
+.kam-step-page-po-document
+  .kam-po-upload-field
+  > input[type="file"]::file-selector-button {
+
+  height: 33px;
+
+  margin-right: 11px;
+
+  padding: 0 15px;
+
+  border-radius: 7px;
+
+  font-size: 10px;
+}
+
+/* Existing document name */
+
+.kam-step-page-po-document
+  .kam-po-upload-field > small {
+
+  margin-top: 6px;
+
+  font-size: 9px;
+}
+
+/* =========================
+   FOOTER
+========================= */
+
+.kam-actions.kam-workflow-footer {
+  height: 64px;
+  min-height: 64px;
+  flex-basis: 64px;
+
+  padding: 9px 18px;
+}
+
+/* Current Stage */
+
+.kam-actions.kam-workflow-footer
+  .kam-readonly-field {
+
+  min-height: 38px;
+  height: 38px;
+
+  padding: 0 13px;
+
+  border-radius: 8px;
+
+  font-size: 10px;
+}
+
+/* =========================
+   FOOTER BUTTONS
+========================= */
+
+.kam-footer-action-buttons {
+  gap: 9px;
+}
+
+.kam-footer-action-buttons
+  .kam-request-approval-btn,
+
+.kam-footer-action-buttons
+  .kam-footer-close-btn {
+
+  height: 40px;
+  min-height: 40px;
+
+  min-width: 92px;
+
+  padding: 0 16px;
+
+  border-radius: 8px;
+
+  font-size: 10.5px;
+}
+
+/* SAVE */
+.kam-footer-action-buttons
+  .kam-po-save-btn {
+  min-width: 108px;
+}
+
+/* NEXT */
+.kam-footer-action-buttons
+  .kam-po-next-btn {
+  min-width: 106px;
+}
+
+/* CLOSE */
+.kam-footer-action-buttons
+  .kam-footer-close-btn {
+  min-width: 92px;
+}
+
+/* =========================================================
+   NORMAL LAPTOP VIEW
+========================================================= */
+
+@media (min-width: 1100px) and (max-height: 850px) {
+
+  .kam-step-page-po-document
+    .kam-client-vehicle-section {
+    min-height: 390px;
+  }
+
+  .kam-step-page-po-document
+    .kam-client-trip-grid {
+    padding: 16px 18px 18px;
+    gap: 14px;
+  }
+
+  .kam-step-page-po-document
+    .kam-client-trip-field
+    > input[type="text"],
+
+  .kam-step-page-po-document
+    .kam-client-trip-field
+    > input[type="date"],
+
+  .kam-step-page-po-document
+    .kam-client-trip-field
+    > select {
+    height: 42px;
+  }
+}
+
+
+
+/* =========================================================
+   ORDER PLACED - FINAL VERIFICATION
+========================================================= */
+
+.kam-step-page-place-order {
+  display: grid;
+  gap: 12px;
+}
+
+.kam-place-order-section {
+  overflow: hidden;
+  border: 1px solid #d5e3e7;
+  border-radius: 13px;
+  background: #ffffff;
+  box-shadow: 0 3px 12px rgba(15, 56, 75, 0.04);
+}
+
+.kam-place-order-heading {
+  min-height: 58px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  border-bottom: 1px solid #e1eaed;
+  background: linear-gradient(90deg, #f7fbfb 0%, #ffffff 72%);
+}
+
+.kam-place-order-heading > div {
+  min-width: 0;
+}
+
+.kam-place-order-kicker {
+  display: block;
+  margin-bottom: 3px;
+  color: #718995;
+  font-size: 7.5px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+}
+
+.kam-place-order-heading h3 {
+  margin: 0;
+  color: #12394b;
+  font-size: 12.5px;
+  font-weight: 900;
+}
+
+.kam-place-order-heading p {
+  margin: 3px 0 0;
+  color: #6b838e;
+  font-size: 8.8px;
+  line-height: 1.4;
+}
+
+.kam-place-order-ready,
+.kam-place-order-transport-count {
+  min-height: 28px;
+  padding: 0 11px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #bde0da;
+  border-radius: 999px;
+  background: #edf8f5;
+  color: #087d74;
+  font-size: 8.5px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.kam-place-order-detail-grid {
+  padding: 13px 14px 14px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.kam-place-order-detail {
+  min-width: 0;
+  min-height: 62px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border: 1px solid #dce7ea;
+  border-radius: 9px;
+  background: #fbfdfd;
+}
+
+.kam-place-order-detail-wide {
+  grid-column: span 2;
+}
+
+.kam-place-order-detail span {
+  margin-bottom: 5px;
+  color: #718995;
+  font-size: 7.5px;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.kam-place-order-detail strong {
+  overflow: hidden;
+  color: #15394b;
+  font-size: 10.5px;
+  font-weight: 850;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+}
+
+.kam-place-order-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.kam-place-order-table {
+  width: 100%;
+  min-width: 900px;
+  border-collapse: collapse;
+}
+
+.kam-place-order-table th {
+  height: 34px;
+  padding: 0 12px;
+  border-bottom: 1px solid #dfe8eb;
+  background: #f8fafb;
+  color: #6e8591;
+  text-align: left;
+  font-size: 7.8px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.kam-place-order-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #edf2f4;
+  color: #294a5b;
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.kam-place-order-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.kam-place-order-table tbody tr:hover {
+  background: #f8fcfb;
+}
+
+.kam-place-order-note {
+  min-height: 62px;
+  padding: 10px 13px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  border: 1px solid #cbe2df;
+  border-radius: 11px;
+  background: #f0f9f7;
+}
+
+.kam-place-order-note-icon {
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: #0b8379;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.kam-place-order-note strong {
+  color: #15394b;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.kam-place-order-note p {
+  margin: 2px 0 0;
+  color: #68808b;
+  font-size: 8.7px;
+  line-height: 1.4;
+}
+
+.kam-footer-action-buttons .kam-place-order-btn {
+  min-width: 128px;
+  border-color: #27a89e;
+  background: linear-gradient(135deg, #0d9488, #0b8178);
+  color: #ffffff;
+  box-shadow: 0 6px 15px rgba(5, 145, 133, 0.2);
+}
+
+.kam-footer-action-buttons .kam-place-order-btn:hover:not(:disabled) {
+  border-color: #0b8178;
+  background: linear-gradient(135deg, #0b887e, #08766e);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 1100px) {
+  .kam-place-order-detail-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 620px) {
+  .kam-place-order-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .kam-place-order-detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .kam-place-order-detail-wide {
+    grid-column: auto;
+  }
+
+  .kam-place-order-ready,
+  .kam-place-order-transport-count {
     width: 100%;
   }
 }

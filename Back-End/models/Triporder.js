@@ -142,6 +142,36 @@ const orderFinalizationSchema = new Schema(
 );
 
 /* =========================================================
+   PO DOCUMENT
+========================================================= */
+
+const poDocumentSchema = new Schema(
+  {
+    poNumber: { type: String, trim: true, default: "" },
+    poValidityPeriod: { type: Date, default: null },
+    billingGstin: {
+      type: String,
+      trim: true,
+      uppercase: true,
+      default: "",
+    },
+    status: {
+      type: String,
+      enum: ["Pending", "Completed"],
+      default: "Pending",
+    },
+    documentName: { type: String, trim: true, default: "" },
+    fileName: { type: String, trim: true, default: "" },
+    mimeType: { type: String, trim: true, default: "" },
+    fileSize: { type: Number, min: 0, default: 0 },
+    fileData: { type: Buffer, select: false, default: null },
+    uploadedBy: { type: String, trim: true, default: "" },
+    uploadedAt: { type: Date, default: null },
+  },
+  { _id: false }
+);
+
+/* =========================================================
    ORDER APPROVAL
    First Approval Management stage
 
@@ -674,6 +704,36 @@ const allocatedVehicleSchema = new Schema(
    MAIN TRIP ORDER SCHEMA
 ========================================================= */
 
+
+/* =========================================================
+   ORDER PLACED
+   KEY ACCOUNT -> TRACKING
+========================================================= */
+
+const orderPlacedSchema = new Schema(
+  {
+    status: {
+      type: String,
+      enum: ["Pending", "Completed"],
+      default: "Pending",
+    },
+
+    placedBy: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
+    placedAt: {
+      type: Date,
+      default: null,
+    },
+  },
+  {
+    _id: false,
+  }
+);
+
 const tripOrderSchema = new Schema(
   {
     /* =====================================================
@@ -860,6 +920,21 @@ const tripOrderSchema = new Schema(
 
     orderFinalization: {
       type: orderFinalizationSchema,
+      default: () => ({}),
+    },
+
+    poDocument: {
+      type: poDocumentSchema,
+      default: () => ({}),
+    },
+
+    /* =====================================================
+       ORDER PLACED
+       Final Key Account verification before Tracking
+    ===================================================== */
+
+    orderPlaced: {
+      type: orderPlacedSchema,
       default: () => ({}),
     },
 

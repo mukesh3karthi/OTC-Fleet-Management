@@ -146,6 +146,14 @@ const getResponseArray = (
     return payload.trips;
   }
 
+  if (
+    Array.isArray(
+      payload?.orders
+    )
+  ) {
+    return payload.orders;
+  }
+
   return [];
 };
 
@@ -909,12 +917,29 @@ const Tracking = () => {
          */
         const normalizedTrips =
           databaseTrips
-            .filter(
-              (trip) =>
-                safeArray(
-                  trip.allocatedVehicles
-                ).length > 0
-            )
+            .filter((trip) => {
+              const stage =
+                safeText(
+                  trip?.stage
+                )
+                  .trim()
+                  .toLowerCase();
+
+              const orderPlacedStatus =
+                safeText(
+                  trip?.orderPlaced?.status
+                )
+                  .trim()
+                  .toLowerCase();
+
+              return (
+                orderPlacedStatus === "completed" ||
+                stage === "tracking" ||
+                stage === "trip complete" ||
+                stage === "trip completed" ||
+                stage === "completed"
+              );
+            })
             .map(
               (
                 trip,

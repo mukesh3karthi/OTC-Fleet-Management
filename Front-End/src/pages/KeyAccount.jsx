@@ -303,6 +303,93 @@
       )}`;
 
   /* =========================================================
+    DISPLAY STAGE
+    Keeps the UI lifecycle stage aligned with PO/Vendor flow
+    without changing the raw backend stage.
+  ========================================================= */
+
+  const getDisplayStage = (order = {}) => {
+    const requirements = Array.isArray(order?.vehicleRequirements)
+      ? order.vehicleRequirements
+      : [];
+
+    const confirmations = Array.isArray(order?.vehicleConfirmations)
+      ? order.vehicleConfirmations
+      : [];
+
+    const approvedConfirmations = confirmations.filter(
+      (confirmation) =>
+        String(confirmation?.status || "")
+          .trim()
+          .toLowerCase() === "approved"
+    );
+
+    const vehicleApprovalCompleted =
+      requirements.length > 0 &&
+      requirements.every((requirement) =>
+        approvedConfirmations.some(
+          (confirmation) =>
+            confirmation?.requirementId ===
+            requirement?.requirementId
+        )
+      );
+
+    const rawStage = String(order?.stage || "")
+      .trim()
+      .toLowerCase();
+
+    const approvalManagementApproved =
+      vehicleApprovalCompleted ||
+      rawStage === "tracking input";
+
+    const poCompleted =
+      String(order?.poDocument?.status || "")
+        .trim()
+        .toLowerCase() === "completed" ||
+      Boolean(
+        order?.poDocument?.poNumber &&
+        (
+          order?.poDocument?.fileName ||
+          order?.poDocument?.fileUrl ||
+          order?.poDocument?.documentUrl
+        )
+      );
+
+    const vendorCompleted =
+      String(order?.vendorFinalization?.status || "")
+        .trim()
+        .toLowerCase() === "completed" ||
+      vehicleApprovalCompleted;
+
+    const orderPlacedCompleted =
+      String(order?.orderPlaced?.status || "")
+        .trim()
+        .toLowerCase() === "completed";
+
+    if (orderPlacedCompleted || rawStage === "tracking") {
+      return "Tracking";
+    }
+
+    if (approvalManagementApproved && !poCompleted) {
+      return "PO Document";
+    }
+
+    if (poCompleted && !vendorCompleted) {
+      return "Vendor Finalization";
+    }
+
+    if (
+      poCompleted &&
+      vendorCompleted &&
+      !orderPlacedCompleted
+    ) {
+      return "Order Placed";
+    }
+
+    return order?.stage || "Order Approval";
+  };
+
+  /* =========================================================
     ORDER APPROVAL STATUS
 
     IMPORTANT:
@@ -945,7 +1032,7 @@
               orders
                 .map(
                   (order) =>
-                    order.stage
+                    getDisplayStage(order)
                 )
                 .filter(Boolean)
             )
@@ -1017,7 +1104,7 @@
               order.distance,
               order.totalVehicles,
 
-              order.stage,
+              getDisplayStage(order),
               order.status,
 
               order.orderApproval
@@ -1052,7 +1139,7 @@
             const matchesStage =
               stageFilter ===
                 "All Stages" ||
-              order.stage ===
+              getDisplayStage(order) ===
                 stageFilter;
 
             return (
@@ -2593,14 +2680,13 @@
                               <span
                                 className={
                                   getStageClass(
-                                    order.stage
+                                    getDisplayStage(order)
                                   )
                                 }
                               >
                                 <span className="stage-dot" />
 
-                                {order.stage ||
-                                  "Order Approval"}
+                                {getDisplayStage(order)}
                               </span>
 
                             </td>

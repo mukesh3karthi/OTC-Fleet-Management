@@ -862,32 +862,54 @@
   background: currentColor;
 }
 
-.stage-client-enquiry,
-.stage-order-finalization {
-  border-color: #f3dfba;
-  background: #fff7e8;
-  color: #a66808;
+/* Client Enquiry */
+.stage-client-enquiry {
+  border-color: #cfe3f3;
+  background: #eef6fc;
+  color: #276f9b;
 }
 
-.stage-documentation,
-.stage-po-documents {
+/* Order Finalization */
+.stage-order-finalization {
   border-color: #d8ddff;
   background: #f0f3ff;
   color: #5563c6;
 }
 
-.stage-vendor-finalization {
-  border-color: #e1d7fb;
+/* Order Approval */
+.stage-order-approval {
+  border-color: #f3d6a2;
+  background: #fff7e8;
+  color: #b66a00;
+}
+
+/* PO Document */
+.stage-po-document,
+.stage-po-documents,
+.stage-documentation {
+  border-color: #ddd2f5;
   background: #f5f0ff;
-  color: #7454bb;
+  color: #7650b5;
 }
 
-.stage-vehicle-assigned {
-  border-color: #cfe8f6;
-  background: #eef8fd;
-  color: #247aa6;
+/* Vendor Finalization */
+.stage-vendor-finalization {
+  border-color: #c9dcf5;
+  background: #eef5ff;
+  color: #2563a8;
 }
 
+/* Order Placed */
+.stage-order-placed,
+.stage-completion-order-placed {
+  border-color: #bfe5e2;
+  background: #edf9f7;
+  color: #087f78;
+}
+
+/* Tracking / Tracking Input */
+.stage-tracking,
+.stage-tracking-input,
 .stage-trip-started,
 .stage-delivery-in-progress {
   border-color: #cce8d7;
@@ -895,10 +917,27 @@
   color: #26845b;
 }
 
-.stage-completion-order-placed {
-  border-color: #cfe3f3;
-  background: #eef6fc;
-  color: #276f9b;
+/* Vehicle Assigned */
+.stage-vehicle-assigned {
+  border-color: #cfe8f6;
+  background: #eef8fd;
+  color: #247aa6;
+}
+
+/* Trip Complete / Completed */
+.stage-trip-complete,
+.stage-trip-completed,
+.stage-completed {
+  border-color: #b9e3d2;
+  background: #eaf8f1;
+  color: #087f5b;
+}
+
+/* Rejected */
+.stage-rejected {
+  border-color: #efc2c2;
+  background: #fff1f1;
+  color: #c53d3d;
 }
 
 /* KEY ACCOUNT */
@@ -1111,6 +1150,54 @@
   background: #fff3f3 !important;
   color: #ad3030 !important;
 }
+
+/* =========================================================
+   ORDER STATUS BADGE
+========================================================= */
+
+.order-status-badge {
+  width: fit-content;
+  max-width: 100%;
+  min-height: 27px;
+  padding: 5px 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 9.5px;
+  font-weight: 850;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.order-status-dot {
+  width: 6px;
+  height: 6px;
+  flex: 0 0 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.order-status-approved {
+  border-color: #b9e3d2;
+  background: #edf9f4;
+  color: #087f5b;
+}
+
+.order-status-pending {
+  border-color: #f1d79d;
+  background: #fff8e8;
+  color: #a66a00;
+}
+
+.order-status-rejected {
+  border-color: #efc2c2;
+  background: #fff1f1;
+  color: #c53d3d;
+}
+
 
 /* =========================================================
    EMPTY
@@ -1538,7 +1625,6 @@
 
 /* =========================================================
    COMPACT PROFESSIONAL ACTION MENU
-   Final overrides
 ========================================================= */
 
 .kam-three-dot-btn {

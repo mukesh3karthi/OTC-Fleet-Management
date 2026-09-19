@@ -483,17 +483,38 @@ const Trackinginput = () => {
         /*
          * TRACKING INPUT ELIGIBILITY:
          *
-         * An order enters Tracking Input only
-         * when at least one vehicle requirement
-         * has an Approved vehicle confirmation.
+         * An order enters Tracking Input only after
+         * Key Account verifies the final order and clicks
+         * Place Order. Approved transporter confirmation
+         * must also be available.
          */
         const eligibleOrders =
-          allOrders.filter(
-            (order) =>
-              getConfirmedRequirementData(
-                order
-              ).length > 0
-          );
+          allOrders.filter((order) => {
+            const hasConfirmedTransport =
+              getConfirmedRequirementData(order).length > 0;
+
+            const stage =
+              safeText(order?.stage)
+                .trim()
+                .toLowerCase();
+
+            const orderPlacedStatus =
+              safeText(order?.orderPlaced?.status)
+                .trim()
+                .toLowerCase();
+
+            const releasedToTracking =
+              orderPlacedStatus === "completed" ||
+              stage === "tracking" ||
+              stage === "trip complete" ||
+              stage === "trip completed" ||
+              stage === "completed";
+
+            return (
+              hasConfirmedTransport &&
+              releasedToTracking
+            );
+          });
 
         setOrders(
           eligibleOrders
@@ -1543,20 +1564,6 @@ const Trackinginput = () => {
         </div>
       )}
 
-      {success && (
-        <div
-          className="tracking-form-card"
-          style={{
-            padding: "12px 16px",
-            marginBottom: "14px",
-          }}
-        >
-          <strong>
-            {success}
-          </strong>
-        </div>
-      )}
-
       {/* =================================================
           NO ORDERS
       ================================================= */}
@@ -1569,100 +1576,25 @@ const Trackinginput = () => {
             }
             iconClass="indigo"
             title="No Confirmed Orders"
-            subtitle="Orders will appear here after Approval Management confirms a transporter quotation."
+            subtitle="Orders will appear here after Key Account verifies the final details and clicks Place Order."
           />
 
           <div className="tracking-form-card-body">
             There are currently no
-            vehicle requirements ready
+            placed orders ready
             for Tracking Input.
           </div>
         </section>
       ) : (
         <>
-          {/* =============================================
-              ORDER SELECTOR
-          ============================================= */}
-
-          <section className="tracking-form-card">
-            <CardHeader
-              icon={
-                <Route size={18} />
-              }
-              iconClass="blue"
-              title="Confirmed Orders"
-              subtitle="Select an approved order to allocate and track vehicles."
-            />
-
-            <div className="tracking-form-card-body">
-              <div className="tracking-form-grid">
-                <div className="tracking-form-field">
-                  <label>
-                    Select Trip
-                  </label>
-
-                  <div className="tracking-form-control">
-                    <Navigation
-                      size={15}
-                    />
-
-                    <select
-                      value={
-                        selectedOrderId
-                      }
-                      onChange={(
-                        event
-                      ) => {
-                        setSelectedOrderId(
-                          event.target
-                            .value
-                        );
-
-                        setAllocationForms(
-                          {}
-                        );
-
-                        setTrackingForms(
-                          {}
-                        );
-
-                        setError("");
-                        setSuccess("");
-                      }}
-                    >
-                      {orders.map(
-                        (order) => (
-                          <option
-                            key={
-                              getMongoId(
-                                order
-                              )
-                            }
-                            value={
-                              getMongoId(
-                                order
-                              )
-                            }
-                          >
-                            {order.tripId} -{" "}
-                            {order.customer}
-                          </option>
-                        )
-                      )}
-                    </select>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-
           {selectedOrder && (
             <>
+
               {/* =========================================
                   TRIP INFORMATION
               ========================================= */}
 
-              <section className="tracking-form-card">
+              <section className="tracking-form-card tracking-trip-information-card">
                 <CardHeader
                   icon={
                     <Route
@@ -1670,8 +1602,8 @@ const Trackinginput = () => {
                     />
                   }
                   iconClass="blue"
-                  title="Trip Information"
-                  subtitle="Approved order information is read-only in Tracking Input."
+                  title="Order Snapshot"
+                  subtitle="Essential trip information for the operations team."
                 >
                   <span className="tracking-trip-id-badge">
                     {
@@ -1889,10 +1821,10 @@ const Trackinginput = () => {
               </section>
 
               {/* =========================================
-                  CONFIRMED REQUIREMENTS
+                  REQUIRED VEHICLE DETAILS
               ========================================= */}
 
-              <section className="tracking-form-card">
+              <section className="tracking-form-card tracking-required-vehicle-card">
                 <CardHeader
                   icon={
                     <Building2
@@ -1900,250 +1832,172 @@ const Trackinginput = () => {
                     />
                   }
                   iconClass="indigo"
-                  title="Confirmed Vehicle Requirements"
-                  subtitle="Approved vehicle requirement and confirmed transporter. Quotation amount is intentionally not displayed in Tracking Input."
+                  title="Vehicle Allocation Plan"
+                  subtitle="Review each approved requirement and allocate actual vehicles."
                 />
 
-                <div className="tracking-form-card-body">
-                  <div className="tracking-vehicle-list">
-                    {confirmedRequirements.map(
-                      ({
-                        requirement,
-                        confirmation,
-                        quotation,
-                      }) => {
-                        const requirementId =
-                          requirement.requirementId;
+                <div className="tracking-form-card-body tracking-required-vehicle-body">
+                  <div className="tracking-required-vehicle-table-wrap">
+                    <table className="tracking-required-vehicle-table">
+                      <thead>
+                        <tr>
+                          <th>#</th>
+                          <th>Vehicle Type</th>
+                          <th>Configuration</th>
+                          <th>Classification</th>
+                          <th>Required Qty</th>
+                          <th>Weight</th>
+                          <th>L × H × W</th>
+                          <th>Confirmed Transporter</th>
+                          <th>Allocated</th>
+                          <th>Action</th>
+                        </tr>
+                      </thead>
 
-                        const allocatedCount =
-                          getAllocatedCount(
-                            requirementId
-                          );
+                      <tbody>
+                        {confirmedRequirements.map(
+                          (
+                            {
+                              requirement,
+                              confirmation,
+                              quotation,
+                            },
+                            index
+                          ) => {
+                            const requirementId =
+                              requirement.requirementId;
 
-                        const requiredQuantity =
-                          Math.max(
-                            Number(
-                              requirement.quantity
-                            ) || 0,
-                            0
-                          );
+                            const allocatedCount =
+                              getAllocatedCount(
+                                requirementId
+                              );
 
-                        const fullyAllocated =
-                          requiredQuantity >
-                            0 &&
-                          allocatedCount >=
-                            requiredQuantity;
-
-                        const allocationForm =
-                          allocationForms[
-                            requirementId
-                          ];
-
-                        return (
-                          <article
-                            key={
-                              requirementId
-                            }
-                            className="tracking-vehicle-entry-card tracking-vehicle-expanded-card"
-                          >
-                            <div className="tracking-vehicle-entry-header">
-                              <div className="tracking-vehicle-entry-title">
-                                <span className="tracking-vehicle-number-icon">
-                                  <Truck
-                                    size={
-                                      15
-                                    }
-                                  />
-                                </span>
-
-                                <div>
-                                  <strong>
-                                    {requirement.vehicleType ||
-                                      "Vehicle Requirement"}
-                                  </strong>
-
-                                  <small>
-                                    {
-                                      requirementId
-                                    }
-                                  </small>
-                                </div>
-                              </div>
-
-                              {!fullyAllocated && (
-                                <button
-                                  type="button"
-                                  className="tracking-add-vehicle-btn"
-                                  disabled={
-                                    saving
-                                  }
-                                  onClick={() =>
-                                    allocationForm
-                                      ? closeAllocationForm(
-                                          requirementId
-                                        )
-                                      : openAllocationForm(
-                                          requirement,
-                                          confirmation,
-                                          quotation
-                                        )
-                                  }
-                                >
-                                  <Plus
-                                    size={
-                                      15
-                                    }
-                                  />
-
-                                  {allocationForm
-                                    ? "Cancel"
-                                    : "Allocate Vehicle"}
-                                </button>
-                              )}
-                            </div>
-
-                            <VehicleSectionTitle
-                              icon={
-                                <Truck
-                                  size={
-                                    15
-                                  }
-                                />
-                              }
-                              title="Approved Requirement"
-                              type="tracking"
-                            />
-
-                            <div className="tracking-vehicle-entry-grid">
-                              <FormField
-                                label="Vehicle Type"
-                                icon={
-                                  <Truck
-                                    size={
-                                      15
-                                    }
-                                  />
-                                }
-                                readOnly
-                                value={
-                                  requirement.vehicleType
-                                }
-                              />
-
-                              <FormField
-                                label="Configuration"
-                                icon={
-                                  <Truck
-                                    size={
-                                      15
-                                    }
-                                  />
-                                }
-                                readOnly
-                                value={
-                                  requirement.configuration
-                                }
-                              />
-
-                              <FormField
-                                label="Classification"
-                                icon={
-                                  <Package
-                                    size={
-                                      15
-                                    }
-                                  />
-                                }
-                                readOnly
-                                value={
-                                  requirement.classification
-                                }
-                              />
-
-                              <FormField
-                                label="Required Quantity"
-                                icon={
-                                  <Truck
-                                    size={
-                                      15
-                                    }
-                                  />
-                                }
-                                readOnly
-                                value={
+                            const requiredQuantity =
+                              Math.max(
+                                Number(
                                   requirement.quantity
-                                }
-                              />
+                                ) || 0,
+                                0
+                              );
 
-                              <FormField
-                                label="Weight"
-                                icon={
-                                  <Gauge
-                                    size={
-                                      15
-                                    }
-                                  />
-                                }
-                                readOnly
-                                value={
-                                  requirement.weight !==
-                                    null &&
-                                  requirement.weight !==
-                                    undefined
-                                    ? `${requirement.weight} TON`
-                                    : ""
-                                }
-                              />
+                            const fullyAllocated =
+                              requiredQuantity > 0 &&
+                              allocatedCount >=
+                                requiredQuantity;
 
-                              <FormField
-                                label="L × H × W"
-                                icon={
-                                  <Package
-                                    size={
-                                      15
-                                    }
-                                  />
-                                }
-                                readOnly
-                                value={formatDimensions(
-                                  requirement.dimensions
-                                )}
-                              />
+                            const allocationForm =
+                              allocationForms[
+                                requirementId
+                              ];
 
-                              <FormField
-                                label="Confirmed Transporter"
-                                icon={
-                                  <Building2
-                                    size={
-                                      15
-                                    }
-                                  />
+                            return (
+                              <React.Fragment
+                                key={
+                                  requirementId
                                 }
-                                readOnly
-                                value={
-                                  quotation.transporter
-                                }
-                              />
+                              >
+                                <tr>
+                                  <td>
+                                    <span className="tracking-required-row-number">
+                                      {index + 1}
+                                    </span>
+                                  </td>
 
-                              <FormField
-                                label="Vehicle Allocation"
-                                icon={
-                                  <Truck
-                                    size={
-                                      15
-                                    }
-                                  />
-                                }
-                                readOnly
-                                value={`${allocatedCount} / ${requiredQuantity}`}
-                              />
-                            </div>
+                                  <td>
+                                    <strong className="tracking-required-primary">
+                                      {requirement.vehicleType || "—"}
+                                    </strong>
+                                  </td>
 
-                            {/* IMPORTANT:
-                                NO quotation.amount is rendered here. */}
+                                  <td>
+                                    {requirement.configuration || "—"}
+                                  </td>
 
-                            {allocationForm && (
-                              <>
+                                  <td>
+                                    {requirement.classification || "—"}
+                                  </td>
+
+                                  <td>
+                                    {requirement.quantity ?? "—"}
+                                  </td>
+
+                                  <td>
+                                    {requirement.weight !== null &&
+                                    requirement.weight !== undefined
+                                      ? `${requirement.weight} TON`
+                                      : "—"}
+                                  </td>
+
+                                  <td>
+                                    {formatDimensions(
+                                      requirement.dimensions
+                                    )}
+                                  </td>
+
+                                  <td>
+                                    <div className="tracking-required-transporter">
+                                      <Building2 size={14} />
+                                      <span>
+                                        {quotation.transporter || "—"}
+                                      </span>
+                                    </div>
+                                  </td>
+
+                                  <td>
+                                    <span
+                                      className={
+                                        fullyAllocated
+                                          ? "tracking-required-allocation complete"
+                                          : "tracking-required-allocation"
+                                      }
+                                    >
+                                      {allocatedCount} / {requiredQuantity}
+                                    </span>
+                                  </td>
+
+                                  <td>
+                                    {!fullyAllocated ? (
+                                      <button
+                                        type="button"
+                                        className="tracking-required-allocate-btn"
+                                        disabled={
+                                          saving
+                                        }
+                                        onClick={() =>
+                                          allocationForm
+                                            ? closeAllocationForm(
+                                                requirementId
+                                              )
+                                            : openAllocationForm(
+                                                requirement,
+                                                confirmation,
+                                                quotation
+                                              )
+                                        }
+                                      >
+                                        <Plus
+                                          size={14}
+                                        />
+                                        <span>
+                                          {allocationForm
+                                            ? "Cancel"
+                                            : "Allocate"}
+                                        </span>
+                                      </button>
+                                    ) : (
+                                      <span className="tracking-required-complete-badge">
+                                        Allocated
+                                      </span>
+                                    )}
+                                  </td>
+                                </tr>
+
+                                {allocationForm && (
+                                  <tr className="tracking-required-form-row">
+                                    <td colSpan={10}>
+                                      <article className="tracking-vehicle-entry-card tracking-vehicle-expanded-card tracking-required-allocation-form">
+
+
                                 <VehicleSectionTitle
                                   icon={
                                     <Plus
@@ -2156,7 +2010,7 @@ const Trackinginput = () => {
                                   type="driver"
                                 />
 
-                                <div className="tracking-vehicle-entry-grid">
+                                <div className="tracking-vehicle-entry-grid tracking-driver-data-grid">
                                   <FormField
                                     label="Vehicle Number"
                                     required
@@ -2391,7 +2245,7 @@ const Trackinginput = () => {
                                   type="loading"
                                 />
 
-                                <div className="tracking-vehicle-entry-grid">
+                                <div className="tracking-vehicle-entry-grid tracking-driver-data-grid">
                                   <NormalSelect
                                     label="Loading Status"
                                     icon={
@@ -2555,7 +2409,7 @@ const Trackinginput = () => {
                                   type="unloading"
                                 />
 
-                                <div className="tracking-vehicle-entry-grid">
+                                <div className="tracking-vehicle-entry-grid tracking-driver-data-grid">
                                   <NormalSelect
                                     label="Unloading Status"
                                     icon={
@@ -2754,12 +2608,17 @@ const Trackinginput = () => {
                                     </button>
                                   </div>
                                 </div>
-                              </>
-                            )}
-                          </article>
-                        );
-                      }
-                    )}
+
+                                      </article>
+                                    </td>
+                                  </tr>
+                                )}
+                              </React.Fragment>
+                            );
+                          }
+                        )}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               </section>
@@ -2776,7 +2635,7 @@ const Trackinginput = () => {
                     />
                   }
                   iconClass="indigo"
-                  title="Allocated Vehicles"
+                  title="Live Vehicle Operations"
                   subtitle="Manage driver, escort, supervisor, loading, unloading and daily movement."
                 >
                   <span className="tracking-trip-id-badge">
@@ -2872,13 +2731,9 @@ const Trackinginput = () => {
                                     saving
                                   }
                                   onClick={() =>
-                                    trackingForm
-                                      ? closeTrackingForm(
-                                          allocation.allocationId
-                                        )
-                                      : openTrackingForm(
-                                          allocation
-                                        )
+                                    openTrackingForm(
+                                      allocation
+                                    )
                                   }
                                 >
                                   <Plus
@@ -2887,9 +2742,7 @@ const Trackinginput = () => {
                                     }
                                   />
 
-                                  {trackingForm
-                                    ? "Cancel Movement"
-                                    : "Add Movement"}
+                                  Add Movement
                                 </button>
                               </div>
 
@@ -2907,100 +2760,68 @@ const Trackinginput = () => {
                                 type="tracking"
                               />
 
-                              <div className="tracking-vehicle-entry-grid">
-                                <FormField
-                                  label="Vehicle Type"
-                                  readOnly
-                                  icon={
-                                    <Truck
-                                      size={
-                                        15
-                                      }
-                                    />
-                                  }
-                                  value={
-                                    requirement?.vehicleType
-                                  }
-                                />
+                              <div className="tracking-requirement-summary">
+                                <div className="tracking-summary-item">
+                                  <span className="tracking-summary-label">Vehicle Type</span>
+                                  <div className="tracking-summary-value">
+                                    <Truck size={15} />
+                                    <strong>{requirement?.vehicleType || "—"}</strong>
+                                  </div>
+                                </div>
 
-                                <FormField
-                                  label="Configuration"
-                                  readOnly
-                                  icon={
-                                    <Truck
-                                      size={
-                                        15
-                                      }
-                                    />
-                                  }
-                                  value={
-                                    requirement?.configuration
-                                  }
-                                />
+                                <span className="tracking-summary-divider" aria-hidden="true" />
 
-                                <FormField
-                                  label="Confirmed Transporter"
-                                  readOnly
-                                  icon={
-                                    <Building2
-                                      size={
-                                        15
-                                      }
-                                    />
-                                  }
-                                  value={
-                                    quotation?.transporter
-                                  }
-                                />
+                                <div className="tracking-summary-item">
+                                  <span className="tracking-summary-label">Configuration</span>
+                                  <div className="tracking-summary-value">
+                                    <Truck size={15} />
+                                    <strong>{requirement?.configuration || "—"}</strong>
+                                  </div>
+                                </div>
 
-                                <FormField
-                                  label="Latest Status"
-                                  readOnly
-                                  icon={
-                                    <Navigation
-                                      size={
-                                        15
-                                      }
-                                    />
-                                  }
-                                  value={
-                                    latest?.status ||
-                                    "Idle"
-                                  }
-                                />
+                                <span className="tracking-summary-divider" aria-hidden="true" />
 
-                                <FormField
-                                  label="Latest Location"
-                                  readOnly
-                                  icon={
-                                    <MapPin
-                                      size={
-                                        15
-                                      }
-                                    />
-                                  }
-                                  value={
-                                    latest?.currentLocation ||
-                                    ""
-                                  }
-                                />
+                                <div className="tracking-summary-item">
+                                  <span className="tracking-summary-label">Confirmed Transporter</span>
+                                  <div className="tracking-summary-value">
+                                    <Building2 size={15} />
+                                    <strong>{quotation?.transporter || "—"}</strong>
+                                  </div>
+                                </div>
 
-                                <FormField
-                                  label="Current Day"
-                                  readOnly
-                                  icon={
-                                    <CalendarDays
-                                      size={
-                                        15
-                                      }
-                                    />
-                                  }
-                                  value={
-                                    latest?.day
-                                      ? `Day ${latest.day}`
-                                      : "No movement update"
-                                  }
-                                />
+                                <span className="tracking-summary-divider" aria-hidden="true" />
+
+                                <div className="tracking-summary-item">
+                                  <span className="tracking-summary-label">Latest Status</span>
+                                  <div className="tracking-summary-value">
+                                    <Navigation size={15} />
+                                    <strong>{latest?.status || "Idle"}</strong>
+                                  </div>
+                                </div>
+
+                                <span className="tracking-summary-divider" aria-hidden="true" />
+
+                                <div className="tracking-summary-item">
+                                  <span className="tracking-summary-label">Latest Location</span>
+                                  <div className="tracking-summary-value">
+                                    <MapPin size={15} />
+                                    <strong>{latest?.currentLocation || "—"}</strong>
+                                  </div>
+                                </div>
+
+                                <span className="tracking-summary-divider" aria-hidden="true" />
+
+                                <div className="tracking-summary-item">
+                                  <span className="tracking-summary-label">Current Day</span>
+                                  <div className="tracking-summary-value">
+                                    <CalendarDays size={15} />
+                                    <strong>
+                                      {latest?.day
+                                        ? `Day ${latest.day}`
+                                        : "No movement update"}
+                                    </strong>
+                                  </div>
+                                </div>
                               </div>
 
                               {/* DRIVER */}
@@ -3017,7 +2838,7 @@ const Trackinginput = () => {
                                 type="driver"
                               />
 
-                              <div className="tracking-vehicle-entry-grid">
+                              <div className="tracking-vehicle-entry-grid tracking-driver-data-grid">
                                 <AllocatedField
                                   label="Vehicle Number"
                                   icon={
@@ -3269,7 +3090,7 @@ const Trackinginput = () => {
                                 type="loading"
                               />
 
-                              <div className="tracking-vehicle-entry-grid">
+                              <div className="tracking-vehicle-entry-grid tracking-driver-data-grid">
                                 <AllocatedSelect
                                   label="Loading Status"
                                   icon={
@@ -3455,7 +3276,7 @@ const Trackinginput = () => {
                                 type="unloading"
                               />
 
-                              <div className="tracking-vehicle-entry-grid">
+                              <div className="tracking-vehicle-entry-grid tracking-driver-data-grid">
                                 <AllocatedSelect
                                   label="Unloading Status"
                                   icon={
@@ -3659,7 +3480,35 @@ const Trackinginput = () => {
                               {/* DAILY TRACKING */}
 
                               {trackingForm && (
-                                <>
+                                <div
+                                  className="tracking-movement-modal-overlay"
+                                  role="dialog"
+                                  aria-modal="true"
+                                  aria-label={`Add movement for ${allocation.vehicleNumber || "vehicle"}`}
+                                  onMouseDown={(event) => {
+                                    if (event.target === event.currentTarget) {
+                                      closeTrackingForm(allocation.allocationId);
+                                    }
+                                  }}
+                                >
+                                  <div className="tracking-movement-modal">
+                                    <div className="tracking-movement-modal-head">
+                                      <div>
+                                        <span className="tracking-movement-modal-kicker">DAILY TRACKING</span>
+                                        <h3>Add Movement</h3>
+                                        <p>{allocation.vehicleNumber || "Vehicle"} · Update today’s movement information.</p>
+                                      </div>
+                                      <button
+                                        type="button"
+                                        className="tracking-movement-modal-close"
+                                        disabled={saving}
+                                        onClick={() => closeTrackingForm(allocation.allocationId)}
+                                        aria-label="Close movement modal"
+                                      >
+                                        ×
+                                      </button>
+                                    </div>
+                                    <div className="tracking-movement-modal-body">
                                   <VehicleSectionTitle
                                     icon={
                                       <Navigation
@@ -3672,7 +3521,7 @@ const Trackinginput = () => {
                                     type="tracking"
                                   />
 
-                                  <div className="tracking-vehicle-entry-grid">
+                                  <div className="tracking-vehicle-entry-grid tracking-driver-data-grid">
                                     <FormField
                                       label="Date"
                                       type="date"
@@ -4037,7 +3886,9 @@ const Trackinginput = () => {
                                       </button>
                                     </div>
                                   </div>
-                                </>
+                                    </div>
+                                  </div>
+                                </div>
                               )}
 
                               {/* HISTORY */}

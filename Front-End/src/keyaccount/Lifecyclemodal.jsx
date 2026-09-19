@@ -259,7 +259,7 @@ const buildLifecycle = (order) => {
 
   const orderPlacedStatus =
     order?.orderPlaced?.status ||
-    (allocations.length > 0
+    (String(order?.stage || "").trim().toLowerCase() === "tracking"
       ? "Completed"
       : "Pending");
 
@@ -285,14 +285,14 @@ const buildLifecycle = (order) => {
       status: orderFinalizationStatus,
     },
     {
-      key: "vendor-finalization",
-      title: "Vendor Finalization",
-      status: vendorFinalizationStatus,
-    },
-    {
       key: "po-document",
       title: "PO Document",
       status: poDocumentStatus,
+    },
+    {
+      key: "vendor-finalization",
+      title: "Vendor Finalization",
+      status: vendorFinalizationStatus,
     },
     {
       key: "order-placed",
@@ -324,29 +324,123 @@ const getLifecycleCurrentIndex = (
     .trim()
     .toLowerCase();
 
+  /*
+   * IMPORTANT:
+   * Once the backend has genuinely progressed to Tracking or
+   * Trip Complete, never allow PO/Vendor completion logic to
+   * move the lifecycle backwards.
+   */
+  if (
+    stage === "trip complete" ||
+    stage === "trip completed" ||
+    stage === "completed" ||
+    stage === "complete"
+  ) {
+    return 6;
+  }
+
+  if (stage === "tracking") {
+    return 5;
+  }
+
+  const requirements = safeArray(
+    order?.vehicleRequirements
+  );
+
+  const approvedConfirmations = safeArray(
+    order?.vehicleConfirmations
+  ).filter(
+    (confirmation) =>
+      confirmation?.status === "Approved"
+  );
+
+  const vehicleApprovalCompleted =
+    requirements.length > 0 &&
+    requirements.every(
+      (requirement) =>
+        approvedConfirmations.some(
+          (confirmation) =>
+            confirmation?.requirementId ===
+            requirement?.requirementId
+        )
+    );
+
+  const poDocumentCompleted =
+    getStatusClass(
+      lifecycle?.[2]?.status
+    ) === "approved";
+
+  const vendorFinalizationCompleted =
+    getStatusClass(
+      lifecycle?.[3]?.status
+    ) === "approved" ||
+    vehicleApprovalCompleted;
+
+  const orderPlacedCompleted =
+    getStatusClass(
+      lifecycle?.[4]?.status
+    ) === "approved" ||
+    String(order?.orderPlaced?.status || "")
+      .trim()
+      .toLowerCase() === "completed";
+
+  /*
+   * "Tracking Input" can be written earlier by approval flow.
+   * Only treat it as Tracking after Order Placed is completed.
+   */
+  if (
+    stage === "tracking input" &&
+    orderPlacedCompleted
+  ) {
+    return 5;
+  }
+
+  if (
+    vehicleApprovalCompleted &&
+    !poDocumentCompleted
+  ) {
+    return 2;
+  }
+
+  if (
+    poDocumentCompleted &&
+    vendorFinalizationCompleted &&
+    orderPlacedCompleted
+  ) {
+    return 5;
+  }
+
+  if (
+    poDocumentCompleted &&
+    vendorFinalizationCompleted
+  ) {
+    return 4;
+  }
+
+  if (
+    poDocumentCompleted &&
+    !vendorFinalizationCompleted
+  ) {
+    return 3;
+  }
+
   const stageMap = {
     enquiry: 0,
     "enquiry details": 0,
     "key account": 0,
-
     "order approval": 1,
     "order finalization": 1,
-
-    traffic: 2,
-    "traffic quotation": 2,
-    "quotation approval": 2,
-    "quotation confirmation": 2,
-    "vendor finalization": 2,
-
-    po: 3,
-    "po document": 3,
-
+    po: 2,
+    "po document": 2,
+    traffic: 3,
+    "traffic quotation": 3,
+    "quotation approval": 3,
+    "quotation confirmation": 3,
+    "vendor finalization": 3,
     "order placed": 4,
     "vehicle allocation": 4,
     "tracking input": 4,
-
     tracking: 5,
-
     "trip complete": 6,
     "trip completed": 6,
     completed: 6,
@@ -503,19 +597,89 @@ const CommonStepDetails = ({
 const Lifecyclemodal = ({
   order,
   onClose,
+  onOrderUpdated,
 }) => {
+  const [localOrder, setLocalOrder] = useState(null);
+  const [latestOrderLoading, setLatestOrderLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    setLatestOrderLoading(true);
+    setLocalOrder(null);
+
+    const loadLatestOrder = async () => {
+      if (!order?._id) {
+        if (!cancelled) {
+          setLocalOrder(order || null);
+          setLatestOrderLoading(false);
+        }
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          `${TRIP_API_URL}/${order._id}`,
+          {
+            method: "GET",
+            headers: {
+              Accept: "application/json",
+            },
+          }
+        );
+
+        const payload = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          throw new Error(
+            payload?.message || "Unable to fetch latest order."
+          );
+        }
+
+        const latestOrder =
+          payload?.data ||
+          payload?.trip ||
+          payload?.order ||
+          payload;
+
+        if (!cancelled) {
+          setLocalOrder(latestOrder);
+          setLatestOrderLoading(false);
+        }
+      } catch (error) {
+        console.error("Load Latest Order Error:", error);
+
+        // Keep the order received from the list as a safe fallback.
+        if (!cancelled) {
+          setLocalOrder(order || null);
+          setLatestOrderLoading(false);
+        }
+      }
+    };
+
+    loadLatestOrder();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [order?._id]);
+
+  // Do not fall back to the stale table-row order while the latest
+  // MongoDB order is loading. This prevents the PO page flashing first.
+  const workingOrder = latestOrderLoading ? null : (localOrder || order);
+
   const lifecycle = useMemo(
-    () => buildLifecycle(order || {}),
-    [order]
+    () => buildLifecycle(workingOrder || {}),
+    [workingOrder]
   );
 
   const currentLifecycleIndex = useMemo(
     () =>
       getLifecycleCurrentIndex(
-        order || {},
+        workingOrder || {},
         lifecycle
       ),
-    [order, lifecycle]
+    [workingOrder, lifecycle]
   );
 
   const [
@@ -542,6 +706,32 @@ const Lifecyclemodal = ({
 
   const [finalizationError, setFinalizationError] =
     useState("");
+
+  const [poForm, setPoForm] = useState({
+    poNumber: order?.poDocument?.poNumber || "",
+    poValidityPeriod:
+      order?.poDocument?.poValidityPeriod || "",
+    billingGstin:
+      order?.poDocument?.billingGstin || "",
+    status: order?.poDocument?.status || "Pending",
+    documentName:
+      order?.poDocument?.fileName ||
+      order?.poDocument?.documentName ||
+      "",
+    uploadedBy:
+      order?.poDocument?.uploadedBy ||
+      sessionStorage.getItem("kamUsername") ||
+      "",
+  });
+
+  const [poFile, setPoFile] = useState(null);
+  const [poSaving, setPoSaving] = useState(false);
+  const [poMessage, setPoMessage] = useState("");
+  const [poError, setPoError] = useState("");
+
+  const [placeOrderSaving, setPlaceOrderSaving] = useState(false);
+  const [placeOrderMessage, setPlaceOrderMessage] = useState("");
+  const [placeOrderError, setPlaceOrderError] = useState("");
 
   /* =========================================================
      ORDER FINALIZATION INPUT DATA
@@ -574,27 +764,30 @@ const Lifecyclemodal = ({
   });
 
   useEffect(() => {
-    if (order) {
+    if (workingOrder) {
       setActiveStepIndex(
         currentLifecycleIndex
       );
     }
   }, [
     currentLifecycleIndex,
-    order,
+    workingOrder?._id,
+    workingOrder?.stage,
+    workingOrder?.poDocument?.status,
+    workingOrder?.orderPlaced?.status,
   ]);
 
   useEffect(() => {
     setApprovalRequested(
-      order?.orderApproval?.status ===
+      workingOrder?.orderApproval?.status ===
         "Pending" &&
         Boolean(
-          order?.orderApproval?.requestedAt
+          workingOrder?.orderApproval?.requestedAt
         )
     );
   }, [
-    order?.orderApproval?.status,
-    order?.orderApproval?.requestedAt,
+    workingOrder?.orderApproval?.status,
+    workingOrder?.orderApproval?.requestedAt,
   ]);
 
   /* =========================================================
@@ -604,31 +797,90 @@ const Lifecyclemodal = ({
   useEffect(() => {
     setFinalizationForm({
       quotedRate:
-        order?.orderFinalization?.quotedRate ??
-        order?.quotedRate ??
+        workingOrder?.orderFinalization?.quotedRate ??
+        workingOrder?.quotedRate ??
         "",
       finalRate:
-        order?.orderFinalization?.finalRate ??
-        order?.finalRate ??
+        workingOrder?.orderFinalization?.finalRate ??
+        workingOrder?.finalRate ??
         "",
       commercialTerms:
-        order?.orderFinalization?.commercialTerms ??
-        order?.commercialTerms ??
+        workingOrder?.orderFinalization?.commercialTerms ??
+        workingOrder?.commercialTerms ??
         "",
       deliveryCommitments:
-        order?.orderFinalization?.deliveryCommitments ??
-        order?.deliveryCommitments ??
+        workingOrder?.orderFinalization?.deliveryCommitments ??
+        workingOrder?.deliveryCommitments ??
         "",
       clientConfirmationNotes:
-        order?.orderFinalization?.clientConfirmationNotes ??
-        order?.clientConfirmationNotes ??
+        workingOrder?.orderFinalization?.clientConfirmationNotes ??
+        workingOrder?.clientConfirmationNotes ??
         "",
     });
-  }, [order]);
+  }, [workingOrder]);
 
-  if (!order) {
+  useEffect(() => {
+    const savedValidity =
+      workingOrder?.poDocument?.poValidityPeriod;
+
+    setPoForm({
+      poNumber:
+        workingOrder?.poDocument?.poNumber || "",
+      poValidityPeriod:
+        savedValidity
+          ? String(savedValidity).slice(0, 10)
+          : "",
+      billingGstin:
+        workingOrder?.poDocument?.billingGstin || "",
+      status:
+        workingOrder?.poDocument?.status || "Pending",
+      documentName:
+        workingOrder?.poDocument?.documentName ||
+        workingOrder?.poDocument?.fileName ||
+        "",
+      uploadedBy:
+        workingOrder?.poDocument?.uploadedBy ||
+        sessionStorage.getItem("kamUsername") ||
+        "",
+    });
+
+    setPoFile(null);
+    setPoMessage("");
+    setPoError("");
+  }, [workingOrder]);
+
+  if (latestOrderLoading) {
+    return (
+      <div className="kam-lifecycle-modal-overlay">
+        <div className="kam-lifecycle-modal">
+          <div
+            style={{
+              minHeight: "220px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexDirection: "column",
+              gap: "10px",
+              fontWeight: 700,
+            }}
+          >
+            <div>Loading latest order...</div>
+            <small style={{ fontWeight: 500, opacity: 0.65 }}>
+              Checking the current lifecycle stage
+            </small>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!workingOrder) {
     return null;
   }
+
+  // From this point onward all lifecycle rendering and actions use the
+  // freshest order returned by the backend.
+  order = workingOrder;
 
   /* =========================================================
      INPUT CHANGE
@@ -649,6 +901,261 @@ const Lifecyclemodal = ({
       })
     );
   };
+
+  const handlePoChange = (event) => {
+    const { name, value } = event.target;
+
+    setPoForm((previous) => ({
+      ...previous,
+      [name]: value,
+    }));
+  };
+
+  const savePoDocument = async () => {
+    if (!order?._id) {
+      setPoError("Order ID is missing.");
+      return;
+    }
+
+    if (!poForm.poNumber.trim()) {
+      setPoError("Enter the PO number before saving.");
+      return;
+    }
+
+    if (!poForm.poValidityPeriod) {
+      setPoError("Select the PO validity period before saving.");
+      return;
+    }
+
+    if (!poForm.billingGstin.trim()) {
+      setPoError("Enter the Billing GSTIN before saving.");
+      return;
+    }
+
+    if (
+      !poFile &&
+      !order?.poDocument?.fileName &&
+      !order?.poDocument?.fileUrl &&
+      !order?.poDocument?.documentUrl
+    ) {
+      setPoError("Select a PO document before saving.");
+      return;
+    }
+
+    try {
+      setPoSaving(true);
+      setPoError("");
+      setPoMessage("");
+
+      const formData = new FormData();
+      formData.append("poNumber", poForm.poNumber.trim());
+      formData.append("poValidityPeriod", poForm.poValidityPeriod);
+      formData.append(
+        "billingGstin",
+        poForm.billingGstin.trim().toUpperCase()
+      );
+      formData.append("status", "Completed");
+      formData.append(
+        "documentName",
+        poForm.documentName.trim() || poFile?.name || "PO Document"
+      );
+      formData.append(
+        "uploadedBy",
+        poForm.uploadedBy.trim() ||
+          sessionStorage.getItem("kamUsername") ||
+          "Key Account"
+      );
+
+      if (poFile) {
+        formData.append("document", poFile);
+      }
+
+      const response = await fetch(
+        `${TRIP_API_URL}/${order._id}/po-document`,
+        {
+          method: "PUT",
+          body: formData,
+        }
+      );
+
+      const payload = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(payload?.message || "Unable to save PO document.");
+      }
+
+      const updatedOrder =
+        payload?.data || payload?.trip || payload?.order || payload;
+
+      setPoForm((previous) => ({
+        ...previous,
+        status: "Completed",
+      }));
+      setPoMessage("PO document saved successfully.");
+
+      // Immediately use the fresh backend order inside this modal.
+      // This makes PO Number, PO Validity and Billing GSTIN appear on
+      // Order Placed without closing/reopening the lifecycle modal.
+      setLocalOrder(updatedOrder);
+
+      if (typeof onOrderUpdated === "function") {
+        onOrderUpdated(updatedOrder);
+      }
+
+      /*
+       * AFTER PO SAVE:
+       * - If Vendor Finalization was already approved -> Order Placed.
+       * - Otherwise -> Vendor Finalization.
+       *
+       * Use updatedOrder returned by the backend so this does not depend
+       * on stale React state.
+       */
+      const updatedRequirements = safeArray(
+        updatedOrder?.vehicleRequirements
+      );
+
+      const updatedApprovedConfirmations = safeArray(
+        updatedOrder?.vehicleConfirmations
+      ).filter(
+        (confirmation) =>
+          confirmation?.status === "Approved"
+      );
+
+      const updatedVehicleApprovalCompleted =
+        updatedRequirements.length > 0 &&
+        updatedRequirements.every(
+          (requirement) =>
+            updatedApprovedConfirmations.some(
+              (confirmation) =>
+                confirmation?.requirementId ===
+                requirement?.requirementId
+            )
+        );
+
+      const vendorAlreadyApproved =
+        getStatusClass(
+          updatedOrder?.vendorFinalization?.status
+        ) === "approved" ||
+        updatedVehicleApprovalCompleted;
+
+      if (vendorAlreadyApproved) {
+        // Step 5: Order Placed
+        setActiveStepIndex(4);
+      } else {
+        // Step 4: Vendor Finalization
+        setActiveStepIndex(3);
+      }
+    } catch (error) {
+      setPoError(error.message || "Unable to save PO document.");
+    } finally {
+      setPoSaving(false);
+    }
+  };
+
+  const placeOrder = async () => {
+    if (!order?._id) {
+      setPlaceOrderError("Order ID is missing.");
+      return;
+    }
+
+    if (!vehicleApprovalCompleted) {
+      setPlaceOrderError(
+        "All vehicle requirements must have an approved transporter before placing the order."
+      );
+      return;
+    }
+
+    const poCompleted =
+      getStatusClass(order?.poDocument?.status) === "approved" ||
+      Boolean(
+        order?.poDocument?.poNumber &&
+        (
+          order?.poDocument?.fileName ||
+          order?.poDocument?.fileUrl ||
+          order?.poDocument?.documentUrl
+        )
+      );
+
+    if (!poCompleted) {
+      setPlaceOrderError("Complete the PO Document before placing the order.");
+      return;
+    }
+
+    try {
+      setPlaceOrderSaving(true);
+      setPlaceOrderError("");
+      setPlaceOrderMessage("");
+
+      const placedBy =
+        sessionStorage.getItem("kamUsername") || "Key Account";
+
+      const body = {
+        stage: "Tracking",
+        orderPlaced: {
+          status: "Completed",
+          placedAt: new Date().toISOString(),
+          placedBy,
+        },
+      };
+
+      // Prefer a dedicated order-placement endpoint when available.
+      let response = await fetch(
+        `${TRIP_API_URL}/${order._id}/order-placed`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(body),
+        }
+      );
+
+      // Backward-compatible fallback for projects using the generic updateTrip route.
+      if (response.status === 404) {
+        response = await fetch(
+          `${TRIP_API_URL}/${order._id}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(body),
+          }
+        );
+      }
+
+      const payload = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(
+          payload?.message || "Unable to place the order."
+        );
+      }
+
+      const updatedOrder =
+        payload?.data ||
+        payload?.trip ||
+        payload?.order ||
+        payload;
+
+      setPlaceOrderMessage(
+        "Order placed successfully and moved to Tracking."
+      );
+
+      if (typeof onOrderUpdated === "function") {
+        onOrderUpdated(updatedOrder);
+      }
+
+      setActiveStepIndex(5);
+    } catch (error) {
+      setPlaceOrderError(
+        error.message || "Unable to place the order."
+      );
+    } finally {
+      setPlaceOrderSaving(false);
+    }
+  };
+
 
   const saveOrderFinalization = async (
     requestApproval = false
@@ -736,9 +1243,25 @@ const Lifecyclemodal = ({
   const handleStepClick = (
     index
   ) => {
+    const poOrVendorStep =
+      index === 2 || index === 3;
+
+    const approvalManagementApproved =
+      order?.orderApproval?.status === "Approved" ||
+      vehicleApprovalCompleted ||
+      String(order?.stage || "")
+        .trim()
+        .toLowerCase() === "tracking input";
+
+    /*
+     * After Approval Management approval:
+     * - PO Document (step 3) stays as the default page.
+     * - PO Document and Vendor Finalization are both clickable.
+     * - Vendor Finalization does not require PO data/completion.
+     */
     if (
-      index <=
-      currentLifecycleIndex
+      index <= currentLifecycleIndex ||
+      (approvalManagementApproved && poOrVendorStep)
     ) {
       setActiveStepIndex(index);
     }
@@ -785,6 +1308,54 @@ const Lifecyclemodal = ({
             requirement.requirementId
         )
     );
+
+  const displayCurrentStage = (() => {
+    const rawStage = String(order?.stage || "")
+      .trim()
+      .toLowerCase();
+
+    const poCompleted =
+      getStatusClass(order?.poDocument?.status) === "approved" ||
+      Boolean(
+        order?.poDocument?.poNumber &&
+        (order?.poDocument?.fileUrl ||
+          order?.poDocument?.documentUrl)
+      );
+
+    const approvalManagementApproved =
+      vehicleApprovalCompleted ||
+      rawStage === "tracking input";
+
+    const orderPlacedCompleted =
+      getStatusClass(order?.orderPlaced?.status) === "approved";
+
+    if (orderPlacedCompleted || rawStage === "tracking") {
+      return "Tracking";
+    }
+
+    if (approvalManagementApproved && !poCompleted) {
+      return "PO Document";
+    }
+
+    if (
+      poCompleted &&
+      getStatusClass(
+        order?.vendorFinalization?.status
+      ) !== "approved"
+    ) {
+      return "Vendor Finalization";
+    }
+
+    if (
+      poCompleted &&
+      vehicleApprovalCompleted &&
+      !orderPlacedCompleted
+    ) {
+      return "Order Placed";
+    }
+
+    return order?.stage || "Order Approval";
+  })();
 
   const totalRequiredVehicles =
     requirements.reduce(
@@ -898,14 +1469,13 @@ const Lifecyclemodal = ({
                   "rejected";
 
                 const isCurrent =
-                  index ===
-                  currentLifecycleIndex;
+                  index === activeStepIndex;
 
                 const completed =
                   !rejected &&
                   (
                     index <
-                      currentLifecycleIndex ||
+                      activeStepIndex ||
                     (
                       index ===
                         lifecycle.length -
@@ -940,10 +1510,22 @@ const Lifecyclemodal = ({
                           index
                         )
                       }
-                      disabled={
-                        index >
-                        currentLifecycleIndex
-                      }
+                      disabled={(() => {
+                        const poOrVendorStep =
+                          index === 2 || index === 3;
+
+                        const approvalManagementApproved =
+                          order?.orderApproval?.status === "Approved" ||
+                          vehicleApprovalCompleted ||
+                          String(order?.stage || "")
+                            .trim()
+                            .toLowerCase() === "tracking input";
+
+                        return !(
+                          index <= currentLifecycleIndex ||
+                          (approvalManagementApproved && poOrVendorStep)
+                        );
+                      })()}
                       className={[
                         "kam-top-step",
 
@@ -1586,7 +2168,7 @@ const Lifecyclemodal = ({
               TRAFFIC QUOTATIONS SECOND
           ================================================= */}
 
-          {activeStepIndex === 2 && (
+          {activeStepIndex === 3 && (
             <>
               {/* =================================================
                   CONFIRMED TRANSPORTERS
@@ -1892,7 +2474,7 @@ const Lifecyclemodal = ({
               DATA ENTRY FIELDS
           ================================================= */}
 
-          {activeStepIndex === 3 && (
+          {activeStepIndex === 2 && (
 
             <div className="kam-step-page kam-step-page-po-document">
 
@@ -1907,16 +2489,51 @@ const Lifecyclemodal = ({
 
                   <div className="kam-client-trip-field">
                     <span>
-                      PO Number
+                      Client Purchase Order (PO) Number
+                      <em>*</em>
                     </span>
 
                     <input
                       type="text"
-                      defaultValue={
-                        order?.poDocument?.poNumber ||
-                        ""
-                      }
+                      name="poNumber"
+                      value={poForm.poNumber}
+                      onChange={handlePoChange}
                       placeholder="Enter PO number"
+                    />
+                  </div>
+
+                  <div className="kam-client-trip-field">
+                    <span>
+                      PO Validity Period
+                      <em>*</em>
+                    </span>
+
+                    <input
+                      type="date"
+                      name="poValidityPeriod"
+                      value={poForm.poValidityPeriod}
+                      onChange={handlePoChange}
+                    />
+                  </div>
+
+                  <div className="kam-client-trip-field">
+                    <span>
+                      Billing GSTIN
+                      <em>*</em>
+                    </span>
+
+                    <input
+                      type="text"
+                      name="billingGstin"
+                      value={poForm.billingGstin}
+                      onChange={(event) =>
+                        setPoForm((previous) => ({
+                          ...previous,
+                          billingGstin: event.target.value.toUpperCase(),
+                        }))
+                      }
+                      maxLength={15}
+                      placeholder="Enter billing GSTIN"
                     />
                   </div>
 
@@ -1925,14 +2542,14 @@ const Lifecyclemodal = ({
                       PO Status
                     </span>
 
-                    <input
-                      type="text"
-                      defaultValue={
-                        order?.poDocument?.status ||
-                        ""
-                      }
-                      placeholder="Enter PO status"
-                    />
+                    <select
+                      name="status"
+                      value={poForm.status}
+                      onChange={handlePoChange}
+                    >
+                      <option value="Pending">Pending</option>
+                      <option value="Completed">Completed</option>
+                    </select>
                   </div>
 
                   <div className="kam-client-trip-field">
@@ -1942,12 +2559,9 @@ const Lifecyclemodal = ({
 
                     <input
                       type="text"
-                      defaultValue={
-                        order?.poDocument?.fileName ||
-                        order?.poDocument
-                          ?.documentName ||
-                        ""
-                      }
+                      name="documentName"
+                      value={poForm.documentName}
+                      onChange={handlePoChange}
                       placeholder="Enter document name"
                     />
                   </div>
@@ -1959,15 +2573,50 @@ const Lifecyclemodal = ({
 
                     <input
                       type="text"
-                      defaultValue={
-                        order?.poDocument?.uploadedBy ||
-                        ""
-                      }
+                      name="uploadedBy"
+                      value={poForm.uploadedBy}
+                      onChange={handlePoChange}
                       placeholder="Enter uploaded by"
                     />
                   </div>
 
+                  <div className="kam-client-trip-field kam-po-upload-field">
+                    <span>Upload PO Document</span>
+
+                    <input
+                      type="file"
+                      accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                      onChange={(event) => {
+                        const selectedFile = event.target.files?.[0] || null;
+                        setPoFile(selectedFile);
+                        setPoError("");
+
+                        if (selectedFile && !poForm.documentName.trim()) {
+                          setPoForm((previous) => ({
+                            ...previous,
+                            documentName: selectedFile.name,
+                          }));
+                        }
+                      }}
+                    />
+
+                    <small>
+                      {poFile
+                        ? `Selected: ${poFile.name}`
+                        : order?.poDocument?.fileName ||
+                          "PDF, Word, JPG or PNG"}
+                    </small>
+                  </div>
+
                 </div>
+
+                {poMessage && (
+                  <div className="kam-form-success">{poMessage}</div>
+                )}
+
+                {poError && (
+                  <div className="kam-form-error">{poError}</div>
+                )}
 
               </section>
 
@@ -1975,200 +2624,331 @@ const Lifecyclemodal = ({
           )}
 
           {/* =================================================
-              ALLOCATED VEHICLES
+              ORDER PLACED - FINAL VERIFICATION
           ================================================= */}
 
-          {(activeStepIndex === 4 ||
-            activeStepIndex === 5 ||
-            activeStepIndex === 6) && (
+          {activeStepIndex === 4 && (
+            <div className="kam-step-page kam-step-page-place-order">
 
-            <div className="kam-step-page kam-step-page-allocated-vehicles">
+              <section className="kam-place-order-section">
+                <div className="kam-place-order-heading">
+                  <div>
+                    <span className="kam-place-order-kicker">
+                      FINAL VERIFICATION
+                    </span>
+                    <h3>Order Important Details</h3>
+                    <p>
+                      Verify the commercial and PO details before releasing this
+                      order to the Tracking team.
+                    </p>
+                  </div>
 
-              <section className="kam-client-vehicle-section">
+                  <span className="kam-place-order-ready">
+                    Ready to Place
+                  </span>
+                </div>
 
-                <SectionHeading
-                  title="Allocated Vehicles"
-                  description="Actual vehicles allocated by Tracking Input after transporter confirmation."
-                  count={
-                    allocations.length
-                  }
-                />
+                <div className="kam-place-order-detail-grid">
+                  <div className="kam-place-order-detail">
+                    <span>Order ID</span>
+                    <strong>{order.tripId || "—"}</strong>
+                  </div>
 
-                {allocations.length > 0 ? (
+                  <div className="kam-place-order-detail">
+                    <span>Final Rate</span>
+                    <strong>
+                      {formatAmount(
+                        order?.orderFinalization?.finalRate ??
+                          order?.finalRate
+                      )}
+                    </strong>
+                  </div>
 
-                  <div className="kam-client-vehicle-table-wrap">
+                  <div className="kam-place-order-detail">
+                    <span>PO Number</span>
+                    <strong>{order?.poDocument?.poNumber || "—"}</strong>
+                  </div>
 
-                    <table className="kam-client-vehicle-table">
+                  <div className="kam-place-order-detail">
+                    <span>PO Validity</span>
+                    <strong>
+                      {formatDate(order?.poDocument?.poValidityPeriod)}
+                    </strong>
+                  </div>
 
+                  <div className="kam-place-order-detail">
+                    <span>Billing GSTIN</span>
+                    <strong>{order?.poDocument?.billingGstin || "—"}</strong>
+                  </div>
+
+                  <div className="kam-place-order-detail">
+                    <span>Commercial Terms</span>
+                    <strong>
+                      {order?.orderFinalization?.commercialTerms ||
+                        order?.commercialTerms ||
+                        "—"}
+                    </strong>
+                  </div>
+
+                  <div className="kam-place-order-detail kam-place-order-detail-wide">
+                    <span>Delivery Commitment</span>
+                    <strong>
+                      {order?.orderFinalization?.deliveryCommitments ||
+                        order?.deliveryCommitments ||
+                        "—"}
+                    </strong>
+                  </div>
+                </div>
+              </section>
+
+              <section className="kam-place-order-section">
+                <div className="kam-place-order-heading">
+                  <div>
+                    <span className="kam-place-order-kicker">
+                      APPROVED TRANSPORT
+                    </span>
+                    <h3>Transport Details</h3>
+                    <p>
+                      Final transporter selection approved against each vehicle
+                      requirement.
+                    </p>
+                  </div>
+
+                  <span className="kam-place-order-transport-count">
+                    {approvedConfirmations.length} Confirmed
+                  </span>
+                </div>
+
+                {approvedConfirmations.length > 0 ? (
+                  <div className="kam-place-order-table-wrap">
+                    <table className="kam-place-order-table">
                       <thead>
                         <tr>
                           <th>#</th>
-                          <th>
-                            Vehicle Number
-                          </th>
-                          <th>
-                            Requirement
-                          </th>
-                          <th>
-                            Transporter
-                          </th>
-                          <th>
-                            Driver
-                          </th>
-                          <th>
-                            Current Location
-                          </th>
-                          <th>
-                            Day
-                          </th>
-                          <th>
-                            Status
-                          </th>
+                          <th>Vehicle Type</th>
+                          <th>Configuration</th>
+                          <th>Qty</th>
+                          <th>Transporter</th>
+                          <th>Confirmed Amount</th>
+                          <th>Confirmed By</th>
                         </tr>
                       </thead>
 
                       <tbody>
+                        {approvedConfirmations.map((confirmation, index) => {
+                          const requirement = getRequirement(
+                            order,
+                            confirmation.requirementId
+                          );
 
-                        {allocations.map(
-                          (
-                            allocation,
-                            index
-                          ) => {
+                          const quotation = getQuotation(
+                            order,
+                            confirmation.quotationId
+                          );
 
-                            const requirement =
-                              getRequirement(
-                                order,
-                                allocation.requirementId
-                              );
+                          return (
+                            <tr
+                              key={
+                                confirmation.confirmationId ||
+                                confirmation.requirementId ||
+                                index
+                              }
+                            >
+                              <td>
+                                <span className="kam-client-row-no">
+                                  {index + 1}
+                                </span>
+                              </td>
 
-                            const confirmation =
-                              safeArray(
-                                order.vehicleConfirmations
-                              ).find(
-                                (item) =>
-                                  item.confirmationId ===
-                                  allocation.confirmationId
-                              ) ||
-                              getApprovedConfirmation(
-                                order,
-                                allocation.requirementId
-                              );
+                              <td>
+                                <strong>
+                                  {requirement?.vehicleType || "—"}
+                                </strong>
+                              </td>
 
-                            const quotation =
-                              getQuotation(
-                                order,
-                                allocation.quotationId ||
-                                  confirmation?.quotationId
-                              );
+                              <td>{requirement?.configuration || "—"}</td>
 
-                            const latest =
-                              getLatestTracking(
-                                allocation
-                              );
+                              <td>
+                                {formatNumber(requirement?.quantity)}
+                              </td>
 
-                            return (
+                              <td>
+                                <strong>
+                                  {quotation?.transporter || "—"}
+                                </strong>
+                              </td>
 
-                              <tr
-                                key={
-                                  allocation.allocationId ||
-                                  index
-                                }
-                              >
+                              <td>
+                                {formatAmount(quotation?.amount)}
+                              </td>
 
-                                <td>
-                                  <span className="kam-client-row-no">
-                                    {index + 1}
-                                  </span>
-                                </td>
-
-                                <td>
-                                  <strong>
-                                    {allocation.vehicleNumber ||
-                                      "—"}
-                                  </strong>
-                                </td>
-
-                                <td>
-                                  {requirement?.vehicleType ||
-                                    allocation.requirementId ||
-                                    "—"}
-                                </td>
-
-                                <td>
-                                  {quotation?.transporter ||
-                                    "—"}
-                                </td>
-
-                                <td>
-
-                                  <strong>
-                                    {allocation?.driver?.name ||
-                                      "—"}
-                                  </strong>
-
-                                  {allocation?.driver
-                                    ?.contactNumber && (
-
-                                    <small
-                                      style={{
-                                        display:
-                                          "block",
-                                      }}
-                                    >
-                                      {
-                                        allocation.driver
-                                          .contactNumber
-                                      }
-                                    </small>
-
-                                  )}
-
-                                </td>
-
-                                <td>
-                                  {latest?.currentLocation ||
-                                    "—"}
-                                </td>
-
-                                <td>
-                                  {latest?.day ||
-                                    "—"}
-                                </td>
-
-                                <td>
-
-                                  <span
-                                    className={`approval-status ${getStatusClass(
-                                      latest?.status ||
-                                        "Pending"
-                                    )}`}
-                                  >
-                                    {latest?.status ||
-                                      "Pending"}
-                                  </span>
-
-                                </td>
-
-                              </tr>
-
-                            );
-                          }
-                        )}
-
+                              <td>
+                                {confirmation?.confirmedBy || "—"}
+                              </td>
+                            </tr>
+                          );
+                        })}
                       </tbody>
-
                     </table>
-
                   </div>
-
                 ) : (
-
                   <div className="kam-lifecycle-empty">
-                    No actual vehicles have been allocated yet.
+                    No approved transporter details are available.
                   </div>
-
                 )}
+              </section>
 
+              <div className="kam-place-order-note">
+                <span className="kam-place-order-note-icon" aria-hidden="true">
+                  ✓
+                </span>
+
+                <div>
+                  <strong>Final verification</strong>
+                  <p>
+                    After you click Place Order, this order will move to Tracking.
+                    The Tracking team can then allocate actual vehicles, drivers,
+                    and manage daily movement updates.
+                  </p>
+                </div>
+              </div>
+
+              {placeOrderMessage && (
+                <div className="kam-form-success">
+                  {placeOrderMessage}
+                </div>
+              )}
+
+              {placeOrderError && (
+                <div className="kam-form-error">
+                  {placeOrderError}
+                </div>
+              )}
+
+            </div>
+          )}
+
+          {/* =================================================
+              TRACKING / TRIP COMPLETE - ALLOCATED VEHICLES
+          ================================================= */}
+
+          {(activeStepIndex === 5 || activeStepIndex === 6) && (
+            <div className="kam-step-page kam-step-page-allocated-vehicles">
+
+              <section className="kam-client-vehicle-section">
+                <SectionHeading
+                  title="Allocated Vehicles"
+                  description="Actual vehicles allocated and managed by the Tracking team."
+                  count={allocations.length}
+                />
+
+                {allocations.length > 0 ? (
+                  <div className="kam-client-vehicle-table-wrap">
+                    <table className="kam-client-vehicle-table">
+                      <thead>
+                        <tr>
+                          <th>#</th>
+                          <th>Vehicle Number</th>
+                          <th>Requirement</th>
+                          <th>Transporter</th>
+                          <th>Driver</th>
+                          <th>Current Location</th>
+                          <th>Day</th>
+                          <th>Status</th>
+                        </tr>
+                      </thead>
+
+                      <tbody>
+                        {allocations.map((allocation, index) => {
+                          const requirement = getRequirement(
+                            order,
+                            allocation.requirementId
+                          );
+
+                          const confirmation =
+                            safeArray(order.vehicleConfirmations).find(
+                              (item) =>
+                                item.confirmationId ===
+                                allocation.confirmationId
+                            ) ||
+                            getApprovedConfirmation(
+                              order,
+                              allocation.requirementId
+                            );
+
+                          const quotation = getQuotation(
+                            order,
+                            allocation.quotationId ||
+                              confirmation?.quotationId
+                          );
+
+                          const latest = getLatestTracking(allocation);
+
+                          return (
+                            <tr
+                              key={allocation.allocationId || index}
+                            >
+                              <td>
+                                <span className="kam-client-row-no">
+                                  {index + 1}
+                                </span>
+                              </td>
+
+                              <td>
+                                <strong>
+                                  {allocation.vehicleNumber || "—"}
+                                </strong>
+                              </td>
+
+                              <td>
+                                {requirement?.vehicleType ||
+                                  allocation.requirementId ||
+                                  "—"}
+                              </td>
+
+                              <td>
+                                {quotation?.transporter || "—"}
+                              </td>
+
+                              <td>
+                                <strong>
+                                  {allocation?.driver?.name || "—"}
+                                </strong>
+
+                                {allocation?.driver?.contactNumber && (
+                                  <small style={{ display: "block" }}>
+                                    {allocation.driver.contactNumber}
+                                  </small>
+                                )}
+                              </td>
+
+                              <td>
+                                {latest?.currentLocation || "—"}
+                              </td>
+
+                              <td>{latest?.day || "—"}</td>
+
+                              <td>
+                                <span
+                                  className={`approval-status ${getStatusClass(
+                                    latest?.status || "Pending"
+                                  )}`}
+                                >
+                                  {latest?.status || "Pending"}
+                                </span>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="kam-lifecycle-empty">
+                    Tracking has started. Actual vehicle details will appear here
+                    after the Tracking team allocates vehicles.
+                  </div>
+                )}
               </section>
 
             </div>
@@ -2185,8 +2965,9 @@ const Lifecyclemodal = ({
           <div className="kam-readonly-field">
             Current Stage:{" "}
             <strong>
-              {order.stage ||
-                "Order Approval"}
+              {lifecycle?.[currentLifecycleIndex]?.title ||
+                order?.stage ||
+                displayCurrentStage}
             </strong>
           </div>
 
@@ -2312,7 +3093,7 @@ const Lifecyclemodal = ({
 
             {/* VENDOR FINALIZATION */}
 
-            {activeStepIndex === 2 && (
+            {activeStepIndex === 3 && (
               <>
 
                 {!vehicleApprovalCompleted ? (
@@ -2355,6 +3136,39 @@ const Lifecyclemodal = ({
                 )}
 
               </>
+            )}
+
+            {/* PO DOCUMENT */}
+
+            {activeStepIndex === 2 && (
+                <button
+                  type="button"
+                  className="kam-request-approval-btn kam-po-save-btn"
+                  disabled={poSaving}
+                  onClick={savePoDocument}
+                >
+                  <span aria-hidden="true">✓</span>
+                  <span>{poSaving ? "Saving..." : "Save PO"}</span>
+                </button>
+            )}
+
+            {/* ORDER PLACED */}
+
+            {activeStepIndex === 4 && (
+              <button
+                type="button"
+                className="kam-request-approval-btn kam-place-order-btn"
+                disabled={placeOrderSaving}
+                onClick={placeOrder}
+              >
+                <span aria-hidden="true">✓</span>
+                <span>
+                  {placeOrderSaving ? "Placing Order..." : "Place Order"}
+                </span>
+                {!placeOrderSaving && (
+                  <span aria-hidden="true">→</span>
+                )}
+              </button>
             )}
 
             <button

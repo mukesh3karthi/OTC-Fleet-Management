@@ -2139,24 +2139,90 @@
 ========================================================= */
 
 .approval-quotation-main-table {
-  min-width: 980px;
+  width: 100%;
+  min-width: 0;
   table-layout: fixed;
 }
 
+.approval-quotation-main-table th,
+.approval-quotation-main-table td {
+  padding-left: 14px;
+  padding-right: 14px;
+  vertical-align: middle;
+}
+
 .approval-quotation-main-table th:nth-child(1),
-.approval-quotation-main-table td:nth-child(1) { width: 6%; text-align: center; }
+.approval-quotation-main-table td:nth-child(1) {
+  width: 6%;
+  text-align: center;
+}
+
 .approval-quotation-main-table th:nth-child(2),
-.approval-quotation-main-table td:nth-child(2) { width: 12%; }
+.approval-quotation-main-table td:nth-child(2) {
+  width: 12%;
+}
+
 .approval-quotation-main-table th:nth-child(3),
-.approval-quotation-main-table td:nth-child(3) { width: 18%; }
+.approval-quotation-main-table td:nth-child(3) {
+  width: 17%;
+}
+
 .approval-quotation-main-table th:nth-child(4),
-.approval-quotation-main-table td:nth-child(4) { width: 28%; }
+.approval-quotation-main-table td:nth-child(4) {
+  width: 17%;
+}
+
 .approval-quotation-main-table th:nth-child(5),
-.approval-quotation-main-table td:nth-child(5) { width: 15%; }
+.approval-quotation-main-table td:nth-child(5) {
+  width: 17%;
+}
+
 .approval-quotation-main-table th:nth-child(6),
-.approval-quotation-main-table td:nth-child(6) { width: 9%; text-align: center; }
+.approval-quotation-main-table td:nth-child(6) {
+  width: 11%;
+  text-align: center;
+}
+
 .approval-quotation-main-table th:nth-child(7),
-.approval-quotation-main-table td:nth-child(7) { width: 12%; text-align: center; }
+.approval-quotation-main-table td:nth-child(7) {
+  width: 10%;
+  text-align: center;
+}
+
+.approval-quotation-main-table th:nth-child(8),
+.approval-quotation-main-table td:nth-child(8) {
+  width: 5%;
+  text-align: center;
+}
+
+.approval-quotation-main-table th:nth-child(9),
+.approval-quotation-main-table td:nth-child(9) {
+  width: 8%;
+  text-align: center;
+}
+
+.approval-quotation-main-table .approval-status {
+  min-width: 72px;
+  min-height: 26px;
+  padding: 0 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.approval-quotation-main-table .approval-status.approved {
+  border-color: #b7e0d0;
+  background: var(--ap-success-bg);
+  color: var(--ap-success);
+}
+
+.approval-quotation-main-table .approval-status.pending {
+  border-color: #ead7a8;
+  background: var(--ap-warning-bg);
+  color: var(--ap-warning);
+}
 
 .approval-quotation-order-row {
   cursor: pointer;
