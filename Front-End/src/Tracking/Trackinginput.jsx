@@ -1518,12 +1518,7 @@ const Trackinginput = () => {
             Tracking Input
           </h1>
 
-          <p>
-            Allocate actual vehicles
-            and update daily movement
-            for confirmed transporter
-            requirements.
-          </p>
+          
         </div>
 
         <button
@@ -1613,7 +1608,7 @@ const Trackinginput = () => {
                 </CardHeader>
 
                 <div className="tracking-form-card-body">
-                  <div className="tracking-form-grid">
+                  <div className="tracking-form-grid tracking-order-snapshot-grid">
                     <FormField
                       label="Trip ID"
                       icon={
@@ -2824,21 +2819,16 @@ const Trackinginput = () => {
                                 </div>
                               </div>
 
-                              {/* DRIVER */}
-
-                              <VehicleSectionTitle
-                                icon={
-                                  <UserRound
-                                    size={
-                                      15
-                                    }
-                                  />
-                                }
-                                title="Driver Details"
-                                type="driver"
-                              />
-
-                              <div className="tracking-vehicle-entry-grid tracking-driver-data-grid">
+                              {/* DRIVER / ESCORT / SUPERVISOR - SINGLE ROW */}
+                              <div className="tracking-personnel-row">
+                                <SupportCard
+                                  title="Driver Details"
+                                  subtitle="Vehicle and driver information"
+                                  icon={
+                                    <UserRound size={15} />
+                                  }
+                                  className="driver"
+                                >
                                 <AllocatedField
                                   label="Vehicle Number"
                                   icon={
@@ -2914,11 +2904,8 @@ const Trackinginput = () => {
                                     )
                                   }
                                 />
-                              </div>
+                                </SupportCard>
 
-                              {/* ESCORT + SUPERVISOR */}
-
-                              <div className="tracking-trip-support-grid">
                                 <SupportCard
                                   title="Escort Details"
                                   subtitle="Vehicle-specific escort information"
@@ -3076,21 +3063,20 @@ const Trackinginput = () => {
                                 </SupportCard>
                               </div>
 
-                              {/* LOADING */}
+                              {/* LOADING + UNLOADING - SIDE BY SIDE */}
+                              <div className="tracking-operation-row">
+                                <section className="tracking-operation-card loading">
+                                  <div className="tracking-operation-card-header">
+                                    <div className="tracking-operation-card-icon">
+                                      <Truck size={17} />
+                                    </div>
+                                    <div>
+                                      <strong>Loading Details</strong>
+                                      <span>Loading point and dispatch information</span>
+                                    </div>
+                                  </div>
 
-                              <VehicleSectionTitle
-                                icon={
-                                  <Truck
-                                    size={
-                                      15
-                                    }
-                                  />
-                                }
-                                title="Loading Details"
-                                type="loading"
-                              />
-
-                              <div className="tracking-vehicle-entry-grid tracking-driver-data-grid">
+                                  <div className="tracking-operation-card-grid">
                                 <AllocatedSelect
                                   label="Loading Status"
                                   icon={
@@ -3261,22 +3247,20 @@ const Trackinginput = () => {
                                   }
                                 />
                               </div>
+                                </section>
 
-                              {/* UNLOADING */}
+                                <section className="tracking-operation-card unloading">
+                                  <div className="tracking-operation-card-header">
+                                    <div className="tracking-operation-card-icon">
+                                      <PackageCheck size={17} />
+                                    </div>
+                                    <div>
+                                      <strong>Unloading Details</strong>
+                                      <span>Delivery point and unloading information</span>
+                                    </div>
+                                  </div>
 
-                              <VehicleSectionTitle
-                                icon={
-                                  <PackageCheck
-                                    size={
-                                      15
-                                    }
-                                  />
-                                }
-                                title="Unloading Details"
-                                type="unloading"
-                              />
-
-                              <div className="tracking-vehicle-entry-grid tracking-driver-data-grid">
+                                  <div className="tracking-operation-card-grid">
                                 <AllocatedSelect
                                   label="Unloading Status"
                                   icon={
@@ -3447,6 +3431,8 @@ const Trackinginput = () => {
                                   }
                                 />
                               </div>
+                                </section>
+                              </div>
 
                               <div className="tracking-form-footer">
                                 <div />
@@ -3521,7 +3507,7 @@ const Trackinginput = () => {
                                     type="tracking"
                                   />
 
-                                  <div className="tracking-vehicle-entry-grid tracking-driver-data-grid">
+                                  <div className="tracking-vehicle-entry-grid tracking-driver-data-grid tracking-movement-grid">
                                     <FormField
                                       label="Date"
                                       type="date"
@@ -3680,79 +3666,6 @@ const Trackinginput = () => {
                                       name="currentLocation"
                                       value={
                                         trackingForm.currentLocation
-                                      }
-                                      onChange={(
-                                        event
-                                      ) =>
-                                        handleTrackingChange(
-                                          allocation.allocationId,
-                                          event
-                                        )
-                                      }
-                                    />
-
-                                    <FormField
-                                      label="Latitude"
-                                      type="number"
-                                      icon={
-                                        <Navigation
-                                          size={
-                                            15
-                                          }
-                                        />
-                                      }
-                                      name="latitude"
-                                      value={
-                                        trackingForm.latitude
-                                      }
-                                      onChange={(
-                                        event
-                                      ) =>
-                                        handleTrackingChange(
-                                          allocation.allocationId,
-                                          event
-                                        )
-                                      }
-                                    />
-
-                                    <FormField
-                                      label="Longitude"
-                                      type="number"
-                                      icon={
-                                        <Navigation
-                                          size={
-                                            15
-                                          }
-                                        />
-                                      }
-                                      name="longitude"
-                                      value={
-                                        trackingForm.longitude
-                                      }
-                                      onChange={(
-                                        event
-                                      ) =>
-                                        handleTrackingChange(
-                                          allocation.allocationId,
-                                          event
-                                        )
-                                      }
-                                    />
-
-                                    <FormField
-                                      label="Speed"
-                                      type="number"
-                                      min="0"
-                                      icon={
-                                        <Gauge
-                                          size={
-                                            15
-                                          }
-                                        />
-                                      }
-                                      name="speed"
-                                      value={
-                                        trackingForm.speed
                                       }
                                       onChange={(
                                         event
@@ -4034,7 +3947,7 @@ const SupportCard = ({
       </div>
     </div>
 
-    <div className="tracking-form-grid">
+    <div className="tracking-support-fields">
       {children}
     </div>
   </div>

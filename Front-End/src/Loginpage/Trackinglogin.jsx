@@ -170,123 +170,139 @@ const Trackinglogin = ({
      LOGIN
   ========================================================= */
 
-  const handleSubmit = (
-    event
-  ) => {
+  // const handleSubmit = (
+  //   event
+  // ) => {
 
+  //   event.preventDefault();
+
+  //   setError("");
+
+
+  //   const cleanUsername =
+  //     username.trim();
+
+  //   const cleanPassword =
+  //     password.trim();
+
+
+  //   /* BOTH EMPTY */
+
+  //   if (
+  //     !cleanUsername &&
+  //     !cleanPassword
+  //   ) {
+
+  //     setError(
+  //       "Please enter username and password."
+  //     );
+
+  //     return;
+
+  //   }
+
+
+  //   /* USERNAME EMPTY */
+
+  //   if (!cleanUsername) {
+
+  //     setError(
+  //       "Please enter username."
+  //     );
+
+  //     return;
+
+  //   }
+
+
+  //   /* PASSWORD EMPTY */
+
+  //   if (!cleanPassword) {
+
+  //     setError(
+  //       "Please enter password."
+  //     );
+
+  //     return;
+
+  //   }
+
+
+  //   /* =========================================================
+  //      START LOGIN
+  //   ========================================================= */
+
+  //   setIsLoggingIn(true);
+
+
+  //   /* =========================================================
+  //      LOGIN SUCCESS
+  //   ========================================================= */
+
+  //   if (
+  //     cleanUsername ===
+  //       VALID_USERNAME &&
+  //     cleanPassword ===
+  //       VALID_PASSWORD
+  //   ) {
+
+  //     sessionStorage.setItem(
+  //       "trackingLoggedIn",
+  //       "true"
+  //     );
+
+  //     sessionStorage.setItem(
+  //       "trackingUsername",
+  //       cleanUsername
+  //     );
+
+
+  //     setIsLoggingIn(false);
+
+  //     setError("");
+
+
+  //     onLoginSuccess?.({
+  //       username:
+  //         cleanUsername,
+  //     });
+
+
+  //     onClose?.();
+
+  //     return;
+
+  //   }
+
+
+  //   /* =========================================================
+  //      INVALID LOGIN
+  //   ========================================================= */
+
+  //   setIsLoggingIn(false);
+
+  //   setError(
+  //     "Invalid username or password."
+  //   );
+
+  // };
+
+  const handleSubmit = (event) => {
     event.preventDefault();
 
-    setError("");
-
-
-    const cleanUsername =
-      username.trim();
-
-    const cleanPassword =
-      password.trim();
-
-
-    /* BOTH EMPTY */
-
-    if (
-      !cleanUsername &&
-      !cleanPassword
-    ) {
-
-      setError(
-        "Please enter username and password."
-      );
-
-      return;
-
-    }
-
-
-    /* USERNAME EMPTY */
-
-    if (!cleanUsername) {
-
-      setError(
-        "Please enter username."
-      );
-
-      return;
-
-    }
-
-
-    /* PASSWORD EMPTY */
-
-    if (!cleanPassword) {
-
-      setError(
-        "Please enter password."
-      );
-
-      return;
-
-    }
-
-
-    /* =========================================================
-       START LOGIN
-    ========================================================= */
-
-    setIsLoggingIn(true);
-
-
-    /* =========================================================
-       LOGIN SUCCESS
-    ========================================================= */
-
-    if (
-      cleanUsername ===
-        VALID_USERNAME &&
-      cleanPassword ===
-        VALID_PASSWORD
-    ) {
-
-      sessionStorage.setItem(
-        "trackingLoggedIn",
-        "true"
-      );
-
-      sessionStorage.setItem(
-        "trackingUsername",
-        cleanUsername
-      );
-
-
-      setIsLoggingIn(false);
-
-      setError("");
-
-
-      onLoginSuccess?.({
-        username:
-          cleanUsername,
-      });
-
-
-      onClose?.();
-
-      return;
-
-    }
-
-
-    /* =========================================================
-       INVALID LOGIN
-    ========================================================= */
+    // TEMPORARY: bypass username/password login
+    sessionStorage.setItem("trackingLoggedIn", "true");
+    sessionStorage.setItem("trackingUsername", "Temporary User");
 
     setIsLoggingIn(false);
+    setError("");
 
-    setError(
-      "Invalid username or password."
-    );
+    onLoginSuccess?.({
+      username: "Temporary User",
+    });
 
+    onClose?.();
   };
-
 
   /* =========================================================
      RENDER

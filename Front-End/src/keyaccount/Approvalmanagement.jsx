@@ -1901,8 +1901,49 @@ const Approvalmanagement = () => {
                     {isExpanded && (
                       <tr className="approval-quotation-expand-row">
                         <td colSpan="9">
-                          <div className="approval-quotation-expand-panel">
-                            <div className="approval-quotation-vehicle-list">
+                          <div
+                            className="approval-quotation-expand-panel"
+                            role="dialog"
+                            aria-modal="true"
+                            aria-label={`Transporter quotation details for ${order.tripId || "order"}`}
+                          >
+                            <div className="approval-quotation-modal-head">
+                              <div className="approval-quotation-modal-title">
+                                <span>TRANSPORTER QUOTATION REVIEW</span>
+                                <h3>{order.tripId || "Order Details"}</h3>
+                                <p>
+                                  {order.customer || "—"} <b>•</b> {order.movementType || "—"}
+                                  <b>•</b> {order.origin || "—"} → {order.destination || "—"}
+                                </p>
+                              </div>
+
+                              <div className="approval-quotation-modal-summary">
+                                <div>
+                                  <span>Requirements</span>
+                                  <strong>{totalRequirements}</strong>
+                                </div>
+                                <div>
+                                  <span>Confirmed</span>
+                                  <strong>{confirmedCount}/{totalRequirements}</strong>
+                                </div>
+                                <div>
+                                  <span>Status</span>
+                                  <strong>{orderQuotationStatus}</strong>
+                                </div>
+                              </div>
+
+                              <button
+                                type="button"
+                                className="approval-quotation-modal-close"
+                                onClick={() => setExpandedOrderId(null)}
+                                aria-label="Close quotation details"
+                              >
+                                ×
+                              </button>
+                            </div>
+
+                            <div className="approval-quotation-modal-body">
+                              <div className="approval-quotation-vehicle-list">
                               {requirements.map((requirement, index) => {
                                 const quotations = getQuotationsForRequirement(
                                   order,
@@ -2205,6 +2246,7 @@ const Approvalmanagement = () => {
                                   </section>
                                 );
                               })}
+                              </div>
                             </div>
                           </div>
                         </td>

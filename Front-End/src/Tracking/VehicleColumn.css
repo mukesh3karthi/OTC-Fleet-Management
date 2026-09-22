@@ -5446,3 +5446,423 @@
     height: 40px;
   }
 }
+
+
+/* =========================================================
+   PROFESSIONAL CORPORATE UI OVERRIDE
+   Clean navy / white / teal system
+========================================================= */
+
+.vehicle-column-panel {
+  background: #f6f8fb;
+  color: #142b40;
+}
+
+/* Top vehicle selector */
+.vehicle-selector-row {
+  margin: 8px 10px 7px !important;
+  padding: 5px !important;
+  border: 1px solid #dce5ec !important;
+  border-radius: 11px !important;
+  background: #ffffff !important;
+  box-shadow: 0 2px 10px rgba(24, 52, 77, 0.04);
+}
+
+.vehicle-number-card {
+  min-height: 38px !important;
+  border: 1px solid transparent !important;
+  border-radius: 8px !important;
+  background: transparent !important;
+  color: #53697b !important;
+  box-shadow: none !important;
+}
+
+.vehicle-number-card:hover {
+  background: #f3f7fa !important;
+  color: #173d5d !important;
+}
+
+.vehicle-number-card.active {
+  border-color: #244f73 !important;
+  background: #244f73 !important;
+  color: #ffffff !important;
+  box-shadow: 0 3px 9px rgba(36, 79, 115, 0.16) !important;
+}
+
+/* Current status */
+.vehicle-status-strip {
+  width: calc(100% - 20px) !important;
+  min-height: 44px !important;
+  margin: 8px 10px !important;
+  padding: 5px 7px !important;
+  border: 1px solid #dce5ec !important;
+  border-radius: 10px !important;
+  background: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(24, 52, 77, 0.035);
+}
+
+.status-item {
+  min-height: 30px !important;
+  padding: 0 10px !important;
+  gap: 5px !important;
+  border-right: 1px solid #e8edf1;
+}
+
+.status-item:last-child {
+  border-right: 0;
+}
+
+.status-item span {
+  color: #7d8e9c !important;
+  font-size: 8px !important;
+  font-weight: 600 !important;
+}
+
+.status-item strong {
+  color: #17364f;
+  font-size: 10px !important;
+  font-weight: 750 !important;
+}
+
+/* Route */
+.trip-route-card {
+  margin: 0 10px 8px !important;
+  min-height: 62px;
+  padding: 9px 12px !important;
+  grid-template-columns: minmax(0, 1fr) 120px minmax(0, 1fr) !important;
+  border: 1px solid #dce5ec !important;
+  border-radius: 10px !important;
+  background: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(24, 52, 77, 0.03);
+}
+
+.trip-route-point span {
+  color: #8998a5 !important;
+  font-size: 7.5px !important;
+  font-weight: 600 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.35px;
+}
+
+.trip-route-point strong {
+  margin-top: 4px !important;
+  color: #163a56 !important;
+  font-size: 11px !important;
+  font-weight: 750 !important;
+}
+
+.trip-route-direction .route-line {
+  background: #ccd8e0 !important;
+}
+
+.route-center-content {
+  width: 58px !important;
+  min-width: 58px !important;
+}
+
+.route-material-name {
+  font-size: 7px !important;
+  color: #778b99 !important;
+}
+
+.route-vehicle-icon {
+  width: 30px !important;
+  height: 30px !important;
+  border-radius: 9px !important;
+  color: #ffffff !important;
+  background: #285b83 !important;
+  box-shadow: 0 4px 9px rgba(40, 91, 131, 0.17) !important;
+}
+
+/* Distance summary */
+.trip-distance-summary {
+  margin: 0 10px 9px !important;
+  gap: 8px !important;
+}
+
+.distance-summary-item {
+  position: relative;
+  min-height: 64px;
+  padding: 10px 12px !important;
+  overflow: hidden;
+  border: 1px solid #dce5ec !important;
+  border-radius: 10px !important;
+  background: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(24, 52, 77, 0.03);
+}
+
+.distance-summary-item::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: #2b6da4;
+}
+
+.distance-summary-item.covered::before {
+  background: #1b9b91;
+}
+
+.distance-summary-item.balance::before {
+  background: #d88a22;
+}
+
+.distance-summary-item span {
+  color: #8293a1 !important;
+  font-size: 8px !important;
+  font-weight: 600 !important;
+}
+
+.distance-summary-item strong {
+  margin-top: 5px !important;
+  color: #17364f !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+}
+
+/* Movement section */
+.movement-card-section {
+  margin: 0 10px 9px !important;
+  overflow: hidden;
+  border: 1px solid #d9e3ea !important;
+  border-radius: 11px !important;
+  background: #ffffff !important;
+  box-shadow: 0 3px 10px rgba(24, 52, 77, 0.04);
+}
+
+.movement-heading-row {
+  min-height: 52px !important;
+  margin: 0 !important;
+  padding: 8px 11px !important;
+  gap: 8px !important;
+  background: #254f73 !important;
+}
+
+.movement-title-line > strong {
+  color: #ffffff !important;
+  font-size: 11px !important;
+  font-weight: 750 !important;
+}
+
+.movement-heading-subtitle {
+  margin-top: 3px !important;
+  color: rgba(255,255,255,.68) !important;
+  font-size: 7.5px !important;
+}
+
+.section-heading-icon.blue {
+  width: 30px !important;
+  height: 30px !important;
+  border-radius: 8px !important;
+  color: #245274 !important;
+  background: #ffffff !important;
+}
+
+.movement-vehicle-badge {
+  min-height: 27px !important;
+  padding: 0 9px !important;
+  border: 1px solid rgba(255,255,255,.25) !important;
+  border-radius: 7px !important;
+  color: #214b6e !important;
+  background: #ffffff !important;
+  font-size: 8px !important;
+  font-weight: 800 !important;
+}
+
+.movement-card-grid {
+  padding: 9px !important;
+  gap: 7px !important;
+}
+
+.movement-info-card {
+  min-height: 55px !important;
+  padding: 8px 9px !important;
+  border: 1px solid #e0e7ec !important;
+  border-radius: 8px !important;
+  background: #fbfcfd !important;
+}
+
+.movement-info-card:hover {
+  border-color: #c6d7e2 !important;
+  background: #ffffff !important;
+}
+
+.movement-info-card span {
+  color: #8494a1 !important;
+  font-size: 7.5px !important;
+  font-weight: 600 !important;
+}
+
+.movement-info-card strong {
+  margin-top: 4px !important;
+  color: #17364f !important;
+  font-size: 9.5px !important;
+  font-weight: 750 !important;
+}
+
+/* Generic detail cards */
+.trip-detail-group,
+.operation-card,
+.document-details-card,
+.lr-person-section {
+  border-color: #dce5ec !important;
+  border-radius: 10px !important;
+  background: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(24, 52, 77, 0.03) !important;
+}
+
+.trip-detail-group-title,
+.document-details-heading,
+.operation-card-header,
+.lr-person-heading {
+  background: #f7f9fb !important;
+  border-bottom-color: #e5ebef !important;
+}
+
+.trip-detail-group-title strong,
+.operation-card-title strong,
+.document-details-heading strong,
+.lr-person-heading strong {
+  color: #173a56 !important;
+  font-weight: 750 !important;
+}
+
+/* Loading / unloading */
+.operation-main-grid {
+  gap: 8px !important;
+}
+
+.operation-card {
+  border-radius: 10px !important;
+}
+
+.operation-card::before {
+  height: 3px !important;
+}
+
+.operation-card.loading-card::before {
+  background: #2b6da4 !important;
+}
+
+.operation-card.unloading-card::before {
+  background: #1a9369 !important;
+}
+
+.operation-info-item {
+  border-color: #e4eaef !important;
+  border-radius: 7px !important;
+  background: #fbfcfd !important;
+}
+
+.operation-info-item > strong {
+  color: #1b3850 !important;
+}
+
+/* Details */
+.trip-detail-row,
+.simple-detail-row,
+.lr-person-row {
+  border-bottom-color: #edf1f4 !important;
+}
+
+.trip-detail-label,
+.simple-detail-label,
+.lr-person-row > span:first-child {
+  color: #7d8f9d !important;
+}
+
+.trip-detail-value,
+.simple-detail-value,
+.lr-person-row strong {
+  color: #193850 !important;
+}
+
+/* Mini statuses */
+.vehicle-mini-status {
+  border: 1px solid transparent;
+  border-radius: 999px !important;
+  padding: 0 7px !important;
+}
+
+.vehicle-mini-status.moving {
+  color: #137e59 !important;
+  background: #eaf7f1 !important;
+  border-color: #c8e9da !important;
+}
+
+.vehicle-mini-status.idle {
+  color: #b27617 !important;
+  background: #fff6e8 !important;
+  border-color: #efd9b2 !important;
+}
+
+.vehicle-mini-status.breakdown {
+  color: #be4a51 !important;
+  background: #fff0f1 !important;
+  border-color: #efc9cc !important;
+}
+
+.vehicle-mini-status.reached {
+  color: #286fa2 !important;
+  background: #edf6fc !important;
+  border-color: #c8deed !important;
+}
+
+/* Consistent section spacing */
+.operation-details-section {
+  margin: 0 10px 9px !important;
+}
+
+.trip-detail-group {
+  margin-top: 8px !important;
+}
+
+/* Cleaner scrollbar */
+.vehicle-column-panel {
+  scrollbar-width: thin;
+  scrollbar-color: #c8d3db transparent;
+}
+
+.vehicle-column-panel::-webkit-scrollbar {
+  width: 5px;
+}
+
+.vehicle-column-panel::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: #c8d3db;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .trip-route-card {
+    grid-template-columns: minmax(0, 1fr) 85px minmax(0, 1fr) !important;
+  }
+
+  .movement-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 620px) {
+  .trip-distance-summary,
+  .operation-main-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .vehicle-status-strip {
+    align-items: stretch !important;
+    flex-direction: column !important;
+  }
+
+  .status-item {
+    justify-content: flex-start !important;
+    border-right: 0 !important;
+    border-bottom: 1px solid #edf1f4;
+  }
+
+  .status-item:last-child {
+    border-bottom: 0;
+  }
+}

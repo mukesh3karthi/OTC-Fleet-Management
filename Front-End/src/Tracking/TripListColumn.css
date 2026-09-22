@@ -1,17 +1,17 @@
 /* =========================================================
-   TRIP LIST COLUMN
-   SCREENSHOT STYLE
-   WHITE + NAVY + TEAL
+   ACTIVE TRIPS
+   COMPACT PROFESSIONAL DESIGN
 ========================================================= */
 
+.trip-list-column,
+.trip-list-column * {
+  box-sizing: border-box;
+}
 
-/* =========================================================
-   PANEL
-========================================================= */
-
-.tracking-trip-panel {
+.trip-list-column {
   width: 100%;
   height: 100%;
+  min-width: 0;
   min-height: 0;
 
   display: flex;
@@ -19,46 +19,13 @@
 
   overflow: hidden;
 
-  background: #ffffff;
-
-  border: 1px solid #dbe3e9;
-  border-radius: 0;
-
-  box-shadow: none;
-
-  box-sizing: border-box;
-}
-
-
-/* =========================================================
-   HEADER
-========================================================= */
-
-.tracking-column-heading {
-  min-height: 70px;
-
-  padding: 13px 16px;
-
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  flex-shrink: 0;
+  border: 1px solid #dbe5eb;
+  border-radius: 12px;
 
   background: #ffffff;
 
-  border-bottom: 1px solid #e4eaee;
-}
-
-
-/* =========================================================
-   HEADER TITLE
-========================================================= */
-
-.tracking-column-heading h2 {
-  margin: 0;
-
-  color: #0b2942;
+  box-shadow:
+    0 3px 12px rgba(22, 48, 70, 0.04);
 
   font-family:
     Inter,
@@ -66,111 +33,131 @@
     Roboto,
     Arial,
     sans-serif;
-
-  font-size: 16px;
-  font-weight: 700;
-
-  line-height: 1.2;
 }
 
 
 /* =========================================================
-   HEADER SUBTITLE
+   HEADER
 ========================================================= */
 
-.tracking-column-heading p {
-  margin: 4px 0 0;
+.trip-list-header {
+  min-height: 58px;
 
-  color: #8797a5;
+  padding: 10px 12px;
 
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 10px;
+
+  flex: 0 0 auto;
+
+  border-bottom: 1px solid #e6edf1;
+
+  background: #ffffff;
+}
+
+.trip-list-header-content {
+  min-width: 0;
+}
+
+.trip-list-header h3 {
+  margin: 0;
+
+  color: #173a56;
+
+  font-size: 15px;
+  font-weight: 750;
+
+  line-height: 1.15;
+
+  letter-spacing: -0.2px;
+}
+
+.trip-list-header-content > span {
+  display: block;
+
+  margin-top: 3px;
+
+  color: #81929f;
+
+  font-size: 8px;
+  font-weight: 550;
+}
+
+
+/* COUNT */
+
+.trip-list-total {
+  min-width: 38px;
+  height: 31px;
+
+  padding: 0 8px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 5px;
+
+  flex: 0 0 auto;
+
+  border: 1px solid #c9e4e0;
+  border-radius: 8px;
+
+  color: #14867d;
+
+  background: #edf8f6;
+}
+
+.trip-list-total svg {
+  width: 12px;
+  height: 12px;
+}
+
+.trip-list-total strong {
   font-size: 10px;
-  font-weight: 500;
-
-  line-height: 1.3;
+  font-weight: 800;
 }
 
 
 /* =========================================================
-   HEADER ICON
+   SCROLL AREA
 ========================================================= */
 
-.tracking-column-heading-icon {
-  width: 38px;
-  height: 38px;
-
-  flex: 0 0 38px;
-
-  display: grid;
-  place-items: center;
-
-  color: #0f9488;
-
-  background: #e7f5f3;
-
-  border: none;
-  border-radius: 9px;
-}
-
-
-.tracking-column-heading-icon svg {
-  width: 15px;
-  height: 15px;
-
-  stroke-width: 2;
-}
-
-
-/* =========================================================
-   LIST
-========================================================= */
-
-.tracking-trip-list {
+.trip-list-scroll {
   flex: 1;
+
   min-height: 0;
 
-  padding: 12px 13px;
+  padding: 8px;
 
   display: flex;
   flex-direction: column;
 
-  gap: 10px;
+  gap: 6px;
 
   overflow-y: auto;
   overflow-x: hidden;
 
-  background: #ffffff;
+  background: #f7f9fb;
 
   scrollbar-width: thin;
-
-  scrollbar-color:
-    #c9d4db
-    transparent;
+  scrollbar-color: #cbd5dc transparent;
 }
 
-
-/* =========================================================
-   SCROLLBAR
-========================================================= */
-
-.tracking-trip-list::-webkit-scrollbar {
+.trip-list-scroll::-webkit-scrollbar {
   width: 4px;
 }
 
-
-.tracking-trip-list::-webkit-scrollbar-track {
+.trip-list-scroll::-webkit-scrollbar-track {
   background: transparent;
 }
 
-
-.tracking-trip-list::-webkit-scrollbar-thumb {
-  background: #c9d4db;
-
-  border-radius: 999px;
-}
-
-
-.tracking-trip-list::-webkit-scrollbar-thumb:hover {
-  background: #9eafb9;
+.trip-list-scroll::-webkit-scrollbar-thumb {
+  border-radius: 20px;
+  background: #cbd5dc;
 }
 
 
@@ -178,30 +165,32 @@
    TRIP CARD
 ========================================================= */
 
-.tracking-trip-card {
+.trip-list-item {
   position: relative;
 
   width: 100%;
-  min-height: 70px;
+  min-width: 0;
+
+  min-height: 76px;
 
   margin: 0;
 
-  padding: 10px 10px 0px;
+  padding: 8px 9px;
 
   display: block;
 
-  flex-shrink: 0;
+  flex: 0 0 auto;
 
   overflow: hidden;
 
-  color: #0b2942;
-
-  background: #ffffff;
-
-  border: 1px solid #d7e0e6;
-  border-radius: 10px;
+  border: 1px solid #dde6eb;
+  border-radius: 9px;
 
   outline: none;
+
+  color: #173a56;
+
+  background: #ffffff;
 
   text-align: left;
 
@@ -210,87 +199,204 @@
   cursor: pointer;
 
   box-shadow:
-    0 1px 3px
-    rgba(11, 41, 66, 0.025);
+    0 1px 4px rgba(20, 45, 65, 0.025);
 
   transition:
-    background 160ms ease,
-    border-color 160ms ease,
-    box-shadow 160ms ease,
-    transform 160ms ease;
+    border-color 150ms ease,
+    background 150ms ease,
+    box-shadow 150ms ease;
 }
 
 
-/* =========================================================
-   CARD HOVER
-========================================================= */
+/* HOVER */
 
-.tracking-trip-card:hover {
-  border-color: #a8ceca;
+.trip-list-item:hover {
+  border-color: #a9d4cf;
 
-  background: #f8fbfb;
+  background: #fcfefe;
 
   box-shadow:
-    0 3px 8px
-    rgba(15, 148, 136, 0.06);
+    0 3px 9px rgba(19, 116, 108, 0.07);
 }
 
 
-/* =========================================================
-   ACTIVE CARD
-========================================================= */
+/* SELECTED */
 
-.tracking-trip-card.active {
-  border: 2px solid #0f9488;
+.trip-list-item.active {
+  border-color: #188e86;
 
-  background: #e5f3f1;
+  background:
+    linear-gradient(
+      90deg,
+      #f0faf8 0%,
+      #ffffff 80%
+    );
 
   box-shadow:
-    0 2px 7px
-    rgba(15, 148, 136, 0.10);
-}
-
-
-/* remove old indicator */
-
-.tracking-trip-card.active::before {
-  display: none;
+    inset 3px 0 0 #188e86,
+    0 2px 8px rgba(18, 120, 112, 0.06);
 }
 
 
 /* =========================================================
-   PRIMARY ROW
+   TOP
 ========================================================= */
 
-.trip-primary-row {
+.trip-list-item-top {
   width: 100%;
-  min-width: 0;
 
-  padding: 0;
+  min-width: 0;
 
   display: flex;
   align-items: center;
   justify-content: space-between;
 
-  gap: 8px;
+  gap: 6px;
 }
 
 
-/* =========================================================
-   CUSTOMER + MATERIAL WRAPPER
-========================================================= */
+/* TRIP ID */
 
-.trip-primary-details {
+.trip-list-trip-id {
   min-width: 0;
-
-  flex: 1;
 
   display: flex;
   align-items: center;
 
   gap: 6px;
+}
+
+.trip-list-truck-icon {
+  width: 24px;
+  height: 24px;
+
+  flex: 0 0 24px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 6px;
+
+  color: #16877f;
+
+  background: #e9f7f5;
+}
+
+.trip-list-truck-icon svg {
+  width: 12px;
+  height: 12px;
+}
+
+.trip-list-trip-id strong {
+  min-width: 0;
 
   overflow: hidden;
+
+  color: #173c58;
+
+  font-size: 10.5px;
+  font-weight: 800;
+
+  line-height: 1.1;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   STATUS
+========================================================= */
+
+.trip-list-status {
+  min-height: 21px;
+
+  padding: 0 7px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 4px;
+
+  flex: 0 0 auto;
+
+  border: 1px solid transparent;
+  border-radius: 999px;
+
+  font-size: 7px;
+  font-weight: 750;
+
+  line-height: 1;
+
+  white-space: nowrap;
+}
+
+.trip-list-status-dot {
+  width: 4px;
+  height: 4px;
+
+  flex: 0 0 4px;
+
+  border-radius: 50%;
+
+  background: currentColor;
+}
+
+
+/* MOVING */
+
+.trip-list-status.moving {
+  color: #14865d;
+
+  border-color: #bee7d2;
+
+  background: #ecf9f2;
+}
+
+
+/* IDLE */
+
+.trip-list-status.idle {
+  color: #ad7014;
+
+  border-color: #efd5a6;
+
+  background: #fff7e9;
+}
+
+
+/* STOPPED */
+
+.trip-list-status.stopped {
+  color: #c34b52;
+
+  border-color: #efc7ca;
+
+  background: #fff1f2;
+}
+
+
+/* BREAKDOWN */
+
+.trip-list-status.breakdown {
+  color: #c34b52;
+
+  border-color: #efc7ca;
+
+  background: #fff1f2;
+}
+
+
+/* REACHED */
+
+.trip-list-status.reached {
+  color: #286fa2;
+
+  border-color: #c7ddef;
+
+  background: #eef7fd;
 }
 
 
@@ -298,133 +404,42 @@
    CUSTOMER
 ========================================================= */
 
-.trip-customer-name {
-  max-width: 58%;
+.trip-list-customer {
+  width: 100%;
+
+  margin-top: 5px;
 
   overflow: hidden;
 
-  color: #0b2942;
+  color: #29465a;
 
-  font-size: 12px;
+  font-size: 9px;
   font-weight: 700;
 
   line-height: 1.2;
 
   text-overflow: ellipsis;
+
   white-space: nowrap;
 }
 
 
 /* =========================================================
-   DIVIDER
+   BOTTOM ROW
 ========================================================= */
 
-.trip-primary-divider {
-  flex: 0 0 auto;
+.trip-list-bottom {
+  width: 100%;
 
-  color: #9caab5;
-
-  font-size: 8px;
-  font-weight: 700;
-}
-
-
-/* =========================================================
-   MATERIAL
-========================================================= */
-
-.trip-material-name {
   min-width: 0;
 
-  flex: 1;
+  margin-top: 6px;
 
-  overflow: hidden;
-
-  color: #768999;
-
-  font-size: 10px;
-  font-weight: 500;
-
-  line-height: 1.2;
-
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-
-/* =========================================================
-   ACTIVE TEXT
-========================================================= */
-
-.tracking-trip-card.active
-.trip-customer-name {
-  color: #0b2942;
-}
-
-
-.tracking-trip-card.active
-.trip-material-name {
-  color: #607987;
-}
-
-
-.tracking-trip-card.active
-.trip-primary-divider {
-  color: #769c98;
-}
-
-
-/* =========================================================
-   VEHICLE COUNT
-========================================================= */
-
-.trip-card-vehicle-count {
-  min-width: 43px;
-  height: 26px;
-
-  padding: 0 9px;
-
-  flex: 0 0 auto;
-
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
 
-  gap: 4px;
-
-  color: #0b2942;
-
-  background: #eef2f4;
-
-  border: none;
-  border-radius: 14px;
-
-  font-size: 10px;
-  font-weight: 700;
-
-  line-height: 1;
-}
-
-
-.trip-card-vehicle-count svg {
-  width: 11px;
-  height: 11px;
-
-  flex: 0 0 auto;
-
-  stroke-width: 2;
-}
-
-
-/* =========================================================
-   ACTIVE VEHICLE COUNT
-========================================================= */
-
-.tracking-trip-card.active
-.trip-card-vehicle-count {
-  color: #ffffff;
-
-  background: #0f9488;
+  gap: 6px;
 }
 
 
@@ -432,227 +447,99 @@
    ROUTE
 ========================================================= */
 
-.trip-route {
-  width: 100%;
-  min-height: 28px;
+.trip-list-route {
+  min-width: 0;
 
-  margin-top: 2px;
-
-  padding: 0 2px;
+  flex: 1;
 
   display: flex;
   align-items: center;
 
-  gap: 5px;
+  gap: 3px;
 
   overflow: hidden;
 
-  background: transparent;
+  color: #728794;
 
-  border: none;
+  font-size: 7.5px;
+  font-weight: 600;
+
+  white-space: nowrap;
+}
+
+.trip-list-route > svg:first-child {
+  width: 10px;
+  height: 10px;
+
+  flex: 0 0 10px;
+
+  color: #dc527c;
+}
+
+.trip-list-route span {
+  min-width: 0;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+}
+
+.trip-list-route span:first-of-type {
+  max-width: 43%;
+}
+
+.trip-list-route span:last-child {
+  max-width: 43%;
+}
+
+.trip-list-route svg:not(:first-child) {
+  width: 8px;
+  height: 8px;
+
+  flex: 0 0 8px;
+
+  color: #a5b1ba;
 }
 
 
 /* =========================================================
-   LOCATION
+   VEHICLE COUNT
 ========================================================= */
 
-.trip-route-location {
-  min-width: 0;
+.trip-list-vehicle-count {
+  flex: 0 0 auto;
 
   display: inline-flex;
   align-items: center;
 
-  gap: 5px;
-}
+  gap: 3px;
 
+  color: #6f8391;
 
-/* =========================================================
-   MAP PIN
-========================================================= */
+  font-size: 7px;
+  font-weight: 650;
 
-.trip-route-location svg {
-  width: 11px;
-  height: 11px;
-
-  flex: 0 0 auto;
-
-  color: #e83c81;
-
-  stroke-width: 2.1;
-}
-
-
-/* =========================================================
-   LOCATION TEXT
-========================================================= */
-
-.trip-route-location span {
-  min-width: 0;
-
-  overflow: hidden;
-
-  color: #536879;
-
-  font-size: 9.5px;
-  font-weight: 500;
-
-  line-height: 1.2;
-
-  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+.trip-list-vehicle-count svg {
+  width: 9px;
+  height: 9px;
 
-/* =========================================================
-   DESTINATION
-========================================================= */
-
-.trip-route-location.destination {
-  flex: 1;
-}
-
-
-.trip-route-location.destination span {
-  color: #0b2942;
-
-  font-size: 9.5px;
-  font-weight: 600;
+  color: #68808e;
 }
 
 
 /* =========================================================
-   ROUTE ARROW
+   EMPTY
 ========================================================= */
 
-.trip-route-arrow {
-  width: 10px;
-  height: 10px;
-
-  flex: 0 0 auto;
-
-  color: #9eacb7;
-}
-
-
-/* =========================================================
-   OPEN ARROW
-========================================================= */
-
-.trip-open-icon {
-  width: 18px;
-  height: 18px;
-
-  margin-left: auto;
-
-  flex: 0 0 18px;
-
-  display: grid;
-  place-items: center;
-
-  color: #0f9488;
-
-  background: transparent;
-
-  border-radius: 4px;
-
-  transition:
-    color 160ms ease,
-    background 160ms ease,
-    transform 160ms ease;
-}
-
-
-.trip-open-icon svg {
-  width: 11px;
-  height: 11px;
-
-  stroke-width: 2.2;
-}
-
-
-/* =========================================================
-   OPEN HOVER
-========================================================= */
-
-.tracking-trip-card:hover
-.trip-open-icon {
-  color: #0c7f76;
-
-  transform: translateX(1px);
-}
-
-
-/* =========================================================
-   ACTIVE ROUTE
-========================================================= */
-
-.tracking-trip-card.active
-.trip-route {
-  background: transparent;
-
-  border: none;
-}
-
-
-.tracking-trip-card.active
-.trip-route-location span {
-  color: #536879;
-}
-
-
-.tracking-trip-card.active
-.trip-route-location.destination span {
-  color: #0b2942;
-}
-
-
-.tracking-trip-card.active
-.trip-route-arrow {
-  color: #75928f;
-}
-
-
-.tracking-trip-card.active
-.trip-open-icon {
-  color: #0f9488;
-
-  background: transparent;
-}
-
-
-/* =========================================================
-   FOCUS
-========================================================= */
-
-.tracking-trip-card:focus-visible {
-  outline:
-    2px solid
-    rgba(15, 148, 136, 0.30);
-
-  outline-offset: 2px;
-}
-
-
-/* =========================================================
-   OLD ELEMENTS
-========================================================= */
-
-.trip-compact-top,
-.trip-material-info,
-.trip-vehicle-count {
-  display: none;
-}
-
-
-/* =========================================================
-   EMPTY STATE
-========================================================= */
-
-.tracking-column-empty {
+.trip-list-empty {
   min-height: 180px;
 
-  padding: 20px;
+  padding: 20px 12px;
 
   display: flex;
   flex-direction: column;
@@ -660,291 +547,88 @@
   align-items: center;
   justify-content: center;
 
-  color: #7c8f9e;
+  color: #81929e;
 
   text-align: center;
 }
 
+.trip-list-empty > svg {
+  width: 28px;
+  height: 28px;
 
-.tracking-column-empty-icon {
-  width: 40px;
-  height: 40px;
+  margin-bottom: 8px;
 
-  margin-bottom: 9px;
+  padding: 6px;
 
-  display: grid;
-  place-items: center;
+  border-radius: 7px;
 
-  color: #0f9488;
+  color: #168e86;
 
-  background: #e7f5f3;
-
-  border-radius: 9px;
+  background: #eaf7f5;
 }
 
+.trip-list-empty strong {
+  color: #29485c;
 
-.tracking-column-empty-icon svg {
-  width: 18px;
-  height: 18px;
+  font-size: 10px;
+  font-weight: 750;
 }
 
+.trip-list-empty span {
+  margin-top: 4px;
 
-.tracking-column-empty strong {
-  color: #0b2942;
+  color: #8999a5;
 
-  font-size: 12px;
-  font-weight: 700;
-}
-
-
-.tracking-column-empty p {
-  max-width: 190px;
-
-  margin: 4px 0 0;
-
-  color: #899aa7;
-
-  font-size: 9px;
-
-  line-height: 1.45;
+  font-size: 7.5px;
 }
 
 
 /* =========================================================
-   TABLET
+   RESPONSIVE
 ========================================================= */
 
-@media (max-width: 900px) {
+@media (max-width: 1050px) {
 
-  .tracking-column-heading {
-    min-height: 62px;
-
-    padding: 11px 13px;
-  }
-
-
-  .tracking-column-heading h2 {
-    font-size: 15px;
-  }
-
-
-  .tracking-trip-list {
-    padding: 9px;
-
-    gap: 9px;
-  }
-
-
-  .tracking-trip-card {
-    min-height: 100px;
-
-    padding: 12px;
-  }
-
-
-  .trip-route {
-    margin-top: 15px;
-  }
-
-
-  .trip-customer-name {
-    font-size: 11.5px;
-  }
-
-
-  .trip-material-name {
-    font-size: 9.5px;
-  }
-
-}
-
-
-/* =========================================================
-   MOBILE
-========================================================= */
-
-@media (max-width: 650px) {
-
-  .tracking-column-heading {
-    min-height: 56px;
-
+  .trip-list-header {
+    min-height: 54px;
     padding: 9px 10px;
   }
 
-
-  .tracking-column-heading h2 {
-    font-size: 14px;
-  }
-
-
-  .tracking-column-heading p {
-    font-size: 8.5px;
-  }
-
-
-  .tracking-column-heading-icon {
-    width: 31px;
-    height: 31px;
-
-    flex-basis: 31px;
-  }
-
-
-  .tracking-trip-list {
+  .trip-list-scroll {
     padding: 7px;
-
-    gap: 8px;
+    gap: 5px;
   }
 
+  .trip-list-item {
+    min-height: 73px;
+    padding: 7px 8px;
+  }
+}
 
-  .tracking-trip-card {
-    min-height: 88px;
 
-    padding: 10px;
+@media (max-width: 760px) {
 
-    border-radius: 9px;
+  .trip-list-column {
+    max-height: 420px;
   }
 
+  .trip-list-scroll {
+    display: grid;
 
-  .trip-customer-name {
-    max-width: 55%;
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
 
-    font-size: 11px;
+    align-content: start;
   }
+}
 
 
-  .trip-material-name {
-    font-size: 9px;
+@media (max-width: 520px) {
+
+  .trip-list-scroll {
+    grid-template-columns: 1fr;
   }
-
-
-  .trip-card-vehicle-count {
-    min-width: 36px;
-    height: 23px;
-
-    padding: 0 7px;
-
-    font-size: 9px;
-  }
-
-
-  .trip-card-vehicle-count svg {
-    width: 10px;
-    height: 10px;
-  }
-
-
-  .trip-route {
-    min-height: 24px;
-
-    margin-top: 12px;
-  }
-
-
-  .trip-route-location span,
-  .trip-route-location.destination span {
-    font-size: 8.5px;
-  }
-
-
-  .trip-open-icon {
-    width: 17px;
-    height: 17px;
-
-    flex-basis: 17px;
-  }
-
 }
-
-
-
-.trip-card-status-strip {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 6px;
-  margin-top: 8px;
-  padding: 6px 8px;
-  border: 1px solid #e6ebee;
-  border-radius: 8px;
-  background: #fbfcfd;
-}
-
-.trip-card-status-item {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  flex: 1;
-  min-width: 0;
-  font-size: 9px;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.trip-card-status-item strong {
-  font-size: 10px;
-}
-
-.trip-card-status-item span {
-  color: #8a99a1;
-  font-weight: 600;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.trip-card-status-item.moving {
-  color: #159e9a;
-}
-
-.trip-card-status-item.moving svg {
-  color: #159e9a;
-}
-
-.trip-card-status-item.breakdown {
-  color: #d45252;
-}
-
-.trip-card-status-item.breakdown svg {
-  color: #d45252;
-}
-
-.trip-card-status-item.idle {
-  color: #c08a1e;
-}
-
-.trip-card-status-item.idle svg {
-  color: #c08a1e;
-}
-
-.trip-card-status-item.reached {
-  color: #2875a8;
-}
-
-.trip-card-status-item.reached svg {
-  color: #2875a8;
-}
-.vehicle-list-toggle-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 10px 12px;
-  border: 1px solid #e6ebee;
-  border-radius: 10px;
-  background: #ffffff;
-}
-
-.vehicle-list-toggle-info {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  color: #29485a;
-  font-size: 11px;
-  font-weight: 700;
-}
-
-.vehicle-list-toggle-info svg {
-  color: #159e9a;
-}
-
-

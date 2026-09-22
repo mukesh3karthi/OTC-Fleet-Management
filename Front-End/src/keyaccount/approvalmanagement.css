@@ -3042,3 +3042,219 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+
+/* =========================================================
+   TRANSPORTER QUOTATION DETAILS - MODAL EXPAND
+   Keeps the existing quotation logic, but presents expanded
+   vehicle requirements in a viewport-friendly modal.
+========================================================= */
+
+.approval-quotation-expand-row > td {
+  height: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+.approval-quotation-expand-panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 1500;
+  width: min(1180px, calc(100vw - 48px));
+  height: min(760px, calc(100vh - 48px));
+  padding: 0 !important;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transform: translate(-50%, -50%);
+  border: 1px solid #cfdee2;
+  border-radius: 18px;
+  background: #f6f9fa;
+  box-shadow:
+    0 24px 70px rgba(16, 47, 67, 0.24),
+    0 0 0 100vmax rgba(8, 30, 40, 0.42);
+  isolation: isolate;
+}
+
+.approval-quotation-modal-head {
+  position: relative;
+  flex: 0 0 auto;
+  min-height: 92px;
+  padding: 17px 64px 15px 20px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 24px;
+  border-bottom: 1px solid #d8e4e7;
+  background: linear-gradient(110deg, #eef8f6 0%, #ffffff 62%, #f8fbfb 100%);
+}
+
+.approval-quotation-modal-title {
+  min-width: 0;
+}
+
+.approval-quotation-modal-title > span {
+  display: block;
+  margin-bottom: 3px;
+  color: var(--ap-primary);
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 0.09em;
+}
+
+.approval-quotation-modal-title h3 {
+  margin: 0;
+  color: var(--ap-navy);
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.approval-quotation-modal-title p {
+  margin: 5px 0 0;
+  color: #6e848f;
+  font-size: 9.5px;
+  font-weight: 650;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.approval-quotation-modal-title p b {
+  margin: 0 6px;
+  color: #b1c0c6;
+}
+
+.approval-quotation-modal-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(82px, auto));
+  gap: 8px;
+}
+
+.approval-quotation-modal-summary > div {
+  min-width: 82px;
+  padding: 8px 11px;
+  border: 1px solid #dce7ea;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.approval-quotation-modal-summary span {
+  display: block;
+  margin-bottom: 2px;
+  color: #82969f;
+  font-size: 7px;
+  font-weight: 850;
+  letter-spacing: 0.045em;
+  text-transform: uppercase;
+}
+
+.approval-quotation-modal-summary strong {
+  display: block;
+  color: #173e50;
+  font-size: 10.5px;
+  font-weight: 900;
+}
+
+.approval-quotation-modal-close {
+  position: absolute;
+  top: 17px;
+  right: 18px;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #d2dfe3;
+  border-radius: 9px;
+  background: #fff;
+  color: #5c747f;
+  font: inherit;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1;
+  cursor: pointer;
+  transition: 0.18s ease;
+}
+
+.approval-quotation-modal-close:hover {
+  border-color: #b9cece;
+  background: #edf7f5;
+  color: var(--ap-primary);
+  transform: translateY(-1px);
+}
+
+.approval-quotation-modal-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 14px 16px 18px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #b8cbcf transparent;
+}
+
+.approval-quotation-modal-body::-webkit-scrollbar {
+  width: 7px;
+}
+
+.approval-quotation-modal-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.approval-quotation-modal-body::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: #b8cbcf;
+}
+
+.approval-quotation-modal-body .approval-quotation-vehicle-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.approval-quotation-modal-body .approval-qv-card {
+  flex: none;
+  box-shadow: 0 3px 12px rgba(16, 47, 67, 0.045);
+}
+
+@media (max-width: 900px) {
+  .approval-quotation-expand-panel {
+    width: calc(100vw - 24px);
+    height: calc(100vh - 24px);
+    border-radius: 14px;
+  }
+
+  .approval-quotation-modal-head {
+    padding: 14px 54px 14px 15px;
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .approval-quotation-modal-summary {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .approval-quotation-expand-panel {
+    width: calc(100vw - 12px);
+    height: calc(100vh - 12px);
+    border-radius: 12px;
+  }
+
+  .approval-quotation-modal-title p {
+    white-space: normal;
+  }
+
+  .approval-quotation-modal-summary {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+
+  .approval-quotation-modal-body {
+    padding: 10px;
+  }
+}

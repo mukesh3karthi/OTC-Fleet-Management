@@ -181,7 +181,7 @@ const findApprovedConfirmation = (
 
     if (
       confirmation.requirementId ===
-        requirementId &&
+      requirementId &&
       confirmation.status === "Approved"
     ) {
       return confirmation;
@@ -331,8 +331,8 @@ const buildTripData = (
       body.routeLocations
     )
       ? body.routeLocations
-          .map(cleanString)
-          .filter(Boolean)
+        .map(cleanString)
+        .filter(Boolean)
       : [],
 
   materialType:
@@ -365,8 +365,8 @@ const buildTripData = (
       body.vehicleRequirements
     )
       ? body.vehicleRequirements.map(
-          normalizeRequirement
-        )
+        normalizeRequirement
+      )
       : [],
 });
 
@@ -875,21 +875,21 @@ const saveOrderFinalization = async (
 
     const quotedRate =
       quotedRateRaw === "" ||
-      quotedRateRaw === null ||
-      quotedRateRaw === undefined
+        quotedRateRaw === null ||
+        quotedRateRaw === undefined
         ? null
         : Number(
-            quotedRateRaw
-          );
+          quotedRateRaw
+        );
 
     const finalRate =
       finalRateRaw === "" ||
-      finalRateRaw === null ||
-      finalRateRaw === undefined
+        finalRateRaw === null ||
+        finalRateRaw === undefined
         ? null
         : Number(
-            finalRateRaw
-          );
+          finalRateRaw
+        );
 
     if (
       quotedRate !== null &&
@@ -1713,7 +1713,7 @@ const confirmVehicleQuotation = async (
         existingApproved &&
         existingApproved
           .quotationId !==
-          quotationId
+        quotationId
       ) {
         return sendError(
           res,
@@ -1743,11 +1743,11 @@ const confirmVehicleQuotation = async (
           (confirmation) =>
             confirmation
               .requirementId ===
-              requirementId &&
+            requirementId &&
             confirmation
               .quotationId ===
-              targetQuotation
-                .quotationId
+            targetQuotation
+              .quotationId
         );
 
       /* =======================================================
@@ -1791,7 +1791,7 @@ const confirmVehicleQuotation = async (
 
         existingConfirmation.rejectionReason =
           confirmationStatus ===
-          "Rejected"
+            "Rejected"
             ? confirmationRejectionReason
             : "";
 
@@ -1828,7 +1828,7 @@ const confirmVehicleQuotation = async (
 
         rejectionReason:
           confirmationStatus ===
-          "Rejected"
+            "Rejected"
             ? confirmationRejectionReason
             : "",
       };
@@ -1893,11 +1893,11 @@ const confirmVehicleQuotation = async (
             (confirmation) =>
               confirmation
                 .requirementId ===
-                requirementId &&
+              requirementId &&
               confirmation
                 .quotationId ===
-                requirementQuotation
-                  .quotationId
+              requirementQuotation
+                .quotationId
           );
 
         if (
@@ -1906,7 +1906,7 @@ const confirmVehicleQuotation = async (
           const desiredStatus =
             requirementQuotation
               .quotationId ===
-            quotationId
+              quotationId
               ? "Approved"
               : "Rejected";
 
@@ -1925,7 +1925,7 @@ const confirmVehicleQuotation = async (
             allocationExists &&
             existingConfirmation
               .status !==
-              desiredStatus
+            desiredStatus
           ) {
             return sendError(
               res,
@@ -2482,6 +2482,19 @@ const allocateVehicle = async (
   }
 };
 
+/* =========================================================
+   UPDATE ALLOCATED VEHICLE
+   TRACKING INPUT
+
+   PUT
+   /api/triporders/:id/allocated-vehicles/:allocationId
+
+   AUTO TRIP COMPLETE:
+   When ALL allocated vehicles have
+   unloading.status === "Completed",
+   the complete order moves to Trip Complete.
+========================================================= */
+
 const updateAllocatedVehicle = async (
   req,
   res
@@ -2500,8 +2513,7 @@ const updateAllocatedVehicle = async (
       );
     }
 
-    const trip =
-      result.trip;
+    const trip = result.trip;
 
     const allocationId =
       cleanString(
@@ -2524,6 +2536,10 @@ const updateAllocatedVehicle = async (
         "Allocated vehicle not found."
       );
     }
+
+    /* =====================================================
+       VEHICLE NUMBER
+    ===================================================== */
 
     if (
       req.body.vehicleNumber !==
@@ -2548,16 +2564,13 @@ const updateAllocatedVehicle = async (
         ).some(
           (item) =>
             item.allocationId !==
-              allocationId &&
+            allocationId &&
             cleanUpperString(
               item.vehicleNumber
-            ) ===
-              vehicleNumber
+            ) === vehicleNumber
         );
 
-      if (
-        duplicateVehicle
-      ) {
+      if (duplicateVehicle) {
         return sendError(
           res,
           409,
@@ -2569,23 +2582,31 @@ const updateAllocatedVehicle = async (
         vehicleNumber;
     }
 
+    /* =====================================================
+       DRIVER
+    ===================================================== */
+
     if (req.body.driver) {
       vehicle.driver = {
         name:
           cleanString(
             req.body.driver.name ??
-              vehicle.driver?.name
+            vehicle.driver?.name
           ),
 
         contactNumber:
           cleanString(
             req.body.driver
               .contactNumber ??
-              vehicle.driver
-                ?.contactNumber
+            vehicle.driver
+              ?.contactNumber
           ),
       };
     }
+
+    /* =====================================================
+       ESCORT
+    ===================================================== */
 
     if (req.body.escort) {
       vehicle.escort = {
@@ -2593,47 +2614,53 @@ const updateAllocatedVehicle = async (
           cleanUpperString(
             req.body.escort
               .vehicleNumber ??
-              vehicle.escort
-                ?.vehicleNumber
+            vehicle.escort
+              ?.vehicleNumber
           ),
 
         name:
           cleanString(
             req.body.escort.name ??
-              vehicle.escort?.name
+            vehicle.escort?.name
           ),
 
         contactNumber:
           cleanString(
             req.body.escort
               .contactNumber ??
-              vehicle.escort
-                ?.contactNumber
+            vehicle.escort
+              ?.contactNumber
           ),
       };
     }
 
-    if (
-      req.body.supervisor
-    ) {
+    /* =====================================================
+       SUPERVISOR
+    ===================================================== */
+
+    if (req.body.supervisor) {
       vehicle.supervisor = {
         name:
           cleanString(
             req.body.supervisor
               .name ??
-              vehicle.supervisor
-                ?.name
+            vehicle.supervisor
+              ?.name
           ),
 
         contactNumber:
           cleanString(
             req.body.supervisor
               .contactNumber ??
-              vehicle.supervisor
-                ?.contactNumber
+            vehicle.supervisor
+              ?.contactNumber
           ),
       };
     }
+
+    /* =====================================================
+       LOADING
+    ===================================================== */
 
     if (req.body.loading) {
       const loading =
@@ -2704,9 +2731,11 @@ const updateAllocatedVehicle = async (
       }
     }
 
-    if (
-      req.body.unloading
-    ) {
+    /* =====================================================
+       UNLOADING
+    ===================================================== */
+
+    if (req.body.unloading) {
       const unloading =
         req.body.unloading;
 
@@ -2775,12 +2804,76 @@ const updateAllocatedVehicle = async (
       }
     }
 
+    /* =====================================================
+       CHECK COMPLETE TRIP
+    ===================================================== */
+
+    const allocatedVehicles =
+      getAllocatedVehicles(
+        trip
+      );
+
+    /*
+     * Trip becomes completed only when:
+     *
+     * 1. At least one vehicle exists.
+     * 2. EVERY allocated vehicle has
+     *    unloading status = Completed.
+     */
+
+    const allVehiclesCompleted =
+      allocatedVehicles.length > 0 &&
+      allocatedVehicles.every(
+        (allocatedVehicle) =>
+          cleanString(
+            allocatedVehicle
+              ?.unloading
+              ?.status
+          )
+            .toLowerCase() ===
+          "completed"
+      );
+
+    /* =====================================================
+       UPDATE ORDER STAGE
+    ===================================================== */
+
+    if (allVehiclesCompleted) {
+      trip.stage =
+        "Trip Complete";
+
+      trip.status =
+        "Completed";
+    } else {
+      /*
+       * Keep order under Tracking while
+       * one or more vehicles are still
+       * incomplete.
+       */
+
+      trip.stage =
+        "Tracking";
+
+      trip.status =
+        "Active";
+    }
+
+    /* =====================================================
+       SAVE EVERYTHING TO MONGODB
+    ===================================================== */
+
     await trip.save();
+
+    /* =====================================================
+       RESPONSE
+    ===================================================== */
 
     return sendSuccess(
       res,
       200,
-      "Vehicle details updated successfully.",
+      allVehiclesCompleted
+        ? "Vehicle details saved successfully. All vehicles have completed unloading and the trip is now complete."
+        : "Vehicle details updated successfully.",
       trip
     );
   } catch (error) {
@@ -2851,28 +2944,28 @@ const addDailyTracking = async (
     const previousEntry =
       history.length > 0
         ? history[
-            history.length - 1
-          ]
+        history.length - 1
+        ]
         : null;
 
     const yesterdayKm =
       req.body.yesterdayKm !==
-      undefined
+        undefined
         ? Math.max(
-            0,
-            toNumber(
-              req.body.yesterdayKm,
-              0
-            )
+          0,
+          toNumber(
+            req.body.yesterdayKm,
+            0
           )
+        )
         : Math.max(
-            0,
-            toNumber(
-              previousEntry
-                ?.todayKm,
-              0
-            )
-          );
+          0,
+          toNumber(
+            previousEntry
+              ?.todayKm,
+            0
+          )
+        );
 
     const todayKm =
       Math.max(
@@ -2885,32 +2978,32 @@ const addDailyTracking = async (
 
     const runningKm =
       req.body.runningKm !==
-      undefined
+        undefined
         ? Math.max(
-            0,
-            toNumber(
-              req.body.runningKm,
-              0
-            )
+          0,
+          toNumber(
+            req.body.runningKm,
+            0
           )
+        )
         : Math.max(
-            0,
-            todayKm -
-              yesterdayKm
-          );
+          0,
+          todayKm -
+          yesterdayKm
+        );
 
     const yesterdayLocation =
       req.body
         .yesterdayLocation !==
-      undefined
+        undefined
         ? cleanString(
-            req.body
-              .yesterdayLocation
-          )
+          req.body
+            .yesterdayLocation
+        )
         : cleanString(
-            previousEntry
-              ?.currentLocation
-          );
+          previousEntry
+            ?.currentLocation
+        );
 
     const currentLocation =
       cleanString(
@@ -2919,14 +3012,14 @@ const addDailyTracking = async (
 
     const day =
       req.body.day !==
-      undefined
+        undefined
         ? Math.max(
-            0,
-            toNumber(
-              req.body.day,
-              0
-            )
+          0,
+          toNumber(
+            req.body.day,
+            0
           )
+        )
         : history.length + 1;
 
     const tracking = {

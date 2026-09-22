@@ -217,18 +217,14 @@ const buildLifecycle = (order) => {
     );
 
   const allVehiclesCompleted =
-    allocations.length > 0 &&
-    latestTrackingStatuses.length ===
-      allocations.length &&
-    latestTrackingStatuses.every((status) =>
-      [
-        "reached",
-        "completed",
-        "complete",
-        "delivered",
-        "trip complete",
-      ].includes(status)
-    );
+    String(order?.stage || "").trim().toLowerCase() === "trip complete" ||
+    (allocations.length > 0 &&
+      allocations.every(
+        (allocation) =>
+          String(allocation?.unloading?.status || "")
+            .trim()
+            .toLowerCase() === "completed"
+      ));
 
   const enquiryStatus =
     requirements.length > 0
@@ -883,6 +879,25 @@ const Lifecyclemodal = ({
   order = workingOrder;
 
   /* =========================================================
+     SAVED / LOCKED STATES
+     - Order Finalization locks after a successful Save Changes
+       because the backend writes orderFinalization.updatedAt.
+     - PO Document locks after a successful save because its
+       status is stored as Completed.
+  ========================================================= */
+
+  const finalizationLocked =
+    Boolean(order?.orderFinalization?.updatedAt) ||
+    String(order?.orderApproval?.status || "")
+      .trim()
+      .toLowerCase() === "approved";
+
+  const poLocked =
+    String(order?.poDocument?.status || "")
+      .trim()
+      .toLowerCase() === "completed";
+
+  /* =========================================================
      INPUT CHANGE
   ========================================================= */
 
@@ -1214,6 +1229,10 @@ const Lifecyclemodal = ({
         payload?.order ||
         payload;
 
+      // Use the fresh backend response immediately. This makes
+      // the saved fields read-only without closing the modal.
+      setLocalOrder(updatedOrder);
+
       setFinalizationMessage(
         requestApproval
           ? "Saved and sent for approval."
@@ -1328,6 +1347,15 @@ const Lifecyclemodal = ({
 
     const orderPlacedCompleted =
       getStatusClass(order?.orderPlaced?.status) === "approved";
+
+    if (
+      rawStage === "trip complete" ||
+      rawStage === "trip completed" ||
+      rawStage === "completed" ||
+      rawStage === "complete"
+    ) {
+      return "Trip Complete";
+    }
 
     if (orderPlacedCompleted || rawStage === "tracking") {
       return "Tracking";
@@ -2043,6 +2071,7 @@ const Lifecyclemodal = ({
                         handleFinalizationChange
                       }
                       placeholder="Enter quoted rate"
+                      disabled={finalizationLocked}
                     />
                   </div>
 
@@ -2063,6 +2092,7 @@ const Lifecyclemodal = ({
                         handleFinalizationChange
                       }
                       placeholder="Enter final rate"
+                      disabled={finalizationLocked}
                     />
                   </div>
 
@@ -2083,6 +2113,7 @@ const Lifecyclemodal = ({
                       }
                       placeholder="Enter commercial terms and payment SLAs"
                       rows={3}
+                      disabled={finalizationLocked}
                     />
                   </div>
 
@@ -2103,6 +2134,7 @@ const Lifecyclemodal = ({
                       }
                       placeholder="Enter delivery commitments and transit SLAs"
                       rows={3}
+                      disabled={finalizationLocked}
                     />
                   </div>
 
@@ -2123,6 +2155,7 @@ const Lifecyclemodal = ({
                       }
                       placeholder="Enter client confirmation notes"
                       rows={3}
+                      disabled={finalizationLocked}
                     />
                   </div>
 
@@ -2143,18 +2176,28 @@ const Lifecyclemodal = ({
                     )}
                   </div>
 
-                  <button
-                    type="button"
-                    className="kam-save-finalization-btn"
-                    disabled={finalizationSaving}
-                    onClick={() =>
-                      saveOrderFinalization(false)
-                    }
-                  >
-                    {finalizationSaving
-                      ? "Saving..."
-                      : "Save Changes"}
-                  </button>
+                  {finalizationLocked ? (
+                    <button
+                      type="button"
+                      className="kam-save-finalization-btn"
+                      disabled
+                    >
+                      ✓ Saved
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className="kam-save-finalization-btn"
+                      disabled={finalizationSaving}
+                      onClick={() =>
+                        saveOrderFinalization(false)
+                      }
+                    >
+                      {finalizationSaving
+                        ? "Saving..."
+                        : "Save Changes"}
+                    </button>
+                  )}
                 </div>
 
               </section>
@@ -2499,6 +2542,7 @@ const Lifecyclemodal = ({
                       value={poForm.poNumber}
                       onChange={handlePoChange}
                       placeholder="Enter PO number"
+                      disabled={poLocked}
                     />
                   </div>
 
@@ -2513,6 +2557,7 @@ const Lifecyclemodal = ({
                       name="poValidityPeriod"
                       value={poForm.poValidityPeriod}
                       onChange={handlePoChange}
+                      disabled={poLocked}
                     />
                   </div>
 
@@ -2534,6 +2579,7 @@ const Lifecyclemodal = ({
                       }
                       maxLength={15}
                       placeholder="Enter billing GSTIN"
+                      disabled={poLocked}
                     />
                   </div>
 
@@ -2546,6 +2592,7 @@ const Lifecyclemodal = ({
                       name="status"
                       value={poForm.status}
                       onChange={handlePoChange}
+                      disabled={poLocked}
                     >
                       <option value="Pending">Pending</option>
                       <option value="Completed">Completed</option>
@@ -2563,6 +2610,7 @@ const Lifecyclemodal = ({
                       value={poForm.documentName}
                       onChange={handlePoChange}
                       placeholder="Enter document name"
+                      disabled={poLocked}
                     />
                   </div>
 
@@ -2577,6 +2625,7 @@ const Lifecyclemodal = ({
                       value={poForm.uploadedBy}
                       onChange={handlePoChange}
                       placeholder="Enter uploaded by"
+                      disabled={poLocked}
                     />
                   </div>
 
@@ -2586,6 +2635,7 @@ const Lifecyclemodal = ({
                     <input
                       type="file"
                       accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                      disabled={poLocked}
                       onChange={(event) => {
                         const selectedFile = event.target.files?.[0] || null;
                         setPoFile(selectedFile);
@@ -2829,12 +2879,11 @@ const Lifecyclemodal = ({
           )}
 
           {/* =================================================
-              TRACKING / TRIP COMPLETE - ALLOCATED VEHICLES
+              TRACKING - ALLOCATED VEHICLES
           ================================================= */}
 
-          {(activeStepIndex === 5 || activeStepIndex === 6) && (
+          {activeStepIndex === 5 && (
             <div className="kam-step-page kam-step-page-allocated-vehicles">
-
               <section className="kam-client-vehicle-section">
                 <SectionHeading
                   title="Allocated Vehicles"
@@ -2885,55 +2934,27 @@ const Lifecyclemodal = ({
                           const latest = getLatestTracking(allocation);
 
                           return (
-                            <tr
-                              key={allocation.allocationId || index}
-                            >
+                            <tr key={allocation.allocationId || index}>
                               <td>
                                 <span className="kam-client-row-no">
                                   {index + 1}
                                 </span>
                               </td>
-
+                              <td><strong>{allocation.vehicleNumber || "—"}</strong></td>
+                              <td>{requirement?.vehicleType || allocation.requirementId || "—"}</td>
+                              <td>{quotation?.transporter || "—"}</td>
                               <td>
-                                <strong>
-                                  {allocation.vehicleNumber || "—"}
-                                </strong>
-                              </td>
-
-                              <td>
-                                {requirement?.vehicleType ||
-                                  allocation.requirementId ||
-                                  "—"}
-                              </td>
-
-                              <td>
-                                {quotation?.transporter || "—"}
-                              </td>
-
-                              <td>
-                                <strong>
-                                  {allocation?.driver?.name || "—"}
-                                </strong>
-
+                                <strong>{allocation?.driver?.name || "—"}</strong>
                                 {allocation?.driver?.contactNumber && (
                                   <small style={{ display: "block" }}>
                                     {allocation.driver.contactNumber}
                                   </small>
                                 )}
                               </td>
-
-                              <td>
-                                {latest?.currentLocation || "—"}
-                              </td>
-
+                              <td>{latest?.currentLocation || "—"}</td>
                               <td>{latest?.day || "—"}</td>
-
                               <td>
-                                <span
-                                  className={`approval-status ${getStatusClass(
-                                    latest?.status || "Pending"
-                                  )}`}
-                                >
+                                <span className={`approval-status ${getStatusClass(latest?.status || "Pending")}`}>
                                   {latest?.status || "Pending"}
                                 </span>
                               </td>
@@ -2945,10 +2966,193 @@ const Lifecyclemodal = ({
                   </div>
                 ) : (
                   <div className="kam-lifecycle-empty">
-                    Tracking has started. Actual vehicle details will appear here
-                    after the Tracking team allocates vehicles.
+                    Tracking has started. Actual vehicle details will appear here after the Tracking team allocates vehicles.
                   </div>
                 )}
+              </section>
+            </div>
+          )}
+
+          {/* =================================================
+              TRIP COMPLETE - COMPACT OVERALL SUMMARY
+              READ ONLY
+          ================================================= */}
+
+          {activeStepIndex === 6 && (
+            <div className="kam-step-page kam-step-page-trip-complete">
+
+              {/* ORDER SUMMARY */}
+              <section className="kam-client-vehicle-section">
+                <SectionHeading
+                  title="Trip Complete"
+                  description="Compact final summary of the completed trip."
+                  count={allocations.length}
+                />
+
+                <div className="kam-client-trip-grid">
+                  <ReadOnlyField label="Order ID" value={order.tripId} />
+                  <ReadOnlyField label="Customer" value={order.customer} />
+                  <ReadOnlyField label="Material Type" value={order.materialType} />
+                  <ReadOnlyField
+                    label="Route"
+                    value={
+                      order.origin || order.destination
+                        ? `${order.origin || "—"} → ${order.destination || "—"}`
+                        : "—"
+                    }
+                  />
+                  <ReadOnlyField label="Placement Date" value={formatDate(order.placementDate)} />
+                  <ReadOnlyField
+                    label="Total Vehicles"
+                    value={
+                      Number(order?.totalVehicles) > 0
+                        ? `${order.totalVehicles} NOS`
+                        : totalRequiredVehicles > 0
+                        ? `${totalRequiredVehicles} NOS`
+                        : "—"
+                    }
+                  />
+                </div>
+              </section>
+
+              {/* COMMERCIAL & PO */}
+              <section className="kam-client-vehicle-section">
+                <SectionHeading
+                  title="Commercial & PO"
+                  description="Final commercial and purchase order information."
+                />
+
+                <div className="kam-client-trip-grid">
+                  <ReadOnlyField
+                    label="Final Rate"
+                    value={formatAmount(
+                      order?.orderFinalization?.finalRate ?? order?.finalRate
+                    )}
+                  />
+                  <ReadOnlyField
+                    label="Commercial Terms"
+                    value={
+                      order?.orderFinalization?.commercialTerms ??
+                      order?.commercialTerms
+                    }
+                  />
+                  <ReadOnlyField label="PO Number" value={order?.poDocument?.poNumber} />
+                  <ReadOnlyField
+                    label="PO Validity"
+                    value={formatDate(order?.poDocument?.poValidityPeriod)}
+                  />
+                  <ReadOnlyField label="Billing GSTIN" value={order?.poDocument?.billingGstin} />
+                  <ReadOnlyField label="PO Status" value={order?.poDocument?.status} />
+                </div>
+              </section>
+
+              {/* VEHICLE SUMMARY */}
+              <section className="kam-client-vehicle-section">
+                <SectionHeading
+                  title="Vehicle Summary"
+                  description="Final vehicle, transporter, driver and delivery status."
+                  count={allocations.length}
+                />
+
+                {allocations.length > 0 ? (
+                  <div className="kam-client-vehicle-table-wrap">
+                    <table className="kam-client-vehicle-table">
+                      <thead>
+                        <tr>
+                          <th>#</th>
+                          <th>Vehicle Number</th>
+                          <th>Vehicle Type</th>
+                          <th>Transporter</th>
+                          <th>Driver</th>
+                          <th>Final Location</th>
+                          <th>Status</th>
+                        </tr>
+                      </thead>
+
+                      <tbody>
+                        {allocations.map((allocation, index) => {
+                          const requirement = getRequirement(
+                            order,
+                            allocation.requirementId
+                          );
+
+                          const confirmation =
+                            safeArray(order.vehicleConfirmations).find(
+                              (item) =>
+                                item.confirmationId === allocation.confirmationId
+                            ) ||
+                            getApprovedConfirmation(
+                              order,
+                              allocation.requirementId
+                            );
+
+                          const quotation = getQuotation(
+                            order,
+                            allocation.quotationId || confirmation?.quotationId
+                          );
+
+                          const latest = getLatestTracking(allocation);
+
+                          return (
+                            <tr
+                              key={
+                                allocation.allocationId ||
+                                allocation._id ||
+                                index
+                              }
+                            >
+                              <td><span className="kam-client-row-no">{index + 1}</span></td>
+                              <td><strong>{allocation.vehicleNumber || "—"}</strong></td>
+                              <td>{requirement?.vehicleType || "—"}</td>
+                              <td>{quotation?.transporter || "—"}</td>
+                              <td><strong>{allocation?.driver?.name || "—"}</strong></td>
+                              <td>{latest?.currentLocation || order.destination || "—"}</td>
+                              <td>
+                                <span
+                                  className={`approval-status ${getStatusClass(
+                                    allocation?.unloading?.status ||
+                                      latest?.status ||
+                                      "Pending"
+                                  )}`}
+                                >
+                                  {allocation?.unloading?.status ||
+                                    latest?.status ||
+                                    "Pending"}
+                                </span>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="kam-lifecycle-empty">No allocated vehicle data is available.</div>
+                )}
+              </section>
+
+              {/* FINAL COMPLETION */}
+              <section className="kam-client-vehicle-section">
+                <SectionHeading
+                  title="Completion"
+                  description="Final trip completion status."
+                />
+
+                <div className="kam-client-trip-grid">
+                  <ReadOnlyField label="Trip Stage" value={order?.stage || "Trip Complete"} />
+                  <ReadOnlyField label="Trip Status" value={order?.status || "Completed"} />
+                  <ReadOnlyField
+                    label="Completed Vehicles"
+                    value={`${
+                      allocations.filter(
+                        (item) =>
+                          String(item?.unloading?.status || "")
+                            .trim()
+                            .toLowerCase() === "completed"
+                      ).length
+                    } / ${allocations.length}`}
+                  />
+                </div>
               </section>
 
             </div>
@@ -2979,18 +3183,29 @@ const Lifecyclemodal = ({
 
               <button
                 type="button"
-                className="kam-request-approval-btn"
-                onClick={() =>
-                  setActiveStepIndex(1)
-                }
+                className={`kam-request-approval-btn ${
+                  currentLifecycleIndex > 0
+                    ? "kam-approval-approved-btn"
+                    : ""
+                }`}
+                disabled={currentLifecycleIndex > 0}
+                onClick={() => {
+                  if (currentLifecycleIndex === 0) {
+                    setActiveStepIndex(1);
+                  }
+                }}
               >
-                <span>
-                  Order Finalization
-                </span>
-
-                <span aria-hidden="true">
-                  →
-                </span>
+                {currentLifecycleIndex > 0 ? (
+                  <>
+                    <span aria-hidden="true">✓</span>
+                    <span>Order Finalization Started</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Order Finalization</span>
+                    <span aria-hidden="true">→</span>
+                  </>
+                )}
               </button>
 
             )}
@@ -3141,6 +3356,16 @@ const Lifecyclemodal = ({
             {/* PO DOCUMENT */}
 
             {activeStepIndex === 2 && (
+              poLocked ? (
+                <button
+                  type="button"
+                  className="kam-request-approval-btn kam-po-save-btn kam-approval-approved-btn"
+                  disabled
+                >
+                  <span aria-hidden="true">✓</span>
+                  <span>PO Saved</span>
+                </button>
+              ) : (
                 <button
                   type="button"
                   className="kam-request-approval-btn kam-po-save-btn"
@@ -3150,25 +3375,43 @@ const Lifecyclemodal = ({
                   <span aria-hidden="true">✓</span>
                   <span>{poSaving ? "Saving..." : "Save PO"}</span>
                 </button>
+              )
             )}
 
             {/* ORDER PLACED */}
 
             {activeStepIndex === 4 && (
-              <button
-                type="button"
-                className="kam-request-approval-btn kam-place-order-btn"
-                disabled={placeOrderSaving}
-                onClick={placeOrder}
-              >
-                <span aria-hidden="true">✓</span>
-                <span>
-                  {placeOrderSaving ? "Placing Order..." : "Place Order"}
-                </span>
-                {!placeOrderSaving && (
-                  <span aria-hidden="true">→</span>
-                )}
-              </button>
+              currentLifecycleIndex >= 5 ||
+              String(order?.stage || "")
+                .trim()
+                .toLowerCase() === "tracking" ||
+              String(order?.orderPlaced?.status || "")
+                .trim()
+                .toLowerCase() === "completed" ? (
+                <button
+                  type="button"
+                  className="kam-request-approval-btn kam-place-order-btn kam-approval-approved-btn"
+                  disabled
+                >
+                  <span aria-hidden="true">✓</span>
+                  <span>Order Placed</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="kam-request-approval-btn kam-place-order-btn"
+                  disabled={placeOrderSaving}
+                  onClick={placeOrder}
+                >
+                  <span aria-hidden="true">✓</span>
+                  <span>
+                    {placeOrderSaving ? "Placing Order..." : "Place Order"}
+                  </span>
+                  {!placeOrderSaving && (
+                    <span aria-hidden="true">→</span>
+                  )}
+                </button>
+              )
             )}
 
             <button

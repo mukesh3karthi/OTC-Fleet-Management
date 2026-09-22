@@ -78,7 +78,7 @@ const Sidebar = ({
     if (
       isMobile() &&
       typeof setCollapsed ===
-        "function"
+      "function"
     ) {
       setCollapsed(true);
     }
@@ -273,7 +273,7 @@ const Sidebar = ({
     },
 
     {
-      title: "Trips",
+      title: "Order Management",
       icon:
         <FaFileAlt />,
       path:
@@ -402,7 +402,7 @@ const Sidebar = ({
 
             return (
               currentPath ===
-                relatedPath ||
+              relatedPath ||
               currentPath.startsWith(
                 `${relatedPath}/`
               )
@@ -429,7 +429,7 @@ const Sidebar = ({
 
     return (
       currentPath ===
-        itemPath ||
+      itemPath ||
       currentPath.startsWith(
         `${itemPath}/`
       )
@@ -755,12 +755,8 @@ const Sidebar = ({
           !collapsed;
 
         const showSubLinks =
-          Array.isArray(
-            item.subLinks
-          ) &&
-          item.subLinks.length >
-            0 &&
-          active &&
+          Array.isArray(item.subLinks) &&
+          item.subLinks.length > 0 &&
           !collapsed;
 
         return (
@@ -779,10 +775,9 @@ const Sidebar = ({
                 "/dashboard"
               }
               className={
-                `sidebar-link ${
-                  active
-                    ? "active"
-                    : ""
+                `sidebar-link ${active
+                  ? "active"
+                  : ""
                 }`
               }
               aria-current={
@@ -865,10 +860,9 @@ const Sidebar = ({
                       className={({
                         isActive,
                       }) =>
-                        `sidebar-submenu-link ${
-                          isActive
-                            ? "active"
-                            : ""
+                        `sidebar-submenu-link ${isActive
+                          ? "active"
+                          : ""
                         }`
                       }
                       onClick={(
@@ -924,10 +918,9 @@ const Sidebar = ({
 
       <aside
         className={
-          `sidebar ${
-            collapsed
-              ? "collapsed"
-              : ""
+          `sidebar ${collapsed
+            ? "collapsed"
+            : ""
           }`
         }
       >

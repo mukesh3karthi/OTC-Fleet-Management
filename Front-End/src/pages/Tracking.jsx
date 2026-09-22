@@ -18,8 +18,6 @@ import {
 
 import TripListColumn from "../Tracking/TripListColumn";
 import VehicleColumn from "../Tracking/VehicleColumn";
-import TrackingMapColumn from "../Tracking/TrackingMapColumn";
-
 import "../pagescss/tracking.css";
 
 /* =========================================
@@ -1718,7 +1716,7 @@ const Tracking = () => {
           )}
         </div>
       ) : (
-        <section className="tracking-layout">
+        <section className="tracking-layout tracking-layout-no-map">
           {/* TRIP LIST */}
 
           <TripListColumn
@@ -1754,22 +1752,7 @@ const Tracking = () => {
           />
 
           {/* MAP */}
-
-          <TrackingMapColumn
-            trip={
-              selectedTrip
-            }
-            selectedVehicle={
-              selectedVehicle
-            }
-            onSelectVehicle={
-              handleVehicleSelect
-            }
-            getStatusClass={
-              getStatusClass
-            }
-          />
-        </section>
+</section>
       )}
     </main>
   );

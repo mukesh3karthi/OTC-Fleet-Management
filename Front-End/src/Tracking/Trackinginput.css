@@ -204,6 +204,12 @@
   gap: 14px 15px;
 }
 
+/* Order Snapshot: 10 fields in exactly 2 rows on desktop */
+.tracking-order-snapshot-grid {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px 12px;
+}
+
 .tracking-form-field {
   min-width: 0;
 }
@@ -1363,6 +1369,12 @@
   padding: 16px 18px 20px;
 }
 
+
+/* Daily Movement: keep the remaining fields compact after removing Latitude, Longitude and Speed */
+.tracking-movement-grid > .tracking-form-field:last-child {
+  grid-column: 1 / -1;
+}
+
 /* =========================================================
    FOOTER
 ========================================================= */
@@ -1478,6 +1490,10 @@
 }
 
 @media (max-width: 1200px) {
+  .tracking-order-snapshot-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
   .tracking-form-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
@@ -1495,6 +1511,10 @@
 }
 
 @media (max-width: 900px) {
+  .tracking-order-snapshot-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .tracking-input-page {
     padding: 20px 18px 32px;
   }
@@ -1528,6 +1548,10 @@
 }
 
 @media (max-width: 650px) {
+  .tracking-order-snapshot-grid {
+    grid-template-columns: 1fr;
+  }
+
   .tracking-input-page {
     padding: 15px 10px 28px;
   }
@@ -1691,3 +1715,1559 @@
     width: 100%;
   }
 }
+
+/* =========================================================
+   DRIVER / ESCORT / SUPERVISOR - PROFESSIONAL SINGLE ROW
+========================================================= */
+.tracking-personnel-row {
+  width: calc(100% - 28px);
+  margin: 12px 14px 14px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.18fr) minmax(0, 1.18fr) minmax(0, 0.82fr);
+  gap: 12px;
+  align-items: stretch;
+}
+
+.tracking-personnel-row .tracking-trip-support-card {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid var(--tracking-line);
+  border-radius: 11px;
+  background: #fff;
+  box-shadow: 0 3px 10px rgba(11, 63, 80, 0.035);
+  transition: 150ms ease;
+}
+
+.tracking-personnel-row .tracking-trip-support-card:hover {
+  border-color: #b9d3d7;
+  box-shadow: 0 6px 16px rgba(11, 63, 80, 0.06);
+  transform: translateY(-1px);
+}
+
+.tracking-personnel-row .tracking-trip-support-heading {
+  min-height: 48px;
+  margin: 0;
+  padding: 8px 11px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--tracking-line-soft);
+  background: linear-gradient(90deg, #edf7f6 0%, #f8fbfb 100%);
+}
+
+.tracking-personnel-row .tracking-trip-support-heading svg {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  color: var(--tracking-teal);
+}
+
+.tracking-personnel-row .tracking-trip-support-heading strong {
+  display: block;
+  color: var(--tracking-navy);
+  font-size: 10.2px;
+  font-weight: 800;
+}
+
+.tracking-personnel-row .tracking-trip-support-heading span {
+  display: block;
+  margin-top: 2px;
+  color: var(--tracking-muted);
+  font-size: 7.7px;
+}
+
+.tracking-personnel-row .tracking-vehicle-entry-grid {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  border: 0;
+  border-radius: 0;
+  background: #fff;
+}
+
+.tracking-personnel-row .tracking-trip-support-card.supervisor .tracking-vehicle-entry-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.tracking-personnel-row .tracking-form-field {
+  min-width: 0;
+  border-right: 1px solid var(--tracking-line-soft);
+}
+
+.tracking-personnel-row .tracking-form-field:last-child {
+  border-right: 0;
+}
+
+.tracking-personnel-row .tracking-form-field > label {
+  min-height: 32px;
+  margin: 0;
+  padding: 7px 9px;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--tracking-line-soft);
+  color: #607889;
+  background: #f6f9fa;
+  font-size: 7.5px;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.tracking-personnel-row .tracking-form-control {
+  min-height: 45px;
+  height: 45px;
+  padding: 0 9px;
+  border: 0;
+  border-radius: 0;
+  background: #fff;
+  box-shadow: none;
+}
+
+.tracking-personnel-row .tracking-form-control:hover,
+.tracking-personnel-row .tracking-form-control:focus-within {
+  border: 0;
+  background: #fbfefe;
+  box-shadow: inset 0 -2px 0 rgba(8, 127, 120, 0.12);
+}
+
+.tracking-personnel-row .tracking-form-control > svg {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+  color: var(--tracking-teal);
+}
+
+.tracking-personnel-row .tracking-form-control input,
+.tracking-personnel-row .tracking-form-control select {
+  min-width: 0;
+  font-size: 9.6px;
+  font-weight: 700;
+  color: var(--tracking-ink);
+}
+
+@media (max-width: 1180px) {
+  .tracking-personnel-row { grid-template-columns: 1fr 1fr; }
+  .tracking-personnel-row .tracking-trip-support-card.supervisor { grid-column: 1 / -1; }
+}
+
+@media (max-width: 760px) {
+  .tracking-personnel-row { grid-template-columns: 1fr; }
+  .tracking-personnel-row .tracking-trip-support-card.supervisor { grid-column: auto; }
+}
+
+@media (max-width: 520px) {
+  .tracking-personnel-row .tracking-vehicle-entry-grid,
+  .tracking-personnel-row .tracking-trip-support-card.supervisor .tracking-vehicle-entry-grid {
+    grid-template-columns: 1fr;
+  }
+  .tracking-personnel-row .tracking-form-field {
+    border-right: 0;
+    border-bottom: 1px solid var(--tracking-line-soft);
+  }
+}
+
+/* =========================================================
+   LOADING + UNLOADING - PROFESSIONAL SIDE-BY-SIDE
+========================================================= */
+.tracking-operation-row {
+  width: calc(100% - 28px);
+  margin: 14px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  align-items: stretch;
+}
+
+.tracking-operation-card {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid #d4e3e7;
+  border-top: 3px solid #087f78;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 4px 14px rgba(11, 63, 80, 0.045);
+  transition: 160ms ease;
+}
+
+.tracking-operation-card.unloading {
+  border-top-color: #0d6573;
+}
+
+.tracking-operation-card:hover {
+  border-color: #b9d4d5;
+  box-shadow: 0 8px 22px rgba(11, 63, 80, 0.07);
+  transform: translateY(-1px);
+}
+
+.tracking-operation-card-header {
+  min-height: 58px;
+  padding: 10px 13px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid #dfe9ed;
+  background: linear-gradient(90deg, #eef8f7 0%, #f7fbfb 62%, #fff 100%);
+}
+
+.tracking-operation-card.unloading .tracking-operation-card-header {
+  background: linear-gradient(90deg, #eef7f8 0%, #f7fbfb 62%, #fff 100%);
+}
+
+.tracking-operation-card-icon {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  color: #087f78;
+  background: #e3f4f2;
+}
+
+.tracking-operation-card.unloading .tracking-operation-card-icon {
+  color: #0d6573;
+  background: #e7f3f5;
+}
+
+.tracking-operation-card-header strong {
+  display: block;
+  color: #0b3f50;
+  font-size: 10.5px;
+  font-weight: 850;
+  letter-spacing: .25px;
+  text-transform: uppercase;
+}
+
+.tracking-operation-card-header span {
+  display: block;
+  margin-top: 3px;
+  color: #71869a;
+  font-size: 8px;
+}
+
+.tracking-operation-card-grid {
+  width: 100%;
+  margin: 0;
+  padding: 12px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  border: 0;
+  background: #fff;
+}
+
+.tracking-operation-card-grid > .tracking-form-field {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid #d8e4ea;
+  border-radius: 9px;
+  background: #fff;
+  transition: 150ms ease;
+}
+
+.tracking-operation-card-grid > .tracking-form-field:hover {
+  border-color: #b5d2d3;
+  box-shadow: 0 3px 9px rgba(8, 127, 120, .05);
+}
+
+.tracking-operation-card-grid > .tracking-form-field > label {
+  min-height: 31px;
+  margin: 0;
+  padding: 7px 9px;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #e7eef1;
+  color: #607889;
+  background: #f5f9fa;
+  font-size: 7.6px;
+  font-weight: 850;
+  letter-spacing: .42px;
+  text-transform: uppercase;
+}
+
+.tracking-operation-card-grid .tracking-form-control {
+  min-height: 43px;
+  height: 43px;
+  padding: 0 9px;
+  border: 0;
+  border-radius: 0;
+  background: #fff;
+  box-shadow: none;
+}
+
+.tracking-operation-card-grid .tracking-form-control:hover {
+  border: 0;
+  background: #fbfefe;
+}
+
+.tracking-operation-card-grid .tracking-form-control:focus-within {
+  border: 0;
+  background: #fff;
+  box-shadow: inset 0 -2px 0 rgba(8, 127, 120, .18);
+}
+
+.tracking-operation-card-grid .tracking-form-control > svg {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+  color: #078c84;
+}
+
+.tracking-operation-card.unloading .tracking-operation-card-grid .tracking-form-control > svg {
+  color: #0d7180;
+}
+
+.tracking-operation-card-grid .tracking-form-control input,
+.tracking-operation-card-grid .tracking-form-control select {
+  min-width: 0;
+  font-size: 9.4px;
+  font-weight: 700;
+  color: #17384c;
+}
+
+.tracking-operation-card-grid > .tracking-form-field:first-child {
+  border-left: 3px solid #087f78;
+}
+
+.tracking-operation-card.unloading .tracking-operation-card-grid > .tracking-form-field:first-child {
+  border-left-color: #0d6573;
+}
+
+.tracking-operation-card-grid > .tracking-form-field:first-child select {
+  color: #0b3f50;
+  font-weight: 800;
+}
+
+@media (max-width: 1280px) {
+  .tracking-operation-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 960px) {
+  .tracking-operation-row {
+    grid-template-columns: 1fr;
+  }
+  .tracking-operation-card-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 680px) {
+  .tracking-operation-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .tracking-operation-row {
+    width: calc(100% - 20px);
+    margin: 10px;
+  }
+  .tracking-operation-card-grid {
+    grid-template-columns: 1fr;
+    padding: 10px;
+  }
+}
+
+/* =========================================================
+   PROFESSIONAL CORPORATE POLISH
+   Driver / Escort / Supervisor + Loading / Unloading
+   Append-only override: existing functionality is unchanged.
+========================================================= */
+
+/* ---------- Expanded vehicle surface ---------- */
+.tracking-vehicle-expanded-card {
+  border: 1px solid #d9e5e9;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 5px 18px rgba(11, 63, 80, 0.045);
+}
+
+/* ---------- Confirmed Requirement ---------- */
+.tracking-confirmed-requirement-row {
+  margin-top: 10px;
+  margin-bottom: 12px;
+  gap: 0;
+  overflow: hidden;
+  border: 1px solid #d9e5e9;
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(11, 63, 80, 0.025);
+}
+
+.tracking-confirmed-requirement-item {
+  min-height: 64px;
+  padding: 9px 12px;
+  border: 0;
+  border-right: 1px solid #e4ecef;
+  border-radius: 0;
+  box-shadow: none;
+  background: #ffffff;
+}
+
+.tracking-confirmed-requirement-item:last-child {
+  border-right: 0;
+}
+
+.tracking-confirmed-requirement-item:hover {
+  border-color: #e4ecef;
+  background: #f9fcfc;
+  box-shadow: none;
+}
+
+.tracking-confirmed-requirement-label {
+  color: #6c8291;
+  font-size: 7.4px;
+  font-weight: 800;
+  letter-spacing: 0.48px;
+}
+
+.tracking-confirmed-requirement-value {
+  gap: 7px;
+  color: #123f50;
+  font-size: 9.8px;
+  font-weight: 750;
+}
+
+/* ---------- Personnel row ---------- */
+.tracking-personnel-row {
+  width: calc(100% - 28px);
+  margin: 12px 14px 14px;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1.15fr) minmax(0, 0.8fr);
+  gap: 12px;
+}
+
+.tracking-personnel-row .tracking-trip-support-card {
+  border: 1px solid #d7e4e8;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 3px 11px rgba(11, 63, 80, 0.035);
+}
+
+.tracking-personnel-row .tracking-trip-support-card:hover {
+  border-color: #bfd5d7;
+  box-shadow: 0 6px 15px rgba(11, 63, 80, 0.055);
+  transform: none;
+}
+
+.tracking-personnel-row .tracking-trip-support-heading {
+  min-height: 52px;
+  padding: 9px 12px;
+  border-bottom: 1px solid #e3ebee;
+  background: linear-gradient(90deg, #f0f8f7 0%, #f8fbfb 70%, #ffffff 100%);
+}
+
+.tracking-personnel-row .tracking-trip-support-heading svg {
+  width: 17px;
+  height: 17px;
+  color: #087f78;
+}
+
+.tracking-personnel-row .tracking-trip-support-heading strong {
+  color: #0b3f50;
+  font-size: 10.4px;
+  font-weight: 800;
+}
+
+.tracking-personnel-row .tracking-trip-support-heading span {
+  margin-top: 2px;
+  color: #788d9c;
+  font-size: 7.6px;
+}
+
+.tracking-personnel-row .tracking-form-field {
+  border-right: 1px solid #e6edef;
+}
+
+.tracking-personnel-row .tracking-form-field > label {
+  min-height: 31px;
+  padding: 7px 9px;
+  border-bottom: 1px solid #e7eef1;
+  color: #647b8a;
+  background: #f7fafb;
+  font-size: 7.3px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+}
+
+.tracking-personnel-row .tracking-form-control {
+  min-height: 43px;
+  height: 43px;
+  padding: 0 9px;
+}
+
+.tracking-personnel-row .tracking-form-control input,
+.tracking-personnel-row .tracking-form-control select {
+  color: #163d4e;
+  font-size: 9.4px;
+  font-weight: 700;
+}
+
+/* ---------- Loading + Unloading pair ---------- */
+.tracking-operation-row {
+  width: calc(100% - 28px);
+  margin: 4px 14px 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  align-items: stretch;
+}
+
+.tracking-operation-card {
+  border: 1px solid #d5e3e7;
+  border-top: 3px solid #087f78;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 4px 14px rgba(11, 63, 80, 0.04);
+}
+
+.tracking-operation-card.unloading {
+  border-top-color: #176a78;
+}
+
+.tracking-operation-card:hover {
+  border-color: #bfd4d8;
+  box-shadow: 0 7px 18px rgba(11, 63, 80, 0.06);
+  transform: none;
+}
+
+.tracking-operation-card-header {
+  min-height: 56px;
+  padding: 9px 13px;
+  gap: 10px;
+  border-bottom: 1px solid #dfe9ed;
+  background: linear-gradient(90deg, #eff8f7 0%, #f8fbfb 72%, #ffffff 100%);
+}
+
+.tracking-operation-card.unloading .tracking-operation-card-header {
+  background: linear-gradient(90deg, #f0f7f8 0%, #f8fbfb 72%, #ffffff 100%);
+}
+
+.tracking-operation-card-icon {
+  width: 34px;
+  height: 34px;
+  flex-basis: 34px;
+  border-radius: 9px;
+  color: #087f78;
+  background: #e5f4f2;
+}
+
+.tracking-operation-card.unloading .tracking-operation-card-icon {
+  color: #176a78;
+  background: #e8f3f5;
+}
+
+.tracking-operation-card-header strong {
+  color: #0b3f50;
+  font-size: 10.4px;
+  font-weight: 850;
+  letter-spacing: 0.3px;
+}
+
+.tracking-operation-card-header span {
+  margin-top: 3px;
+  color: #758b9b;
+  font-size: 7.8px;
+}
+
+.tracking-operation-card-grid {
+  padding: 11px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+  background: #ffffff;
+}
+
+.tracking-operation-card-grid > .tracking-form-field {
+  overflow: hidden;
+  border: 1px solid #d9e5e9;
+  border-radius: 9px;
+  background: #ffffff;
+}
+
+.tracking-operation-card-grid > .tracking-form-field:hover {
+  border-color: #b9d1d4;
+  box-shadow: 0 2px 8px rgba(8, 127, 120, 0.045);
+}
+
+.tracking-operation-card-grid > .tracking-form-field > label {
+  min-height: 30px;
+  padding: 7px 9px;
+  border-bottom: 1px solid #e7eef1;
+  color: #627989;
+  background: #f6f9fa;
+  font-size: 7.4px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+}
+
+.tracking-operation-card-grid .tracking-form-control {
+  min-height: 42px;
+  height: 42px;
+  padding: 0 9px;
+  background: #ffffff;
+}
+
+.tracking-operation-card-grid .tracking-form-control:hover {
+  background: #fbfdfd;
+}
+
+.tracking-operation-card-grid .tracking-form-control:focus-within {
+  background: #ffffff;
+  box-shadow: inset 0 -2px 0 rgba(8, 127, 120, 0.16);
+}
+
+.tracking-operation-card-grid .tracking-form-control > svg {
+  width: 14px;
+  height: 14px;
+  color: #078a83;
+}
+
+.tracking-operation-card.unloading
+  .tracking-operation-card-grid
+  .tracking-form-control > svg {
+  color: #176f7c;
+}
+
+.tracking-operation-card-grid .tracking-form-control input,
+.tracking-operation-card-grid .tracking-form-control select {
+  color: #163d4e;
+  font-size: 9.3px;
+  font-weight: 700;
+}
+
+.tracking-operation-card-grid > .tracking-form-field:first-child {
+  border-left: 3px solid #087f78;
+}
+
+.tracking-operation-card.unloading
+  .tracking-operation-card-grid > .tracking-form-field:first-child {
+  border-left-color: #176a78;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1280px) {
+  .tracking-personnel-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tracking-personnel-row .tracking-trip-support-card.supervisor {
+    grid-column: 1 / -1;
+  }
+
+  .tracking-operation-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 960px) {
+  .tracking-personnel-row,
+  .tracking-operation-row {
+    grid-template-columns: 1fr;
+  }
+
+  .tracking-personnel-row .tracking-trip-support-card.supervisor {
+    grid-column: auto;
+  }
+
+  .tracking-operation-card-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 680px) {
+  .tracking-operation-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tracking-confirmed-requirement-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tracking-confirmed-requirement-item {
+    border-bottom: 1px solid #e4ecef;
+  }
+}
+
+@media (max-width: 480px) {
+  .tracking-personnel-row,
+  .tracking-operation-row {
+    width: calc(100% - 20px);
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+
+  .tracking-operation-card-grid,
+  .tracking-personnel-row .tracking-vehicle-entry-grid,
+  .tracking-personnel-row .tracking-trip-support-card.supervisor .tracking-vehicle-entry-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tracking-confirmed-requirement-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =========================================================
+   FINAL ALIGNMENT FIX
+   Driver / Escort / Supervisor
+   Loading / Unloading
+========================================================= */
+
+/* =========================
+   PERSONNEL - 3 EQUAL CARDS
+========================= */
+
+.tracking-personnel-row {
+  width: calc(100% - 36px);
+  margin: 14px 18px 18px;
+
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+
+  align-items: stretch;
+}
+
+.tracking-personnel-row .tracking-trip-support-card {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+
+  margin: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  overflow: hidden;
+
+  border: 1px solid #d6e3e8;
+  border-radius: 12px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 2px 6px rgba(11, 63, 80, 0.025),
+    0 6px 16px rgba(11, 63, 80, 0.035);
+}
+
+
+/* =========================
+   PERSONNEL HEADERS
+========================= */
+
+.tracking-personnel-row .tracking-trip-support-heading {
+  width: 100%;
+  height: 64px;
+  min-height: 64px;
+
+  margin: 0;
+  padding: 0 16px;
+
+  display: flex;
+  align-items: center;
+  gap: 11px;
+
+  border-bottom: 1px solid #dfe9ed;
+
+  background:
+    linear-gradient(
+      90deg,
+      #eef8f7 0%,
+      #f7fbfb 65%,
+      #ffffff 100%
+    );
+}
+
+.tracking-personnel-row
+.tracking-trip-support-heading svg {
+  width: 18px;
+  height: 18px;
+
+  flex: 0 0 18px;
+
+  color: #087f78;
+}
+
+.tracking-personnel-row
+.tracking-trip-support-heading strong {
+  display: block;
+
+  margin: 0;
+
+  color: #0b3f50;
+
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.tracking-personnel-row
+.tracking-trip-support-heading span {
+  display: block;
+
+  margin-top: 3px;
+
+  color: #71869a;
+
+  font-size: 8px;
+  font-weight: 500;
+  line-height: 1.25;
+}
+
+
+/* =========================
+   PERSONNEL FIELD GRID
+========================= */
+
+.tracking-personnel-row
+.tracking-trip-support-card
+.tracking-vehicle-entry-grid {
+  width: 100%;
+
+  margin: 0;
+  padding: 0;
+
+  flex: 1;
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+
+  gap: 0;
+
+  border: 0;
+  border-radius: 0;
+
+  background: #ffffff;
+}
+
+
+/* Supervisor has only 2 fields */
+
+.tracking-personnel-row
+.tracking-trip-support-card.supervisor
+.tracking-vehicle-entry-grid {
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+}
+
+
+/* =========================
+   PERSONNEL FIELDS
+========================= */
+
+.tracking-personnel-row .tracking-form-field {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  border-right: 1px solid #e2eaee;
+}
+
+.tracking-personnel-row
+.tracking-form-field:last-child {
+  border-right: 0;
+}
+
+
+/* LABEL */
+
+.tracking-personnel-row
+.tracking-form-field > label {
+  width: 100%;
+  height: 40px;
+  min-height: 40px;
+
+  margin: 0;
+  padding: 0 11px;
+
+  display: flex;
+  align-items: center;
+
+  border-bottom: 1px solid #e4ecef;
+
+  color: #607989;
+
+  background: #f6f9fa;
+
+  font-size: 7.5px;
+  font-weight: 800;
+
+  line-height: 1.15;
+
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+
+  white-space: normal;
+}
+
+
+/* VALUE */
+
+.tracking-personnel-row
+.tracking-form-control {
+  width: 100%;
+
+  height: 52px;
+  min-height: 52px;
+
+  padding: 0 11px;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  border: 0;
+  border-radius: 0;
+
+  background: #ffffff;
+
+  box-shadow: none;
+}
+
+.tracking-personnel-row
+.tracking-form-control:hover {
+  background: #fbfdfd;
+}
+
+.tracking-personnel-row
+.tracking-form-control:focus-within {
+  background: #ffffff;
+
+  box-shadow:
+    inset 0 -2px 0 rgba(8, 127, 120, 0.18);
+}
+
+
+/* ICON */
+
+.tracking-personnel-row
+.tracking-form-control > svg {
+  width: 15px;
+  height: 15px;
+
+  flex: 0 0 15px;
+
+  color: #078b84;
+}
+
+
+/* INPUT */
+
+.tracking-personnel-row
+.tracking-form-control input,
+.tracking-personnel-row
+.tracking-form-control select {
+  width: 100%;
+  min-width: 0;
+
+  color: #143c4e;
+
+  font-size: 10px;
+  font-weight: 700;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+/* =========================================================
+   LOADING + UNLOADING
+   EXACT 50 / 50 ALIGNMENT
+========================================================= */
+
+.tracking-operation-row {
+  width: calc(100% - 36px);
+
+  margin: 0 18px 18px;
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 16px;
+
+  align-items: stretch;
+}
+
+
+/* =========================
+   OPERATION CARDS
+========================= */
+
+.tracking-operation-card {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+
+  margin: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  overflow: hidden;
+
+  border: 1px solid #d6e3e8;
+  border-top: 3px solid #087f78;
+
+  border-radius: 12px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 2px 6px rgba(11, 63, 80, 0.025),
+    0 6px 16px rgba(11, 63, 80, 0.035);
+}
+
+.tracking-operation-card.unloading {
+  border-top-color: #176a78;
+}
+
+
+/* =========================
+   OPERATION HEADER
+========================= */
+
+.tracking-operation-card-header {
+  width: 100%;
+
+  height: 70px;
+  min-height: 70px;
+
+  padding: 0 16px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+
+  border-bottom: 1px solid #dfe9ed;
+
+  background:
+    linear-gradient(
+      90deg,
+      #eef8f7 0%,
+      #f8fbfb 70%,
+      #ffffff 100%
+    );
+}
+
+.tracking-operation-card.unloading
+.tracking-operation-card-header {
+  background:
+    linear-gradient(
+      90deg,
+      #eef7f8 0%,
+      #f8fbfb 70%,
+      #ffffff 100%
+    );
+}
+
+
+/* HEADER ICON */
+
+.tracking-operation-card-icon {
+  width: 40px;
+  height: 40px;
+
+  flex: 0 0 40px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 10px;
+
+  color: #087f78;
+
+  background: #e4f4f2;
+}
+
+.tracking-operation-card.unloading
+.tracking-operation-card-icon {
+  color: #176a78;
+
+  background: #e7f3f5;
+}
+
+
+/* TITLE */
+
+.tracking-operation-card-header strong {
+  display: block;
+
+  color: #0b3f50;
+
+  font-size: 11.5px;
+  font-weight: 850;
+
+  line-height: 1.2;
+
+  letter-spacing: 0.3px;
+
+  text-transform: uppercase;
+}
+
+
+/* SUB TITLE */
+
+.tracking-operation-card-header span {
+  display: block;
+
+  margin-top: 4px;
+
+  color: #71869a;
+
+  font-size: 8px;
+  font-weight: 500;
+
+  line-height: 1.25;
+}
+
+
+/* =========================
+   OPERATION GRID
+========================= */
+
+.tracking-operation-card-grid {
+  width: 100%;
+
+  padding: 14px;
+
+  flex: 1;
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+
+  grid-template-rows:
+    repeat(2, minmax(92px, auto));
+
+  gap: 12px;
+
+  align-content: stretch;
+
+  background: #ffffff;
+}
+
+
+/* =========================
+   OPERATION FIELD
+========================= */
+
+.tracking-operation-card-grid
+> .tracking-form-field {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+
+  display: flex;
+  flex-direction: column;
+
+  overflow: hidden;
+
+  border: 1px solid #d8e4e9;
+
+  border-radius: 10px;
+
+  background: #ffffff;
+
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.tracking-operation-card-grid
+> .tracking-form-field:hover {
+  border-color: #b8d1d3;
+
+  box-shadow:
+    0 3px 9px rgba(8, 127, 120, 0.05);
+}
+
+
+/* FIELD LABEL */
+
+.tracking-operation-card-grid
+> .tracking-form-field
+> label {
+  width: 100%;
+
+  height: 38px;
+  min-height: 38px;
+
+  margin: 0;
+  padding: 0 11px;
+
+  display: flex;
+  align-items: center;
+
+  border-bottom: 1px solid #e5edef;
+
+  color: #607989;
+
+  background: #f6f9fa;
+
+  font-size: 7.6px;
+  font-weight: 800;
+
+  letter-spacing: 0.4px;
+
+  text-transform: uppercase;
+}
+
+
+/* FIELD VALUE */
+
+.tracking-operation-card-grid
+.tracking-form-control {
+  width: 100%;
+
+  height: 52px;
+  min-height: 52px;
+
+  padding: 0 11px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+
+  border: 0;
+  border-radius: 0;
+
+  background: #ffffff;
+
+  box-shadow: none;
+}
+
+
+/* FIELD ICON */
+
+.tracking-operation-card-grid
+.tracking-form-control > svg {
+  width: 15px;
+  height: 15px;
+
+  flex: 0 0 15px;
+
+  color: #078b84;
+}
+
+
+/* FIELD INPUT */
+
+.tracking-operation-card-grid
+.tracking-form-control input,
+.tracking-operation-card-grid
+.tracking-form-control select {
+  width: 100%;
+  min-width: 0;
+
+  color: #143c4e;
+
+  font-size: 9.7px;
+  font-weight: 700;
+}
+
+
+/* STATUS ACCENT */
+
+.tracking-operation-card-grid
+> .tracking-form-field:first-child {
+  border-left:
+    3px solid #087f78;
+}
+
+.tracking-operation-card.unloading
+.tracking-operation-card-grid
+> .tracking-form-field:first-child {
+  border-left-color: #176a78;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 1200px) {
+
+  .tracking-personnel-row {
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+  }
+
+  .tracking-operation-card-grid {
+    gap: 9px;
+    padding: 10px;
+  }
+}
+
+
+@media (max-width: 900px) {
+
+  .tracking-personnel-row {
+    grid-template-columns: 1fr;
+  }
+
+  .tracking-operation-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+@media (max-width: 600px) {
+
+  .tracking-personnel-row,
+  .tracking-operation-row {
+    width: calc(100% - 20px);
+
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+
+  .tracking-personnel-row
+  .tracking-trip-support-card
+  .tracking-vehicle-entry-grid,
+
+  .tracking-personnel-row
+  .tracking-trip-support-card.supervisor
+  .tracking-vehicle-entry-grid,
+
+  .tracking-operation-card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tracking-operation-card-grid {
+    grid-template-rows: auto;
+  }
+}
+
+
+/* =========================================================
+   PERSONNEL CARD STRUCTURE FIX
+   IMPORTANT: Keep this block at the very end of the CSS.
+   SupportCard now uses .tracking-support-fields.
+========================================================= */
+
+.tracking-input-page .tracking-personnel-row {
+  width: calc(100% - 36px);
+  margin: 14px 18px 18px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  align-items: stretch;
+}
+
+.tracking-input-page .tracking-personnel-row > .tracking-trip-support-card {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #d7e4e8;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 4px 14px rgba(11, 63, 80, 0.045);
+}
+
+.tracking-input-page .tracking-personnel-row .tracking-trip-support-heading {
+  width: 100%;
+  min-height: 58px;
+  height: 58px;
+  padding: 0 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid #e1eaed;
+  background: linear-gradient(90deg, #eef8f7 0%, #f8fbfb 72%, #ffffff 100%);
+}
+
+.tracking-input-page .tracking-personnel-row .tracking-trip-support-heading > svg {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  color: #087f78;
+}
+
+.tracking-input-page .tracking-personnel-row .tracking-trip-support-heading strong {
+  display: block;
+  margin: 0;
+  color: #0b3f50;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.tracking-input-page .tracking-personnel-row .tracking-trip-support-heading span {
+  display: block;
+  margin-top: 3px;
+  color: #71869a;
+  font-size: 7.8px;
+  line-height: 1.25;
+}
+
+/* Driver and Escort = 3 equal fields across the FULL card */
+.tracking-input-page .tracking-personnel-row .tracking-support-fields {
+  width: 100%;
+  min-width: 0;
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  padding: 0;
+  margin: 0;
+  background: #ffffff;
+}
+
+/* Supervisor = 2 equal fields across the FULL card */
+.tracking-input-page .tracking-personnel-row .tracking-trip-support-card.supervisor .tracking-support-fields {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.tracking-input-page .tracking-personnel-row .tracking-support-fields > .tracking-form-field {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #e3ebee;
+}
+
+.tracking-input-page .tracking-personnel-row .tracking-support-fields > .tracking-form-field:last-child {
+  border-right: 0;
+}
+
+.tracking-input-page .tracking-personnel-row .tracking-support-fields > .tracking-form-field > label {
+  width: 100%;
+  height: 42px;
+  min-height: 42px;
+  margin: 0;
+  padding: 0 11px;
+  display: flex;
+  align-items: center;
+  color: #617988;
+  background: #f6f9fa;
+  border-bottom: 1px solid #e5edef;
+  font-size: 7.4px;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: 0.35px;
+  text-transform: uppercase;
+  white-space: normal;
+}
+
+.tracking-input-page .tracking-personnel-row .tracking-support-fields .tracking-form-control {
+  width: 100%;
+  height: 52px;
+  min-height: 52px;
+  padding: 0 11px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 0;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.tracking-input-page .tracking-personnel-row .tracking-support-fields .tracking-form-control > svg {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 15px;
+  color: #087f78;
+}
+
+.tracking-input-page .tracking-personnel-row .tracking-support-fields .tracking-form-control input,
+.tracking-input-page .tracking-personnel-row .tracking-support-fields .tracking-form-control select {
+  width: 100%;
+  min-width: 0;
+  height: 50px;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  color: #17384c;
+  background: transparent;
+  font-size: 9.7px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Loading / Unloading remain exact 50 / 50 */
+.tracking-input-page .tracking-operation-row {
+  width: calc(100% - 36px);
+  margin: 0 18px 18px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  align-items: stretch;
+}
+
+.tracking-input-page .tracking-operation-row > .tracking-operation-card {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+}
+
+.tracking-input-page .tracking-operation-card-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 11px;
+}
+
+/* Responsive */
+@media (max-width: 1050px) {
+  .tracking-input-page .tracking-personnel-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tracking-input-page .tracking-personnel-row > .tracking-trip-support-card.supervisor {
+    grid-column: 1 / -1;
+  }
+
+  .tracking-input-page .tracking-operation-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .tracking-input-page .tracking-personnel-row {
+    grid-template-columns: 1fr;
+  }
+
+  .tracking-input-page .tracking-personnel-row > .tracking-trip-support-card.supervisor {
+    grid-column: auto;
+  }
+
+  .tracking-input-page .tracking-operation-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .tracking-input-page .tracking-personnel-row,
+  .tracking-input-page .tracking-operation-row {
+    width: calc(100% - 20px);
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+
+  .tracking-input-page .tracking-personnel-row .tracking-support-fields,
+  .tracking-input-page .tracking-personnel-row .tracking-trip-support-card.supervisor .tracking-support-fields,
+  .tracking-input-page .tracking-operation-card-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
