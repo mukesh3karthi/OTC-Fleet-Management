@@ -2116,3 +2116,311 @@
 .traffic-quotation-table th:nth-child(4){width:20%;}
 .traffic-quotation-table th:nth-child(5){width:16%;}
 .traffic-quotation-table th:nth-child(6){width:70px;text-align:center;}
+
+/* =========================================================
+   COMPACT TRAFFIC TOAST - BOTTOM RIGHT
+   Same model as Approval Management
+========================================================= */
+
+.traffic-toast {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 100000;
+
+  width: 260px;
+  min-height: 50px;
+  padding: 8px 30px 8px 8px;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  border: 1px solid #dce5e9;
+  border-left-width: 3px;
+  border-radius: 8px;
+
+  background: #ffffff;
+  box-shadow: 0 8px 22px rgba(15, 40, 55, 0.14);
+
+  animation: trafficToastIn 0.2s ease-out;
+}
+
+.traffic-toast-icon {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 7px;
+
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.traffic-toast-content {
+  min-width: 0;
+  display: grid;
+  gap: 1px;
+}
+
+.traffic-toast-content strong {
+  color: #17384b;
+  font-size: 9.5px;
+  font-weight: 850;
+  line-height: 1.2;
+}
+
+.traffic-toast-content > span {
+  display: block;
+  max-width: 185px;
+
+  overflow: hidden;
+  color: #70838e;
+
+  font-size: 8px;
+  font-weight: 600;
+  line-height: 1.3;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.traffic-toast-close {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+
+  width: 19px;
+  height: 19px;
+  padding: 0;
+
+  display: grid;
+  place-items: center;
+
+  border: 0;
+  border-radius: 5px;
+
+  background: transparent;
+  color: #98a7af;
+
+  font-size: 13px;
+  line-height: 1;
+
+  cursor: pointer;
+}
+
+.traffic-toast-close:hover {
+  background: #f1f4f6;
+  color: #365260;
+}
+
+.traffic-toast-success {
+  border-left-color: #0f8b78;
+}
+
+.traffic-toast-success .traffic-toast-icon {
+  color: #087b6b;
+  background: #e9f7f3;
+}
+
+.traffic-toast-error {
+  border-left-color: #d84a4a;
+}
+
+.traffic-toast-error .traffic-toast-icon {
+  color: #c83e3e;
+  background: #fff0f0;
+}
+
+.traffic-toast-warning {
+  border-left-color: #d98a17;
+}
+
+.traffic-toast-warning .traffic-toast-icon {
+  color: #b56e0c;
+  background: #fff6e7;
+}
+
+@keyframes trafficToastIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 520px) {
+  .traffic-toast {
+    right: 10px;
+    bottom: 10px;
+    width: min(260px, calc(100vw - 20px));
+  }
+}
+
+
+
+/* =========================================================
+   TRAFFIC TOAST - SAME STYLE AS APPROVAL MANAGEMENT
+   BOTTOM RIGHT
+========================================================= */
+.traffic-toast {
+  position: fixed !important;
+  right: 22px !important;
+  bottom: 22px !important;
+  top: auto !important;
+  left: auto !important;
+  z-index: 99999 !important;
+
+  width: min(390px, calc(100vw - 32px));
+  min-height: 68px;
+  padding: 12px 42px 12px 12px;
+
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+
+  border: 1px solid #dce6ea;
+  border-left-width: 4px;
+  border-radius: 12px;
+
+  background: #ffffff;
+  color: #234657;
+
+  box-shadow:
+    0 16px 38px rgba(15, 47, 67, 0.16),
+    0 4px 12px rgba(15, 47, 67, 0.08);
+
+  animation: trafficToastIn 0.22s ease;
+}
+
+.traffic-toast-icon {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.traffic-toast-content {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.traffic-toast-content strong {
+  font-size: 11px;
+  line-height: 1.2;
+  font-weight: 850;
+}
+
+.traffic-toast-content span {
+  color: #607985;
+  font-size: 10px;
+  line-height: 1.4;
+  font-weight: 650;
+}
+
+.traffic-toast-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+
+  width: 26px;
+  height: 26px;
+  padding: 0;
+
+  display: grid;
+  place-items: center;
+
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #82959f;
+
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.traffic-toast-close:hover {
+  background: rgba(15, 47, 67, 0.06);
+  color: #294b59;
+}
+
+/* SUCCESS */
+.traffic-toast-success {
+  border-color: #b9dfd0;
+  border-left-color: #11785b;
+  background: #f6fcf9;
+}
+
+.traffic-toast-success .traffic-toast-icon {
+  background: #e2f5ec;
+  color: #11785b;
+}
+
+.traffic-toast-success .traffic-toast-content strong {
+  color: #11785b;
+}
+
+/* ERROR */
+.traffic-toast-error {
+  border-color: #efc6c2;
+  border-left-color: #bd4039;
+  background: #fff8f7;
+}
+
+.traffic-toast-error .traffic-toast-icon {
+  background: #fde9e7;
+  color: #bd4039;
+}
+
+.traffic-toast-error .traffic-toast-content strong {
+  color: #bd4039;
+}
+
+/* WARNING */
+.traffic-toast-warning {
+  border-color: #ead7a8;
+  border-left-color: #946200;
+  background: #fffbf2;
+}
+
+.traffic-toast-warning .traffic-toast-icon {
+  background: #fff0c9;
+  color: #946200;
+}
+
+.traffic-toast-warning .traffic-toast-content strong {
+  color: #946200;
+}
+
+@keyframes trafficToastIn {
+  from {
+    opacity: 0;
+    transform: translate3d(18px, 10px, 0) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@media (max-width: 600px) {
+  .traffic-toast {
+    right: 12px !important;
+    bottom: 12px !important;
+    width: calc(100vw - 24px);
+  }
+}

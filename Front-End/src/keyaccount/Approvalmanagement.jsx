@@ -406,6 +406,30 @@ const Approvalmanagement = () => {
     setSuccessMessage,
   ] = useState("");
 
+  /* =========================================================
+     COMPACT APPROVAL TOAST
+  ========================================================= */
+
+  const [toast, setToast] = useState(null);
+
+  const showToast = (message, type = "success") => {
+    setToast({
+      message,
+      type,
+      id: Date.now(),
+    });
+  };
+
+  useEffect(() => {
+    if (!toast) return undefined;
+
+    const timer = window.setTimeout(() => {
+      setToast(null);
+    }, 2800);
+
+    return () => window.clearTimeout(timer);
+  }, [toast]);
+
   const [
     searchTerm,
     setSearchTerm,
@@ -506,11 +530,13 @@ const Approvalmanagement = () => {
       quotationSelections[rowKey] || "";
 
     if (!selectedQuotationId) {
-      setError(
+      const message =
         action === "Approved"
           ? "Select a transporter quotation before approving."
-          : "Select the quotation you want to reject."
-      );
+          : "Select the quotation you want to reject.";
+
+      setError(message);
+      showToast(message, "warning");
       return;
     }
 
@@ -524,7 +550,9 @@ const Approvalmanagement = () => {
       );
 
     if (!selectedQuotation) {
-      setError("Selected quotation was not found.");
+      const message = "Selected quotation was not found.";
+      setError(message);
+      showToast(message, "error");
       return;
     }
 
@@ -861,10 +889,11 @@ const Approvalmanagement = () => {
           "Rejected" &&
         !rejectionReason
       ) {
-        setError(
-          "Enter a rejection reason before rejecting the order."
-        );
+        const message =
+          "Enter a rejection reason before rejecting the order.";
 
+        setError(message);
+        showToast(message, "warning");
         return;
       }
 
@@ -945,10 +974,15 @@ const Approvalmanagement = () => {
           );
         }
 
-        setSuccessMessage(
+        const successText =
           status === "Approved"
             ? `${order.tripId} approved and released to Traffic.`
-            : `${order.tripId} rejected.`
+            : `${order.tripId} rejected.`;
+
+        setSuccessMessage(successText);
+        showToast(
+          successText,
+          status === "Approved" ? "success" : "error"
         );
 
         setOrderActionModal(null);
@@ -989,10 +1023,12 @@ const Approvalmanagement = () => {
           approvalError
         );
 
-        setError(
+        const message =
           approvalError.message ||
-            "Unable to update order approval."
-        );
+          "Unable to update order approval.";
+
+        setError(message);
+        showToast(message, "error");
       } finally {
         setOrderUpdatingId(
           ""
@@ -1063,10 +1099,11 @@ const Approvalmanagement = () => {
       if (
         approvedConfirmation
       ) {
-        setError(
-          "This vehicle requirement already has an approved transporter quotation."
-        );
+        const message =
+          "This vehicle requirement already has an approved transporter quotation.";
 
+        setError(message);
+        showToast(message, "warning");
         return;
       }
 
@@ -1084,12 +1121,13 @@ const Approvalmanagement = () => {
       if (
         !selectedQuotationId
       ) {
-        setError(
+        const message =
           status === "Approved"
             ? "Select a transporter quotation before approving."
-            : "Select the quotation you want to reject."
-        );
+            : "Select the quotation you want to reject.";
 
+        setError(message);
+        showToast(message, "warning");
         return;
       }
 
@@ -1103,10 +1141,10 @@ const Approvalmanagement = () => {
       if (
         !selectedQuotation
       ) {
-        setError(
-          "Selected quotation was not found."
-        );
+        const message = "Selected quotation was not found.";
 
+        setError(message);
+        showToast(message, "error");
         return;
       }
 
@@ -1123,10 +1161,11 @@ const Approvalmanagement = () => {
           "Rejected" &&
         !rejectionReason
       ) {
-        setError(
-          "Enter a rejection reason before rejecting the quotation."
-        );
+        const message =
+          "Enter a rejection reason before rejecting the quotation.";
 
+        setError(message);
+        showToast(message, "warning");
         return;
       }
 
@@ -1217,10 +1256,15 @@ const Approvalmanagement = () => {
           );
         }
 
-        setSuccessMessage(
+        const successText =
           status === "Approved"
-            ? `${selectedQuotation.transporter} confirmed for ${requirement.vehicleType || requirement.requirementId}. The requirement is now available in Tracking Input.`
-            : `${selectedQuotation.transporter} quotation rejected.`
+            ? `${selectedQuotation.transporter} confirmed for ${requirement.vehicleType || requirement.requirementId}.`
+            : `${selectedQuotation.transporter} quotation rejected.`;
+
+        setSuccessMessage(successText);
+        showToast(
+          successText,
+          status === "Approved" ? "success" : "error"
         );
 
         setQuotationActionModal(null);
@@ -1275,10 +1319,12 @@ const Approvalmanagement = () => {
           quotationError
         );
 
-        setError(
+        const message =
           quotationError.message ||
-            "Unable to update transporter quotation."
-        );
+          "Unable to update transporter quotation.";
+
+        setError(message);
+        showToast(message, "error");
       } finally {
         setQuotationUpdatingKey(
           ""
@@ -2268,6 +2314,42 @@ const Approvalmanagement = () => {
 
   return (
     <div className="approval-management-page">
+      {toast && (
+        <div
+          className={`approval-toast approval-toast-${toast.type}`}
+          role="status"
+          aria-live="polite"
+          key={toast.id}
+        >
+          <span className="approval-toast-icon" aria-hidden="true">
+            {toast.type === "success"
+              ? "✓"
+              : toast.type === "error"
+              ? "×"
+              : "!"}
+          </span>
+
+          <div className="approval-toast-content">
+            <strong>
+              {toast.type === "success"
+                ? "Approved"
+                : toast.type === "error"
+                ? "Updated"
+                : "Required"}
+            </strong>
+            <span>{toast.message}</span>
+          </div>
+
+          <button
+            type="button"
+            className="approval-toast-close"
+            onClick={() => setToast(null)}
+            aria-label="Close notification"
+          >
+            ×
+          </button>
+        </div>
+      )}
 
       {/* ===================================================
           HEADER

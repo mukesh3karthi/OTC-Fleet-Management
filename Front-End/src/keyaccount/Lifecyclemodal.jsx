@@ -176,6 +176,22 @@ const getLatestTracking = (allocation) => {
   return history[history.length - 1];
 };
 
+const isPoDocumentComplete = (order) => {
+  const po = order?.poDocument || {};
+
+  const hasPoNumber = Boolean(String(po?.poNumber || "").trim());
+  const hasValidity = Boolean(po?.poValidityPeriod);
+  const hasBillingGstin = Boolean(String(po?.billingGstin || "").trim());
+  const hasDocument = Boolean(
+    po?.fileName ||
+    po?.documentName ||
+    po?.fileUrl ||
+    po?.documentUrl
+  );
+
+  return hasPoNumber && hasValidity && hasBillingGstin && hasDocument;
+};
+
 /* =========================================================
    LIFECYCLE STATUS
 ========================================================= */
@@ -239,13 +255,11 @@ const buildLifecycle = (order) => {
       ? "Rejected"
       : "Pending");
 
-  const poDocumentStatus =
-    order?.poDocument?.status ||
-    (order?.poDocument?.documentUrl ||
-    order?.poDocument?.fileUrl ||
-    order?.poDocument?.poNumber
-      ? "Completed"
-      : "Pending");
+  // PO is completed only when all required PO fields are actually saved.
+  // Do not trust a stale `status: Completed` by itself.
+  const poDocumentStatus = isPoDocumentComplete(order)
+    ? "Completed"
+    : "Pending";
 
   const vendorFinalizationStatus =
     order?.vendorFinalization?.status ||
@@ -335,7 +349,51 @@ const getLifecycleCurrentIndex = (
     return 6;
   }
 
-  if (stage === "tracking") {
+  /*
+   * IMPORTANT:
+   * Approval Management can leave a stale backend stage such as
+   * "Tracking Input" / "Order Placed". The PO page must still win
+   * until the required PO data is genuinely complete.
+   *
+   * Only a real Tracking order with vehicle tracking history should
+   * bypass the PO gate.
+   */
+  const stageAllocations = safeArray(order?.allocatedVehicles);
+  const hasRealTrackingProgress = stageAllocations.some(
+    (allocation) =>
+      safeArray(allocation?.dailyTracking).length > 0 ||
+      String(allocation?.loading?.status || "").trim().toLowerCase() === "completed" ||
+      String(allocation?.unloading?.status || "").trim().toLowerCase() === "completed"
+  );
+
+  const poActuallyComplete = isPoDocumentComplete(order);
+
+  if (
+    !poActuallyComplete &&
+    stage !== "trip complete" &&
+    stage !== "trip completed" &&
+    stage !== "completed" &&
+    stage !== "complete" &&
+    !hasRealTrackingProgress
+  ) {
+    const hasApprovedVehicle = safeArray(order?.vehicleConfirmations).some(
+      (confirmation) =>
+        String(confirmation?.status || "").trim().toLowerCase() === "approved"
+    );
+
+    if (
+      hasApprovedVehicle ||
+      String(order?.orderApproval?.status || "").trim().toLowerCase() === "approved" ||
+      stage === "po document" ||
+      stage === "tracking input" ||
+      stage === "order placed" ||
+      stage === "vehicle allocation"
+    ) {
+      return 2;
+    }
+  }
+
+  if (stage === "tracking" && hasRealTrackingProgress) {
     return 5;
   }
 
@@ -362,9 +420,8 @@ const getLifecycleCurrentIndex = (
     );
 
   const poDocumentCompleted =
-    getStatusClass(
-      lifecycle?.[2]?.status
-    ) === "approved";
+    isPoDocumentComplete(order) &&
+    getStatusClass(lifecycle?.[2]?.status) === "approved";
 
   const vendorFinalizationCompleted =
     getStatusClass(
@@ -730,6 +787,30 @@ const Lifecyclemodal = ({
   const [placeOrderError, setPlaceOrderError] = useState("");
 
   /* =========================================================
+     TOAST NOTIFICATION
+  ========================================================= */
+
+  const [toast, setToast] = useState(null);
+
+  const showToast = (message, type = "success") => {
+    setToast({
+      message,
+      type,
+      id: Date.now(),
+    });
+  };
+
+  useEffect(() => {
+    if (!toast) return undefined;
+
+    const timer = window.setTimeout(() => {
+      setToast(null);
+    }, 2800);
+
+    return () => window.clearTimeout(timer);
+  }, [toast]);
+
+  /* =========================================================
      ORDER FINALIZATION INPUT DATA
   ========================================================= */
 
@@ -928,22 +1009,30 @@ const Lifecyclemodal = ({
 
   const savePoDocument = async () => {
     if (!order?._id) {
-      setPoError("Order ID is missing.");
+      const message = "Order ID is missing.";
+      setPoError(message);
+      showToast(message, "error");
       return;
     }
 
     if (!poForm.poNumber.trim()) {
-      setPoError("Enter the PO number before saving.");
+      const message = "Enter the PO number before saving.";
+      setPoError(message);
+      showToast(message, "warning");
       return;
     }
 
     if (!poForm.poValidityPeriod) {
-      setPoError("Select the PO validity period before saving.");
+      const message = "Select the PO validity period before saving.";
+      setPoError(message);
+      showToast(message, "warning");
       return;
     }
 
     if (!poForm.billingGstin.trim()) {
-      setPoError("Enter the Billing GSTIN before saving.");
+      const message = "Enter the Billing GSTIN before saving.";
+      setPoError(message);
+      showToast(message, "warning");
       return;
     }
 
@@ -953,7 +1042,9 @@ const Lifecyclemodal = ({
       !order?.poDocument?.fileUrl &&
       !order?.poDocument?.documentUrl
     ) {
-      setPoError("Select a PO document before saving.");
+      const message = "Select a PO document before saving.";
+      setPoError(message);
+      showToast(message, "warning");
       return;
     }
 
@@ -1007,6 +1098,7 @@ const Lifecyclemodal = ({
         status: "Completed",
       }));
       setPoMessage("PO document saved successfully.");
+      showToast("PO document saved successfully.", "success");
 
       // Immediately use the fresh backend order inside this modal.
       // This makes PO Number, PO Validity and Billing GSTIN appear on
@@ -1061,7 +1153,9 @@ const Lifecyclemodal = ({
         setActiveStepIndex(3);
       }
     } catch (error) {
-      setPoError(error.message || "Unable to save PO document.");
+      const message = error.message || "Unable to save PO document.";
+      setPoError(message);
+      showToast(message, "error");
     } finally {
       setPoSaving(false);
     }
@@ -1069,30 +1163,26 @@ const Lifecyclemodal = ({
 
   const placeOrder = async () => {
     if (!order?._id) {
-      setPlaceOrderError("Order ID is missing.");
+      const message = "Order ID is missing.";
+      setPlaceOrderError(message);
+      showToast(message, "error");
       return;
     }
 
     if (!vehicleApprovalCompleted) {
-      setPlaceOrderError(
-        "All vehicle requirements must have an approved transporter before placing the order."
-      );
+      const message =
+        "All vehicle requirements must have an approved transporter before placing the order.";
+      setPlaceOrderError(message);
+      showToast(message, "warning");
       return;
     }
 
-    const poCompleted =
-      getStatusClass(order?.poDocument?.status) === "approved" ||
-      Boolean(
-        order?.poDocument?.poNumber &&
-        (
-          order?.poDocument?.fileName ||
-          order?.poDocument?.fileUrl ||
-          order?.poDocument?.documentUrl
-        )
-      );
+    const poCompleted = isPoDocumentComplete(order);
 
     if (!poCompleted) {
-      setPlaceOrderError("Complete the PO Document before placing the order.");
+      const message = "Complete the PO Document before placing the order.";
+      setPlaceOrderError(message);
+      showToast(message, "warning");
       return;
     }
 
@@ -1156,6 +1246,10 @@ const Lifecyclemodal = ({
       setPlaceOrderMessage(
         "Order placed successfully and moved to Tracking."
       );
+      showToast(
+        "Order placed successfully. The trip is now in Tracking.",
+        "success"
+      );
 
       if (typeof onOrderUpdated === "function") {
         onOrderUpdated(updatedOrder);
@@ -1163,9 +1257,10 @@ const Lifecyclemodal = ({
 
       setActiveStepIndex(5);
     } catch (error) {
-      setPlaceOrderError(
-        error.message || "Unable to place the order."
-      );
+      const message =
+        error.message || "Unable to place the order.";
+      setPlaceOrderError(message);
+      showToast(message, "error");
     } finally {
       setPlaceOrderSaving(false);
     }
@@ -1176,9 +1271,9 @@ const Lifecyclemodal = ({
     requestApproval = false
   ) => {
     if (!order?._id) {
-      setFinalizationError(
-        "Order ID is missing."
-      );
+      const message = "Order ID is missing.";
+      setFinalizationError(message);
+      showToast(message, "error");
       return;
     }
 
@@ -1233,11 +1328,12 @@ const Lifecyclemodal = ({
       // the saved fields read-only without closing the modal.
       setLocalOrder(updatedOrder);
 
-      setFinalizationMessage(
-        requestApproval
-          ? "Saved and sent for approval."
-          : "Changes saved successfully."
-      );
+      const successMessage = requestApproval
+        ? "Order finalization saved and sent for approval."
+        : "Order finalization saved successfully.";
+
+      setFinalizationMessage(successMessage);
+      showToast(successMessage, "success");
 
       if (requestApproval) {
         setApprovalRequested(true);
@@ -1250,10 +1346,12 @@ const Lifecyclemodal = ({
         onOrderUpdated(updatedOrder);
       }
     } catch (error) {
-      setFinalizationError(
+      const message =
         error.message ||
-          "Unable to save order finalization."
-      );
+        "Unable to save order finalization.";
+
+      setFinalizationError(message);
+      showToast(message, "error");
     } finally {
       setFinalizationSaving(false);
     }
@@ -1333,13 +1431,7 @@ const Lifecyclemodal = ({
       .trim()
       .toLowerCase();
 
-    const poCompleted =
-      getStatusClass(order?.poDocument?.status) === "approved" ||
-      Boolean(
-        order?.poDocument?.poNumber &&
-        (order?.poDocument?.fileUrl ||
-          order?.poDocument?.documentUrl)
-      );
+    const poCompleted = isPoDocumentComplete(order);
 
     const approvalManagementApproved =
       vehicleApprovalCompleted ||
@@ -1357,12 +1449,28 @@ const Lifecyclemodal = ({
       return "Trip Complete";
     }
 
-    if (orderPlacedCompleted || rawStage === "tracking") {
-      return "Tracking";
+    const hasRealTrackingProgress = safeArray(order?.allocatedVehicles).some(
+      (allocation) =>
+        safeArray(allocation?.dailyTracking).length > 0 ||
+        String(allocation?.loading?.status || "").trim().toLowerCase() === "completed" ||
+        String(allocation?.unloading?.status || "").trim().toLowerCase() === "completed"
+    );
+
+    // PO Document is the mandatory gate after Approval Management.
+    // Ignore stale Order Placed / Tracking Input values until PO is complete.
+    if (
+      approvalManagementApproved &&
+      !poCompleted &&
+      !hasRealTrackingProgress
+    ) {
+      return "PO Document";
     }
 
-    if (approvalManagementApproved && !poCompleted) {
-      return "PO Document";
+    if (
+      (orderPlacedCompleted || rawStage === "tracking") &&
+      hasRealTrackingProgress
+    ) {
+      return "Tracking";
     }
 
     if (
@@ -3192,6 +3300,10 @@ const Lifecyclemodal = ({
                 onClick={() => {
                   if (currentLifecycleIndex === 0) {
                     setActiveStepIndex(1);
+                    showToast(
+                      "Order Finalization opened. Complete the details and request approval.",
+                      "info"
+                    );
                   }
                 }}
               >
@@ -3427,6 +3539,49 @@ const Lifecyclemodal = ({
         </div>
 
       </section>
+
+      {/* PROFESSIONAL TOAST */}
+      {toast && (
+        <div
+          className={`kam-toast kam-toast-${toast.type}`}
+          role="status"
+          aria-live="polite"
+          key={toast.id}
+        >
+          <div className="kam-toast-icon" aria-hidden="true">
+            {toast.type === "success"
+              ? "✓"
+              : toast.type === "error"
+              ? "!"
+              : toast.type === "warning"
+              ? "!"
+              : "i"}
+          </div>
+
+          <div className="kam-toast-content">
+            <strong>
+              {toast.type === "success"
+                ? "Success"
+                : toast.type === "error"
+                ? "Action Failed"
+                : toast.type === "warning"
+                ? "Required"
+                : "Information"}
+            </strong>
+            <span>{toast.message}</span>
+          </div>
+
+          <button
+            type="button"
+            className="kam-toast-close"
+            onClick={() => setToast(null)}
+            aria-label="Close notification"
+          >
+            ×
+          </button>
+        </div>
+      )}
+
     </div>
   );
 };

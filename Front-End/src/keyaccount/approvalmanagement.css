@@ -929,7 +929,10 @@
 .approval-md-table td:nth-child(3) { width: 165px; }
 
 .approval-md-table th:nth-child(4),
-.approval-md-table td:nth-child(4) { width: 185px; }
+.approval-md-table td:nth-child(4) {
+  width: 13%;
+  min-width: 165px;
+}
 
 .approval-md-table th:nth-child(5),
 .approval-md-table td:nth-child(5) { width: 255px; }
@@ -1768,7 +1771,7 @@
 
 /* 10-column viewport layout */
 .approval-md-table th:nth-child(1),
-.approval-md-table td:nth-child(1) { width: 7%; }
+.approval-md-table td:nth-child(1) { width: 8%; min-width: 105px; }
 
 .approval-md-table th:nth-child(2),
 .approval-md-table td:nth-child(2) { width: 9%; }
@@ -1800,7 +1803,7 @@
 .approval-md-table thead th {
   height: 38px;
   padding: 8px 7px;
-  font-size: 7.5px;
+  font-size: 8.5px;
   line-height: 1.15;
   white-space: normal;
   overflow-wrap: anywhere;
@@ -1835,28 +1838,47 @@
 .approval-md-trip,
 .approval-md-client,
 .approval-md-rate {
-  font-size: 10px;
-  white-space: normal;
-  overflow-wrap: anywhere;
+  font-size: 11px;
+  overflow-wrap: normal;
+}
+
+.approval-md-trip {
+  display: inline-block;
+  white-space: nowrap;
+  word-break: keep-all;
+}
+
+.approval-md-client,
+.approval-md-rate {
+  white-space: nowrap;
 }
 
 .approval-md-movement {
   max-width: 100%;
-  padding: 3px 7px;
-  font-size: 7.5px;
+  padding: 4px 8px;
+  font-size: 8.5px;
   line-height: 1.15;
-  white-space: normal;
+  white-space: nowrap;
   text-align: center;
 }
 
 .approval-md-route {
-  min-width: 0;
   display: flex;
   align-items: center;
-  gap: 4px;
-  color: #355665;
-  font-size: 8.5px;
+  gap: 6px;
+  min-width: 0;
+  font-size: 9.5px;
   line-height: 1.2;
+  white-space: nowrap;
+  word-break: normal;
+  overflow-wrap: normal;
+}
+
+.approval-md-route strong,
+.approval-md-route span {
+  white-space: nowrap;
+  word-break: normal;
+  overflow-wrap: normal;
 }
 
 .approval-md-route strong {
@@ -1872,15 +1894,15 @@
 }
 
 .approval-md-terms {
-  font-size: 8.5px;
-  line-height: 1.18;
+  font-size: 9.5px;
+  line-height: 1.22;
   overflow-wrap: anywhere;
 }
 
 .approval-md-status {
   max-width: 100%;
-  padding: 0 7px;
-  font-size: 7.5px;
+  padding: 0 8px;
+  font-size: 8.5px;
 }
 
 /* Expanded area */
@@ -3081,110 +3103,143 @@
 .approval-quotation-modal-head {
   position: relative;
   flex: 0 0 auto;
-  min-height: 92px;
-  padding: 17px 64px 15px 20px;
+  min-height: 96px;
+  padding: 16px 70px 16px 20px;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 24px;
+  gap: 28px;
   border-bottom: 1px solid #d8e4e7;
-  background: linear-gradient(110deg, #eef8f6 0%, #ffffff 62%, #f8fbfb 100%);
+  background: #ffffff;
+}
+
+.approval-quotation-modal-head::after {
+  content: "";
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(90deg, #0f766e 0 18%, #dce7ea 18% 100%);
 }
 
 .approval-quotation-modal-title {
   min-width: 0;
+  padding-left: 14px;
+  border-left: 3px solid #0f766e;
 }
 
 .approval-quotation-modal-title > span {
   display: block;
-  margin-bottom: 3px;
-  color: var(--ap-primary);
-  font-size: 8px;
+  margin: 0 0 4px;
+  color: #6d8791;
+  font-size: 7px;
   font-weight: 900;
-  letter-spacing: 0.09em;
+  line-height: 1;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 .approval-quotation-modal-title h3 {
   margin: 0;
-  color: var(--ap-navy);
-  font-size: 18px;
+  color: #12394b;
+  font-size: 22px;
   font-weight: 900;
-  letter-spacing: -0.02em;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
 }
 
 .approval-quotation-modal-title p {
-  margin: 5px 0 0;
-  color: #6e848f;
-  font-size: 9.5px;
-  font-weight: 650;
+  margin: 7px 0 0;
+  color: #718791;
+  font-size: 9px;
+  font-weight: 700;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .approval-quotation-modal-title p b {
-  margin: 0 6px;
+  margin: 0 7px;
   color: #b1c0c6;
+  font-size: 7px;
 }
 
 .approval-quotation-modal-summary {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(82px, auto));
-  gap: 8px;
+  display: flex;
+  align-items: stretch;
+  overflow: hidden;
+  border: 1px solid #d7e3e7;
+  border-radius: 10px;
+  background: #f8fafb;
 }
 
 .approval-quotation-modal-summary > div {
-  min-width: 82px;
-  padding: 8px 11px;
-  border: 1px solid #dce7ea;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.88);
+  min-width: 94px;
+  min-height: 52px;
+  padding: 8px 13px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-right: 1px solid #dce6e9;
+  background: transparent;
+}
+
+.approval-quotation-modal-summary > div:last-child {
+  border-right: 0;
 }
 
 .approval-quotation-modal-summary span {
   display: block;
-  margin-bottom: 2px;
-  color: #82969f;
-  font-size: 7px;
-  font-weight: 850;
-  letter-spacing: 0.045em;
+  margin-bottom: 3px;
+  color: #82959e;
+  font-size: 6.5px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0.055em;
   text-transform: uppercase;
 }
 
 .approval-quotation-modal-summary strong {
   display: block;
   color: #173e50;
-  font-size: 10.5px;
+  font-size: 11px;
   font-weight: 900;
+  line-height: 1.1;
+}
+
+.approval-quotation-modal-summary > div:nth-child(2) strong,
+.approval-quotation-modal-summary > div:nth-child(3) strong {
+  color: #0f766e;
 }
 
 .approval-quotation-modal-close {
   position: absolute;
-  top: 17px;
+  top: 18px;
   right: 18px;
-  width: 32px;
-  height: 32px;
+  width: 31px;
+  height: 31px;
   padding: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border: 1px solid #d2dfe3;
-  border-radius: 9px;
-  background: #fff;
-  color: #5c747f;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #607985;
   font: inherit;
-  font-size: 20px;
-  font-weight: 500;
+  font-size: 18px;
+  font-weight: 600;
   line-height: 1;
   cursor: pointer;
   transition: 0.18s ease;
 }
 
 .approval-quotation-modal-close:hover {
-  border-color: #b9cece;
-  background: #edf7f5;
-  color: var(--ap-primary);
-  transform: translateY(-1px);
+  border-color: #9fc8c2;
+  background: #f0f8f7;
+  color: #0f766e;
 }
 
 .approval-quotation-modal-body {
@@ -3256,5 +3311,503 @@
 
   .approval-quotation-modal-body {
     padding: 10px;
+  }
+}
+
+/* =========================================================
+   COMPACT APPROVAL TOAST - BOTTOM RIGHT
+========================================================= */
+
+.approval-toast {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 99999;
+
+  width: 260px;
+  min-height: 50px;
+  padding: 8px 30px 8px 8px;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  border: 1px solid #dce5e9;
+  border-left-width: 3px;
+  border-radius: 8px;
+
+  background: #ffffff;
+  box-shadow: 0 8px 22px rgba(15, 40, 55, 0.14);
+
+  animation: approvalToastIn 0.2s ease-out;
+}
+
+.approval-toast-icon {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 7px;
+
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.approval-toast-content {
+  min-width: 0;
+  display: grid;
+  gap: 1px;
+}
+
+.approval-toast-content strong {
+  color: #17384b;
+  font-size: 9.5px;
+  font-weight: 850;
+  line-height: 1.2;
+}
+
+.approval-toast-content > span {
+  display: block;
+  max-width: 185px;
+
+  overflow: hidden;
+  color: #70838e;
+
+  font-size: 8px;
+  font-weight: 600;
+  line-height: 1.3;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.approval-toast-close {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+
+  width: 19px;
+  height: 19px;
+  padding: 0;
+
+  display: grid;
+  place-items: center;
+
+  border: 0;
+  border-radius: 5px;
+
+  background: transparent;
+  color: #98a7af;
+
+  font-size: 13px;
+  line-height: 1;
+
+  cursor: pointer;
+}
+
+.approval-toast-close:hover {
+  background: #f1f4f6;
+  color: #365260;
+}
+
+.approval-toast-success {
+  border-left-color: #0f8b78;
+}
+
+.approval-toast-success .approval-toast-icon {
+  color: #087b6b;
+  background: #e9f7f3;
+}
+
+.approval-toast-error {
+  border-left-color: #d84a4a;
+}
+
+.approval-toast-error .approval-toast-icon {
+  color: #c83e3e;
+  background: #fff0f0;
+}
+
+.approval-toast-warning {
+  border-left-color: #d98a17;
+}
+
+.approval-toast-warning .approval-toast-icon {
+  color: #b56e0c;
+  background: #fff6e7;
+}
+
+@keyframes approvalToastIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 520px) {
+  .approval-toast {
+    right: 10px;
+    bottom: 10px;
+    width: min(260px, calc(100vw - 20px));
+  }
+}
+
+
+/* =========================================================
+   USER-FRIENDLY QUOTATION REVIEW - FINAL PROFESSIONAL UI
+   Visual redesign only: content, APIs and actions stay intact.
+========================================================= */
+
+/* Modal / expanded review shell */
+.approval-quotation-expand-panel {
+  background: #f5f8f9 !important;
+}
+
+/* Requirements container */
+.approval-qv-list,
+.approval-quotation-requirements {
+  padding: 14px 16px 18px !important;
+  gap: 10px !important;
+  background: #f5f8f9 !important;
+}
+
+/* Individual vehicle card */
+.approval-qv-requirement-card {
+  position: relative;
+  overflow: hidden;
+  margin: 0 0 10px !important;
+  border: 1px solid #d8e3e7 !important;
+  border-radius: 11px !important;
+  background: #fff !important;
+  box-shadow: 0 2px 8px rgba(15, 47, 67, .035) !important;
+}
+
+.approval-qv-requirement-card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: #0f766e;
+  z-index: 3;
+}
+
+/* Vehicle heading: compact and left aligned */
+.approval-qv-requirement-head {
+  min-height: 62px !important;
+  padding: 9px 14px 9px 16px !important;
+  display: grid !important;
+  grid-template-columns: 34px minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  column-gap: 10px !important;
+  border-bottom: 1px solid #e1e8eb !important;
+  background: #fff !important;
+}
+
+.approval-qv-requirement-number {
+  width: 32px !important;
+  height: 32px !important;
+  display: grid !important;
+  place-items: center !important;
+  border: 0 !important;
+  border-radius: 8px !important;
+  background: #e9f6f4 !important;
+  color: #0f766e !important;
+  font-size: 10px !important;
+  font-weight: 900 !important;
+}
+
+.approval-qv-requirement-title {
+  min-width: 0 !important;
+  text-align: left !important;
+}
+
+.approval-qv-requirement-title span {
+  display: block !important;
+  margin: 0 !important;
+  color: #8a9ca5 !important;
+  font-size: 6.8px !important;
+  font-weight: 850 !important;
+  letter-spacing: .06em !important;
+  text-transform: uppercase !important;
+}
+
+.approval-qv-requirement-title strong {
+  display: block !important;
+  margin: 1px 0 0 !important;
+  color: #173b4c !important;
+  font-size: 11.5px !important;
+  font-weight: 900 !important;
+  line-height: 1.25 !important;
+}
+
+.approval-qv-tags {
+  margin-top: 5px !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 4px !important;
+}
+
+.approval-qv-tags span {
+  min-height: 19px !important;
+  padding: 0 7px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  border: 1px solid #d7e1e5 !important;
+  border-radius: 5px !important;
+  background: #f8fafb !important;
+  color: #617984 !important;
+  font-size: 7px !important;
+  font-weight: 800 !important;
+}
+
+.approval-qv-requirement-status {
+  min-width: 72px !important;
+  height: 26px !important;
+  padding: 0 10px !important;
+  border-radius: 999px !important;
+  font-size: 7.5px !important;
+  font-weight: 850 !important;
+}
+
+/* Table: compact, readable, no oversized empty rows */
+.approval-qv-table-wrap {
+  width: 100% !important;
+  overflow-x: auto !important;
+  background: #fff !important;
+}
+
+.approval-qv-table {
+  width: 100% !important;
+  min-width: 850px !important;
+  table-layout: fixed !important;
+  border-collapse: collapse !important;
+}
+
+.approval-qv-table thead th {
+  height: 31px !important;
+  padding: 0 10px !important;
+  border-bottom: 1px solid #dde6e9 !important;
+  background: #f6f8f9 !important;
+  color: #718792 !important;
+  font-size: 7px !important;
+  font-weight: 900 !important;
+  letter-spacing: .04em !important;
+  text-transform: uppercase !important;
+}
+
+.approval-qv-table tbody td {
+  height: 46px !important;
+  padding: 7px 10px !important;
+  border-bottom: 1px solid #e8eef0 !important;
+  background: #fff !important;
+  color: #3c5b69 !important;
+  font-size: 8.5px !important;
+  vertical-align: middle !important;
+}
+
+/* sensible column widths */
+.approval-qv-table th:nth-child(1),
+.approval-qv-table td:nth-child(1) { width: 58px !important; text-align: center !important; }
+
+.approval-qv-table th:nth-child(2),
+.approval-qv-table td:nth-child(2) { width: 22% !important; }
+
+.approval-qv-table th:nth-child(3),
+.approval-qv-table td:nth-child(3) { width: 15% !important; }
+
+.approval-qv-table th:nth-child(4),
+.approval-qv-table td:nth-child(4) { width: 18% !important; }
+
+.approval-qv-table th:nth-child(5),
+.approval-qv-table td:nth-child(5) { width: 23% !important; }
+
+.approval-qv-table th:nth-child(6),
+.approval-qv-table td:nth-child(6) { width: 110px !important; text-align: center !important; }
+
+.approval-qv-table tbody tr {
+  transition: background .16s ease;
+}
+
+.approval-qv-table tbody tr:hover td {
+  background: #f9fbfb !important;
+}
+
+/* Selected / confirmed quotation is the visual focus */
+.approval-qv-table tbody tr:has(input[type="radio"]:checked) td {
+  background: #f0f9f6 !important;
+  border-top: 1px solid #c6e4da !important;
+  border-bottom: 1px solid #c6e4da !important;
+}
+
+.approval-qv-table tbody tr:has(input[type="radio"]:checked) td:first-child {
+  box-shadow: inset 3px 0 0 #0f8069;
+}
+
+.approval-qv-table input[type="radio"] {
+  width: 15px !important;
+  height: 15px !important;
+  margin: 0 !important;
+  accent-color: #0f766e !important;
+  cursor: pointer;
+}
+
+.approval-qv-transporter strong {
+  display: block !important;
+  color: #234b5a !important;
+  font-size: 9.5px !important;
+  font-weight: 900 !important;
+}
+
+.approval-qv-transporter small {
+  display: block !important;
+  margin-top: 1px !important;
+  color: #96a5ad !important;
+  font-size: 6.4px !important;
+  font-weight: 700 !important;
+}
+
+.approval-qv-amount {
+  color: #173f50 !important;
+  font-size: 10px !important;
+  font-weight: 900 !important;
+}
+
+/* Status pills */
+.approval-qv-table .approval-status {
+  min-width: 64px !important;
+  min-height: 23px !important;
+  padding: 0 8px !important;
+  border-radius: 999px !important;
+  font-size: 7px !important;
+  font-weight: 850 !important;
+}
+
+/* The confirmed summary repeats the same transporter data.
+   Keep it in DOM/data flow but remove the duplicated visual block. */
+.approval-qv-confirmed-bar {
+  display: none !important;
+}
+
+/* For unapproved requirement: one compact decision footer */
+.approval-qv-actionbar {
+  min-height: 48px !important;
+  padding: 7px 11px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  border-top: 1px solid #e1e8eb !important;
+  background: #fafcfc !important;
+}
+
+.approval-qv-selected-summary {
+  min-width: 0 !important;
+}
+
+.approval-qv-selected-summary span {
+  display: block !important;
+  margin-bottom: 2px !important;
+  color: #83969f !important;
+  font-size: 6.8px !important;
+  font-weight: 850 !important;
+  text-transform: uppercase !important;
+}
+
+.approval-qv-selected-summary strong {
+  display: block !important;
+  color: #294d5b !important;
+  font-size: 8.5px !important;
+  font-weight: 800 !important;
+}
+
+.approval-qv-actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  flex: 0 0 auto !important;
+}
+
+.approval-qv-reject-btn,
+.approval-qv-approve-btn {
+  height: 29px !important;
+  min-width: 76px !important;
+  padding: 0 10px !important;
+  border-radius: 7px !important;
+  font-size: 7.5px !important;
+  font-weight: 850 !important;
+}
+
+.approval-qv-approve-btn {
+  min-width: 112px !important;
+  border: 1px solid #0f766e !important;
+  background: #0f766e !important;
+  color: #fff !important;
+}
+
+.approval-qv-approve-btn:hover:not(:disabled) {
+  background: #0b655e !important;
+}
+
+.approval-qv-reject-btn {
+  border: 1px solid #e2b8b4 !important;
+  background: #fff !important;
+  color: #b7443d !important;
+}
+
+.approval-qv-last-rejection {
+  margin: 0 !important;
+  padding: 7px 11px !important;
+  border: 0 !important;
+  border-top: 1px solid #efd3d0 !important;
+  border-radius: 0 !important;
+  background: #fff7f6 !important;
+  font-size: 8px !important;
+}
+
+/* Make modal feel less overwhelming on desktop */
+@media (min-width: 1100px) {
+  .approval-quotation-expand-panel {
+    max-height: calc(100vh - 92px) !important;
+    overflow-y: auto !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .approval-qv-list,
+  .approval-quotation-requirements {
+    padding: 10px !important;
+  }
+
+  .approval-qv-requirement-head {
+    grid-template-columns: 32px minmax(0, 1fr) !important;
+  }
+
+  .approval-qv-requirement-status {
+    grid-column: 2 !important;
+    justify-self: start !important;
+    margin-top: 5px !important;
+  }
+
+  .approval-qv-actionbar {
+    align-items: stretch !important;
+    flex-direction: column !important;
+  }
+
+  .approval-qv-actions {
+    width: 100% !important;
+  }
+
+  .approval-qv-actions button {
+    flex: 1 !important;
   }
 }

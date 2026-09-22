@@ -484,6 +484,30 @@ const Traffic = () => {
     setMessage,
   ] = useState("");
 
+  /* =========================================================
+     COMPACT BOTTOM-RIGHT TOAST
+  ========================================================= */
+
+  const [toast, setToast] = useState(null);
+
+  const showToast = (toastMessage, type = "success") => {
+    setToast({
+      message: toastMessage,
+      type,
+      id: Date.now(),
+    });
+  };
+
+  useEffect(() => {
+    if (!toast) return undefined;
+
+    const timer = window.setTimeout(() => {
+      setToast(null);
+    }, 2800);
+
+    return () => window.clearTimeout(timer);
+  }, [toast]);
+
 
 
   /* =========================================================
@@ -973,9 +997,9 @@ const Traffic = () => {
     async () => {
 
       if (!selectedOrder?._id) {
-        setMessage(
-          "Database order ID is missing."
-        );
+        const text = "Database order ID is missing.";
+        setMessage(text);
+        showToast(text, "error");
         return;
       }
 
@@ -984,9 +1008,9 @@ const Traffic = () => {
       if (
         !requirementForms.length
       ) {
-        setMessage(
-          "No vehicle requirements found."
-        );
+        const text = "No vehicle requirements found.";
+        setMessage(text);
+        showToast(text, "warning");
         return;
       }
 
@@ -1010,14 +1034,12 @@ const Traffic = () => {
         if (
           !requirement.requirementId
         ) {
-          setMessage(
-            `Requirement ID is missing for ${
-              requirement.vehicleType ||
-              `requirement ${
-                requirementIndex + 1
-              }`
-            }.`
-          );
+          const text = `Requirement ID is missing for ${
+            requirement.vehicleType ||
+            `requirement ${requirementIndex + 1}`
+          }.`;
+          setMessage(text);
+          showToast(text, "error");
           return;
         }
 
@@ -1091,14 +1113,12 @@ const Traffic = () => {
 
 
           if (!transporter) {
-            setMessage(
-              `Enter Transport Name for ${
-                requirement.vehicleType ||
-                `requirement ${
-                  requirementIndex + 1
-                }`
-              }.`
-            );
+            const text = `Enter Transport Name for ${
+              requirement.vehicleType ||
+              `requirement ${requirementIndex + 1}`
+            }.`;
+            setMessage(text);
+            showToast(text, "warning");
             return;
           }
 
@@ -1107,17 +1127,19 @@ const Traffic = () => {
             !Number.isFinite(amount) ||
             amount <= 0
           ) {
-            setMessage(
-              `Enter a valid quotation amount for ${transporter}.`
-            );
+            const text =
+              `Enter a valid quotation amount for ${transporter}.`;
+            setMessage(text);
+            showToast(text, "warning");
             return;
           }
 
 
           if (!allocatedBy) {
-            setMessage(
-              `Enter Allocated By name for ${transporter}.`
-            );
+            const text =
+              `Enter Allocated By name for ${transporter}.`;
+            setMessage(text);
+            showToast(text, "warning");
             return;
           }
 
@@ -1143,9 +1165,10 @@ const Traffic = () => {
 
 
       if (!newQuotations.length) {
-        setMessage(
-          "Please enter at least one new transport quotation."
-        );
+        const text =
+          "Please enter at least one new transport quotation.";
+        setMessage(text);
+        showToast(text, "warning");
         return;
       }
 
@@ -1254,9 +1277,10 @@ const Traffic = () => {
         );
 
 
-        setMessage(
-          "Transport quotations submitted successfully for management approval."
-        );
+        const text =
+          "Transport quotations submitted successfully for management approval.";
+        setMessage(text);
+        showToast(text, "success");
 
       } catch (err) {
 
@@ -1265,10 +1289,11 @@ const Traffic = () => {
           err
         );
 
-        setMessage(
+        const text =
           err.message ||
-          "Unable to submit transport quotations."
-        );
+          "Unable to submit transport quotations.";
+        setMessage(text);
+        showToast(text, "error");
 
       } finally {
 
@@ -1284,6 +1309,43 @@ const Traffic = () => {
   return (
 
     <div className="traffic-page">
+
+      {toast && (
+        <div
+          className={`traffic-toast traffic-toast-${toast.type}`}
+          role="status"
+          aria-live="polite"
+          key={toast.id}
+        >
+          <span className="traffic-toast-icon" aria-hidden="true">
+            {toast.type === "success"
+              ? "✓"
+              : toast.type === "error"
+              ? "×"
+              : "!"}
+          </span>
+
+          <div className="traffic-toast-content">
+            <strong>
+              {toast.type === "success"
+                ? "Submitted"
+                : toast.type === "error"
+                ? "Error"
+                : "Required"}
+            </strong>
+            <span>{toast.message}</span>
+          </div>
+
+          <button
+            type="button"
+            className="traffic-toast-close"
+            onClick={() => setToast(null)}
+            aria-label="Close notification"
+          >
+            ×
+          </button>
+        </div>
+      )}
 
 
       {/* =====================================================
@@ -2616,4 +2678,4 @@ const Traffic = () => {
 };
 
 
-export default Traffic;
+export default Traffic; 

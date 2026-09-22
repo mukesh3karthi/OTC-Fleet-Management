@@ -2396,8 +2396,44 @@ const getDisplayStage = (order = {}) => {
       <div className="key-account-page">
 
         {toast && (
-          <div className="kam-toast">
-            {toast}
+          <div
+            className={`kam-toast ${
+              /success|created|updated|deleted|sent for approval/i.test(toast)
+                ? "kam-toast-success"
+                : /required|missing|complete|valid|exists/i.test(toast)
+                ? "kam-toast-warning"
+                : "kam-toast-error"
+            }`}
+            role="status"
+            aria-live="polite"
+          >
+            <span className="kam-toast-icon" aria-hidden="true">
+              {/success|created|updated|deleted|sent for approval/i.test(toast)
+                ? "✓"
+                : /required|missing|complete|valid|exists/i.test(toast)
+                ? "!"
+                : "×"}
+            </span>
+
+            <div className="kam-toast-content">
+              <strong>
+                {/success|created|updated|deleted|sent for approval/i.test(toast)
+                  ? "Success"
+                  : /required|missing|complete|valid|exists/i.test(toast)
+                  ? "Required"
+                  : "Action Failed"}
+              </strong>
+              <span>{toast}</span>
+            </div>
+
+            <button
+              type="button"
+              className="kam-toast-close"
+              onClick={() => setToast("")}
+              aria-label="Close notification"
+            >
+              ×
+            </button>
           </div>
         )}
 
