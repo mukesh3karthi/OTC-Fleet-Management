@@ -2424,3 +2424,484 @@
     width: calc(100vw - 24px);
   }
 }
+
+
+/* =========================================================
+   CRANE MOVEMENT - DOCUMENT + VEHICLE VIEW
+========================================================= */
+
+.traffic-crane-panel {
+  margin-bottom: 12px;
+  overflow: hidden;
+  border: 1px solid #cfe2df;
+  border-radius: 11px;
+  background: #ffffff;
+  box-shadow: 0 3px 12px rgba(25, 60, 70, 0.04);
+}
+
+.traffic-crane-panel-header {
+  min-height: 72px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid #e1e9eb;
+  background: linear-gradient(90deg, #f4fbf9 0%, #ffffff 100%);
+}
+
+.traffic-crane-title {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.traffic-crane-icon,
+.traffic-crane-vehicle-icon {
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #cbe3de;
+  border-radius: 8px;
+  background: #eaf7f4;
+  color: var(--tm-primary);
+}
+
+.traffic-crane-eyebrow {
+  display: block;
+  margin-bottom: 2px;
+  color: var(--tm-primary);
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 0.09em;
+}
+
+.traffic-crane-title h3 {
+  margin: 0;
+  color: #193f4c;
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.traffic-crane-title p {
+  margin: 3px 0 0;
+  color: #81949b;
+  font-size: 9px;
+  line-height: 1.35;
+}
+
+.traffic-crane-document-actions {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.traffic-crane-view-btn,
+.traffic-crane-download-btn {
+  height: 32px;
+  padding: 0 11px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border-radius: 7px;
+  font-family: inherit;
+  font-size: 9px;
+  font-weight: 850;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.traffic-crane-view-btn {
+  border: 1px solid var(--tm-primary);
+  background: var(--tm-primary);
+  color: #ffffff;
+}
+
+.traffic-crane-download-btn {
+  border: 1px solid #c7d8dc;
+  background: #ffffff;
+  color: #456873;
+}
+
+.traffic-crane-view-btn:hover {
+  background: var(--tm-primary-dark);
+}
+
+.traffic-crane-download-btn:hover {
+  border-color: #8fb2b8;
+  background: #f7fafb;
+}
+
+.traffic-crane-view-btn:disabled,
+.traffic-crane-download-btn.disabled {
+  opacity: 0.45;
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+.traffic-crane-document-meta {
+  display: grid;
+  grid-template-columns: 1.15fr 1.7fr 1fr 1fr;
+  border-bottom: 1px solid #e7edef;
+  background: #ffffff;
+}
+
+.traffic-crane-document-meta > div {
+  min-width: 0;
+  padding: 10px 13px;
+  border-right: 1px solid #e7edef;
+}
+
+.traffic-crane-document-meta > div:last-child {
+  border-right: 0;
+}
+
+.traffic-crane-document-meta span,
+.traffic-crane-vehicle-data span,
+.traffic-crane-vehicle-heading span {
+  display: block;
+  margin-bottom: 3px;
+  color: #87999f;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.traffic-crane-document-meta strong {
+  display: block;
+  overflow: hidden;
+  color: #315560;
+  font-size: 10px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.traffic-crane-vehicle-summary {
+  min-height: 66px;
+  padding: 10px 13px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  background: #fbfcfc;
+}
+
+.traffic-crane-vehicle-heading {
+  min-width: 170px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.traffic-crane-vehicle-heading strong {
+  display: block;
+  color: #214955;
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.traffic-crane-vehicle-data {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 0.8fr 0.65fr 1.8fr 1fr;
+  align-items: center;
+}
+
+.traffic-crane-vehicle-data > div {
+  min-width: 0;
+  padding: 2px 13px;
+  border-left: 1px solid #e2e9eb;
+}
+
+.traffic-crane-vehicle-data strong {
+  display: block;
+  overflow: hidden;
+  color: #315560;
+  font-size: 10px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+  .traffic-crane-panel-header,
+  .traffic-crane-vehicle-summary {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .traffic-crane-document-meta,
+  .traffic-crane-vehicle-data {
+    width: 100%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .traffic-crane-document-meta > div,
+  .traffic-crane-vehicle-data > div {
+    border-bottom: 1px solid #e7edef;
+  }
+}
+
+@media (max-width: 560px) {
+  .traffic-crane-document-actions {
+    width: 100%;
+  }
+
+  .traffic-crane-view-btn,
+  .traffic-crane-download-btn {
+    flex: 1;
+  }
+
+  .traffic-crane-document-meta,
+  .traffic-crane-vehicle-data {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* =========================================================
+   CRANE MOVEMENT - COMPACT TRAFFIC VIEW
+   Keeps old quotation functions unchanged.
+========================================================= */
+
+.traffic-crane-compact {
+  margin-bottom: 10px;
+  overflow: hidden;
+  border: 1px solid #cfe2df;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+.traffic-crane-compact-main {
+  min-height: 58px;
+  padding: 9px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  background: linear-gradient(90deg, #f4fbf9 0%, #ffffff 100%);
+}
+
+.traffic-crane-compact-file {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.traffic-crane-compact-icon {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #cbe3de;
+  border-radius: 8px;
+  background: #eaf7f4;
+  color: var(--tm-primary);
+}
+
+.traffic-crane-compact-file > div {
+  min-width: 0;
+}
+
+.traffic-crane-compact-label {
+  display: block;
+  margin-bottom: 3px;
+  color: var(--tm-primary);
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.traffic-crane-compact-file strong {
+  display: block;
+  max-width: 520px;
+  overflow: hidden;
+  color: #244b58;
+  font-size: 11px;
+  font-weight: 850;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.traffic-crane-compact-actions {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.traffic-crane-compact-footer {
+  min-height: 32px;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border-top: 1px solid #e3eaec;
+  background: #fbfcfc;
+}
+
+.traffic-crane-compact-footer span {
+  color: #83969d;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.traffic-crane-compact-footer strong {
+  color: #214b57;
+  font-size: 10px;
+  font-weight: 850;
+}
+
+/* Crane document buttons */
+.traffic-crane-compact .traffic-crane-view-btn,
+.traffic-crane-compact .traffic-crane-download-btn {
+  height: 30px;
+  padding: 0 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border-radius: 7px;
+  font-family: inherit;
+  font-size: 9px;
+  font-weight: 850;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.traffic-crane-compact .traffic-crane-view-btn {
+  border: 1px solid var(--tm-primary);
+  background: var(--tm-primary);
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.traffic-crane-compact .traffic-crane-download-btn {
+  border: 1px solid #c7d8dc;
+  background: #ffffff;
+  color: #456873;
+  cursor: pointer;
+}
+
+.traffic-crane-compact .traffic-crane-view-btn:disabled,
+.traffic-crane-compact .traffic-crane-download-btn.disabled {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+/*
+  Crane already shows the requirement document above.
+  Remove the repeated Crane requirement header only.
+  The existing quotation table and all its functions remain.
+*/
+.traffic-crane-quotation-card > .traffic-vehicle-card-header {
+  display: none;
+}
+
+.traffic-crane-quotation-card {
+  margin-top: 0;
+}
+
+@media (max-width: 640px) {
+  .traffic-crane-compact-main {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .traffic-crane-compact-actions {
+    width: 100%;
+  }
+
+  .traffic-crane-compact .traffic-crane-view-btn,
+  .traffic-crane-compact .traffic-crane-download-btn {
+    flex: 1;
+  }
+}
+
+
+/* =========================================================
+   MOVEMENT TYPE - MAIN TABLE + POPUP HEADER
+========================================================= */
+
+.traffic-movement-badge {
+  min-height: 23px;
+  padding: 0 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #cbdcde;
+  border-radius: 999px;
+  background: #f5f8f8;
+  color: #47656f;
+  font-size: 9px;
+  font-weight: 850;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.traffic-movement-badge.crane {
+  border-color: #b8ddd6;
+  background: #edf8f6;
+  color: #0f766e;
+}
+
+.traffic-movement-badge.wtg {
+  border-color: #cbd9e8;
+  background: #f1f6fb;
+  color: #356b9a;
+}
+
+.traffic-movement-badge.intercarting {
+  border-color: #ead9ae;
+  background: #fff9eb;
+  color: #8a650b;
+}
+
+.traffic-modal-title-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.traffic-modal-title-row h2 {
+  margin: 0;
+}
+
+.traffic-modal-header .traffic-modal-movement {
+  width: auto;
+  min-height: 23px;
+  margin: 0;
+  padding: 0 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 720px) {
+  .traffic-modal-title-row {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 5px;
+  }
+}

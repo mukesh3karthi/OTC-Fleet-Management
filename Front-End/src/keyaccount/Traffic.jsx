@@ -10,6 +10,8 @@ import {
   CircleAlert,
   Clock3,
   Eye,
+  FileText,
+  Download,
   Plus,
   RefreshCw,
   Search,
@@ -422,6 +424,27 @@ const getRouteText = (order) => {
   return `${order?.origin || "—"} → ${
     order?.destination || "—"
   }`;
+};
+
+
+/* =========================================================
+   CRANE MOVEMENT
+========================================================= */
+
+const isCraneMovement = (order) =>
+  String(order?.movementType || "")
+    .trim()
+    .toLowerCase() === "crane";
+
+const getCraneDocumentUrl = (
+  order,
+  disposition = "inline"
+) => {
+  if (!order?._id) {
+    return "";
+  }
+
+  return `${TRIP_API_URL}/${order._id}/crane-document/file?disposition=${disposition}`;
 };
 
 
@@ -1669,6 +1692,10 @@ const Traffic = () => {
                 </th>
 
                 <th>
+                  Movement
+                </th>
+
+                <th>
                   Route / Site
                 </th>
 
@@ -1700,7 +1727,7 @@ const Traffic = () => {
                 <tr>
 
                   <td
-                    colSpan="8"
+                    colSpan="9"
                     className="traffic-empty-row"
                   >
 
@@ -1720,7 +1747,7 @@ const Traffic = () => {
                 <tr>
 
                   <td
-                    colSpan="8"
+                    colSpan="9"
                     className="traffic-empty-row error"
                   >
                     {error}
@@ -1735,7 +1762,7 @@ const Traffic = () => {
                 <tr>
 
                   <td
-                    colSpan="8"
+                    colSpan="9"
                     className="traffic-empty-row"
                   >
                     No vehicle requirement
@@ -1796,6 +1823,22 @@ const Traffic = () => {
                           <span className="traffic-company">
                             {order.contactPerson ||
                               ""}
+                          </span>
+
+                        </td>
+
+
+                        <td>
+
+                          <span
+                            className={`traffic-movement-badge ${
+                              String(order.movementType || "")
+                                .trim()
+                                .toLowerCase()
+                                .replace(/\s+/g, "-")
+                            }`}
+                          >
+                            {order.movementType || "—"}
                           </span>
 
                         </td>
@@ -1935,9 +1978,17 @@ const Traffic = () => {
                   TRANSPORT QUOTATION
                 </span>
 
-                <h2>
-                  Vehicle Requirements
-                </h2>
+                <div className="traffic-modal-title-row">
+
+                  <h2>
+                    Vehicle Requirements
+                  </h2>
+
+                  <span className="traffic-modal-movement">
+                    {selectedOrder.movementType || "—"}
+                  </span>
+
+                </div>
 
                 <p>
                   {selectedOrder.tripId}
@@ -2062,6 +2113,97 @@ const Traffic = () => {
 
             <div className="traffic-modal-body">
 
+              {isCraneMovement(selectedOrder) && (
+                <section className="traffic-crane-compact">
+
+                  <div className="traffic-crane-compact-main">
+
+                    <div className="traffic-crane-compact-file">
+
+                      <span className="traffic-crane-compact-icon">
+                        <FileText size={16} />
+                      </span>
+
+                      <div>
+                        <span className="traffic-crane-compact-label">
+                          CRANE VEHICLE REQUIREMENT
+                        </span>
+
+                        <strong>
+                          {selectedOrder?.craneDocument?.fileName ||
+                            "No vehicle requirement document"}
+                        </strong>
+                      </div>
+
+                    </div>
+
+
+                    <div className="traffic-crane-compact-actions">
+
+                      <button
+                        type="button"
+                        className="traffic-crane-view-btn"
+                        onClick={() =>
+                          window.open(
+                            getCraneDocumentUrl(
+                              selectedOrder,
+                              "inline"
+                            ),
+                            "_blank",
+                            "noopener,noreferrer"
+                          )
+                        }
+                        disabled={
+                          !selectedOrder?.craneDocument?.fileName
+                        }
+                      >
+                        <Eye size={13} />
+                        View
+                      </button>
+
+                      <a
+                        className={`traffic-crane-download-btn ${
+                          !selectedOrder?.craneDocument?.fileName
+                            ? "disabled"
+                            : ""
+                        }`}
+                        href={
+                          selectedOrder?.craneDocument?.fileName
+                            ? getCraneDocumentUrl(
+                                selectedOrder,
+                                "attachment"
+                              )
+                            : undefined
+                        }
+                        aria-disabled={
+                          !selectedOrder?.craneDocument?.fileName
+                        }
+                      >
+                        <Download size={13} />
+                        Download
+                      </a>
+
+                    </div>
+
+                  </div>
+
+
+                  <div className="traffic-crane-compact-footer">
+
+                    <span>Vehicle Qty</span>
+
+                    <strong>
+                      {getTotalVehicleQuantity(selectedOrder) ||
+                        selectedOrder?.totalVehicles ||
+                        1}{" "}
+                      NOS
+                    </strong>
+
+                  </div>
+
+                </section>
+              )}
+
               {requirementForms.map(
                 (
                   requirement,
@@ -2108,7 +2250,11 @@ const Traffic = () => {
                   return (
 
                     <section
-                      className="traffic-vehicle-card"
+                      className={`traffic-vehicle-card ${
+                      isCraneMovement(selectedOrder)
+                        ? "traffic-crane-quotation-card"
+                        : ""
+                    }`}
                       key={
                         requirementKey
                       }
