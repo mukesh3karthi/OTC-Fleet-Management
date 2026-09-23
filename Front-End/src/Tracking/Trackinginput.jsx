@@ -435,6 +435,25 @@ const Trackinginput = () => {
     setSuccess,
   ] = useState("");
 
+  /* =======================================================
+     TOAST AUTO DISMISS
+  ======================================================= */
+
+  useEffect(() => {
+    if (!error && !success) {
+      return undefined;
+    }
+
+    const toastTimer = window.setTimeout(() => {
+      setError("");
+      setSuccess("");
+    }, 3500);
+
+    return () => {
+      window.clearTimeout(toastTimer);
+    };
+  }, [error, success]);
+
   const [
     allocationForms,
     setAllocationForms,
@@ -449,6 +468,11 @@ const Trackinginput = () => {
     routeLocations,
     setRouteLocations,
   ] = useState([]);
+
+  const [
+    activeVehicleModal,
+    setActiveVehicleModal,
+  ] = useState(null);
 
   /* =======================================================
      FETCH ORDERS
@@ -1253,6 +1277,9 @@ const Trackinginput = () => {
         );
 
         await fetchOrders();
+
+        /* Close Manage Vehicle popup after successful save */
+        setActiveVehicleModal(null);
       } catch (
         updateError
       ) {
@@ -1696,17 +1723,41 @@ const Trackinginput = () => {
           MESSAGES
       ================================================= */}
 
-      {error && (
+      {(error || success) && (
         <div
-          className="tracking-form-card"
-          style={{
-            padding: "12px 16px",
-            marginBottom: "14px",
-          }}
+          className={`tracking-toast ${
+            error
+              ? "tracking-toast-error"
+              : "tracking-toast-success"
+          }`}
+          role="status"
+          aria-live="polite"
         >
-          <strong>
-            {error}
-          </strong>
+          <span className="tracking-toast-icon">
+            {error ? "!" : "✓"}
+          </span>
+
+          <div className="tracking-toast-content">
+            <strong>
+              {error ? "Unable to save" : "Success"}
+            </strong>
+
+            <span>
+              {error || success}
+            </span>
+          </div>
+
+          <button
+            type="button"
+            className="tracking-toast-close"
+            aria-label="Close notification"
+            onClick={() => {
+              setError("");
+              setSuccess("");
+            }}
+          >
+            ×
+          </button>
         </div>
       )}
 
@@ -2176,8 +2227,43 @@ const Trackinginput = () => {
 
                                 {allocationForm && (
                                   <tr className="tracking-required-form-row">
-                                    <td colSpan={10}>
-                                      <article className="tracking-vehicle-entry-card tracking-vehicle-expanded-card tracking-required-allocation-form">
+                                    <td colSpan={10} className="tracking-allocation-modal-cell">
+                                      <div
+                                        className="tracking-allocation-modal-overlay"
+                                        role="dialog"
+                                        aria-modal="true"
+                                        aria-label="Allocate actual vehicle"
+                                        onMouseDown={(event) => {
+                                          if (event.target === event.currentTarget) {
+                                            closeAllocationForm(requirementId);
+                                          }
+                                        }}
+                                      >
+                                        <div className="tracking-allocation-modal">
+                                          <div className="tracking-allocation-modal-head">
+                                            <div className="tracking-allocation-modal-title">
+                                              <span className="tracking-vehicle-number-icon">
+                                                <Plus size={16} />
+                                              </span>
+                                              <div>
+                                                <span className="tracking-allocation-modal-kicker">VEHICLE ALLOCATION</span>
+                                                <h3>Allocate Actual Vehicle</h3>
+                                                <p>{requirement.vehicleType || "Vehicle"} • {quotation.transporter || "Confirmed transporter"}</p>
+                                              </div>
+                                            </div>
+
+                                            <button
+                                              type="button"
+                                              className="tracking-vehicle-modal-close"
+                                              aria-label="Close allocation popup"
+                                              onClick={() => closeAllocationForm(requirementId)}
+                                            >
+                                              ×
+                                            </button>
+                                          </div>
+
+                                          <div className="tracking-allocation-modal-body">
+                                            <article className="tracking-vehicle-entry-card tracking-vehicle-expanded-card tracking-required-allocation-form">
 
 
                                 <VehicleSectionTitle
@@ -2791,7 +2877,10 @@ const Trackinginput = () => {
                                   </div>
                                 </div>
 
-                                      </article>
+                                            </article>
+                                          </div>
+                                        </div>
+                                      </div>
                                     </td>
                                   </tr>
                                 )}
@@ -2908,25 +2997,74 @@ const Trackinginput = () => {
 
                                 <button
                                   type="button"
-                                  className="tracking-add-vehicle-btn"
-                                  disabled={
-                                    saving
-                                  }
+                                  className="tracking-manage-vehicle-btn"
                                   onClick={() =>
-                                    openTrackingForm(
-                                      allocation
+                                    setActiveVehicleModal(
+                                      allocation.allocationId
                                     )
                                   }
                                 >
-                                  <Plus
-                                    size={
-                                      15
-                                    }
-                                  />
-
-                                  Add Movement
+                                  <Truck size={15} />
+                                  Manage Vehicle
                                 </button>
                               </div>
+
+                              {activeVehicleModal ===
+                                allocation.allocationId && (
+                                <div
+                                  className="tracking-vehicle-modal-overlay"
+                                  role="dialog"
+                                  aria-modal="true"
+                                  aria-label={`Manage ${allocation.vehicleNumber || "vehicle"}`}
+                                  onMouseDown={(event) => {
+                                    if (
+                                      event.target ===
+                                      event.currentTarget
+                                    ) {
+                                      setActiveVehicleModal(null);
+                                    }
+                                  }}
+                                >
+                                  <div className="tracking-vehicle-modal">
+                                    <div className="tracking-vehicle-modal-head">
+                                      <div className="tracking-vehicle-modal-title">
+                                        <span className="tracking-vehicle-number-icon">
+                                          <Truck size={16} />
+                                        </span>
+                                        <div>
+                                          <span className="tracking-vehicle-modal-kicker">VEHICLE OPERATIONS</span>
+                                          <h3>{allocation.vehicleNumber || `Vehicle ${index + 1}`}</h3>
+                                          <p>Driver, escort, supervisor, loading, unloading and movement.</p>
+                                        </div>
+                                      </div>
+
+                                      <div className="tracking-vehicle-modal-actions">
+                                        <button
+                                          type="button"
+                                          className="tracking-modal-add-movement"
+                                          disabled={saving}
+                                          onClick={() =>
+                                            openTrackingForm(allocation)
+                                          }
+                                        >
+                                          <Plus size={14} />
+                                          Add Movement
+                                        </button>
+
+                                        <button
+                                          type="button"
+                                          className="tracking-vehicle-modal-close"
+                                          aria-label="Close vehicle details"
+                                          onClick={() =>
+                                            setActiveVehicleModal(null)
+                                          }
+                                        >
+                                          ×
+                                        </button>
+                                      </div>
+                                    </div>
+
+                                    <div className="tracking-vehicle-modal-body">
 
                               {/* CONFIRMED DETAILS */}
 
@@ -3621,8 +3759,10 @@ const Trackinginput = () => {
                                 </section>
                               </div>
 
-                              <div className="tracking-form-footer">
-                                <div />
+                              <div className="tracking-form-footer tracking-vehicle-modal-footer">
+                                <div className="tracking-vehicle-modal-footer-note">
+                                  Changes are saved for this vehicle only.
+                                </div>
 
                                 <button
                                   type="button"
@@ -4057,6 +4197,10 @@ const Trackinginput = () => {
                                       )}
                                   </div>
                                 </>
+                              )}
+                                    </div>
+                                  </div>
+                                </div>
                               )}
                             </article>
                           );

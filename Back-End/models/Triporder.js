@@ -172,6 +172,25 @@ const poDocumentSchema = new Schema(
 );
 
 /* =========================================================
+   CRANE REQUIREMENT DOCUMENT
+   Used only for Crane movement.
+   Existing vehicle / PO flows remain unchanged.
+========================================================= */
+
+const craneDocumentSchema = new Schema(
+  {
+    documentName: { type: String, trim: true, default: "" },
+    fileName: { type: String, trim: true, default: "" },
+    mimeType: { type: String, trim: true, default: "" },
+    fileSize: { type: Number, min: 0, default: 0 },
+    fileData: { type: Buffer, select: false, default: null },
+    uploadedBy: { type: String, trim: true, default: "" },
+    uploadedAt: { type: Date, default: null },
+  },
+  { _id: false }
+);
+
+/* =========================================================
    ORDER APPROVAL
    First Approval Management stage
 
@@ -917,6 +936,16 @@ const tripOrderSchema = new Schema(
        - deliveryCommitments
        - clientConfirmationNotes
     ===================================================== */
+
+    /* =====================================================
+       CRANE REQUIREMENT DOCUMENT
+       Stored only for Crane movement.
+    ===================================================== */
+
+    craneDocument: {
+      type: craneDocumentSchema,
+      default: () => ({}),
+    },
 
     orderFinalization: {
       type: orderFinalizationSchema,

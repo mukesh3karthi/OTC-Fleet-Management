@@ -858,165 +858,188 @@
 }
 
 /* =========================================================
-   ROUTE LOCATIONS
+   TRIP ROUTE - PROFESSIONAL COMPACT DESIGN
 ========================================================= */
 
 .tracking-route-locations {
-  margin: 0 14px 14px;
-  padding: 12px;
-  border: 1px solid var(--tracking-line);
-  border-radius: 11px;
-  background: #f8fbfb;
-  box-shadow: 0 3px 10px rgba(11, 63, 80, 0.035);
+  width: calc(100% - 28px);
+  margin: 16px 14px 14px;
+  padding: 14px 15px;
+  border: 1px solid #d6e5e8;
+  border-radius: 12px;
+  background: #fbfdfd;
+  box-shadow: 0 3px 12px rgba(11, 63, 80, 0.035);
 }
 
 .tracking-route-locations-header {
+  width: 100%;
+  margin-bottom: 12px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 14px;
 }
 
+.tracking-route-locations-header > div:first-child { min-width: 0; }
 .tracking-route-locations-header strong {
-  display: block;
-  color: var(--tracking-navy);
-  font-size: 12px;
-  font-weight: 750;
+  display: block; margin: 0; color: var(--tracking-navy);
+  font-size: 12px; font-weight: 800; line-height: 1.3;
 }
-
 .tracking-route-locations-header span {
-  display: block;
-  margin-top: 3px;
-  color: var(--tracking-muted);
-  font-size: 9px;
+  display: block; margin-top: 4px; color: var(--tracking-muted);
+  font-size: 9px; font-weight: 500; line-height: 1.4;
 }
 
+.tracking-route-actions {
+  flex: 0 0 auto; display: flex; align-items: center;
+  justify-content: flex-end; gap: 8px;
+}
+
+.tracking-add-location-btn,
+.tracking-save-route-btn {
+  height: 32px; min-height: 32px; padding: 0 12px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  border-radius: 8px; font-family: inherit; font-size: 9px; font-weight: 750;
+  line-height: 1; white-space: nowrap; cursor: pointer; transition: 150ms ease;
+}
 .tracking-add-location-btn {
-  min-height: 32px;
-  padding: 0 11px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  border: 1px solid #b9d7d5;
-  border-radius: 8px;
-  color: var(--tracking-teal-dark);
-  background: var(--tracking-teal-soft);
-  font: inherit;
-  font-size: 9px;
-  font-weight: 750;
-  cursor: pointer;
+  border: 1px solid #b9d8d5; color: var(--tracking-teal-dark); background: #eef8f7;
+}
+.tracking-add-location-btn:hover:not(:disabled) {
+  color: #fff; border-color: var(--tracking-teal); background: var(--tracking-teal);
+  box-shadow: 0 4px 11px rgba(8,127,120,.15); transform: translateY(-1px);
+}
+.tracking-save-route-btn {
+  border: 1px solid var(--tracking-teal); color: #fff; background: var(--tracking-teal);
+  box-shadow: 0 3px 8px rgba(8,127,120,.13);
+}
+.tracking-save-route-btn:hover:not(:disabled) {
+  border-color: var(--tracking-teal-dark); background: var(--tracking-teal-dark);
+  box-shadow: 0 5px 12px rgba(8,127,120,.2); transform: translateY(-1px);
+}
+.tracking-add-location-btn svg,
+.tracking-save-route-btn svg { width: 13px; height: 13px; stroke-width: 2; }
+.tracking-add-location-btn:disabled,
+.tracking-save-route-btn:disabled { opacity: .55; cursor: not-allowed; pointer-events: none; transform: none; box-shadow: none; }
+
+.tracking-route-editor-flow {
+  width: 100%; min-width: 0; min-height: 58px; padding: 9px 11px;
+  display: flex; align-items: center; gap: 8px; overflow-x: auto; overflow-y: hidden;
+  border: 1px solid #d7e4e8; border-radius: 10px; background: #fff;
+  scrollbar-width: thin; scrollbar-color: #c3d6da transparent;
+}
+.tracking-route-editor-flow::-webkit-scrollbar { height: 4px; }
+.tracking-route-editor-flow::-webkit-scrollbar-track { background: transparent; }
+.tracking-route-editor-flow::-webkit-scrollbar-thumb { border-radius: 999px; background: #c3d6da; }
+
+.tracking-route-editor-fixed {
+  min-width: 110px; max-width: 150px; min-height: 34px; padding: 6px 9px;
+  flex: 0 0 auto; display: flex; align-items: center; gap: 7px;
+  border: 1px solid #c6deda; border-radius: 8px; background: #f1f9f8;
+}
+.tracking-route-editor-fixed > svg { width: 13px; height: 13px; flex: 0 0 13px; color: var(--tracking-teal); stroke-width: 2; }
+.tracking-route-editor-fixed > div { min-width: 0; }
+.tracking-route-editor-fixed span {
+  display: block; margin: 0 0 1px; color: #79909c; font-size: 6.8px;
+  font-weight: 800; line-height: 1.1; letter-spacing: .45px; text-transform: uppercase;
+}
+.tracking-route-editor-fixed strong {
+  display: block; overflow: hidden; color: var(--tracking-navy); font-size: 8.8px;
+  font-weight: 800; line-height: 1.25; text-overflow: ellipsis; white-space: nowrap;
+}
+.tracking-route-editor-fixed.origin { border-color: #b9dcd8; background: #eef9f7; }
+.tracking-route-editor-fixed.destination { border-color: #bdd8e4; background: #f1f7fa; }
+.tracking-route-editor-fixed.destination > svg { color: #397b98; }
+
+.tracking-route-editor-list { min-width: 0; display: flex; align-items: center; gap: 7px; flex: 1 1 auto; }
+.tracking-route-editor-item { min-width: 0; flex: 1 1 150px; display: flex; align-items: center; gap: 6px; }
+.tracking-route-editor-number {
+  width: 22px; height: 22px; flex: 0 0 22px; display: inline-flex;
+  align-items: center; justify-content: center; border: 1px solid #c7deda;
+  border-radius: 50%; color: var(--tracking-teal-dark); background: #eef8f7;
+  font-size: 8px; font-weight: 850;
 }
 
+.tracking-route-editor-input {
+  min-width: 100px; height: 34px; padding: 0 9px; flex: 1 1 auto;
+  display: flex; align-items: center; gap: 6px; overflow: hidden;
+  border: 1px solid #d3e1e5; border-radius: 8px; color: #6b8794; background: #fff;
+  transition: 150ms ease;
+}
+.tracking-route-editor-input:hover { border-color: #b8d1d5; }
+.tracking-route-editor-input:focus-within {
+  border-color: var(--tracking-teal); box-shadow: 0 0 0 3px rgba(8,127,120,.07);
+}
+.tracking-route-editor-input > svg { width: 13px; height: 13px; flex: 0 0 13px; color: #78939f; stroke-width: 1.8; }
+.tracking-route-editor-input:focus-within > svg { color: var(--tracking-teal); }
+.tracking-route-editor-input input {
+  width: 100%; min-width: 0; height: 32px; margin: 0; padding: 0;
+  border: 0 !important; outline: 0 !important; color: var(--tracking-ink);
+  background: transparent !important; font-family: inherit; font-size: 9.5px;
+  font-weight: 700; line-height: 1; box-shadow: none !important;
+}
+.tracking-route-editor-input input::placeholder { color: #9aabb4; font-size: 9px; font-weight: 500; }
+
+.tracking-remove-location-btn {
+  width: 28px; height: 28px; min-width: 28px; min-height: 28px; padding: 0;
+  flex: 0 0 28px; display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid #efd4d7; border-radius: 7px; color: #c44d56; background: #fff7f8;
+  font-family: inherit; font-size: 16px; font-weight: 400; line-height: 1; cursor: pointer; transition: 150ms ease;
+}
+.tracking-remove-location-btn:hover:not(:disabled) { color: #fff; border-color: #c44d56; background: #c44d56; transform: translateY(-1px); }
+.tracking-remove-location-btn:disabled { opacity: .5; cursor: not-allowed; pointer-events: none; }
+
+.tracking-route-editor-flow > svg,
+.tracking-route-flow-arrow { width: 13px; height: 13px; flex: 0 0 13px; color: #91a8b1; stroke-width: 2; }
+
+.tracking-route-editor-empty {
+  min-width: 180px; height: 34px; padding: 0 10px; flex: 1 1 auto;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  border: 1px dashed #c7d8dd; border-radius: 8px; color: #8297a1;
+  background: #fafcfc; font-size: 8.5px; font-weight: 600; white-space: nowrap;
+}
+.tracking-route-editor-empty svg { width: 13px; height: 13px; color: var(--tracking-teal); }
+
+/* legacy route display support */
 .tracking-route-location-flow {
-  width: 100%;
-  margin-top: 11px;
-  padding: 8px 9px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  overflow-x: auto;
-  border: 1px solid var(--tracking-line);
-  border-radius: 8px;
-  background: #ffffff;
+  width: 100%; margin-top: 10px; padding: 8px 9px; display: flex; align-items: center;
+  gap: 6px; overflow-x: auto; border: 1px solid var(--tracking-line); border-radius: 8px; background: #fff;
 }
-
 .tracking-route-fixed-point,
 .tracking-route-location-chip {
-  min-height: 25px;
-  padding: 4px 8px;
-  flex: 0 0 auto;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  border: 1px solid #c5deda;
-  border-radius: 7px;
-  color: var(--tracking-navy);
-  background: var(--tracking-teal-soft);
-  font-size: 8.5px;
-  font-weight: 700;
-  white-space: nowrap;
+  min-height: 25px; padding: 4px 8px; flex: 0 0 auto; display: inline-flex;
+  align-items: center; gap: 4px; border: 1px solid #c5deda; border-radius: 7px;
+  color: var(--tracking-navy); background: var(--tracking-teal-soft); font-size: 8.5px;
+  font-weight: 700; white-space: nowrap;
 }
+.tracking-route-location-list { margin-top: 10px; display: flex; flex-direction: column; gap: 7px; }
+.tracking-route-location-row { width: 100%; display: grid; grid-template-columns: 26px minmax(0,1fr) 30px; align-items: center; gap: 7px; }
+.tracking-route-location-number { width: 26px; height: 26px; display: grid; place-items: center; border-radius: 7px; color: var(--tracking-teal-dark); background: var(--tracking-teal-soft); font-size: 9px; font-weight: 750; }
+.tracking-route-location-input { min-width: 0; min-height: 35px; padding: 0 9px; display: flex; align-items: center; gap: 7px; border: 1px solid var(--tracking-line); border-radius: 8px; color: #668391; background: #fff; }
+.tracking-route-location-input:focus-within { border-color: var(--tracking-teal); box-shadow: 0 0 0 3px rgba(8,127,120,.07); }
+.tracking-route-location-input input { width: 100%; min-width: 0; border: 0; outline: 0; color: var(--tracking-ink); background: transparent; font: inherit; font-size: 10px; font-weight: 600; }
+.tracking-route-location-empty { margin-top: 10px; padding: 11px; border: 1px dashed #c8d9df; border-radius: 8px; color: var(--tracking-muted); background: #fff; font-size: 9px; text-align: center; }
+.tracking-route-location-empty strong { color: var(--tracking-teal-dark); }
+.tracking-trip-route-locations { margin-top: 16px; }
 
-.tracking-route-flow-arrow {
-  flex: 0 0 auto;
-  color: #8ba2ad;
+@media (max-width: 1100px) {
+  .tracking-route-editor-flow { overflow-x: auto; }
+  .tracking-route-editor-fixed { min-width: 105px; }
+  .tracking-route-editor-item { min-width: 160px; flex: 0 0 160px; }
 }
-
-.tracking-route-location-list {
-  margin-top: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
+@media (max-width: 700px) {
+  .tracking-route-locations { width: calc(100% - 20px); margin: 12px 10px; padding: 11px; }
+  .tracking-route-locations-header { align-items: flex-start; flex-direction: column; gap: 10px; }
+  .tracking-route-actions { width: 100%; }
+  .tracking-add-location-btn, .tracking-save-route-btn { flex: 1; }
+  .tracking-route-editor-flow { padding: 8px; }
+  .tracking-route-editor-fixed { min-width: 105px; }
+  .tracking-route-editor-item { min-width: 155px; flex: 0 0 155px; }
 }
-
-.tracking-route-location-row {
-  width: 100%;
-  display: grid;
-  grid-template-columns: 26px minmax(0, 1fr) 30px;
-  align-items: center;
-  gap: 7px;
-}
-
-.tracking-route-location-number {
-  width: 26px;
-  height: 26px;
-  display: grid;
-  place-items: center;
-  border-radius: 7px;
-  color: var(--tracking-teal-dark);
-  background: var(--tracking-teal-soft);
-  font-size: 9px;
-  font-weight: 750;
-}
-
-.tracking-route-location-input {
-  min-width: 0;
-  min-height: 35px;
-  padding: 0 9px;
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  border: 1px solid var(--tracking-line);
-  border-radius: 8px;
-  color: #668391;
-  background: #ffffff;
-}
-
-.tracking-route-location-input:focus-within {
-  border-color: var(--tracking-teal);
-  box-shadow: 0 0 0 3px rgba(8, 127, 120, 0.07);
-}
-
-.tracking-route-location-input input {
-  width: 100%;
-  min-width: 0;
-  border: 0;
-  outline: 0;
-  color: var(--tracking-ink);
-  background: transparent;
-  font: inherit;
-  font-size: 10px;
-  font-weight: 600;
-}
-
-.tracking-route-location-empty {
-  margin-top: 10px;
-  padding: 11px;
-  border: 1px dashed #c8d9df;
-  border-radius: 8px;
-  color: var(--tracking-muted);
-  background: #ffffff;
-  font-size: 9px;
-  text-align: center;
-}
-
-.tracking-route-location-empty strong {
-  color: var(--tracking-teal-dark);
-}
-
-.tracking-trip-route-locations {
-  margin-top: 16px;
+@media (max-width: 430px) {
+  .tracking-route-actions { flex-direction: column; }
+  .tracking-add-location-btn, .tracking-save-route-btn { width: 100%; }
+  .tracking-route-editor-flow { min-height: 54px; }
 }
 
 /* =========================================================
@@ -3271,3 +3294,1630 @@
   }
 }
 
+/* =========================================================
+   FINAL TRIP ROUTE OVERRIDE
+   Compact single-row professional route layout
+========================================================= */
+
+.tracking-route-locations {
+  width: calc(100% - 28px);
+  margin: 16px 14px 14px;
+  padding: 14px 15px;
+  border: 1px solid #d6e5e8;
+  border-radius: 12px;
+  background: #fbfdfd;
+  box-shadow: 0 3px 12px rgba(11, 63, 80, 0.035);
+}
+
+.tracking-route-locations-header {
+  width: 100%;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.tracking-route-actions {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.tracking-add-location-btn,
+.tracking-save-route-btn {
+  height: 32px;
+  min-height: 32px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 9px;
+  font-weight: 750;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: 150ms ease;
+}
+
+.tracking-add-location-btn {
+  border: 1px solid #b9d8d5;
+  color: var(--tracking-teal-dark);
+  background: #eef8f7;
+}
+
+.tracking-save-route-btn {
+  border: 1px solid var(--tracking-teal);
+  color: #fff;
+  background: var(--tracking-teal);
+  box-shadow: 0 3px 8px rgba(8, 127, 120, 0.13);
+}
+
+.tracking-add-location-btn:hover:not(:disabled) {
+  color: #fff;
+  border-color: var(--tracking-teal);
+  background: var(--tracking-teal);
+}
+
+.tracking-save-route-btn:hover:not(:disabled) {
+  border-color: var(--tracking-teal-dark);
+  background: var(--tracking-teal-dark);
+}
+
+.tracking-add-location-btn:disabled,
+.tracking-save-route-btn:disabled,
+.tracking-remove-location-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.tracking-route-editor-flow {
+  width: 100%;
+  min-width: 0;
+  min-height: 56px;
+  padding: 9px 11px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  border: 1px solid #d7e4e8;
+  border-radius: 10px;
+  background: #fff;
+  scrollbar-width: thin;
+  scrollbar-color: #c3d6da transparent;
+}
+
+.tracking-route-editor-flow::-webkit-scrollbar {
+  height: 4px;
+}
+
+.tracking-route-editor-flow::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: #c3d6da;
+}
+
+.tracking-route-editor-fixed {
+  width: auto;
+  min-width: 86px;
+  max-width: 130px;
+  height: 32px;
+  min-height: 32px;
+  padding: 0 9px;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #c6deda;
+  border-radius: 8px;
+  background: #f1f9f8;
+}
+
+.tracking-route-editor-fixed > svg {
+  width: 12px;
+  height: 12px;
+  flex: 0 0 12px;
+  color: var(--tracking-teal);
+}
+
+.tracking-route-editor-fixed > div {
+  min-width: 0;
+}
+
+.tracking-route-editor-fixed span {
+  display: none;
+}
+
+.tracking-route-editor-fixed strong {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--tracking-navy);
+  font-size: 8.5px;
+  font-weight: 800;
+  line-height: 1.2;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.tracking-route-editor-fixed.origin {
+  border-color: #b9dcd8;
+  background: #eef9f7;
+}
+
+.tracking-route-editor-fixed.destination {
+  border-color: #bdd8e4;
+  background: #f1f7fa;
+}
+
+.tracking-route-editor-fixed.destination > svg {
+  color: #397b98;
+}
+
+.tracking-route-editor-list {
+  width: auto;
+  min-width: 0;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.tracking-route-editor-item {
+  width: auto;
+  min-width: 0;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.tracking-route-editor-number {
+  display: none;
+}
+
+.tracking-route-editor-input {
+  width: 145px;
+  min-width: 110px;
+  max-width: 170px;
+  height: 32px;
+  min-height: 32px;
+  padding: 0 8px;
+  flex: 0 0 145px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  overflow: hidden;
+  border: 1px solid #d3e1e5;
+  border-radius: 8px;
+  color: #6b8794;
+  background: #fff;
+  transition: 150ms ease;
+}
+
+.tracking-route-editor-input:hover {
+  border-color: #b8d1d5;
+}
+
+.tracking-route-editor-input:focus-within {
+  border-color: var(--tracking-teal);
+  box-shadow: 0 0 0 3px rgba(8, 127, 120, 0.07);
+}
+
+.tracking-route-editor-input > svg {
+  width: 12px;
+  height: 12px;
+  flex: 0 0 12px;
+  color: #78939f;
+}
+
+.tracking-route-editor-input input {
+  width: 100%;
+  min-width: 0;
+  height: 30px;
+  margin: 0;
+  padding: 0;
+  border: 0 !important;
+  outline: 0 !important;
+  color: var(--tracking-ink);
+  background: transparent !important;
+  font-family: inherit;
+  font-size: 9.5px;
+  font-weight: 700;
+  line-height: 1;
+  box-shadow: none !important;
+}
+
+.tracking-route-editor-input input::placeholder {
+  color: #9aabb4;
+  font-size: 9px;
+  font-weight: 500;
+}
+
+.tracking-remove-location-btn {
+  width: 27px;
+  height: 27px;
+  min-width: 27px;
+  min-height: 27px;
+  padding: 0;
+  flex: 0 0 27px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #efd4d7;
+  border-radius: 7px;
+  color: #c44d56;
+  background: #fff7f8;
+  font-family: inherit;
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  transition: 150ms ease;
+}
+
+.tracking-remove-location-btn:hover:not(:disabled) {
+  color: #fff;
+  border-color: #c44d56;
+  background: #c44d56;
+}
+
+.tracking-route-editor-flow > svg,
+.tracking-route-flow-arrow {
+  width: 12px;
+  height: 12px;
+  flex: 0 0 12px;
+  color: #91a8b1;
+  stroke-width: 2;
+}
+
+.tracking-route-editor-empty {
+  min-width: 170px;
+  height: 32px;
+  padding: 0 10px;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px dashed #c7d8dd;
+  border-radius: 8px;
+  color: #8297a1;
+  background: #fafcfc;
+  font-size: 8.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+@media (max-width: 1100px) {
+  .tracking-route-editor-input {
+    width: 135px;
+    flex-basis: 135px;
+  }
+}
+
+@media (max-width: 700px) {
+  .tracking-route-locations {
+    width: calc(100% - 20px);
+    margin: 12px 10px;
+    padding: 11px;
+  }
+
+  .tracking-route-locations-header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .tracking-route-actions {
+    width: 100%;
+  }
+
+  .tracking-add-location-btn,
+  .tracking-save-route-btn {
+    flex: 1;
+  }
+
+  .tracking-route-editor-input {
+    width: 130px;
+    flex-basis: 130px;
+  }
+}
+
+@media (max-width: 430px) {
+  .tracking-route-actions {
+    flex-direction: column;
+  }
+
+  .tracking-add-location-btn,
+  .tracking-save-route-btn {
+    width: 100%;
+  }
+}
+/* =========================================================
+   FINAL FIX - TRIP ROUTE INPUT
+   KEEP THIS AT THE VERY BOTTOM OF Trackinginput.css
+========================================================= */
+
+.tracking-input-page .tracking-route-editor-item {
+  width: auto !important;
+  min-width: 0 !important;
+  flex: 0 0 auto !important;
+
+  display: flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+}
+
+/* Input outer box */
+.tracking-input-page .tracking-route-editor-input {
+  width: 135px !important;
+  min-width: 135px !important;
+  max-width: 135px !important;
+  height: 30px !important;
+  min-height: 30px !important;
+
+  padding: 0 8px !important;
+  margin: 0 !important;
+
+  flex: 0 0 135px !important;
+
+  display: flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+
+  border: 1px solid #d5e2e6 !important;
+  border-radius: 7px !important;
+
+  background: #ffffff !important;
+  box-shadow: none !important;
+}
+
+/* ACTUAL INPUT - important fix */
+.tracking-input-page .tracking-route-editor-input input,
+.tracking-input-page .tracking-route-editor-input input[type="text"] {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+
+  height: 28px !important;
+  min-height: 28px !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  border: 0 !important;
+  outline: 0 !important;
+
+  border-radius: 0 !important;
+
+  color: #17384c !important;
+  background: transparent !important;
+
+  font-family: Inter, "Segoe UI", Arial, sans-serif !important;
+  font-size: 10px !important;
+  font-weight: 650 !important;
+  line-height: 28px !important;
+
+  box-shadow: none !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+}
+
+/* Placeholder */
+.tracking-input-page .tracking-route-editor-input input::placeholder {
+  color: #8b9ca5 !important;
+  font-size: 9.5px !important;
+  font-weight: 500 !important;
+  opacity: 1 !important;
+}
+
+/* Focus */
+.tracking-input-page .tracking-route-editor-input:focus-within {
+  border-color: #087f78 !important;
+  box-shadow: 0 0 0 2px rgba(8, 127, 120, 0.08) !important;
+}
+
+/* Location icon */
+.tracking-input-page .tracking-route-editor-input > svg {
+  width: 12px !important;
+  height: 12px !important;
+  min-width: 12px !important;
+  flex: 0 0 12px !important;
+
+  color: #668a98 !important;
+}
+
+/* Remove X */
+.tracking-input-page .tracking-remove-location-btn {
+  width: 28px !important;
+  min-width: 28px !important;
+  max-width: 28px !important;
+
+  height: 28px !important;
+  min-height: 28px !important;
+  max-height: 28px !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  flex: 0 0 28px !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  border: 1px solid #efd4d7 !important;
+  border-radius: 7px !important;
+
+  color: #cf4f59 !important;
+  background: #fff7f8 !important;
+
+  font-size: 15px !important;
+  line-height: 1 !important;
+
+  box-shadow: none !important;
+}
+
+/* Route arrows */
+.tracking-input-page .tracking-route-flow-arrow {
+  width: 12px !important;
+  height: 12px !important;
+
+  min-width: 12px !important;
+  flex: 0 0 12px !important;
+
+  margin: 0 2px !important;
+
+  color: #91a8b1 !important;
+}
+
+/* Origin / Destination */
+.tracking-input-page .tracking-route-editor-fixed {
+  width: auto !important;
+  min-width: 88px !important;
+  max-width: 125px !important;
+
+  height: 30px !important;
+  min-height: 30px !important;
+
+  padding: 0 9px !important;
+
+  flex: 0 0 auto !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+
+  border-radius: 7px !important;
+}
+
+/* Hide Origin / Destination small label */
+.tracking-input-page .tracking-route-editor-fixed span {
+  display: none !important;
+}
+
+.tracking-input-page .tracking-route-editor-fixed strong {
+  font-size: 9px !important;
+  font-weight: 750 !important;
+  white-space: nowrap !important;
+}
+
+/* Route row */
+.tracking-input-page .tracking-route-editor-flow {
+  min-height: 50px !important;
+
+  padding: 8px 11px !important;
+
+  display: flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+
+  overflow-x: auto !important;
+}
+
+/* Route locations list */
+.tracking-input-page .tracking-route-editor-list {
+  width: auto !important;
+  min-width: 0 !important;
+
+  flex: 0 0 auto !important;
+
+  display: flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+}
+
+/* Don't show number circle */
+.tracking-input-page .tracking-route-editor-number {
+  display: none !important;
+}
+/* =========================================================
+   ACTUAL TRIP ROUTE INPUT FIX
+   JSX uses: tracking-route-edit-item
+========================================================= */
+
+.tracking-route-location-flow {
+  width: 100%;
+  min-height: 48px;
+  margin-top: 10px;
+  padding: 7px 10px;
+
+  display: flex;
+  align-items: center;
+  gap: 7px;
+
+  overflow-x: auto;
+  overflow-y: hidden;
+
+  border: 1px solid #d8e5e9;
+  border-radius: 9px;
+
+  background: #ffffff;
+}
+
+/* Origin + Destination */
+.tracking-route-fixed-point {
+  height: 30px;
+  min-height: 30px;
+
+  padding: 0 9px;
+
+  flex: 0 0 auto;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+
+  border: 1px solid #bcded9;
+  border-radius: 7px;
+
+  color: #0b5965;
+  background: #eef9f7;
+
+  font-size: 9px;
+  font-weight: 750;
+
+  white-space: nowrap;
+}
+
+.tracking-route-fixed-point svg {
+  width: 12px;
+  height: 12px;
+
+  color: #167d82;
+}
+
+.tracking-route-fixed-point.destination {
+  border-color: #bfdedb;
+  background: #eff9f8;
+}
+
+/* Arrow */
+.tracking-route-flow-arrow {
+  width: 12px;
+  height: 12px;
+
+  min-width: 12px;
+
+  flex: 0 0 12px;
+
+  margin: 0 1px;
+
+  color: #8fa7b0;
+}
+
+/* =========================================================
+   EACH EDITABLE LOCATION
+========================================================= */
+
+.tracking-route-edit-item {
+  width: auto !important;
+  min-width: 0 !important;
+
+  flex: 0 0 auto !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+
+  gap: 5px !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* ACTUAL INPUT */
+.tracking-route-edit-item > input,
+.tracking-route-edit-item input[type="text"] {
+  width: 125px !important;
+  min-width: 125px !important;
+  max-width: 125px !important;
+
+  height: 30px !important;
+  min-height: 30px !important;
+
+  margin: 0 !important;
+
+  padding: 0 9px !important;
+
+  flex: 0 0 125px !important;
+
+  border: 1px solid #d3e1e5 !important;
+  outline: none !important;
+
+  border-radius: 7px !important;
+
+  color: #17384c !important;
+  background: #ffffff !important;
+
+  font-family: Inter, "Segoe UI", Arial, sans-serif !important;
+  font-size: 9.5px !important;
+  font-weight: 650 !important;
+  line-height: 30px !important;
+
+  box-shadow: none !important;
+
+  appearance: none !important;
+  -webkit-appearance: none !important;
+
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease,
+    background 150ms ease !important;
+}
+
+.tracking-route-edit-item > input:hover {
+  border-color: #b6cdd2 !important;
+}
+
+.tracking-route-edit-item > input:focus {
+  border-color: #087f78 !important;
+
+  background: #ffffff !important;
+
+  box-shadow:
+    0 0 0 2px rgba(8, 127, 120, 0.08) !important;
+}
+
+.tracking-route-edit-item > input::placeholder {
+  color: #91a3ac !important;
+
+  font-size: 9px !important;
+  font-weight: 500 !important;
+
+  opacity: 1 !important;
+}
+
+/* =========================================================
+   REMOVE X
+========================================================= */
+
+.tracking-route-edit-item .tracking-remove-location-btn {
+  width: 28px !important;
+  height: 28px !important;
+
+  min-width: 28px !important;
+  min-height: 28px !important;
+  max-width: 28px !important;
+  max-height: 28px !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  flex: 0 0 28px !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  border: 1px solid #efd4d7 !important;
+  border-radius: 7px !important;
+
+  color: #d1535c !important;
+  background: #fff7f8 !important;
+
+  font-size: 15px !important;
+  font-weight: 400 !important;
+  line-height: 1 !important;
+
+  cursor: pointer !important;
+
+  box-shadow: none !important;
+}
+
+.tracking-route-edit-item
+  .tracking-remove-location-btn:hover {
+  color: #ffffff !important;
+
+  border-color: #cf515a !important;
+
+  background: #cf515a !important;
+}
+
+/* =========================================================
+   ROUTE HEADER
+========================================================= */
+
+.tracking-route-locations-header {
+  margin-bottom: 10px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 12px;
+}
+
+.tracking-route-actions {
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+}
+
+/* =========================================================
+   ADD + SAVE BUTTON
+========================================================= */
+
+.tracking-add-location-btn,
+.tracking-save-route-btn {
+  height: 32px;
+
+  padding: 0 12px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 6px;
+
+  border-radius: 8px;
+
+  font-family: inherit;
+  font-size: 9px;
+  font-weight: 750;
+
+  white-space: nowrap;
+
+  cursor: pointer;
+}
+
+.tracking-add-location-btn {
+  border: 1px solid #b8d9d5;
+
+  color: #08766f;
+
+  background: #eff9f7;
+}
+
+.tracking-add-location-btn:hover {
+  border-color: #087f78;
+
+  color: #087f78;
+
+  background: #e8f6f4;
+}
+
+.tracking-save-route-btn {
+  border: 1px solid #087f78;
+
+  color: #ffffff;
+
+  background: #087f78;
+
+  box-shadow:
+    0 3px 8px rgba(8, 127, 120, 0.12);
+}
+
+.tracking-save-route-btn:hover {
+  border-color: #066761;
+
+  background: #066761;
+}
+
+/* =========================================================
+   DESKTOP - KEEP EVERYTHING IN ONE ROW
+========================================================= */
+
+@media (min-width: 1000px) {
+  .tracking-route-location-flow {
+    flex-wrap: nowrap !important;
+  }
+
+  .tracking-route-edit-item {
+    flex-shrink: 0 !important;
+  }
+}
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 1000px) {
+  .tracking-route-edit-item > input,
+  .tracking-route-edit-item input[type="text"] {
+    width: 115px !important;
+    min-width: 115px !important;
+    max-width: 115px !important;
+
+    flex-basis: 115px !important;
+  }
+}
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 700px) {
+  .tracking-route-locations-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .tracking-route-actions {
+    width: 100%;
+  }
+
+  .tracking-add-location-btn,
+  .tracking-save-route-btn {
+    flex: 1;
+  }
+
+  .tracking-route-edit-item > input,
+  .tracking-route-edit-item input[type="text"] {
+    width: 110px !important;
+    min-width: 110px !important;
+    max-width: 110px !important;
+
+    flex-basis: 110px !important;
+  }
+}
+
+/* =========================================================
+   VEHICLE MANAGEMENT - COMPACT LIST + PROFESSIONAL POPUP
+   Driver / Escort / Supervisor / Loading / Unloading / Movement
+========================================================= */
+
+.tracking-vehicle-entry-card.tracking-vehicle-expanded-card {
+  overflow: visible;
+}
+
+.tracking-vehicle-entry-card .tracking-vehicle-entry-header {
+  border-bottom: 0;
+}
+
+.tracking-manage-vehicle-btn,
+.tracking-modal-add-movement {
+  min-height: 34px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid #b9d7d5;
+  border-radius: 8px;
+  color: var(--tracking-teal-dark);
+  background: var(--tracking-teal-soft);
+  font: inherit;
+  font-size: 8.8px;
+  font-weight: 800;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: 150ms ease;
+}
+
+.tracking-manage-vehicle-btn:hover,
+.tracking-modal-add-movement:hover {
+  color: #fff;
+  border-color: var(--tracking-teal);
+  background: var(--tracking-teal);
+}
+
+.tracking-vehicle-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  padding: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(7, 31, 43, 0.58);
+  backdrop-filter: blur(3px);
+}
+
+.tracking-vehicle-modal {
+  width: min(1280px, 94vw);
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #cbdde2;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 24px 65px rgba(6, 37, 49, 0.24);
+}
+
+.tracking-vehicle-modal-head {
+  min-height: 70px;
+  padding: 12px 16px;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid var(--tracking-line);
+  background: linear-gradient(90deg, #f4fbfa 0%, #fff 65%);
+}
+
+.tracking-vehicle-modal-title,
+.tracking-vehicle-modal-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tracking-vehicle-modal-title { min-width: 0; }
+.tracking-vehicle-modal-title > div { min-width: 0; }
+
+.tracking-vehicle-modal-kicker {
+  display: block;
+  margin-bottom: 3px;
+  color: var(--tracking-teal);
+  font-size: 7.5px;
+  font-weight: 900;
+  letter-spacing: .8px;
+}
+
+.tracking-vehicle-modal-title h3 {
+  margin: 0;
+  color: var(--tracking-navy);
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.tracking-vehicle-modal-title p {
+  margin: 3px 0 0;
+  color: var(--tracking-muted);
+  font-size: 8.5px;
+}
+
+.tracking-vehicle-modal-close {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #d8e4e8;
+  border-radius: 8px;
+  color: #657d8b;
+  background: #fff;
+  font: inherit;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.tracking-vehicle-modal-close:hover {
+  color: #fff;
+  border-color: var(--tracking-danger);
+  background: var(--tracking-danger);
+}
+
+.tracking-vehicle-modal-body {
+  min-height: 0;
+  padding-bottom: 14px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: #fff;
+}
+
+.tracking-vehicle-modal-body .tracking-requirement-summary {
+  margin-top: 14px;
+}
+
+.tracking-vehicle-modal-body .tracking-form-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 4;
+  background: rgba(255,255,255,.96);
+  backdrop-filter: blur(6px);
+}
+
+/* movement popup stays above vehicle popup */
+.tracking-movement-modal-overlay {
+  z-index: 1300 !important;
+}
+
+@media (max-width: 900px) {
+  .tracking-vehicle-modal-overlay { padding: 14px; }
+  .tracking-vehicle-modal { width: 97vw; max-height: 92vh; }
+  .tracking-vehicle-modal-head { align-items: flex-start; }
+  .tracking-vehicle-modal-actions { flex-wrap: wrap; justify-content: flex-end; }
+}
+
+@media (max-width: 600px) {
+  .tracking-vehicle-modal-overlay { padding: 8px; }
+  .tracking-vehicle-modal { width: 100%; max-height: 94vh; border-radius: 11px; }
+  .tracking-vehicle-modal-head { padding: 10px; }
+  .tracking-vehicle-modal-title p { display: none; }
+  .tracking-modal-add-movement { padding: 0 9px; }
+}
+
+/* =========================================================
+   ALLOCATE ACTUAL VEHICLE - POPUP MODAL
+   Keeps the requirement table compact even with many vehicles
+========================================================= */
+
+.tracking-allocation-modal-cell {
+  padding: 0 !important;
+  border: 0 !important;
+  height: 0 !important;
+}
+
+.tracking-allocation-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1400;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(5, 30, 42, 0.48);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+
+.tracking-allocation-modal {
+  width: min(1240px, 94vw);
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #cbdde2;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 24px 70px rgba(5, 34, 48, 0.24);
+}
+
+.tracking-allocation-modal-head {
+  min-height: 64px;
+  padding: 11px 14px;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  border-bottom: 1px solid var(--tracking-line);
+  background: linear-gradient(180deg, #fff 0%, #f4f9f9 100%);
+}
+
+.tracking-allocation-modal-title {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tracking-allocation-modal-title > div {
+  min-width: 0;
+}
+
+.tracking-allocation-modal-kicker {
+  display: block;
+  margin-bottom: 3px;
+  color: var(--tracking-teal);
+  font-size: 7.5px;
+  font-weight: 900;
+  letter-spacing: .8px;
+}
+
+.tracking-allocation-modal-title h3 {
+  margin: 0;
+  color: var(--tracking-navy);
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.tracking-allocation-modal-title p {
+  margin: 3px 0 0;
+  overflow: hidden;
+  color: var(--tracking-muted);
+  font-size: 8.5px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.tracking-allocation-modal-body {
+  min-height: 0;
+  padding: 14px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: #f7fafb;
+}
+
+.tracking-allocation-modal-body .tracking-required-allocation-form {
+  margin: 0;
+  border-radius: 11px;
+  background: #fff;
+  box-shadow: none;
+}
+
+.tracking-allocation-modal-body .tracking-form-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  margin-top: 12px;
+  border-top: 1px solid var(--tracking-line);
+  background: rgba(255, 255, 255, .97);
+  backdrop-filter: blur(6px);
+}
+
+/* Hide the duplicate inner title because the popup already has a title. */
+.tracking-allocation-modal-body
+  .tracking-required-allocation-form
+  > .tracking-vehicle-subsection-title:first-child {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .tracking-allocation-modal-overlay {
+    padding: 12px;
+  }
+
+  .tracking-allocation-modal {
+    width: 97vw;
+    max-height: 93vh;
+  }
+}
+
+@media (max-width: 600px) {
+  .tracking-allocation-modal-overlay {
+    padding: 7px;
+  }
+
+  .tracking-allocation-modal {
+    width: 100%;
+    max-height: 95vh;
+    border-radius: 11px;
+  }
+
+  .tracking-allocation-modal-head {
+    padding: 10px;
+  }
+
+  .tracking-allocation-modal-title p {
+    display: none;
+  }
+}
+
+/* =========================================================
+   VEHICLE MODAL - FIXED FOOTER
+   Save Vehicle Details always stays visible at the bottom.
+========================================================= */
+
+.tracking-vehicle-modal {
+  position: relative;
+}
+
+.tracking-vehicle-modal-body {
+  padding-bottom: 88px !important;
+  overscroll-behavior: contain;
+}
+
+.tracking-vehicle-modal-body .tracking-vehicle-modal-footer {
+  position: absolute !important;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 25;
+
+  width: 100%;
+  min-height: 70px;
+  margin: 0 !important;
+  padding: 10px 16px !important;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+
+  border-top: 1px solid #d5e3e7;
+  border-radius: 0 0 14px 14px;
+
+  background: rgba(255, 255, 255, 0.98) !important;
+  box-shadow: 0 -8px 22px rgba(11, 63, 80, 0.08);
+  backdrop-filter: blur(10px);
+}
+
+.tracking-vehicle-modal-footer-note {
+  color: #71869a;
+  font-size: 8.5px;
+  font-weight: 600;
+}
+
+.tracking-vehicle-modal-footer .tracking-form-save {
+  min-width: 164px;
+  min-height: 40px;
+  margin-left: auto;
+  flex: 0 0 auto;
+}
+
+/* Keep Movement History fully visible above the fixed footer */
+.tracking-vehicle-modal-body .tracking-movement-history,
+.tracking-vehicle-modal-body .tracking-history-section,
+.tracking-vehicle-modal-body > :last-child {
+  scroll-margin-bottom: 95px;
+}
+
+/* =========================================================
+   PROFESSIONAL TOAST
+========================================================= */
+
+.tracking-toast {
+  position: fixed;
+  top: 94px;
+  right: 24px;
+  z-index: 3000;
+
+  width: min(390px, calc(100vw - 32px));
+  min-height: 62px;
+  padding: 11px 12px;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  border: 1px solid #cfe1e4;
+  border-radius: 11px;
+
+  background: #ffffff;
+  box-shadow: 0 14px 34px rgba(8, 48, 62, 0.18);
+
+  animation: tracking-toast-in 180ms ease-out;
+}
+
+.tracking-toast-icon {
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 9px;
+
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.tracking-toast-success {
+  border-left: 4px solid #087f78;
+}
+
+.tracking-toast-success .tracking-toast-icon {
+  color: #087f78;
+  background: #eaf8f6;
+}
+
+.tracking-toast-error {
+  border-left: 4px solid #b9474f;
+}
+
+.tracking-toast-error .tracking-toast-icon {
+  color: #b9474f;
+  background: #fff0f1;
+}
+
+.tracking-toast-content {
+  min-width: 0;
+  flex: 1;
+}
+
+.tracking-toast-content strong {
+  display: block;
+  margin-bottom: 3px;
+
+  color: #17384c;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.tracking-toast-content span {
+  display: block;
+
+  overflow: hidden;
+
+  color: #647c8c;
+  font-size: 9px;
+  font-weight: 550;
+  line-height: 1.4;
+
+  text-overflow: ellipsis;
+}
+
+.tracking-toast-close {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 0;
+  border-radius: 7px;
+
+  color: #758b98;
+  background: transparent;
+
+  font: inherit;
+  font-size: 18px;
+  line-height: 1;
+
+  cursor: pointer;
+}
+
+.tracking-toast-close:hover {
+  color: #17384c;
+  background: #f0f5f6;
+}
+
+@keyframes tracking-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) translateX(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) translateX(0);
+  }
+}
+
+@media (max-width: 700px) {
+  .tracking-vehicle-modal-body {
+    padding-bottom: 82px !important;
+  }
+
+  .tracking-vehicle-modal-body .tracking-vehicle-modal-footer {
+    min-height: 66px;
+    padding: 9px 10px !important;
+    border-radius: 0 0 11px 11px;
+  }
+
+  .tracking-vehicle-modal-footer-note {
+    display: none;
+  }
+
+  .tracking-vehicle-modal-footer .tracking-form-save {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .tracking-toast {
+    top: 78px;
+    right: 12px;
+    left: 12px;
+    width: auto;
+  }
+}
+
+/* =========================================================
+   MOVEMENT HISTORY - PROFESSIONAL COMPACT TIMELINE
+========================================================= */
+
+.tracking-vehicle-modal .tracking-movement-history,
+.tracking-vehicle-modal .tracking-history-section {
+  width: 100%;
+  margin: 0;
+  padding: 0 14px 18px;
+  background: #ffffff;
+}
+
+.tracking-vehicle-modal .tracking-movement-history-list,
+.tracking-vehicle-modal .tracking-history-list {
+  position: relative;
+  width: 100%;
+  margin: 0;
+  padding: 10px 0 4px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* subtle timeline line */
+.tracking-vehicle-modal .tracking-movement-history-list::before,
+.tracking-vehicle-modal .tracking-history-list::before {
+  content: "";
+  position: absolute;
+  left: 18px;
+  top: 18px;
+  bottom: 12px;
+  width: 1px;
+  background: #d8e8e9;
+}
+
+.tracking-vehicle-modal .tracking-movement-history-item,
+.tracking-vehicle-modal .tracking-history-item {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  min-height: 52px;
+  margin: 0;
+  padding: 8px 12px 8px 48px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid #d9e6ea;
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: 0 2px 7px rgba(11, 63, 80, 0.035);
+  transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
+}
+
+.tracking-vehicle-modal .tracking-movement-history-item:hover,
+.tracking-vehicle-modal .tracking-history-item:hover {
+  border-color: #afd2cf;
+  box-shadow: 0 5px 14px rgba(8, 127, 120, 0.07);
+  transform: translateY(-1px);
+}
+
+/* Day number / timeline marker */
+.tracking-vehicle-modal .tracking-history-day,
+.tracking-vehicle-modal .tracking-movement-day {
+  position: absolute;
+  left: 7px;
+  top: 50%;
+  width: 24px;
+  height: 24px;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #bcdedb;
+  border-radius: 7px;
+  color: #087f78;
+  background: #eef8f7;
+  font-size: 8.5px;
+  font-weight: 850;
+}
+
+/* Main location / KM / status line */
+.tracking-vehicle-modal .tracking-history-main,
+.tracking-vehicle-modal .tracking-history-summary,
+.tracking-vehicle-modal .tracking-movement-history-summary {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #17384c;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.tracking-vehicle-modal .tracking-history-main > svg,
+.tracking-vehicle-modal .tracking-history-summary > svg,
+.tracking-vehicle-modal .tracking-movement-history-summary > svg {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 15px;
+  color: #087f78;
+}
+
+.tracking-vehicle-modal .tracking-history-location {
+  min-width: 0;
+  overflow: hidden;
+  color: #17384c;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tracking-vehicle-modal .tracking-history-km {
+  color: #4f7183;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.tracking-vehicle-modal .tracking-history-separator {
+  color: #a3b4bd;
+  font-weight: 700;
+}
+
+.tracking-vehicle-modal .tracking-history-status {
+  min-width: 62px;
+  padding: 4px 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #c8e1df;
+  border-radius: 999px;
+  color: #087f78;
+  background: #eef8f7;
+  font-size: 8px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+/* Existing simple history rows: improve them without requiring markup changes */
+.tracking-vehicle-modal .tracking-history-row {
+  position: relative;
+  min-height: 48px;
+  margin: 0 14px 8px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #d9e6ea;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #355b70;
+  font-size: 10px;
+  font-weight: 650;
+  box-shadow: 0 2px 6px rgba(11, 63, 80, 0.03);
+}
+
+.tracking-vehicle-modal .tracking-history-row > svg {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 15px;
+  color: #087f78;
+}
+
+.tracking-vehicle-modal .tracking-history-row:hover {
+  border-color: #b5d5d2;
+  background: #fbfefe;
+}
+
+/* Movement History heading */
+.tracking-vehicle-modal .tracking-vehicle-subsection-title.tracking {
+  min-height: 43px;
+  margin-top: 2px;
+  border-top: 1px solid #d8e4ea;
+  border-bottom: 1px solid #d8e4ea;
+  color: #0b3f50;
+  background: linear-gradient(90deg, #edf8f7 0%, #f8fbfb 70%, #ffffff 100%);
+}
+
+.tracking-vehicle-modal .tracking-vehicle-subsection-title.tracking span {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  color: #087f78;
+  background: #dff3f1;
+}
+
+/* Ensure final history content never hides behind fixed modal footer */
+.tracking-vehicle-modal-body {
+  padding-bottom: 92px !important;
+}
+
+.tracking-vehicle-modal .tracking-history-list,
+.tracking-vehicle-modal .tracking-movement-history-list,
+.tracking-vehicle-modal .tracking-history-row:last-child {
+  margin-bottom: 12px;
+}
+
+@media (max-width: 700px) {
+  .tracking-vehicle-modal .tracking-movement-history-item,
+  .tracking-vehicle-modal .tracking-history-item {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    padding-right: 9px;
+  }
+
+  .tracking-vehicle-modal .tracking-history-main,
+  .tracking-vehicle-modal .tracking-history-summary,
+  .tracking-vehicle-modal .tracking-movement-history-summary {
+    flex-wrap: wrap;
+  }
+}

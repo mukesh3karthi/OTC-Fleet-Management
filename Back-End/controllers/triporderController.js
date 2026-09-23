@@ -506,6 +506,308 @@ const createTrip = async (
   }
 };
 
+/* =========================================================
+   CREATE CRANE MOVEMENT
+   Separate flow so the existing createTrip function is untouched.
+
+   Expects multipart/form-data:
+   - data: JSON string containing normal trip fields
+   - document: Crane vehicle requirement file
+========================================================= */
+
+const createCraneTrip = async (
+  req,
+  res
+) => {
+  try {
+    let body = {};
+
+    try {
+      body =
+        typeof req.body?.data === "string"
+          ? JSON.parse(req.body.data)
+          : req.body || {};
+    } catch {
+      return sendError(
+        res,
+        400,
+        "Invalid Crane order data."
+      );
+    }
+
+    const data =
+      buildTripData(body);
+
+    if (!data.tripId) {
+      return sendError(
+        res,
+        400,
+        "Trip ID is required."
+      );
+    }
+
+    if (!data.customer) {
+      return sendError(
+        res,
+        400,
+        "Customer is required."
+      );
+    }
+
+    if (
+      cleanString(data.movementType)
+        .toLowerCase() !== "crane"
+    ) {
+      return sendError(
+        res,
+        400,
+        "This endpoint is only for Crane movement."
+      );
+    }
+
+    if (!req.file) {
+      return sendError(
+        res,
+        400,
+        "Crane vehicle requirement document is required."
+      );
+    }
+
+    const duplicateTrip =
+      await TripOrder.findOne({
+        tripId: data.tripId,
+      });
+
+    if (duplicateTrip) {
+      return sendError(
+        res,
+        409,
+        `Trip ID ${data.tripId} already exists.`
+      );
+    }
+
+    /*
+     * Keep the existing quotation / approval / tracking functions working.
+     * Crane gets one parent requirement linked to the uploaded vehicle list.
+     * No old function is replaced.
+     */
+    const craneRequirement = {
+      requirementId:
+        `${data.tripId}-CRANE-REQ-1`,
+
+      vehicleType:
+        "Crane",
+
+      configuration:
+        "As per uploaded Crane vehicle requirement document",
+
+      classification:
+        "Crane Movement",
+
+      quantity:
+        Math.max(
+          1,
+          data.totalVehicles || 1
+        ),
+
+      weight: 0,
+
+      dimensions: {
+        length: null,
+        height: null,
+        width: null,
+      },
+    };
+
+    const trip =
+      await TripOrder.create({
+        ...data,
+
+        movementType: "Crane",
+
+        vehicleRequirements: [
+          craneRequirement,
+        ],
+
+        craneDocument: {
+          documentName:
+            cleanString(
+              body.craneDocumentName
+            ) ||
+            "Crane Vehicle Requirement",
+
+          fileName:
+            req.file.originalname,
+
+          mimeType:
+            req.file.mimetype,
+
+          fileSize:
+            req.file.size,
+
+          fileData:
+            req.file.buffer,
+
+          uploadedBy:
+            cleanString(
+              body.uploadedBy
+            ) ||
+            cleanString(
+              body.assignedKam
+            ) ||
+            "Key Account",
+
+          uploadedAt:
+            new Date(),
+        },
+
+        status: "Pending",
+
+        stage: "Order Approval",
+
+        orderApproval: {
+          status: "Pending",
+          requestedAt: null,
+          approvedBy: "",
+          approvedAt: null,
+          remarks: "",
+          rejectionReason: "",
+        },
+
+        trafficQuotations: [],
+        vehicleConfirmations: [],
+        allocatedVehicles: [],
+      });
+
+    const createdTrip =
+      await TripOrder.findById(
+        trip._id
+      ).lean();
+
+    return sendSuccess(
+      res,
+      201,
+      "Crane order created successfully and sent for approval.",
+      createdTrip
+    );
+  } catch (error) {
+    console.error(
+      "Create Crane Trip Error:",
+      error
+    );
+
+    if (error?.code === 11000) {
+      return sendError(
+        res,
+        409,
+        "Trip ID already exists.",
+        error
+      );
+    }
+
+    return sendError(
+      res,
+      500,
+      "Unable to create Crane order.",
+      error
+    );
+  }
+};
+
+/* =========================================================
+   DOWNLOAD / VIEW CRANE REQUIREMENT DOCUMENT
+========================================================= */
+
+const downloadCraneDocument = async (
+  req,
+  res
+) => {
+  try {
+    if (
+      !isValidMongoId(
+        req.params.id
+      )
+    ) {
+      return sendError(
+        res,
+        400,
+        "Invalid order database ID."
+      );
+    }
+
+    const trip =
+      await TripOrder.findById(
+        req.params.id
+      )
+        .select(
+          "+craneDocument.fileData"
+        );
+
+    if (!trip) {
+      return sendError(
+        res,
+        404,
+        "Order not found."
+      );
+    }
+
+    const document =
+      trip.craneDocument;
+
+    if (
+      !document?.fileData ||
+      !document?.fileName
+    ) {
+      return sendError(
+        res,
+        404,
+        "Crane vehicle requirement document not found."
+      );
+    }
+
+    const disposition =
+      String(
+        req.query.disposition || ""
+      ).toLowerCase() === "inline"
+        ? "inline"
+        : "attachment";
+
+    res.setHeader(
+      "Content-Type",
+      document.mimeType ||
+        "application/octet-stream"
+    );
+
+    res.setHeader(
+      "Content-Length",
+      document.fileData.length
+    );
+
+    res.setHeader(
+      "Content-Disposition",
+      `${disposition}; filename="${String(
+        document.fileName
+      ).replace(/"/g, "")}"`
+    );
+
+    return res.send(
+      document.fileData
+    );
+  } catch (error) {
+    console.error(
+      "Download Crane Document Error:",
+      error
+    );
+
+    return sendError(
+      res,
+      500,
+      "Unable to load Crane vehicle requirement document.",
+      error
+    );
+  }
+};
+
 const getAllTrips = async (
   req,
   res
@@ -3394,6 +3696,8 @@ const deleteTrip = async (
 
 module.exports = {
   createTrip,
+  createCraneTrip,
+  downloadCraneDocument,
   getAllTrips,
   getTripById,
   getTripByTripId,

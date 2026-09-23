@@ -7,6 +7,9 @@
 
   import "../pagescss/keyaccount.css";
 
+  import jsPDF from "jspdf";
+  import autoTable from "jspdf-autotable";
+
   import Tripcreatemodal from "../keyaccount/Tripcreatemodal";
   import Lifecyclemodal from "../keyaccount/Lifecyclemodal";
 
@@ -927,6 +930,293 @@ const getDisplayStage = (order = {}) => {
   };
 
   /* =========================================================
+    PROFESSIONAL PDF EXPORT
+  ========================================================= */
+
+  const pdfText = (value) => {
+    if (value === null || value === undefined || value === "") return "—";
+    if (typeof value === "boolean") return value ? "Yes" : "No";
+    if (typeof value === "object" && value.$date) return pdfText(value.$date);
+    return String(value);
+  };
+
+  const pdfDate = (value) => {
+    if (!value) return "—";
+    const date = new Date(value?.$date || value);
+    if (Number.isNaN(date.getTime())) return pdfText(value);
+    return date.toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+  };
+
+  const humanizePdfKey = (key = "") =>
+    String(key)
+      .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+      .replace(/[_-]+/g, " ")
+      .replace(/\b\w/g, (letter) => letter.toUpperCase());
+
+  const flattenPdfObject = (value, prefix = "", rows = []) => {
+    if (value === null || value === undefined || value === "") return rows;
+
+    if (Array.isArray(value)) {
+      if (!value.length) return rows;
+      value.forEach((item, index) => {
+        const label = `${prefix}${prefix ? " " : ""}${index + 1}`;
+        if (item && typeof item === "object") {
+          flattenPdfObject(item, label, rows);
+        } else {
+          rows.push([label, pdfText(item)]);
+        }
+      });
+      return rows;
+    }
+
+    if (typeof value === "object") {
+      Object.entries(value).forEach(([key, item]) => {
+        if (["__v"].includes(key)) return;
+        const label = prefix
+          ? `${prefix} / ${humanizePdfKey(key)}`
+          : humanizePdfKey(key);
+        if (item && typeof item === "object" && !item.$date) {
+          flattenPdfObject(item, label, rows);
+        } else if (item !== "" && item !== null && item !== undefined) {
+          rows.push([label, item?.$date ? pdfDate(item.$date) : pdfText(item)]);
+        }
+      });
+      return rows;
+    }
+
+    rows.push([prefix || "Value", pdfText(value)]);
+    return rows;
+  };
+
+  const downloadOrderPdf = (order = {}) => {
+    const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 14;
+    let y = 18;
+
+    const addPageHeader = () => {
+      doc.setFillColor(15, 56, 68);
+      doc.rect(0, 0, pageWidth, 23, "F");
+      doc.setTextColor(255, 255, 255);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(15);
+      doc.text("OTC GROUPS", margin, 10);
+      doc.setFontSize(8.5);
+      doc.setFont("helvetica", "normal");
+      doc.text("Trip Order & Logistics Lifecycle Report", margin, 16);
+      doc.text(`Order ID: ${pdfText(order.tripId)}`, pageWidth - margin, 10, { align: "right" });
+      doc.text(`Generated: ${new Date().toLocaleString("en-IN")}`, pageWidth - margin, 16, { align: "right" });
+      doc.setTextColor(30, 41, 59);
+      y = 31;
+    };
+
+    const ensureSpace = (needed = 22) => {
+      if (y + needed > pageHeight - 18) {
+        doc.addPage();
+        addPageHeader();
+      }
+    };
+
+    const addSectionTitle = (title) => {
+      ensureSpace(14);
+      doc.setFillColor(232, 246, 246);
+      doc.roundedRect(margin, y, pageWidth - margin * 2, 8, 1.5, 1.5, "F");
+      doc.setTextColor(15, 93, 102);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      doc.text(title, margin + 3, y + 5.3);
+      doc.setTextColor(30, 41, 59);
+      y += 11;
+    };
+
+    const addKeyValueTable = (title, rows) => {
+      const cleanRows = rows.filter((row) => row[1] !== undefined && row[1] !== null && row[1] !== "");
+      if (!cleanRows.length) return;
+      addSectionTitle(title);
+      autoTable(doc, {
+        startY: y,
+        body: cleanRows.map(([label, value]) => [label, pdfText(value)]),
+        theme: "grid",
+        margin: { left: margin, right: margin },
+        styles: { font: "helvetica", fontSize: 8.2, cellPadding: 2.4, textColor: [30, 41, 59], lineColor: [220, 228, 232], lineWidth: 0.15 },
+        columnStyles: { 0: { cellWidth: 48, fontStyle: "bold", fillColor: [248, 250, 252] } },
+        didDrawPage: () => {},
+      });
+      y = doc.lastAutoTable.finalY + 7;
+    };
+
+    const addDataTable = (title, headers, body) => {
+      if (!Array.isArray(body) || !body.length) return;
+      addSectionTitle(title);
+      autoTable(doc, {
+        startY: y,
+        head: [headers],
+        body,
+        theme: "grid",
+        margin: { left: margin, right: margin },
+        headStyles: { fillColor: [15, 93, 102], textColor: [255, 255, 255], fontStyle: "bold", fontSize: 7.5 },
+        styles: { font: "helvetica", fontSize: 7.2, cellPadding: 2, textColor: [30, 41, 59], lineColor: [220, 228, 232], lineWidth: 0.15, overflow: "linebreak" },
+        alternateRowStyles: { fillColor: [248, 250, 252] },
+      });
+      y = doc.lastAutoTable.finalY + 7;
+    };
+
+    addPageHeader();
+
+    addKeyValueTable("ORDER OVERVIEW", [
+      ["Order ID", order.tripId],
+      ["Movement Type", order.movementType],
+      ["Stage", getDisplayStage(order)],
+      ["Order Status", getDisplayOrderStatus(order)],
+      ["Customer", order.customer],
+      ["Assigned KAM", order.assignedKam],
+      ["Material Type", order.materialType],
+      ["Total Vehicles", order.totalVehicles],
+      ["Enquiry Date", pdfDate(order.enquiryDate)],
+      ["Placement Date", pdfDate(order.placementDate)],
+    ]);
+
+    addKeyValueTable("CUSTOMER & CONTACT DETAILS", [
+      ["Customer", order.customer],
+      ["Contact Person", order.contactPerson],
+      ["Contact Number", order.contactNumber],
+      ["Email", order.email],
+      ["Assigned KAM", order.assignedKam],
+      ["Remark", order.remark],
+    ]);
+
+    addKeyValueTable("ROUTE & MOVEMENT DETAILS", [
+      ["Origin", order.origin],
+      ["Route Locations", Array.isArray(order.routeLocations) && order.routeLocations.length ? order.routeLocations.join("  →  ") : "—"],
+      ["Destination", order.destination],
+      ["Planned Distance", order.distance ? `${order.distance} KM` : "—"],
+      ["Site Location", order.siteLocation],
+      ["Period", order.period],
+      ["Diesel Scope", order.dieselScope],
+    ]);
+
+    addDataTable(
+      "VEHICLE REQUIREMENTS",
+      ["#", "Requirement ID", "Vehicle Type", "Configuration", "Class", "Qty", "Weight", "Dimensions (L×W×H)"],
+      (order.vehicleRequirements || []).map((item, index) => [
+        index + 1,
+        pdfText(item.requirementId),
+        pdfText(item.vehicleType),
+        pdfText(item.configuration),
+        pdfText(item.classification),
+        pdfText(item.quantity),
+        item.weight !== undefined && item.weight !== "" ? `${item.weight} Ton` : "—",
+        `${pdfText(item.dimensions?.length)} × ${pdfText(item.dimensions?.width)} × ${pdfText(item.dimensions?.height)}`,
+      ])
+    );
+
+    addKeyValueTable("FIRST APPROVAL", [
+      ["Status", order.orderApproval?.status],
+      ["Approved By", order.orderApproval?.approvedBy],
+      ["Approved At", pdfDate(order.orderApproval?.approvedAt)],
+      ["Remarks", order.orderApproval?.remarks],
+      ["Rejection Reason", order.orderApproval?.rejectionReason],
+    ]);
+
+    addDataTable(
+      "TRAFFIC QUOTATIONS",
+      ["#", "Requirement", "Transporter", "Vehicle", "Rate", "Allocator", "Contact", "Status"],
+      (order.trafficQuotations || []).map((item, index) => [
+        index + 1,
+        pdfText(item.requirementId),
+        pdfText(item.selectedTransport || item.transportProvider || item.vendorAssigned || item.vendorName),
+        pdfText(item.vehicleType || item.type),
+        pdfText(item.finalRate ?? item.rate ?? item.quotedRate),
+        pdfText(item.allocatorName),
+        pdfText(item.contactNumber),
+        pdfText(item.status),
+      ])
+    );
+
+    addDataTable(
+      "VEHICLE / QUOTATION APPROVALS",
+      ["#", "Requirement", "Vehicle", "Transporter", "Status", "Approved By", "Remarks"],
+      (order.vehicleConfirmations || []).map((item, index) => [
+        index + 1,
+        pdfText(item.requirementId),
+        pdfText(item.vehicleType || item.type),
+        pdfText(item.selectedTransport || item.transportProvider || item.vendorAssigned || item.vendorName),
+        pdfText(item.status),
+        pdfText(item.approvedBy || item.confirmedBy),
+        pdfText(item.remarks || item.remark),
+      ])
+    );
+
+    addKeyValueTable("PO & ORDER PLACEMENT", [
+      ["PO Status", order.poDocument?.status],
+      ["PO Number", order.poDocument?.poNumber],
+      ["PO File", order.poDocument?.fileName],
+      ["PO Uploaded At", pdfDate(order.poDocument?.uploadedAt || order.poDocument?.updatedAt)],
+      ["Vendor Finalization", order.vendorFinalization?.status],
+      ["Order Placed Status", order.orderPlaced?.status],
+      ["Order Placed At", pdfDate(order.orderPlaced?.placedAt || order.orderPlaced?.updatedAt)],
+    ]);
+
+    (order.allocatedVehicles || []).forEach((vehicle, index) => {
+      addKeyValueTable(`ALLOCATED VEHICLE ${index + 1}`, [
+        ["Vehicle Number", vehicle.vehicleNumber],
+        ["Vehicle Type", vehicle.vehicleType || vehicle.type],
+        ["Transporter", vehicle.transportProvider || vehicle.selectedTransport || vehicle.vendorName],
+        ["Driver Name", vehicle.driverName],
+        ["Driver Contact", vehicle.driverNumber || vehicle.contactNumber],
+        ["Escort Name", vehicle.escortName],
+        ["Escort Vehicle", vehicle.escortVehicleNumber],
+        ["Supervisor", vehicle.supervisorName],
+        ["Loading Point", vehicle.loadingPoint],
+        ["Unloading Point", vehicle.unloadingPoint],
+        ["Placement Date", pdfDate(vehicle.placementDate)],
+        ["Loading Status", vehicle.loading?.status],
+        ["Unloading Status", vehicle.unloading?.status],
+      ]);
+
+      addDataTable(
+        `DAILY TRACKING — ${pdfText(vehicle.vehicleNumber)}`,
+        ["#", "Date", "Current Location", "Yesterday Location", "Today KM", "Yesterday KM", "Day KM", "Status", "Remarks"],
+        (vehicle.dailyTracking || []).map((track, trackIndex) => [
+          trackIndex + 1,
+          pdfDate(track.date || track.trackingDate || track.createdAt),
+          pdfText(track.currentLocation || track.todayLocation),
+          pdfText(track.yesterdayLocation),
+          pdfText(track.todayKm),
+          pdfText(track.yesterdayKm),
+          pdfText(track.dayKm),
+          pdfText(track.status),
+          pdfText(track.remarks || track.remark),
+        ])
+      );
+    });
+
+    // Complete appendix ensures backend fields added later are not silently omitted.
+    const appendixRows = flattenPdfObject(order).filter(([key]) => !/^_id$/i.test(key));
+    addKeyValueTable("COMPLETE ORDER DATA APPENDIX", appendixRows);
+
+    const totalPages = doc.getNumberOfPages();
+    for (let page = 1; page <= totalPages; page += 1) {
+      doc.setPage(page);
+      doc.setDrawColor(220, 228, 232);
+      doc.line(margin, pageHeight - 12, pageWidth - margin, pageHeight - 12);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7.5);
+      doc.setTextColor(100, 116, 139);
+      doc.text("OTC Groups • Confidential Operational Report", margin, pageHeight - 7);
+      doc.text(`Page ${page} of ${totalPages}`, pageWidth - margin, pageHeight - 7, { align: "right" });
+    }
+
+    const safeId = String(order.tripId || "order").replace(/[^a-z0-9-_]+/gi, "-");
+    doc.save(`OTC-Trip-Report-${safeId}.pdf`);
+  };
+
+  /* =========================================================
     MAIN COMPONENT
   ========================================================= */
 
@@ -1806,6 +2096,26 @@ const getDisplayStage = (order = {}) => {
           }
         }
 
+        /*
+         * Crane movement uses an uploaded vehicle requirement document.
+         * Existing WTG / Intercarting / Other validation stays unchanged.
+         */
+        if (
+          tripForm.movementType ===
+          "Crane"
+        ) {
+          if (
+            !editingOrderId &&
+            !tripUpload
+          ) {
+            return (
+              "Upload the Crane Vehicle Requirement document."
+            );
+          }
+
+          return "";
+        }
+
         if (
           !Array.isArray(
             tripForm
@@ -2195,6 +2505,61 @@ const getDisplayStage = (order = {}) => {
                       payload
                     ),
                 }
+              );
+          } else if (
+            tripForm.movementType ===
+            "Crane"
+          ) {
+            /*
+             * Crane creation is intentionally separate.
+             * Old JSON createTrip flow is not changed.
+             */
+            const formData =
+              new FormData();
+
+            formData.append(
+              "data",
+              JSON.stringify(
+                payload
+              )
+            );
+
+            formData.append(
+              "document",
+              tripUpload
+            );
+
+            const response =
+              await fetch(
+                `${TRIP_API_URL}/crane`,
+                {
+                  method: "POST",
+                  body: formData,
+                }
+              );
+
+            let responseData =
+              null;
+
+            try {
+              responseData =
+                await response.json();
+            } catch {
+              responseData =
+                null;
+            }
+
+            if (!response.ok) {
+              throw new Error(
+                responseData?.message ||
+                responseData?.error ||
+                `Request failed with status ${response.status}`
+              );
+            }
+
+            savedData =
+              getResponseData(
+                responseData
               );
           } else {
             savedData =
@@ -2920,7 +3285,7 @@ const getDisplayStage = (order = {}) => {
                                       event.currentTarget.getBoundingClientRect();
 
                                     const menuWidth = 122;
-                                    const menuHeight = 72;
+                                    const menuHeight = 110;
                                     const gap = 6;
                                     const edge = 10;
 
@@ -3032,6 +3397,47 @@ const getDisplayStage = (order = {}) => {
                                         </strong>
                                       </span>
 
+                                    </button>
+
+                                    {/* DOWNLOAD PDF */}
+
+                                    <button
+                                      type="button"
+                                      className="kam-dropdown-item"
+                                      role="menuitem"
+                                      onClick={(event) => {
+                                        event.stopPropagation();
+                                        setOpenActionMenu(null);
+                                        setActionMenuPosition(null);
+
+                                        try {
+                                          downloadOrderPdf(order);
+                                          setToast(`${order.tripId || "Order"} PDF downloaded successfully.`);
+                                        } catch (error) {
+                                          console.error("PDF download error:", error);
+                                          setToast("Unable to generate PDF report.");
+                                        }
+                                      }}
+                                    >
+                                      <span className="kam-action-item-icon">
+                                        <svg
+                                          viewBox="0 0 24 24"
+                                          fill="none"
+                                          stroke="currentColor"
+                                          strokeWidth="2"
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          aria-hidden="true"
+                                        >
+                                          <path d="M12 3v12" />
+                                          <path d="m7 10 5 5 5-5" />
+                                          <path d="M5 21h14" />
+                                        </svg>
+                                      </span>
+
+                                      <span className="kam-action-item-text">
+                                        <strong>Download PDF</strong>
+                                      </span>
                                     </button>
 
                                     {/* DELETE */}

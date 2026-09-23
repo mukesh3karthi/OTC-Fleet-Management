@@ -5,6 +5,11 @@ const router = express.Router();
 
 const {
   createTrip,
+
+  /* CRANE MOVEMENT */
+  createCraneTrip,
+  downloadCraneDocument,
+
   getAllTrips,
   getTripById,
   getTripByTripId,
@@ -110,6 +115,101 @@ const uploadPoDocument = (
 };
 
 /* =========================================================
+   CRANE VEHICLE REQUIREMENT DOCUMENT UPLOAD
+
+   Separate middleware. Existing PO upload is unchanged.
+========================================================= */
+
+const allowedCraneMimeTypes = new Set([
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.ms-excel",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "text/csv",
+  "image/jpeg",
+  "image/png",
+]);
+
+const craneUpload = multer({
+  storage: multer.memoryStorage(),
+
+  limits: {
+    fileSize: 15 * 1024 * 1024,
+    files: 1,
+  },
+
+  fileFilter: (
+    req,
+    file,
+    callback
+  ) => {
+    if (
+      !allowedCraneMimeTypes.has(
+        file.mimetype
+      )
+    ) {
+      return callback(
+        new Error(
+          "Only PDF, Word, Excel, CSV, JPG and PNG files are allowed for Crane movement."
+        )
+      );
+    }
+
+    return callback(
+      null,
+      true
+    );
+  },
+});
+
+const uploadCraneDocument = (
+  req,
+  res,
+  next
+) => {
+  craneUpload.single(
+    "document"
+  )(
+    req,
+    res,
+    (error) => {
+      if (!error) {
+        return next();
+      }
+
+      const message =
+        error.code ===
+        "LIMIT_FILE_SIZE"
+          ? "Crane vehicle requirement document must be 15 MB or smaller."
+          : error.message ||
+            "Unable to upload Crane vehicle requirement document.";
+
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message,
+        });
+    }
+  );
+};
+
+/* =========================================================
+   CRANE MOVEMENT CREATE
+
+   IMPORTANT:
+   Keep this ABOVE router.post("/")
+   and all generic /:id routes.
+========================================================= */
+
+router.post(
+  "/crane",
+  uploadCraneDocument,
+  createCraneTrip
+);
+
+/* =========================================================
    CREATE ORDER
 ========================================================= */
 
@@ -173,10 +273,19 @@ router.put(
 );
 
 /* =========================================================
-   PO DOCUMENT
+   CRANE REQUIREMENT DOCUMENT
 
-   PO fields and uploaded file
-   are stored in MongoDB.
+   ?disposition=inline -> browser view
+   default             -> download
+========================================================= */
+
+router.get(
+  "/:id/crane-document/file",
+  downloadCraneDocument
+);
+
+/* =========================================================
+   PO DOCUMENT
 ========================================================= */
 
 router.put(
@@ -192,9 +301,6 @@ router.get(
 
 /* =========================================================
    ORDER PLACED
-
-   Final Key Account verification
-   releases order to Tracking.
 ========================================================= */
 
 router.put(
@@ -235,18 +341,6 @@ router.post(
 /* =========================================================
    TRACKING INPUT
    ROUTE LOCATIONS
-
-   PUT:
-   /api/triporders/:id/route-locations
-
-   BODY:
-   {
-     "routeLocations": [
-       "Hosur",
-       "Salem",
-       "Dindigul"
-     ]
-   }
 ========================================================= */
 
 router.put(
