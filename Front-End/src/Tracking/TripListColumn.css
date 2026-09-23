@@ -1,6 +1,5 @@
 /* =========================================================
    ACTIVE TRIPS
-   COMPACT PROFESSIONAL DESIGN
 ========================================================= */
 
 .trip-list-column,
@@ -11,6 +10,7 @@
 .trip-list-column {
   width: 100%;
   height: 100%;
+
   min-width: 0;
   min-height: 0;
 
@@ -19,13 +19,13 @@
 
   overflow: hidden;
 
-  border: 1px solid #dbe5eb;
+  border: 1px solid #dce6ec;
   border-radius: 12px;
 
   background: #ffffff;
 
   box-shadow:
-    0 3px 12px rgba(22, 48, 70, 0.04);
+    0 3px 12px rgba(24, 52, 72, 0.045);
 
   font-family:
     Inter,
@@ -37,29 +37,34 @@
 
 
 /* =========================================================
-   HEADER
+   COMPACT HEADER
 ========================================================= */
 
 .trip-list-header {
-  min-height: 58px;
+  height: 48px;
+  min-height: 48px;
 
-  padding: 10px 12px;
+  padding: 6px 10px;
 
   display: flex;
   align-items: center;
   justify-content: space-between;
 
-  gap: 10px;
+  gap: 8px;
 
-  flex: 0 0 auto;
+  flex: 0 0 48px;
 
-  border-bottom: 1px solid #e6edf1;
+  border-bottom: 1px solid #e3ebf0;
 
   background: #ffffff;
 }
 
 .trip-list-header-content {
   min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .trip-list-header h3 {
@@ -67,12 +72,12 @@
 
   color: #173a56;
 
-  font-size: 15px;
-  font-weight: 750;
+  font-size: 16px;
+  font-weight: 800;
 
-  line-height: 1.15;
+  line-height: 1;
 
-  letter-spacing: -0.2px;
+  letter-spacing: -0.25px;
 }
 
 .trip-list-header-content > span {
@@ -80,18 +85,22 @@
 
   margin-top: 3px;
 
-  color: #81929f;
+  color: #7d909e;
 
   font-size: 8px;
-  font-weight: 550;
+  font-weight: 600;
+
+  line-height: 1;
 }
 
 
-/* COUNT */
+/* =========================================================
+   HEADER TOTAL
+========================================================= */
 
 .trip-list-total {
-  min-width: 38px;
-  height: 31px;
+  min-width: 42px;
+  height: 30px;
 
   padding: 0 8px;
 
@@ -103,7 +112,7 @@
 
   flex: 0 0 auto;
 
-  border: 1px solid #c9e4e0;
+  border: 1px solid #c5e4df;
   border-radius: 8px;
 
   color: #14867d;
@@ -131,12 +140,12 @@
 
   min-height: 0;
 
-  padding: 8px;
+  padding: 5px;
 
   display: flex;
   flex-direction: column;
 
-  gap: 6px;
+  gap: 4px;
 
   overflow-y: auto;
   overflow-x: hidden;
@@ -157,6 +166,7 @@
 
 .trip-list-scroll::-webkit-scrollbar-thumb {
   border-radius: 20px;
+
   background: #cbd5dc;
 }
 
@@ -171,11 +181,11 @@
   width: 100%;
   min-width: 0;
 
-  min-height: 76px;
+  min-height: 94px;
 
   margin: 0;
 
-  padding: 8px 9px;
+  padding: 6px 8px 4px;
 
   display: block;
 
@@ -183,8 +193,8 @@
 
   overflow: hidden;
 
-  border: 1px solid #dde6eb;
-  border-radius: 9px;
+  border: 1px solid #dbe5eb;
+  border-radius: 10px;
 
   outline: none;
 
@@ -199,7 +209,7 @@
   cursor: pointer;
 
   box-shadow:
-    0 1px 4px rgba(20, 45, 65, 0.025);
+    0 1px 4px rgba(20, 45, 65, 0.035);
 
   transition:
     border-color 150ms ease,
@@ -207,196 +217,71 @@
     box-shadow 150ms ease;
 }
 
-
-/* HOVER */
-
 .trip-list-item:hover {
-  border-color: #a9d4cf;
+  border-color: #a7d3cf;
 
-  background: #fcfefe;
+  background: #ffffff;
 
   box-shadow:
     0 3px 9px rgba(19, 116, 108, 0.07);
 }
 
-
-/* SELECTED */
-
 .trip-list-item.active {
-  border-color: #188e86;
+  border-color: #1a958b;
 
   background:
     linear-gradient(
       90deg,
-      #f0faf8 0%,
-      #ffffff 80%
+      #f2fbf9 0%,
+      #ffffff 72%
     );
 
   box-shadow:
-    inset 3px 0 0 #188e86,
-    0 2px 8px rgba(18, 120, 112, 0.06);
+    inset 4px 0 0 #1a958b,
+    0 2px 7px rgba(18, 120, 112, 0.07);
+}
+
+.trip-list-item:focus-visible {
+  border-color: #188e86;
+
+  box-shadow:
+    0 0 0 2px rgba(24, 142, 134, 0.12);
 }
 
 
 /* =========================================================
-   TOP
+   TOP ROW
 ========================================================= */
 
-.trip-list-item-top {
+.trip-card-top {
   width: 100%;
-
   min-width: 0;
+
+  height: 30px;
 
   display: flex;
   align-items: center;
   justify-content: space-between;
 
-  gap: 6px;
+  gap: 7px;
 }
 
 
-/* TRIP ID */
+/* =========================================================
+   CUSTOMER + MATERIAL
+========================================================= */
 
-.trip-list-trip-id {
+.trip-card-main-info {
   min-width: 0;
 
   display: flex;
   align-items: center;
 
   gap: 6px;
-}
 
-.trip-list-truck-icon {
-  width: 24px;
-  height: 24px;
-
-  flex: 0 0 24px;
-
-  display: grid;
-  place-items: center;
-
-  border-radius: 6px;
-
-  color: #16877f;
-
-  background: #e9f7f5;
-}
-
-.trip-list-truck-icon svg {
-  width: 12px;
-  height: 12px;
-}
-
-.trip-list-trip-id strong {
-  min-width: 0;
+  flex: 1;
 
   overflow: hidden;
-
-  color: #173c58;
-
-  font-size: 10.5px;
-  font-weight: 800;
-
-  line-height: 1.1;
-
-  text-overflow: ellipsis;
-
-  white-space: nowrap;
-}
-
-
-/* =========================================================
-   STATUS
-========================================================= */
-
-.trip-list-status {
-  min-height: 21px;
-
-  padding: 0 7px;
-
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  gap: 4px;
-
-  flex: 0 0 auto;
-
-  border: 1px solid transparent;
-  border-radius: 999px;
-
-  font-size: 7px;
-  font-weight: 750;
-
-  line-height: 1;
-
-  white-space: nowrap;
-}
-
-.trip-list-status-dot {
-  width: 4px;
-  height: 4px;
-
-  flex: 0 0 4px;
-
-  border-radius: 50%;
-
-  background: currentColor;
-}
-
-
-/* MOVING */
-
-.trip-list-status.moving {
-  color: #14865d;
-
-  border-color: #bee7d2;
-
-  background: #ecf9f2;
-}
-
-
-/* IDLE */
-
-.trip-list-status.idle {
-  color: #ad7014;
-
-  border-color: #efd5a6;
-
-  background: #fff7e9;
-}
-
-
-/* STOPPED */
-
-.trip-list-status.stopped {
-  color: #c34b52;
-
-  border-color: #efc7ca;
-
-  background: #fff1f2;
-}
-
-
-/* BREAKDOWN */
-
-.trip-list-status.breakdown {
-  color: #c34b52;
-
-  border-color: #efc7ca;
-
-  background: #fff1f2;
-}
-
-
-/* REACHED */
-
-.trip-list-status.reached {
-  color: #286fa2;
-
-  border-color: #c7ddef;
-
-  background: #eef7fd;
 }
 
 
@@ -405,18 +290,53 @@
 ========================================================= */
 
 .trip-list-customer {
-  width: 100%;
+  min-width: 0;
+  max-width: 48%;
 
-  margin-top: 5px;
+  display: flex;
+  align-items: center;
+
+  gap: 5px;
 
   overflow: hidden;
 
-  color: #29465a;
+  color: #173a56;
 
-  font-size: 9px;
-  font-weight: 700;
+  white-space: nowrap;
+}
 
-  line-height: 1.2;
+.trip-customer-icon {
+  width: 22px;
+  height: 22px;
+
+  flex: 0 0 22px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 6px;
+
+  color: #315f7d;
+
+  background: #edf4f8;
+}
+
+.trip-customer-icon svg {
+  width: 11px;
+  height: 11px;
+}
+
+.trip-list-customer strong {
+  min-width: 0;
+
+  overflow: hidden;
+
+  color: #173a56;
+
+  font-size: 11px;
+  font-weight: 800;
+
+  line-height: 1;
 
   text-overflow: ellipsis;
 
@@ -425,21 +345,124 @@
 
 
 /* =========================================================
-   BOTTOM ROW
+   CUSTOMER / MATERIAL SEPARATOR
 ========================================================= */
 
-.trip-list-bottom {
-  width: 100%;
+.trip-info-separator {
+  width: 1px;
+  height: 17px;
 
+  flex: 0 0 1px;
+
+  background: #d6e0e6;
+}
+
+
+/* =========================================================
+   MATERIAL
+========================================================= */
+
+.trip-list-material {
   min-width: 0;
-
-  margin-top: 6px;
+  max-width: 46%;
 
   display: flex;
   align-items: center;
-  justify-content: space-between;
 
-  gap: 6px;
+  gap: 4px;
+
+  overflow: hidden;
+
+  color: #60798a;
+
+  white-space: nowrap;
+}
+
+.trip-list-material svg {
+  width: 11px;
+  height: 11px;
+
+  flex: 0 0 11px;
+
+  color: #c18a32;
+}
+
+.trip-list-material span {
+  min-width: 0;
+
+  overflow: hidden;
+
+  color: #60798a;
+
+  font-size: 9.5px;
+  font-weight: 700;
+
+  line-height: 1;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   ORDER ID
+========================================================= */
+
+.trip-list-trip-id {
+  min-width: 0;
+
+  height: 28px;
+
+  padding: 0 7px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 4px;
+
+  flex: 0 0 auto;
+
+  border: 1px solid #cbe6e2;
+  border-radius: 8px;
+
+  color: #176f69;
+
+  background: #f0faf8;
+}
+
+.trip-list-truck-icon {
+  width: 17px;
+  height: 17px;
+
+  flex: 0 0 17px;
+
+  display: grid;
+  place-items: center;
+
+  color: #16877f;
+}
+
+.trip-list-truck-icon svg {
+  width: 11px;
+  height: 11px;
+}
+
+.trip-list-trip-id strong {
+  min-width: 0;
+
+  overflow: hidden;
+
+  color: #173a56;
+
+  font-size: 10.5px;
+  font-weight: 800;
+
+  line-height: 1;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
 }
 
 
@@ -448,21 +471,28 @@
 ========================================================= */
 
 .trip-list-route {
+  width: 100%;
   min-width: 0;
 
-  flex: 1;
+  height: 19px;
+
+  margin-top: 3px;
+
+  padding-left: 2px;
 
   display: flex;
   align-items: center;
 
-  gap: 3px;
+  gap: 4px;
 
   overflow: hidden;
 
-  color: #728794;
+  color: #718794;
 
-  font-size: 7.5px;
-  font-weight: 600;
+  font-size: 8.5px;
+  font-weight: 650;
+
+  line-height: 1;
 
   white-space: nowrap;
 }
@@ -500,46 +530,228 @@
 
   flex: 0 0 8px;
 
-  color: #a5b1ba;
+  color: #a2b0b9;
 }
 
 
 /* =========================================================
-   VEHICLE COUNT
+   VEHICLE STATUS SUMMARY
 ========================================================= */
 
-.trip-list-vehicle-count {
-  flex: 0 0 auto;
+.trip-list-vehicle-summary {
+  width: 100%;
+  min-width: 0;
 
-  display: inline-flex;
+  height: 27px;
+
+  margin-top: 4px;
+
+  padding: 2px 0 0;
+
+  display: grid;
+
+  /*
+    Total | Moving | Idle | Breakdown | Reached
+  */
+  grid-template-columns:
+    0.90fr
+    1.15fr
+    0.85fr
+    1.45fr
+    1.15fr;
+
   align-items: center;
+
+  border-top: 1px solid #e2e9ed;
+
+  background: transparent;
+
+  overflow: visible;
+}
+
+
+/* =========================================================
+   STATUS ITEMS
+========================================================= */
+
+.trip-vehicle-total,
+.trip-vehicle-stat {
+  position: relative;
+
+  width: 100%;
+  min-width: 0;
+
+  height: 22px;
+
+  padding: 0 2px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   gap: 3px;
 
-  color: #6f8391;
+  border: 0;
+  border-radius: 0;
+
+  background: transparent;
 
   font-size: 7px;
-  font-weight: 650;
+  font-weight: 700;
+
+  line-height: 1;
+
+  white-space: nowrap;
+
+  overflow: visible;
+}
+
+
+/* =========================================================
+   STATUS SEPARATOR
+========================================================= */
+
+.trip-vehicle-stat::before {
+  content: "";
+
+  position: absolute;
+
+  left: 0;
+  top: 4px;
+  bottom: 4px;
+
+  width: 1px;
+
+  background: #d8e2e7;
+}
+
+
+/* =========================================================
+   TOTAL
+========================================================= */
+
+.trip-vehicle-total {
+  color: #177a72;
+
+  font-weight: 750;
+}
+
+.trip-vehicle-total svg {
+  width: 9px;
+  height: 9px;
+
+  flex: 0 0 9px;
+
+  color: #16877f;
+}
+
+
+/* =========================================================
+   STATUS NUMBER
+========================================================= */
+
+.trip-vehicle-total strong,
+.trip-vehicle-stat strong {
+  min-width: auto;
+  height: auto;
+
+  margin: 0;
+  padding: 0;
+
+  display: inline;
+
+  flex: 0 0 auto;
+
+  border: 0;
+  border-radius: 0;
+
+  background: transparent;
+
+  color: inherit;
+
+  font-size: 7.3px;
+  font-weight: 800;
+
+  line-height: 1;
 
   white-space: nowrap;
 }
 
-.trip-list-vehicle-count svg {
-  width: 9px;
-  height: 9px;
 
-  color: #68808e;
+/* =========================================================
+   STATUS DOT
+========================================================= */
+
+.trip-vehicle-dot {
+  width: 4px;
+  height: 4px;
+
+  flex: 0 0 4px;
+
+  border-radius: 50%;
+
+  background: currentColor;
 }
 
 
 /* =========================================================
-   EMPTY
+   TOTAL COLOR
+========================================================= */
+
+.trip-vehicle-total,
+.trip-vehicle-total strong {
+  color: #177a72;
+}
+
+
+/* =========================================================
+   MOVING
+========================================================= */
+
+.trip-vehicle-stat.moving,
+.trip-vehicle-stat.moving strong {
+  color: #16845d;
+}
+
+
+/* =========================================================
+   IDLE
+========================================================= */
+
+.trip-vehicle-stat.idle,
+.trip-vehicle-stat.idle strong {
+  color: #a96b0d;
+}
+
+
+/* =========================================================
+   BREAKDOWN
+========================================================= */
+
+.trip-vehicle-stat.breakdown,
+.trip-vehicle-stat.breakdown strong {
+  color: #c64250;
+}
+
+
+/* =========================================================
+   REACHED
+========================================================= */
+
+.trip-vehicle-stat.reached,
+.trip-vehicle-stat.reached strong {
+  color: #286fa2;
+}
+
+
+/* =========================================================
+   EMPTY STATE
 ========================================================= */
 
 .trip-list-empty {
-  min-height: 180px;
+  min-height: 120px;
 
-  padding: 20px 12px;
+  padding: 14px 10px;
 
   display: flex;
   flex-direction: column;
@@ -553,10 +765,10 @@
 }
 
 .trip-list-empty > svg {
-  width: 28px;
-  height: 28px;
+  width: 27px;
+  height: 27px;
 
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 
   padding: 6px;
 
@@ -570,7 +782,7 @@
 .trip-list-empty strong {
   color: #29485c;
 
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 750;
 }
 
@@ -579,37 +791,134 @@
 
   color: #8999a5;
 
-  font-size: 7.5px;
+  font-size: 8px;
 }
 
 
 /* =========================================================
-   RESPONSIVE
+   LAPTOP
 ========================================================= */
 
 @media (max-width: 1050px) {
 
   .trip-list-header {
-    min-height: 54px;
-    padding: 9px 10px;
+    height: 46px;
+    min-height: 46px;
+
+    flex-basis: 46px;
+
+    padding: 5px 9px;
+  }
+
+  .trip-list-header h3 {
+    font-size: 15px;
+  }
+
+  .trip-list-header-content > span {
+    font-size: 7.5px;
+  }
+
+  .trip-list-total {
+    min-width: 40px;
+    height: 28px;
+
+    padding: 0 7px;
   }
 
   .trip-list-scroll {
-    padding: 7px;
-    gap: 5px;
+    padding: 4px;
+
+    gap: 4px;
   }
 
   .trip-list-item {
-    min-height: 73px;
-    padding: 7px 8px;
+    min-height: 91px;
+
+    padding: 5px 7px 3px;
+  }
+
+  .trip-card-top {
+    height: 29px;
+
+    gap: 6px;
+  }
+
+  .trip-card-main-info {
+    gap: 5px;
+  }
+
+  .trip-customer-icon {
+    width: 21px;
+    height: 21px;
+
+    flex-basis: 21px;
+  }
+
+  .trip-list-customer strong {
+    font-size: 10.5px;
+  }
+
+  .trip-list-material span {
+    font-size: 9px;
+  }
+
+  .trip-list-trip-id {
+    height: 27px;
+
+    padding: 0 6px;
+  }
+
+  .trip-list-trip-id strong {
+    font-size: 10px;
+  }
+
+  .trip-list-route {
+    height: 18px;
+
+    margin-top: 2px;
+
+    font-size: 8px;
+  }
+
+  .trip-list-vehicle-summary {
+    height: 26px;
+
+    margin-top: 3px;
+
+    grid-template-columns:
+      0.90fr
+      1.15fr
+      0.85fr
+      1.45fr
+      1.15fr;
+  }
+
+  .trip-vehicle-total,
+  .trip-vehicle-stat {
+    height: 21px;
+
+    padding: 0 2px;
+
+    gap: 2px;
+
+    font-size: 6.7px;
+  }
+
+  .trip-vehicle-total strong,
+  .trip-vehicle-stat strong {
+    font-size: 7px;
   }
 }
 
 
+/* =========================================================
+   TABLET
+========================================================= */
+
 @media (max-width: 760px) {
 
   .trip-list-column {
-    max-height: 420px;
+    max-height: 520px;
   }
 
   .trip-list-scroll {
@@ -626,9 +935,181 @@
 }
 
 
-@media (max-width: 520px) {
+/* =========================================================
+   SMALL TABLET
+========================================================= */
+
+@media (max-width: 620px) {
 
   .trip-list-scroll {
     grid-template-columns: 1fr;
+  }
+
+  .trip-card-top {
+    gap: 5px;
+  }
+
+  .trip-card-main-info {
+    gap: 4px;
+  }
+
+  .trip-list-customer {
+    max-width: 48%;
+  }
+
+  .trip-list-material {
+    max-width: 44%;
+  }
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 420px) {
+
+  .trip-list-header {
+    height: 44px;
+    min-height: 44px;
+
+    flex-basis: 44px;
+
+    padding: 5px 8px;
+  }
+
+  .trip-list-header h3 {
+    font-size: 14px;
+  }
+
+  .trip-list-header-content > span {
+    margin-top: 2px;
+
+    font-size: 7px;
+  }
+
+  .trip-list-total {
+    min-width: 38px;
+    height: 27px;
+
+    padding: 0 6px;
+  }
+
+  .trip-list-total svg {
+    width: 10px;
+    height: 10px;
+  }
+
+  .trip-list-total strong {
+    font-size: 9px;
+  }
+
+  .trip-list-item {
+    min-height: 89px;
+
+    padding: 5px 6px 3px;
+  }
+
+  .trip-card-top {
+    height: 28px;
+  }
+
+  .trip-customer-icon {
+    width: 20px;
+    height: 20px;
+
+    flex-basis: 20px;
+  }
+
+  .trip-customer-icon svg {
+    width: 10px;
+    height: 10px;
+  }
+
+  .trip-list-customer strong {
+    font-size: 10px;
+  }
+
+  .trip-info-separator {
+    height: 15px;
+  }
+
+  .trip-list-material svg {
+    width: 10px;
+    height: 10px;
+
+    flex-basis: 10px;
+  }
+
+  .trip-list-material span {
+    font-size: 8.5px;
+  }
+
+  .trip-list-trip-id {
+    height: 26px;
+
+    padding: 0 5px;
+  }
+
+  .trip-list-truck-icon {
+    width: 15px;
+    height: 15px;
+
+    flex-basis: 15px;
+  }
+
+  .trip-list-trip-id strong {
+    font-size: 9.5px;
+  }
+
+  .trip-list-route {
+    height: 17px;
+
+    margin-top: 2px;
+
+    font-size: 7.8px;
+  }
+
+  .trip-list-vehicle-summary {
+    height: 25px;
+
+    margin-top: 2px;
+
+    grid-template-columns:
+      0.90fr
+      1.15fr
+      0.85fr
+      1.45fr
+      1.15fr;
+  }
+
+  .trip-vehicle-total,
+  .trip-vehicle-stat {
+    height: 20px;
+
+    padding: 0 1px;
+
+    gap: 2px;
+
+    font-size: 6.2px;
+  }
+
+  .trip-vehicle-total strong,
+  .trip-vehicle-stat strong {
+    font-size: 6.5px;
+  }
+
+  .trip-vehicle-total svg {
+    width: 8px;
+    height: 8px;
+
+    flex-basis: 8px;
+  }
+
+  .trip-vehicle-dot {
+    width: 3px;
+    height: 3px;
+
+    flex-basis: 3px;
   }
 }

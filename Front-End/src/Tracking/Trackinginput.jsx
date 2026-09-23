@@ -445,6 +445,11 @@ const Trackinginput = () => {
     setTrackingForms,
   ] = useState({});
 
+  const [
+    routeLocations,
+    setRouteLocations,
+  ] = useState([]);
+
   /* =======================================================
      FETCH ORDERS
   ======================================================= */
@@ -597,6 +602,23 @@ const Trackinginput = () => {
         selectedOrderId,
       ]
     );
+
+  useEffect(() => {
+    if (!selectedOrder) {
+      setRouteLocations([]);
+      return;
+    }
+
+    setRouteLocations(
+      safeArray(
+        selectedOrder.routeLocations
+      )
+        .map((location) =>
+          safeText(location).trim()
+        )
+        .filter(Boolean)
+    );
+  }, [selectedOrder]);
 
   const confirmedRequirements =
     useMemo(
@@ -1482,6 +1504,135 @@ const Trackinginput = () => {
     };
 
   /* =======================================================
+     ROUTE LOCATIONS
+  ======================================================= */
+
+  const handleAddRouteLocation = () => {
+    setRouteLocations((previous) => [
+      ...previous,
+      "",
+    ]);
+  };
+
+  const handleRouteLocationChange = (
+    index,
+    value
+  ) => {
+    setRouteLocations((previous) =>
+      previous.map((location, locationIndex) =>
+        locationIndex === index
+          ? value
+          : location
+      )
+    );
+  };
+
+  const handleRemoveRouteLocation = (
+    index
+  ) => {
+    setRouteLocations((previous) =>
+      previous.filter(
+        (_, locationIndex) =>
+          locationIndex !== index
+      )
+    );
+  };
+
+  const handleSaveRoute = async () => {
+    if (!selectedOrder) {
+      setError("Select an order first.");
+      return;
+    }
+
+    const orderId =
+      getMongoId(selectedOrder);
+
+    if (!orderId) {
+      setError(
+        "Order database ID not found."
+      );
+      return;
+    }
+
+    const cleanedRouteLocations =
+      routeLocations
+        .map((location) =>
+          safeText(location).trim()
+        )
+        .filter(Boolean);
+
+    try {
+      setSaving(true);
+      setError("");
+      setSuccess("");
+
+      const response = await fetch(
+        `${API_URL}/${orderId}/route-locations`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify({
+            routeLocations:
+              cleanedRouteLocations,
+          }),
+        }
+      );
+
+      const result =
+        await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          result?.message ||
+            "Unable to save route."
+        );
+      }
+
+      const updatedOrder =
+        getResponseData(result);
+
+      if (updatedOrder) {
+        setOrders((previous) =>
+          previous.map((order) =>
+            getMongoId(order) === orderId
+              ? updatedOrder
+              : order
+          )
+        );
+
+        setRouteLocations(
+          safeArray(
+            updatedOrder.routeLocations
+          )
+            .map((location) =>
+              safeText(location).trim()
+            )
+            .filter(Boolean)
+        );
+      }
+
+      setSuccess(
+        "Route saved successfully."
+      );
+    } catch (routeError) {
+      console.error(
+        "Save Route Error:",
+        routeError
+      );
+
+      setError(
+        routeError.message ||
+          "Unable to save route."
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  /* =======================================================
      RENDER LOADING
   ======================================================= */
 
@@ -1752,47 +1903,86 @@ const Trackinginput = () => {
                   <div className="tracking-route-locations tracking-trip-route-locations">
                     <div className="tracking-route-locations-header">
                       <div>
-                        <strong>
-                          Trip Route
-                        </strong>
-
+                        <strong>Trip Route</strong>
                         <span>
-                          Approved route
-                          information.
+                          Add intermediate locations between origin and destination.
                         </span>
+                      </div>
+
+                      <div className="tracking-route-actions">
+                        <button
+                          type="button"
+                          className="tracking-add-location-btn"
+                          disabled={saving}
+                          onClick={handleAddRouteLocation}
+                        >
+                          <Plus size={13} />
+                          Add Location
+                        </button>
+
+                        <button
+                          type="button"
+                          className="tracking-save-route-btn"
+                          disabled={saving}
+                          onClick={handleSaveRoute}
+                        >
+                          <Save size={13} />
+                          {saving
+                            ? "Saving..."
+                            : "Save Route"}
+                        </button>
                       </div>
                     </div>
 
                     <div className="tracking-route-location-flow">
                       <span className="tracking-route-fixed-point origin">
-                        <MapPin
-                          size={12}
-                        />
-
+                        <MapPin size={12} />
                         {selectedOrder.origin ||
                           "Origin"}
                       </span>
 
-                      {safeArray(
-                        selectedOrder.routeLocations
-                      ).map(
-                        (
-                          routeLocation,
-                          index
-                        ) => (
+                      {routeLocations.map(
+                        (routeLocation, index) => (
                           <React.Fragment
-                            key={`${routeLocation}-${index}`}
+                            key={`route-${index}`}
                           >
                             <ChevronRight
                               size={13}
                               className="tracking-route-flow-arrow"
                             />
 
-                            <span className="tracking-route-location-chip">
-                              {
-                                routeLocation
-                              }
-                            </span>
+                            <div className="tracking-route-edit-item">
+                              <input
+                                type="text"
+                                value={routeLocation}
+                                placeholder={`Location ${
+                                  index + 1
+                                }`}
+                                disabled={saving}
+                                onChange={(event) =>
+                                  handleRouteLocationChange(
+                                    index,
+                                    event.target.value
+                                  )
+                                }
+                              />
+
+                              <button
+                                type="button"
+                                className="tracking-remove-location-btn"
+                                disabled={saving}
+                                onClick={() =>
+                                  handleRemoveRouteLocation(
+                                    index
+                                  )
+                                }
+                                aria-label={`Remove location ${
+                                  index + 1
+                                }`}
+                              >
+                                ×
+                              </button>
+                            </div>
                           </React.Fragment>
                         )
                       )}
@@ -1803,10 +1993,7 @@ const Trackinginput = () => {
                       />
 
                       <span className="tracking-route-fixed-point destination">
-                        <MapPin
-                          size={12}
-                        />
-
+                        <MapPin size={12} />
                         {selectedOrder.destination ||
                           "Destination"}
                       </span>

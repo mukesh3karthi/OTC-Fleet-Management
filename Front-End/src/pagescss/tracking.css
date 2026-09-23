@@ -794,9 +794,7 @@ input[type="search"]::-webkit-search-cancel-button {
 
 
   grid-template-columns:
-    minmax(250px, 0.82fr)
-    minmax(430px, 1.48fr)
-    minmax(330px, 0.92fr);
+    27% 73%;
 
 
   align-items:
@@ -1239,9 +1237,7 @@ body {
 
   .tracking-layout {
     grid-template-columns:
-      minmax(270px, 0.85fr)
-      minmax(470px, 1.45fr)
-      minmax(350px, 0.95fr);
+    27% 73%;
   }
 
 
@@ -1263,9 +1259,7 @@ body {
 
   .tracking-layout {
     grid-template-columns:
-      minmax(240px, 0.8fr)
-      minmax(410px, 1.45fr)
-      minmax(320px, 0.95fr);
+    27% 73%;
   }
 
 
@@ -1341,8 +1335,7 @@ body {
 
 
     grid-template-columns:
-      minmax(250px, 0.9fr)
-      minmax(380px, 1.1fr);
+    27% 73%;
 
 
     overflow:
@@ -2877,80 +2870,4 @@ body {
       430px !important;
   }
 
-}
-
-/* =========================================================
-   PROFESSIONAL 2-COLUMN TRACKING LAYOUT — MAP REMOVED
-   Added by ChatGPT. Existing page behavior/data is preserved.
-========================================================= */
-
-.tracking-page .tracking-layout,
-.tracking-page .tracking-layout.tracking-layout-no-map {
-  grid-template-columns: minmax(235px, 0.72fr) minmax(0, 2.85fr) !important;
-  gap: 12px !important;
-  align-items: stretch;
-}
-
-/* Left trip navigator: compact, clean, fixed working width */
-.tracking-page .tracking-layout > :first-child {
-  min-width: 0;
-  height: 100%;
-  overflow: hidden;
-  border: 1px solid #dce5ea;
-  border-radius: 12px;
-  background: #ffffff;
-  box-shadow: 0 4px 14px rgba(24, 48, 72, 0.045);
-}
-
-/* Vehicle/detail workspace now receives all former map space */
-.tracking-page .tracking-layout > :nth-child(2) {
-  min-width: 0;
-  width: 100%;
-  height: 100%;
-  overflow: auto;
-  border: 1px solid #dce5ea;
-  border-radius: 12px;
-  background: #ffffff;
-  box-shadow: 0 4px 16px rgba(24, 48, 72, 0.05);
-}
-
-/* Prevent any legacy third/map column from reserving width */
-.tracking-page .tracking-layout > :nth-child(n + 3) {
-  display: none !important;
-}
-
-/* Give detail cards more breathing room on wide screens */
-@media (min-width: 1200px) {
-  .tracking-page .tracking-layout,
-  .tracking-page .tracking-layout.tracking-layout-no-map {
-    grid-template-columns: minmax(250px, 0.68fr) minmax(0, 3.1fr) !important;
-    gap: 14px !important;
-  }
-}
-
-/* Tablet: keep usable trip list + wide detail panel */
-@media (max-width: 1050px) {
-  .tracking-page .tracking-layout,
-  .tracking-page .tracking-layout.tracking-layout-no-map {
-    grid-template-columns: minmax(215px, 0.78fr) minmax(0, 2.2fr) !important;
-    gap: 10px !important;
-  }
-}
-
-/* Mobile: stack instead of squeezing both panels */
-@media (max-width: 760px) {
-  .tracking-page .tracking-layout,
-  .tracking-page .tracking-layout.tracking-layout-no-map {
-    position: static;
-    height: auto;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) !important;
-    gap: 10px !important;
-  }
-
-  .tracking-page .tracking-layout > :first-child,
-  .tracking-page .tracking-layout > :nth-child(2) {
-    height: auto;
-    max-height: none;
-  }
 }

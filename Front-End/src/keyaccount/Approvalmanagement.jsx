@@ -1953,28 +1953,33 @@ const Approvalmanagement = () => {
                             aria-modal="true"
                             aria-label={`Transporter quotation details for ${order.tripId || "order"}`}
                           >
-                            <div className="approval-quotation-modal-head">
-                              <div className="approval-quotation-modal-title">
-                                <span>TRANSPORTER QUOTATION REVIEW</span>
-                                <h3>{order.tripId || "Order Details"}</h3>
-                                <p>
-                                  {order.customer || "—"} <b>•</b> {order.movementType || "—"}
-                                  <b>•</b> {order.origin || "—"} → {order.destination || "—"}
-                                </p>
+                            <div className="approval-quotation-modal-head approval-quotation-modal-head-single">
+                              <div className="approval-quotation-modal-title approval-quotation-modal-title-single">
+                                <span>TRANSPORT QUOTATION</span>
+                                <h3>Quotation Approval</h3>
                               </div>
 
-                              <div className="approval-quotation-modal-summary">
-                                <div>
-                                  <span>Requirements</span>
-                                  <strong>{totalRequirements}</strong>
+                              <div className="approval-quotation-head-details">
+                                <div className="approval-quotation-head-item">
+                                  <span>ORDER ID</span>
+                                  <strong>{order.tripId || "—"}</strong>
                                 </div>
-                                <div>
-                                  <span>Confirmed</span>
-                                  <strong>{confirmedCount}/{totalRequirements}</strong>
+
+                                <div className="approval-quotation-head-item approval-quotation-head-route">
+                                  <span>ROUTE</span>
+                                  <strong>
+                                    {order.origin || "—"} → {order.destination || "—"}
+                                  </strong>
                                 </div>
-                                <div>
-                                  <span>Status</span>
-                                  <strong>{orderQuotationStatus}</strong>
+
+                                <div className="approval-quotation-head-item">
+                                  <span>PLACEMENT</span>
+                                  <strong>{formatDate(order.placementDate)}</strong>
+                                </div>
+
+                                <div className="approval-quotation-head-item">
+                                  <span>VEHICLES</span>
+                                  <strong>{getTotalRequiredVehicles(order)} NOS</strong>
                                 </div>
                               </div>
 

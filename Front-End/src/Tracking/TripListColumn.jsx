@@ -3,9 +3,15 @@ import {
   ChevronRight,
   MapPin,
   Truck,
+  Package,
+  UserRound,
 } from "lucide-react";
 
 import "./TripListColumn.css";
+
+/* =========================================================
+   SAFE HELPERS
+========================================================= */
 
 const safeArray = (value) =>
   Array.isArray(value) ? value : [];
@@ -18,6 +24,10 @@ const safeText = (value, fallback = "") => {
   return String(value);
 };
 
+/* =========================================================
+   LATEST TRACKING
+========================================================= */
+
 const getLatestTracking = (vehicle) => {
   const tracking = safeArray(vehicle?.dailyTracking);
 
@@ -28,49 +38,76 @@ const getLatestTracking = (vehicle) => {
   return tracking[tracking.length - 1];
 };
 
+/* =========================================================
+   VEHICLE STATUS
+========================================================= */
+
 const getVehicleStatus = (vehicle) => {
   const latest = getLatestTracking(vehicle);
 
-  return (
-    safeText(
-      latest?.status || vehicle?.status,
-      "Idle"
-    ) || "Idle"
-  );
-};
+  const status = safeText(
+    latest?.status || vehicle?.status,
+    "Idle"
+  )
+    .trim()
+    .toLowerCase();
 
-const getTripStatus = (trip) => {
-  const vehicles = safeArray(trip?.allocatedVehicles);
+  if (status === "moving") {
+    return "Moving";
+  }
 
-  if (!vehicles.length) {
+  if (status === "breakdown") {
+    return "Breakdown";
+  }
+
+  if (status === "reached") {
+    return "Reached";
+  }
+
+  /* Stopped is counted under Idle */
+  if (status === "stopped") {
     return "Idle";
-  }
-
-  const statuses = vehicles.map(getVehicleStatus);
-
-  if (statuses.includes("Breakdown")) return "Breakdown";
-  if (statuses.includes("Moving")) return "Moving";
-  if (statuses.includes("Stopped")) return "Stopped";
-
-  if (
-    statuses.every(
-      (status) => status === "Reached"
-    )
-  ) {
-    return "Reached";
-  }
-
-  if (statuses.includes("Reached")) {
-    return "Reached";
   }
 
   return "Idle";
 };
 
-const getStatusClass = (status) =>
-  safeText(status, "Idle")
-    .toLowerCase()
-    .replaceAll(" ", "-");
+/* =========================================================
+   VEHICLE STATUS COUNTS
+========================================================= */
+
+const getVehicleStatusCounts = (trip) => {
+  const vehicles = safeArray(
+    trip?.allocatedVehicles
+  );
+
+  const counts = {
+    total: vehicles.length,
+    Moving: 0,
+    Idle: 0,
+    Breakdown: 0,
+    Reached: 0,
+  };
+
+  vehicles.forEach((vehicle) => {
+    const status = getVehicleStatus(vehicle);
+
+    if (
+      Object.prototype.hasOwnProperty.call(
+        counts,
+        status
+      )
+    ) {
+      counts[status] += 1;
+    }
+  });
+
+  return counts;
+};
+
+/* =========================================================
+   TRIP KEY
+========================================================= */
 
 const getTripKey = (trip, index) =>
   safeText(trip?._id) ||
@@ -78,17 +115,30 @@ const getTripKey = (trip, index) =>
   safeText(trip?.tripId) ||
   `trip-${index}`;
 
-const isSameTrip = (trip, selectedTrip) => {
+/* =========================================================
+   SELECTED TRIP
+========================================================= */
+
+const isSameTrip = (
+  trip,
+  selectedTrip
+) => {
   if (!trip || !selectedTrip) {
     return false;
   }
 
   if (trip._id && selectedTrip._id) {
-    return String(trip._id) === String(selectedTrip._id);
+    return (
+      String(trip._id) ===
+      String(selectedTrip._id)
+    );
   }
 
   if (trip.id && selectedTrip.id) {
-    return String(trip.id) === String(selectedTrip.id);
+    return (
+      String(trip.id) ===
+      String(selectedTrip.id)
+    );
   }
 
   return (
@@ -96,6 +146,23 @@ const isSameTrip = (trip, selectedTrip) => {
     safeText(selectedTrip.tripId)
   );
 };
+
+/* =========================================================
+   MATERIAL
+========================================================= */
+
+const getMaterial = (trip) => {
+  return (
+    safeText(trip?.material) ||
+    safeText(trip?.materialType) ||
+    safeText(trip?.materialName) ||
+    "-"
+  );
+};
+
+/* =========================================================
+   COMPONENT
+========================================================= */
 
 const TripListColumn = ({
   trips = [],
@@ -106,8 +173,10 @@ const TripListColumn = ({
 
   return (
     <aside className="trip-list-column">
+
       {/* HEADER */}
       <div className="trip-list-header">
+
         <div className="trip-list-header-content">
           <h3>Active Trips</h3>
 
@@ -120,39 +189,52 @@ const TripListColumn = ({
         </div>
 
         <div className="trip-list-total">
-          <Truck size={13} />
-          <strong>{tripList.length}</strong>
+          <Truck size={15} />
+
+          <strong>
+            {tripList.length}
+          </strong>
         </div>
+
       </div>
 
       {/* TRIP LIST */}
       <div className="trip-list-scroll">
-        {tripList.length === 0 ? (
-          <div className="trip-list-empty">
-            <Truck size={20} />
 
-            <strong>No active trips</strong>
+        {tripList.length === 0 ? (
+
+          <div className="trip-list-empty">
+
+            <Truck size={22} />
+
+            <strong>
+              No active trips
+            </strong>
 
             <span>
               Active trips will appear here.
             </span>
+
           </div>
+
         ) : (
+
           tripList.map((trip, index) => {
-            const active = isSameTrip(
-              trip,
-              selectedTrip
-            );
 
-            const vehicles = safeArray(
-              trip?.allocatedVehicles
-            );
+            const active =
+              isSameTrip(
+                trip,
+                selectedTrip
+              );
 
-            const tripStatus =
-              getTripStatus(trip);
+            const vehicleStatusCounts =
+              getVehicleStatusCounts(trip);
 
             const origin =
-              safeText(trip?.origin, "-") || "-";
+              safeText(
+                trip?.origin,
+                "-"
+              ) || "-";
 
             const destination =
               safeText(
@@ -160,10 +242,23 @@ const TripListColumn = ({
                 "-"
               ) || "-";
 
+            const material =
+              getMaterial(trip);
+
+            const customer =
+              safeText(
+                trip?.customer,
+                "Customer"
+              );
+
             return (
+
               <button
                 type="button"
-                key={getTripKey(trip, index)}
+                key={getTripKey(
+                  trip,
+                  index
+                )}
                 className={`trip-list-item ${
                   active ? "active" : ""
                 }`}
@@ -171,9 +266,54 @@ const TripListColumn = ({
                   onSelectTrip?.(trip)
                 }
               >
-                {/* TOP */}
-                <div className="trip-list-item-top">
+
+                {/* =============================================
+                    TOP ROW
+                    CUSTOMER + MATERIAL LEFT
+                    ORDER ID RIGHT
+                ============================================= */}
+
+                <div className="trip-card-top">
+
+                  <div className="trip-card-main-info">
+
+                    {/* CUSTOMER */}
+                    <div
+                      className="trip-list-customer"
+                      title={customer}
+                    >
+                      <span className="trip-customer-icon">
+                        <UserRound size={12} />
+                      </span>
+
+                      <strong>
+                        {customer}
+                      </strong>
+                    </div>
+
+                    {/* SEPARATOR */}
+                    <span
+                      className="trip-info-separator"
+                      aria-hidden="true"
+                    />
+
+                    {/* MATERIAL */}
+                    <div
+                      className="trip-list-material"
+                      title={material}
+                    >
+                      <Package size={12} />
+
+                      <span>
+                        {material}
+                      </span>
+                    </div>
+
+                  </div>
+
+                  {/* ORDER ID */}
                   <div className="trip-list-trip-id">
+
                     <span className="trip-list-truck-icon">
                       <Truck size={13} />
                     </span>
@@ -184,57 +324,124 @@ const TripListColumn = ({
                         `Trip ${index + 1}`
                       )}
                     </strong>
+
                   </div>
 
-                  <span
-                    className={`trip-list-status ${getStatusClass(
-                      tripStatus
-                    )}`}
-                  >
-                    <span className="trip-list-status-dot" />
-                    {tripStatus}
+                </div>
+
+                {/* =============================================
+                    ROUTE
+                ============================================= */}
+
+                <div
+                  className="trip-list-route"
+                  title={`${origin} → ${destination}`}
+                >
+
+                  <MapPin size={12} />
+
+                  <span>
+                    {origin}
                   </span>
+
+                  <ChevronRight size={11} />
+
+                  <span>
+                    {destination}
+                  </span>
+
                 </div>
 
-                {/* CUSTOMER */}
-                <div className="trip-list-customer">
-                  {safeText(
-                    trip?.customer,
-                    "Customer"
-                  )}
-                </div>
+                {/* =============================================
+                    VEHICLE STATUS SUMMARY
+                ============================================= */}
 
-                {/* BOTTOM */}
-                <div className="trip-list-bottom">
-                  <div
-                    className="trip-list-route"
-                    title={`${origin} → ${destination}`}
-                  >
-                    <MapPin size={11} />
+                <div className="trip-list-vehicle-summary">
 
-                    <span>{origin}</span>
+                  {/* TOTAL */}
+                  <div className="trip-vehicle-total">
 
-                    <ChevronRight size={10} />
-
-                    <span>{destination}</span>
-                  </div>
-
-                  <div className="trip-list-vehicle-count">
-                    <Truck size={10} />
+                    <Truck size={11} />
 
                     <span>
-                      {vehicles.length}{" "}
-                      {vehicles.length === 1
-                        ? "Vehicle"
-                        : "Vehicles"}
+                      Total
                     </span>
+
+                    <strong>
+                      {vehicleStatusCounts.total}
+                    </strong>
+
                   </div>
+
+                  {/* MOVING */}
+                  <div className="trip-vehicle-stat moving">
+
+                    <span className="trip-vehicle-dot" />
+
+                    <span>
+                      Moving
+                    </span>
+
+                    <strong>
+                      {vehicleStatusCounts.Moving}
+                    </strong>
+
+                  </div>
+
+                  {/* IDLE */}
+                  <div className="trip-vehicle-stat idle">
+
+                    <span className="trip-vehicle-dot" />
+
+                    <span>
+                      Idle
+                    </span>
+
+                    <strong>
+                      {vehicleStatusCounts.Idle}
+                    </strong>
+
+                  </div>
+
+                  {/* BREAKDOWN */}
+                  <div className="trip-vehicle-stat breakdown">
+
+                    <span className="trip-vehicle-dot" />
+
+                    <span>
+                      Breakdown
+                    </span>
+
+                    <strong>
+                      {vehicleStatusCounts.Breakdown}
+                    </strong>
+
+                  </div>
+
+                  {/* REACHED */}
+                  <div className="trip-vehicle-stat reached">
+
+                    <span className="trip-vehicle-dot" />
+
+                    <span>
+                      Reached
+                    </span>
+
+                    <strong>
+                      {vehicleStatusCounts.Reached}
+                    </strong>
+
+                  </div>
+
                 </div>
+
               </button>
             );
           })
         )}
+
       </div>
+
     </aside>
   );
 };

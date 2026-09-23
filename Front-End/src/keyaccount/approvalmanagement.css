@@ -3811,3 +3811,242 @@
     flex: 1 !important;
   }
 }
+
+/* =========================================================
+   QUOTATION APPROVAL MODAL
+   Single-row professional header
+========================================================= */
+
+.approval-quotation-expand-panel {
+  width: min(1360px, calc(100vw - 64px));
+  height: min(760px, calc(100vh - 64px));
+  max-width: 1360px;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid #c9dadd;
+  border-radius: 18px;
+  background: #f4f8f9;
+  box-shadow:
+    0 26px 70px rgba(8, 35, 47, 0.26),
+    0 0 0 100vmax rgba(7, 27, 37, 0.48);
+}
+
+.approval-quotation-modal-head.approval-quotation-modal-head-single {
+  position: relative;
+  min-height: 92px;
+  padding: 15px 78px 15px 24px;
+
+  display: grid;
+  grid-template-columns: minmax(230px, 0.85fr) minmax(650px, 2.15fr);
+  align-items: center;
+  gap: 28px;
+
+  border-bottom: 0;
+
+  background:
+    radial-gradient(circle at 92% -55%, rgba(255,255,255,.10) 0 110px, transparent 111px),
+    radial-gradient(circle at 84% -45%, rgba(255,255,255,.06) 0 165px, transparent 166px),
+    linear-gradient(110deg, #0b5b60 0%, #0f766e 56%, #168d80 100%);
+}
+
+.approval-quotation-modal-head::after {
+  display: none;
+}
+
+.approval-quotation-modal-title-single {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+}
+
+.approval-quotation-modal-title-single > span {
+  width: max-content;
+  margin: 0 0 7px;
+  padding: 4px 10px;
+
+  display: inline-flex;
+  align-items: center;
+
+  border: 1px solid rgba(201, 242, 236, 0.34);
+  border-radius: 999px;
+
+  background: rgba(255,255,255,.07);
+  color: #d3f4ef;
+
+  font-size: 8.5px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: .055em;
+}
+
+.approval-quotation-modal-title-single h3 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 22px;
+  font-weight: 900;
+  line-height: 1.08;
+  letter-spacing: -.025em;
+}
+
+/* Important order information is now inside the same teal header */
+.approval-quotation-head-details {
+  min-width: 0;
+
+  display: grid;
+  grid-template-columns:
+    minmax(100px, .7fr)
+    minmax(230px, 1.55fr)
+    minmax(135px, .9fr)
+    minmax(90px, .65fr);
+
+  align-items: center;
+  gap: 0;
+}
+
+.approval-quotation-head-item {
+  min-width: 0;
+  min-height: 48px;
+  padding: 4px 20px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  border-left: 1px solid rgba(218, 248, 244, 0.18);
+}
+
+.approval-quotation-head-item span {
+  margin-bottom: 5px;
+  color: #aee0da;
+
+  font-size: 7.5px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: .055em;
+}
+
+.approval-quotation-head-item strong {
+  min-width: 0;
+
+  color: #ffffff;
+
+  font-size: 10.5px;
+  font-weight: 850;
+  line-height: 1.2;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.approval-quotation-head-route strong {
+  white-space: nowrap;
+}
+
+.approval-quotation-modal-close {
+  position: absolute;
+  top: 26px;
+  right: 22px;
+
+  width: 40px;
+  height: 40px;
+  padding: 0;
+
+  display: grid;
+  place-items: center;
+
+  border: 1px solid rgba(255,255,255,.25);
+  border-radius: 10px;
+
+  background: rgba(255,255,255,.07);
+  color: #eafffc;
+
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 1;
+
+  cursor: pointer;
+}
+
+.approval-quotation-modal-close:hover {
+  border-color: rgba(255,255,255,.42);
+  background: rgba(255,255,255,.14);
+  color: #ffffff;
+}
+
+/* The old second information row is intentionally removed. */
+.approval-quotation-modal-info,
+.approval-quotation-modal-summary {
+  display: none;
+}
+
+.approval-quotation-modal-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 14px 16px 18px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: #f4f8f9;
+}
+
+.approval-quotation-modal-body .approval-quotation-vehicle-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.approval-quotation-modal-body .approval-qv-card,
+.approval-quotation-modal-body .approval-qv-requirement-card {
+  width: 100%;
+  margin: 0;
+}
+
+@media (max-width: 1100px) {
+  .approval-quotation-expand-panel {
+    width: calc(100vw - 32px);
+    height: calc(100vh - 32px);
+  }
+
+  .approval-quotation-modal-head.approval-quotation-modal-head-single {
+    grid-template-columns: 220px minmax(600px, 1fr);
+    gap: 18px;
+    overflow-x: auto;
+  }
+}
+
+@media (max-width: 760px) {
+  .approval-quotation-expand-panel {
+    width: calc(100vw - 18px);
+    height: calc(100vh - 18px);
+    border-radius: 14px;
+  }
+
+  .approval-quotation-modal-head.approval-quotation-modal-head-single {
+    min-height: 136px;
+    padding: 13px 60px 13px 16px;
+    display: block;
+    overflow: hidden;
+  }
+
+  .approval-quotation-modal-title-single h3 {
+    font-size: 19px;
+  }
+
+  .approval-quotation-head-details {
+    margin-top: 12px;
+    grid-template-columns: repeat(4, minmax(120px, 1fr));
+    overflow-x: auto;
+  }
+
+  .approval-quotation-head-item {
+    min-height: 42px;
+    padding: 3px 12px;
+  }
+
+  .approval-quotation-modal-close {
+    top: 17px;
+    right: 14px;
+    width: 36px;
+    height: 36px;
+  }
+}

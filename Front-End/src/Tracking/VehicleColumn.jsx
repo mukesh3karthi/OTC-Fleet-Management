@@ -619,6 +619,99 @@ const VehicleColumn = ({
       latestTracking?.currentLocation
     );
 
+  /* =======================================================
+     DYNAMIC ROUTE STEPPER
+     - Uses entered route locations
+     - Highlights the step that exactly matches currentLocation
+  ======================================================= */
+
+  const normalizeRouteLocation = (value) =>
+    safeText(value, "")
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, " ");
+
+  const getRouteLocationText = (value) => {
+    if (typeof value === "string" || typeof value === "number") {
+      return safeText(value, "").trim();
+    }
+
+    if (value && typeof value === "object") {
+      return safeText(
+        value.location ||
+          value.name ||
+          value.city ||
+          value.place ||
+          value.label,
+        ""
+      ).trim();
+    }
+
+    return "";
+  };
+
+  const rawRouteLocations = (() => {
+    if (Array.isArray(trip?.routeLocations)) {
+      return trip.routeLocations;
+    }
+
+    if (Array.isArray(trip?.route)) {
+      return trip.route;
+    }
+
+    if (Array.isArray(trip?.routes)) {
+      return trip.routes;
+    }
+
+    if (typeof trip?.route === "string") {
+      return trip.route
+        .split(/\s*(?:→|->|>|,|\|)\s*/)
+        .filter(Boolean);
+    }
+
+    return [];
+  })();
+
+  const enteredRouteLocations = rawRouteLocations
+    .map(getRouteLocationText)
+    .filter(Boolean);
+
+  const originLocation = safeText(trip?.origin, "").trim();
+  const destinationLocation = safeText(trip?.destination, "").trim();
+
+  const routeLocations = [...enteredRouteLocations];
+
+  if (
+    originLocation &&
+    !routeLocations.some(
+      (location) =>
+        normalizeRouteLocation(location) ===
+        normalizeRouteLocation(originLocation)
+    )
+  ) {
+    routeLocations.unshift(originLocation);
+  }
+
+  if (
+    destinationLocation &&
+    !routeLocations.some(
+      (location) =>
+        normalizeRouteLocation(location) ===
+        normalizeRouteLocation(destinationLocation)
+    )
+  ) {
+    routeLocations.push(destinationLocation);
+  }
+
+  const currentRouteIndex =
+    currentPosition && currentPosition !== "-"
+      ? routeLocations.findIndex(
+          (location) =>
+            normalizeRouteLocation(location) ===
+            normalizeRouteLocation(currentPosition)
+        )
+      : -1;
+
   const yesterdayPosition =
     safeText(
       latestTracking
@@ -1047,103 +1140,84 @@ const VehicleColumn = ({
         </div>
       ) : (
         <>
-          {/* =================================
-              CURRENT STATUS
-          ================================= */}
-
-          <div className="vehicle-status-strip">
-            <div
-              className={`status-item ${getVehicleStatusClass(
-                vehicleStatus
-              )}`}
-            >
-              {getVehicleStatusIcon(
-                vehicleStatus
-              )}
-
-              <span>
-                Current Status
-              </span>
-
-              <strong>
-                {vehicleStatus}
-              </strong>
-            </div>
-
-            <div className="status-item">
-              <Navigation
-                size={11}
-              />
-
-              <span>
-                Current Location
-              </span>
-
-              <strong>
-                {currentPosition}
-              </strong>
-            </div>
-
-            <div className="status-item">
-              <Route size={11} />
-
-              <span>
-                Last Updated
-              </span>
-
-              <strong>
-                {lastUpdated}
-              </strong>
-            </div>
-          </div>
+          
 
           {/* =================================
               ROUTE
           ================================= */}
 
-          <div className="trip-route-card">
-            <div className="trip-route-point">
-              <span>
-                Origin
-              </span>
+          <div className="trip-route-stepper-card">
+            <div className="trip-route-stepper-scroll">
+              {routeLocations.length > 0 ? (
+                routeLocations.map((location, index) => {
+                  const isFirst = index === 0;
+                  const isLast =
+                    index === routeLocations.length - 1;
+                  const isCurrent =
+                    index === currentRouteIndex;
+                  const isCompleted =
+                    currentRouteIndex >= 0 &&
+                    index < currentRouteIndex;
 
-              <strong>
-                {safeText(
-                  trip.origin
-                )}
-              </strong>
-            </div>
+                  return (
+                    <React.Fragment
+                      key={`${location}-${index}`}
+                    >
+                      <div
+                        className={`trip-route-step ${
+                          isCurrent
+                            ? "current"
+                            : isCompleted
+                            ? "completed"
+                            : "upcoming"
+                        }`}
+                      >
+                        <div className="trip-route-step-marker">
+                          {isCurrent ? (
+                            <Truck size={13} />
+                          ) : isCompleted ? (
+                            <CheckCircle2 size={13} />
+                          ) : (
+                            <span>{index + 1}</span>
+                          )}
+                        </div>
 
-            <div className="trip-route-direction">
-              <span className="route-line" />
+                        <div className="trip-route-step-text">
+                          <strong title={location}>
+                            {location}
+                          </strong>
 
-              <div className="route-center-content">
-                <span className="route-material-name">
-                  {safeText(
-                    trip.materialType
-                  )}
-                </span>
+                          <span>
+                            {isCurrent
+                              ? "Current Location"
+                              : isFirst
+                              ? "Origin"
+                              : isLast
+                              ? "Destination"
+                              : isCompleted
+                              ? "Completed"
+                              : `Stop ${index}`}
+                          </span>
+                        </div>
+                      </div>
 
-                <span className="route-vehicle-icon">
-                  <Truck
-                    size={13}
-                  />
-                </span>
-              </div>
-
-              <span className="route-line" />
-            </div>
-
-            <div className="trip-route-point destination">
-              <span>
-                Destination
-              </span>
-
-              <strong>
-                {safeText(
-                  trip.destination
-                )}
-              </strong>
+                      {index < routeLocations.length - 1 && (
+                        <div
+                          className={`trip-route-step-line ${
+                            currentRouteIndex > index
+                              ? "completed"
+                              : ""
+                          }`}
+                        />
+                      )}
+                    </React.Fragment>
+                  );
+                })
+              ) : (
+                <div className="trip-route-stepper-empty">
+                  No route locations available
+                </div>
+              )}
             </div>
           </div>
 
@@ -1318,109 +1392,47 @@ const VehicleColumn = ({
           </div>
 
           {/* =================================
-              REQUIREMENT
+              VEHICLE + TRANSPORT SUMMARY
           ================================= */}
 
-          <div className="trip-detail-group client-group">
-            <div className="trip-detail-group-title">
-              <span className="trip-detail-group-icon client">
-                <Truck
-                  size={12}
-                />
+          <div className="vehicle-transport-summary">
+            <div className="vehicle-transport-header">
+              <span className="vehicle-transport-icon">
+                <Truck size={14} />
               </span>
 
-              <strong>
-                Vehicle Requirement
-              </strong>
+              <div className="vehicle-transport-heading">
+                <strong>Vehicle &amp; Transport Details</strong>
+                <span>Vehicle specification and assigned transporter</span>
+              </div>
             </div>
 
-            <TripDetailRow
-              label="Vehicle Type"
-              value={vehicleType}
-            />
+            <div className="vehicle-transport-grid">
+              <div className="vehicle-transport-item">
+                <span>Vehicle Type</span>
+                <strong>{vehicleType || "-"}</strong>
+              </div>
 
-            <TripDetailRow
-              label="Configuration"
-              value={
-                configuration
-              }
-            />
+              <div className="vehicle-transport-item">
+                <span>Configuration</span>
+                <strong>{configuration || "-"}</strong>
+              </div>
 
-            <TripDetailRow
-              label="Classification"
-              value={
-                classification
-              }
-            />
+              <div className="vehicle-transport-item">
+                <span>Classification</span>
+                <strong>{classification || "-"}</strong>
+              </div>
 
-            <TripDetailRow
-              label="Vehicle Number"
-              value={
-                vehicleNumber
-              }
-            />
-          </div>
+              <div className="vehicle-transport-item vehicle-number">
+                <span>Vehicle Number</span>
+                <strong>{vehicleNumber || "-"}</strong>
+              </div>
 
-          {/* =================================
-              TRANSPORTER
-          ================================= */}
-
-          <div className="trip-detail-group transporter-group">
-            <div className="trip-detail-group-title">
-              <span className="trip-detail-group-icon transporter">
-                <Truck
-                  size={12}
-                />
-              </span>
-
-              <strong>
-                Transporter Details
-              </strong>
+              <div className="vehicle-transport-item transporter">
+                <span>Transporter</span>
+                <strong>{transporter || "-"}</strong>
+              </div>
             </div>
-
-            <TripDetailRow
-              label="Transporter"
-              value={transporter}
-            />
-          </div>
-
-          {/* =================================
-              CUSTOMER
-          ================================= */}
-
-          <div className="trip-detail-group client-group">
-            <div className="trip-detail-group-title">
-              <span className="trip-detail-group-icon client">
-                <Package
-                  size={12}
-                />
-              </span>
-
-              <strong>
-                Customer Details
-              </strong>
-            </div>
-
-            <TripDetailRow
-              label="Customer Name"
-              value={
-                customerName
-              }
-            />
-
-            <TripDetailRow
-              label="Contact Person"
-              value={
-                customerContact
-              }
-            />
-
-            <TripDetailRow
-              label="Phone No."
-              value={
-                customerPhone
-              }
-            />
           </div>
 
           {/* =================================

@@ -3116,6 +3116,103 @@ const addDailyTracking = async (
 };
 
 
+
+/* =========================================================
+   UPDATE ROUTE LOCATIONS
+   TRACKING INPUT
+
+   PUT /api/triporders/:id/route-locations
+========================================================= */
+
+const updateRouteLocations = async (
+  req,
+  res
+) => {
+  try {
+    const result =
+      await getTripDocument(
+        req.params.id
+      );
+
+    if (result.error) {
+      return sendError(
+        res,
+        result.status,
+        result.error
+      );
+    }
+
+    const trip = result.trip;
+
+    if (
+      !Array.isArray(
+        req.body.routeLocations
+      )
+    ) {
+      return sendError(
+        res,
+        400,
+        "Route locations must be an array."
+      );
+    }
+
+    const cleanedLocations =
+      req.body.routeLocations
+        .map(cleanString)
+        .filter(Boolean);
+
+    // Remove duplicate locations while preserving entered order.
+    const seen = new Set();
+    const routeLocations =
+      cleanedLocations.filter(
+        (location) => {
+          const key =
+            location.toLowerCase();
+
+          if (seen.has(key)) {
+            return false;
+          }
+
+          seen.add(key);
+          return true;
+        }
+      );
+
+    trip.routeLocations =
+      routeLocations;
+
+    trip.markModified(
+      "routeLocations"
+    );
+
+    await trip.save();
+
+    const updatedTrip =
+      await TripOrder.findById(
+        trip._id
+      ).lean();
+
+    return sendSuccess(
+      res,
+      200,
+      "Route locations saved successfully.",
+      updatedTrip
+    );
+  } catch (error) {
+    console.error(
+      "Update Route Locations Error:",
+      error
+    );
+
+    return sendError(
+      res,
+      500,
+      "Unable to save route locations.",
+      error
+    );
+  }
+};
+
 /* =========================================================
    PLACE ORDER
    KEY ACCOUNT -> TRACKING
@@ -3317,6 +3414,7 @@ module.exports = {
   allocateVehicle,
   updateAllocatedVehicle,
   addDailyTracking,
+  updateRouteLocations,
 
   deleteTrip,
 };
