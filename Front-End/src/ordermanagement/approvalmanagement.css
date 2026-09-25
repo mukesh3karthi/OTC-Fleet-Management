@@ -4050,3 +4050,738 @@
     height: 36px;
   }
 }
+
+
+/* =========================================================
+   TAB FILTERS
+========================================================= */
+.approval-tab-filters {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.approval-filter-field {
+  position: relative;
+  min-width: 126px;
+  height: 38px;
+}
+
+.approval-filter-field > span {
+  position: absolute;
+  top: 4px;
+  left: 10px;
+  z-index: 1;
+  color: #8799a2;
+  font-size: 7px;
+  font-weight: 850;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+.approval-filter-field select {
+  width: 100%;
+  height: 38px;
+  padding: 12px 28px 2px 9px;
+  border: 1px solid #cbd8de;
+  border-radius: 9px;
+  outline: 0;
+  background: #fff;
+  color: #294b59;
+  font: inherit;
+  font-size: 9.5px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.approval-filter-field select:focus {
+  border-color: rgba(15, 118, 110, 0.7);
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.08);
+}
+
+.approval-filter-clear {
+  height: 38px;
+  padding: 0 11px;
+  border: 1px solid #d6e1e5;
+  border-radius: 9px;
+  background: #f8fafb;
+  color: #607985;
+  font: inherit;
+  font-size: 9px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.approval-filter-clear:hover {
+  border-color: #9bc8c2;
+  background: #eef8f6;
+  color: var(--ap-primary);
+}
+
+/* =========================================================
+   MOVEMENT TYPE COLORS
+========================================================= */
+.approval-md-movement,
+.approval-quotation-movement {
+  min-width: 70px;
+  min-height: 26px;
+  padding: 0 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #d5dfe3;
+  border-radius: 999px;
+  background: #f4f7f8;
+  color: #526d79;
+  font-size: 8.5px;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.approval-md-movement.movement-wtg,
+.approval-quotation-movement.movement-wtg {
+  border-color: #b9d7f4;
+  background: #edf6ff;
+  color: #1769aa;
+}
+
+.approval-md-movement.movement-crane,
+.approval-quotation-movement.movement-crane {
+  border-color: #abdcd5;
+  background: #eaf8f5;
+  color: #0f766e;
+}
+
+.approval-md-movement.movement-intercarting,
+.approval-quotation-movement.movement-intercarting {
+  border-color: #efd59c;
+  background: #fff7e5;
+  color: #946200;
+}
+
+.approval-md-movement.movement-other,
+.approval-quotation-movement.movement-other {
+  border-color: #d6c9ef;
+  background: #f5f0ff;
+  color: #6842a6;
+}
+
+@media (max-width: 1100px) {
+  .approval-toolbar {
+    flex-wrap: wrap;
+    padding: 8px 12px;
+  }
+
+  .approval-tab-filters {
+    order: 3;
+    width: 100%;
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 760px) {
+  .approval-tab-filters {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+  }
+
+  .approval-filter-field {
+    min-width: 0;
+  }
+}
+
+
+/* =========================================================
+   FILTERS INSIDE EACH TAB SECTION HEADER
+========================================================= */
+.approval-section-head-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.approval-section-filters {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.approval-table-head .approval-filter-field {
+  min-width: 118px;
+  height: 34px;
+}
+
+.approval-table-head .approval-filter-field select {
+  height: 34px;
+  padding-top: 11px;
+  border-color: #cbdcdf;
+  background: #ffffff;
+}
+
+.approval-table-head .approval-filter-field > span {
+  top: 3px;
+}
+
+.approval-table-head .approval-filter-clear {
+  height: 34px;
+}
+
+@media (max-width: 1050px) {
+  .approval-table-head {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .approval-section-head-actions {
+    width: 100%;
+    margin-left: 0;
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 700px) {
+  .approval-section-head-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .approval-section-filters {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+  }
+
+  .approval-table-head .approval-filter-field {
+    min-width: 0;
+  }
+
+  .approval-table-count {
+    align-self: flex-start;
+  }
+}
+
+
+/* =========================================================
+   OTC MODAL COLOR THEME OVERRIDE
+   Color-only update to match the Order Lifecycle reference.
+   No layout, sizing, spacing, or JSX behavior is changed.
+========================================================= */
+
+:root {
+  --otc-modal-navy: #0b3447;
+  --otc-modal-navy-2: #0b4f59;
+  --otc-modal-teal: #0d8f87;
+  --otc-modal-teal-dark: #08776f;
+  --otc-modal-teal-soft: #eaf8f6;
+  --otc-modal-bg: #f4f9fa;
+  --otc-modal-card: #ffffff;
+  --otc-modal-input: #f8fafb;
+  --otc-modal-border: #c9dde3;
+  --otc-modal-border-soft: #dce8eb;
+  --otc-modal-heading: #10394c;
+  --otc-modal-text: #173c4e;
+  --otc-modal-muted: #668697;
+}
+
+/* Shared dark modal backdrop */
+.approval-action-modal-overlay,
+.approval-qaction-overlay {
+  background: rgba(4, 30, 42, 0.48);
+}
+
+/* ---------------------------------------------------------
+   ORDER APPROVE / REJECT MODAL
+--------------------------------------------------------- */
+.approval-action-modal {
+  border-color: var(--otc-modal-border);
+  background: var(--otc-modal-card);
+  box-shadow: 0 22px 60px rgba(5, 42, 58, 0.24);
+}
+
+.approval-action-modal::before,
+.approval-action-modal.is-approve::before,
+.approval-action-modal.is-reject::before {
+  background: linear-gradient(90deg, var(--otc-modal-navy), var(--otc-modal-teal));
+}
+
+.approval-action-modal.is-approve .approval-action-modal-icon,
+.approval-action-modal.is-reject .approval-action-modal-icon {
+  color: var(--otc-modal-teal-dark);
+  background: var(--otc-modal-teal-soft);
+  border-color: #a9ddd6;
+}
+
+.approval-action-modal-copy h3 {
+  color: var(--otc-modal-heading);
+}
+
+.approval-action-modal-copy p {
+  color: var(--otc-modal-muted);
+}
+
+.approval-action-modal-label {
+  color: #315568;
+}
+
+.approval-action-modal-textarea {
+  border-color: var(--otc-modal-border);
+  background: var(--otc-modal-input);
+  color: var(--otc-modal-text);
+}
+
+.approval-action-modal-textarea:focus {
+  border-color: var(--otc-modal-teal);
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(13, 143, 135, 0.10);
+}
+
+.approval-action-modal-cancel {
+  border-color: rgba(255, 255, 255, 0.25);
+  background: var(--otc-modal-navy);
+  color: #ffffff;
+}
+
+.approval-action-modal-confirm.approve,
+.approval-action-modal-confirm.reject {
+  background: var(--otc-modal-teal);
+  color: #ffffff;
+}
+
+/* ---------------------------------------------------------
+   QUOTATION APPROVE / REJECT ACTION MODAL
+--------------------------------------------------------- */
+.approval-qaction-modal {
+  border-color: var(--otc-modal-border);
+  background: var(--otc-modal-card);
+  box-shadow: 0 24px 65px rgba(5, 42, 58, 0.24);
+}
+
+.approval-qaction-modal.is-approve,
+.approval-qaction-modal.is-reject {
+  border-top-color: var(--otc-modal-teal);
+}
+
+.approval-qaction-head {
+  border-bottom-color: rgba(255, 255, 255, 0.12);
+  background: linear-gradient(110deg, var(--otc-modal-navy) 0%, var(--otc-modal-navy-2) 55%, var(--otc-modal-teal) 100%);
+}
+
+.approval-qaction-heading span {
+  color: #aee0da;
+}
+
+.approval-qaction-heading h3 {
+  color: #ffffff;
+}
+
+.approval-qaction-modal.is-approve .approval-qaction-icon,
+.approval-qaction-modal.is-reject .approval-qaction-icon {
+  background: rgba(255, 255, 255, 0.10);
+  color: #eafffc;
+  border-color: rgba(255, 255, 255, 0.20);
+}
+
+/* Generic qaction content controls */
+.approval-qaction-modal input,
+.approval-qaction-modal textarea,
+.approval-qaction-modal select {
+  border-color: var(--otc-modal-border);
+  background: var(--otc-modal-input);
+  color: var(--otc-modal-text);
+}
+
+.approval-qaction-modal input:focus,
+.approval-qaction-modal textarea:focus,
+.approval-qaction-modal select:focus {
+  border-color: var(--otc-modal-teal);
+  box-shadow: 0 0 0 3px rgba(13, 143, 135, 0.10);
+}
+
+/* ---------------------------------------------------------
+   TRANSPORTER QUOTATION DETAILS MODAL
+--------------------------------------------------------- */
+.approval-quotation-expand-panel {
+  border-color: var(--otc-modal-border);
+  background: var(--otc-modal-bg);
+  box-shadow:
+    0 26px 70px rgba(5, 42, 58, 0.26),
+    0 0 0 100vmax rgba(4, 30, 42, 0.48);
+}
+
+.approval-quotation-modal-head,
+.approval-quotation-modal-head.approval-quotation-modal-head-single {
+  border-bottom-color: rgba(255, 255, 255, 0.12);
+  background:
+    radial-gradient(circle at 92% -55%, rgba(255,255,255,.10) 0 110px, transparent 111px),
+    radial-gradient(circle at 84% -45%, rgba(255,255,255,.06) 0 165px, transparent 166px),
+    linear-gradient(110deg, var(--otc-modal-navy) 0%, var(--otc-modal-navy-2) 55%, var(--otc-modal-teal) 100%);
+}
+
+.approval-quotation-modal-title,
+.approval-quotation-modal-title-single {
+  border-left-color: #63d8cf;
+}
+
+.approval-quotation-modal-title > span,
+.approval-quotation-modal-title-single > span {
+  color: #d3f4ef;
+}
+
+.approval-quotation-modal-title h3,
+.approval-quotation-modal-title-single h3 {
+  color: #ffffff;
+}
+
+.approval-quotation-modal-title p,
+.approval-quotation-modal-title-single p {
+  color: #c3e4e1;
+}
+
+.approval-quotation-head-item {
+  border-left-color: rgba(218, 248, 244, 0.18);
+}
+
+.approval-quotation-head-item span {
+  color: #aee0da;
+}
+
+.approval-quotation-head-item strong {
+  color: #ffffff;
+}
+
+.approval-quotation-modal-close {
+  border-color: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.07);
+  color: #eafffc;
+}
+
+.approval-quotation-modal-close:hover {
+  border-color: rgba(255, 255, 255, 0.42);
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+}
+
+.approval-quotation-modal-body {
+  background: var(--otc-modal-bg);
+  scrollbar-color: #9dbfc4 transparent;
+}
+
+.approval-quotation-modal-body::-webkit-scrollbar-thumb {
+  background: #9dbfc4;
+}
+
+/* Cards and controls inside quotation modal */
+.approval-quotation-modal-body .approval-qv-card,
+.approval-quotation-modal-body .approval-qv-requirement-card,
+.approval-quotation-modal-body .approval-quotation-requirement-card,
+.approval-quotation-modal-body .approval-quotation-option,
+.approval-quotation-modal-body .approval-quotation-review {
+  border-color: var(--otc-modal-border-soft);
+  background: #ffffff;
+}
+
+.approval-quotation-modal-body .approval-qv-card-head,
+.approval-quotation-modal-body .approval-qv-requirement-head,
+.approval-quotation-modal-body .approval-quotation-requirement-head {
+  border-bottom-color: var(--otc-modal-border-soft);
+  background: #f2f8f8;
+}
+
+.approval-quotation-modal-body input,
+.approval-quotation-modal-body textarea,
+.approval-quotation-modal-body select {
+  border-color: var(--otc-modal-border);
+  background: var(--otc-modal-input);
+  color: var(--otc-modal-text);
+}
+
+.approval-quotation-modal-body input:focus,
+.approval-quotation-modal-body textarea:focus,
+.approval-quotation-modal-body select:focus {
+  border-color: var(--otc-modal-teal);
+  box-shadow: 0 0 0 3px rgba(13, 143, 135, 0.10);
+}
+
+.approval-quotation-modal-body input[type="radio"],
+.approval-quotation-modal-body input[type="checkbox"] {
+  accent-color: var(--otc-modal-teal);
+}
+
+
+/* =========================================================
+   QUOTATION APPROVAL - QUANTITY
+   Keeps the existing Approval Management design unchanged.
+========================================================= */
+
+.approval-qv-quantity {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 52px;
+  min-height: 25px;
+  padding: 0 8px;
+  border: 1px solid #cfe4e0;
+  border-radius: 7px;
+  background: #f0f9f7;
+  color: var(--ap-primary);
+  font-size: 9px;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   QUOTATION APPROVAL - VEHICLE REQUIREMENT HEADER V2
+   Professional left-aligned layout + slightly larger fonts.
+   This final block intentionally overrides only this header.
+========================================================= */
+
+.approval-qv-requirement-head {
+  min-height: 84px !important;
+  padding: 13px 16px !important;
+  display: grid !important;
+  grid-template-columns: 48px minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: 14px !important;
+  border-bottom: 1px solid #dbe7ea !important;
+  border-left: 4px solid var(--ap-primary) !important;
+  background: linear-gradient(90deg, #f2faf8 0%, #ffffff 58%, #f8fbfc 100%) !important;
+}
+
+.approval-qv-requirement-no,
+.approval-qv-requirement-number {
+  width: 42px !important;
+  height: 42px !important;
+  min-width: 42px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 10px !important;
+  background: #e1f5f2 !important;
+  color: var(--ap-primary) !important;
+  font-size: 12px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+}
+
+.approval-qv-requirement-info {
+  min-width: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  justify-content: center !important;
+  gap: 5px !important;
+  text-align: left !important;
+}
+
+.approval-qv-requirement-info > span:first-child,
+.approval-qv-requirement-label {
+  margin: 0 !important;
+  color: #738b96 !important;
+  font-size: 9px !important;
+  font-weight: 850 !important;
+  line-height: 1.1 !important;
+  letter-spacing: 0.065em !important;
+  text-transform: uppercase !important;
+}
+
+.approval-qv-requirement-info > strong,
+.approval-qv-requirement-title {
+  margin: 0 !important;
+  color: #123b4d !important;
+  font-size: 14px !important;
+  font-weight: 900 !important;
+  line-height: 1.2 !important;
+}
+
+.approval-qv-requirement-meta {
+  margin-top: 2px !important;
+  display: flex !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  gap: 5px !important;
+}
+
+.approval-qv-requirement-meta span {
+  min-height: 24px !important;
+  padding: 0 8px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border: 1px solid #cfdfe4 !important;
+  border-radius: 6px !important;
+  background: #ffffff !important;
+  color: #496a78 !important;
+  font-size: 9px !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+}
+
+.approval-qv-requirement-status {
+  min-width: 90px !important;
+  min-height: 32px !important;
+  padding: 0 13px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  justify-self: end !important;
+  border-radius: 999px !important;
+  font-size: 9.5px !important;
+  font-weight: 850 !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+}
+
+/* Slight font increase inside quotation approval */
+.approval-qv-table th {
+  font-size: 9.5px !important;
+}
+
+.approval-qv-table td,
+.approval-qv-table td strong {
+  font-size: 10.5px !important;
+}
+
+.approval-qv-amount,
+.approval-qv-quantity {
+  font-size: 10px !important;
+}
+
+.approval-qv-transporter-name {
+  font-size: 11px !important;
+  font-weight: 850 !important;
+}
+
+@media (max-width: 760px) {
+  .approval-qv-requirement-head {
+    grid-template-columns: 42px minmax(0, 1fr) !important;
+    gap: 10px !important;
+    padding: 11px 12px !important;
+  }
+
+  .approval-qv-requirement-status {
+    grid-column: 2 !important;
+    justify-self: start !important;
+  }
+}
+
+
+/* =========================================================
+   MULTI TRANSPORTER QUANTITY APPROVAL
+========================================================= */
+
+.approval-qv-radio input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.approval-qv-radio input[type="checkbox"] + span {
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #aec8ce;
+  border-radius: 7px;
+  background: #ffffff;
+  transition: 0.18s ease;
+}
+
+.approval-qv-radio input[type="checkbox"]:checked + span {
+  border-color: #0d8f87;
+  background: #0d8f87;
+  box-shadow: 0 0 0 3px rgba(13, 143, 135, 0.09);
+}
+
+.approval-qv-radio input[type="checkbox"]:checked + span::after {
+  content: "✓";
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.approval-qv-selection-progress {
+  margin-top: 5px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.approval-qv-selection-progress > strong {
+  min-width: 68px;
+  color: #123b4d;
+  font-size: 15px !important;
+  font-weight: 900;
+}
+
+.approval-qv-selection-progress > strong small {
+  color: #668697;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.approval-qv-selection-track {
+  width: 120px;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #dfeaed;
+}
+
+.approval-qv-selection-track > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #0d8f87;
+  transition: width 0.2s ease;
+}
+
+.approval-qv-selection-progress > em {
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #fff6e6;
+  color: #9a6700;
+  font-size: 8px;
+  font-style: normal;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.approval-qv-selection-progress > em.is-complete {
+  background: #e9f8f4;
+  color: #08776f;
+}
+
+.approval-qv-selected-list {
+  margin-top: 7px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.approval-qv-selected-list > span {
+  min-height: 24px;
+  padding: 0 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #c8e2de;
+  border-radius: 6px;
+  background: #f1faf8;
+  color: #365b68;
+  font-size: 8.5px;
+  font-weight: 800;
+}
+
+.approval-qv-selected-list > span b {
+  color: #0d8f87;
+  font-size: 8.5px;
+  font-weight: 900;
+}

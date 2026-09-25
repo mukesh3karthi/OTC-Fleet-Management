@@ -74,7 +74,7 @@ const API_BASE = (() => {
 
 const VEHICLES_URL = `${API_BASE}/vehicles`;
 const OWNVEHICLES_URL = `${API_BASE}/ownvehicles`;
-const TRIPTRACKING_URL = `${API_BASE}/triptracking`;
+const TRIPORDERS_URL = `${API_BASE}/triporders`;
 
 /* =========================================================
    AXIOS INSTANCE + DEBUG LOGGING
@@ -173,7 +173,7 @@ const fetchAllFleetData = async () => {
   const [vehiclesRes, ownRes, tripsRes] = await Promise.allSettled([
     api.get(VEHICLES_URL),
     api.get(OWNVEHICLES_URL),
-    api.get(TRIPTRACKING_URL),
+    api.get(TRIPORDERS_URL),
   ]);
 
   const result = {
@@ -185,7 +185,7 @@ const fetchAllFleetData = async () => {
 
   if (vehiclesRes.status === "rejected") result.errors.vehicles = vehiclesRes.reason?.message || "Failed to load /api/vehicles";
   if (ownRes.status === "rejected") result.errors.ownVehicles = ownRes.reason?.message || "Failed to load /api/ownvehicles";
-  if (tripsRes.status === "rejected") result.errors.trips = tripsRes.reason?.message || "Failed to load /api/triptracking";
+  if (tripsRes.status === "rejected") result.errors.trips = tripsRes.reason?.message || "Failed to load /api/triporders";
 
   if (Object.keys(result.errors).length > 0) {
     console.error("[fetchAllFleetData] One or more sources failed:", result.errors);
@@ -586,18 +586,40 @@ const DashContent = () => {
 
   const achievements = [
     { number: "15+", title: "Years", description: "Industry Experience" },
-    { number: "20+", title: "Branches", description: "Across India" },
+    { number: "4", title: "Branches", description: "Strategic Locations" },
     { number: "1000+", title: "Clients", description: "Successfully Served" },
     { number: "24/7", title: "Operations", description: "Logistics Support" },
   ];
 
   const locations = [
-    { name: "Bangalore", type: "Head Office" },
-    { name: "Chennai", type: "Regional Office" },
-    { name: "Hyderabad", type: "Regional Office" },
-    { name: "Mumbai", type: "Regional Office" },
-    { name: "Pune", type: "Regional Office" },
-    { name: "Delhi", type: "Regional Office" },
+    {
+      name: "Navi Mumbai",
+      type: "Head Office",
+      address: "Office No. 1309, 13th Floor, Satra Plaza, Sector 19D, Vashi, Navi Mumbai, Maharashtra - 400703",
+    },
+    {
+      name: "Chennai",
+      type: "Branch Office",
+      address: "OM Trans Infra Corporation Pvt Ltd, 1/53, Poonamallee Highway, Vanagaram, Near Mahesh Kumar Hotel, Chennai - 600095",
+    },
+    {
+      name: "Bangalore",
+      type: "Branch Office",
+      address: "OM Trans Infra Corporation Pvt Ltd, No. 33, RAB Complex, 4th Floor, 18th Main Road, 15th Cross, J.P. Nagar 2nd Phase, Bangalore - 560078",
+    },
+    {
+      name: "Pune",
+      type: "Branch Office",
+      address: "Shop No. 49/50, Tapaswi Plaza, Old Pune-Mumbai Highway, Akurdi, Pune - 411019, Maharashtra",
+    },
+  ];
+
+  const clients = [
+    { name: "JSW", short: "JSW" },
+    { name: "HEFT", short: "HEFT" },
+    { name: "Serentica", short: "SERENTICA" },
+    { name: "Avada", short: "AVADA" },
+    { name: "Suzlon", short: "SUZLON" },
   ];
 
   const clearFilters = () => {
@@ -831,46 +853,118 @@ const DashContent = () => {
         </div>
       </section>
 
-      {/* COMPANY + NETWORK */}
-      <section className="dashboard-section company-grid">
-        <div className="content-card">
-          <div className="card-heading">
-            <div className="card-heading-icon"><FaBuilding /></div>
-            <div><span>ABOUT OTC GROUPS</span><h2>Who We Are</h2></div>
+      {/* CLIENT COMPANIES */}
+      <section className="dashboard-section client-section">
+        <div className="client-section-heading">
+          <div>
+            <span className="section-label">OUR CLIENTS</span>
+            <h2>Trusted By Leading Companies</h2>
+            <p>Supporting key customers with dependable transportation, project logistics and fleet operations.</p>
           </div>
-
-          <p className="about-description">
-            OTC Groups is focused on delivering dependable transportation and logistics solutions
-            through efficient operations, experienced teams and technology-driven processes.
-          </p>
-
-          <div className="about-points">
-            <div><FaCheckCircle /><span>Reliable transportation operations</span></div>
-            <div><FaCheckCircle /><span>Professional fleet management</span></div>
-            <div><FaCheckCircle /><span>Technology-driven processes</span></div>
-            <div><FaCheckCircle /><span>Customer-focused service</span></div>
-          </div>
+          <div className="client-count"><strong>{clients.length}</strong><span>Key Clients</span></div>
         </div>
 
-        <div className="content-card">
-          <div className="card-heading">
-            <div className="card-heading-icon"><FaMapMarkerAlt /></div>
-            <div><span>OUR NETWORK</span><h2>Branch Locations</h2></div>
-          </div>
-
-          <div className="location-mini-grid">
-            {locations.map((location, index) => (
-              <div className="location-mini" key={index}>
-                <div className="location-mini-icon"><FaMapMarkerAlt /></div>
+        <div className="client-slider">
+          <div className="client-slider-track">
+            {[...clients, ...clients].map((client, index) => (
+              <div className="client-slide-card" key={`${client.name}-${index}`}>
+                <div className="client-letter">{client.short.charAt(0)}</div>
                 <div>
-                  <strong>{location.name}</strong>
-                  <span>{location.type}</span>
+                  <strong>{client.short}</strong>
+                  <span>Valued Client</span>
                 </div>
               </div>
             ))}
           </div>
         </div>
       </section>
+
+      {/* ORDER OPERATIONS + COMPANY NETWORK */}
+      <section className="dashboard-section company-grid">
+        <div className="content-card order-operations-card">
+          <div className="card-heading">
+            <div className="card-heading-icon"><FaTruck /></div>
+            <div>
+              <span>ORDER OPERATIONS</span>
+              <h2>End-to-End Order Management</h2>
+            </div>
+          </div>
+
+          <p className="about-description">
+            Manage customer enquiries, approvals, traffic quotations, vehicle allocation,
+            PO documentation and trip tracking through one centralized operational workflow.
+          </p>
+
+          <div className="about-points">
+            <div><FaCheckCircle /><span>Order & enquiry management</span></div>
+            <div><FaCheckCircle /><span>Quotation and approval workflow</span></div>
+            <div><FaCheckCircle /><span>Vehicle allocation & movement tracking</span></div>
+            <div><FaCheckCircle /><span>PO, LR & POD document management</span></div>
+          </div>
+        </div>
+
+        <div className="content-card branch-network-card">
+          <div className="card-heading branch-heading">
+            <div className="card-heading-icon"><FaMapMarkerAlt /></div>
+            <div>
+              <span>OUR NETWORK</span>
+              <h2>Company Presence</h2>
+            </div>
+            <div className="branch-total">
+              <strong>{locations.length}</strong>
+              <small>Locations</small>
+            </div>
+          </div>
+
+          <div className="branch-directory-grid">
+            {locations.map((location, index) => {
+              const stateMap = {
+                "Navi Mumbai": "Maharashtra",
+                Chennai: "Tamil Nadu",
+                Bangalore: "Karnataka",
+                Pune: "Maharashtra",
+              };
+
+              return (
+                <article
+                  className={`branch-directory-card ${index === 0 ? "branch-directory-card--hq" : ""}`}
+                  key={location.name}
+                >
+                  <div className="branch-directory-top">
+                    <span className="branch-directory-number">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+
+                    <div className="branch-directory-title">
+                      <strong>{location.name}</strong>
+                      <span>{location.type}</span>
+                    </div>
+
+                    {index === 0 && (
+                      <span className="branch-directory-hq">HQ</span>
+                    )}
+                  </div>
+
+                  <div className="branch-directory-divider" />
+
+                  <div className="branch-directory-address">
+                    <span className="branch-directory-pin">
+                      <FaMapMarkerAlt />
+                    </span>
+
+                    <div>
+                      <p>{location.address}</p>
+                      <small>{stateMap[location.name] || "India"}</small>
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      
 
       {/* FOOTER */}
       <section className="dashboard-footer">

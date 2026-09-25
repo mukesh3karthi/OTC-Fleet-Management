@@ -8906,3 +8906,87 @@ and
     width: calc(100vw - 24px);
   }
 }
+
+/* =========================================================
+   OPTIONAL LIFECYCLE PENDING - WARNING STATE
+========================================================= */
+
+.kam-top-step.warning {
+  border-color: #f2c56b;
+  background: #fff8e8;
+  color: #9a6200;
+  box-shadow: 0 4px 12px rgba(197, 126, 0, 0.08);
+}
+
+.kam-top-step.warning .kam-top-step-marker {
+  border-color: #e5a62f;
+  background: #f3ad2f;
+  color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(243, 173, 47, 0.12);
+}
+
+.kam-top-step.warning .kam-top-step-text {
+  color: #9a6200;
+  font-weight: 900;
+}
+
+.kam-top-step.warning:hover {
+  border-color: #dfa02c;
+  background: #fff3d6;
+  box-shadow: 0 6px 15px rgba(197, 126, 0, 0.12);
+}
+
+.kam-top-step.warning.selected,
+.kam-top-step.warning.active {
+  border-color: #e5a62f;
+  background: #fff4d8;
+  color: #8a5700;
+}
+
+.kam-top-step.warning.selected .kam-top-step-marker,
+.kam-top-step.warning.active .kam-top-step-marker {
+  background: #e5a62f;
+  color: #ffffff;
+}
+
+
+
+/* =========================================================
+   OPTIONAL COMMERCIAL ITEMS - ORDER PLACED WARNING
+========================================================= */
+
+.kam-optional-commercial-warning {
+  margin-bottom: 14px;
+  padding: 11px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  border: 1px solid #f0c66f;
+  border-left: 4px solid #e5a62f;
+  border-radius: 10px;
+  background: #fff8e8;
+}
+
+.kam-optional-commercial-warning strong {
+  color: #925c00;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.kam-optional-commercial-warning span {
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #ffedc2;
+  color: #a26700;
+  font-size: 9px;
+  font-weight: 900;
+}
+
+.kam-optional-commercial-warning small {
+  flex-basis: 100%;
+  color: #80622e;
+  font-size: 9px;
+  font-weight: 650;
+  line-height: 1.45;
+}

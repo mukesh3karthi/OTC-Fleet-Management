@@ -5,13 +5,13 @@
     useState,
   } from "react";
 
-  import "../pagescss/keyaccount.css";
+  import "../ordermanagement/keyaccount.css";
 
   import jsPDF from "jspdf";
   import autoTable from "jspdf-autotable";
 
-  import Tripcreatemodal from "../keyaccount/Tripcreatemodal";
-  import Lifecyclemodal from "../keyaccount/Lifecyclemodal";
+  import Tripcreatemodal from "./Tripcreatemodal";
+  import Lifecyclemodal from "./Lifecyclemodal";
 
   /* =========================================================
     API
@@ -512,8 +512,27 @@ const getDisplayStage = (order = {}) => {
      DEFAULT
   ===================================================== */
 
+  const backendStage =
+    String(order?.stage || "").trim();
+
+  // Display-only stage names.
+  // Backend/API values remain unchanged.
+  if (
+    backendStage.toLowerCase() ===
+    "first approval management"
+  ) {
+    return "Order Approval";
+  }
+
+  if (
+    backendStage.toLowerCase() ===
+    "second approval management"
+  ) {
+    return "Quotation Approval";
+  }
+
   return (
-    order?.stage ||
+    backendStage ||
     "Order Approval"
   );
 };

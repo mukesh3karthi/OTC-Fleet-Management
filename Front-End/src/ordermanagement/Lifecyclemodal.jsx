@@ -334,12 +334,29 @@ const getLifecycleCurrentIndex = (
     .trim()
     .toLowerCase();
 
-  /*
-   * IMPORTANT:
-   * Once the backend has genuinely progressed to Tracking or
-   * Trip Complete, never allow PO/Vendor completion logic to
-   * move the lifecycle backwards.
-   */
+  const allocations = safeArray(order?.allocatedVehicles);
+
+  const orderApproved =
+    String(order?.orderApproval?.status || "")
+      .trim()
+      .toLowerCase() === "approved";
+
+  const orderPlacedCompleted =
+    String(order?.orderPlaced?.status || "")
+      .trim()
+      .toLowerCase() === "completed";
+
+  const hasTrackingProgress = allocations.some(
+    (allocation) =>
+      safeArray(allocation?.dailyTracking).length > 0 ||
+      String(allocation?.loading?.status || "")
+        .trim()
+        .toLowerCase() === "completed" ||
+      String(allocation?.unloading?.status || "")
+        .trim()
+        .toLowerCase() === "completed"
+  );
+
   if (
     stage === "trip complete" ||
     stage === "trip completed" ||
@@ -349,132 +366,26 @@ const getLifecycleCurrentIndex = (
     return 6;
   }
 
-  /*
-   * IMPORTANT:
-   * Approval Management can leave a stale backend stage such as
-   * "Tracking Input" / "Order Placed". The PO page must still win
-   * until the required PO data is genuinely complete.
-   *
-   * Only a real Tracking order with vehicle tracking history should
-   * bypass the PO gate.
-   */
-  const stageAllocations = safeArray(order?.allocatedVehicles);
-  const hasRealTrackingProgress = stageAllocations.some(
-    (allocation) =>
-      safeArray(allocation?.dailyTracking).length > 0 ||
-      String(allocation?.loading?.status || "").trim().toLowerCase() === "completed" ||
-      String(allocation?.unloading?.status || "").trim().toLowerCase() === "completed"
-  );
-
-  const poActuallyComplete = isPoDocumentComplete(order);
-
   if (
-    !poActuallyComplete &&
-    stage !== "trip complete" &&
-    stage !== "trip completed" &&
-    stage !== "completed" &&
-    stage !== "complete" &&
-    !hasRealTrackingProgress
+    orderPlacedCompleted ||
+    hasTrackingProgress ||
+    stage === "tracking" ||
+    stage === "tracking input"
   ) {
-    const hasApprovedVehicle = safeArray(order?.vehicleConfirmations).some(
-      (confirmation) =>
-        String(confirmation?.status || "").trim().toLowerCase() === "approved"
-    );
-
-    if (
-      hasApprovedVehicle ||
-      String(order?.orderApproval?.status || "").trim().toLowerCase() === "approved" ||
-      stage === "po document" ||
-      stage === "tracking input" ||
-      stage === "order placed" ||
-      stage === "vehicle allocation"
-    ) {
-      return 2;
-    }
-  }
-
-  if (stage === "tracking" && hasRealTrackingProgress) {
     return 5;
   }
-
-  const requirements = safeArray(
-    order?.vehicleRequirements
-  );
-
-  const approvedConfirmations = safeArray(
-    order?.vehicleConfirmations
-  ).filter(
-    (confirmation) =>
-      confirmation?.status === "Approved"
-  );
-
-  const vehicleApprovalCompleted =
-    requirements.length > 0 &&
-    requirements.every(
-      (requirement) =>
-        approvedConfirmations.some(
-          (confirmation) =>
-            confirmation?.requirementId ===
-            requirement?.requirementId
-        )
-    );
-
-  const poDocumentCompleted =
-    isPoDocumentComplete(order) &&
-    getStatusClass(lifecycle?.[2]?.status) === "approved";
-
-  const vendorFinalizationCompleted =
-    getStatusClass(
-      lifecycle?.[3]?.status
-    ) === "approved" ||
-    vehicleApprovalCompleted;
-
-  const orderPlacedCompleted =
-    getStatusClass(
-      lifecycle?.[4]?.status
-    ) === "approved" ||
-    String(order?.orderPlaced?.status || "")
-      .trim()
-      .toLowerCase() === "completed";
 
   /*
-   * "Tracking Input" can be written earlier by approval flow.
-   * Only treat it as Tracking after Order Placed is completed.
+   * PO Document and Vendor Finalization are OPTIONAL.
+   * Once the commercial/order approval is Approved,
+   * Order Placed becomes the operational next stage.
    */
   if (
-    stage === "tracking input" &&
-    orderPlacedCompleted
-  ) {
-    return 5;
-  }
-
-  if (
-    vehicleApprovalCompleted &&
-    !poDocumentCompleted
-  ) {
-    return 2;
-  }
-
-  if (
-    poDocumentCompleted &&
-    vendorFinalizationCompleted &&
-    orderPlacedCompleted
-  ) {
-    return 5;
-  }
-
-  if (
-    poDocumentCompleted &&
-    vendorFinalizationCompleted
+    orderApproved ||
+    stage === "order placed" ||
+    stage === "vehicle allocation"
   ) {
     return 4;
-  }
-
-  if (
-    poDocumentCompleted &&
-    !vendorFinalizationCompleted
-  ) {
-    return 3;
   }
 
   const stageMap = {
@@ -483,16 +394,16 @@ const getLifecycleCurrentIndex = (
     "key account": 0,
     "order approval": 1,
     "order finalization": 1,
+    traffic: 1,
+    "traffic quotation": 1,
+    "quotation approval": 1,
+    "quotation confirmation": 1,
     po: 2,
     "po document": 2,
-    traffic: 3,
-    "traffic quotation": 3,
-    "quotation approval": 3,
-    "quotation confirmation": 3,
     "vendor finalization": 3,
     "order placed": 4,
     "vehicle allocation": 4,
-    "tracking input": 4,
+    "tracking input": 5,
     tracking: 5,
     "trip complete": 6,
     "trip completed": 6,
@@ -504,28 +415,13 @@ const getLifecycleCurrentIndex = (
     return stageMap[stage];
   }
 
-  const rejectedIndex =
-    lifecycle.findIndex(
-      (step) =>
-        getStatusClass(step.status) ===
-        "rejected"
-    );
+  const rejectedIndex = lifecycle.findIndex(
+    (step) => getStatusClass(step.status) === "rejected"
+  );
 
-  if (rejectedIndex >= 0) {
-    return rejectedIndex;
-  }
-
-  const pendingIndex =
-    lifecycle.findIndex(
-      (step) =>
-        getStatusClass(step.status) ===
-        "pending"
-    );
-
-  return pendingIndex >= 0
-    ? pendingIndex
-    : Math.max(lifecycle.length - 1, 0);
+  return rejectedIndex >= 0 ? rejectedIndex : 0;
 };
+
 
 /* =========================================================
    READ ONLY FIELD
@@ -1169,23 +1065,25 @@ const Lifecyclemodal = ({
       return;
     }
 
-    if (!vehicleApprovalCompleted) {
+    const orderApproved =
+      String(order?.orderApproval?.status || "")
+        .trim()
+        .toLowerCase() === "approved";
+
+    if (!orderApproved) {
       const message =
-        "All vehicle requirements must have an approved transporter before placing the order.";
+        "Order approval must be completed before placing the order.";
       setPlaceOrderError(message);
       showToast(message, "warning");
       return;
     }
 
-    const poCompleted = isPoDocumentComplete(order);
-
-    if (!poCompleted) {
-      const message = "Complete the PO Document before placing the order.";
-      setPlaceOrderError(message);
-      showToast(message, "warning");
-      return;
-    }
-
+    /*
+     * IMPORTANT:
+     * PO Document and Vendor Finalization are optional.
+     * Missing PO/vendor details must NOT block Place Order.
+     * Vehicle allocation can also be partial after the order is placed.
+     */
     try {
       setPlaceOrderSaving(true);
       setPlaceOrderError("");
@@ -1196,6 +1094,7 @@ const Lifecyclemodal = ({
 
       const body = {
         stage: "Tracking",
+        status: "Tracking",
         orderPlaced: {
           status: "Completed",
           placedAt: new Date().toISOString(),
@@ -1242,6 +1141,9 @@ const Lifecyclemodal = ({
         payload?.trip ||
         payload?.order ||
         payload;
+
+      // Keep this modal synced with the fresh backend response.
+      setLocalOrder(updatedOrder);
 
       setPlaceOrderMessage(
         "Order placed successfully and moved to Tracking."
@@ -1357,55 +1259,172 @@ const Lifecyclemodal = ({
     }
   };
 
-  const handleStepClick = (
-    index
-  ) => {
-    const poOrVendorStep =
-      index === 2 || index === 3;
+  const handleStepClick = (index) => {
+    const orderApproved =
+      String(order?.orderApproval?.status || "")
+        .trim()
+        .toLowerCase() === "approved";
 
-    const approvalManagementApproved =
-      order?.orderApproval?.status === "Approved" ||
-      vehicleApprovalCompleted ||
+    const orderPlacedCompleted =
+      String(order?.orderPlaced?.status || "")
+        .trim()
+        .toLowerCase() === "completed" ||
       String(order?.stage || "")
         .trim()
-        .toLowerCase() === "tracking input";
+        .toLowerCase() === "tracking" ||
+      currentLifecycleIndex >= 5;
 
-    /*
-     * After Approval Management approval:
-     * - PO Document (step 3) stays as the default page.
-     * - PO Document and Vendor Finalization are both clickable.
-     * - Vendor Finalization does not require PO data/completion.
-     */
+    const canOpenOptionalOrOrderPlaced =
+      orderApproved &&
+      (index === 2 || index === 3 || index === 4);
+
+    const canOpenTracking =
+      orderPlacedCompleted && index === 5;
+
     if (
       index <= currentLifecycleIndex ||
-      (approvalManagementApproved && poOrVendorStep)
+      canOpenOptionalOrOrderPlaced ||
+      canOpenTracking
     ) {
       setActiveStepIndex(index);
     }
   };
 
-  const requirements = safeArray(
-    order.vehicleRequirements
+
+  /* Derived order collections used by lifecycle logic */
+  const requirements = safeArray(order?.vehicleRequirements);
+
+  // Keep ALL confirmations because Vendor Finalization needs to match
+  // every quotation with its Approved / Rejected / Pending confirmation.
+  const confirmations = safeArray(order?.vehicleConfirmations);
+
+  const approvedConfirmations = confirmations.filter(
+    (confirmation) =>
+      String(confirmation?.status || "")
+        .trim()
+        .toLowerCase() === "approved"
   );
 
-  const quotations = safeArray(
-    order.trafficQuotations
+  const allocations = safeArray(order?.allocatedVehicles);
+
+  // Traffic quotations used by Vendor Finalization.
+  const quotations = safeArray(order?.trafficQuotations);
+
+  const totalAllocatedVehicles = allocations.length;
+
+  // IMPORTANT:
+  // Define totalRequiredVehicles before quotationPendingVehicleCount
+  // or any other calculation that uses it.
+  const totalRequiredVehicles = requirements.reduce(
+    (total, requirement) =>
+      total +
+      Math.max(
+        Number(
+          requirement?.quantity ??
+          requirement?.vehicleQuantity ??
+          requirement?.requiredQuantity ??
+          requirement?.noOfVehicles ??
+          requirement?.numberOfVehicles ??
+          0
+        ) || 0,
+        0
+      ),
+    0
   );
 
-  const confirmations = safeArray(
-    order.vehicleConfirmations
+  const pendingVehicleCount = Math.max(
+    totalRequiredVehicles - totalAllocatedVehicles,
+    0
   );
 
-  const allocations = safeArray(
-    order.allocatedVehicles
+  /*
+   * QUOTATION VEHICLE STATUS
+   * Pending here means vehicles whose requirement quantity is not yet
+   * covered by an APPROVED vehicle confirmation/quotation.
+   */
+  const getRequirementQuantity = (requirement) => {
+    const value =
+      requirement?.quantity ??
+      requirement?.vehicleQuantity ??
+      requirement?.requiredQuantity ??
+      requirement?.noOfVehicles ??
+      requirement?.numberOfVehicles ??
+      1;
+
+    const parsed = Number(value);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
+  };
+
+  const getRequirementKey = (item) =>
+    String(
+      item?.requirementId ||
+      item?.vehicleRequirementId ||
+      item?.requirement?.id ||
+      item?.requirement?._id ||
+      item?.id ||
+      item?._id ||
+      ""
+    ).trim();
+
+  const approvedQuotationVehicleCount = requirements.reduce(
+    (sum, requirement) => {
+      const requirementKey = getRequirementKey(requirement);
+
+      const hasApprovedConfirmation = confirmations.some(
+        (confirmation) => {
+          const status = String(confirmation?.status || "")
+            .trim()
+            .toLowerCase();
+
+          if (status !== "approved") {
+            return false;
+          }
+
+          const confirmationKey = getRequirementKey(confirmation);
+
+          if (
+            requirementKey &&
+            confirmationKey &&
+            requirementKey === confirmationKey
+          ) {
+            return true;
+          }
+
+          const quotation = quotations.find(
+            (quote) =>
+              String(quote?._id || quote?.id || "") ===
+              String(
+                confirmation?.quotationId ||
+                confirmation?.trafficQuotationId ||
+                ""
+              )
+          );
+
+          return (
+            quotation &&
+            requirementKey &&
+            getRequirementKey(quotation) === requirementKey
+          );
+        }
+      );
+
+      return (
+        sum +
+        (hasApprovedConfirmation
+          ? getRequirementQuantity(requirement)
+          : 0)
+      );
+    },
+    0
   );
 
-  const approvedConfirmations =
-    confirmations.filter(
-      (confirmation) =>
-        confirmation.status ===
-        "Approved"
-    );
+  const quotationPendingVehicleCount = Math.max(
+    totalRequiredVehicles - approvedQuotationVehicleCount,
+    0
+  );
+
+
+
 
   /* =========================================================
      VEHICLE APPROVAL COMPLETED
@@ -1427,87 +1446,28 @@ const Lifecyclemodal = ({
     );
 
   const displayCurrentStage = (() => {
-    const rawStage = String(order?.stage || "")
-      .trim()
-      .toLowerCase();
-
-    const poCompleted = isPoDocumentComplete(order);
-
-    const approvalManagementApproved =
-      vehicleApprovalCompleted ||
-      rawStage === "tracking input";
-
-    const orderPlacedCompleted =
-      getStatusClass(order?.orderPlaced?.status) === "approved";
-
-    if (
-      rawStage === "trip complete" ||
-      rawStage === "trip completed" ||
-      rawStage === "completed" ||
-      rawStage === "complete"
-    ) {
+    if (currentLifecycleIndex >= 6) {
       return "Trip Complete";
     }
 
-    const hasRealTrackingProgress = safeArray(order?.allocatedVehicles).some(
-      (allocation) =>
-        safeArray(allocation?.dailyTracking).length > 0 ||
-        String(allocation?.loading?.status || "").trim().toLowerCase() === "completed" ||
-        String(allocation?.unloading?.status || "").trim().toLowerCase() === "completed"
-    );
-
-    // PO Document is the mandatory gate after Approval Management.
-    // Ignore stale Order Placed / Tracking Input values until PO is complete.
-    if (
-      approvalManagementApproved &&
-      !poCompleted &&
-      !hasRealTrackingProgress
-    ) {
-      return "PO Document";
-    }
-
-    if (
-      (orderPlacedCompleted || rawStage === "tracking") &&
-      hasRealTrackingProgress
-    ) {
+    if (currentLifecycleIndex >= 5) {
       return "Tracking";
     }
 
-    if (
-      poCompleted &&
-      getStatusClass(
-        order?.vendorFinalization?.status
-      ) !== "approved"
-    ) {
-      return "Vendor Finalization";
-    }
-
-    if (
-      poCompleted &&
-      vehicleApprovalCompleted &&
-      !orderPlacedCompleted
-    ) {
+    if (currentLifecycleIndex >= 4) {
       return "Order Placed";
     }
 
-    return order?.stage || "Order Approval";
+    return (
+      lifecycle?.[currentLifecycleIndex]?.title ||
+      order?.stage ||
+      "Enquiry Details"
+    );
   })();
 
-  const totalRequiredVehicles =
-    requirements.reduce(
-      (
-        total,
-        requirement
-      ) =>
-        total +
-        Math.max(
-          Number(
-            requirement.quantity
-          ) || 0,
-          0
-        ),
-      0
-    );
+
+
+
 
   return (
     <div
@@ -1604,11 +1564,22 @@ const Lifecyclemodal = ({
                   statusClass ===
                   "rejected";
 
+                const optionalPending =
+                  (
+                    step.key === "po-document" ||
+                    step.key === "vendor-finalization"
+                  ) &&
+                  statusClass === "pending" &&
+                  String(order?.orderApproval?.status || "")
+                    .trim()
+                    .toLowerCase() === "approved";
+
                 const isCurrent =
                   index === activeStepIndex;
 
                 const completed =
                   !rejected &&
+                  !optionalPending &&
                   (
                     index <
                       activeStepIndex ||
@@ -1647,19 +1618,36 @@ const Lifecyclemodal = ({
                         )
                       }
                       disabled={(() => {
-                        const poOrVendorStep =
-                          index === 2 || index === 3;
+                        const orderApproved =
+                          String(order?.orderApproval?.status || "")
+                            .trim()
+                            .toLowerCase() === "approved";
 
-                        const approvalManagementApproved =
-                          order?.orderApproval?.status === "Approved" ||
-                          vehicleApprovalCompleted ||
+                        const orderPlacedCompleted =
+                          String(order?.orderPlaced?.status || "")
+                            .trim()
+                            .toLowerCase() === "completed" ||
                           String(order?.stage || "")
                             .trim()
-                            .toLowerCase() === "tracking input";
+                            .toLowerCase() === "tracking" ||
+                          currentLifecycleIndex >= 5;
+
+                        const canOpenOptionalOrOrderPlaced =
+                          orderApproved &&
+                          (
+                            index === 2 ||
+                            index === 3 ||
+                            index === 4
+                          );
+
+                        const canOpenTracking =
+                          orderPlacedCompleted &&
+                          index === 5;
 
                         return !(
                           index <= currentLifecycleIndex ||
-                          (approvalManagementApproved && poOrVendorStep)
+                          canOpenOptionalOrOrderPlaced ||
+                          canOpenTracking
                         );
                       })()}
                       className={[
@@ -1675,6 +1663,10 @@ const Lifecyclemodal = ({
 
                         rejected
                           ? "rejected"
+                          : "",
+
+                        optionalPending
+                          ? "warning"
                           : "",
 
                         activeStepIndex ===
@@ -1711,7 +1703,7 @@ const Lifecyclemodal = ({
                               strokeLinejoin="round"
                             />
                           </svg>
-                        ) : rejected ? (
+                        ) : rejected || optionalPending ? (
                           "!"
                         ) : (
                           index + 1
@@ -2315,8 +2307,7 @@ const Lifecyclemodal = ({
 
           {/* =================================================
               VENDOR FINALIZATION
-              CONFIRMED TRANSPORTERS FIRST
-              TRAFFIC QUOTATIONS SECOND
+              CONFIRMED TRANSPORTERS + QUOTATION VEHICLE STATUS
           ================================================= */}
 
           {activeStepIndex === 3 && (
@@ -2474,149 +2465,125 @@ const Lifecyclemodal = ({
 
 
               {/* =================================================
-                  TRAFFIC QUOTATIONS
+                  QUOTATION VEHICLE STATUS
               ================================================= */}
 
-              <div className="kam-step-page kam-step-page-traffic-quotations">
+              <div className="kam-step-page kam-step-page-pending-vehicles">
 
                 <section className="kam-client-vehicle-section">
 
                   <SectionHeading
-                    title="Traffic Quotations"
-                    description="Transporter quotations submitted by Traffic."
-                    count={
-                      quotations.length
-                    }
+                    title="Quotation Vehicle Status"
+                    description="Required, quotation confirmed and quotation pending vehicles for this order."
+                    count={quotationPendingVehicleCount}
                   />
 
-                  {quotations.length > 0 ? (
+                  <div className="kam-client-vehicle-table-wrap">
 
-                    <div className="kam-client-vehicle-table-wrap">
+                    <table className="kam-client-vehicle-table">
 
-                      <table className="kam-client-vehicle-table">
+                      <thead>
+                        <tr>
+                          <th>Required Vehicles</th>
+                          <th>Quotation Confirmed</th>
+                          <th>Quotation Pending</th>
+                          <th>Status</th>
+                        </tr>
+                      </thead>
 
-                        <thead>
-                          <tr>
-                            <th>#</th>
+                      <tbody>
+                        <tr>
+                          <td>
+                            <strong>{totalRequiredVehicles}</strong>
+                          </td>
 
-                            <th>
-                              Requirement
-                            </th>
+                          <td>
+                            <strong>{approvedQuotationVehicleCount}</strong>
+                          </td>
 
-                            <th>
-                              Transporter
-                            </th>
+                          <td>
+                            <strong
+                              style={{
+                                color:
+                                  quotationPendingVehicleCount > 0
+                                    ? "#b77900"
+                                    : "#0d8f87",
+                              }}
+                            >
+                              {quotationPendingVehicleCount}
+                            </strong>
+                          </td>
 
-                            <th>
-                              Amount
-                            </th>
+                          <td>
+                            {quotationPendingVehicleCount > 0 ? (
+                              <span
+                                style={{
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  gap: "6px",
+                                  padding: "6px 10px",
+                                  border: "1px solid #f0c56a",
+                                  borderRadius: "999px",
+                                  background: "#fff7e2",
+                                  color: "#9a6200",
+                                  fontSize: "10px",
+                                  fontWeight: 900,
+                                }}
+                              >
+                                ⚠ {quotationPendingVehicleCount} Pending
+                              </span>
+                            ) : (
+                              <span
+                                style={{
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  gap: "6px",
+                                  padding: "6px 10px",
+                                  border: "1px solid #b9ddd8",
+                                  borderRadius: "999px",
+                                  background: "#eefaf8",
+                                  color: "#08776f",
+                                  fontSize: "10px",
+                                  fontWeight: 900,
+                                }}
+                              >
+                                ✓ Quotation Complete
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      </tbody>
 
-                            <th>
-                              Quoted By
-                            </th>
+                    </table>
 
-                            <th>
-                              Quoted At
-                            </th>
+                  </div>
 
-                            <th>
-                              Status
-                            </th>
-                          </tr>
-                        </thead>
-
-                        <tbody>
-
-                          {quotations.map(
-                            (
-                              quotation,
-                              index
-                            ) => {
-
-                              const confirmation =
-                                confirmations.find(
-                                  (item) =>
-                                    item.quotationId ===
-                                    quotation.quotationId
-                                );
-
-                              return (
-                                <tr
-                                  key={
-                                    quotation.quotationId ||
-                                    index
-                                  }
-                                >
-
-                                  <td>
-                                    <span className="kam-client-row-no">
-                                      {index + 1}
-                                    </span>
-                                  </td>
-
-                                  <td>
-                                    {quotation.requirementId ||
-                                      "—"}
-                                  </td>
-
-                                  <td>
-                                    <strong>
-                                      {quotation.transporter ||
-                                        "—"}
-                                    </strong>
-                                  </td>
-
-                                  <td>
-                                    {formatAmount(
-                                      quotation.amount
-                                    )}
-                                  </td>
-
-                                  <td>
-                                    {quotation.quotedBy ||
-                                      "—"}
-                                  </td>
-
-                                  <td>
-                                    {formatDateTime(
-                                      quotation.quotedAt
-                                    )}
-                                  </td>
-
-                                  <td>
-                                    <span
-                                      className={`approval-status ${getStatusClass(
-                                        confirmation?.status ||
-                                          "Pending"
-                                      )}`}
-                                    >
-                                      {confirmation?.status ||
-                                        "Pending"}
-                                    </span>
-                                  </td>
-
-                                </tr>
-                              );
-                            }
-                          )}
-
-                        </tbody>
-
-                      </table>
-
+                  {quotationPendingVehicleCount > 0 && (
+                    <div
+                      style={{
+                        marginTop: "12px",
+                        padding: "10px 12px",
+                        border: "1px solid #f0c56a",
+                        borderLeft: "4px solid #e5a62f",
+                        borderRadius: "8px",
+                        background: "#fff8e8",
+                        color: "#8a5a00",
+                        fontSize: "10px",
+                        fontWeight: 700,
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      ⚠ {quotationPendingVehicleCount} vehicle
+                      {quotationPendingVehicleCount === 1 ? "" : "s"} pending
+                      quotation/finalization. Order Placed and Tracking can still
+                      continue.
                     </div>
-
-                  ) : (
-
-                    <div className="kam-lifecycle-empty">
-                      No Traffic quotations have been submitted yet.
-                    </div>
-
                   )}
 
                 </section>
 
               </div>
+
             </>
           )}
 
@@ -2789,6 +2756,26 @@ const Lifecyclemodal = ({
             <div className="kam-step-page kam-step-page-place-order">
 
               <section className="kam-place-order-section">
+                {(
+                  !isPoDocumentComplete(order) ||
+                  getStatusClass(lifecycle?.[3]?.status) === "pending"
+                ) && (
+                  <div className="kam-optional-commercial-warning">
+                    <strong>⚠ Optional items pending</strong>
+                    <span>
+                      {!isPoDocumentComplete(order) && "PO Document"}
+                      {!isPoDocumentComplete(order) &&
+                        getStatusClass(lifecycle?.[3]?.status) === "pending" &&
+                        " • "}
+                      {getStatusClass(lifecycle?.[3]?.status) === "pending" &&
+                        "Vendor Finalization"}
+                    </span>
+                    <small>
+                      You can place the order and start tracking. These items can be completed later.
+                    </small>
+                  </div>
+                )}
+
                 <div className="kam-place-order-heading">
                   <div>
                     <span className="kam-place-order-kicker">
@@ -2987,16 +2974,105 @@ const Lifecyclemodal = ({
           )}
 
           {/* =================================================
-              TRACKING - ALLOCATED VEHICLES
+              TRACKING - ALLOCATED + PENDING VEHICLES
           ================================================= */}
 
           {activeStepIndex === 5 && (
             <div className="kam-step-page kam-step-page-allocated-vehicles">
+
+              {/* TRACKING ALLOCATION SUMMARY */}
+              <section className="kam-client-vehicle-section">
+                <SectionHeading
+                  title="Vehicle Allocation Status"
+                  description="Allocated and allocation-pending vehicles for this trip."
+                  count={totalRequiredVehicles}
+                />
+
+                <div className="kam-client-vehicle-table-wrap">
+                  <table className="kam-client-vehicle-table">
+                    <thead>
+                      <tr>
+                        <th>Required Vehicles</th>
+                        <th>Allocated Vehicles</th>
+                        <th>Allocation Pending</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+
+                    <tbody>
+                      <tr>
+                        <td>
+                          <strong>{totalRequiredVehicles}</strong>
+                        </td>
+
+                        <td>
+                          <strong style={{ color: "#08776f" }}>
+                            {totalAllocatedVehicles}
+                          </strong>
+                        </td>
+
+                        <td>
+                          <strong
+                            style={{
+                              color:
+                                pendingVehicleCount > 0
+                                  ? "#b77900"
+                                  : "#08776f",
+                            }}
+                          >
+                            {pendingVehicleCount}
+                          </strong>
+                        </td>
+
+                        <td>
+                          {pendingVehicleCount > 0 ? (
+                            <span
+                              style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "6px",
+                                padding: "6px 10px",
+                                border: "1px solid #f0c56a",
+                                borderRadius: "999px",
+                                background: "#fff7e2",
+                                color: "#9a6200",
+                                fontSize: "10px",
+                                fontWeight: 900,
+                              }}
+                            >
+                              ⚠ {pendingVehicleCount} Pending
+                            </span>
+                          ) : (
+                            <span
+                              style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "6px",
+                                padding: "6px 10px",
+                                border: "1px solid #b9ddd8",
+                                borderRadius: "999px",
+                                background: "#eefaf8",
+                                color: "#08776f",
+                                fontSize: "10px",
+                                fontWeight: 900,
+                              }}
+                            >
+                              ✓ Fully Allocated
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+
+              {/* ALLOCATED VEHICLES */}
               <section className="kam-client-vehicle-section">
                 <SectionHeading
                   title="Allocated Vehicles"
                   description="Actual vehicles allocated and managed by the Tracking team."
-                  count={allocations.length}
+                  count={totalAllocatedVehicles}
                 />
 
                 {allocations.length > 0 ? (
@@ -3048,21 +3124,58 @@ const Lifecyclemodal = ({
                                   {index + 1}
                                 </span>
                               </td>
-                              <td><strong>{allocation.vehicleNumber || "—"}</strong></td>
-                              <td>{requirement?.vehicleType || allocation.requirementId || "—"}</td>
-                              <td>{quotation?.transporter || "—"}</td>
+
                               <td>
-                                <strong>{allocation?.driver?.name || "—"}</strong>
-                                {allocation?.driver?.contactNumber && (
+                                <strong>
+                                  {allocation.vehicleNumber || "—"}
+                                </strong>
+                              </td>
+
+                              <td>
+                                {requirement?.vehicleType ||
+                                  allocation.requirementId ||
+                                  "—"}
+                              </td>
+
+                              <td>
+                                {quotation?.transporter ||
+                                  confirmation?.selectedTransport ||
+                                  confirmation?.transporter ||
+                                  "—"}
+                              </td>
+
+                              <td>
+                                <strong>
+                                  {allocation?.driver?.name ||
+                                    allocation?.driverName ||
+                                    "—"}
+                                </strong>
+
+                                {(allocation?.driver?.contactNumber ||
+                                  allocation?.driverNumber) && (
                                   <small style={{ display: "block" }}>
-                                    {allocation.driver.contactNumber}
+                                    {allocation?.driver?.contactNumber ||
+                                      allocation?.driverNumber}
                                   </small>
                                 )}
                               </td>
-                              <td>{latest?.currentLocation || "—"}</td>
-                              <td>{latest?.day || "—"}</td>
+
                               <td>
-                                <span className={`approval-status ${getStatusClass(latest?.status || "Pending")}`}>
+                                {latest?.currentLocation ||
+                                  allocation?.todayLocation ||
+                                  "—"}
+                              </td>
+
+                              <td>
+                                {latest?.day || "—"}
+                              </td>
+
+                              <td>
+                                <span
+                                  className={`approval-status ${getStatusClass(
+                                    latest?.status || "Pending"
+                                  )}`}
+                                >
                                   {latest?.status || "Pending"}
                                 </span>
                               </td>
@@ -3074,10 +3187,138 @@ const Lifecyclemodal = ({
                   </div>
                 ) : (
                   <div className="kam-lifecycle-empty">
-                    Tracking has started. Actual vehicle details will appear here after the Tracking team allocates vehicles.
+                    No vehicles have been allocated by the Tracking team yet.
                   </div>
                 )}
               </section>
+
+              {/* ALLOCATION PENDING VEHICLES */}
+              <section className="kam-client-vehicle-section">
+                <SectionHeading
+                  title="Allocation Pending Vehicles"
+                  description="Vehicle quantity still waiting for actual vehicle allocation by the Tracking team."
+                  count={pendingVehicleCount}
+                />
+
+                {pendingVehicleCount > 0 ? (
+                  <div className="kam-client-vehicle-table-wrap">
+                    <table className="kam-client-vehicle-table">
+                      <thead>
+                        <tr>
+                          <th>#</th>
+                          <th>Requirement ID</th>
+                          <th>Vehicle Requirement</th>
+                          <th>Required</th>
+                          <th>Allocated</th>
+                          <th>Pending</th>
+                          <th>Status</th>
+                        </tr>
+                      </thead>
+
+                      <tbody>
+                        {requirements
+                          .map((requirement) => {
+                            const requiredQty = Math.max(
+                              Number(requirement?.quantity) || 0,
+                              0
+                            );
+
+                            const allocatedQty = allocations.filter(
+                              (allocation) =>
+                                String(allocation?.requirementId || "") ===
+                                String(requirement?.requirementId || "")
+                            ).length;
+
+                            const pendingQty = Math.max(
+                              requiredQty - allocatedQty,
+                              0
+                            );
+
+                            return {
+                              requirement,
+                              requiredQty,
+                              allocatedQty,
+                              pendingQty,
+                            };
+                          })
+                          .filter((item) => item.pendingQty > 0)
+                          .map((item, index) => (
+                            <tr
+                              key={
+                                item.requirement?.requirementId ||
+                                index
+                              }
+                            >
+                              <td>
+                                <span className="kam-client-row-no">
+                                  {index + 1}
+                                </span>
+                              </td>
+
+                              <td>
+                                <strong>
+                                  {item.requirement?.requirementId || "—"}
+                                </strong>
+                              </td>
+
+                              <td>
+                                <strong>
+                                  {item.requirement?.vehicleType || "—"}
+                                </strong>
+
+                                {item.requirement?.configuration && (
+                                  <small style={{ display: "block" }}>
+                                    {item.requirement.configuration}
+                                  </small>
+                                )}
+                              </td>
+
+                              <td>
+                                <strong>{item.requiredQty}</strong>
+                              </td>
+
+                              <td>
+                                <strong style={{ color: "#08776f" }}>
+                                  {item.allocatedQty}
+                                </strong>
+                              </td>
+
+                              <td>
+                                <strong style={{ color: "#b77900" }}>
+                                  {item.pendingQty}
+                                </strong>
+                              </td>
+
+                              <td>
+                                <span
+                                  style={{
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: "6px",
+                                    padding: "6px 10px",
+                                    border: "1px solid #f0c56a",
+                                    borderRadius: "999px",
+                                    background: "#fff7e2",
+                                    color: "#9a6200",
+                                    fontSize: "10px",
+                                    fontWeight: 900,
+                                  }}
+                                >
+                                  ⚠ Allocation Pending
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="kam-lifecycle-empty">
+                    ✓ All required vehicles have been allocated.
+                  </div>
+                )}
+              </section>
+
             </div>
           )}
 
@@ -3277,9 +3518,7 @@ const Lifecyclemodal = ({
           <div className="kam-readonly-field">
             Current Stage:{" "}
             <strong>
-              {lifecycle?.[currentLifecycleIndex]?.title ||
-                order?.stage ||
-                displayCurrentStage}
+{displayCurrentStage}
             </strong>
           </div>
 

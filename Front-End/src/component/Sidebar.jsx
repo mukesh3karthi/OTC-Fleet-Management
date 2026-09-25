@@ -263,14 +263,7 @@ const Sidebar = ({
         "/vehicle-documents",
     },
 
-    {
-      title: "Assets",
-      icon:
-        <FaBoxOpen />,
-      path:
-        "/assets",
-      secureLogin: true,
-    },
+    
 
     {
       title: "Order Management",
@@ -324,13 +317,22 @@ const Sidebar = ({
       ],
     },
 
+    // {
+    //   title:
+    //     "Inbound & Outbound",
+    //   icon:
+    //     <FaTruck />,
+    //   path:
+    //     "/inbound-outbound",
+    // },
+
     {
-      title:
-        "Inbound & Outbound",
+      title: "Assets",
       icon:
-        <FaTruck />,
+        <FaBoxOpen />,
       path:
-        "/inbound-outbound",
+        "/assets",
+      secureLogin: true,
     },
 
     {

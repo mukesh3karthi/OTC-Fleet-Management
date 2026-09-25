@@ -275,6 +275,19 @@ const trafficQuotationSchema = new Schema(
       trim: true,
     },
 
+    quantity: {
+      type: Number,
+      required: true,
+      min: 1,
+      default: 1,
+    },
+
+    allocatedBy: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
     amount: {
       type: Number,
       required: true,
@@ -537,6 +550,76 @@ const unloadingSchema = new Schema(
 );
 
 /* =========================================================
+   LR / POD DOCUMENT
+   Stored per allocated vehicle
+========================================================= */
+
+const movementDocumentSchema = new Schema(
+  {
+    number: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
+    date: {
+      type: Date,
+      default: null,
+    },
+
+    status: {
+      type: String,
+      trim: true,
+      default: "Pending",
+    },
+
+    documentName: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
+    fileName: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
+    mimeType: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
+    fileSize: {
+      type: Number,
+      min: 0,
+      default: 0,
+    },
+
+    fileData: {
+      type: Buffer,
+      select: false,
+      default: null,
+    },
+
+    uploadedBy: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
+    uploadedAt: {
+      type: Date,
+      default: null,
+    },
+  },
+  {
+    _id: false,
+  }
+);
+
+/* =========================================================
    DAILY TRACKING
 ========================================================= */
 
@@ -706,6 +789,16 @@ const allocatedVehicleSchema = new Schema(
 
     unloading: {
       type: unloadingSchema,
+      default: () => ({}),
+    },
+
+    lr: {
+      type: movementDocumentSchema,
+      default: () => ({}),
+    },
+
+    pod: {
+      type: movementDocumentSchema,
       default: () => ({}),
     },
 

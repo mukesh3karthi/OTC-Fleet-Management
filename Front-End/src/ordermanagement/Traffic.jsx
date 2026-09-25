@@ -131,6 +131,7 @@ const createQuotationForm = () => ({
       .slice(2, 8)}`,
 
   transporter: "",
+  quantity: 1,
   amount: "",
   allocatedBy: "",
   remarks: "",
@@ -241,6 +242,46 @@ const getRequirementConfirmation = (
 };
 
 
+const getApprovedQuantityForRequirement = (
+  order,
+  requirementId
+) => {
+  const quotations =
+    getRequirementQuotations(
+      order,
+      requirementId
+    );
+
+  const confirmations =
+    getVehicleConfirmations(order)
+      .filter(
+        (confirmation) =>
+          confirmation.requirementId === requirementId &&
+          confirmation.status === "Approved"
+      );
+
+  return confirmations.reduce(
+    (total, confirmation) => {
+      const quotation =
+        quotations.find(
+          (item) =>
+            item.quotationId ===
+            confirmation.quotationId
+        );
+
+      return (
+        total +
+        Math.max(
+          1,
+          Number(quotation?.quantity) || 1
+        )
+      );
+    },
+    0
+  );
+};
+
+
 /* =========================================================
    REQUIREMENT STATUS
 
@@ -272,29 +313,47 @@ const getRequirementStatus = (
     return "Quotation Pending";
   }
 
-  const confirmation =
-    getRequirementConfirmation(
+  const requirement =
+    getVehicleRequirements(order).find(
+      (item) =>
+        item.requirementId === requirementId
+    );
+
+  const requiredQuantity =
+    Math.max(
+      1,
+      Number(requirement?.quantity) || 1
+    );
+
+  const approvedQuantity =
+    getApprovedQuantityForRequirement(
       order,
       requirementId
     );
 
-  if (
-    confirmation?.status ===
-    "Approved"
-  ) {
+  if (approvedQuantity >= requiredQuantity) {
     return "Approved";
   }
 
+  const confirmations =
+    getVehicleConfirmations(order).filter(
+      (confirmation) =>
+        confirmation.requirementId === requirementId
+    );
+
   if (
-    confirmation?.status ===
-    "Rejected"
+    approvedQuantity === 0 &&
+    confirmations.length > 0 &&
+    confirmations.every(
+      (confirmation) =>
+        confirmation.status === "Rejected"
+    )
   ) {
     return "Rejected";
   }
 
   return "Approval Pending";
 };
-
 
 const getOrderQuotationStatus = (
   order
@@ -555,9 +614,22 @@ const Traffic = () => {
             ).map(
               (quotation) => ({
                 ...quotation,
+                quantity:
+                  Math.max(
+                    1,
+                    Number(quotation.quantity) || 1
+                  ),
                 allocatedBy: quotation.quotedBy || "",
                 isNew: false,
               })
+            );
+
+          const requiredQuantity =
+            Math.max(
+              1,
+              Math.floor(
+                getRequirementQuantity(requirement)
+              )
             );
 
           return {
@@ -567,7 +639,10 @@ const Traffic = () => {
               existing.length
                 ? existing
                 : [
-                    createQuotationForm(),
+                    {
+                      ...createQuotationForm(),
+                      quantity: 1,
+                    },
                   ],
           };
         }
@@ -989,7 +1064,10 @@ const Traffic = () => {
                 quotations.length
                   ? quotations
                   : [
-                      createQuotationForm(),
+                      {
+                        ...createQuotationForm(),
+                        quantity: 1,
+                      },
                     ],
             };
           }
@@ -1010,6 +1088,7 @@ const Traffic = () => {
      {
        requirementId,
        transporter,
+       quantity,
        amount,
        quotedBy,
        remarks
@@ -1088,6 +1167,8 @@ const Traffic = () => {
         }
 
 
+
+
         for (
           let quotationIndex = 0;
           quotationIndex <
@@ -1111,6 +1192,13 @@ const Traffic = () => {
               quotation.amount
             );
 
+          const quantity =
+            Math.floor(
+              Number(
+                quotation.quantity
+              )
+            );
+
           const allocatedBy =
             String(
               quotation.allocatedBy ||
@@ -1132,6 +1220,21 @@ const Traffic = () => {
             )
           ) {
             continue;
+          }
+
+
+          if (
+            !Number.isFinite(quantity) ||
+            quantity <= 0
+          ) {
+            const text =
+              `Enter a valid quantity for ${
+                requirement.vehicleType ||
+                `requirement ${requirementIndex + 1}`
+              }.`;
+            setMessage(text);
+            showToast(text, "warning");
+            return;
           }
 
 
@@ -1172,6 +1275,8 @@ const Traffic = () => {
               requirement.requirementId,
 
             transporter,
+
+            quantity,
 
             amount,
 
@@ -2456,6 +2561,10 @@ const Traffic = () => {
                                 </th>
 
                                 <th>
+                                  Quantity
+                                </th>
+
+                                <th>
                                   Quoted Amount
                                 </th>
 
@@ -2555,6 +2664,64 @@ const Traffic = () => {
                                                 saving
                                               }
                                             />
+
+                                          )}
+
+                                        </td>
+
+
+                                        {/* QUANTITY */}
+
+                                        <td>
+
+                                          {isExisting ? (
+
+                                            <strong className="traffic-quantity-value">
+                                              {Math.max(
+                                                1,
+                                                Number(
+                                                  quotation.quantity
+                                                ) || 1
+                                              )} NOS
+                                            </strong>
+
+                                          ) : (
+
+                                            <div className="traffic-quantity-input">
+
+                                              <input
+                                                type="number"
+                                                min="1"
+                                                max={
+                                                  getRequirementQuantity(
+                                                    requirement
+                                                  )
+                                                }
+                                                step="1"
+                                                value={
+                                                  quotation.quantity ??
+                                                  1
+                                                }
+                                                onChange={(
+                                                  event
+                                                ) =>
+                                                  handleQuotationChange(
+                                                    requirementIndex,
+                                                    quotationIndex,
+                                                    "quantity",
+                                                    event.target.value
+                                                  )
+                                                }
+                                                disabled={
+                                                  saving
+                                                }
+                                              />
+
+                                              <span>
+                                                NOS
+                                              </span>
+
+                                            </div>
 
                                           )}
 

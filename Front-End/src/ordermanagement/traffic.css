@@ -4,20 +4,20 @@
 ========================================================= */
 
 :root {
-  --tm-primary: #0f766e;
-  --tm-primary-dark: #0b5f59;
-  --tm-primary-soft: #edf8f6;
+  --tm-primary: #0d8f87;
+  --tm-primary-dark: #08776f;
+  --tm-primary-soft: #ecfaf7;
 
-  --tm-bg: #f4f7f8;
+  --tm-bg: #f4f9fa;
   --tm-surface: #ffffff;
   --tm-surface-soft: #f8fafb;
 
-  --tm-text: #173b49;
-  --tm-text-2: #47636e;
-  --tm-muted: #7b9098;
+  --tm-text: #173c4e;
+  --tm-text-2: #456675;
+  --tm-muted: #668697;
 
-  --tm-border: #dbe5e8;
-  --tm-border-dark: #cbd9dd;
+  --tm-border: #dce8eb;
+  --tm-border-dark: #c9dde3;
 
   --tm-success: #18794e;
   --tm-success-bg: #edf8f2;
@@ -31,7 +31,7 @@
   --tm-info: #2f6ea9;
   --tm-info-bg: #eef5fc;
 
-  --tm-shadow: 0 8px 26px rgba(21, 55, 67, 0.06);
+  --tm-shadow: 0 8px 26px rgba(11, 52, 71, 0.07);
 }
 
 
@@ -770,7 +770,7 @@
   align-items: center;
   justify-content: center;
 
-  background: rgba(13, 30, 38, 0.58);
+  background: rgba(4, 30, 42, 0.48);
   backdrop-filter: blur(4px);
 
   animation: trafficOverlayIn 0.18s ease;
@@ -793,11 +793,11 @@
   border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 16px;
 
-  background: #f6f8f9;
+  background: #f4f9fa;
 
   box-shadow:
-    0 28px 70px rgba(7, 30, 34, 0.3),
-    0 8px 22px rgba(7, 30, 34, 0.11);
+    0 28px 70px rgba(5, 42, 58, 0.28),
+    0 8px 22px rgba(5, 42, 58, 0.10);
 
   animation: trafficModalIn 0.2s ease;
 }
@@ -826,9 +826,9 @@
   background:
     linear-gradient(
       135deg,
-      #0c5f5a 0%,
-      #11736a 52%,
-      #15877b 100%
+      #0b3447 0%,
+      #0b4f59 55%,
+      #0d8f87 100%
     );
 
   color: #ffffff;
@@ -871,7 +871,7 @@
   border-radius: 999px;
 
   background: rgba(255, 255, 255, 0.1);
-  color: #dffcf7;
+  color: #62e2d8;
 
   font-size: 9px;
   font-weight: 800;
@@ -945,7 +945,7 @@
 
 
 .traffic-allocator-field label b {
-  color: #dffcf7;
+  color: #62e2d8;
 
   font-size: 11px;
   font-weight: 900;
@@ -1129,7 +1129,7 @@
 
   overflow-y: auto;
 
-  background: #f5f7f8;
+  background: #f4f9fa;
 
   overscroll-behavior: contain;
 }
@@ -1610,7 +1610,7 @@
 
 .traffic-option-not-selected {
   border: 1px solid #d9e1e3;
-  background: #f5f7f8;
+  background: #f4f9fa;
   color: #71858d;
 }
 
@@ -1997,13 +1997,14 @@
   gap: 18px;
   flex-shrink: 0;
 
-  border-top: 1px solid #d8e3e6;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
 
   background:
     linear-gradient(
-      180deg,
-      #ffffff 0%,
-      #f8fbfb 100%
+      110deg,
+      #0b3447 0%,
+      #0b4f59 55%,
+      #0d8f87 100%
     );
 
   box-shadow:
@@ -2020,14 +2021,14 @@
 }
 
 .traffic-modal-approval-note strong {
-  color: #214b58;
+  color: #ffffff;
 
   font-size: 11px;
   font-weight: 800;
 }
 
 .traffic-modal-approval-note span {
-  color: #82959c;
+  color: rgba(255, 255, 255, 0.72);
 
   font-size: 9px;
   line-height: 1.45;
@@ -2053,9 +2054,9 @@
   background:
     linear-gradient(
       135deg,
-      #13857d 0%,
-      var(--tm-primary) 55%,
-      var(--tm-primary-dark) 100%
+      #128f87 0%,
+      #0d8f87 55%,
+      #08776f 100%
     );
 
   color: #ffffff;
@@ -2904,4 +2905,146 @@
     flex-direction: column;
     gap: 5px;
   }
+}
+
+/* =========================================================
+   QUOTATION TABLE - FIT INSIDE CARD / NO HORIZONTAL SCROLL
+   Keeps the existing design and removes only horizontal overflow.
+========================================================= */
+
+.traffic-quotation-table-wrap {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.traffic-quotation-table {
+  width: 100%;
+  min-width: 0 !important;
+  table-layout: fixed;
+}
+
+.traffic-quotation-table th,
+.traffic-quotation-table td {
+  min-width: 0;
+  padding-left: 8px;
+  padding-right: 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* S.NO */
+.traffic-quotation-table th:nth-child(1),
+.traffic-quotation-table td:nth-child(1) {
+  width: 8%;
+  text-align: center;
+}
+
+/* TRANSPORT NAME */
+.traffic-quotation-table th:nth-child(2),
+.traffic-quotation-table td:nth-child(2) {
+  width: 23%;
+}
+
+/* QUOTED AMOUNT */
+.traffic-quotation-table th:nth-child(3),
+.traffic-quotation-table td:nth-child(3) {
+  width: 19%;
+}
+
+/* ALLOCATED BY */
+.traffic-quotation-table th:nth-child(4),
+.traffic-quotation-table td:nth-child(4) {
+  width: 22%;
+}
+
+/* STATUS */
+.traffic-quotation-table th:nth-child(5),
+.traffic-quotation-table td:nth-child(5) {
+  width: 18%;
+}
+
+/* ACTION - only when the table contains a sixth column */
+.traffic-quotation-table th:nth-child(6),
+.traffic-quotation-table td:nth-child(6) {
+  width: 10%;
+  text-align: center;
+}
+
+.traffic-quotation-table input,
+.traffic-allocator-input,
+.traffic-amount-input {
+  min-width: 0 !important;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Remove the horizontal scrollbar specifically from quotation tables. */
+.traffic-quotation-table-wrap::-webkit-scrollbar {
+  height: 0;
+  display: none;
+}
+
+.traffic-quotation-table-wrap {
+  scrollbar-width: none;
+}
+
+
+
+/* =========================================================
+   TRAFFIC QUOTATION - QUANTITY
+   Added without changing existing Traffic design.
+========================================================= */
+
+.traffic-quantity-input {
+  width: 108px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid var(--tm-border-dark);
+  border-radius: 7px;
+  background: #ffffff;
+}
+
+.traffic-quantity-input:focus-within {
+  border-color: #79aaa4;
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.06);
+}
+
+.traffic-quantity-input input {
+  width: 62px !important;
+  min-width: 0;
+  height: 100%;
+  padding: 0 9px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  outline: none;
+  background: transparent;
+  color: #294b59;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 800;
+  box-shadow: none !important;
+}
+
+.traffic-quantity-input span {
+  height: 100%;
+  padding: 0 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-left: 1px solid var(--tm-border);
+  background: #f5f8f9;
+  color: #668697;
+  font-size: 8px;
+  font-weight: 800;
+}
+
+.traffic-quantity-value {
+  color: #244b58;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
 }

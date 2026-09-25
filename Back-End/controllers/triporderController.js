@@ -775,7 +775,7 @@ const downloadCraneDocument = async (
     res.setHeader(
       "Content-Type",
       document.mimeType ||
-        "application/octet-stream"
+      "application/octet-stream"
     );
 
     res.setHeader(
@@ -1450,9 +1450,22 @@ const savePoDocument = async (req, res) => {
         )
       );
 
-    trip.stage = vendorApprovalCompleted
-      ? "Order Placed"
-      : "Vendor Finalization";
+    const alreadyReleasedToTracking =
+      cleanString(trip?.orderPlaced?.status).toLowerCase() === "completed" ||
+      [
+        "tracking",
+        "trip complete",
+        "trip completed",
+        "completed",
+      ].includes(
+        cleanString(trip?.stage).toLowerCase()
+      );
+
+    if (!alreadyReleasedToTracking) {
+      trip.stage = vendorApprovalCompleted
+        ? "Order Placed"
+        : "Vendor Finalization";
+    }
 
     await trip.save();
 
@@ -1698,6 +1711,12 @@ const addTrafficQuotation = async (
         req.body.quotedBy
       );
 
+    const allocatedBy =
+      cleanString(
+        req.body.allocatedBy
+      ) ||
+      quotedBy;
+
     const remarks =
       cleanString(
         req.body.remarks
@@ -1706,6 +1725,17 @@ const addTrafficQuotation = async (
     const amount =
       Number(
         req.body.amount
+      );
+
+    const quantity =
+      Math.max(
+        1,
+        Math.floor(
+          toNumber(
+            req.body.quantity,
+            1
+          )
+        )
       );
 
     if (!requirementId) {
@@ -1759,19 +1789,58 @@ const addTrafficQuotation = async (
       );
     }
 
-    const approvedConfirmation =
-      findApprovedConfirmation(
-        trip,
-        requirementId
+    const requiredQuantity =
+      Math.max(
+        1,
+        Math.floor(
+          toNumber(
+            requirement.quantity,
+            1
+          )
+        )
       );
 
+    const approvedQuantity =
+      getConfirmations(trip)
+        .filter(
+          (confirmation) =>
+            confirmation.requirementId ===
+              requirementId &&
+            confirmation.status ===
+              "Approved"
+        )
+        .reduce(
+          (total, confirmation) => {
+            const approvedQuotation =
+              findQuotation(
+                trip,
+                confirmation.quotationId
+              );
+
+            return (
+              total +
+              Math.max(
+                1,
+                Math.floor(
+                  toNumber(
+                    approvedQuotation?.quantity,
+                    1
+                  )
+                )
+              )
+            );
+          },
+          0
+        );
+
     if (
-      approvedConfirmation
+      approvedQuantity >=
+      requiredQuantity
     ) {
       return sendError(
         res,
         409,
-        "This vehicle requirement already has a confirmed transporter."
+        "This vehicle requirement is already fully approved."
       );
     }
 
@@ -1783,9 +1852,13 @@ const addTrafficQuotation = async (
 
       transporter,
 
+      quantity,
+
       amount,
 
       quotedBy,
+
+      allocatedBy,
 
       quotedAt:
         new Date(),
@@ -1802,6 +1875,10 @@ const addTrafficQuotation = async (
 
     trip.stage =
       "Quotation Approval";
+
+    trip.markModified(
+      "trafficQuotations"
+    );
 
     await trip.save();
 
@@ -1846,10 +1923,6 @@ const confirmVehicleQuotation = async (
 
     const trip = result.trip;
 
-    /* =========================================================
-       ORDER MUST BE APPROVED FIRST
-    ========================================================= */
-
     if (
       trip.orderApproval?.status !==
       "Approved"
@@ -1861,18 +1934,9 @@ const confirmVehicleQuotation = async (
       );
     }
 
-    /* =========================================================
-       REQUEST DATA
-    ========================================================= */
-
     const requirementId =
       cleanString(
         req.body.requirementId
-      );
-
-    const quotationId =
-      cleanString(
-        req.body.quotationId
       );
 
     const status =
@@ -1895,9 +1959,20 @@ const confirmVehicleQuotation = async (
         req.body.rejectionReason
       );
 
-    /* =========================================================
-       VALIDATION
-    ========================================================= */
+    const incomingQuotationIds =
+      Array.isArray(
+        req.body.quotationIds
+      )
+        ? req.body.quotationIds
+        : [req.body.quotationId];
+
+    const quotationIds = [
+      ...new Set(
+        incomingQuotationIds
+          .map(cleanString)
+          .filter(Boolean)
+      ),
+    ];
 
     if (!requirementId) {
       return sendError(
@@ -1907,11 +1982,11 @@ const confirmVehicleQuotation = async (
       );
     }
 
-    if (!quotationId) {
+    if (!quotationIds.length) {
       return sendError(
         res,
         400,
-        "Quotation ID is required."
+        "Select at least one quotation."
       );
     }
 
@@ -1947,10 +2022,6 @@ const confirmVehicleQuotation = async (
       );
     }
 
-    /* =========================================================
-       FIND VEHICLE REQUIREMENT
-    ========================================================= */
-
     const requirement =
       findRequirement(
         trip,
@@ -1965,72 +2036,117 @@ const confirmVehicleQuotation = async (
       );
     }
 
-    /* =========================================================
-       FIND SELECTED QUOTATION
-    ========================================================= */
-
-    const quotation =
-      findQuotation(
-        trip,
-        quotationId
+    const requirementQuotations =
+      getQuotations(trip).filter(
+        (item) =>
+          item.requirementId ===
+          requirementId
       );
 
-    if (!quotation) {
+    const selectedQuotations =
+      requirementQuotations.filter(
+        (item) =>
+          quotationIds.includes(
+            item.quotationId
+          )
+      );
+
+    if (
+      selectedQuotations.length !==
+      quotationIds.length
+    ) {
       return sendError(
         res,
         404,
-        "Traffic quotation not found."
+        "One or more selected quotations were not found for this vehicle requirement."
       );
     }
 
-    /* =========================================================
-       CHECK QUOTATION BELONGS TO VEHICLE REQUIREMENT
-    ========================================================= */
+    const requiredQuantity =
+      Math.max(
+        1,
+        Math.floor(
+          toNumber(
+            requirement.quantity,
+            1
+          )
+        )
+      );
+
+    const selectedQuantity =
+      selectedQuotations.reduce(
+        (total, quotation) =>
+          total +
+          Math.max(
+            1,
+            Math.floor(
+              toNumber(
+                quotation.quantity,
+                1
+              )
+            )
+          ),
+        0
+      );
+
+    const alreadyApprovedQuantity =
+      getConfirmations(trip)
+        .filter(
+          (confirmation) =>
+            confirmation.requirementId === requirementId &&
+            confirmation.status === "Approved" &&
+            !quotationIds.includes(
+              confirmation.quotationId
+            )
+        )
+        .reduce(
+          (total, confirmation) => {
+            const quotation =
+              findQuotation(
+                trip,
+                confirmation.quotationId
+              );
+
+            return (
+              total +
+              Math.max(
+                1,
+                Math.floor(
+                  toNumber(
+                    quotation?.quantity,
+                    1
+                  )
+                )
+              )
+            );
+          },
+          0
+        );
+
+    const pendingQuantity =
+      Math.max(
+        0,
+        requiredQuantity -
+          alreadyApprovedQuantity
+      );
 
     if (
-      quotation.requirementId !==
-      requirementId
+      status === "Approved" &&
+      (
+        selectedQuantity <= 0 ||
+        selectedQuantity > pendingQuantity
+      )
     ) {
       return sendError(
         res,
         400,
-        "The selected quotation does not belong to this vehicle requirement."
+        pendingQuantity <= 0
+          ? "This vehicle requirement is already fully approved."
+          : `You can approve up to ${pendingQuantity} pending NOS. Selected ${selectedQuantity} NOS.`
       );
     }
 
-    /* =========================================================
-       CHECK EXISTING APPROVED QUOTATION
-    ========================================================= */
-
-    if (
-      status === "Approved"
-    ) {
-      const existingApproved =
-        findApprovedConfirmation(
-          trip,
-          requirementId
-        );
-
-      if (
-        existingApproved &&
-        existingApproved
-          .quotationId !==
-        quotationId
-      ) {
-        return sendError(
-          res,
-          409,
-          "This vehicle requirement already has an approved quotation."
-        );
-      }
-    }
-
-    const now =
-      new Date();
-
-    /* =========================================================
-       CREATE / UPDATE CONFIRMATION
-    ========================================================= */
+    const now = new Date();
 
     const upsertConfirmation = (
       targetQuotation,
@@ -2039,39 +2155,28 @@ const confirmVehicleQuotation = async (
       confirmationRejectionReason = ""
     ) => {
       const existingConfirmation =
-        getConfirmations(
-          trip
-        ).find(
+        getConfirmations(trip).find(
           (confirmation) =>
-            confirmation
-              .requirementId ===
-            requirementId &&
-            confirmation
-              .quotationId ===
-            targetQuotation
-              .quotationId
+            confirmation.requirementId ===
+              requirementId &&
+            confirmation.quotationId ===
+              targetQuotation.quotationId
         );
 
-      /* =======================================================
-         EXISTING CONFIRMATION
-      ======================================================= */
-
-      if (
-        existingConfirmation
-      ) {
+      if (existingConfirmation) {
         const allocationExists =
           getAllocatedVehicles(
             trip
           ).some(
             (vehicle) =>
-              vehicle
-                .confirmationId ===
-              existingConfirmation
-                .confirmationId
+              vehicle.confirmationId ===
+              existingConfirmation.confirmationId
           );
 
         if (
-          allocationExists
+          allocationExists &&
+          existingConfirmation.status !==
+            confirmationStatus
         ) {
           return {
             error:
@@ -2093,7 +2198,7 @@ const confirmVehicleQuotation = async (
 
         existingConfirmation.rejectionReason =
           confirmationStatus ===
-            "Rejected"
+          "Rejected"
             ? confirmationRejectionReason
             : "";
 
@@ -2103,10 +2208,6 @@ const confirmVehicleQuotation = async (
         };
       }
 
-      /* =======================================================
-         NEW CONFIRMATION
-      ======================================================= */
-
       const newConfirmation = {
         confirmationId:
           makeId("CONF"),
@@ -2114,23 +2215,21 @@ const confirmVehicleQuotation = async (
         requirementId,
 
         quotationId:
-          targetQuotation
-            .quotationId,
+          targetQuotation.quotationId,
 
         status:
           confirmationStatus,
 
         confirmedBy,
 
-        confirmedAt:
-          now,
+        confirmedAt: now,
 
         remarks:
           confirmationRemarks,
 
         rejectionReason:
           confirmationStatus ===
-            "Rejected"
+          "Rejected"
             ? confirmationRejectionReason
             : "",
       };
@@ -2145,137 +2244,43 @@ const confirmVehicleQuotation = async (
       };
     };
 
-    /* =========================================================
-       APPROVE QUOTATION
-
-       IMPORTANT:
-
-       SELECTED QUOTATION
-       -> APPROVED
-
-       ALL OTHER QUOTATIONS
-       FOR SAME VEHICLE REQUIREMENT
-       -> REJECTED
-
-       OTHER VEHICLE REQUIREMENTS
-       -> NOT CHANGED
-    ========================================================= */
-
-    if (
-      status === "Approved"
-    ) {
-      /* =======================================================
-         GET ONLY QUOTATIONS FOR THIS VEHICLE REQUIREMENT
-      ======================================================= */
-
-      const requirementQuotations =
-        getQuotations(
-          trip
-        ).filter(
-          (item) =>
-            item.requirementId ===
-            requirementId
-        );
-
-      /* =======================================================
-         CHECK VEHICLE ALLOCATION BEFORE CHANGING STATUS
-
-         This prevents partial updates if a confirmation has
-         already been used for actual vehicle allocation.
-      ======================================================= */
-
+    if (status === "Approved") {
+      // Partial approval is allowed.
+      // Approve selected rows only; unselected balance remains pending.
       for (
-        const requirementQuotation
-        of requirementQuotations
+        const selectedQuotation
+        of selectedQuotations
       ) {
-        const existingConfirmation =
-          getConfirmations(
-            trip
-          ).find(
-            (confirmation) =>
-              confirmation
-                .requirementId ===
-              requirementId &&
-              confirmation
-                .quotationId ===
-              requirementQuotation
-                .quotationId
-          );
-
-        if (
-          existingConfirmation
-        ) {
-          const desiredStatus =
-            requirementQuotation
-              .quotationId ===
-              quotationId
-              ? "Approved"
-              : "Rejected";
-
-          const allocationExists =
-            getAllocatedVehicles(
-              trip
-            ).some(
-              (vehicle) =>
-                vehicle
-                  .confirmationId ===
-                existingConfirmation
-                  .confirmationId
-            );
-
-          if (
-            allocationExists &&
-            existingConfirmation
-              .status !==
-            desiredStatus
-          ) {
-            return sendError(
-              res,
-              409,
-              "Quotation confirmation cannot be changed after vehicle allocation."
-            );
-          }
-        }
-      }
-
-      /* =======================================================
-         APPROVE SELECTED + AUTO REJECT BALANCE QUOTATIONS
-      ======================================================= */
-
-      for (
-        const requirementQuotation
-        of requirementQuotations
-      ) {
-        const isSelected =
-          requirementQuotation
-            .quotationId ===
-          quotationId;
-
-        const confirmationStatus =
-          isSelected
-            ? "Approved"
-            : "Rejected";
-
-        const autoRejectReason =
-          isSelected
-            ? ""
-            : `Automatically rejected because quotation ${quotationId} was approved for this vehicle requirement.`;
-
         const updateResult =
           upsertConfirmation(
-            requirementQuotation,
-            confirmationStatus,
-
-            isSelected
-              ? remarks
-              : "",
-
-            autoRejectReason
+            selectedQuotation,
+            "Approved",
+            remarks,
+            ""
           );
 
-        if (
-          updateResult.error
-        ) {
+        if (updateResult.error) {
+          return sendError(
+            res,
+            409,
+            updateResult.error
+          );
+        }
+      }
+    } else {
+      for (
+        const selectedQuotation
+        of selectedQuotations
+      ) {
+        const updateResult =
+          upsertConfirmation(
+            selectedQuotation,
+            "Rejected",
+            remarks,
+            rejectionReason
+          );
+
+        if (updateResult.error) {
           return sendError(
             res,
             409,
@@ -2285,62 +2290,68 @@ const confirmVehicleQuotation = async (
       }
     }
 
-    /* =========================================================
-       MANUAL REJECTION
-
-       If Approval Management manually rejects one quotation,
-       reject only that selected quotation.
-
-       Other quotations remain unchanged.
-    ========================================================= */
-
-    else {
-      const updateResult =
-        upsertConfirmation(
-          quotation,
-          "Rejected",
-          remarks,
-          rejectionReason
-        );
-
-      if (
-        updateResult.error
-      ) {
-        return sendError(
-          res,
-          409,
-          updateResult.error
-        );
-      }
-    }
-
-    /* =========================================================
-       CALCULATE APPROVED VEHICLE REQUIREMENTS
-    ========================================================= */
-
     const requirements =
-      getRequirements(
-        trip
+      getRequirements(trip);
+
+    const allRequirementsApproved =
+      requirements.length > 0 &&
+      requirements.every(
+        (item) => {
+          const required =
+            Math.max(
+              1,
+              Math.floor(
+                toNumber(
+                  item.quantity,
+                  1
+                )
+              )
+            );
+
+          const approvedQuantity =
+            getConfirmations(trip)
+              .filter(
+                (confirmation) =>
+                  confirmation.requirementId ===
+                    item.requirementId &&
+                  confirmation.status ===
+                    "Approved"
+              )
+              .reduce(
+                (
+                  total,
+                  confirmation
+                ) => {
+                  const quotation =
+                    findQuotation(
+                      trip,
+                      confirmation.quotationId
+                    );
+
+                  return (
+                    total +
+                    Math.max(
+                      1,
+                      Math.floor(
+                        toNumber(
+                          quotation?.quantity,
+                          1
+                        )
+                      )
+                    )
+                  );
+                },
+                0
+              );
+
+          return (
+            approvedQuantity >=
+            required
+          );
+        }
       );
 
-    const approvedRequirementCount =
-      requirements.filter(
-        (item) =>
-          Boolean(
-            findApprovedConfirmation(
-              trip,
-              item.requirementId
-            )
-          )
-      ).length;
-
-    /* =========================================================
-       UPDATE ORDER STATUS / STAGE
-    ========================================================= */
-
-    if (
-      approvedRequirementCount > 0
-    ) {
+    if (allRequirementsApproved) {
       trip.status =
         "Confirmed";
 
@@ -2354,41 +2365,23 @@ const confirmVehicleQuotation = async (
         "Quotation Approval";
     }
 
-    /* =========================================================
-       MARK CONFIRMATIONS MODIFIED
-    ========================================================= */
-
     trip.markModified(
       "vehicleConfirmations"
     );
 
-    /* =========================================================
-       SAVE TO MONGODB
-    ========================================================= */
-
     await trip.save();
-
-    /* =========================================================
-       FETCH UPDATED ORDER
-    ========================================================= */
 
     const updatedTrip =
       await TripOrder.findById(
         trip._id
       ).lean();
 
-    /* =========================================================
-       RESPONSE
-    ========================================================= */
-
     return sendSuccess(
       res,
       200,
-
       status === "Approved"
-        ? "Transporter quotation approved successfully. Other quotations for the same vehicle requirement were automatically rejected."
-        : "Transporter quotation rejected successfully.",
-
+        ? `${selectedQuotations.length} transporter quotation(s) approved for ${selectedQuantity} NOS. Balance quantity remains pending until fully approved.`
+        : "Selected transporter quotation(s) rejected successfully.",
       updatedTrip
     );
   } catch (error) {
@@ -2405,6 +2398,7 @@ const confirmVehicleQuotation = async (
     );
   }
 };
+
 
 const allocateVehicle = async (
   req,
@@ -2755,11 +2749,24 @@ const allocateVehicle = async (
       allocatedVehicle
     );
 
-    trip.status =
-      "Active";
+    const tripAlreadyCompleted =
+      [
+        "trip complete",
+        "trip completed",
+        "completed",
+      ].includes(
+        cleanString(
+          trip?.stage
+        ).toLowerCase()
+      );
 
-    trip.stage =
-      "Tracking";
+    if (!tripAlreadyCompleted) {
+      trip.status =
+        "Active";
+
+      trip.stage =
+        "Tracking";
+    }
 
     await trip.save();
 
@@ -3123,7 +3130,37 @@ const updateAllocatedVehicle = async (
      *    unloading status = Completed.
      */
 
-    const allVehiclesCompleted =
+    const requiredVehicleCount =
+      Math.max(
+        0,
+        Math.floor(
+          toNumber(
+            trip?.totalVehicles,
+            0
+          )
+        )
+      ) ||
+      getRequirements(trip).reduce(
+        (total, requirement) =>
+          total +
+          Math.max(
+            0,
+            Math.floor(
+              toNumber(
+                requirement?.quantity,
+                0
+              )
+            )
+          ),
+        0
+      );
+
+    const allRequiredVehiclesAllocated =
+      requiredVehicleCount > 0 &&
+      allocatedVehicles.length >=
+        requiredVehicleCount;
+
+    const allAllocatedVehiclesUnloaded =
       allocatedVehicles.length > 0 &&
       allocatedVehicles.every(
         (allocatedVehicle) =>
@@ -3131,10 +3168,13 @@ const updateAllocatedVehicle = async (
             allocatedVehicle
               ?.unloading
               ?.status
-          )
-            .toLowerCase() ===
+          ).toLowerCase() ===
           "completed"
       );
+
+    const allVehiclesCompleted =
+      allRequiredVehiclesAllocated &&
+      allAllocatedVehiclesUnloaded;
 
     /* =====================================================
        UPDATE ORDER STAGE
@@ -3192,6 +3232,168 @@ const updateAllocatedVehicle = async (
     );
   }
 };
+
+
+/* =========================================================
+   SAVE LR / POD DOCUMENT FOR ALLOCATED VEHICLE
+========================================================= */
+
+const saveMovementDocument = async (req, res, documentType) => {
+  try {
+    const result = await getTripDocument(req.params.id);
+
+    if (result.error) {
+      return sendError(res, result.status, result.error);
+    }
+
+    const trip = result.trip;
+    const allocationId = cleanString(req.params.allocationId);
+
+    const vehicle = getAllocatedVehicles(trip).find(
+      (item) => item.allocationId === allocationId
+    );
+
+    if (!vehicle) {
+      return sendError(res, 404, "Allocated vehicle not found.");
+    }
+
+    if (!["lr", "pod"].includes(documentType)) {
+      return sendError(res, 400, "Invalid movement document type.");
+    }
+
+    const currentDocument = vehicle[documentType] || {};
+    const number = cleanString(req.body.number);
+    const date = toDateOrNull(req.body.date);
+    const status = cleanString(req.body.status) || "Pending";
+    const uploadedBy = cleanString(req.body.uploadedBy) || "Tracking";
+
+    if (documentType === "lr" && !number) {
+      return sendError(res, 400, "LR Number is required.");
+    }
+
+    if (!req.file && !currentDocument.fileName) {
+      return sendError(
+        res,
+        400,
+        `${documentType.toUpperCase()} document is required.`
+      );
+    }
+
+    vehicle[documentType] = {
+      number,
+      date,
+      status,
+      documentName:
+        cleanString(req.body.documentName) ||
+        req.file?.originalname ||
+        currentDocument.documentName ||
+        `${documentType.toUpperCase()} Document`,
+      fileName: req.file?.originalname || currentDocument.fileName || "",
+      mimeType: req.file?.mimetype || currentDocument.mimeType || "",
+      fileSize: req.file?.size || currentDocument.fileSize || 0,
+      fileData: req.file?.buffer || currentDocument.fileData || null,
+      uploadedBy,
+      uploadedAt: req.file ? new Date() : currentDocument.uploadedAt || new Date(),
+    };
+
+    trip.markModified("allocatedVehicles");
+    await trip.save();
+
+    const updatedTrip = await TripOrder.findById(trip._id).lean();
+
+    return sendSuccess(
+      res,
+      200,
+      `${documentType.toUpperCase()} saved successfully.`,
+      updatedTrip
+    );
+  } catch (error) {
+    console.error(`Save ${documentType.toUpperCase()} Error:`, error);
+    return sendError(
+      res,
+      500,
+      `Unable to save ${documentType.toUpperCase()}.`,
+      error
+    );
+  }
+};
+
+const saveLrDocument = (req, res) =>
+  saveMovementDocument(req, res, "lr");
+
+const savePodDocument = (req, res) =>
+  saveMovementDocument(req, res, "pod");
+
+/* =========================================================
+   VIEW / DOWNLOAD LR / POD DOCUMENT
+========================================================= */
+
+const downloadMovementDocument = async (req, res, documentType) => {
+  try {
+    if (!isValidMongoId(req.params.id)) {
+      return sendError(res, 400, "Invalid order database ID.");
+    }
+
+    const trip = await TripOrder.findById(req.params.id).select(
+      `+allocatedVehicles.${documentType}.fileData`
+    );
+
+    if (!trip) {
+      return sendError(res, 404, "Order not found.");
+    }
+
+    const allocationId = cleanString(req.params.allocationId);
+
+    const vehicle = getAllocatedVehicles(trip).find(
+      (item) => item.allocationId === allocationId
+    );
+
+    if (!vehicle) {
+      return sendError(res, 404, "Allocated vehicle not found.");
+    }
+
+    const document = vehicle[documentType];
+
+    if (!document?.fileData || !document?.fileName) {
+      return sendError(
+        res,
+        404,
+        `${documentType.toUpperCase()} document not found.`
+      );
+    }
+
+    const disposition =
+      String(req.query.disposition || "").toLowerCase() === "inline"
+        ? "inline"
+        : "attachment";
+
+    res.setHeader(
+      "Content-Type",
+      document.mimeType || "application/octet-stream"
+    );
+
+    res.setHeader(
+      "Content-Disposition",
+      `${disposition}; filename="${String(document.fileName).replace(/"/g, "")}"`
+    );
+
+    return res.send(document.fileData);
+  } catch (error) {
+    console.error(`Download ${documentType.toUpperCase()} Error:`, error);
+    return sendError(
+      res,
+      500,
+      `Unable to load ${documentType.toUpperCase()} document.`,
+      error
+    );
+  }
+};
+
+const downloadLrDocument = (req, res) =>
+  downloadMovementDocument(req, res, "lr");
+
+const downloadPodDocument = (req, res) =>
+  downloadMovementDocument(req, res, "pod");
 
 const addDailyTracking = async (
   req,
@@ -3520,9 +3722,36 @@ const updateRouteLocations = async (
    KEY ACCOUNT -> TRACKING
 ========================================================= */
 
+/* =========================================================
+   PLACE ORDER
+   KEY ACCOUNT -> TRACKING
+
+   FLOW:
+   Order Approval Approved
+          ↓
+      Place Order
+          ↓
+       Tracking
+
+   IMPORTANT:
+   These are NOT mandatory before Tracking:
+   - PO Document
+   - Traffic Quotation
+   - Quotation Approval
+   - Vendor Finalization
+   - Vehicle Allocation
+========================================================= */
+
 const placeOrder = async (req, res) => {
   try {
-    const result = await getTripDocument(req.params.id);
+    /* =====================================================
+       GET ORDER
+    ===================================================== */
+
+    const result =
+      await getTripDocument(
+        req.params.id
+      );
 
     if (result.error) {
       return sendError(
@@ -3534,69 +3763,106 @@ const placeOrder = async (req, res) => {
 
     const trip = result.trip;
 
-    const poCompleted =
-      trip.poDocument?.status === "Completed" &&
-      Boolean(cleanString(trip.poDocument?.poNumber)) &&
-      Boolean(trip.poDocument?.fileName);
+    /* =====================================================
+       CHECK ONLY ORDER APPROVAL
 
-    if (!poCompleted) {
+       We intentionally DO NOT check:
+       - PO document
+       - traffic quotation
+       - vehicle confirmation
+       - vendor finalization
+       - allocated vehicles
+    ===================================================== */
+
+    const orderApprovalStatus =
+      cleanString(
+        trip?.orderApproval?.status
+      )
+        .trim()
+        .toLowerCase();
+
+    if (
+      orderApprovalStatus !==
+      "approved"
+    ) {
       return sendError(
         res,
         400,
-        "Complete the PO Document before placing the order."
+        "Order Approval must be approved before placing the order."
       );
     }
 
-    const requirements = getRequirements(trip);
-
-    if (!requirements.length) {
-      return sendError(
-        res,
-        400,
-        "No vehicle requirements found."
-      );
-    }
-
-    const confirmations = getConfirmations(trip);
-
-    const allRequirementsApproved =
-      requirements.every((requirement) =>
-        confirmations.some(
-          (confirmation) =>
-            confirmation.requirementId === requirement.requirementId &&
-            confirmation.status === "Approved"
-        )
-      );
-
-    if (!allRequirementsApproved) {
-      return sendError(
-        res,
-        400,
-        "All vehicle requirements must have an approved transporter before placing the order."
-      );
-    }
+    /* =====================================================
+       PLACED BY
+    ===================================================== */
 
     const placedBy =
-      cleanString(req.body?.orderPlaced?.placedBy) ||
-      cleanString(req.body?.placedBy) ||
+      cleanString(
+        req.body?.orderPlaced?.placedBy
+      ) ||
+      cleanString(
+        req.body?.placedBy
+      ) ||
       "Key Account";
+
+    /* =====================================================
+       SAVE ORDER PLACED
+    ===================================================== */
 
     trip.orderPlaced = {
       status: "Completed",
+
       placedBy,
-      placedAt: new Date(),
+
+      placedAt:
+        new Date(),
     };
 
-    trip.stage = "Tracking";
-    trip.status = "Tracking";
+    /* =====================================================
+       MOVE ORDER TO TRACKING
 
-    trip.markModified("orderPlaced");
+       This is the important part.
+
+       Even when:
+       allocatedVehicles = []
+
+       the order is now officially in Tracking.
+    ===================================================== */
+
+    trip.stage =
+      "Tracking";
+
+    trip.status =
+      "Tracking";
+
+    /* =====================================================
+       MARK NESTED OBJECT MODIFIED
+    ===================================================== */
+
+    trip.markModified(
+      "orderPlaced"
+    );
+
+    /* =====================================================
+       SAVE DATABASE
+    ===================================================== */
 
     await trip.save();
 
-    const updatedTrip = await TripOrder.findById(
-      trip._id
-    ).lean();
+    /* =====================================================
+       GET FRESH SAVED ORDER
+    ===================================================== */
+
+    const updatedTrip =
+      await TripOrder
+        .findById(
+          trip._id
+        )
+        .lean();
+
+    /* =====================================================
+       RESPONSE
+    ===================================================== */
 
     return sendSuccess(
       res,
@@ -3695,6 +3961,11 @@ const deleteTrip = async (
 };
 
 module.exports = {
+  saveLrDocument,
+  downloadLrDocument,
+  savePodDocument,
+  downloadPodDocument,
+
   createTrip,
   createCraneTrip,
   downloadCraneDocument,

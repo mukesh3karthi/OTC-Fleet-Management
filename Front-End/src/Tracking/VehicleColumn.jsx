@@ -6,6 +6,7 @@ import {
   ChevronDown,
   ChevronUp,
   CirclePause,
+  FileText,
   MessageSquareText,
   Navigation,
   Package,
@@ -734,10 +735,6 @@ const VehicleColumn = ({
     latestTracking?.day ??
     null;
 
-  const speed =
-    latestTracking?.speed ??
-    null;
-
   const lastUpdated =
     formatLastUpdated(
       latestTracking?.updatedAt
@@ -898,6 +895,27 @@ const VehicleColumn = ({
     safeText(
       supervisor.contactNumber
     );
+
+  /* =======================================================
+     LR / POD DOCUMENTS
+  ======================================================= */
+
+  const lr = activeVehicle?.lr || {};
+  const pod = activeVehicle?.pod || {};
+
+  const lrNumber = safeText(lr.number);
+  const lrDate = formatDate(lr.date);
+  const lrStatus = safeText(lr.status, "Pending");
+  const lrDocument = safeText(
+    lr.documentName || lr.fileName
+  );
+
+  const podNumber = safeText(pod.number);
+  const podDate = formatDate(pod.date);
+  const podStatus = safeText(pod.status, "Pending");
+  const podDocument = safeText(
+    pod.documentName || pod.fileName
+  );
 
   /* =======================================================
      CUSTOMER
@@ -1366,21 +1384,6 @@ const VehicleColumn = ({
 
               <div className="movement-info-card">
                 <span>
-                  Speed
-                </span>
-
-                <strong>
-                  {speed === null ||
-                  speed ===
-                    undefined ||
-                  speed === ""
-                    ? "-"
-                    : `${speed} km/h`}
-                </strong>
-              </div>
-
-              <div className="movement-info-card">
-                <span>
                   Status
                 </span>
 
@@ -1588,6 +1591,67 @@ const VehicleColumn = ({
                       {unloadingRemarks}
                     </div>
                   </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* =================================
+              LR / POD DOCUMENT DETAILS
+          ================================= */}
+
+          <div className="vehicle-document-section">
+            <div className="vehicle-document-header">
+              <span className="vehicle-document-header-icon">
+                <FileText size={14} />
+              </span>
+
+              <div>
+                <strong>LR &amp; POD Documents</strong>
+                <span>Consignment and delivery document information</span>
+              </div>
+            </div>
+
+            <div className="vehicle-document-grid">
+              <div className="vehicle-document-card lr-document-card">
+                <div className="vehicle-document-card-head">
+                  <div>
+                    <span className="vehicle-document-type">LR</span>
+                    <div>
+                      <strong>Lorry Receipt</strong>
+                      <small>Dispatch document</small>
+                    </div>
+                  </div>
+                  <span className={`vehicle-document-status ${lrStatus.toLowerCase().replaceAll(" ", "-")}`}>
+                    {lrStatus}
+                  </span>
+                </div>
+
+                <div className="vehicle-document-details">
+                  <DetailRow label="LR Number" value={lrNumber} />
+                  <DetailRow label="LR Date" value={lrDate} />
+                  <DetailRow label="Document" value={lrDocument} />
+                </div>
+              </div>
+
+              <div className="vehicle-document-card pod-document-card">
+                <div className="vehicle-document-card-head">
+                  <div>
+                    <span className="vehicle-document-type pod">POD</span>
+                    <div>
+                      <strong>Proof of Delivery</strong>
+                      <small>Delivery confirmation document</small>
+                    </div>
+                  </div>
+                  <span className={`vehicle-document-status ${podStatus.toLowerCase().replaceAll(" ", "-")}`}>
+                    {podStatus}
+                  </span>
+                </div>
+
+                <div className="vehicle-document-details">
+                  <DetailRow label="POD Number" value={podNumber} />
+                  <DetailRow label="POD Date" value={podDate} />
+                  <DetailRow label="Document" value={podDocument} />
                 </div>
               </div>
             </div>

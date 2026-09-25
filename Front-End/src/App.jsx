@@ -60,19 +60,19 @@ import Ownvehicledash
   from "./pages/Ownvehicledash";
 
 import TripDashboard
-  from "./pages/TripDashboard";
+  from "./pages/OrderManagement";
 
 import KeyAccount
-  from "./pages/KeyAccount";
+  from "./ordermanagement/KeyAccount";
 
 import TrafficManagement
-  from "./keyaccount/Traffic";
+  from "./ordermanagement/Traffic";
 
 import Approvalmanagement
-  from "./keyaccount/Approvalmanagement";
+  from "./ordermanagement/Approvalmanagement";
 
 import Trackinginput
-  from "./Tracking/Trackinginput";
+  from "./Tracking/AllocateVehicle";
 
 import Tripdetails
   from "./Tracking/Tripdetails";

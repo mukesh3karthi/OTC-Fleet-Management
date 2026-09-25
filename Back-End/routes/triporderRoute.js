@@ -117,7 +117,8 @@ const uploadPoDocument = (
 /* =========================================================
    CRANE VEHICLE REQUIREMENT DOCUMENT UPLOAD
 
-   Separate middleware. Existing PO upload is unchanged.
+   Separate middleware.
+   Existing PO upload is unchanged.
 ========================================================= */
 
 const allowedCraneMimeTypes = new Set([
@@ -301,6 +302,17 @@ router.get(
 
 /* =========================================================
    ORDER PLACED
+
+   Once Place Order is completed, the controller changes:
+
+   stage  = "Tracking"
+   status = "Tracking"
+
+   PO / Vendor Finalization / vehicle allocation
+   do NOT need to be completed before the order
+   appears in Tracking.
+
+   The actual validation is handled inside placeOrder().
 ========================================================= */
 
 router.put(
@@ -353,6 +365,13 @@ router.put(
 
    IMPORTANT:
    Keep these BELOW all specific routes.
+
+   Otherwise routes such as:
+   /:id/order-placed
+   /:id/po-document
+   /:id/allocated-vehicles
+
+   can conflict with generic order routes.
 ========================================================= */
 
 router.get(
