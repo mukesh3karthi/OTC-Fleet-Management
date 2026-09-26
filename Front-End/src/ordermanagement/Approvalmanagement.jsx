@@ -795,6 +795,12 @@ const Approvalmanagement = () => {
             return false;
           }
 
+          // Only show orders that Key Account has explicitly sent
+          // through Request for Approval. Draft/new orders have no requestedAt.
+          if (!order?.orderApproval?.requestedAt) {
+            return false;
+          }
+
           const movement = String(order.movementType || "").trim().toLowerCase();
           const status = getOrderApprovalStatus(order).toLowerCase();
 

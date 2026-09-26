@@ -1179,6 +1179,21 @@ const Lifecyclemodal = ({
       return;
     }
 
+    if (requestApproval) {
+      const quotedRate = String(finalizationForm.quotedRate ?? "").trim();
+      const finalRate = String(finalizationForm.finalRate ?? "").trim();
+      const commercialTerms = String(finalizationForm.commercialTerms ?? "").trim();
+      const deliveryCommitments = String(finalizationForm.deliveryCommitments ?? "").trim();
+
+      if (!quotedRate || !finalRate || !commercialTerms || !deliveryCommitments) {
+        const message =
+          "Complete Quoted Rate, Final Rate, Commercial Terms & Payment SLAs, and Delivery Commitments & Transit SLAs before requesting approval.";
+        setFinalizationError(message);
+        showToast(message, "warning");
+        return;
+      }
+    }
+
     setFinalizationSaving(true);
     setFinalizationMessage("");
     setFinalizationError("");
@@ -2914,7 +2929,13 @@ const Lifecyclemodal = ({
                               <td>{requirement?.configuration || "—"}</td>
 
                               <td>
-                                {formatNumber(requirement?.quantity)}
+                                <strong>
+                                  {formatNumber(
+                                    quotation?.quantity ??
+                                      quotation?.vehicleQuantity ??
+                                      1
+                                  )}
+                                </strong>
                               </td>
 
                               <td>

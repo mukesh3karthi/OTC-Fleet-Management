@@ -32,6 +32,14 @@ const {
   updateAllocatedVehicle,
   addDailyTracking,
 
+  /* MOVEMENT DOCUMENTS */
+  saveLrDocument,
+  downloadLrDocument,
+  savePodDocument,
+  downloadPodDocument,
+  saveEwayBillDocument,
+  downloadEwayBillDocument,
+
   /* TRACKING ROUTE */
   updateRouteLocations,
 
@@ -58,16 +66,8 @@ const poUpload = multer({
     files: 1,
   },
 
-  fileFilter: (
-    req,
-    file,
-    callback
-  ) => {
-    if (
-      !allowedPoMimeTypes.has(
-        file.mimetype
-      )
-    ) {
+  fileFilter: (req, file, callback) => {
+    if (!allowedPoMimeTypes.has(file.mimetype)) {
       return callback(
         new Error(
           "Only PDF, Word, JPG and PNG files are allowed."
@@ -75,50 +75,31 @@ const poUpload = multer({
       );
     }
 
-    return callback(
-      null,
-      true
-    );
+    return callback(null, true);
   },
 });
 
-const uploadPoDocument = (
-  req,
-  res,
-  next
-) => {
-  poUpload.single(
-    "document"
-  )(
-    req,
-    res,
-    (error) => {
-      if (!error) {
-        return next();
-      }
-
-      const message =
-        error.code ===
-        "LIMIT_FILE_SIZE"
-          ? "PO document must be 10 MB or smaller."
-          : error.message ||
-            "Unable to upload PO document.";
-
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message,
-        });
+const uploadPoDocument = (req, res, next) => {
+  poUpload.single("document")(req, res, (error) => {
+    if (!error) {
+      return next();
     }
-  );
+
+    const message =
+      error.code === "LIMIT_FILE_SIZE"
+        ? "PO document must be 10 MB or smaller."
+        : error.message ||
+          "Unable to upload PO document.";
+
+    return res.status(400).json({
+      success: false,
+      message,
+    });
+  });
 };
 
 /* =========================================================
    CRANE VEHICLE REQUIREMENT DOCUMENT UPLOAD
-
-   Separate middleware.
-   Existing PO upload is unchanged.
 ========================================================= */
 
 const allowedCraneMimeTypes = new Set([
@@ -140,16 +121,8 @@ const craneUpload = multer({
     files: 1,
   },
 
-  fileFilter: (
-    req,
-    file,
-    callback
-  ) => {
-    if (
-      !allowedCraneMimeTypes.has(
-        file.mimetype
-      )
-    ) {
+  fileFilter: (req, file, callback) => {
+    if (!allowedCraneMimeTypes.has(file.mimetype)) {
       return callback(
         new Error(
           "Only PDF, Word, Excel, CSV, JPG and PNG files are allowed for Crane movement."
@@ -157,51 +130,85 @@ const craneUpload = multer({
       );
     }
 
-    return callback(
-      null,
-      true
-    );
+    return callback(null, true);
   },
 });
 
-const uploadCraneDocument = (
-  req,
-  res,
-  next
-) => {
-  craneUpload.single(
-    "document"
-  )(
-    req,
-    res,
-    (error) => {
-      if (!error) {
-        return next();
-      }
-
-      const message =
-        error.code ===
-        "LIMIT_FILE_SIZE"
-          ? "Crane vehicle requirement document must be 15 MB or smaller."
-          : error.message ||
-            "Unable to upload Crane vehicle requirement document.";
-
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message,
-        });
+const uploadCraneDocument = (req, res, next) => {
+  craneUpload.single("document")(req, res, (error) => {
+    if (!error) {
+      return next();
     }
-  );
+
+    const message =
+      error.code === "LIMIT_FILE_SIZE"
+        ? "Crane vehicle requirement document must be 15 MB or smaller."
+        : error.message ||
+          "Unable to upload Crane vehicle requirement document.";
+
+    return res.status(400).json({
+      success: false,
+      message,
+    });
+  });
+};
+
+/* =========================================================
+   MOVEMENT DOCUMENT UPLOAD
+   POD / E-Way Bill
+   LR metadata also uses this middleware safely without a file.
+========================================================= */
+
+const allowedMovementMimeTypes = new Set([
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "image/jpeg",
+  "image/png",
+]);
+
+const movementUpload = multer({
+  storage: multer.memoryStorage(),
+
+  limits: {
+    fileSize: 10 * 1024 * 1024,
+    files: 1,
+  },
+
+  fileFilter: (req, file, callback) => {
+    if (!allowedMovementMimeTypes.has(file.mimetype)) {
+      return callback(
+        new Error(
+          "Only PDF, Word, JPG and PNG files are allowed."
+        )
+      );
+    }
+
+    return callback(null, true);
+  },
+});
+
+const uploadMovementDocument = (req, res, next) => {
+  movementUpload.single("document")(req, res, (error) => {
+    if (!error) {
+      return next();
+    }
+
+    const message =
+      error.code === "LIMIT_FILE_SIZE"
+        ? "Movement document must be 10 MB or smaller."
+        : error.message ||
+          "Unable to upload movement document.";
+
+    return res.status(400).json({
+      success: false,
+      message,
+    });
+  });
 };
 
 /* =========================================================
    CRANE MOVEMENT CREATE
-
-   IMPORTANT:
-   Keep this ABOVE router.post("/")
-   and all generic /:id routes.
 ========================================================= */
 
 router.post(
@@ -211,26 +218,11 @@ router.post(
 );
 
 /* =========================================================
-   CREATE ORDER
+   CREATE / GET ORDERS
 ========================================================= */
 
-router.post(
-  "/",
-  createTrip
-);
-
-/* =========================================================
-   GET ALL ORDERS
-========================================================= */
-
-router.get(
-  "/",
-  getAllTrips
-);
-
-/* =========================================================
-   GET ORDER BY BUSINESS TRIP ID
-========================================================= */
+router.post("/", createTrip);
+router.get("/", getAllTrips);
 
 router.get(
   "/trip/:tripId",
@@ -275,9 +267,6 @@ router.put(
 
 /* =========================================================
    CRANE REQUIREMENT DOCUMENT
-
-   ?disposition=inline -> browser view
-   default             -> download
 ========================================================= */
 
 router.get(
@@ -302,17 +291,6 @@ router.get(
 
 /* =========================================================
    ORDER PLACED
-
-   Once Place Order is completed, the controller changes:
-
-   stage  = "Tracking"
-   status = "Tracking"
-
-   PO / Vendor Finalization / vehicle allocation
-   do NOT need to be completed before the order
-   appears in Tracking.
-
-   The actual validation is handled inside placeOrder().
 ========================================================= */
 
 router.put(
@@ -321,8 +299,7 @@ router.put(
 );
 
 /* =========================================================
-   TRACKING INPUT
-   VEHICLE ALLOCATION
+   TRACKING INPUT - VEHICLE ALLOCATION
 ========================================================= */
 
 router.post(
@@ -331,8 +308,7 @@ router.post(
 );
 
 /* =========================================================
-   TRACKING INPUT
-   UPDATE VEHICLE
+   TRACKING INPUT - UPDATE VEHICLE
 ========================================================= */
 
 router.put(
@@ -341,8 +317,52 @@ router.put(
 );
 
 /* =========================================================
-   TRACKING INPUT
-   DAILY MOVEMENT
+   TRACKING INPUT - LR DETAILS
+========================================================= */
+
+router.put(
+  "/:id/allocated-vehicles/:allocationId/lr",
+  uploadMovementDocument,
+  saveLrDocument
+);
+
+router.get(
+  "/:id/allocated-vehicles/:allocationId/lr/file",
+  downloadLrDocument
+);
+
+/* =========================================================
+   TRACKING INPUT - POD DOCUMENT
+========================================================= */
+
+router.put(
+  "/:id/allocated-vehicles/:allocationId/pod",
+  uploadMovementDocument,
+  savePodDocument
+);
+
+router.get(
+  "/:id/allocated-vehicles/:allocationId/pod/file",
+  downloadPodDocument
+);
+
+/* =========================================================
+   TRACKING INPUT - E-WAY BILL
+========================================================= */
+
+router.put(
+  "/:id/allocated-vehicles/:allocationId/ewayBill",
+  uploadMovementDocument,
+  saveEwayBillDocument
+);
+
+router.get(
+  "/:id/allocated-vehicles/:allocationId/ewayBill/file",
+  downloadEwayBillDocument
+);
+
+/* =========================================================
+   TRACKING INPUT - DAILY MOVEMENT
 ========================================================= */
 
 router.post(
@@ -351,8 +371,7 @@ router.post(
 );
 
 /* =========================================================
-   TRACKING INPUT
-   ROUTE LOCATIONS
+   TRACKING INPUT - ROUTE LOCATIONS
 ========================================================= */
 
 router.put(
@@ -362,16 +381,7 @@ router.put(
 
 /* =========================================================
    GENERIC ROUTES
-
-   IMPORTANT:
-   Keep these BELOW all specific routes.
-
-   Otherwise routes such as:
-   /:id/order-placed
-   /:id/po-document
-   /:id/allocated-vehicles
-
-   can conflict with generic order routes.
+   Keep below all specific routes.
 ========================================================= */
 
 router.get(

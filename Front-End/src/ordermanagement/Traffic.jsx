@@ -208,6 +208,18 @@ const getVehicleConfirmations = (
     : [];
 
 
+const getApprovedConfirmationsForRequirement = (
+  order,
+  requirementId
+) =>
+  getVehicleConfirmations(order).filter(
+    (confirmation) =>
+      confirmation.requirementId === requirementId &&
+      String(confirmation.status || "").trim().toLowerCase() ===
+        "approved"
+  );
+
+
 const getRequirementConfirmation = (
   order,
   requirementId
@@ -2329,17 +2341,34 @@ const Traffic = () => {
                     );
 
 
-                  const approvedQuotation =
-                    confirmation?.status ===
-                    "Approved"
-                      ? getTrafficQuotations(
-                          selectedOrder
-                        ).find(
-                          (quotation) =>
-                            quotation.quotationId ===
-                            confirmation.quotationId
+                  const approvedConfirmations =
+                    getApprovedConfirmationsForRequirement(
+                      selectedOrder,
+                      requirement.requirementId
+                    );
+
+
+                  const approvedQuotationIds =
+                    new Set(
+                      approvedConfirmations
+                        .map(
+                          (item) =>
+                            item?.quotationId
                         )
-                      : null;
+                        .filter(Boolean)
+                    );
+
+
+                  const approvedQuotations =
+                    getRequirementQuotations(
+                      selectedOrder,
+                      requirement.requirementId
+                    ).filter(
+                      (quotation) =>
+                        approvedQuotationIds.has(
+                          quotation?.quotationId
+                        )
+                    );
 
 
                   const isApproved =
@@ -2467,9 +2496,7 @@ const Traffic = () => {
                           APPROVAL RESPONSE
                       ============================================= */}
 
-                      {status ===
-                        "Approved" &&
-                        approvedQuotation && (
+                      {approvedQuotations.length > 0 && (
 
                         <div className="traffic-kam-response selected">
 
@@ -2483,20 +2510,40 @@ const Traffic = () => {
 
                               Selected{" "}
 
-                              <b>
-                                {approvedQuotation.transporter}
-                              </b>
+                              {approvedQuotations.map(
+                                (quotation, index) => (
+                                  <React.Fragment
+                                    key={
+                                      quotation.quotationId ||
+                                      index
+                                    }
+                                  >
+                                    <b>
+                                      {quotation.transporter ||
+                                        "Transporter"}
+                                    </b>
 
-                              {" at "}
+                                    {" at "}
 
-                              <b>
-                                {formatAmount(
-                                  approvedQuotation.amount
-                                )}
-                              </b>
+                                    <b>
+                                      {formatAmount(
+                                        quotation.amount
+                                      )}
+                                    </b>
 
-                              {confirmation?.confirmedBy
-                                ? ` by ${confirmation.confirmedBy}`
+                                    {index <
+                                      approvedQuotations.length - 1 &&
+                                      ", "}
+                                  </React.Fragment>
+                                )
+                              )}
+
+                              {approvedConfirmations?.[0]
+                                ?.confirmedBy
+                                ? ` by ${
+                                    approvedConfirmations[0]
+                                      .confirmedBy
+                                  }`
                                 : ""}
 
                             </p>
@@ -2603,9 +2650,13 @@ const Traffic = () => {
 
 
                                     const selectedQuotation =
-                                      approvedQuotation &&
-                                      quotation.quotationId ===
-                                        approvedQuotation.quotationId;
+                                      isExisting &&
+                                      Boolean(
+                                        quotation?.quotationId
+                                      ) &&
+                                      approvedQuotationIds.has(
+                                        quotation.quotationId
+                                      );
 
 
                                     return (
@@ -2843,8 +2894,7 @@ const Traffic = () => {
                                               {status ===
                                               "Rejected"
                                                 ? "Rejected"
-                                                : status ===
-                                                  "Approved"
+                                                : approvedQuotationIds.size > 0
                                                   ? "Not Selected"
                                                   : "Submitted"}
 

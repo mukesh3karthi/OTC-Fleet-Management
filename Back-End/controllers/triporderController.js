@@ -451,9 +451,9 @@ const createTrip = async (
       await TripOrder.create({
         ...data,
 
-        status: "Pending",
+        status: "Draft",
 
-        stage: "Order Approval",
+        stage: "Order Finalization",
 
         orderApproval: {
           status: "Pending",
@@ -661,9 +661,9 @@ const createCraneTrip = async (
             new Date(),
         },
 
-        status: "Pending",
+        status: "Draft",
 
-        stage: "Order Approval",
+        stage: "Order Finalization",
 
         orderApproval: {
           status: "Pending",
@@ -1538,6 +1538,16 @@ const approveOrder = async (
     }
 
     const trip = result.trip;
+
+    // Approval Management can act only after Key Account explicitly
+    // requests approval from Order Finalization.
+    if (!trip.orderApproval?.requestedAt) {
+      return sendError(
+        res,
+        409,
+        "Order approval has not been requested by Key Account."
+      );
+    }
 
     const status =
       cleanString(
@@ -3235,7 +3245,7 @@ const updateAllocatedVehicle = async (
 
 
 /* =========================================================
-   SAVE LR / POD DOCUMENT FOR ALLOCATED VEHICLE
+   SAVE LR / POD / E-WAY BILL DOCUMENT FOR ALLOCATED VEHICLE
 ========================================================= */
 
 const saveMovementDocument = async (req, res, documentType) => {
@@ -3257,62 +3267,131 @@ const saveMovementDocument = async (req, res, documentType) => {
       return sendError(res, 404, "Allocated vehicle not found.");
     }
 
-    if (!["lr", "pod"].includes(documentType)) {
+    if (!["lr", "pod", "ewayBill"].includes(documentType)) {
       return sendError(res, 400, "Invalid movement document type.");
     }
 
     const currentDocument = vehicle[documentType] || {};
     const number = cleanString(req.body.number);
     const date = toDateOrNull(req.body.date);
+    const validUpto = toDateOrNull(req.body.validUpto);
     const status = cleanString(req.body.status) || "Pending";
-    const uploadedBy = cleanString(req.body.uploadedBy) || "Tracking";
+    const remarks = cleanString(req.body.remarks);
+    const uploadedBy =
+      cleanString(req.body.uploadedBy) || "Tracking";
 
     if (documentType === "lr" && !number) {
       return sendError(res, 400, "LR Number is required.");
     }
 
-    if (!req.file && !currentDocument.fileName) {
+    if (
+      documentType !== "lr" &&
+      !req.file &&
+      !currentDocument.fileName
+    ) {
+      const label =
+        documentType === "ewayBill"
+          ? "E-Way Bill"
+          : documentType.toUpperCase();
+
       return sendError(
         res,
         400,
-        `${documentType.toUpperCase()} document is required.`
+        `${label} document is required.`
       );
     }
 
     vehicle[documentType] = {
-      number,
-      date,
-      status,
+      number:
+        documentType === "pod"
+          ? currentDocument.number || ""
+          : number,
+
+      date:
+        documentType === "lr"
+          ? date
+          : currentDocument.date || null,
+
+      validUpto:
+        documentType === "ewayBill"
+          ? validUpto
+          : currentDocument.validUpto || null,
+
+      status:
+        documentType === "ewayBill"
+          ? status
+          : currentDocument.status || "Pending",
+
+      remarks:
+        documentType === "lr"
+          ? remarks
+          : currentDocument.remarks || "",
+
       documentName:
         cleanString(req.body.documentName) ||
         req.file?.originalname ||
         currentDocument.documentName ||
-        `${documentType.toUpperCase()} Document`,
-      fileName: req.file?.originalname || currentDocument.fileName || "",
-      mimeType: req.file?.mimetype || currentDocument.mimeType || "",
-      fileSize: req.file?.size || currentDocument.fileSize || 0,
-      fileData: req.file?.buffer || currentDocument.fileData || null,
+        (documentType === "ewayBill"
+          ? "E-Way Bill Document"
+          : `${documentType.toUpperCase()} Document`),
+
+      fileName:
+        req.file?.originalname ||
+        currentDocument.fileName ||
+        "",
+
+      mimeType:
+        req.file?.mimetype ||
+        currentDocument.mimeType ||
+        "",
+
+      fileSize:
+        req.file?.size ||
+        currentDocument.fileSize ||
+        0,
+
+      fileData:
+        req.file?.buffer ||
+        currentDocument.fileData ||
+        null,
+
       uploadedBy,
-      uploadedAt: req.file ? new Date() : currentDocument.uploadedAt || new Date(),
+
+      uploadedAt:
+        req.file
+          ? new Date()
+          : currentDocument.uploadedAt || null,
     };
 
     trip.markModified("allocatedVehicles");
     await trip.save();
 
-    const updatedTrip = await TripOrder.findById(trip._id).lean();
+    const updatedTrip =
+      await TripOrder.findById(trip._id).lean();
+
+    const label =
+      documentType === "ewayBill"
+        ? "E-Way Bill"
+        : documentType.toUpperCase();
 
     return sendSuccess(
       res,
       200,
-      `${documentType.toUpperCase()} saved successfully.`,
+      `${label} saved successfully.`,
       updatedTrip
     );
   } catch (error) {
-    console.error(`Save ${documentType.toUpperCase()} Error:`, error);
+    const label =
+      documentType === "ewayBill"
+        ? "E-Way Bill"
+        : documentType.toUpperCase();
+
+    console.error(`Save ${label} Error:`, error);
+
     return sendError(
       res,
       500,
-      `Unable to save ${documentType.toUpperCase()}.`,
+      `Unable to save ${label}.`,
       error
     );
   }
@@ -3324,17 +3403,38 @@ const saveLrDocument = (req, res) =>
 const savePodDocument = (req, res) =>
   saveMovementDocument(req, res, "pod");
 
+const saveEwayBillDocument = (req, res) =>
+  saveMovementDocument(req, res, "ewayBill");
+
 /* =========================================================
-   VIEW / DOWNLOAD LR / POD DOCUMENT
+   VIEW / DOWNLOAD LR / POD / E-WAY BILL DOCUMENT
 ========================================================= */
 
-const downloadMovementDocument = async (req, res, documentType) => {
+const downloadMovementDocument = async (
+  req,
+  res,
+  documentType
+) => {
   try {
     if (!isValidMongoId(req.params.id)) {
-      return sendError(res, 400, "Invalid order database ID.");
+      return sendError(
+        res,
+        400,
+        "Invalid order database ID."
+      );
     }
 
-    const trip = await TripOrder.findById(req.params.id).select(
+    if (!["lr", "pod", "ewayBill"].includes(documentType)) {
+      return sendError(
+        res,
+        400,
+        "Invalid movement document type."
+      );
+    }
+
+    const trip = await TripOrder.findById(
+      req.params.id
+    ).select(
       `+allocatedVehicles.${documentType}.fileData`
     );
 
@@ -3342,48 +3442,72 @@ const downloadMovementDocument = async (req, res, documentType) => {
       return sendError(res, 404, "Order not found.");
     }
 
-    const allocationId = cleanString(req.params.allocationId);
+    const allocationId =
+      cleanString(req.params.allocationId);
 
     const vehicle = getAllocatedVehicles(trip).find(
       (item) => item.allocationId === allocationId
     );
 
     if (!vehicle) {
-      return sendError(res, 404, "Allocated vehicle not found.");
+      return sendError(
+        res,
+        404,
+        "Allocated vehicle not found."
+      );
     }
 
     const document = vehicle[documentType];
 
     if (!document?.fileData || !document?.fileName) {
+      const label =
+        documentType === "ewayBill"
+          ? "E-Way Bill"
+          : documentType.toUpperCase();
+
       return sendError(
         res,
         404,
-        `${documentType.toUpperCase()} document not found.`
+        `${label} document not found.`
       );
     }
 
     const disposition =
-      String(req.query.disposition || "").toLowerCase() === "inline"
+      String(
+        req.query.disposition || ""
+      ).toLowerCase() === "inline"
         ? "inline"
         : "attachment";
 
     res.setHeader(
       "Content-Type",
-      document.mimeType || "application/octet-stream"
+      document.mimeType ||
+        "application/octet-stream"
     );
 
     res.setHeader(
       "Content-Disposition",
-      `${disposition}; filename="${String(document.fileName).replace(/"/g, "")}"`
+      `${disposition}; filename="${String(
+        document.fileName
+      ).replace(/"/g, "")}"`
     );
 
     return res.send(document.fileData);
   } catch (error) {
-    console.error(`Download ${documentType.toUpperCase()} Error:`, error);
+    const label =
+      documentType === "ewayBill"
+        ? "E-Way Bill"
+        : documentType.toUpperCase();
+
+    console.error(
+      `Download ${label} Error:`,
+      error
+    );
+
     return sendError(
       res,
       500,
-      `Unable to load ${documentType.toUpperCase()} document.`,
+      `Unable to load ${label} document.`,
       error
     );
   }
@@ -3394,6 +3518,9 @@ const downloadLrDocument = (req, res) =>
 
 const downloadPodDocument = (req, res) =>
   downloadMovementDocument(req, res, "pod");
+
+const downloadEwayBillDocument = (req, res) =>
+  downloadMovementDocument(req, res, "ewayBill");
 
 const addDailyTracking = async (
   req,
@@ -3965,6 +4092,8 @@ module.exports = {
   downloadLrDocument,
   savePodDocument,
   downloadPodDocument,
+  saveEwayBillDocument,
+  downloadEwayBillDocument,
 
   createTrip,
   createCraneTrip,
