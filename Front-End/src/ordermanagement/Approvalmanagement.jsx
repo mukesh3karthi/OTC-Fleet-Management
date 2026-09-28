@@ -501,6 +501,20 @@ const Approvalmanagement = () => {
   ] = useState(null);
 
   const [
+    orderDetailsModal,
+    setOrderDetailsModal,
+  ] = useState(null);
+
+  const openOrderDetailsModal = (order) => {
+    if (!order) return;
+    setOrderDetailsModal(order);
+  };
+
+  const closeOrderDetailsModal = () => {
+    setOrderDetailsModal(null);
+  };
+
+  const [
     orderRemarks,
     setOrderRemarks,
   ] = useState({});
@@ -1718,7 +1732,6 @@ const Approvalmanagement = () => {
                 <th>Movement Type</th>
                 <th>Route</th>
                 <th>Placement Date</th>
-                <th>Assigned KAM</th>
                 <th>Agreed Rate</th>
                 <th>Commercial Terms &amp; SLAs</th>
                 <th>MD Status</th>
@@ -1729,7 +1742,6 @@ const Approvalmanagement = () => {
             <tbody>
               {orderApprovalRows.map((order) => {
                 const status = getOrderApprovalStatus(order);
-                const isExpanded = expandedOrderId === order._id;
                 const updating = orderUpdatingId === order._id;
 
                 const finalization =
@@ -1762,33 +1774,14 @@ const Approvalmanagement = () => {
                 return (
                   <React.Fragment key={order._id || order.tripId}>
                     <tr
-                      className={`approval-md-main-row ${
-                        isExpanded
-                          ? "approval-row-expanded approval-md-row-selected"
-                          : ""
-                      }`}
-                      onClick={() => toggleOrder(order._id)}
+                      className="approval-md-main-row approval-md-clickable-row"
+                      onClick={() => openOrderDetailsModal(order)}
+                      title="Click to view complete order details"
                     >
                       <td>
-                        <button
-                          type="button"
-                          className="approval-md-order-btn"
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            toggleOrder(order._id);
-                          }}
-                        >
-                          <span
-                            className={`approval-md-arrow ${
-                              isExpanded ? "open" : ""
-                            }`}
-                          >
-                            ›
-                          </span>
-                          <span className="approval-md-trip">
-                            {order.tripId || "—"}
-                          </span>
-                        </button>
+                        <span className="approval-md-trip">
+                          {order.tripId || "—"}
+                        </span>
                       </td>
 
                       <td>
@@ -1821,12 +1814,6 @@ const Approvalmanagement = () => {
                       <td>
                         <span className="approval-md-placement">
                           {formatDate(order.placementDate)}
-                        </span>
-                      </td>
-
-                      <td>
-                        <span className="approval-md-kam">
-                          {order.assignedKam || "—"}
                         </span>
                       </td>
 
@@ -1897,119 +1884,6 @@ const Approvalmanagement = () => {
                       </td>
                     </tr>
 
-                    {isExpanded && (
-                      <tr className="approval-expand-row">
-                        <td colSpan="10">
-                          <div className="approval-expand-content">
-                            <div className="approval-md-expand-section">
-                              <div className="approval-order-info-grid">
-                                <div>
-                                  <span>Material Type</span>
-                                  <strong>{order.materialType || "—"}</strong>
-                                </div>
-
-                                <div>
-                                  <span>Total Vehicles</span>
-                                  <strong>
-                                    {getTotalRequiredVehicles(order)} NOS
-                                  </strong>
-                                </div>
-
-                                <div>
-                                  <span>Distance</span>
-                                  <strong>
-                                    {order.distance ?? "—"}
-                                    {order.distance !== null &&
-                                    order.distance !== undefined &&
-                                    order.distance !== ""
-                                      ? " KM"
-                                      : ""}
-                                  </strong>
-                                </div>
-
-                                <div>
-                                  <span>Enquiry Date</span>
-                                  <strong>{formatDate(order.enquiryDate)}</strong>
-                                </div>
-
-                                <div className="approval-order-wide-info">
-                                  <span>Commercial Terms &amp; Payment SLAs</span>
-                                  <strong>
-                                    {finalization.commercialTerms ||
-                                      finalization.paymentTerms ||
-                                      order.commercialTerms ||
-                                      order.paymentTerms ||
-                                      "—"}
-                                  </strong>
-                                </div>
-
-                                <div className="approval-order-wide-info">
-                                  <span>Delivery Commitments &amp; Transit SLAs</span>
-                                  <strong>
-                                    {finalization.deliveryCommitments ||
-                                      finalization.deliverySla ||
-                                      finalization.transitSla ||
-                                      order.deliveryCommitments ||
-                                      order.transitSla ||
-                                      "—"}
-                                  </strong>
-                                </div>
-                              </div>
-                            </div>
-
-                            <div className="approval-md-expand-section">
-                              <div className="approval-md-section-head">
-                                <div>
-                                  <h4>Vehicle Details</h4>
-                                  <p>Vehicle requirement details</p>
-                                </div>
-                              </div>
-
-                              {renderRequirements(order)}
-                            </div>
-
-                            {order.remark && (
-                              <div className="approval-order-remark">
-                                <span>Order Remarks</span>
-                                <p>{order.remark}</p>
-                              </div>
-                            )}
-
-                            {status !== "Pending" && (
-                              <div className="approval-decision-summary">
-                                <span
-                                  className={`approval-status ${getStatusClass(
-                                    status
-                                  )}`}
-                                >
-                                  {status}
-                                </span>
-
-                                <div>
-                                  <strong>
-                                    {order.orderApproval?.approvedBy ||
-                                      "Approval Management"}
-                                  </strong>
-                                  <small>
-                                    {formatDateTime(
-                                      order.orderApproval?.approvedAt
-                                    )}
-                                  </small>
-                                </div>
-
-                                {(order.orderApproval?.remarks ||
-                                  order.orderApproval?.rejectionReason) && (
-                                  <p>
-                                    {order.orderApproval?.rejectionReason ||
-                                      order.orderApproval?.remarks}
-                                  </p>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    )}
                   </React.Fragment>
                 );
               })}
@@ -3065,6 +2939,278 @@ const Approvalmanagement = () => {
       ) : (
         renderQuotationApproval()
       )}
+
+      {orderDetailsModal && (() => {
+        const order = orderDetailsModal;
+        const status = getOrderApprovalStatus(order);
+        const finalization =
+          order.orderFinalization ||
+          order.finalization ||
+          {};
+
+        const agreedRate =
+          finalization.finalRate ??
+          finalization.agreedRate ??
+          order.finalRate ??
+          order.agreedRate ??
+          null;
+
+        const commercialTerms =
+          finalization.commercialTerms ||
+          finalization.paymentTerms ||
+          order.commercialTerms ||
+          order.paymentTerms ||
+          "—";
+
+        const deliverySla =
+          finalization.deliveryCommitments ||
+          finalization.deliverySla ||
+          finalization.transitSla ||
+          order.deliveryCommitments ||
+          order.transitSla ||
+          "—";
+
+        return (
+          <div
+            className="approval-order-details-overlay"
+            onMouseDown={(event) => {
+              if (event.target === event.currentTarget) {
+                closeOrderDetailsModal();
+              }
+            }}
+          >
+            <div
+              className="approval-order-details-modal"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="approval-order-details-title"
+              onMouseDown={(event) => event.stopPropagation()}
+            >
+              <div className="approval-order-details-head">
+                <div>
+                  <span className="approval-order-details-eyebrow">
+                    ORDER APPROVAL DETAILS
+                  </span>
+                  <h3 id="approval-order-details-title">
+                    {order.tripId || "Order Details"}
+                  </h3>
+                  <p>
+                    {order.customer || "—"} · {order.origin || "—"} →{" "}
+                    {order.destination || "—"}
+                  </p>
+                </div>
+
+                <div className="approval-order-details-head-right">
+                  <span
+                    className={`approval-md-status ${getStatusClass(status)}`}
+                  >
+                    {status === "Approved" && "✓ "}
+                    {status === "Rejected" && "× "}
+                    {status.toUpperCase()}
+                  </span>
+
+                  <button
+                    type="button"
+                    className="approval-order-details-close"
+                    onClick={closeOrderDetailsModal}
+                    aria-label="Close order details"
+                  >
+                    ×
+                  </button>
+                </div>
+              </div>
+
+              <div className="approval-order-details-body">
+                <section className="approval-order-details-section">
+                  <div className="approval-order-details-section-head">
+                    <div>
+                      <span>ORDER SNAPSHOT</span>
+                      <h4>Order Information</h4>
+                    </div>
+                  </div>
+
+                  <div className="approval-order-details-grid">
+                    <div>
+                      <span>Client Name</span>
+                      <strong>{order.customer || "—"}</strong>
+                    </div>
+
+                    <div>
+                      <span>Movement Type</span>
+                      <strong>{order.movementType || "—"}</strong>
+                    </div>
+
+                    <div>
+                      <span>Material Type</span>
+                      <strong>{order.materialType || "—"}</strong>
+                    </div>
+
+                    <div>
+                      <span>Total Vehicles</span>
+                      <strong>{getTotalRequiredVehicles(order)} NOS</strong>
+                    </div>
+
+                    <div>
+                      <span>Origin</span>
+                      <strong>{order.origin || "—"}</strong>
+                    </div>
+
+                    <div>
+                      <span>Destination</span>
+                      <strong>{order.destination || "—"}</strong>
+                    </div>
+
+                    <div>
+                      <span>Distance</span>
+                      <strong>
+                        {order.distance ?? "—"}
+                        {order.distance !== null &&
+                        order.distance !== undefined &&
+                        order.distance !== ""
+                          ? " KM"
+                          : ""}
+                      </strong>
+                    </div>
+
+                    <div>
+                      <span>Placement Date</span>
+                      <strong>{formatDate(order.placementDate)}</strong>
+                    </div>
+
+                    <div>
+                      <span>Enquiry Date</span>
+                      <strong>{formatDate(order.enquiryDate)}</strong>
+                    </div>
+
+                    <div>
+                      <span>Assigned KAM</span>
+                      <strong>{order.assignedKam || "—"}</strong>
+                    </div>
+
+                    <div>
+                      <span>Agreed Rate</span>
+                      <strong>
+                        {agreedRate !== null &&
+                        agreedRate !== undefined &&
+                        agreedRate !== ""
+                          ? formatAmount(agreedRate)
+                          : "—"}
+                      </strong>
+                    </div>
+
+                    <div>
+                      <span>MD Status</span>
+                      <strong>{status}</strong>
+                    </div>
+                  </div>
+                </section>
+
+                <section className="approval-order-details-section">
+                  <div className="approval-order-details-section-head">
+                    <div>
+                      <span>COMMERCIAL</span>
+                      <h4>Terms &amp; Service Commitments</h4>
+                    </div>
+                  </div>
+
+                  <div className="approval-order-details-sla-grid">
+                    <div>
+                      <span>Commercial Terms &amp; Payment SLAs</span>
+                      <strong>{commercialTerms}</strong>
+                    </div>
+
+                    <div>
+                      <span>Delivery Commitments &amp; Transit SLAs</span>
+                      <strong>{deliverySla}</strong>
+                    </div>
+                  </div>
+                </section>
+
+                <section className="approval-order-details-section">
+                  <div className="approval-order-details-section-head">
+                    <div>
+                      <span>VEHICLE REQUIREMENTS</span>
+                      <h4>Vehicle Details</h4>
+                    </div>
+                  </div>
+
+                  {renderRequirements(order)}
+                </section>
+
+                {order.remark && (
+                  <section className="approval-order-details-section">
+                    <div className="approval-order-details-section-head">
+                      <div>
+                        <span>REMARKS</span>
+                        <h4>Order Remarks</h4>
+                      </div>
+                    </div>
+
+                    <div className="approval-order-details-remark">
+                      {order.remark}
+                    </div>
+                  </section>
+                )}
+
+                {status !== "Pending" && (
+                  <section className="approval-order-details-section">
+                    <div className="approval-order-details-section-head">
+                      <div>
+                        <span>DECISION</span>
+                        <h4>Approval Summary</h4>
+                      </div>
+                    </div>
+
+                    <div className="approval-order-details-decision">
+                      <span
+                        className={`approval-status ${getStatusClass(status)}`}
+                      >
+                        {status}
+                      </span>
+
+                      <div>
+                        <span>Decision By</span>
+                        <strong>
+                          {order.orderApproval?.approvedBy ||
+                            "Approval Management"}
+                        </strong>
+                      </div>
+
+                      <div>
+                        <span>Decision Date</span>
+                        <strong>
+                          {formatDateTime(order.orderApproval?.approvedAt)}
+                        </strong>
+                      </div>
+
+                      {(order.orderApproval?.remarks ||
+                        order.orderApproval?.rejectionReason) && (
+                        <div className="approval-order-details-decision-remark">
+                          <span>Decision Remarks</span>
+                          <strong>
+                            {order.orderApproval?.rejectionReason ||
+                              order.orderApproval?.remarks}
+                          </strong>
+                        </div>
+                      )}
+                    </div>
+                  </section>
+                )}
+              </div>
+
+              <div className="approval-order-details-footer">
+                <button
+                  type="button"
+                  className="approval-order-details-done"
+                  onClick={closeOrderDetailsModal}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {quotationActionModal && (
         <div

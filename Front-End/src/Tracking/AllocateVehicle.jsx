@@ -735,13 +735,53 @@ const AllocateVehicle = () => {
      ALLOCATION COUNTS
   ======================================================= */
 
+  const getApprovedQuantity = (
+    requirement,
+    quotation
+  ) => {
+    const requirementQuantity = Number(
+      requirement?.quantity ??
+      requirement?.vehicleQuantity ??
+      requirement?.requiredQuantity ??
+      0
+    );
+
+    if (
+      Number.isFinite(requirementQuantity) &&
+      requirementQuantity > 0
+    ) {
+      return requirementQuantity;
+    }
+
+    const quotationQuantity = Number(
+      quotation?.quantity ??
+      quotation?.vehicleQuantity ??
+      quotation?.approvedQuantity ??
+      quotation?.allocatedQuantity ??
+      0
+    );
+
+    return (
+      Number.isFinite(quotationQuantity) &&
+      quotationQuantity > 0
+    )
+      ? quotationQuantity
+      : 0;
+  };
+
   const getAllocatedCount = (
-    requirementId
+    requirementId,
+    quotationId
   ) =>
     allocations.filter(
       (allocation) =>
-        allocation.requirementId ===
-        requirementId
+        String(allocation?.requirementId || "") ===
+          String(requirementId || "") &&
+        (
+          !quotationId ||
+          String(allocation?.quotationId || "") ===
+            String(quotationId || "")
+        )
     ).length;
 
   /* =======================================================
@@ -856,23 +896,31 @@ const AllocateVehicle = () => {
         return;
       }
 
-      const requiredQuantity =
-        Math.max(
-          Number(
-            requirement.quantity
-          ) || 0,
-          0
+      const approvedQuantity =
+        getApprovedQuantity(
+          requirement,
+          quotation
         );
 
       const allocatedCount =
         getAllocatedCount(
-          requirementId
+          requirementId,
+          quotation?.quotationId
         );
 
       if (
-        requiredQuantity > 0 &&
+        approvedQuantity <= 0
+      ) {
+        setError(
+          `No approved vehicle quantity is available for ${requirement.vehicleType || requirementId}.`
+        );
+
+        return;
+      }
+
+      if (
         allocatedCount >=
-          requiredQuantity
+          approvedQuantity
       ) {
         setError(
           `Required quantity for ${requirement.vehicleType || requirementId} is already fully allocated.`
@@ -2110,23 +2158,28 @@ const AllocateVehicle = () => {
                             const requirementId =
                               requirement.requirementId;
 
-                            const allocatedCount =
-                              getAllocatedCount(
-                                requirementId
+                            const approvedQuantity =
+                              getApprovedQuantity(
+                                requirement,
+                                quotation
                               );
 
-                            const requiredQuantity =
-                              Math.max(
-                                Number(
-                                  requirement.quantity
-                                ) || 0,
-                                0
+                            const allocatedCount =
+                              getAllocatedCount(
+                                requirementId,
+                                quotation?.quotationId
+                              );
+
+                            const displayAllocatedCount =
+                              Math.min(
+                                allocatedCount,
+                                approvedQuantity
                               );
 
                             const fullyAllocated =
-                              requiredQuantity > 0 &&
+                              approvedQuantity > 0 &&
                               allocatedCount >=
-                                requiredQuantity;
+                                approvedQuantity;
 
                             const allocationForm =
                               allocationForms[
@@ -2194,7 +2247,7 @@ const AllocateVehicle = () => {
                                           : "tracking-required-allocation"
                                       }
                                     >
-                                      {allocatedCount} / {requiredQuantity}
+                                      {displayAllocatedCount} / {approvedQuantity}
                                     </span>
                                   </td>
 

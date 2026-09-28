@@ -8990,3 +8990,13 @@ and
   font-weight: 650;
   line-height: 1.45;
 }
+
+
+/* =========================================================
+   VENDOR FINALIZATION - OPTIONAL PENDING WARNING
+========================================================= */
+
+.kam-vendor-warning {
+  margin-bottom: 14px;
+  flex-shrink: 0;
+}

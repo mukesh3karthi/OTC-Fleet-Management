@@ -261,11 +261,73 @@ const buildLifecycle = (order) => {
     ? "Completed"
     : "Pending";
 
+  const lifecycleQuotations = safeArray(order?.trafficQuotations);
+
+  const lifecycleRequiredVehicleCount = requirements.reduce(
+    (total, requirement) => {
+      const quantity = Number(
+        requirement?.quantity ??
+        requirement?.vehicleQuantity ??
+        requirement?.requiredQuantity ??
+        requirement?.noOfVehicles ??
+        requirement?.numberOfVehicles ??
+        0
+      );
+
+      return total + (
+        Number.isFinite(quantity) && quantity > 0 ? quantity : 0
+      );
+    },
+    0
+  );
+
+  const lifecycleApprovedVehicleCount = approvedConfirmations.reduce(
+    (total, confirmation) => {
+      const confirmationQuotationId = String(
+        confirmation?.quotationId ||
+        confirmation?.trafficQuotationId ||
+        ""
+      ).trim();
+
+      const quotation = lifecycleQuotations.find((quote) => {
+        const quoteId = String(
+          quote?.quotationId ||
+          quote?._id ||
+          quote?.id ||
+          ""
+        ).trim();
+
+        return (
+          quoteId &&
+          confirmationQuotationId &&
+          quoteId === confirmationQuotationId
+        );
+      });
+
+      if (!quotation) {
+        return total;
+      }
+
+      const quantity = Number(
+        quotation?.quantity ??
+        quotation?.vehicleQuantity ??
+        quotation?.approvedQuantity ??
+        quotation?.allocatedQuantity ??
+        1
+      );
+
+      return total + (
+        Number.isFinite(quantity) && quantity > 0 ? quantity : 1
+      );
+    },
+    0
+  );
+
   const vendorFinalizationStatus =
-    order?.vendorFinalization?.status ||
-    (approvedConfirmations.length > 0
+    lifecycleRequiredVehicleCount > 0 &&
+    lifecycleApprovedVehicleCount >= lifecycleRequiredVehicleCount
       ? "Completed"
-      : "Pending");
+      : "Pending";
 
   const orderPlacedStatus =
     order?.orderPlaced?.status ||
@@ -1024,16 +1086,80 @@ const Lifecyclemodal = ({
           confirmation?.status === "Approved"
       );
 
-      const updatedVehicleApprovalCompleted =
-        updatedRequirements.length > 0 &&
-        updatedRequirements.every(
-          (requirement) =>
-            updatedApprovedConfirmations.some(
-              (confirmation) =>
-                confirmation?.requirementId ===
-                requirement?.requirementId
-            )
+      const updatedQuotations = safeArray(
+        updatedOrder?.trafficQuotations
+      );
+
+      const updatedRequiredVehicleCount =
+        updatedRequirements.reduce(
+          (total, requirement) => {
+            const quantity = Number(
+              requirement?.quantity ??
+              requirement?.vehicleQuantity ??
+              requirement?.requiredQuantity ??
+              requirement?.noOfVehicles ??
+              requirement?.numberOfVehicles ??
+              0
+            );
+
+            return total + (
+              Number.isFinite(quantity) && quantity > 0
+                ? quantity
+                : 0
+            );
+          },
+          0
         );
+
+      const updatedApprovedVehicleCount =
+        updatedApprovedConfirmations.reduce(
+          (total, confirmation) => {
+            const confirmationQuotationId = String(
+              confirmation?.quotationId ||
+              confirmation?.trafficQuotationId ||
+              ""
+            ).trim();
+
+            const quotation = updatedQuotations.find((quote) => {
+              const quoteId = String(
+                quote?.quotationId ||
+                quote?._id ||
+                quote?.id ||
+                ""
+              ).trim();
+
+              return (
+                quoteId &&
+                confirmationQuotationId &&
+                quoteId === confirmationQuotationId
+              );
+            });
+
+            if (!quotation) {
+              return total;
+            }
+
+            const quantity = Number(
+              quotation?.quantity ??
+              quotation?.vehicleQuantity ??
+              quotation?.approvedQuantity ??
+              quotation?.allocatedQuantity ??
+              1
+            );
+
+            return total + (
+              Number.isFinite(quantity) && quantity > 0
+                ? quantity
+                : 1
+            );
+          },
+          0
+        );
+
+      const updatedVehicleApprovalCompleted =
+        updatedRequiredVehicleCount > 0 &&
+        updatedApprovedVehicleCount >=
+          updatedRequiredVehicleCount;
 
       const vendorAlreadyApproved =
         getStatusClass(
@@ -1325,11 +1451,8 @@ const Lifecyclemodal = ({
   // Traffic quotations used by Vendor Finalization.
   const quotations = safeArray(order?.trafficQuotations);
 
-  const totalAllocatedVehicles = allocations.length;
-
   // IMPORTANT:
-  // Define totalRequiredVehicles before quotationPendingVehicleCount
-  // or any other calculation that uses it.
+  // Total order quantity is still the original enquiry requirement quantity.
   const totalRequiredVehicles = requirements.reduce(
     (total, requirement) =>
       total +
@@ -1344,11 +1467,6 @@ const Lifecyclemodal = ({
         ) || 0,
         0
       ),
-    0
-  );
-
-  const pendingVehicleCount = Math.max(
-    totalRequiredVehicles - totalAllocatedVehicles,
     0
   );
 
@@ -1381,63 +1499,228 @@ const Lifecyclemodal = ({
       ""
     ).trim();
 
-  const approvedQuotationVehicleCount = requirements.reduce(
-    (sum, requirement) => {
-      const requirementKey = getRequirementKey(requirement);
+  const getQuotationKey = (item) =>
+    String(
+      item?.quotationId ||
+      item?.trafficQuotationId ||
+      item?._id ||
+      item?.id ||
+      ""
+    ).trim();
 
-      const hasApprovedConfirmation = confirmations.some(
-        (confirmation) => {
-          const status = String(confirmation?.status || "")
-            .trim()
-            .toLowerCase();
+  const getApprovedQuotationQuantity = (confirmation) => {
+    const status = String(confirmation?.status || "")
+      .trim()
+      .toLowerCase();
 
-          if (status !== "approved") {
-            return false;
-          }
+    if (status !== "approved") {
+      return 0;
+    }
 
-          const confirmationKey = getRequirementKey(confirmation);
+    const confirmationQuotationKey = getQuotationKey(confirmation);
 
-          if (
-            requirementKey &&
-            confirmationKey &&
-            requirementKey === confirmationKey
-          ) {
-            return true;
-          }
+    const quotation = quotations.find((quote) => {
+      const quoteKey = getQuotationKey(quote);
 
-          const quotation = quotations.find(
-            (quote) =>
-              String(quote?._id || quote?.id || "") ===
-              String(
-                confirmation?.quotationId ||
-                confirmation?.trafficQuotationId ||
-                ""
-              )
-          );
-
-          return (
-            quotation &&
-            requirementKey &&
-            getRequirementKey(quotation) === requirementKey
-          );
-        }
-      );
+      if (
+        quoteKey &&
+        confirmationQuotationKey &&
+        quoteKey === confirmationQuotationKey
+      ) {
+        return true;
+      }
 
       return (
-        sum +
-        (hasApprovedConfirmation
-          ? getRequirementQuantity(requirement)
-          : 0)
+        getRequirementKey(quote) &&
+        getRequirementKey(quote) === getRequirementKey(confirmation) &&
+        String(quote?.transporter || "").trim().toLowerCase() ===
+          String(
+            confirmation?.transporter ||
+            confirmation?.transportProvider ||
+            ""
+          ).trim().toLowerCase()
       );
-    },
-    0
-  );
+    });
+
+    if (!quotation) {
+      return 0;
+    }
+
+    const quantity = Number(
+      quotation?.quantity ??
+      quotation?.vehicleQuantity ??
+      quotation?.approvedQuantity ??
+      quotation?.allocatedQuantity ??
+      1
+    );
+
+    return Number.isFinite(quantity) && quantity > 0
+      ? quantity
+      : 1;
+  };
+
+  const approvedQuotationVehicleCount =
+    approvedConfirmations.reduce(
+      (total, confirmation) =>
+        total + getApprovedQuotationQuantity(confirmation),
+      0
+    );
 
   const quotationPendingVehicleCount = Math.max(
     totalRequiredVehicles - approvedQuotationVehicleCount,
     0
   );
 
+  /*
+   * TRACKING CAPACITY
+   * Tracking must use only Approved confirmation + Approved quotation quantity.
+   * Unconfirmed requirement quantity must never become allocatable.
+   */
+  const approvedTrackingRows = approvedConfirmations
+    .map((confirmation) => {
+      const confirmationQuotationKey =
+        getQuotationKey(confirmation);
+
+      const quotation = quotations.find(
+        (quote) =>
+          getQuotationKey(quote) &&
+          getQuotationKey(quote) ===
+            confirmationQuotationKey
+      );
+
+      if (!quotation) {
+        return null;
+      }
+
+      const approvedQuantity = Number(
+        quotation?.quantity ??
+        quotation?.vehicleQuantity ??
+        quotation?.approvedQuantity ??
+        quotation?.allocatedQuantity ??
+        0
+      );
+
+      if (
+        !Number.isFinite(approvedQuantity) ||
+        approvedQuantity <= 0
+      ) {
+        return null;
+      }
+
+      return {
+        confirmation,
+        quotation,
+        requirementId:
+          confirmation?.requirementId ||
+          quotation?.requirementId ||
+          "",
+        approvedQuantity,
+      };
+    })
+    .filter(Boolean);
+
+  const approvedTrackingVehicleCount =
+    approvedTrackingRows.reduce(
+      (total, item) =>
+        total + item.approvedQuantity,
+      0
+    );
+
+  /*
+   * VALID TRACKING ALLOCATIONS
+   *
+   * Allocation records created by older/newer Tracking screens do not always
+   * contain quotationId or confirmationId. requirementId is the stable link.
+   *
+   * Therefore:
+   * 1. Only requirements having an APPROVED transporter are allowed.
+   * 2. Match allocations primarily by requirementId.
+   * 3. Respect the approved quantity for each requirement.
+   * 4. Do not count the same allocation twice.
+   *
+   * Example:
+   * Hydraulic Axle Trailer approved quantity = 2
+   * Two actual vehicles allocated against that requirement => 2 / 2.
+   */
+  const validTrackingAllocations = [];
+  const usedAllocationKeys = new Set();
+
+  const getAllocationKey = (allocation, index = 0) =>
+    String(
+      allocation?.allocationId ||
+      allocation?._id ||
+      allocation?.vehicleNumber ||
+      `${allocation?.requirementId || "REQ"}-${index}`
+    ).trim();
+
+  approvedTrackingRows.forEach((item) => {
+    const approvedRequirementId = String(
+      item?.requirementId || ""
+    ).trim();
+
+    if (!approvedRequirementId) {
+      return;
+    }
+
+    const matches = allocations.filter((allocation) => {
+      const allocationRequirementId = String(
+        allocation?.requirementId ||
+        allocation?.vehicleRequirementId ||
+        ""
+      ).trim();
+
+      return (
+        allocationRequirementId &&
+        allocationRequirementId === approvedRequirementId
+      );
+    });
+
+    let acceptedForRequirement = 0;
+
+    matches.forEach((allocation, allocationIndex) => {
+      if (acceptedForRequirement >= item.approvedQuantity) {
+        return;
+      }
+
+      const allocationKey = getAllocationKey(
+        allocation,
+        allocationIndex
+      );
+
+      if (usedAllocationKeys.has(allocationKey)) {
+        return;
+      }
+
+      usedAllocationKeys.add(allocationKey);
+      validTrackingAllocations.push(allocation);
+      acceptedForRequirement += 1;
+    });
+  });
+
+  const totalAllocatedVehicles = validTrackingAllocations.length;
+
+  const pendingVehicleCount = Math.max(
+    approvedTrackingVehicleCount - totalAllocatedVehicles,
+    0
+  );
+
+  /*
+   * Requirement-wise allocation count.
+   * Used by the Tracking pending table so a requirement with quantity 2
+   * correctly becomes 0 / 2, 1 / 2, then 2 / 2.
+   */
+  const getAllocatedQuantityForRequirement = (requirementId) => {
+    const key = String(requirementId || "").trim();
+
+    return validTrackingAllocations.filter(
+      (allocation) =>
+        String(
+          allocation?.requirementId ||
+          allocation?.vehicleRequirementId ||
+          ""
+        ).trim() === key
+    ).length;
+  };
 
 
 
@@ -1450,15 +1733,8 @@ const Lifecyclemodal = ({
   ========================================================= */
 
   const vehicleApprovalCompleted =
-    requirements.length > 0 &&
-    requirements.every(
-      (requirement) =>
-        approvedConfirmations.some(
-          (confirmation) =>
-            confirmation.requirementId ===
-            requirement.requirementId
-        )
-    );
+    totalRequiredVehicles > 0 &&
+    approvedQuotationVehicleCount >= totalRequiredVehicles;
 
   const displayCurrentStage = (() => {
     if (currentLifecycleIndex >= 6) {
@@ -2327,6 +2603,19 @@ const Lifecyclemodal = ({
 
           {activeStepIndex === 3 && (
             <>
+              {quotationPendingVehicleCount > 0 && (
+                <div className="kam-optional-commercial-warning kam-vendor-warning">
+                  <strong>⚠ Optional items pending</strong>
+                  <span>Vendor Finalization</span>
+                  <small>
+                    {quotationPendingVehicleCount} vehicle
+                    {quotationPendingVehicleCount > 1 ? "s are" : " is"} still
+                    pending transporter confirmation. You can place the order and
+                    start tracking. These items can be completed later.
+                  </small>
+                </div>
+              )}
+
               {/* =================================================
                   CONFIRMED TRANSPORTERS
               ================================================= */}
@@ -3006,7 +3295,7 @@ const Lifecyclemodal = ({
                 <SectionHeading
                   title="Vehicle Allocation Status"
                   description="Allocated and allocation-pending vehicles for this trip."
-                  count={totalRequiredVehicles}
+                  count={approvedTrackingVehicleCount}
                 />
 
                 <div className="kam-client-vehicle-table-wrap">
@@ -3023,7 +3312,7 @@ const Lifecyclemodal = ({
                     <tbody>
                       <tr>
                         <td>
-                          <strong>{totalRequiredVehicles}</strong>
+                          <strong>{approvedTrackingVehicleCount}</strong>
                         </td>
 
                         <td>
@@ -3096,7 +3385,7 @@ const Lifecyclemodal = ({
                   count={totalAllocatedVehicles}
                 />
 
-                {allocations.length > 0 ? (
+                {validTrackingAllocations.length > 0 ? (
                   <div className="kam-client-vehicle-table-wrap">
                     <table className="kam-client-vehicle-table">
                       <thead>
@@ -3113,7 +3402,7 @@ const Lifecyclemodal = ({
                       </thead>
 
                       <tbody>
-                        {allocations.map((allocation, index) => {
+                        {validTrackingAllocations.map((allocation, index) => {
                           const requirement = getRequirement(
                             order,
                             allocation.requirementId
@@ -3237,18 +3526,22 @@ const Lifecyclemodal = ({
                       </thead>
 
                       <tbody>
-                        {requirements
-                          .map((requirement) => {
-                            const requiredQty = Math.max(
-                              Number(requirement?.quantity) || 0,
-                              0
+                        {approvedTrackingRows
+                          .map((approvedItem) => {
+                            const requirement = getRequirement(
+                              order,
+                              approvedItem.requirementId
                             );
 
-                            const allocatedQty = allocations.filter(
-                              (allocation) =>
-                                String(allocation?.requirementId || "") ===
-                                String(requirement?.requirementId || "")
-                            ).length;
+                            const requiredQty =
+                              approvedItem.approvedQuantity;
+
+                            const allocatedQty = Math.min(
+                              getAllocatedQuantityForRequirement(
+                                approvedItem.requirementId
+                              ),
+                              requiredQty
+                            );
 
                             const pendingQty = Math.max(
                               requiredQty - allocatedQty,

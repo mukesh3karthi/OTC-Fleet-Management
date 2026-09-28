@@ -1385,7 +1385,7 @@ const VehicleColumn = ({
                       <FileText size={14} />
                     </span>
                     <div>
-                      <small>LORRY RECEIPT</small>
+                      
                       <strong>LR Document</strong>
                       <span>Dispatch document</span>
                     </div>
@@ -1437,7 +1437,7 @@ const VehicleColumn = ({
                       <FileText size={14} />
                     </span>
                     <div>
-                      <small>E-WAY BILL</small>
+                      
                       <strong>E-Way Bill Document</strong>
                       <span>Transport document</span>
                     </div>
