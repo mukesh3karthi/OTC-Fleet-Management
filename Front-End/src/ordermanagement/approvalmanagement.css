@@ -1313,7 +1313,6 @@
   }
 }
 
-
 /* =========================================================
    FINAL VEHICLE DETAILS - CLEAN HORIZONTAL READ-ONLY ROW
    This replaces the old vehicle card/column appearance.
@@ -1523,7 +1522,6 @@
     grid-column: span 2;
   }
 }
-
 
 /* MD ACTION ICONS + DECISION MODAL */
 .approval-md-icon-actions {
@@ -2159,36 +2157,45 @@
 
 .approval-quotation-main-table {
   width: 100%;
-  min-width: 0;
+  min-width: 1180px;
   table-layout: fixed;
+  border-collapse: collapse;
 }
 
 .approval-quotation-main-table th,
 .approval-quotation-main-table td {
-  padding-left: 14px;
-  padding-right: 14px;
+  padding-left: 10px;
+  padding-right: 10px;
   vertical-align: middle;
+}
+
+.approval-quotation-main-table thead th {
+  height: 46px;
+}
+
+.approval-quotation-main-table > tbody > .approval-quotation-order-row > td {
+  height: 64px;
 }
 
 .approval-quotation-main-table th:nth-child(1),
 .approval-quotation-main-table td:nth-child(1) {
-  width: 6%;
+  width: 5%;
   text-align: center;
 }
 
 .approval-quotation-main-table th:nth-child(2),
 .approval-quotation-main-table td:nth-child(2) {
-  width: 12%;
+  width: 11%;
 }
 
 .approval-quotation-main-table th:nth-child(3),
 .approval-quotation-main-table td:nth-child(3) {
-  width: 17%;
+  width: 10%;
 }
 
 .approval-quotation-main-table th:nth-child(4),
 .approval-quotation-main-table td:nth-child(4) {
-  width: 17%;
+  width: 13%;
 }
 
 .approval-quotation-main-table th:nth-child(5),
@@ -2199,36 +2206,39 @@
 .approval-quotation-main-table th:nth-child(6),
 .approval-quotation-main-table td:nth-child(6) {
   width: 11%;
-  text-align: center;
 }
 
 .approval-quotation-main-table th:nth-child(7),
 .approval-quotation-main-table td:nth-child(7) {
   width: 10%;
-  text-align: center;
+  text-align: left;
 }
 
 .approval-quotation-main-table th:nth-child(8),
 .approval-quotation-main-table td:nth-child(8) {
-  width: 5%;
-  text-align: center;
+  width: 7%;
+  text-align: left;
 }
 
 .approval-quotation-main-table th:nth-child(9),
 .approval-quotation-main-table td:nth-child(9) {
-  width: 8%;
-  text-align: center;
+  width: 16%;
+  text-align: left;
+  overflow: visible;
 }
 
 .approval-quotation-main-table .approval-status {
+  width: auto;
   min-width: 72px;
+  max-width: 100%;
   min-height: 26px;
-  padding: 0 9px;
+  padding: 0 10px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border-radius: 999px;
   white-space: nowrap;
+  overflow: visible;
 }
 
 .approval-quotation-main-table .approval-status.approved {
@@ -3062,7 +3072,6 @@
   white-space: nowrap;
 }
 
-
 /* =========================================================
    TRANSPORTER QUOTATION DETAILS - MODAL EXPAND
    Keeps the existing quotation logic, but presents expanded
@@ -3456,7 +3465,6 @@
     width: min(260px, calc(100vw - 20px));
   }
 }
-
 
 /* =========================================================
    USER-FRIENDLY QUOTATION REVIEW - FINAL PROFESSIONAL UI
@@ -4048,7 +4056,6 @@
   }
 }
 
-
 /* =========================================================
    TAB FILTERS
 ========================================================= */
@@ -4189,7 +4196,6 @@
   }
 }
 
-
 /* =========================================================
    FILTERS INSIDE EACH TAB SECTION HEADER
 ========================================================= */
@@ -4259,7 +4265,6 @@
     align-self: flex-start;
   }
 }
-
 
 /* =========================================================
    OTC MODAL COLOR THEME OVERRIDE
@@ -4507,7 +4512,6 @@
   accent-color: var(--otc-modal-teal);
 }
 
-
 /* =========================================================
    QUOTATION APPROVAL - QUANTITY
    Keeps the existing Approval Management design unchanged.
@@ -4528,7 +4532,6 @@
   font-weight: 850;
   white-space: nowrap;
 }
-
 
 /* =========================================================
    QUOTATION APPROVAL - VEHICLE REQUIREMENT HEADER V2
@@ -4666,7 +4669,6 @@
   }
 }
 
-
 /* =========================================================
    MULTI TRANSPORTER QUANTITY APPROVAL
 ========================================================= */
@@ -4782,7 +4784,6 @@
   font-size: 8.5px;
   font-weight: 900;
 }
-
 
 /* =========================================================
    ORDER APPROVAL - ROW CLICK DETAILS MODAL
@@ -5404,8 +5405,8 @@
   vertical-align: middle;
 }
 .approval-md-main-row td {
-  height: 88px;
-  padding: 11px 9px !important;
+  height: 64px;
+  padding: 10px 9px !important;
   vertical-align: middle;
 }
 @media (max-width: 1350px) {
@@ -5416,4 +5417,177 @@
   .approval-md-table td:nth-child(9) {
     min-width: 78px !important;
   }
+}
+
+/* =========================================================
+   TRANSPORT REPLACEMENT APPROVAL
+========================================================= */
+
+.approval-replacement-table-card { overflow: hidden; }
+.approval-replacement-table-wrap { width: 100%; overflow-x: auto; background: #fff; }
+.approval-replacement-table {
+  width: 100%;
+  min-width: 1180px;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.approval-replacement-table thead th {
+  height: 46px;
+  padding: 8px 10px;
+  border-bottom: 1px solid #dce7ea;
+  background: #f4f8f9;
+  color: #607b87;
+  font-size: 8px;
+  font-weight: 850;
+  letter-spacing: .045em;
+  text-align: left;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.approval-replacement-table th:nth-child(1),
+.approval-replacement-table td:nth-child(1) { width: 6%; text-align: center; }
+
+.approval-replacement-table th:nth-child(2),
+.approval-replacement-table td:nth-child(2) { width: 10%; }
+
+.approval-replacement-table th:nth-child(3),
+.approval-replacement-table td:nth-child(3) { width: 19%; }
+
+.approval-replacement-table th:nth-child(4),
+.approval-replacement-table td:nth-child(4) { width: 16%; }
+
+.approval-replacement-table th:nth-child(5),
+.approval-replacement-table td:nth-child(5) { width: 16%; }
+
+.approval-replacement-table th:nth-child(6),
+.approval-replacement-table td:nth-child(6) { width: 8%; }
+
+.approval-replacement-table th:nth-child(7),
+.approval-replacement-table td:nth-child(7) { width: 15%; }
+
+.approval-replacement-table th:nth-child(8),
+.approval-replacement-table td:nth-child(8) { width: 10%; text-align: center; }
+
+.approval-replacement-table tbody > tr:not(.approval-replacement-review-row):not(.approval-replacement-result-row) > td {
+  height: 64px;
+  padding: 10px;
+  border-bottom: 1px solid #e6edef;
+  background: #fff;
+  color: #294b59;
+  font-size: 9px;
+  vertical-align: middle;
+}
+.approval-replacement-table tbody > tr.is-pending > td { background: #fffefb; }
+.approval-replacement-table tbody > tr.is-pending > td:first-child { box-shadow: inset 3px 0 0 #d59b27; }
+.approval-replacement-serial { display: inline-grid; width: 28px; height: 28px; place-items: center; border: 1px solid #cfe3e3; border-radius: 7px; background: #eef9f8; color: #087f78; font-size: 9px; font-weight: 850; }
+.approval-replacement-table td:first-child { text-align: center; }
+.approval-replacement-order,.approval-replacement-transport,.approval-replacement-reason,.approval-replacement-requested,.approval-replacement-reviewed { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.approval-replacement-order strong,.approval-replacement-transport strong,.approval-replacement-reason strong,.approval-replacement-requested strong,.approval-replacement-reviewed strong { overflow: hidden; color: #173e50; font-size: 9.5px; font-weight: 850; text-overflow: ellipsis; white-space: nowrap; }
+.approval-replacement-order span,.approval-replacement-transport span,.approval-replacement-reason span,.approval-replacement-requested span,.approval-replacement-reviewed span { overflow: hidden; color: #718a95; font-size: 8px; font-weight: 650; text-overflow: ellipsis; white-space: nowrap; }
+.approval-replacement-transport.proposed { padding-left: 9px; border-left: 2px solid #16a394; }
+.approval-replacement-transport.proposed strong { color: #087f78; }
+.approval-replacement-difference { display: inline-flex; min-height: 26px; align-items: center; justify-content: center; padding: 0 8px; border-radius: 999px; font-size: 8px; font-weight: 850; white-space: nowrap; }
+.approval-replacement-difference.decrease { border: 1px solid #b8e0d6; background: #edf9f5; color: #087f5b; }
+.approval-replacement-difference.increase { border: 1px solid #f0d3a4; background: #fff8e9; color: #a26508; }
+.approval-replacement-difference.same { border: 1px solid #d9e3e7; background: #f6f8f9; color: #607985; }
+.approval-replacement-qty { color: #244957; font-size: 9px; white-space: nowrap; }
+.approval-replacement-actions { display: flex; align-items: center; justify-content: flex-end; gap: 6px; }
+.approval-replacement-actions button { min-width: 70px; height: 30px; padding: 0 10px; border-radius: 7px; font-size: 8.5px; font-weight: 850; cursor: pointer; transition: transform .15s ease, box-shadow .15s ease; }
+.approval-replacement-actions button:hover:not(:disabled) { transform: translateY(-1px); }
+.approval-replacement-actions button:disabled { cursor: not-allowed; opacity: .55; }
+.approval-replacement-reject { border: 1px solid #efc4c4; background: #fff5f5; color: #c53a3a; }
+.approval-replacement-approve { border: 1px solid #0e9187; background: #0e9187; color: #fff; box-shadow: 0 4px 10px rgba(14,145,135,.14); }
+.approval-replacement-review-row td { padding: 0; border-bottom: 1px solid #dfe8eb; background: #f8fbfb; }
+.approval-replacement-review-bar { padding: 10px 12px 12px 70px; display: grid; grid-template-columns: minmax(0,1fr) 280px; align-items: stretch; gap: 12px; }
+.approval-replacement-review-bar > div:first-child > span,.approval-replacement-request-summary > span { display: block; margin-bottom: 5px; color: #7b929c; font-size: 7.5px; font-weight: 850; letter-spacing: .035em; text-transform: uppercase; }
+.approval-replacement-review-bar textarea { width: 100%; min-height: 52px; padding: 9px 10px; border: 1px solid #cbdadd; border-radius: 8px; outline: none; resize: vertical; background: #fff; color: #294b59; font: inherit; font-size: 9px; line-height: 1.45; }
+.approval-replacement-review-bar textarea:focus { border-color: #58aaa4; box-shadow: 0 0 0 3px rgba(14,145,135,.08); }
+.approval-replacement-request-summary { padding: 9px 10px; border: 1px solid #dbe7e9; border-radius: 8px; background: #fff; }
+.approval-replacement-request-summary strong { display: block; color: #173e50; font-size: 9px; font-weight: 850; }
+.approval-replacement-request-summary small { display: block; margin-top: 5px; color: #78909a; font-size: 7.5px; font-weight: 650; }
+.approval-replacement-result-row td { padding: 8px 12px 8px 70px; border-bottom: 1px solid #e3ebed; background: #f8fbfb; color: #607985; font-size: 8.5px; }
+.approval-replacement-result-row strong { color: #294b59; }
+@media (max-width: 900px) { .approval-replacement-review-bar { padding-left: 12px; grid-template-columns: 1fr; } }
+
+
+/* =========================================================
+   TRANSPORT REPLACEMENT APPROVAL POPUP
+========================================================= */
+.approval-transport-popup-tab{white-space:nowrap}.approval-replacement-modal-overlay{position:fixed;inset:0;z-index:12000;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(7,32,45,.58);backdrop-filter:blur(4px)}.approval-replacement-modal{position:relative;width:min(1480px,96vw);max-height:90vh;overflow:hidden;border:1px solid rgba(197,216,222,.95);border-radius:18px;background:#f7fafb;box-shadow:0 28px 80px rgba(7,32,45,.28)}.approval-replacement-modal-content{max-height:90vh;overflow:auto;padding:18px}.approval-replacement-modal-content .approval-replacement-table-card{margin:0;box-shadow:none}.approval-replacement-modal-close{position:absolute;top:27px;right:32px;z-index:5;width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #cbd9de;border-radius:9px;background:#fff;color:#56727f;font:inherit;font-size:22px;line-height:1;cursor:pointer;box-shadow:0 2px 8px rgba(15,47,67,.06);transition:.18s ease}.approval-replacement-modal-close:hover{border-color:#9bc8c2;background:#eef9f7;color:var(--ap-primary)}.approval-replacement-modal-content .approval-table-head{padding-right:62px;position:sticky;top:0;z-index:3}.approval-replacement-modal-content .approval-replacement-table-wrap{max-height:calc(90vh - 112px);overflow:auto}.approval-replacement-modal-content .approval-replacement-table thead th{position:sticky;top:0;z-index:2}.approval-replacement-modal-content .approval-replacement-review-row textarea{min-height:58px}.approval-replacement-modal-content .approval-replacement-actions{flex-wrap:nowrap}@media(max-width:760px){.approval-replacement-modal-overlay{padding:10px}.approval-replacement-modal{width:100%;max-height:94vh;border-radius:13px}.approval-replacement-modal-content{max-height:94vh;padding:10px}.approval-replacement-modal-close{top:18px;right:20px}.approval-replacement-modal-content .approval-table-head{padding-right:52px}.approval-replacement-modal-content .approval-replacement-table-wrap{max-height:calc(94vh - 102px)}}
+
+/* =========================================================
+   TRANSPORT REPLACEMENT - CLICK ROW / DETAILS POPUP
+========================================================= */
+.approval-replacement-click-table{min-width:1180px}
+.approval-replacement-click-table thead th:nth-child(1){width:58px;text-align:center}
+.approval-replacement-click-table thead th:nth-child(2){width:105px}
+.approval-replacement-click-table thead th:nth-child(3){width:200px}
+.approval-replacement-click-table thead th:nth-child(4){width:155px}
+.approval-replacement-click-table thead th:nth-child(5){width:165px}
+.approval-replacement-click-table thead th:nth-child(6){width:78px}
+.approval-replacement-click-table thead th:nth-child(7){width:165px}
+.approval-replacement-click-table thead th:nth-child(8){width:100px;text-align:center}
+.approval-replacement-click-table td:nth-child(8){text-align:center;overflow:hidden}
+.approval-replacement-click-table td:nth-child(8) .approval-status{max-width:100%;white-space:nowrap}
+.approval-replacement-click-row{cursor:pointer;outline:none;transition:background .15s ease,box-shadow .15s ease}
+.approval-replacement-click-row:hover td{background:#f5fbfa!important}
+.approval-replacement-click-row:focus-visible td{background:#f2faf8!important;box-shadow:inset 0 1px 0 #9bc8c2,inset 0 -1px 0 #9bc8c2}
+.approval-replacement-order-id{color:var(--ap-primary);font-size:10px;font-weight:850}
+.approval-replacement-detail-overlay{position:fixed;inset:0;z-index:13000;display:flex;align-items:center;justify-content:center;padding:22px;background:rgba(7,32,45,.6);backdrop-filter:blur(4px)}
+.approval-replacement-detail-modal{width:min(920px,96vw);max-height:92vh;overflow:hidden;border:1px solid #c9dadd;border-radius:16px;background:#fff;box-shadow:0 28px 80px rgba(7,32,45,.3)}
+.approval-replacement-detail-head{min-height:82px;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:18px;border-bottom:1px solid #dce6ea;background:linear-gradient(90deg,#edf8f6,#fff)}
+.approval-replacement-detail-head>div:first-child>span{display:block;margin-bottom:3px;color:var(--ap-primary);font-size:8px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
+.approval-replacement-detail-head h3{margin:0;color:var(--ap-navy);font-size:17px;font-weight:850}
+.approval-replacement-detail-head p{margin:4px 0 0;color:#718892;font-size:9px;font-weight:650}
+.approval-replacement-detail-head-right{display:flex;align-items:center;gap:10px}
+.approval-replacement-detail-head-right>button{width:32px;height:32px;display:grid;place-items:center;border:1px solid #cbd9de;border-radius:8px;background:#fff;color:#607985;font-size:20px;line-height:1;cursor:pointer}
+.approval-replacement-detail-head-right>button:hover:not(:disabled){border-color:#9bc8c2;background:#f0f8f7;color:var(--ap-primary)}
+.approval-replacement-detail-head-right>button:disabled{opacity:.5;cursor:not-allowed}
+.approval-replacement-detail-body{max-height:calc(92vh - 82px);overflow:auto;padding:16px 18px 18px}
+.approval-replacement-compare{display:grid;grid-template-columns:minmax(0,1fr) 42px minmax(0,1fr);align-items:center;gap:10px;margin-bottom:13px}
+.approval-replacement-compare-card{min-width:0;padding:13px 14px;border:1px solid #dce6ea;border-radius:11px;background:#f9fbfc}
+.approval-replacement-compare-card>span{display:block;margin-bottom:5px;color:#7d919b;font-size:7.5px;font-weight:850;letter-spacing:.04em;text-transform:uppercase}
+.approval-replacement-compare-card>strong{display:block;overflow:hidden;color:#173e50;font-size:13px;font-weight:850;text-overflow:ellipsis;white-space:nowrap}
+.approval-replacement-compare-card>div{margin-top:9px;padding-top:8px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid #e2eaed}
+.approval-replacement-compare-card small{color:#82959f;font-size:8px;font-weight:700}
+.approval-replacement-compare-card b{color:#294b59;font-size:11px;font-weight:850}
+.approval-replacement-compare-card.proposed{border-color:#b9ddd8;background:#f1faf8}
+.approval-replacement-compare-card.proposed>strong,.approval-replacement-compare-card.proposed b{color:#087f78}
+.approval-replacement-arrow{display:grid;width:32px;height:32px;place-items:center;justify-self:center;border:1px solid #cfe0e3;border-radius:50%;background:#fff;color:#69838e;font-size:16px;font-weight:850}
+.approval-replacement-detail-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-bottom:11px}
+.approval-replacement-detail-grid>div,.approval-replacement-review-result>div{min-width:0;padding:10px 11px;border:1px solid #e0e8eb;border-radius:9px;background:#fff}
+.approval-replacement-detail-grid span,.approval-replacement-detail-note>span,.approval-replacement-detail-review label>span,.approval-replacement-review-result span{display:block;margin-bottom:4px;color:#84969f;font-size:7.5px;font-weight:850;letter-spacing:.035em;text-transform:uppercase}
+.approval-replacement-detail-grid strong,.approval-replacement-review-result strong{display:block;color:#294b59;font-size:9.5px;font-weight:800;overflow-wrap:anywhere}
+.replacement-value-decrease{color:#087f5b!important}
+.replacement-value-increase{color:#a26508!important}
+.approval-replacement-detail-note{margin-bottom:11px;padding:10px 11px;border:1px solid #e0e8eb;border-radius:9px;background:#f8fafb}
+.approval-replacement-detail-note p{margin:0;color:#466673;font-size:9.5px;font-weight:650;line-height:1.45}
+.approval-replacement-detail-review{padding:11px;border:1px solid #d8e5e7;border-radius:10px;background:#f8fbfb}
+.approval-replacement-detail-review label{display:block}
+.approval-replacement-detail-review textarea{width:100%;min-height:72px;padding:9px 10px;border:1px solid #cbdadd;border-radius:8px;outline:none;resize:vertical;background:#fff;color:#294b59;font:inherit;font-size:9.5px;line-height:1.45}
+.approval-replacement-detail-review textarea:focus{border-color:#58aaa4;box-shadow:0 0 0 3px rgba(14,145,135,.08)}
+.approval-replacement-detail-actions{margin-top:10px;display:flex;align-items:center;justify-content:flex-end;gap:8px}
+.approval-replacement-detail-actions button{height:34px;padding:0 14px;border-radius:8px;font:inherit;font-size:9px;font-weight:850;cursor:pointer}
+.approval-replacement-detail-actions .approval-replacement-approve{min-width:138px}
+.approval-replacement-detail-actions button:disabled{opacity:.55;cursor:not-allowed}
+.approval-replacement-review-result{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;padding:11px;border:1px solid #d8e5e7;border-radius:10px;background:#f8fbfb}
+.approval-replacement-review-result .wide{grid-column:1/-1}
+@media(max-width:760px){.approval-replacement-detail-overlay{padding:10px}.approval-replacement-detail-modal{width:100%;max-height:95vh;border-radius:12px}.approval-replacement-detail-body{max-height:calc(95vh - 82px);padding:12px}.approval-replacement-compare{grid-template-columns:1fr}.approval-replacement-arrow{transform:rotate(90deg)}.approval-replacement-detail-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.approval-replacement-detail-actions{align-items:stretch;flex-direction:column-reverse}.approval-replacement-detail-actions button{width:100%}}
+@media(max-width:480px){.approval-replacement-detail-grid,.approval-replacement-review-result{grid-template-columns:1fr}.approval-replacement-review-result .wide{grid-column:auto}}
+
+/* =========================================================
+   ORDER APPROVAL - OUTER COLUMN SPACING
+   Keeps Order ID away from the left edge and MD Action
+   away from the right edge without changing table functions.
+========================================================= */
+.approval-md-table th:first-child,
+.approval-md-table td:first-child {
+  padding-left: 26px !important;
+}
+
+.approval-md-table th:last-child,
+.approval-md-table td:last-child {
+  padding-right: 26px !important;
 }

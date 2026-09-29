@@ -9000,3 +9000,57 @@ and
   margin-bottom: 14px;
   flex-shrink: 0;
 }
+
+/* =========================================================
+   SIMPLE ALL REPLACED VEHICLE NUMBERS
+========================================================= */
+
+.kam-simple-vehicle-number {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+}
+
+.kam-simple-vehicle-number > strong {
+  color: #173a4c;
+  font-size: 10.3px;
+  font-weight: 850;
+}
+
+.kam-simple-replacement-chain {
+  max-width: 100%;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 3px 6px;
+  border: 1px solid #cce5e1;
+  border-radius: 5px;
+  background: #f2faf8;
+  line-height: 1.15;
+}
+
+.kam-simple-replacement-chain span {
+  font-size: 7.5px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.kam-simple-replacement-chain .previous {
+  color: #a95860;
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+
+.kam-simple-replacement-chain .current {
+  color: #087e76;
+  text-decoration: none;
+}
+
+.kam-simple-replacement-chain b {
+  color: #78909a;
+  font-size: 7.5px;
+  font-weight: 850;
+}
+

@@ -24,7 +24,6 @@ import {
 
 import "./traffic.css";
 
-
 /* =========================================================
    API
 ========================================================= */
@@ -36,7 +35,6 @@ const API_BASE_URL = (
 
 const TRIP_API_URL =
   `${API_BASE_URL}/api/triporders`;
-
 
 /* =========================================================
    HELPERS
@@ -62,13 +60,11 @@ const extractTripList = (payload) => {
   return [];
 };
 
-
 const extractTrip = (payload) =>
   payload?.data ||
   payload?.trip ||
   payload?.order ||
   payload;
-
 
 const formatDate = (value) => {
   if (!value) {
@@ -90,7 +86,6 @@ const formatDate = (value) => {
     }
   ).format(date);
 };
-
 
 const formatAmount = (value) => {
   if (
@@ -117,7 +112,6 @@ const formatAmount = (value) => {
   ).format(number);
 };
 
-
 /* =========================================================
    TEMPORARY QUOTATION FORM
 
@@ -138,7 +132,6 @@ const createQuotationForm = () => ({
   isNew: true,
 });
 
-
 /* =========================================================
    REQUIREMENTS
 ========================================================= */
@@ -147,7 +140,6 @@ const getVehicleRequirements = (order) =>
   Array.isArray(order?.vehicleRequirements)
     ? order.vehicleRequirements
     : [];
-
 
 const getRequirementQuantity = (
   requirement
@@ -159,7 +151,6 @@ const getRequirementQuantity = (
     ? value
     : 0;
 };
-
 
 const getTotalVehicleQuantity = (
   order
@@ -174,7 +165,6 @@ const getTotalVehicleQuantity = (
       0
     );
 
-
 /* =========================================================
    QUOTATIONS
 ========================================================= */
@@ -183,7 +173,6 @@ const getTrafficQuotations = (order) =>
   Array.isArray(order?.trafficQuotations)
     ? order.trafficQuotations
     : [];
-
 
 const getRequirementQuotations = (
   order,
@@ -194,7 +183,6 @@ const getRequirementQuotations = (
       quotation.requirementId ===
       requirementId
   );
-
 
 /* =========================================================
    CONFIRMATIONS
@@ -207,6 +195,93 @@ const getVehicleConfirmations = (
     ? order.vehicleConfirmations
     : [];
 
+const getTransportReplacementRequests = (order) =>
+  Array.isArray(order?.transportReplacementRequests)
+    ? order.transportReplacementRequests
+    : [];
+
+const getPendingTransportReplacementForRequirement = (
+  order,
+  requirementId
+) =>
+  getTransportReplacementRequests(order).find(
+    (item) =>
+      String(item?.requirementId || "") ===
+        String(requirementId || "") &&
+      String(item?.status || "").trim().toLowerCase() ===
+        "pending"
+  );
+
+const hasPendingTransportReplacement = (order) =>
+  getTransportReplacementRequests(order).some(
+    (item) =>
+      String(item?.status || "").trim().toLowerCase() ===
+      "pending"
+  );
+
+const getPendingTransportReplacement = (
+  order,
+  confirmationId
+) =>
+  getTransportReplacementRequests(order).find(
+    (item) =>
+      item.currentConfirmationId === confirmationId &&
+      item.status === "Pending"
+  );
+
+const createTransportReplacementForm = (
+  requirement,
+  confirmation,
+  quotation
+) => ({
+  requirementId: requirement?.requirementId || "",
+  currentConfirmationId: confirmation?.confirmationId || "",
+  currentQuotationId: quotation?.quotationId || "",
+  currentTransporter: quotation?.transporter || "",
+  currentAmount: quotation?.amount ?? "",
+  proposedTransporter: "",
+  proposedAmount: quotation?.amount ?? "",
+  quantity: Math.max(1, Number(quotation?.quantity) || 1),
+  reason: "",
+  remarks: "",
+  requestedBy: "",
+});
+
+/* =========================================================
+   ACTUAL / CURRENT VEHICLES
+========================================================= */
+
+const getAllocatedVehicles = (order) =>
+  Array.isArray(order?.allocatedVehicles)
+    ? order.allocatedVehicles
+    : [];
+
+const getAllocatedVehiclesForRequirement = (
+  order,
+  requirementId
+) =>
+  getAllocatedVehicles(order).filter(
+    (vehicle) =>
+      String(vehicle?.requirementId || "") ===
+      String(requirementId || "")
+  );
+
+const createTrafficVehicleForm = () => ({
+  vehicleNumber: "",
+  driverName: "",
+  driverContactNumber: "",
+});
+
+const createTrafficReplacementForm = (vehicle) => ({
+  allocationId: vehicle?.allocationId || "",
+  oldVehicleNumber: vehicle?.vehicleNumber || "",
+  newVehicleNumber: "",
+  driverName: vehicle?.driver?.name || "",
+  driverContactNumber: vehicle?.driver?.contactNumber || "",
+  reason: "",
+  remarks: "",
+  replacedBy: "",
+});
 
 const getApprovedConfirmationsForRequirement = (
   order,
@@ -218,7 +293,6 @@ const getApprovedConfirmationsForRequirement = (
       String(confirmation.status || "").trim().toLowerCase() ===
         "approved"
   );
-
 
 const getRequirementConfirmation = (
   order,
@@ -252,7 +326,6 @@ const getRequirementConfirmation = (
     ]
   );
 };
-
 
 const getApprovedQuantityForRequirement = (
   order,
@@ -293,7 +366,6 @@ const getApprovedQuantityForRequirement = (
   );
 };
 
-
 /* =========================================================
    REQUIREMENT STATUS
 
@@ -315,6 +387,16 @@ const getRequirementStatus = (
   order,
   requirementId
 ) => {
+  const pendingReplacement =
+    getPendingTransportReplacementForRequirement(
+      order,
+      requirementId
+    );
+
+  if (pendingReplacement) {
+    return "Replacement Pending";
+  }
+
   const quotations =
     getRequirementQuotations(
       order,
@@ -387,6 +469,15 @@ const getOrderQuotationStatus = (
     );
 
   if (
+    statuses.some(
+      (status) =>
+        status === "Replacement Pending"
+    )
+  ) {
+    return "Replacement Pending";
+  }
+
+  if (
     statuses.every(
       (status) =>
         status === "Approved"
@@ -416,7 +507,6 @@ const getOrderQuotationStatus = (
   return "Approval Pending";
 };
 
-
 /* =========================================================
    STATUS UI
 ========================================================= */
@@ -432,13 +522,13 @@ const getStatusClass = (
       return "rejected";
 
     case "Approval Pending":
+    case "Replacement Pending":
       return "waiting";
 
     default:
       return "pending";
   }
 };
-
 
 const StatusIcon = ({
   status,
@@ -459,6 +549,7 @@ const StatusIcon = ({
       );
 
     case "Approval Pending":
+    case "Replacement Pending":
       return (
         <Clock3
           size={13}
@@ -473,7 +564,6 @@ const StatusIcon = ({
       );
   }
 };
-
 
 /* =========================================================
    ROUTE / SITE
@@ -497,7 +587,6 @@ const getRouteText = (order) => {
   }`;
 };
 
-
 /* =========================================================
    CRANE MOVEMENT
 ========================================================= */
@@ -517,7 +606,6 @@ const getCraneDocumentUrl = (
 
   return `${TRIP_API_URL}/${order._id}/crane-document/file?disposition=${disposition}`;
 };
-
 
 /* =========================================================
    TRAFFIC
@@ -579,6 +667,174 @@ const Traffic = () => {
   ] = useState("");
 
   /* =========================================================
+     TRAFFIC ACTUAL VEHICLE / REPLACEMENT
+  ========================================================= */
+
+  const [
+    trafficVehicleForms,
+    setTrafficVehicleForms,
+  ] = useState({});
+
+  const [
+    trafficReplacementForm,
+    setTrafficReplacementForm,
+  ] = useState(null);
+
+  const [
+    transportReplacementForm,
+    setTransportReplacementForm,
+  ] = useState(null);
+
+  /* =========================================================
+     TRANSPORT REPLACEMENT REQUEST
+  ========================================================= */
+
+  const openTransportReplacement = (
+    requirement,
+    confirmation,
+    quotation
+  ) => {
+    if (!requirement || !confirmation || !quotation) return;
+
+    setTransportReplacementForm(
+      createTransportReplacementForm(
+        requirement,
+        confirmation,
+        quotation
+      )
+    );
+  };
+
+  const closeTransportReplacement = () => {
+    if (!saving) {
+      setTransportReplacementForm(null);
+    }
+  };
+
+  const handleTransportReplacementChange = (
+    field,
+    value
+  ) => {
+    setTransportReplacementForm((previous) =>
+      previous
+        ? {
+            ...previous,
+            [field]: value,
+          }
+        : previous
+    );
+  };
+
+  const handleTransportReplacementRequest = async () => {
+    if (!selectedOrder?._id || !transportReplacementForm) {
+      return;
+    }
+
+    if (!String(transportReplacementForm.proposedTransporter || "").trim()) {
+      showToast("New transporter name is required.", "warning");
+      return;
+    }
+
+    if (
+      transportReplacementForm.proposedAmount === "" ||
+      Number(transportReplacementForm.proposedAmount) < 0
+    ) {
+      showToast("Valid proposed amount is required.", "warning");
+      return;
+    }
+
+    if (!String(transportReplacementForm.reason || "").trim()) {
+      showToast("Replacement reason is required.", "warning");
+      return;
+    }
+
+    try {
+      setSaving(true);
+      setMessage("");
+
+      const response = await fetch(
+        `${TRIP_API_URL}/${selectedOrder._id}/transport-replacement-requests`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({
+            requirementId: transportReplacementForm.requirementId,
+            currentConfirmationId:
+              transportReplacementForm.currentConfirmationId,
+            currentQuotationId:
+              transportReplacementForm.currentQuotationId,
+            proposedTransporter:
+              String(
+                transportReplacementForm.proposedTransporter || ""
+              ).trim(),
+            proposedAmount:
+              Number(transportReplacementForm.proposedAmount),
+            quantity:
+              Math.max(
+                1,
+                Number(transportReplacementForm.quantity) || 1
+              ),
+            reason:
+              String(transportReplacementForm.reason || "").trim(),
+            remarks:
+              String(transportReplacementForm.remarks || "").trim(),
+            requestedBy:
+              String(
+                transportReplacementForm.requestedBy || "Traffic Team"
+              ).trim(),
+          }),
+        }
+      );
+
+      const payload = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(
+          payload?.message ||
+            "Unable to request transport replacement."
+        );
+      }
+
+      const updatedOrder = extractTrip(payload);
+
+      if (updatedOrder?._id) {
+        setSelectedOrder(updatedOrder);
+        setOrders((previous) =>
+          previous.map((order) =>
+            order._id === updatedOrder._id
+              ? updatedOrder
+              : order
+          )
+        );
+      }
+
+      setTransportReplacementForm(null);
+      setMessage(
+        "Transport replacement request sent to Approval Management."
+      );
+      showToast(
+        "Transport replacement sent for approval.",
+        "success"
+      );
+    } catch (requestError) {
+      console.error(
+        "Transport replacement request error:",
+        requestError
+      );
+      showToast(
+        requestError.message ||
+          "Unable to request transport replacement.",
+        "error"
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  /* =========================================================
      COMPACT BOTTOM-RIGHT TOAST
   ========================================================= */
 
@@ -601,8 +857,6 @@ const Traffic = () => {
 
     return () => window.clearTimeout(timer);
   }, [toast]);
-
-
 
   /* =========================================================
      BUILD REQUIREMENT FORMS
@@ -662,7 +916,6 @@ const Traffic = () => {
 
     setRequirementForms(forms);
   };
-
 
   /* =========================================================
      FETCH ORDERS
@@ -724,7 +977,6 @@ const Traffic = () => {
           trafficOrders
         );
 
-
         if (selectedOrder?._id) {
 
           const fresh =
@@ -763,11 +1015,9 @@ const Traffic = () => {
       }
     };
 
-
   useEffect(() => {
     fetchOrders();
   }, []);
-
 
   /* =========================================================
      OPEN ORDER
@@ -783,13 +1033,11 @@ const Traffic = () => {
       order
     );
 
-
     setMessage("");
 
     document.body.style.overflow =
       "hidden";
   };
-
 
   /* =========================================================
      CLOSE ORDER
@@ -802,13 +1050,11 @@ const Traffic = () => {
 
       setRequirementForms([]);
 
-
       setMessage("");
 
       document.body.style.overflow =
         "";
     };
-
 
   /* =========================================================
      CLEANUP BODY SCROLL
@@ -823,6 +1069,219 @@ const Traffic = () => {
 
   }, []);
 
+  /* =========================================================
+     TRAFFIC ACTUAL VEHICLE ALLOCATION
+  ========================================================= */
+
+  const handleTrafficVehicleChange = (
+    requirementId,
+    field,
+    value
+  ) => {
+    setTrafficVehicleForms((previous) => ({
+      ...previous,
+      [requirementId]: {
+        ...(previous[requirementId] || createTrafficVehicleForm()),
+        [field]: value,
+      },
+    }));
+  };
+
+  const handleTrafficAllocateVehicle = async (
+    requirement,
+    confirmation,
+    quotation
+  ) => {
+    if (!selectedOrder?._id) return;
+
+    const requirementId = requirement.requirementId;
+    const form =
+      trafficVehicleForms[requirementId] ||
+      createTrafficVehicleForm();
+
+    const vehicleNumber = String(
+      form.vehicleNumber || ""
+    )
+      .trim()
+      .toUpperCase();
+
+    if (!vehicleNumber) {
+      showToast("Vehicle number is required.", "error");
+      return;
+    }
+
+    try {
+      setSaving(true);
+
+      const response = await fetch(
+        `${TRIP_API_URL}/${selectedOrder._id}/traffic-allocated-vehicles`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            requirementId,
+            confirmationId: confirmation.confirmationId,
+            quotationId: quotation.quotationId,
+            vehicleNumber,
+            driver: {
+              name: String(form.driverName || "").trim(),
+              contactNumber: String(
+                form.driverContactNumber || ""
+              ).trim(),
+            },
+          }),
+        }
+      );
+
+      const result = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(
+          result?.message ||
+            "Unable to allocate Traffic vehicle."
+        );
+      }
+
+      setTrafficVehicleForms((previous) => ({
+        ...previous,
+        [requirementId]: createTrafficVehicleForm(),
+      }));
+
+      showToast(
+        `${vehicleNumber} allocated successfully.`,
+        "success"
+      );
+
+      await fetchOrders();
+    } catch (err) {
+      showToast(
+        err.message || "Unable to allocate Traffic vehicle.",
+        "error"
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const openTrafficReplacement = (vehicle) => {
+    setTrafficReplacementForm(
+      createTrafficReplacementForm(vehicle)
+    );
+  };
+
+  const closeTrafficReplacement = () => {
+    if (!saving) {
+      setTrafficReplacementForm(null);
+    }
+  };
+
+  const handleTrafficReplacementChange = (
+    field,
+    value
+  ) => {
+    setTrafficReplacementForm((previous) =>
+      previous
+        ? {
+            ...previous,
+            [field]: value,
+          }
+        : previous
+    );
+  };
+
+  const handleTrafficReplacement = async () => {
+    if (
+      !selectedOrder?._id ||
+      !trafficReplacementForm?.allocationId
+    ) {
+      return;
+    }
+
+    const newVehicleNumber = String(
+      trafficReplacementForm.newVehicleNumber || ""
+    )
+      .trim()
+      .toUpperCase();
+
+    if (!newVehicleNumber) {
+      showToast(
+        "New vehicle number is required.",
+        "error"
+      );
+      return;
+    }
+
+    if (
+      !String(trafficReplacementForm.reason || "").trim()
+    ) {
+      showToast(
+        "Replacement reason is required.",
+        "error"
+      );
+      return;
+    }
+
+    try {
+      setSaving(true);
+
+      const response = await fetch(
+        `${TRIP_API_URL}/${selectedOrder._id}/allocated-vehicles/${trafficReplacementForm.allocationId}/traffic-replacement`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            newVehicleNumber,
+            driver: {
+              name: String(
+                trafficReplacementForm.driverName || ""
+              ).trim(),
+              contactNumber: String(
+                trafficReplacementForm.driverContactNumber || ""
+              ).trim(),
+            },
+            reason: String(
+              trafficReplacementForm.reason || ""
+            ).trim(),
+            remarks: String(
+              trafficReplacementForm.remarks || ""
+            ).trim(),
+            replacedBy: String(
+              trafficReplacementForm.replacedBy || ""
+            ).trim(),
+          }),
+        }
+      );
+
+      const result = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(
+          result?.message ||
+            "Unable to replace Traffic vehicle."
+        );
+      }
+
+      setTrafficReplacementForm(null);
+
+      showToast(
+        `${newVehicleNumber} is now the current vehicle.`,
+        "success"
+      );
+
+      await fetchOrders();
+    } catch (err) {
+      showToast(
+        err.message || "Unable to replace Traffic vehicle.",
+        "error"
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
 
   /* =========================================================
      FILTER
@@ -886,7 +1345,6 @@ const Traffic = () => {
       statusFilter,
     ]);
 
-
   /* =========================================================
      COUNTS
   ========================================================= */
@@ -915,8 +1373,8 @@ const Traffic = () => {
           }
 
           if (
-            status ===
-            "Approval Pending"
+            status === "Approval Pending" ||
+            status === "Replacement Pending"
           ) {
             waiting += 1;
           }
@@ -945,7 +1403,6 @@ const Traffic = () => {
       };
 
     }, [orders]);
-
 
   /* =========================================================
      QUOTATION INPUT CHANGE
@@ -998,7 +1455,6 @@ const Traffic = () => {
     );
   };
 
-
   /* =========================================================
      ADD QUOTATION FORM
   ========================================================= */
@@ -1030,7 +1486,6 @@ const Traffic = () => {
         )
     );
   };
-
 
   /* =========================================================
      REMOVE UNSAVED QUOTATION
@@ -1087,7 +1542,6 @@ const Traffic = () => {
     );
   };
 
-
   /* =========================================================
      SAVE QUOTATIONS
 
@@ -1117,8 +1571,6 @@ const Traffic = () => {
         return;
       }
 
-
-
       if (
         !requirementForms.length
       ) {
@@ -1128,9 +1580,7 @@ const Traffic = () => {
         return;
       }
 
-
       const newQuotations = [];
-
 
       for (
         let requirementIndex = 0;
@@ -1144,7 +1594,6 @@ const Traffic = () => {
             requirementIndex
           ];
 
-
         if (
           !requirement.requirementId
         ) {
@@ -1157,18 +1606,15 @@ const Traffic = () => {
           return;
         }
 
-
         const forms =
           requirement.quotations ||
           [];
-
 
         const unsavedForms =
           forms.filter(
             (quotation) =>
               quotation.isNew
           );
-
 
         /*
          * Existing quotations are already
@@ -1177,9 +1623,6 @@ const Traffic = () => {
         if (!unsavedForms.length) {
           continue;
         }
-
-
-
 
         for (
           let quotationIndex = 0;
@@ -1217,7 +1660,6 @@ const Traffic = () => {
               ""
             ).trim();
 
-
           /*
            * Completely blank temporary rows
            * can be ignored.
@@ -1234,7 +1676,6 @@ const Traffic = () => {
             continue;
           }
 
-
           if (
             !Number.isFinite(quantity) ||
             quantity <= 0
@@ -1249,7 +1690,6 @@ const Traffic = () => {
             return;
           }
 
-
           if (!transporter) {
             const text = `Enter Transport Name for ${
               requirement.vehicleType ||
@@ -1259,7 +1699,6 @@ const Traffic = () => {
             showToast(text, "warning");
             return;
           }
-
 
           if (
             !Number.isFinite(amount) ||
@@ -1272,7 +1711,6 @@ const Traffic = () => {
             return;
           }
 
-
           if (!allocatedBy) {
             const text =
               `Enter Allocated By name for ${transporter}.`;
@@ -1280,7 +1718,6 @@ const Traffic = () => {
             showToast(text, "warning");
             return;
           }
-
 
           newQuotations.push({
             requirementId:
@@ -1303,7 +1740,6 @@ const Traffic = () => {
         }
       }
 
-
       if (!newQuotations.length) {
         const text =
           "Please enter at least one new transport quotation.";
@@ -1312,12 +1748,10 @@ const Traffic = () => {
         return;
       }
 
-
       try {
 
         setSaving(true);
         setMessage("");
-
 
         /*
          * Backend endpoint creates one
@@ -1346,14 +1780,12 @@ const Traffic = () => {
               }
             );
 
-
           const result =
             await response
               .json()
               .catch(
                 () => ({})
               );
-
 
           if (!response.ok) {
             throw new Error(
@@ -1363,7 +1795,6 @@ const Traffic = () => {
           }
         }
 
-
         /*
          * Reload canonical TripOrder from DB.
          */
@@ -1372,14 +1803,12 @@ const Traffic = () => {
             `${TRIP_API_URL}/${selectedOrder._id}`
           );
 
-
         const refreshResult =
           await refreshResponse
             .json()
             .catch(
               () => ({})
             );
-
 
         if (!refreshResponse.ok) {
           throw new Error(
@@ -1388,17 +1817,14 @@ const Traffic = () => {
           );
         }
 
-
         const savedOrder =
           extractTrip(
             refreshResult
           );
 
-
         setSelectedOrder(
           savedOrder
         );
-
 
         setOrders(
           (previous) =>
@@ -1411,11 +1837,9 @@ const Traffic = () => {
             )
         );
 
-
         loadRequirementForms(
           savedOrder
         );
-
 
         const text =
           "Transport quotations submitted successfully for management approval.";
@@ -1440,7 +1864,6 @@ const Traffic = () => {
         setSaving(false);
       }
     };
-
 
   /* =========================================================
      UI
@@ -1487,7 +1910,6 @@ const Traffic = () => {
         </div>
       )}
 
-
       {/* =====================================================
           HEADER
       ===================================================== */}
@@ -1511,7 +1933,6 @@ const Traffic = () => {
           </p>
 
         </div>
-
 
         <button
           type="button"
@@ -1539,7 +1960,6 @@ const Traffic = () => {
 
       </header>
 
-
       {/* =====================================================
           MESSAGE
       ===================================================== */}
@@ -1564,7 +1984,6 @@ const Traffic = () => {
         </div>
 
       )}
-
 
       {/* =====================================================
           SUMMARY
@@ -1592,7 +2011,6 @@ const Traffic = () => {
 
         </article>
 
-
         <article>
 
           <div className="traffic-summary-icon waiting">
@@ -1612,7 +2030,6 @@ const Traffic = () => {
           </div>
 
         </article>
-
 
         <article>
 
@@ -1637,7 +2054,6 @@ const Traffic = () => {
           </div>
 
         </article>
-
 
         <article>
 
@@ -1664,7 +2080,6 @@ const Traffic = () => {
         </article>
 
       </section>
-
 
       {/* =====================================================
           MAIN CARD
@@ -1696,7 +2111,6 @@ const Traffic = () => {
 
           </div>
 
-
           <span className="traffic-order-count">
 
             {filteredOrders.length}
@@ -1706,7 +2120,6 @@ const Traffic = () => {
           </span>
 
         </div>
-
 
         {/* =================================================
             FILTERS
@@ -1737,7 +2150,6 @@ const Traffic = () => {
 
           </div>
 
-
           <div className="traffic-filter-select">
 
             <select
@@ -1765,6 +2177,10 @@ const Traffic = () => {
                 Approval Pending
               </option>
 
+              <option value="Replacement Pending">
+                Replacement Pending
+              </option>
+
               <option value="Approved">
                 Approved
               </option>
@@ -1782,7 +2198,6 @@ const Traffic = () => {
           </div>
 
         </div>
-
 
         {/* =================================================
             TABLE
@@ -1835,7 +2250,6 @@ const Traffic = () => {
               </tr>
 
             </thead>
-
 
             <tbody>
 
@@ -1919,7 +2333,6 @@ const Traffic = () => {
 
                         </td>
 
-
                         <td>
 
                           <strong className="traffic-order-id">
@@ -1928,7 +2341,6 @@ const Traffic = () => {
                           </strong>
 
                         </td>
-
 
                         <td>
 
@@ -1943,7 +2355,6 @@ const Traffic = () => {
                           </span>
 
                         </td>
-
 
                         <td>
 
@@ -1960,7 +2371,6 @@ const Traffic = () => {
 
                         </td>
 
-
                         <td>
 
                           <span className="traffic-route">
@@ -1970,7 +2380,6 @@ const Traffic = () => {
                           </span>
 
                         </td>
-
 
                         <td>
 
@@ -1989,7 +2398,6 @@ const Traffic = () => {
 
                         </td>
 
-
                         <td>
 
                           {formatDate(
@@ -1997,7 +2405,6 @@ const Traffic = () => {
                           )}
 
                         </td>
-
 
                         <td>
 
@@ -2018,7 +2425,6 @@ const Traffic = () => {
                           </span>
 
                         </td>
-
 
                         <td>
 
@@ -2058,7 +2464,6 @@ const Traffic = () => {
 
       </section>
 
-
       {/* =====================================================
           ORDER DETAILS MODAL
       ===================================================== */}
@@ -2081,7 +2486,6 @@ const Traffic = () => {
         >
 
           <div className="traffic-modal">
-
 
             {/* =================================================
                 MODAL HEADER
@@ -2116,7 +2520,6 @@ const Traffic = () => {
 
               </div>
 
-
                             <div className="traffic-modal-header-actions">
 
 <button
@@ -2139,7 +2542,6 @@ const Traffic = () => {
 
             </div>
 
-
             {/* =================================================
                 ORDER INFO
             ================================================= */}
@@ -2159,7 +2561,6 @@ const Traffic = () => {
 
               </div>
 
-
               <div>
 
                 <span>
@@ -2172,7 +2573,6 @@ const Traffic = () => {
                 </strong>
 
               </div>
-
 
               <div>
 
@@ -2188,7 +2588,6 @@ const Traffic = () => {
 
               </div>
 
-
               <div>
 
                 <span>
@@ -2202,7 +2601,6 @@ const Traffic = () => {
                 </strong>
 
               </div>
-
 
               <div>
 
@@ -2222,7 +2620,6 @@ const Traffic = () => {
               </div>
 
             </div>
-
 
             {/* =================================================
                 REQUIREMENTS
@@ -2253,7 +2650,6 @@ const Traffic = () => {
                       </div>
 
                     </div>
-
 
                     <div className="traffic-crane-compact-actions">
 
@@ -2304,7 +2700,6 @@ const Traffic = () => {
 
                   </div>
 
-
                   <div className="traffic-crane-compact-footer">
 
                     <span>Vehicle Qty</span>
@@ -2333,20 +2728,17 @@ const Traffic = () => {
                       requirement.requirementId
                     );
 
-
                   const confirmation =
                     getRequirementConfirmation(
                       selectedOrder,
                       requirement.requirementId
                     );
 
-
                   const approvedConfirmations =
                     getApprovedConfirmationsForRequirement(
                       selectedOrder,
                       requirement.requirementId
                     );
-
 
                   const approvedQuotationIds =
                     new Set(
@@ -2357,7 +2749,6 @@ const Traffic = () => {
                         )
                         .filter(Boolean)
                     );
-
 
                   const approvedQuotations =
                     getRequirementQuotations(
@@ -2370,16 +2761,13 @@ const Traffic = () => {
                         )
                     );
 
-
                   const isApproved =
                     status ===
                     "Approved";
 
-
                   const requirementKey =
                     requirement.requirementId ||
                     requirementIndex;
-
 
                   return (
 
@@ -2393,7 +2781,6 @@ const Traffic = () => {
                         requirementKey
                       }
                     >
-
 
                       {/* =============================================
                           REQUIREMENT HEADER
@@ -2414,7 +2801,6 @@ const Traffic = () => {
                             )}
 
                           </span>
-
 
                           <div>
 
@@ -2445,7 +2831,6 @@ const Traffic = () => {
 
                         </div>
 
-
                         <div className="traffic-vehicle-header-actions">
 
                           <span
@@ -2463,7 +2848,6 @@ const Traffic = () => {
                             {status}
 
                           </span>
-
 
                           {!isApproved && (
 
@@ -2490,7 +2874,6 @@ const Traffic = () => {
                         </div>
 
                       </div>
-
 
                       {/* =============================================
                           APPROVAL RESPONSE
@@ -2554,7 +2937,6 @@ const Traffic = () => {
 
                       )}
 
-
                       {status ===
                         "Rejected" && (
 
@@ -2583,7 +2965,6 @@ const Traffic = () => {
                         </div>
 
                       )}
-
 
                       {/* =============================================
                           QUOTATION TABLE
@@ -2633,7 +3014,6 @@ const Traffic = () => {
 
                             </thead>
 
-
                             <tbody>
 
                               {requirement.quotations
@@ -2648,7 +3028,6 @@ const Traffic = () => {
                                     const isExisting =
                                       !quotation.isNew;
 
-
                                     const selectedQuotation =
                                       isExisting &&
                                       Boolean(
@@ -2657,7 +3036,6 @@ const Traffic = () => {
                                       approvedQuotationIds.has(
                                         quotation.quotationId
                                       );
-
 
                                     return (
 
@@ -2674,12 +3052,10 @@ const Traffic = () => {
                                         }
                                       >
 
-
                                         <td>
                                           {quotationIndex +
                                             1}
                                         </td>
-
 
                                         {/* TRANSPORTER */}
 
@@ -2719,7 +3095,6 @@ const Traffic = () => {
                                           )}
 
                                         </td>
-
 
                                         {/* QUANTITY */}
 
@@ -2778,7 +3153,6 @@ const Traffic = () => {
 
                                         </td>
 
-
                                         {/* AMOUNT */}
 
                                         <td>
@@ -2831,7 +3205,6 @@ const Traffic = () => {
 
                                         </td>
 
-
                                         {/* ALLOCATED BY */}
 
                                         <td>
@@ -2868,7 +3241,6 @@ const Traffic = () => {
                                           )}
 
                                         </td>
-
 
                                         {/* STATUS */}
 
@@ -2909,7 +3281,6 @@ const Traffic = () => {
                                           )}
 
                                         </td>
-
 
                                         {/* DELETE */}
 
@@ -2986,12 +3357,122 @@ const Traffic = () => {
 
                       </div>
 
+                      {/* =============================================
+                          CONFIRMED / CURRENT TRANSPORT
+                      ============================================= */}
+
+                      {isApproved && approvedQuotations.length > 0 && (
+                        <div className="traffic-current-transport-section">
+                          <div className="traffic-current-transport-head">
+                            <div>
+                              <strong>Confirmed Transport</strong>
+                              <span>
+                                Approved transporter remains current until a
+                                replacement request is approved.
+                              </span>
+                            </div>
+                            <span className="traffic-current-transport-count">
+                              {approvedQuotations.length} Approved
+                            </span>
+                          </div>
+
+                          <div className="traffic-current-transport-list">
+                            {approvedConfirmations.map((confirmation) => {
+                              const quotation =
+                                approvedQuotations.find(
+                                  (item) =>
+                                    item.quotationId ===
+                                    confirmation.quotationId
+                                );
+
+                              if (!quotation) return null;
+
+                              const pendingReplacement =
+                                getPendingTransportReplacement(
+                                  selectedOrder,
+                                  confirmation.confirmationId
+                                );
+
+                              return (
+                                <div
+                                  className="traffic-current-transport-row"
+                                  key={confirmation.confirmationId}
+                                >
+                                  <div className="traffic-current-transport-main">
+                                    <Truck size={15} />
+                                    <div>
+                                      <strong>
+                                        {quotation.transporter || "—"}
+                                      </strong>
+                                      <span>
+                                        Current Approved Transport
+                                      </span>
+                                    </div>
+                                  </div>
+
+                                  <div className="traffic-current-transport-meta">
+                                    <span>Quantity</span>
+                                    <strong>
+                                      {Math.max(
+                                        1,
+                                        Number(quotation.quantity) || 1
+                                      )}{" "}
+                                      NOS
+                                    </strong>
+                                  </div>
+
+                                  <div className="traffic-current-transport-meta">
+                                    <span>Approved Amount</span>
+                                    <strong>
+                                      {formatAmount(quotation.amount)}
+                                    </strong>
+                                  </div>
+
+                                  {pendingReplacement ? (
+                                    <div className="traffic-transport-pending">
+                                      <Clock3 size={13} />
+                                      <div>
+                                        <strong>
+                                          Replacement Pending
+                                        </strong>
+                                        <span>
+                                          {pendingReplacement.proposedTransporter}
+                                          {" • "}
+                                          {formatAmount(
+                                            pendingReplacement.proposedAmount
+                                          )}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      className="traffic-replace-transport-btn"
+                                      disabled={saving}
+                                      onClick={() =>
+                                        openTransportReplacement(
+                                          requirement,
+                                          confirmation,
+                                          quotation
+                                        )
+                                      }
+                                    >
+                                      <RefreshCw size={13} />
+                                      Replace Transport
+                                    </button>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+
                     </section>
 
                   );
                 }
               )}
-
 
               {/* =================================================
                   FOOTER
@@ -3005,7 +3486,6 @@ const Traffic = () => {
                   confirm the suitable transporter
                   and amount.
                 </span>
-
 
                 <button
                   type="button"
@@ -3036,9 +3516,175 @@ const Traffic = () => {
 
       )}
 
+      {transportReplacementForm && (
+        <div
+          className="traffic-transport-replacement-overlay"
+          role="dialog"
+          aria-modal="true"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              closeTransportReplacement();
+            }
+          }}
+        >
+          <div className="traffic-transport-replacement-modal">
+            <div className="traffic-transport-replacement-head">
+              <div>
+                <span>TRANSPORT REPLACEMENT REQUEST</span>
+                <h3>Replace Approved Transport</h3>
+                <p>
+                  This request must be approved by Approval Management.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                disabled={saving}
+                onClick={closeTransportReplacement}
+                aria-label="Close"
+              >
+                <X size={17} />
+              </button>
+            </div>
+
+            <div className="traffic-transport-replacement-current">
+              <div>
+                <span>Current Transport</span>
+                <strong>
+                  {transportReplacementForm.currentTransporter || "—"}
+                </strong>
+              </div>
+
+              <div>
+                <span>Current Amount</span>
+                <strong>
+                  {formatAmount(
+                    transportReplacementForm.currentAmount
+                  )}
+                </strong>
+              </div>
+
+              <div>
+                <span>Quantity</span>
+                <strong>
+                  {transportReplacementForm.quantity} NOS
+                </strong>
+              </div>
+            </div>
+
+            <div className="traffic-transport-replacement-body">
+              <label>
+                <span>New Transporter *</span>
+                <input
+                  value={
+                    transportReplacementForm.proposedTransporter
+                  }
+                  onChange={(event) =>
+                    handleTransportReplacementChange(
+                      "proposedTransporter",
+                      event.target.value
+                    )
+                  }
+                  placeholder="Enter new transporter"
+                  disabled={saving}
+                />
+              </label>
+
+              <label>
+                <span>Proposed Amount *</span>
+                <input
+                  type="number"
+                  min="0"
+                  value={
+                    transportReplacementForm.proposedAmount
+                  }
+                  onChange={(event) =>
+                    handleTransportReplacementChange(
+                      "proposedAmount",
+                      event.target.value
+                    )
+                  }
+                  placeholder="Enter amount"
+                  disabled={saving}
+                />
+              </label>
+
+              <label>
+                <span>Requested By</span>
+                <input
+                  value={
+                    transportReplacementForm.requestedBy
+                  }
+                  onChange={(event) =>
+                    handleTransportReplacementChange(
+                      "requestedBy",
+                      event.target.value
+                    )
+                  }
+                  placeholder="Traffic team member"
+                  disabled={saving}
+                />
+              </label>
+
+              <label>
+                <span>Reason *</span>
+                <input
+                  value={transportReplacementForm.reason}
+                  onChange={(event) =>
+                    handleTransportReplacementChange(
+                      "reason",
+                      event.target.value
+                    )
+                  }
+                  placeholder="Reason for replacing transport"
+                  disabled={saving}
+                />
+              </label>
+
+              <label className="traffic-transport-replacement-full">
+                <span>Remarks</span>
+                <textarea
+                  value={transportReplacementForm.remarks}
+                  onChange={(event) =>
+                    handleTransportReplacementChange(
+                      "remarks",
+                      event.target.value
+                    )
+                  }
+                  placeholder="Optional remarks"
+                  disabled={saving}
+                />
+              </label>
+            </div>
+
+            <div className="traffic-transport-replacement-footer">
+              <button
+                type="button"
+                className="traffic-transport-replacement-cancel"
+                disabled={saving}
+                onClick={closeTransportReplacement}
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                className="traffic-transport-replacement-submit"
+                disabled={saving}
+                onClick={handleTransportReplacementRequest}
+              >
+                <Send size={13} />
+                {saving
+                  ? "Submitting..."
+                  : "Request Replacement Approval"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
 
-
-export default Traffic; 
+export default Traffic;

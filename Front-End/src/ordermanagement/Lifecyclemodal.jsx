@@ -164,6 +164,16 @@ const getApprovedConfirmation = (
       confirmation.status === "Approved"
   );
 
+const getTransportReplacementRequests = (order) =>
+  safeArray(order?.transportReplacementRequests);
+
+const hasPendingTransportReplacement = (order) =>
+  getTransportReplacementRequests(order).some(
+    (request) =>
+      String(request?.status || "").trim().toLowerCase() ===
+      "pending"
+  );
+
 const getLatestTracking = (allocation) => {
   const history = safeArray(
     allocation?.dailyTracking
@@ -323,9 +333,14 @@ const buildLifecycle = (order) => {
     0
   );
 
+  const transportReplacementPending =
+    hasPendingTransportReplacement(order);
+
   const vendorFinalizationStatus =
-    lifecycleRequiredVehicleCount > 0 &&
-    lifecycleApprovedVehicleCount >= lifecycleRequiredVehicleCount
+    transportReplacementPending
+      ? "Replacement Pending"
+      : lifecycleRequiredVehicleCount > 0 &&
+        lifecycleApprovedVehicleCount >= lifecycleRequiredVehicleCount
       ? "Completed"
       : "Pending";
 
@@ -408,6 +423,9 @@ const getLifecycleCurrentIndex = (
       .trim()
       .toLowerCase() === "completed";
 
+  const transportReplacementPending =
+    hasPendingTransportReplacement(order);
+
   const hasTrackingProgress = allocations.some(
     (allocation) =>
       safeArray(allocation?.dailyTracking).length > 0 ||
@@ -438,9 +456,22 @@ const getLifecycleCurrentIndex = (
   }
 
   /*
-   * PO Document and Vendor Finalization are OPTIONAL.
-   * Once the commercial/order approval is Approved,
-   * Order Placed becomes the operational next stage.
+   * A pending transporter replacement is an active Vendor Finalization
+   * approval. Do not display Order Placed as the current stage until that
+   * replacement is reviewed, unless the order was already truly placed.
+   */
+  if (
+    transportReplacementPending &&
+    !orderPlacedCompleted &&
+    stage !== "tracking" &&
+    stage !== "tracking input"
+  ) {
+    return 3;
+  }
+
+  /*
+   * Once commercial/order approval is Approved and there is no active
+   * transporter replacement approval, Order Placed is the next stage.
    */
   if (
     orderApproved ||
@@ -1199,6 +1230,14 @@ const Lifecyclemodal = ({
     if (!orderApproved) {
       const message =
         "Order approval must be completed before placing the order.";
+      setPlaceOrderError(message);
+      showToast(message, "warning");
+      return;
+    }
+
+    if (hasPendingTransportReplacement(order)) {
+      const message =
+        "Transport replacement approval is pending. Complete the replacement approval before placing the order.";
       setPlaceOrderError(message);
       showToast(message, "warning");
       return;
@@ -2819,7 +2858,24 @@ const Lifecyclemodal = ({
                           </td>
 
                           <td>
-                            {quotationPendingVehicleCount > 0 ? (
+                            {hasPendingTransportReplacement(order) ? (
+                              <span
+                                style={{
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  gap: "6px",
+                                  padding: "6px 10px",
+                                  border: "1px solid #f0c56a",
+                                  borderRadius: "999px",
+                                  background: "#fff7e2",
+                                  color: "#9a6200",
+                                  fontSize: "10px",
+                                  fontWeight: 900,
+                                }}
+                              >
+                                ⚠ Replacement Pending
+                              </span>
+                            ) : quotationPendingVehicleCount > 0 ? (
                               <span
                                 style={{
                                   display: "inline-flex",
@@ -2862,7 +2918,8 @@ const Lifecyclemodal = ({
 
                   </div>
 
-                  {quotationPendingVehicleCount > 0 && (
+                  {(quotationPendingVehicleCount > 0 ||
+                    hasPendingTransportReplacement(order)) && (
                     <div
                       style={{
                         marginTop: "12px",
@@ -2877,8 +2934,11 @@ const Lifecyclemodal = ({
                         lineHeight: 1.5,
                       }}
                     >
-                      ⚠ {quotationPendingVehicleCount} vehicle
-                      {quotationPendingVehicleCount === 1 ? "" : "s"} pending
+                      {hasPendingTransportReplacement(order)
+                        ? "⚠ Transport replacement approval pending"
+                        : `⚠ ${quotationPendingVehicleCount} vehicle${
+                            quotationPendingVehicleCount === 1 ? "" : "s"
+                          } pending`}
                       quotation/finalization. Order Placed and Tracking can still
                       continue.
                     </div>
@@ -3093,7 +3153,9 @@ const Lifecyclemodal = ({
                   </div>
 
                   <span className="kam-place-order-ready">
-                    Ready to Place
+                    {hasPendingTransportReplacement(order)
+                      ? "Replacement Pending"
+                      : "Ready to Place"}
                   </span>
                 </div>
 
@@ -3436,9 +3498,62 @@ const Lifecyclemodal = ({
                               </td>
 
                               <td>
-                                <strong>
-                                  {allocation.vehicleNumber || "—"}
-                                </strong>
+                                <div className="kam-simple-vehicle-number">
+                                  <strong>
+                                    {allocation.vehicleNumber || "—"}
+                                  </strong>
+
+                                  {safeArray(allocation.replacementHistory).length > 0 && (() => {
+                                    const history = safeArray(
+                                      allocation.replacementHistory
+                                    );
+
+                                    const vehicleChain = [
+                                      history[0]?.oldVehicleNumber,
+                                      ...history.map(
+                                        (item) => item?.newVehicleNumber
+                                      ),
+                                    ].filter(Boolean);
+
+                                    const uniqueVehicleChain =
+                                      vehicleChain.filter(
+                                        (vehicleNumber, index, array) =>
+                                          index === 0 ||
+                                          vehicleNumber !== array[index - 1]
+                                      );
+
+                                    return (
+                                      <div
+                                        className="kam-simple-replacement-chain"
+                                        title={uniqueVehicleChain.join(" → ")}
+                                      >
+                                        {uniqueVehicleChain.map(
+                                          (vehicleNumber, index) => (
+                                            <React.Fragment
+                                              key={`${allocation.allocationId || allocation._id}-replacement-${vehicleNumber}-${index}`}
+                                            >
+                                              <span
+                                                className={
+                                                  index ===
+                                                  uniqueVehicleChain.length - 1
+                                                    ? "current"
+                                                    : "previous"
+                                                }
+                                              >
+                                                {vehicleNumber}
+                                              </span>
+
+                                              {index <
+                                                uniqueVehicleChain.length - 1 && (
+                                                <b>→</b>
+                                              )}
+                                            </React.Fragment>
+                                          )
+                                        )}
+                                      </div>
+                                    );
+                                  })()}
+                                </div>
                               </td>
 
                               <td>
@@ -4065,12 +4180,19 @@ const Lifecyclemodal = ({
                 <button
                   type="button"
                   className="kam-request-approval-btn kam-place-order-btn"
-                  disabled={placeOrderSaving}
+                  disabled={
+                    placeOrderSaving ||
+                    hasPendingTransportReplacement(order)
+                  }
                   onClick={placeOrder}
                 >
                   <span aria-hidden="true">✓</span>
                   <span>
-                    {placeOrderSaving ? "Placing Order..." : "Place Order"}
+                    {placeOrderSaving
+                      ? "Placing Order..."
+                      : hasPendingTransportReplacement(order)
+                      ? "Replacement Pending"
+                      : "Place Order"}
                   </span>
                   {!placeOrderSaving && (
                     <span aria-hidden="true">→</span>

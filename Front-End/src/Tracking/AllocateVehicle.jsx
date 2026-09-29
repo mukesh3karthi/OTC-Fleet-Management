@@ -22,6 +22,7 @@ import {
   Save,
   Truck,
   UserRound,
+  RefreshCw,
 } from "lucide-react";
 
 import {
@@ -540,6 +541,12 @@ const AllocateVehicle = () => {
     setActiveVehicleModal,
   ] = useState(null);
 
+
+  const [
+    replacementForm,
+    setReplacementForm,
+  ] = useState(null);
+
   /* =======================================================
      FETCH ORDERS
   ======================================================= */
@@ -1048,6 +1055,136 @@ const AllocateVehicle = () => {
     };
 
   /* =======================================================
+     TRACKING VEHICLE REPLACEMENT
+  ======================================================= */
+
+  const openReplacementForm = (allocation) => {
+    setReplacementForm({
+      allocationId: allocation.allocationId,
+      oldVehicleNumber: allocation.vehicleNumber || "",
+      newVehicleNumber: "",
+      driverName: allocation.driver?.name || "",
+      driverContactNumber:
+        allocation.driver?.contactNumber || "",
+      reason: "",
+      remarks: "",
+      replacedBy: "",
+    });
+  };
+
+  const closeReplacementForm = () => {
+    if (!saving) {
+      setReplacementForm(null);
+    }
+  };
+
+  const handleReplacementChange = (
+    field,
+    value
+  ) => {
+    setReplacementForm((previous) =>
+      previous
+        ? {
+            ...previous,
+            [field]: value,
+          }
+        : previous
+    );
+  };
+
+  const handleTrackingReplacement = async () => {
+    if (
+      !selectedOrder ||
+      !replacementForm?.allocationId
+    ) {
+      return;
+    }
+
+    const newVehicleNumber =
+      safeText(
+        replacementForm.newVehicleNumber
+      )
+        .trim()
+        .toUpperCase();
+
+    if (!newVehicleNumber) {
+      setError("New vehicle number is required.");
+      return;
+    }
+
+    if (!safeText(replacementForm.reason).trim()) {
+      setError("Replacement reason is required.");
+      return;
+    }
+
+    try {
+      setSaving(true);
+      setError("");
+      setSuccess("");
+
+      const response = await fetch(
+        `${API_URL}/${getMongoId(
+          selectedOrder
+        )}/allocated-vehicles/${replacementForm.allocationId}/tracking-replacement`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            newVehicleNumber,
+            driver: {
+              name: safeText(
+                replacementForm.driverName
+              ).trim(),
+              contactNumber: safeText(
+                replacementForm.driverContactNumber
+              ).trim(),
+            },
+            reason: safeText(
+              replacementForm.reason
+            ).trim(),
+            remarks: safeText(
+              replacementForm.remarks
+            ).trim(),
+            replacedBy: safeText(
+              replacementForm.replacedBy
+            ).trim(),
+          }),
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          result?.message ||
+            "Unable to replace vehicle."
+        );
+      }
+
+      setReplacementForm(null);
+      setActiveVehicleModal(null);
+
+      setSuccess(
+        `${newVehicleNumber} is now the current vehicle.`
+      );
+
+      await fetchOrders();
+    } catch (replacementError) {
+      console.error(replacementError);
+
+      setError(
+        replacementError.message ||
+          "Unable to replace vehicle."
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
+
+
+  /* =======================================================
      EDIT ALLOCATED VEHICLE
   ======================================================= */
 
@@ -1138,13 +1275,6 @@ const AllocateVehicle = () => {
       }
 
       const payload = {
-        vehicleNumber:
-          safeText(
-            allocation.vehicleNumber
-          )
-            .trim()
-            .toUpperCase(),
-
         driver: {
           name:
             safeText(
@@ -2730,8 +2860,97 @@ const AllocateVehicle = () => {
                                   </div>
                                 </div>
 
-
+                                <button
+                                  type="button"
+                                  className="tracking-replace-vehicle-button tracking-live-replace-button"
+                                  disabled={saving}
+                                  onClick={() =>
+                                    openReplacementForm(allocation)
+                                  }
+                                >
+                                  <RefreshCw size={13} />
+                                  Replace Vehicle
+                                </button>
                               </div>
+
+                              {safeArray(allocation.replacementHistory).length > 0 && (
+                                <div className="tracking-live-replacement-history">
+                                  <div className="tracking-live-replacement-history-title">
+                                    <div>
+                                      <RefreshCw size={12} />
+                                      <strong>Replacement History</strong>
+                                    </div>
+                                    <span>
+                                      {allocation.replacementCount ||
+                                        allocation.replacementHistory.length}
+                                    </span>
+                                  </div>
+
+                                  <div className="tracking-live-replacement-history-list">
+                                    {safeArray(allocation.replacementHistory)
+                                      .slice()
+                                      .reverse()
+                                      .map((item, historyIndex) => (
+                                        <div
+                                          className="tracking-live-replacement-history-row"
+                                          key={
+                                            item?.replacementId ||
+                                            `${allocation.allocationId}-history-${historyIndex}`
+                                          }
+                                        >
+                                          <div className="tracking-live-history-vehicle">
+                                            <span>Previous</span>
+                                            <strong>{item?.oldVehicleNumber || "—"}</strong>
+                                          </div>
+
+                                          <ChevronRight
+                                            className="tracking-live-history-arrow"
+                                            size={13}
+                                          />
+
+                                          <div className="tracking-live-history-vehicle current">
+                                            <span>Replaced With</span>
+                                            <strong>{item?.newVehicleNumber || "—"}</strong>
+                                          </div>
+
+                                          <div className="tracking-live-history-detail">
+                                            <span>Source</span>
+                                            <strong>
+                                              {item?.replacementSource ||
+                                                item?.source ||
+                                                "—"}
+                                            </strong>
+                                          </div>
+
+                                          <div className="tracking-live-history-detail">
+                                            <span>Reason</span>
+                                            <strong>{item?.reason || "—"}</strong>
+                                          </div>
+
+                                          <div className="tracking-live-history-detail">
+                                            <span>Replaced By</span>
+                                            <strong>{item?.replacedBy || "—"}</strong>
+                                          </div>
+
+                                          <div className="tracking-live-history-detail">
+                                            <span>Date</span>
+                                            <strong>
+                                              {item?.replacedAt
+                                                ? new Date(
+                                                    item.replacedAt
+                                                  ).toLocaleDateString("en-GB", {
+                                                    day: "2-digit",
+                                                    month: "short",
+                                                    year: "numeric",
+                                                  })
+                                                : "—"}
+                                            </strong>
+                                          </div>
+                                        </div>
+                                      ))}
+                                  </div>
+                                </div>
+                              )}
 
                               {activeVehicleModal ===
                                 allocation.allocationId && (
@@ -2766,6 +2985,17 @@ const AllocateVehicle = () => {
                                         
                                         <button
                                           type="button"
+                                          className="tracking-replace-vehicle-button"
+                                          disabled={saving}
+                                          onClick={() =>
+                                            openReplacementForm(allocation)
+                                          }
+                                        >
+                                          Replace Vehicle
+                                        </button>
+
+                                        <button
+                                          type="button"
                                           className="tracking-vehicle-modal-close"
                                           aria-label="Close vehicle details"
                                           onClick={() =>
@@ -2778,6 +3008,47 @@ const AllocateVehicle = () => {
                                     </div>
 
                                     <div className="tracking-vehicle-modal-body">
+
+                              {safeArray(allocation.replacementHistory).length > 0 && (
+                                <div className="tracking-replacement-history">
+                                  <div className="tracking-replacement-history-head">
+                                    <strong>Vehicle Replacement History</strong>
+                                    <span>
+                                      {allocation.replacementCount ||
+                                        allocation.replacementHistory.length}{" "}
+                                      Replacement(s)
+                                    </span>
+                                  </div>
+
+                                  {safeArray(allocation.replacementHistory)
+                                    .slice()
+                                    .reverse()
+                                    .map((item) => (
+                                      <div
+                                        className="tracking-replacement-history-row"
+                                        key={item.replacementId}
+                                      >
+                                        <div>
+                                          <span>Previous</span>
+                                          <strong>{item.oldVehicleNumber || "—"}</strong>
+                                        </div>
+                                        <span className="tracking-replacement-arrow">→</span>
+                                        <div>
+                                          <span>New</span>
+                                          <strong>{item.newVehicleNumber || "—"}</strong>
+                                        </div>
+                                        <div>
+                                          <span>Source</span>
+                                          <strong>{item.replacementSource || "—"}</strong>
+                                        </div>
+                                        <div>
+                                          <span>Reason</span>
+                                          <strong>{item.reason || "—"}</strong>
+                                        </div>
+                                      </div>
+                                    ))}
+                                </div>
+                              )}
 
                               {/* CONFIRMED DETAILS */}
 
@@ -4065,6 +4336,14 @@ const AllocateVehicle = () => {
           )}
         </>
       )}
+      <TrackingReplacementModal
+        form={replacementForm}
+        saving={saving}
+        onChange={handleReplacementChange}
+        onClose={closeReplacementForm}
+        onSave={handleTrackingReplacement}
+      />
+
     </main>
   );
 };
@@ -4326,6 +4605,166 @@ const AllocatedSelect = ({
 /* =========================================================
    VEHICLE SECTION TITLE
 ========================================================= */
+
+const TrackingReplacementModal = ({
+  form,
+  saving,
+  onChange,
+  onClose,
+  onSave,
+}) => {
+  if (!form) {
+    return null;
+  }
+
+  return (
+    <div
+      className="tracking-replacement-modal-overlay"
+      role="dialog"
+      aria-modal="true"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) {
+          onClose();
+        }
+      }}
+    >
+      <div className="tracking-replacement-modal">
+        <div className="tracking-replacement-modal-head">
+          <div>
+            <span>TRACKING VEHICLE REPLACEMENT</span>
+            <h3>Replace Current Vehicle</h3>
+            <p>
+              {form.oldVehicleNumber} → New Vehicle
+            </p>
+          </div>
+
+          <button
+            type="button"
+            disabled={saving}
+            onClick={onClose}
+          >
+            ×
+          </button>
+        </div>
+
+        <div className="tracking-replacement-modal-body">
+          <label>
+            <span>Current Vehicle</span>
+            <input
+              value={form.oldVehicleNumber}
+              readOnly
+            />
+          </label>
+
+          <label>
+            <span>New Vehicle Number *</span>
+            <input
+              value={form.newVehicleNumber}
+              onChange={(event) =>
+                onChange(
+                  "newVehicleNumber",
+                  event.target.value
+                )
+              }
+              placeholder="Enter new vehicle number"
+            />
+          </label>
+
+          <label>
+            <span>Driver Name</span>
+            <input
+              value={form.driverName}
+              onChange={(event) =>
+                onChange(
+                  "driverName",
+                  event.target.value
+                )
+              }
+              placeholder="Driver name"
+            />
+          </label>
+
+          <label>
+            <span>Driver Contact</span>
+            <input
+              value={form.driverContactNumber}
+              onChange={(event) =>
+                onChange(
+                  "driverContactNumber",
+                  event.target.value
+                )
+              }
+              placeholder="Contact number"
+            />
+          </label>
+
+          <label>
+            <span>Reason *</span>
+            <input
+              value={form.reason}
+              onChange={(event) =>
+                onChange(
+                  "reason",
+                  event.target.value
+                )
+              }
+              placeholder="Breakdown / unavailable / other"
+            />
+          </label>
+
+          <label>
+            <span>Replaced By</span>
+            <input
+              value={form.replacedBy}
+              onChange={(event) =>
+                onChange(
+                  "replacedBy",
+                  event.target.value
+                )
+              }
+              placeholder="Tracking team member"
+            />
+          </label>
+
+          <label className="tracking-replacement-full">
+            <span>Remarks</span>
+            <textarea
+              value={form.remarks}
+              onChange={(event) =>
+                onChange(
+                  "remarks",
+                  event.target.value
+                )
+              }
+              placeholder="Optional remarks"
+            />
+          </label>
+        </div>
+
+        <div className="tracking-replacement-modal-footer">
+          <button
+            type="button"
+            className="tracking-form-cancel"
+            disabled={saving}
+            onClick={onClose}
+          >
+            Cancel
+          </button>
+
+          <button
+            type="button"
+            className="tracking-form-save"
+            disabled={saving}
+            onClick={onSave}
+          >
+            {saving ? "Replacing..." : "Replace Vehicle"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 
 const VehicleSectionTitle = ({
   icon,

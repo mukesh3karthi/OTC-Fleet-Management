@@ -133,6 +133,50 @@ const getAllocatedVehicles = (trip) =>
     ? trip.allocatedVehicles
     : [];
 
+const getTransportReplacementRequests = (trip) =>
+  Array.isArray(
+    trip?.transportReplacementRequests
+  )
+    ? trip.transportReplacementRequests
+    : [];
+
+const hasTrackingStarted = (trip) =>
+  cleanString(
+    trip?.orderPlaced?.status
+  ).toLowerCase() === "completed" ||
+  ["tracking", "trip complete", "trip completed", "completed"].includes(
+    cleanString(trip?.stage).toLowerCase()
+  ) ||
+  getAllocatedVehicles(trip).some(
+    (vehicle) =>
+      Array.isArray(vehicle?.dailyTracking) &&
+      vehicle.dailyTracking.length > 0
+  );
+
+const findAllocatedVehicle = (
+  trip,
+  allocationId
+) =>
+  getAllocatedVehicles(trip).find(
+    (vehicle) =>
+      vehicle.allocationId ===
+      cleanString(allocationId)
+  );
+
+const isDuplicateVehicleNumber = (
+  trip,
+  vehicleNumber,
+  ignoredAllocationId = ""
+) =>
+  getAllocatedVehicles(trip).some(
+    (vehicle) =>
+      vehicle.allocationId !==
+        cleanString(ignoredAllocationId) &&
+      cleanUpperString(
+        vehicle.vehicleNumber
+      ) === cleanUpperString(vehicleNumber)
+  );
+
 const findRequirement = (
   trip,
   requirementId
@@ -2365,8 +2409,14 @@ const confirmVehicleQuotation = async (
       trip.status =
         "Confirmed";
 
+      /*
+       * IMPORTANT:
+       * Quotation approval must NOT move the order to Tracking.
+       * Traffic must allocate at least one actual transport vehicle,
+       * then Key Account must explicitly click Place Order.
+       */
       trip.stage =
-        "Tracking Input";
+        "Vendor Finalization";
     } else {
       trip.status =
         "Pending";
@@ -2408,7 +2458,6 @@ const confirmVehicleQuotation = async (
     );
   }
 };
-
 
 const allocateVehicle = async (
   req,
@@ -2622,6 +2671,14 @@ const allocateVehicle = async (
 
       vehicleNumber,
 
+      allocatedSource: "Tracking",
+
+      vehicleStatus: "Active",
+
+      replacementCount: 0,
+
+      replacementHistory: [],
+
       driver: {
         name:
           cleanString(
@@ -2814,6 +2871,911 @@ const allocateVehicle = async (
    the complete order moves to Trip Complete.
 ========================================================= */
 
+/* =========================================================
+   TRAFFIC - ALLOCATE ACTUAL VEHICLE AFTER QUOTATION APPROVAL
+
+   POST
+   /api/triporders/:id/traffic-allocated-vehicles
+
+   This creates the shared current vehicle BEFORE Tracking.
+   The same allocatedVehicles record is read by Traffic,
+   Lifecycle, Approval Management and Tracking.
+========================================================= */
+
+/* =========================================================
+   TRAFFIC - REQUEST TRANSPORT REPLACEMENT
+
+   Does NOT replace the approved transporter immediately.
+   Approval Management must approve the request first.
+========================================================= */
+
+const requestTransportReplacement = async (req, res) => {
+  try {
+    const result = await getTripDocument(req.params.id);
+
+    if (result.error) {
+      return sendError(res, result.status, result.error);
+    }
+
+    const trip = result.trip;
+
+    if (trip.orderApproval?.status !== "Approved") {
+      return sendError(
+        res,
+        409,
+        "Order must be approved before requesting a transport replacement."
+      );
+    }
+
+    if (hasTrackingStarted(trip)) {
+      return sendError(
+        res,
+        409,
+        "Transport replacement cannot be requested after the order moves to Tracking."
+      );
+    }
+
+    const requirementId = cleanString(req.body.requirementId);
+    const currentConfirmationId = cleanString(req.body.currentConfirmationId);
+    const currentQuotationId = cleanString(req.body.currentQuotationId);
+    const proposedTransporter = cleanString(req.body.proposedTransporter);
+    const proposedAmount = toNumber(req.body.proposedAmount, -1);
+    const quantity = Math.max(1, Math.floor(toNumber(req.body.quantity, 1)));
+    const reason = cleanString(req.body.reason);
+    const remarks = cleanString(req.body.remarks);
+    const requestedBy = cleanString(req.body.requestedBy) || "Traffic Team";
+
+    if (!requirementId || !currentConfirmationId || !currentQuotationId) {
+      return sendError(
+        res,
+        400,
+        "Requirement, current confirmation and current quotation are required."
+      );
+    }
+
+    if (!proposedTransporter) {
+      return sendError(res, 400, "New transporter name is required.");
+    }
+
+    if (proposedAmount < 0) {
+      return sendError(res, 400, "Valid proposed amount is required.");
+    }
+
+    if (!reason) {
+      return sendError(res, 400, "Replacement reason is required.");
+    }
+
+    const requirement = findRequirement(trip, requirementId);
+    const currentConfirmation = findConfirmation(trip, currentConfirmationId);
+    const currentQuotation = findQuotation(trip, currentQuotationId);
+
+    if (!requirement) {
+      return sendError(res, 404, "Vehicle requirement not found.");
+    }
+
+    if (
+      !currentConfirmation ||
+      currentConfirmation.requirementId !== requirementId ||
+      currentConfirmation.quotationId !== currentQuotationId ||
+      currentConfirmation.status !== "Approved"
+    ) {
+      return sendError(
+        res,
+        409,
+        "The selected transporter is no longer the current approved transporter."
+      );
+    }
+
+    if (
+      !currentQuotation ||
+      currentQuotation.requirementId !== requirementId
+    ) {
+      return sendError(res, 404, "Current approved quotation not found.");
+    }
+
+    const pendingRequest = getTransportReplacementRequests(trip).find(
+      (item) =>
+        item.requirementId === requirementId &&
+        item.currentConfirmationId === currentConfirmationId &&
+        item.status === "Pending"
+    );
+
+    if (pendingRequest) {
+      return sendError(
+        res,
+        409,
+        "A transport replacement request is already pending approval for this transporter."
+      );
+    }
+
+    trip.transportReplacementRequests.push({
+      requestId: makeId("TRR"),
+      requirementId,
+      currentConfirmationId,
+      currentQuotationId,
+      currentTransporter: cleanString(currentQuotation.transporter),
+      currentAmount: toNumber(currentQuotation.amount, 0),
+      proposedTransporter,
+      proposedAmount,
+      quantity,
+      reason,
+      remarks,
+      requestedBy,
+      requestedAt: new Date(),
+      status: "Pending",
+      reviewedBy: "",
+      reviewedAt: null,
+      reviewRemarks: "",
+      replacementQuotationId: "",
+      replacementConfirmationId: "",
+    });
+
+    trip.markModified("transportReplacementRequests");
+    await trip.save();
+
+    const updatedTrip = await TripOrder.findById(trip._id).lean();
+
+    return sendSuccess(
+      res,
+      201,
+      "Transport replacement request sent to Approval Management.",
+      updatedTrip
+    );
+  } catch (error) {
+    console.error("Request Transport Replacement Error:", error);
+
+    return sendError(
+      res,
+      500,
+      "Unable to request transport replacement.",
+      error
+    );
+  }
+};
+
+/* =========================================================
+   APPROVAL MANAGEMENT - REVIEW TRANSPORT REPLACEMENT
+
+   Approved:
+   - old approved confirmation becomes Replaced
+   - new quotation is created
+   - new quotation receives Approved confirmation
+   - replacement request is marked Approved
+
+   Rejected:
+   - old approved transporter remains unchanged
+========================================================= */
+
+const reviewTransportReplacement = async (req, res) => {
+  try {
+    const result = await getTripDocument(req.params.id);
+
+    if (result.error) {
+      return sendError(res, result.status, result.error);
+    }
+
+    const trip = result.trip;
+    const requestId = cleanString(req.params.requestId);
+    const status = cleanString(req.body.status);
+    const reviewedBy = cleanString(req.body.reviewedBy) || "Approval Management";
+    const reviewRemarks = cleanString(req.body.reviewRemarks);
+
+    if (!["Approved", "Rejected"].includes(status)) {
+      return sendError(
+        res,
+        400,
+        "Transport replacement status must be Approved or Rejected."
+      );
+    }
+
+    if (status === "Rejected" && !reviewRemarks) {
+      return sendError(
+        res,
+        400,
+        "Rejection reason is required."
+      );
+    }
+
+    const replacementRequest = getTransportReplacementRequests(trip).find(
+      (item) => item.requestId === requestId
+    );
+
+    if (!replacementRequest) {
+      return sendError(
+        res,
+        404,
+        "Transport replacement request not found."
+      );
+    }
+
+    if (replacementRequest.status !== "Pending") {
+      return sendError(
+        res,
+        409,
+        `This transport replacement request is already ${replacementRequest.status.toLowerCase()}.`
+      );
+    }
+
+    if (hasTrackingStarted(trip)) {
+      return sendError(
+        res,
+        409,
+        "Transport replacement cannot be reviewed after the order moves to Tracking."
+      );
+    }
+
+    const currentConfirmation = findConfirmation(
+      trip,
+      replacementRequest.currentConfirmationId
+    );
+
+    const currentQuotation = findQuotation(
+      trip,
+      replacementRequest.currentQuotationId
+    );
+
+    if (
+      !currentConfirmation ||
+      !currentQuotation ||
+      currentConfirmation.status !== "Approved"
+    ) {
+      return sendError(
+        res,
+        409,
+        "The original approved transporter has changed. Refresh the order before reviewing this request."
+      );
+    }
+
+    const now = new Date();
+
+    replacementRequest.status = status;
+    replacementRequest.reviewedBy = reviewedBy;
+    replacementRequest.reviewedAt = now;
+    replacementRequest.reviewRemarks = reviewRemarks;
+
+    if (status === "Approved") {
+      const replacementQuotationId = makeId("QUO");
+      const replacementConfirmationId = makeId("CONF");
+
+      trip.trafficQuotations.push({
+        quotationId: replacementQuotationId,
+        requirementId: replacementRequest.requirementId,
+        transporter: replacementRequest.proposedTransporter,
+        quantity: Math.max(
+          1,
+          Math.floor(toNumber(replacementRequest.quantity, 1))
+        ),
+        allocatedBy: replacementRequest.requestedBy || "Traffic Team",
+        amount: toNumber(replacementRequest.proposedAmount, 0),
+        quotedBy: replacementRequest.requestedBy || "Traffic Team",
+        quotedAt: now,
+        remarks: `Approved transport replacement for ${replacementRequest.currentTransporter}. ${
+          replacementRequest.remarks || ""
+        }`.trim(),
+      });
+
+      currentConfirmation.status = "Replaced";
+      currentConfirmation.confirmedAt = now;
+      currentConfirmation.remarks = `Replaced by ${replacementRequest.proposedTransporter}. ${
+        reviewRemarks || ""
+      }`.trim();
+      currentConfirmation.rejectionReason = "";
+
+      trip.vehicleConfirmations.push({
+        confirmationId: replacementConfirmationId,
+        requirementId: replacementRequest.requirementId,
+        quotationId: replacementQuotationId,
+        status: "Approved",
+        confirmedBy: reviewedBy,
+        confirmedAt: now,
+        remarks: reviewRemarks,
+        rejectionReason: "",
+      });
+
+      replacementRequest.replacementQuotationId =
+        replacementQuotationId;
+      replacementRequest.replacementConfirmationId =
+        replacementConfirmationId;
+    }
+
+    trip.markModified("trafficQuotations");
+    trip.markModified("vehicleConfirmations");
+    trip.markModified("transportReplacementRequests");
+
+    await trip.save();
+
+    const updatedTrip = await TripOrder.findById(trip._id).lean();
+
+    return sendSuccess(
+      res,
+      200,
+      status === "Approved"
+        ? "Transport replacement approved. The new transporter is now current."
+        : "Transport replacement rejected. The existing transporter remains current.",
+      updatedTrip
+    );
+  } catch (error) {
+    console.error("Review Transport Replacement Error:", error);
+
+    return sendError(
+      res,
+      500,
+      "Unable to review transport replacement.",
+      error
+    );
+  }
+};
+
+const allocateTrafficVehicle = async (req, res) => {
+  try {
+    const result = await getTripDocument(req.params.id);
+
+    if (result.error) {
+      return sendError(
+        res,
+        result.status,
+        result.error
+      );
+    }
+
+    const trip = result.trip;
+
+    if (hasTrackingStarted(trip)) {
+      return sendError(
+        res,
+        409,
+        "The order is already in Tracking. Vehicle allocation must now be handled by the Tracking team."
+      );
+    }
+
+    const requirementId =
+      cleanString(req.body.requirementId);
+
+    const confirmationId =
+      cleanString(req.body.confirmationId);
+
+    const quotationId =
+      cleanString(req.body.quotationId);
+
+    const vehicleNumber =
+      cleanUpperString(req.body.vehicleNumber);
+
+    if (!requirementId) {
+      return sendError(
+        res,
+        400,
+        "Requirement ID is required."
+      );
+    }
+
+    if (!confirmationId) {
+      return sendError(
+        res,
+        400,
+        "Confirmation ID is required."
+      );
+    }
+
+    if (!quotationId) {
+      return sendError(
+        res,
+        400,
+        "Quotation ID is required."
+      );
+    }
+
+    if (!vehicleNumber) {
+      return sendError(
+        res,
+        400,
+        "Vehicle number is required."
+      );
+    }
+
+    const requirement =
+      findRequirement(
+        trip,
+        requirementId
+      );
+
+    if (!requirement) {
+      return sendError(
+        res,
+        404,
+        "Vehicle requirement not found."
+      );
+    }
+
+    const confirmation =
+      findConfirmation(
+        trip,
+        confirmationId
+      );
+
+    if (!confirmation) {
+      return sendError(
+        res,
+        404,
+        "Vehicle confirmation not found."
+      );
+    }
+
+    if (
+      confirmation.status !== "Approved"
+    ) {
+      return sendError(
+        res,
+        409,
+        "Traffic can allocate the actual vehicle only after quotation approval."
+      );
+    }
+
+    if (
+      confirmation.requirementId !==
+        requirementId ||
+      confirmation.quotationId !==
+        quotationId
+    ) {
+      return sendError(
+        res,
+        400,
+        "Requirement, confirmation and quotation do not match."
+      );
+    }
+
+    const quotation =
+      findQuotation(
+        trip,
+        quotationId
+      );
+
+    if (
+      !quotation ||
+      quotation.requirementId !==
+        requirementId
+    ) {
+      return sendError(
+        res,
+        404,
+        "Approved quotation not found."
+      );
+    }
+
+    if (
+      isDuplicateVehicleNumber(
+        trip,
+        vehicleNumber
+      )
+    ) {
+      return sendError(
+        res,
+        409,
+        `${vehicleNumber} is already allocated to this order.`
+      );
+    }
+
+    const allocatedCount =
+      getAllocatedVehicles(trip)
+        .filter(
+          (vehicle) =>
+            vehicle.requirementId ===
+              requirementId
+        ).length;
+
+    if (
+      allocatedCount >=
+      Number(requirement.quantity || 1)
+    ) {
+      return sendError(
+        res,
+        409,
+        `Required quantity for this vehicle requirement is ${requirement.quantity}. All vehicle slots are already allocated.`
+      );
+    }
+
+    const allocatedVehicle = {
+      allocationId:
+        makeId("ALLOC"),
+
+      requirementId,
+
+      confirmationId,
+
+      quotationId,
+
+      vehicleNumber,
+
+      allocatedSource:
+        "Traffic",
+
+      vehicleStatus:
+        "Active",
+
+      replacementCount:
+        0,
+
+      replacementHistory:
+        [],
+
+      driver: {
+        name:
+          cleanString(
+            req.body.driver?.name
+          ),
+
+        contactNumber:
+          cleanString(
+            req.body.driver
+              ?.contactNumber
+          ),
+      },
+
+      escort: {
+        vehicleNumber:
+          cleanUpperString(
+            req.body.escort
+              ?.vehicleNumber
+          ),
+
+        name:
+          cleanString(
+            req.body.escort?.name
+          ),
+
+        contactNumber:
+          cleanString(
+            req.body.escort
+              ?.contactNumber
+          ),
+      },
+
+      supervisor: {
+        name:
+          cleanString(
+            req.body.supervisor
+              ?.name
+          ),
+
+        contactNumber:
+          cleanString(
+            req.body.supervisor
+              ?.contactNumber
+          ),
+      },
+
+      loading: {
+        status: "Pending",
+        pointInDate: null,
+        loadingDate: null,
+        pointOutDate: null,
+        haltingDays: 0,
+        remarks: "",
+      },
+
+      unloading: {
+        status: "Pending",
+        pointInDate: null,
+        unloadingDate: null,
+        pointOutDate: null,
+        haltingDays: 0,
+        remarks: "",
+      },
+
+      dailyTracking: [],
+    };
+
+    trip.allocatedVehicles.push(
+      allocatedVehicle
+    );
+
+    trip.markModified(
+      "allocatedVehicles"
+    );
+
+    await trip.save();
+
+    const updatedTrip =
+      await TripOrder.findById(
+        trip._id
+      ).lean();
+
+    return sendSuccess(
+      res,
+      201,
+      "Traffic vehicle allocated successfully. The vehicle is now available to Lifecycle, Traffic, Approval Management and Tracking.",
+      updatedTrip
+    );
+  } catch (error) {
+    console.error(
+      "Traffic Allocate Vehicle Error:",
+      error
+    );
+
+    return sendError(
+      res,
+      500,
+      "Unable to allocate Traffic vehicle.",
+      error
+    );
+  }
+};
+
+/* =========================================================
+   COMMON VEHICLE REPLACEMENT
+========================================================= */
+
+const replaceAllocatedVehicle = async (
+  req,
+  res,
+  replacementSource
+) => {
+  try {
+    const result =
+      await getTripDocument(
+        req.params.id
+      );
+
+    if (result.error) {
+      return sendError(
+        res,
+        result.status,
+        result.error
+      );
+    }
+
+    const trip = result.trip;
+
+    const allocationId =
+      cleanString(
+        req.params.allocationId
+      );
+
+    const vehicle =
+      findAllocatedVehicle(
+        trip,
+        allocationId
+      );
+
+    if (!vehicle) {
+      return sendError(
+        res,
+        404,
+        "Allocated vehicle not found."
+      );
+    }
+
+    const trackingStarted =
+      hasTrackingStarted(trip);
+
+    if (
+      replacementSource === "Traffic" &&
+      trackingStarted
+    ) {
+      return sendError(
+        res,
+        409,
+        "This order has already moved to Tracking. Use Tracking vehicle replacement."
+      );
+    }
+
+    if (
+      replacementSource === "Tracking" &&
+      !trackingStarted
+    ) {
+      return sendError(
+        res,
+        409,
+        "Tracking vehicle replacement is available only after the order moves to Tracking."
+      );
+    }
+
+    const newVehicleNumber =
+      cleanUpperString(
+        req.body.newVehicleNumber ??
+        req.body.vehicleNumber
+      );
+
+    if (!newVehicleNumber) {
+      return sendError(
+        res,
+        400,
+        "New vehicle number is required."
+      );
+    }
+
+    const oldVehicleNumber =
+      cleanUpperString(
+        vehicle.vehicleNumber
+      );
+
+    if (
+      oldVehicleNumber ===
+      newVehicleNumber
+    ) {
+      return sendError(
+        res,
+        400,
+        "New vehicle number must be different from the current vehicle number."
+      );
+    }
+
+    if (
+      isDuplicateVehicleNumber(
+        trip,
+        newVehicleNumber,
+        allocationId
+      )
+    ) {
+      return sendError(
+        res,
+        409,
+        `${newVehicleNumber} is already allocated to this order.`
+      );
+    }
+
+    const reason =
+      cleanString(
+        req.body.reason
+      );
+
+    if (!reason) {
+      return sendError(
+        res,
+        400,
+        "Replacement reason is required."
+      );
+    }
+
+    const oldDriver = {
+      name:
+        cleanString(
+          vehicle.driver?.name
+        ),
+
+      contactNumber:
+        cleanString(
+          vehicle.driver
+            ?.contactNumber
+        ),
+    };
+
+    const newDriver = {
+      name:
+        cleanString(
+          req.body.driver?.name ??
+          req.body.newDriver?.name ??
+          vehicle.driver?.name
+        ),
+
+      contactNumber:
+        cleanString(
+          req.body.driver
+            ?.contactNumber ??
+          req.body.newDriver
+            ?.contactNumber ??
+          vehicle.driver
+            ?.contactNumber
+        ),
+    };
+
+    const replacement = {
+      replacementId:
+        makeId("REPL"),
+
+      replacementSource,
+
+      oldVehicleNumber,
+
+      newVehicleNumber,
+
+      oldDriver,
+
+      newDriver,
+
+      reason,
+
+      remarks:
+        cleanString(
+          req.body.remarks
+        ),
+
+      replacedBy:
+        cleanString(
+          req.body.replacedBy
+        ) ||
+        `${replacementSource} Team`,
+
+      replacedAt:
+        new Date(),
+    };
+
+    if (
+      !Array.isArray(
+        vehicle.replacementHistory
+      )
+    ) {
+      vehicle.replacementHistory = [];
+    }
+
+    vehicle.replacementHistory.push(
+      replacement
+    );
+
+    vehicle.vehicleNumber =
+      newVehicleNumber;
+
+    vehicle.driver =
+      newDriver;
+
+    vehicle.vehicleStatus =
+      "Active";
+
+    vehicle.allocatedSource =
+      replacementSource;
+
+    vehicle.replacementCount =
+      vehicle.replacementHistory.length;
+
+    trip.markModified(
+      "allocatedVehicles"
+    );
+
+    await trip.save();
+
+    const updatedTrip =
+      await TripOrder.findById(
+        trip._id
+      ).lean();
+
+    return sendSuccess(
+      res,
+      200,
+      `${replacementSource} vehicle replacement completed successfully. Current vehicle is ${newVehicleNumber}.`,
+      updatedTrip
+    );
+  } catch (error) {
+    console.error(
+      `${replacementSource} Vehicle Replacement Error:`,
+      error
+    );
+
+    return sendError(
+      res,
+      500,
+      `Unable to replace vehicle from ${replacementSource}.`,
+      error
+    );
+  }
+};
+
+/* =========================================================
+   TRAFFIC VEHICLE REPLACEMENT
+========================================================= */
+
+const replaceTrafficVehicle = (
+  req,
+  res
+) =>
+  replaceAllocatedVehicle(
+    req,
+    res,
+    "Traffic"
+  );
+
+/* =========================================================
+   TRACKING VEHICLE REPLACEMENT
+========================================================= */
+
+const replaceTrackingVehicle = (
+  req,
+  res
+) =>
+  replaceAllocatedVehicle(
+    req,
+    res,
+    "Tracking"
+  );
+
 const updateAllocatedVehicle = async (
   req,
   res
@@ -2858,47 +3820,20 @@ const updateAllocatedVehicle = async (
 
     /* =====================================================
        VEHICLE NUMBER
+       Vehicle number changes must use a replacement endpoint
+       so replacement history is never lost.
     ===================================================== */
 
     if (
-      req.body.vehicleNumber !==
-      undefined
+      req.body.vehicleNumber !== undefined &&
+      cleanUpperString(req.body.vehicleNumber) !==
+        cleanUpperString(vehicle.vehicleNumber)
     ) {
-      const vehicleNumber =
-        cleanUpperString(
-          req.body.vehicleNumber
-        );
-
-      if (!vehicleNumber) {
-        return sendError(
-          res,
-          400,
-          "Vehicle number cannot be empty."
-        );
-      }
-
-      const duplicateVehicle =
-        getAllocatedVehicles(
-          trip
-        ).some(
-          (item) =>
-            item.allocationId !==
-            allocationId &&
-            cleanUpperString(
-              item.vehicleNumber
-            ) === vehicleNumber
-        );
-
-      if (duplicateVehicle) {
-        return sendError(
-          res,
-          409,
-          `${vehicleNumber} is already allocated to this order.`
-        );
-      }
-
-      vehicle.vehicleNumber =
-        vehicleNumber;
+      return sendError(
+        res,
+        409,
+        "Use the Traffic or Tracking vehicle replacement API to change the vehicle number."
+      );
     }
 
     /* =====================================================
@@ -3242,7 +4177,6 @@ const updateAllocatedVehicle = async (
     );
   }
 };
-
 
 /* =========================================================
    SAVE LR / POD / E-WAY BILL DOCUMENT FOR ALLOCATED VEHICLE
@@ -3746,8 +4680,6 @@ const addDailyTracking = async (
   }
 };
 
-
-
 /* =========================================================
    UPDATE ROUTE LOCATIONS
    TRACKING INPUT
@@ -3871,10 +4803,6 @@ const updateRouteLocations = async (
 
 const placeOrder = async (req, res) => {
   try {
-    /* =====================================================
-       GET ORDER
-    ===================================================== */
-
     const result =
       await getTripDocument(
         req.params.id
@@ -3891,14 +4819,7 @@ const placeOrder = async (req, res) => {
     const trip = result.trip;
 
     /* =====================================================
-       CHECK ONLY ORDER APPROVAL
-
-       We intentionally DO NOT check:
-       - PO document
-       - traffic quotation
-       - vehicle confirmation
-       - vendor finalization
-       - allocated vehicles
+       1. ORDER APPROVAL MUST BE APPROVED
     ===================================================== */
 
     const orderApprovalStatus =
@@ -3920,7 +4841,62 @@ const placeOrder = async (req, res) => {
     }
 
     /* =====================================================
-       PLACED BY
+       2. AT LEAST ONE TRANSPORT VEHICLE MUST BE ALLOCATED
+
+       This is the main workflow lock:
+       0 allocated vehicles -> Place Order blocked
+       1+ allocated vehicles -> Place Order allowed
+
+       The backend check is mandatory so the rule cannot be
+       bypassed by calling the API directly.
+    ===================================================== */
+
+    const allocatedVehicles =
+      getAllocatedVehicles(trip);
+
+    const activeAllocatedVehicles =
+      allocatedVehicles.filter(
+        (vehicle) =>
+          cleanString(
+            vehicle?.vehicleNumber
+          ) &&
+          cleanString(
+            vehicle?.vehicleStatus ||
+              "Active"
+          ).toLowerCase() !==
+            "replaced"
+      );
+
+    if (
+      activeAllocatedVehicles.length ===
+      0
+    ) {
+      return sendError(
+        res,
+        409,
+        "Allocate at least one transport vehicle before placing the order."
+      );
+    }
+
+    /* =====================================================
+       3. PREVENT DUPLICATE PLACE ORDER
+    ===================================================== */
+
+    if (
+      cleanString(
+        trip?.orderPlaced?.status
+      ).toLowerCase() ===
+      "completed"
+    ) {
+      return sendError(
+        res,
+        409,
+        "This order has already been placed and moved to Tracking."
+      );
+    }
+
+    /* =====================================================
+       4. PLACED BY
     ===================================================== */
 
     const placedBy =
@@ -3933,7 +4909,9 @@ const placeOrder = async (req, res) => {
       "Key Account";
 
     /* =====================================================
-       SAVE ORDER PLACED
+       5. PLACE ORDER
+
+       Only this action releases the order to Tracking.
     ===================================================== */
 
     trip.orderPlaced = {
@@ -3945,40 +4923,17 @@ const placeOrder = async (req, res) => {
         new Date(),
     };
 
-    /* =====================================================
-       MOVE ORDER TO TRACKING
-
-       This is the important part.
-
-       Even when:
-       allocatedVehicles = []
-
-       the order is now officially in Tracking.
-    ===================================================== */
-
     trip.stage =
       "Tracking";
 
     trip.status =
       "Tracking";
 
-    /* =====================================================
-       MARK NESTED OBJECT MODIFIED
-    ===================================================== */
-
     trip.markModified(
       "orderPlaced"
     );
 
-    /* =====================================================
-       SAVE DATABASE
-    ===================================================== */
-
     await trip.save();
-
-    /* =====================================================
-       GET FRESH SAVED ORDER
-    ===================================================== */
 
     const updatedTrip =
       await TripOrder
@@ -3987,14 +4942,10 @@ const placeOrder = async (req, res) => {
         )
         .lean();
 
-    /* =====================================================
-       RESPONSE
-    ===================================================== */
-
     return sendSuccess(
       res,
       200,
-      "Order placed successfully and moved to Tracking.",
+      `Order placed successfully with ${activeAllocatedVehicles.length} allocated transport vehicle(s) and moved to Tracking.`,
       updatedTrip
     );
   } catch (error) {
@@ -4114,6 +5065,13 @@ module.exports = {
   addTrafficQuotation,
 
   confirmVehicleQuotation,
+
+  requestTransportReplacement,
+  reviewTransportReplacement,
+
+  allocateTrafficVehicle,
+  replaceTrafficVehicle,
+  replaceTrackingVehicle,
 
   allocateVehicle,
   updateAllocatedVehicle,

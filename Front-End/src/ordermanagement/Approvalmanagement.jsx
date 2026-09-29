@@ -220,6 +220,28 @@ const getConfirmationsForRequirement = (
       requirementId
   );
 
+const getTransportReplacementRequests = (order) =>
+  safeArray(order?.transportReplacementRequests);
+
+const getPendingTransportReplacementForRequirement = (
+  order,
+  requirementId
+) =>
+  getTransportReplacementRequests(order).find(
+    (request) =>
+      String(request?.requirementId || "") ===
+        String(requirementId || "") &&
+      String(request?.status || "").trim().toLowerCase() ===
+        "pending"
+  );
+
+const hasPendingTransportReplacement = (order) =>
+  getTransportReplacementRequests(order).some(
+    (request) =>
+      String(request?.status || "").trim().toLowerCase() ===
+      "pending"
+  );
+
 const getApprovedConfirmation = (
   order,
   requirementId
@@ -315,6 +337,16 @@ const getRequirementQuotationStatus = (
   order,
   requirementId
 ) => {
+  const pendingReplacement =
+    getPendingTransportReplacementForRequirement(
+      order,
+      requirementId
+    );
+
+  if (pendingReplacement) {
+    return "Replacement Pending";
+  }
+
   const requirement =
     getRequirement(order, requirementId);
 
@@ -496,6 +528,21 @@ const Approvalmanagement = () => {
   );
 
   const [
+    selectedTransportReplacement,
+    setSelectedTransportReplacement,
+  ] = useState(null);
+
+  const openTransportReplacementDetails = (order, request) => {
+    if (!order || !request) return;
+    setSelectedTransportReplacement({ order, request });
+  };
+
+  const closeTransportReplacementDetails = () => {
+    if (replacementUpdatingKey) return;
+    setSelectedTransportReplacement(null);
+  };
+
+  const [
     expandedOrderId,
     setExpandedOrderId,
   ] = useState(null);
@@ -565,11 +612,20 @@ const Approvalmanagement = () => {
     setOrderActionRemark("");
   };
 
-
   const [
     quotationUpdatingKey,
     setQuotationUpdatingKey,
   ] = useState("");
+
+  const [
+    replacementUpdatingKey,
+    setReplacementUpdatingKey,
+  ] = useState("");
+
+  const [
+    replacementRemarks,
+    setReplacementRemarks,
+  ] = useState({});
 
   const [
     quotationActionModal,
@@ -850,8 +906,11 @@ const Approvalmanagement = () => {
 
           const requirements = safeArray(order.vehicleRequirements);
           const confirmedCount = getApprovedRequirementCount(order);
+          const replacementPending = hasPendingTransportReplacement(order);
           const quotationStatus =
-            requirements.length > 0 && confirmedCount === requirements.length
+            replacementPending
+              ? "Replacement Pending"
+              : requirements.length > 0 && confirmedCount === requirements.length
               ? "Approved"
               : confirmedCount > 0
               ? "In Progress"
@@ -872,6 +931,34 @@ const Approvalmanagement = () => {
         quotationMovementFilter,
         quotationStatusFilter,
       ]
+    );
+
+  /* =======================================================
+     TRANSPORT REPLACEMENT APPROVAL DATA
+  ======================================================= */
+
+  const transportReplacementRows =
+    useMemo(
+      () =>
+        filteredOrders.flatMap((order) =>
+          getTransportReplacementRequests(order).map(
+            (request) => ({
+              order,
+              request,
+            })
+          )
+        ),
+      [filteredOrders]
+    );
+
+  const pendingTransportReplacementCount =
+    useMemo(
+      () =>
+        transportReplacementRows.filter(
+          ({ request }) =>
+            request.status === "Pending"
+        ).length,
+      [transportReplacementRows]
     );
 
   /* =======================================================
@@ -945,8 +1032,8 @@ const Approvalmanagement = () => {
                 approvedQuotations +=
                   1;
               } else if (
-                status ===
-                "Pending"
+                status === "Pending" ||
+                status === "Replacement Pending"
               ) {
                 pendingQuotations +=
                   1;
@@ -1664,6 +1751,229 @@ const Approvalmanagement = () => {
     );
   };
 
+  /* =======================================================
+     TRANSPORT REPLACEMENT APPROVAL
+  ======================================================= */
+
+  const updateTransportReplacement = async (
+    order,
+    request,
+    status
+  ) => {
+    if (
+      !order?._id ||
+      !request?.requestId ||
+      replacementUpdatingKey
+    ) {
+      return;
+    }
+
+    const key = `${order._id}::${request.requestId}`;
+    const reviewRemarks =
+      String(replacementRemarks[key] || "").trim();
+
+    if (
+      status === "Rejected" &&
+      !reviewRemarks
+    ) {
+      const message =
+        "Enter a rejection reason before rejecting the transport replacement.";
+
+      setError(message);
+      showToast(message, "warning");
+      return;
+    }
+
+    try {
+      setReplacementUpdatingKey(key);
+      setError("");
+      setSuccessMessage("");
+
+      const response = await fetch(
+        `${TRIP_API_URL}/${order._id}/transport-replacement-requests/${request.requestId}/review`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({
+            status,
+            reviewedBy: "Approval Management",
+            reviewRemarks,
+          }),
+        }
+      );
+
+      const payload = await response
+        .json()
+        .catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(
+          payload?.message ||
+            "Unable to review transport replacement."
+        );
+      }
+
+      const updatedOrder =
+        getObjectFromResponse(payload);
+
+      if (updatedOrder?._id) {
+        setOrders((previous) =>
+          previous.map((currentOrder) =>
+            currentOrder._id === updatedOrder._id
+              ? updatedOrder
+              : currentOrder
+          )
+        );
+      } else {
+        await fetchApprovals(true);
+      }
+
+      const successText =
+        status === "Approved"
+          ? `${order.tripId} transport replacement approved.`
+          : `${order.tripId} transport replacement rejected.`;
+
+      setSuccessMessage(successText);
+      showToast(
+        successText,
+        status === "Approved"
+          ? "success"
+          : "error"
+      );
+
+      setReplacementRemarks((previous) => {
+        const next = { ...previous };
+        delete next[key];
+        return next;
+      });
+    } catch (reviewError) {
+      console.error(
+        "Transport replacement approval error:",
+        reviewError
+      );
+
+      const message =
+        reviewError.message ||
+        "Unable to review transport replacement.";
+
+      setError(message);
+      showToast(message, "error");
+    } finally {
+      setReplacementUpdatingKey("");
+    }
+  };
+
+  const renderTransportReplacementApproval = () => {
+    const rows = transportReplacementRows
+      .slice()
+      .sort((a, b) => {
+        if (a.request.status === "Pending" && b.request.status !== "Pending") return -1;
+        if (b.request.status === "Pending" && a.request.status !== "Pending") return 1;
+        return new Date(b.request.requestedAt || 0) - new Date(a.request.requestedAt || 0);
+      });
+
+    return (
+      <div className="approval-table-card approval-replacement-table-card">
+        <div className="approval-table-head">
+          <div>
+            <h3>Transport Replacement Approval</h3>
+            <p>Click a row to view the complete replacement request and take action.</p>
+          </div>
+          <span className="approval-table-count">
+            {pendingTransportReplacementCount} Pending
+          </span>
+        </div>
+
+        {rows.length === 0 ? (
+          <div className="approval-empty">No transport replacement requests.</div>
+        ) : (
+          <div className="approval-replacement-table-wrap">
+            <table className="approval-replacement-table approval-replacement-click-table">
+              <thead>
+                <tr>
+                  <th>S.No</th>
+                  <th>Order ID</th>
+                  <th>Customer / Route</th>
+                  <th>Current Transport</th>
+                  <th>Proposed Transport</th>
+                  <th>Qty</th>
+                  <th>Requested By</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map(({ order, request }, index) => (
+                  <tr
+                    key={request.requestId}
+                    className={`approval-replacement-click-row ${
+                      request.status === "Pending" ? "is-pending" : ""
+                    }`}
+                    tabIndex="0"
+                    role="button"
+                    onClick={() => openTransportReplacementDetails(order, request)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        openTransportReplacementDetails(order, request);
+                      }
+                    }}
+                  >
+                    <td>
+                      <span className="approval-replacement-serial">
+                        {String(index + 1).padStart(2, "0")}
+                      </span>
+                    </td>
+                    <td>
+                      <strong className="approval-replacement-order-id">
+                        {order.tripId || "—"}
+                      </strong>
+                    </td>
+                    <td>
+                      <div className="approval-replacement-order">
+                        <strong>{order.customer || "—"}</strong>
+                        <span>{order.origin || "—"} → {order.destination || "—"}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <div className="approval-replacement-transport current">
+                        <strong>{request.currentTransporter || "—"}</strong>
+                        <span>{formatAmount(request.currentAmount)}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <div className="approval-replacement-transport proposed">
+                        <strong>{request.proposedTransporter || "—"}</strong>
+                        <span>{formatAmount(request.proposedAmount)}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <strong className="approval-replacement-qty">
+                        {Math.max(1, Number(request.quantity) || 1)} NOS
+                      </strong>
+                    </td>
+                    <td>
+                      <div className="approval-replacement-requested">
+                        <strong>{request.requestedBy || "Traffic Team"}</strong>
+                        <span>{formatDateTime(request.requestedAt)}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <span className={`approval-status ${getStatusClass(request.status)}`}>
+                        {request.status || "Pending"}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   const renderOrderApproval = () => (
     <div className="approval-table-card">
@@ -1929,6 +2239,7 @@ const Approvalmanagement = () => {
                 <option value="All">All Status</option>
                 <option value="Pending">Pending</option>
                 <option value="In Progress">In Progress</option>
+                <option value="Replacement Pending">Replacement Pending</option>
                 <option value="Approved">Approved</option>
               </select>
             </label>
@@ -1978,12 +2289,20 @@ const Approvalmanagement = () => {
                 const requirements = safeArray(order.vehicleRequirements);
                 const confirmedCount = getApprovedRequirementCount(order);
                 const totalRequirements = requirements.length;
+                // A pending transporter replacement must override the
+                // previously approved quotation status.
+                const replacementPending =
+                  hasPendingTransportReplacement(order);
+
                 const orderQuotationStatus =
-                  totalRequirements > 0 && confirmedCount === totalRequirements
-                    ? "Approved"
-                    : confirmedCount > 0
-                      ? "In Progress"
-                      : "Pending";
+                  replacementPending
+                    ? "Replacement Pending"
+                    : totalRequirements > 0 &&
+                        confirmedCount === totalRequirements
+                      ? "Approved"
+                      : confirmedCount > 0
+                        ? "In Progress"
+                        : "Pending";
 
                 return (
                   <React.Fragment key={order._id || order.tripId}>
@@ -2878,6 +3197,18 @@ const Approvalmanagement = () => {
             )}
           </button>
 
+          <button
+            type="button"
+            className={activeView === "replacement" ? "active" : ""}
+            onClick={() => setActiveView("replacement")}
+          >
+            Transport Replacement
+
+            {pendingTransportReplacementCount > 0 && (
+              <span>{pendingTransportReplacementCount}</span>
+            )}
+          </button>
+
         </div>
 
         <div className="approval-search">
@@ -2933,12 +3264,190 @@ const Approvalmanagement = () => {
           </strong>
 
         </div>
-      ) : activeView ===
-        "order" ? (
+      ) : activeView === "order" ? (
         renderOrderApproval()
-      ) : (
+      ) : activeView === "quotation" ? (
         renderQuotationApproval()
+      ) : (
+        renderTransportReplacementApproval()
       )}
+
+      {selectedTransportReplacement && (() => {
+        const { order, request } = selectedTransportReplacement;
+        const key = `${order._id}::${request.requestId}`;
+        const updating = replacementUpdatingKey === key;
+        const currentAmount = Number(request.currentAmount) || 0;
+        const proposedAmount = Number(request.proposedAmount) || 0;
+        const amountDifference = proposedAmount - currentAmount;
+        const isPending = request.status === "Pending";
+
+        return (
+          <div
+            className="approval-replacement-detail-overlay"
+            onMouseDown={(event) => {
+              if (event.target === event.currentTarget) {
+                closeTransportReplacementDetails();
+              }
+            }}
+          >
+            <div
+              className="approval-replacement-detail-modal"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Transport Replacement Details"
+              onMouseDown={(event) => event.stopPropagation()}
+            >
+              <div className="approval-replacement-detail-head">
+                <div>
+                  <span>Transport Replacement</span>
+                  <h3>{order.tripId || "—"} • {order.customer || "—"}</h3>
+                  <p>{order.origin || "—"} → {order.destination || "—"}</p>
+                </div>
+
+                <div className="approval-replacement-detail-head-right">
+                  <span className={`approval-status ${getStatusClass(request.status)}`}>
+                    {request.status || "Pending"}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={closeTransportReplacementDetails}
+                    disabled={updating}
+                    aria-label="Close transport replacement details"
+                  >
+                    ×
+                  </button>
+                </div>
+              </div>
+
+              <div className="approval-replacement-detail-body">
+                <div className="approval-replacement-compare">
+                  <div className="approval-replacement-compare-card current">
+                    <span>Current Transport</span>
+                    <strong>{request.currentTransporter || "—"}</strong>
+                    <div>
+                      <small>Current Amount</small>
+                      <b>{formatAmount(currentAmount)}</b>
+                    </div>
+                  </div>
+
+                  <div className="approval-replacement-arrow">→</div>
+
+                  <div className="approval-replacement-compare-card proposed">
+                    <span>Proposed Transport</span>
+                    <strong>{request.proposedTransporter || "—"}</strong>
+                    <div>
+                      <small>Proposed Amount</small>
+                      <b>{formatAmount(proposedAmount)}</b>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="approval-replacement-detail-grid">
+                  <div>
+                    <span>Amount Difference</span>
+                    <strong className={
+                      amountDifference < 0
+                        ? "replacement-value-decrease"
+                        : amountDifference > 0
+                          ? "replacement-value-increase"
+                          : ""
+                    }>
+                      {amountDifference === 0
+                        ? "No Change"
+                        : `${amountDifference > 0 ? "+" : "−"}${formatAmount(
+                            Math.abs(amountDifference)
+                          )}`}
+                    </strong>
+                  </div>
+                  <div>
+                    <span>Quantity</span>
+                    <strong>{Math.max(1, Number(request.quantity) || 1)} NOS</strong>
+                  </div>
+                  <div>
+                    <span>Reason</span>
+                    <strong>{request.reason || "—"}</strong>
+                  </div>
+                  <div>
+                    <span>Requested By</span>
+                    <strong>{request.requestedBy || "Traffic Team"}</strong>
+                  </div>
+                  <div>
+                    <span>Requested At</span>
+                    <strong>{formatDateTime(request.requestedAt)}</strong>
+                  </div>
+                  <div>
+                    <span>Movement</span>
+                    <strong>{order.movementType || "—"}</strong>
+                  </div>
+                </div>
+
+                <div className="approval-replacement-detail-note">
+                  <span>Traffic Remarks</span>
+                  <p>{request.remarks || "No remarks provided."}</p>
+                </div>
+
+                {isPending ? (
+                  <div className="approval-replacement-detail-review">
+                    <label>
+                      <span>Approval Remarks / Rejection Reason</span>
+                      <textarea
+                        value={replacementRemarks[key] || ""}
+                        onChange={(event) =>
+                          setReplacementRemarks((previous) => ({
+                            ...previous,
+                            [key]: event.target.value,
+                          }))
+                        }
+                        placeholder="Add approval remarks or enter the rejection reason..."
+                        disabled={updating}
+                      />
+                    </label>
+
+                    <div className="approval-replacement-detail-actions">
+                      <button
+                        type="button"
+                        className="approval-replacement-reject"
+                        disabled={updating}
+                        onClick={() =>
+                          updateTransportReplacement(order, request, "Rejected")
+                        }
+                      >
+                        Reject
+                      </button>
+
+                      <button
+                        type="button"
+                        className="approval-replacement-approve"
+                        disabled={updating}
+                        onClick={() =>
+                          updateTransportReplacement(order, request, "Approved")
+                        }
+                      >
+                        {updating ? "Updating..." : "Approve Replacement"}
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="approval-replacement-review-result">
+                    <div>
+                      <span>Reviewed By</span>
+                      <strong>{request.reviewedBy || "Approval Management"}</strong>
+                    </div>
+                    <div>
+                      <span>Reviewed At</span>
+                      <strong>{formatDateTime(request.reviewedAt)}</strong>
+                    </div>
+                    <div className="wide">
+                      <span>Review Remarks</span>
+                      <strong>{request.reviewRemarks || "—"}</strong>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {orderDetailsModal && (() => {
         const order = orderDetailsModal;
@@ -3458,7 +3967,6 @@ const Approvalmanagement = () => {
           </div>
         </div>
       )}
-
 
     </div>
   );
