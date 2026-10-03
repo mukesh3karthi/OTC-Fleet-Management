@@ -1,1594 +1,1594 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-  import axios from "axios";
+import axios from "axios";
 
-  import {
+import {
 
-    FaTruck,
+  FaTruck,
 
-    FaExchangeAlt,
+  FaExchangeAlt,
 
-    FaTools,
+  FaTools,
 
-    FaFileAlt,
+  FaFileAlt,
 
-    FaSyncAlt,
+  FaSyncAlt,
 
-    FaArrowRight,
+  FaArrowRight,
 
-    FaMapMarkerAlt,
+  FaMapMarkerAlt,
 
-    FaTrophy,
+  FaTrophy,
 
-    FaBuilding,
+  FaBuilding,
 
-    FaCheckCircle,
+  FaCheckCircle,
 
-    FaExclamationTriangle,
+  FaExclamationTriangle,
 
-    FaClock,
+  FaClock,
 
-    FaRoute,
+  FaRoute,
 
-    FaUsers,
+  FaUsers,
 
-    FaChartLine,
+  FaChartLine,
 
-    FaSearch,
+  FaSearch,
 
-    FaTimes,
+  FaTimes,
 
-    FaPlus,
+  FaPlus,
 
-    FaEdit,
+  FaEdit,
 
-    FaTrash,
+  FaTrash,
 
-    FaUpload,
+  FaUpload,
 
-    FaDownload,
+  FaDownload,
 
-    FaLayerGroup,
+  FaLayerGroup,
 
-    FaListUl,
+  FaListUl,
 
-    FaShippingFast,
+  FaShippingFast,
 
-    FaSave,
+  FaSave,
 
-    FaChevronLeft,
+  FaChevronLeft,
 
-    FaChevronRight,
+  FaChevronRight,
 
-    FaSort,
+  FaSort,
 
-    FaSortUp,
+  FaSortUp,
 
-    FaSortDown,
+  FaSortDown,
 
-  } from "react-icons/fa";
+} from "react-icons/fa";
 
-  import {
+import {
 
-    ResponsiveContainer,
+  ResponsiveContainer,
 
-    BarChart,
+  BarChart,
 
-    Bar,
+  Bar,
 
-    XAxis,
+  XAxis,
 
-    YAxis,
+  YAxis,
 
-    CartesianGrid,
+  CartesianGrid,
 
-    Tooltip,
+  Tooltip,
 
-    PieChart,
+  PieChart,
 
-    Pie,
+  Pie,
 
-    Cell,
+  Cell,
 
-    Legend,
+  Legend,
 
-    AreaChart,
+  AreaChart,
 
-    Area,
+  Area,
 
-  } from "recharts";
+} from "recharts";
 
-  import "../pagescss/dashcontent.css";
+import "../pagescss/dashcontent.css";
 
-  import windmillTransport from "../asset/Dash-image.png";
+import windmillTransport from "../asset/Dash-Image.png";
 
-  import windProjectTransport from "../asset/wind-project-transport.jpg";
+import windProjectTransport from "../asset/wind-project-transport.jpg";
 import jswLogo from "../asset/jsw.png";
 import heftLogo from "../asset/heft.png";
 import serenticaLogo from "../asset/serentica.png";
 import avadaLogo from "../asset/avada.png";
 import suzlonLogo from "../asset/suzlon.png";
 
-  /* =========================================================
+/* =========================================================
 
-    API CONFIGURATION
+  API CONFIGURATION
 
-    If your backend isn't on localhost:5000 while testing,
+  If your backend isn't on localhost:5000 while testing,
 
-    change API_BASE below (or set VITE_API_URL in a .env file
+  change API_BASE below (or set VITE_API_URL in a .env file
 
-    at your project root).
+  at your project root).
 
-    ========================================================= */
+  ========================================================= */
 
-  const RAW_API_BASE =
+const RAW_API_BASE =
 
-    import.meta.env?.VITE_API_URL || "http://localhost:5000/api";
+  import.meta.env?.VITE_API_URL || "http://localhost:5000/api";
 
-  const API_BASE = (() => {
+const API_BASE = (() => {
 
-    const trimmed = RAW_API_BASE.replace(/\/+$/, "");
+  const trimmed = RAW_API_BASE.replace(/\/+$/, "");
 
-    return trimmed.endsWith("/api") ? trimmed : `${trimmed}/api`;
+  return trimmed.endsWith("/api") ? trimmed : `${trimmed}/api`;
 
-  })();
+})();
 
-  const VEHICLES_URL = `${API_BASE}/vehicles`;
+const VEHICLES_URL = `${API_BASE}/vehicles`;
 
-  const OWNVEHICLES_URL = `${API_BASE}/ownvehicles`;
+const OWNVEHICLES_URL = `${API_BASE}/ownvehicles`;
 
-  const TRIPORDERS_URL = `${API_BASE}/triporders`;
+const TRIPORDERS_URL = `${API_BASE}/triporders`;
 
-  /* =========================================================
+/* =========================================================
 
-    AXIOS INSTANCE + DEBUG LOGGING
+  AXIOS INSTANCE + DEBUG LOGGING
 
-    Logs every request/response/error to the browser console
+  Logs every request/response/error to the browser console
 
-    so you can see exactly what each endpoint returned, or why
+  so you can see exactly what each endpoint returned, or why
 
-    it failed, instead of it failing silently.
+  it failed, instead of it failing silently.
 
-    ========================================================= */
+  ========================================================= */
 
-  const api = axios.create({ timeout: 20000 });
+const api = axios.create({ timeout: 20000 });
 
-  api.interceptors.request.use((config) => {
+api.interceptors.request.use((config) => {
 
-    console.log(
+  console.log(
 
-      `%c[API REQUEST] ${config.method?.toUpperCase()} ${config.url}`,
+    `%c[API REQUEST] ${config.method?.toUpperCase()} ${config.url}`,
 
-      "color:#159e9a;font-weight:bold;"
+    "color:#159e9a;font-weight:bold;"
 
-    );
+  );
 
-    return config;
+  return config;
 
-  });
+});
 
-  api.interceptors.response.use(
+api.interceptors.response.use(
 
-    (response) => {
+  (response) => {
 
-      console.log(
+    console.log(
 
-        `%c[API RESPONSE] ${response.config.url} -> ${response.status}`,
+      `%c[API RESPONSE] ${response.config.url} -> ${response.status}`,
 
-        "color:#2875a8;font-weight:bold;",
+      "color:#2875a8;font-weight:bold;",
 
-        response.data
+      response.data
 
-      );
+    );
 
-      return response;
+    return response;
 
-    },
+  },
 
-    (error) => {
+  (error) => {
 
-      if (error.response) {
+    if (error.response) {
 
-        console.error(`[API ERROR] ${error.config?.url} -> ${error.response.status}`, error.response.data);
+      console.error(`[API ERROR] ${error.config?.url} -> ${error.response.status}`, error.response.data);
 
-      } else if (error.request) {
+    } else if (error.request) {
 
-        console.error(
+      console.error(
 
-          `[API ERROR] No response received for ${error.config?.url}.`,
+        `[API ERROR] No response received for ${error.config?.url}.`,
 
-          "This usually means: backend isn't running, wrong API_BASE, or CORS blocked it.",
+        "This usually means: backend isn't running, wrong API_BASE, or CORS blocked it.",
 
-          error.message
+        error.message
 
-        );
+      );
 
-      } else {
+    } else {
 
-        console.error("[API ERROR] Request setup failed:", error.message);
+      console.error("[API ERROR] Request setup failed:", error.message);
 
-      }
+    }
 
-      return Promise.reject(error);
+    return Promise.reject(error);
 
-    }
+  }
 
-  );
+);
 
-  /* Normalizes whatever shape the backend sends back (raw array,
+/* Normalizes whatever shape the backend sends back (raw array,
 
-    { data: [...] }, { vehicles: [...] }, { trips: [...] }, etc.)
+  { data: [...] }, { vehicles: [...] }, { trips: [...] }, etc.)
 
-    into a plain array, and warns if nothing usable was found. */
+  into a plain array, and warns if nothing usable was found. */
 
-  const unwrapList = (payload, ...possibleKeys) => {
+const unwrapList = (payload, ...possibleKeys) => {
 
-    if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload)) return payload;
 
-    for (const key of possibleKeys) {
+  for (const key of possibleKeys) {
 
-      if (Array.isArray(payload?.[key])) return payload[key];
+    if (Array.isArray(payload?.[key])) return payload[key];
 
-    }
+  }
 
-    if (Array.isArray(payload?.data)) return payload.data;
+  if (Array.isArray(payload?.data)) return payload.data;
 
-    console.warn("[API WARNING] Could not find an array in the response payload:", payload);
+  console.warn("[API WARNING] Could not find an array in the response payload:", payload);
 
-    return [];
+  return [];
 
-  };
+};
 
-  /* ---- /api/vehicles ---- */
+/* ---- /api/vehicles ---- */
 
-  const apiAddVehicle = async (payload) => (await api.post(VEHICLES_URL, payload)).data;
+const apiAddVehicle = async (payload) => (await api.post(VEHICLES_URL, payload)).data;
 
-  const apiUpdateVehicle = async (id, payload) => (await api.put(`${VEHICLES_URL}/${id}`, payload)).data;
+const apiUpdateVehicle = async (id, payload) => (await api.put(`${VEHICLES_URL}/${id}`, payload)).data;
 
-  const apiDeleteVehicle = async (id) => (await api.delete(`${VEHICLES_URL}/${id}`)).data;
+const apiDeleteVehicle = async (id) => (await api.delete(`${VEHICLES_URL}/${id}`)).data;
 
-  /* ---- /api/ownvehicles ---- */
+/* ---- /api/ownvehicles ---- */
 
-  const apiAddOwnVehicle = async (fields, files = []) => {
+const apiAddOwnVehicle = async (fields, files = []) => {
 
-    const formData = new FormData();
+  const formData = new FormData();
 
-    Object.entries(fields || {}).forEach(([key, value]) => formData.append(key, value ?? ""));
+  Object.entries(fields || {}).forEach(([key, value]) => formData.append(key, value ?? ""));
 
-    files.forEach((file) => formData.append("documents", file));
+  files.forEach((file) => formData.append("documents", file));
 
-    return (await api.post(OWNVEHICLES_URL, formData, { headers: { "Content-Type": "multipart/form-data" } })).data;
+  return (await api.post(OWNVEHICLES_URL, formData, { headers: { "Content-Type": "multipart/form-data" } })).data;
 
-  };
+};
 
-  const apiUpdateOwnVehicle = async (id, fields, files = []) => {
+const apiUpdateOwnVehicle = async (id, fields, files = []) => {
 
-    const formData = new FormData();
+  const formData = new FormData();
 
-    Object.entries(fields || {}).forEach(([key, value]) => formData.append(key, value ?? ""));
+  Object.entries(fields || {}).forEach(([key, value]) => formData.append(key, value ?? ""));
 
-    files.forEach((file) => formData.append("documents", file));
+  files.forEach((file) => formData.append("documents", file));
 
-    return (await api.put(`${OWNVEHICLES_URL}/${id}`, formData, { headers: { "Content-Type": "multipart/form-data" } })).data;
+  return (await api.put(`${OWNVEHICLES_URL}/${id}`, formData, { headers: { "Content-Type": "multipart/form-data" } })).data;
 
-  };
+};
 
-  const apiDeleteOwnVehicle = async (id) => (await api.delete(`${OWNVEHICLES_URL}/${id}`)).data;
+const apiDeleteOwnVehicle = async (id) => (await api.delete(`${OWNVEHICLES_URL}/${id}`)).data;
 
-  const apiSaveVehicleDocuments = async (id, files = []) => {
+const apiSaveVehicleDocuments = async (id, files = []) => {
 
-    const formData = new FormData();
+  const formData = new FormData();
 
-    files.forEach((file) => formData.append("documents", file));
+  files.forEach((file) => formData.append("documents", file));
 
-    return (await api.put(`${OWNVEHICLES_URL}/${id}/documents`, formData, { headers: { "Content-Type": "multipart/form-data" } })).data;
+  return (await api.put(`${OWNVEHICLES_URL}/${id}/documents`, formData, { headers: { "Content-Type": "multipart/form-data" } })).data;
 
-  };
+};
 
-  const apiDownloadVehicleDocument = (fileName) => {
+const apiDownloadVehicleDocument = (fileName) => {
 
-    if (!fileName) {
+  if (!fileName) {
 
-      console.warn("[API WARNING] downloadVehicleDocument called without a fileName.");
+    console.warn("[API WARNING] downloadVehicleDocument called without a fileName.");
 
-      return;
+    return;
 
-    }
+  }
 
-    window.open(`${OWNVEHICLES_URL}/download/${fileName}`, "_blank", "noopener,noreferrer");
+  window.open(`${OWNVEHICLES_URL}/download/${fileName}`, "_blank", "noopener,noreferrer");
 
-  };
+};
 
-  /* ---- combined fetch: pulls all 3 sources, reports per-source errors ---- */
+/* ---- combined fetch: pulls all 3 sources, reports per-source errors ---- */
 
-  const fetchAllFleetData = async () => {
+const fetchAllFleetData = async () => {
 
-    const [vehiclesRes, ownRes, tripsRes] = await Promise.allSettled([
+  const [vehiclesRes, ownRes, tripsRes] = await Promise.allSettled([
 
-      api.get(VEHICLES_URL),
+    api.get(VEHICLES_URL),
 
-      api.get(OWNVEHICLES_URL),
+    api.get(OWNVEHICLES_URL),
 
-      api.get(TRIPORDERS_URL),
+    api.get(TRIPORDERS_URL),
 
-    ]);
+  ]);
 
-    const result = {
+  const result = {
 
-      vehicles: vehiclesRes.status === "fulfilled" ? unwrapList(vehiclesRes.value.data, "vehicles") : [],
+    vehicles: vehiclesRes.status === "fulfilled" ? unwrapList(vehiclesRes.value.data, "vehicles") : [],
 
-      ownVehicles: ownRes.status === "fulfilled" ? unwrapList(ownRes.value.data, "ownVehicles", "vehicles") : [],
+    ownVehicles: ownRes.status === "fulfilled" ? unwrapList(ownRes.value.data, "ownVehicles", "vehicles") : [],
 
-      trips: tripsRes.status === "fulfilled" ? unwrapList(tripsRes.value.data, "trips") : [],
+    trips: tripsRes.status === "fulfilled" ? unwrapList(tripsRes.value.data, "trips") : [],
 
-      errors: {},
+    errors: {},
 
-    };
+  };
 
-    if (vehiclesRes.status === "rejected") result.errors.vehicles = vehiclesRes.reason?.message || "Failed to load /api/vehicles";
+  if (vehiclesRes.status === "rejected") result.errors.vehicles = vehiclesRes.reason?.message || "Failed to load /api/vehicles";
 
-    if (ownRes.status === "rejected") result.errors.ownVehicles = ownRes.reason?.message || "Failed to load /api/ownvehicles";
+  if (ownRes.status === "rejected") result.errors.ownVehicles = ownRes.reason?.message || "Failed to load /api/ownvehicles";
 
-    if (tripsRes.status === "rejected") result.errors.trips = tripsRes.reason?.message || "Failed to load /api/triporders";
+  if (tripsRes.status === "rejected") result.errors.trips = tripsRes.reason?.message || "Failed to load /api/triporders";
 
-    if (Object.keys(result.errors).length > 0) {
+  if (Object.keys(result.errors).length > 0) {
 
-      console.error("[fetchAllFleetData] One or more sources failed:", result.errors);
+    console.error("[fetchAllFleetData] One or more sources failed:", result.errors);
 
-    }
+  }
 
-    return result;
+  return result;
 
-  };
+};
 
-  /* =========================================================
+/* =========================================================
 
-    CONSTANTS
+  CONSTANTS
 
-    ========================================================= */
+  ========================================================= */
 
-  const STATUS_COLORS = [
+const STATUS_COLORS = [
 
-    "#159e9a",
+  "#159e9a",
 
-    "#2875a8",
+  "#2875a8",
 
-    "#e28a18",
+  "#e28a18",
 
-    "#d45252",
+  "#d45252",
 
-    "#7d5bb5",
+  "#7d5bb5",
 
-    "#718594",
+  "#718594",
 
-  ];
+];
 
-  const MONTHS = [
+const MONTHS = [
 
-    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
 
-    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
 
-  ];
+];
 
-  const PAGE_SIZE = 8;
+const PAGE_SIZE = 8;
 
-  /* If your backend uses different field names than the ones
+/* If your backend uses different field names than the ones
 
-    guessed below, adjust ONLY this list - every getter reads
+  guessed below, adjust ONLY this list - every getter reads
 
-    from here so you don't have to touch the rest of the file. */
+  from here so you don't have to touch the rest of the file. */
 
-  const FIELD_ALIASES = {
+const FIELD_ALIASES = {
 
-    vehicleNo: ["vehicleNo", "vehicleNumber", "VehicleNo", "Vehicle No", "registrationNumber", "registrationNo"],
+  vehicleNo: ["vehicleNo", "vehicleNumber", "VehicleNo", "Vehicle No", "registrationNumber", "registrationNo"],
 
-    vehicleType: ["vehicleType", "type", "Type", "Vehicle Type"],
+  vehicleType: ["vehicleType", "type", "Type", "Vehicle Type"],
 
-    status: ["status", "vehicleStatus", "Status"],
+  status: ["status", "vehicleStatus", "Status"],
 
-    source: ["vehicleSource", "source", "ownership", "category", "vehicleCategory", "VehicleCategory"],
+  source: ["vehicleSource", "source", "ownership", "category", "vehicleCategory", "VehicleCategory"],
 
-    site: ["siteName", "site", "SiteName", "Site Name"],
+  site: ["siteName", "site", "SiteName", "Site Name"],
 
-    driver: ["driverName", "driver", "DriverName", "Driver Name"],
+  driver: ["driverName", "driver", "DriverName", "Driver Name"],
 
-    inDate: ["vehicleInDate", "inDate", "VehicleInDate", "Vehicle In Date"],
+  inDate: ["vehicleInDate", "inDate", "VehicleInDate", "Vehicle In Date"],
 
-    outDate: ["vehicleOutDate", "outDate", "VehicleOutDate", "Vehicle Out Date"],
+  outDate: ["vehicleOutDate", "outDate", "VehicleOutDate", "Vehicle Out Date"],
 
-    documentStatus: ["documentStatus", "documentsStatus", "document", "documents", "DocumentStatus"],
+  documentStatus: ["documentStatus", "documentsStatus", "document", "documents", "DocumentStatus"],
 
-    ownerName: ["ownerName", "owner", "OwnerName"],
+  ownerName: ["ownerName", "owner", "OwnerName"],
 
-  };
+};
 
-  /* =========================================================
+/* =========================================================
 
-    HELPER FUNCTIONS
+  HELPER FUNCTIONS
 
-    ========================================================= */
+  ========================================================= */
 
-  const normalize = (value) => String(value ?? "").trim().toLowerCase();
+const normalize = (value) => String(value ?? "").trim().toLowerCase();
 
-  const pick = (obj, key) => {
+const pick = (obj, key) => {
 
-    for (const alias of FIELD_ALIASES[key] || [key]) {
+  for (const alias of FIELD_ALIASES[key] || [key]) {
 
-      if (obj && obj[alias] !== undefined && obj[alias] !== null && obj[alias] !== "") {
+    if (obj && obj[alias] !== undefined && obj[alias] !== null && obj[alias] !== "") {
 
-        return obj[alias];
+      return obj[alias];
 
-      }
+    }
 
-    }
+  }
 
-    return "";
+  return "";
 
-  };
+};
 
-  const getId = (v) => v._id || v.id || v.vehicleId || "";
+const getId = (v) => v._id || v.id || v.vehicleId || "";
 
-  const getVehicleNumber = (v) => pick(v, "vehicleNo") || "N/A";
+const getVehicleNumber = (v) => pick(v, "vehicleNo") || "N/A";
 
-  const getVehicleType = (v) => pick(v, "vehicleType") || "Unknown";
+const getVehicleType = (v) => pick(v, "vehicleType") || "Unknown";
 
-  const getStatus = (v) => pick(v, "status") || "Unknown";
+const getStatus = (v) => pick(v, "status") || "Unknown";
 
-  const getSource = (v) => pick(v, "source");
+const getSource = (v) => pick(v, "source");
 
-  const getSiteName = (v) => pick(v, "site") || "Not Assigned";
+const getSiteName = (v) => pick(v, "site") || "Not Assigned";
 
-  const getDriverName = (v) => pick(v, "driver") || "Not Assigned";
+const getDriverName = (v) => pick(v, "driver") || "Not Assigned";
 
-  const getVehicleInDate = (v) => pick(v, "inDate") || null;
+const getVehicleInDate = (v) => pick(v, "inDate") || null;
 
-  const getVehicleOutDate = (v) => pick(v, "outDate") || null;
+const getVehicleOutDate = (v) => pick(v, "outDate") || null;
 
-  const getDocumentStatus = (v) => pick(v, "documentStatus");
+const getDocumentStatus = (v) => pick(v, "documentStatus");
 
-  const getOwnerName = (v) => pick(v, "ownerName");
+const getOwnerName = (v) => pick(v, "ownerName");
 
-  const isOwnVehicle = (v) => {
+const isOwnVehicle = (v) => {
 
-    const source = normalize(getSource(v));
+  const source = normalize(getSource(v));
 
-    return source.includes("own") || source.includes("company") || source.includes("owned") || v.__isOwnFleet;
+  return source.includes("own") || source.includes("company") || source.includes("owned") || v.__isOwnFleet;
 
-  };
+};
 
-  const isIntercarting = (v) => {
+const isIntercarting = (v) => {
 
-    const source = normalize(getSource(v));
+  const source = normalize(getSource(v));
 
-    return source.includes("intercart") || source.includes("vendor") || source.includes("attached") || source.includes("market");
+  return source.includes("intercart") || source.includes("vendor") || source.includes("attached") || source.includes("market");
 
-  };
+};
 
-  const isMaintenance = (v) => {
+const isMaintenance = (v) => {
 
-    const status = normalize(getStatus(v));
+  const status = normalize(getStatus(v));
 
-    return status.includes("maintenance") || status.includes("maintain") || status.includes("repair");
+  return status.includes("maintenance") || status.includes("maintain") || status.includes("repair");
 
-  };
+};
 
-  const isInTransit = (v) => {
+const isInTransit = (v) => {
 
-    const status = normalize(getStatus(v));
+  const status = normalize(getStatus(v));
 
-    return status.includes("transit") || status.includes("running") || status.includes("moving") || status.includes("on road");
+  return status.includes("transit") || status.includes("running") || status.includes("moving") || status.includes("on road");
 
-  };
+};
 
-  const isAvailable = (v) => {
+const isAvailable = (v) => {
 
-    const status = normalize(getStatus(v));
+  const status = normalize(getStatus(v));
 
-    return status.includes("available") || status.includes("active") || status.includes("idle") || status.includes("ready");
+  return status.includes("available") || status.includes("active") || status.includes("idle") || status.includes("ready");
 
-  };
+};
 
-  const isDocumentAlert = (v) => {
+const isDocumentAlert = (v) => {
 
-    const documentStatus = normalize(getDocumentStatus(v));
+  const documentStatus = normalize(getDocumentStatus(v));
 
-    return documentStatus.includes("expire") || documentStatus.includes("expired") || documentStatus.includes("due") || documentStatus.includes("renew");
+  return documentStatus.includes("expire") || documentStatus.includes("expired") || documentStatus.includes("due") || documentStatus.includes("renew");
 
-  };
+};
 
-  const safeDate = (value) => {
+const safeDate = (value) => {
 
-    if (!value) return null;
+  if (!value) return null;
 
-    const date = new Date(value);
+  const date = new Date(value);
 
-    return Number.isNaN(date.getTime()) ? null : date;
+  return Number.isNaN(date.getTime()) ? null : date;
 
-  };
+};
 
-  const formatDate = (value) => {
+const formatDate = (value) => {
 
-    const date = safeDate(value);
+  const date = safeDate(value);
 
-    if (!date) return "N/A";
+  if (!date) return "N/A";
 
-    return date.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+  return date.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
 
-  };
+};
 
-  const getMonthName = (date) => {
+const getMonthName = (date) => {
 
-    const parsedDate = safeDate(date);
+  const parsedDate = safeDate(date);
 
-    return parsedDate ? MONTHS[parsedDate.getMonth()] : null;
+  return parsedDate ? MONTHS[parsedDate.getMonth()] : null;
 
-  };
+};
 
-  const emptyForm = {
+const emptyForm = {
 
-    vehicleNo: "",
+  vehicleNo: "",
 
-    vehicleType: "",
+  vehicleType: "",
 
-    status: "Available",
+  status: "Available",
 
-    vehicleSource: "Own",
+  vehicleSource: "Own",
 
-    siteName: "",
+  siteName: "",
 
-    driverName: "",
+  driverName: "",
 
-    vehicleInDate: "",
+  vehicleInDate: "",
 
-    vehicleOutDate: "",
+  vehicleOutDate: "",
 
-    documentStatus: "Valid",
+  documentStatus: "Valid",
 
-  };
+};
 
-  /* =========================================================
+/* =========================================================
 
-    DASHBOARD COMPONENT
+  DASHBOARD COMPONENT
 
-    ========================================================= */
+  ========================================================= */
 
-  const DashContent = () => {
+const DashContent = () => {
 
-    const [vehicles, setVehicles] = useState([]);
+  const [vehicles, setVehicles] = useState([]);
 
-    const [ownVehicles, setOwnVehicles] = useState([]);
+  const [ownVehicles, setOwnVehicles] = useState([]);
 
-    const [trips, setTrips] = useState([]);
+  const [trips, setTrips] = useState([]);
 
-    const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
 
-    const [refreshing, setRefreshing] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
-    const [error, setError] = useState("");
+  const [error, setError] = useState("");
 
-    const [lastUpdated, setLastUpdated] = useState(null);
+  const [lastUpdated, setLastUpdated] = useState(null);
 
-    const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState("overview");
 
-    const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
 
-    const [selectedStatus, setSelectedStatus] = useState("All");
+  const [selectedStatus, setSelectedStatus] = useState("All");
 
-    const [sortField, setSortField] = useState(null);
+  const [sortField, setSortField] = useState(null);
 
-    const [sortDir, setSortDir] = useState("asc");
+  const [sortDir, setSortDir] = useState("asc");
 
-    const [page, setPage] = useState(1);
+  const [page, setPage] = useState(1);
 
-    const [modalOpen, setModalOpen] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
 
-    const [modalMode, setModalMode] = useState("create"); // create | edit
+  const [modalMode, setModalMode] = useState("create"); // create | edit
 
-    const [modalTarget, setModalTarget] = useState(null); // "fleet" | "own"
+  const [modalTarget, setModalTarget] = useState(null); // "fleet" | "own"
 
-    const [formState, setFormState] = useState(emptyForm);
+  const [formState, setFormState] = useState(emptyForm);
 
-    const [formFiles, setFormFiles] = useState([]);
+  const [formFiles, setFormFiles] = useState([]);
 
-    const [saving, setSaving] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-    const [deleteTarget, setDeleteTarget] = useState(null); // { id, source }
+  const [deleteTarget, setDeleteTarget] = useState(null); // { id, source }
 
-    const [docsVehicle, setDocsVehicle] = useState(null);
-    const clientSliderRef = useRef(null);
-    const [clientSlide, setClientSlide] = useState(0);
+  const [docsVehicle, setDocsVehicle] = useState(null);
+  const clientSliderRef = useRef(null);
+  const [clientSlide, setClientSlide] = useState(0);
 
-    /* =======================================================
+  /* =======================================================
 
-      FETCH ALL DATA SOURCES
+    FETCH ALL DATA SOURCES
 
-      ======================================================= */
+    ======================================================= */
 
-    const fetchAll = useCallback(async (isRefresh = false) => {
+  const fetchAll = useCallback(async (isRefresh = false) => {
 
-      try {
+    try {
 
-        isRefresh ? setRefreshing(true) : setLoading(true);
+      isRefresh ? setRefreshing(true) : setLoading(true);
 
-        // fetchAllFleetData logs every request/response/error to the
+      // fetchAllFleetData logs every request/response/error to the
 
-        // console (look for [API REQUEST] / [API RESPONSE] / [API ERROR])
+      // console (look for [API REQUEST] / [API RESPONSE] / [API ERROR])
 
-        // so you can see exactly what each of the 3 endpoints returned.
+      // so you can see exactly what each of the 3 endpoints returned.
 
-        const { vehicles: vehicleData, ownVehicles: ownDataRaw, trips: tripData, errors } =
+      const { vehicles: vehicleData, ownVehicles: ownDataRaw, trips: tripData, errors } =
 
-          await fetchAllFleetData();
+        await fetchAllFleetData();
 
-        const ownData = ownDataRaw.map((v) => ({ ...v, __isOwnFleet: true }));
+      const ownData = ownDataRaw.map((v) => ({ ...v, __isOwnFleet: true }));
 
-        setVehicles(vehicleData);
+      setVehicles(vehicleData);
 
-        setOwnVehicles(ownData);
+      setOwnVehicles(ownData);
 
-        setTrips(tripData);
+      setTrips(tripData);
 
-        setLastUpdated(new Date());
+      setLastUpdated(new Date());
 
-        const errorKeys = Object.keys(errors || {});
+      const errorKeys = Object.keys(errors || {});
 
-        if (errorKeys.length > 0) {
+      if (errorKeys.length > 0) {
 
-          const messages = errorKeys.map((key) => `${key}: ${errors[key]}`).join(" | ");
+        const messages = errorKeys.map((key) => `${key}: ${errors[key]}`).join(" | ");
 
-          setError(
+        setError(
 
-            `Some data failed to load (${messages}). Check the browser console for [API ERROR] details, and confirm the backend is reachable at ${API_BASE}.`
+          `Some data failed to load (${messages}). Check the browser console for [API ERROR] details, and confirm the backend is reachable at ${API_BASE}.`
 
-          );
+        );
 
-        } else if (vehicleData.length === 0 && ownData.length === 0 && tripData.length === 0) {
+      } else if (vehicleData.length === 0 && ownData.length === 0 && tripData.length === 0) {
 
-          setError(
+        setError(
 
-            `Connected, but all three endpoints returned no records. Check the console for the raw [API RESPONSE] payloads to confirm the data shape.`
+          `Connected, but all three endpoints returned no records. Check the console for the raw [API RESPONSE] payloads to confirm the data shape.`
 
-          );
+        );
 
-        } else {
+      } else {
 
-          setError("");
+        setError("");
 
-        }
+      }
 
-      } catch (err) {
+    } catch (err) {
 
-        console.error("Dashboard API error:", err);
+      console.error("Dashboard API error:", err);
 
-        setError(`Unable to load vehicle information. Please confirm the backend is running at ${API_BASE}.`);
+      setError(`Unable to load vehicle information. Please confirm the backend is running at ${API_BASE}.`);
 
-      } finally {
+    } finally {
 
-        setLoading(false);
+      setLoading(false);
 
-        setRefreshing(false);
+      setRefreshing(false);
 
-      }
+    }
 
-    }, []);
+  }, []);
 
-    useEffect(() => {
+  useEffect(() => {
 
-      fetchAll();
+    fetchAll();
 
-    }, [fetchAll]);
+  }, [fetchAll]);
 
-    /* =======================================================
+  /* =======================================================
 
-      COMBINED FLEET (for stats/charts/overview table)
+    COMBINED FLEET (for stats/charts/overview table)
 
-      ======================================================= */
+    ======================================================= */
 
-    const combinedFleet = useMemo(() => {
+  const combinedFleet = useMemo(() => {
 
-      const ownIds = new Set(ownVehicles.map((v) => normalize(getVehicleNumber(v))));
+    const ownIds = new Set(ownVehicles.map((v) => normalize(getVehicleNumber(v))));
 
-      const nonDuplicateVehicles = vehicles.filter(
+    const nonDuplicateVehicles = vehicles.filter(
 
-        (v) => !ownIds.has(normalize(getVehicleNumber(v)))
+      (v) => !ownIds.has(normalize(getVehicleNumber(v)))
 
-      );
+    );
 
-      return [...ownVehicles, ...nonDuplicateVehicles];
+    return [...ownVehicles, ...nonDuplicateVehicles];
 
-    }, [vehicles, ownVehicles]);
+  }, [vehicles, ownVehicles]);
 
-    /* =======================================================
+  /* =======================================================
 
-      ACTIVE TABLE DATA SOURCE (per tab)
+    ACTIVE TABLE DATA SOURCE (per tab)
 
-      ======================================================= */
+    ======================================================= */
 
-    const tableSource = useMemo(() => {
+  const tableSource = useMemo(() => {
 
-      if (activeTab === "own") return ownVehicles;
+    if (activeTab === "own") return ownVehicles;
 
-      if (activeTab === "fleet") return vehicles;
+    if (activeTab === "fleet") return vehicles;
 
-      return combinedFleet;
+    return combinedFleet;
 
-    }, [activeTab, vehicles, ownVehicles, combinedFleet]);
+  }, [activeTab, vehicles, ownVehicles, combinedFleet]);
 
-    /* =======================================================
+  /* =======================================================
 
-      FILTER + SORT + PAGINATE
+    FILTER + SORT + PAGINATE
 
-      ======================================================= */
+    ======================================================= */
 
-    const filteredVehicles = useMemo(() => {
+  const filteredVehicles = useMemo(() => {
 
-      const search = normalize(searchTerm);
+    const search = normalize(searchTerm);
 
-      let result = tableSource.filter((vehicle) => {
+    let result = tableSource.filter((vehicle) => {
 
-        const number = normalize(getVehicleNumber(vehicle));
+      const number = normalize(getVehicleNumber(vehicle));
 
-        const type = normalize(getVehicleType(vehicle));
+      const type = normalize(getVehicleType(vehicle));
 
-        const site = normalize(getSiteName(vehicle));
+      const site = normalize(getSiteName(vehicle));
 
-        const driver = normalize(getDriverName(vehicle));
+      const driver = normalize(getDriverName(vehicle));
 
-        const status = getStatus(vehicle);
+      const status = getStatus(vehicle);
 
-        const matchesSearch =
+      const matchesSearch =
 
-          !search ||
+        !search ||
 
-          number.includes(search) ||
+        number.includes(search) ||
 
-          type.includes(search) ||
+        type.includes(search) ||
 
-          site.includes(search) ||
+        site.includes(search) ||
 
-          driver.includes(search);
+        driver.includes(search);
 
-        const matchesStatus =
+      const matchesStatus =
 
-          selectedStatus === "All" || normalize(status) === normalize(selectedStatus);
+        selectedStatus === "All" || normalize(status) === normalize(selectedStatus);
 
-        return matchesSearch && matchesStatus;
+      return matchesSearch && matchesStatus;
 
-      });
+    });
 
-      if (sortField) {
+    if (sortField) {
 
-        const getters = {
+      const getters = {
 
-          vehicleNo: getVehicleNumber,
+        vehicleNo: getVehicleNumber,
 
-          vehicleType: getVehicleType,
+        vehicleType: getVehicleType,
 
-          status: getStatus,
+        status: getStatus,
 
-          site: getSiteName,
+        site: getSiteName,
 
-          driver: getDriverName,
+        driver: getDriverName,
 
-          inDate: (v) => safeDate(getVehicleInDate(v))?.getTime() || 0,
+        inDate: (v) => safeDate(getVehicleInDate(v))?.getTime() || 0,
 
-        };
+      };
 
-        const getter = getters[sortField];
+      const getter = getters[sortField];
 
-        if (getter) {
+      if (getter) {
 
-          result = [...result].sort((a, b) => {
+        result = [...result].sort((a, b) => {
 
-            const av = getter(a);
+          const av = getter(a);
 
-            const bv = getter(b);
+          const bv = getter(b);
 
-            if (av < bv) return sortDir === "asc" ? -1 : 1;
+          if (av < bv) return sortDir === "asc" ? -1 : 1;
 
-            if (av > bv) return sortDir === "asc" ? 1 : -1;
+          if (av > bv) return sortDir === "asc" ? 1 : -1;
 
-            return 0;
+          return 0;
 
-          });
+        });
 
-        }
+      }
 
-      }
+    }
 
-      return result;
+    return result;
 
-    }, [tableSource, searchTerm, selectedStatus, sortField, sortDir]);
+  }, [tableSource, searchTerm, selectedStatus, sortField, sortDir]);
 
-    const totalPages = Math.max(1, Math.ceil(filteredVehicles.length / PAGE_SIZE));
+  const totalPages = Math.max(1, Math.ceil(filteredVehicles.length / PAGE_SIZE));
 
-    const pagedVehicles = useMemo(() => {
+  const pagedVehicles = useMemo(() => {
 
-      const start = (page - 1) * PAGE_SIZE;
+    const start = (page - 1) * PAGE_SIZE;
 
-      return filteredVehicles.slice(start, start + PAGE_SIZE);
+    return filteredVehicles.slice(start, start + PAGE_SIZE);
 
-    }, [filteredVehicles, page]);
+  }, [filteredVehicles, page]);
 
-    useEffect(() => {
+  useEffect(() => {
 
-      setPage(1);
+    setPage(1);
 
-    }, [searchTerm, selectedStatus, activeTab]);
+  }, [searchTerm, selectedStatus, activeTab]);
 
-    useEffect(() => {
+  useEffect(() => {
 
-      if (page > totalPages) setPage(totalPages);
+    if (page > totalPages) setPage(totalPages);
 
-    }, [totalPages, page]);
+  }, [totalPages, page]);
 
-    const toggleSort = (field) => {
+  const toggleSort = (field) => {
 
-      if (sortField === field) {
+    if (sortField === field) {
 
-        setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
 
-      } else {
+    } else {
 
-        setSortField(field);
+      setSortField(field);
 
-        setSortDir("asc");
+      setSortDir("asc");
 
-      }
+    }
 
-    };
+  };
 
-    const sortIcon = (field) => {
+  const sortIcon = (field) => {
 
-      if (sortField !== field) return <FaSort />;
+    if (sortField !== field) return <FaSort />;
 
-      return sortDir === "asc" ? <FaSortUp /> : <FaSortDown />;
+    return sortDir === "asc" ? <FaSortUp /> : <FaSortDown />;
 
-    };
+  };
 
-    /* =======================================================
+  /* =======================================================
 
-      VEHICLE STATISTICS (based on combined fleet)
+    VEHICLE STATISTICS (based on combined fleet)
 
-      ======================================================= */
+    ======================================================= */
 
-    const statistics = useMemo(() => {
+  const statistics = useMemo(() => {
 
-      const source = combinedFleet;
+    const source = combinedFleet;
 
-      const own = source.filter(isOwnVehicle).length;
+    const own = source.filter(isOwnVehicle).length;
 
-      const intercarting = source.filter(isIntercarting).length;
+    const intercarting = source.filter(isIntercarting).length;
 
-      const maintenance = source.filter(isMaintenance).length;
+    const maintenance = source.filter(isMaintenance).length;
 
-      const inTransit = source.filter(isInTransit).length;
+    const inTransit = source.filter(isInTransit).length;
 
-      const available = source.filter(isAvailable).length;
+    const available = source.filter(isAvailable).length;
 
-      const documentAlerts = source.filter(isDocumentAlert).length;
+    const documentAlerts = source.filter(isDocumentAlert).length;
 
-      const assigned = source.filter((vehicle) => {
+    const assigned = source.filter((vehicle) => {
 
-        const site = getSiteName(vehicle);
+      const site = getSiteName(vehicle);
 
-        return site && normalize(site) !== "not assigned";
+      return site && normalize(site) !== "not assigned";
 
-      }).length;
+    }).length;
 
-      const drivers = new Set(
+    const drivers = new Set(
 
-        source.map(getDriverName).filter((name) => name && normalize(name) !== "not assigned")
+      source.map(getDriverName).filter((name) => name && normalize(name) !== "not assigned")
 
-      ).size;
+    ).size;
 
-      const activeTrips = trips.filter((t) => {
+    const activeTrips = trips.filter((t) => {
 
-        const status = normalize(t.status || t.tripStatus || "");
+      const status = normalize(t.status || t.tripStatus || "");
 
-        return status.includes("progress") || status.includes("active") || status.includes("running") || status === "";
+      return status.includes("progress") || status.includes("active") || status.includes("running") || status === "";
 
-      }).length;
+    }).length;
 
-      return { own, intercarting, maintenance, inTransit, available, documentAlerts, assigned, drivers, activeTrips };
+    return { own, intercarting, maintenance, inTransit, available, documentAlerts, assigned, drivers, activeTrips };
 
-    }, [combinedFleet, trips]);
+  }, [combinedFleet, trips]);
 
-    const sourceChartData = useMemo(
+  const sourceChartData = useMemo(
 
-      () => [
+    () => [
 
-        { name: "Own Vehicle", count: statistics.own },
+      { name: "Own Vehicle", count: statistics.own },
 
-        { name: "Intercarting", count: statistics.intercarting },
+      { name: "Intercarting", count: statistics.intercarting },
 
-      ],
+    ],
 
-      [statistics]
+    [statistics]
 
-    );
+  );
 
-    const statusChartData = useMemo(() => {
+  const statusChartData = useMemo(() => {
 
-      const statusMap = {};
+    const statusMap = {};
 
-      combinedFleet.forEach((vehicle) => {
+    combinedFleet.forEach((vehicle) => {
 
-        const status = String(getStatus(vehicle)).trim();
+      const status = String(getStatus(vehicle)).trim();
 
-        if (!status) return;
+      if (!status) return;
 
-        statusMap[status] = (statusMap[status] || 0) + 1;
+      statusMap[status] = (statusMap[status] || 0) + 1;
 
-      });
+    });
 
-      return Object.entries(statusMap)
+    return Object.entries(statusMap)
 
-        .map(([name, value]) => ({ name, value }))
+      .map(([name, value]) => ({ name, value }))
 
-        .sort((a, b) => b.value - a.value);
+      .sort((a, b) => b.value - a.value);
 
-    }, [combinedFleet]);
+  }, [combinedFleet]);
 
-    const vehicleTypeData = useMemo(() => {
+  const vehicleTypeData = useMemo(() => {
 
-      const typeMap = {};
+    const typeMap = {};
 
-      combinedFleet.forEach((vehicle) => {
+    combinedFleet.forEach((vehicle) => {
 
-        const type = String(getVehicleType(vehicle)).trim();
+      const type = String(getVehicleType(vehicle)).trim();
 
-        if (!type) return;
+      if (!type) return;
 
-        typeMap[type] = (typeMap[type] || 0) + 1;
+      typeMap[type] = (typeMap[type] || 0) + 1;
 
-      });
+    });
 
-      return Object.entries(typeMap)
+    return Object.entries(typeMap)
 
-        .map(([name, count]) => ({ name, count }))
+      .map(([name, count]) => ({ name, count }))
 
-        .sort((a, b) => b.count - a.count)
+      .sort((a, b) => b.count - a.count)
 
-        .slice(0, 7);
+      .slice(0, 7);
 
-    }, [combinedFleet]);
+  }, [combinedFleet]);
 
-    const monthlyTrend = useMemo(() => {
+  const monthlyTrend = useMemo(() => {
 
-      const currentYear = new Date().getFullYear();
+    const currentYear = new Date().getFullYear();
 
-      const months = MONTHS.map((month) => ({ month, vehicles: 0 }));
+    const months = MONTHS.map((month) => ({ month, vehicles: 0 }));
 
-      combinedFleet.forEach((vehicle) => {
+    combinedFleet.forEach((vehicle) => {
 
-        const date = safeDate(getVehicleInDate(vehicle)) || safeDate(getVehicleOutDate(vehicle));
+      const date = safeDate(getVehicleInDate(vehicle)) || safeDate(getVehicleOutDate(vehicle));
 
-        if (!date || date.getFullYear() !== currentYear) return;
+      if (!date || date.getFullYear() !== currentYear) return;
 
-        months[date.getMonth()].vehicles += 1;
+      months[date.getMonth()].vehicles += 1;
 
-      });
+    });
 
-      return months;
+    return months;
 
-    }, [combinedFleet]);
+  }, [combinedFleet]);
 
-    const availableStatuses = useMemo(() => {
+  const availableStatuses = useMemo(() => {
 
-      const statuses = new Set();
+    const statuses = new Set();
 
-      tableSource.forEach((vehicle) => {
+    tableSource.forEach((vehicle) => {
 
-        const status = String(getStatus(vehicle)).trim();
+      const status = String(getStatus(vehicle)).trim();
 
-        if (status) statuses.add(status);
+      if (status) statuses.add(status);
 
-      });
+    });
 
-      return ["All", ...Array.from(statuses)];
+    return ["All", ...Array.from(statuses)];
 
-    }, [tableSource]);
+  }, [tableSource]);
 
-    const achievements = [
+  const achievements = [
 
-      { number: "15+", title: "Years", description: "Industry Experience" },
+    { number: "15+", title: "Years", description: "Industry Experience" },
 
-      { number: "4", title: "Branches", description: "Strategic Locations" },
+    { number: "4", title: "Branches", description: "Strategic Locations" },
 
-      { number: "1000+", title: "Clients", description: "Successfully Served" },
+    { number: "1000+", title: "Clients", description: "Successfully Served" },
 
-      { number: "24/7", title: "Operations", description: "Logistics Support" },
+    { number: "24/7", title: "Operations", description: "Logistics Support" },
 
-    ];
+  ];
 
-    const locations = [
+  const locations = [
 
-      {
+    {
 
-        name: "Mumbai",
+      name: "Mumbai",
 
-        type: "Head Office",
+      type: "Head Office",
 
-        address: "Office No. 1309, 13th Floor, Satra Plaza, Sector 19D, Vashi, Navi Mumbai, Maharashtra - 400703",
+      address: "Office No. 1309, 13th Floor, Satra Plaza, Sector 19D, Vashi, Navi Mumbai, Maharashtra - 400703",
 
-      },
+    },
 
-      {
+    {
 
-        name: "Chennai",
+      name: "Chennai",
 
-        type: "Corporate Office",
+      type: "Corporate Office",
 
-        address: "OM Trans Infra Corporation Pvt Ltd, 1/53, Poonamallee Highway, Vanagaram, Near Mahesh Kumar Hotel, Chennai - 600095",
+      address: "OM Trans Infra Corporation Pvt Ltd, 1/53, Poonamallee Highway, Vanagaram, Near Mahesh Kumar Hotel, Chennai - 600095",
 
-      },
+    },
 
-      {
+    {
 
-        name: "Bangalore",
+      name: "Bangalore",
 
-        type: "Branch Office",
+      type: "Branch Office",
 
-        address: "OM Trans Infra Corporation Pvt Ltd, No. 33, RAB Complex, 4th Floor, 18th Main Road, 15th Cross, J.P. Nagar 2nd Phase, Bangalore - 560078",
+      address: "OM Trans Infra Corporation Pvt Ltd, No. 33, RAB Complex, 4th Floor, 18th Main Road, 15th Cross, J.P. Nagar 2nd Phase, Bangalore - 560078",
 
-      },
+    },
 
-      {
+    {
 
-        name: "Pune",
+      name: "Pune",
 
-        type: "Branch Office",
+      type: "Branch Office",
 
-        address: "Shop No. 49/50, Tapaswi Plaza, Old Pune-Mumbai Highway, Akurdi, Pune - 411019, Maharashtra",
+      address: "Shop No. 49/50, Tapaswi Plaza, Old Pune-Mumbai Highway, Akurdi, Pune - 411019, Maharashtra",
 
-      },
+    },
 
-    ];
+  ];
 
-    const clients = [
-      { name: "JSW", short: "JSW", logo: jswLogo, tone: "blue" },
-      { name: "HEFT", short: "HEFT", logo: heftLogo, tone: "orange" },
-      { name: "Serentica", short: "SERENTICA", logo: serenticaLogo, tone: "teal" },
-      { name: "Avada", short: "AVADA", logo: avadaLogo, tone: "sky" },
-      { name: "Suzlon", short: "SUZLON", logo: suzlonLogo, tone: "green" },
-    ];
+  const clients = [
+    { name: "JSW", short: "JSW", logo: jswLogo, tone: "blue" },
+    { name: "HEFT", short: "HEFT", logo: heftLogo, tone: "orange" },
+    { name: "Serentica", short: "SERENTICA", logo: serenticaLogo, tone: "teal" },
+    { name: "Avada", short: "AVADA", logo: avadaLogo, tone: "sky" },
+    { name: "Suzlon", short: "SUZLON", logo: suzlonLogo, tone: "green" },
+  ];
 
-    const scrollClientSlider = useCallback((direction = 1) => {
-      const slider = clientSliderRef.current;
-      if (!slider) return;
-      const card = slider.querySelector(".client-logo-slide");
-      if (!card) return;
-      const gap = 14;
-      const step = card.getBoundingClientRect().width + gap;
-      const maxScroll = slider.scrollWidth - slider.clientWidth;
-      let nextLeft = slider.scrollLeft + direction * step;
-      if (direction > 0 && nextLeft >= maxScroll - 4) nextLeft = 0;
-      if (direction < 0 && nextLeft < 0) nextLeft = maxScroll;
-      slider.scrollTo({ left: nextLeft, behavior: "smooth" });
-      setClientSlide((current) => (current + direction + clients.length) % clients.length);
-    }, [clients.length]);
+  const scrollClientSlider = useCallback((direction = 1) => {
+    const slider = clientSliderRef.current;
+    if (!slider) return;
+    const card = slider.querySelector(".client-logo-slide");
+    if (!card) return;
+    const gap = 14;
+    const step = card.getBoundingClientRect().width + gap;
+    const maxScroll = slider.scrollWidth - slider.clientWidth;
+    let nextLeft = slider.scrollLeft + direction * step;
+    if (direction > 0 && nextLeft >= maxScroll - 4) nextLeft = 0;
+    if (direction < 0 && nextLeft < 0) nextLeft = maxScroll;
+    slider.scrollTo({ left: nextLeft, behavior: "smooth" });
+    setClientSlide((current) => (current + direction + clients.length) % clients.length);
+  }, [clients.length]);
 
-    const goToClientSlide = useCallback((index) => {
-      const slider = clientSliderRef.current;
-      if (!slider) return;
-      const card = slider.querySelector(".client-logo-slide");
-      if (!card) return;
-      const gap = 14;
-      const step = card.getBoundingClientRect().width + gap;
-      slider.scrollTo({ left: index * step, behavior: "smooth" });
-      setClientSlide(index);
-    }, []);
+  const goToClientSlide = useCallback((index) => {
+    const slider = clientSliderRef.current;
+    if (!slider) return;
+    const card = slider.querySelector(".client-logo-slide");
+    if (!card) return;
+    const gap = 14;
+    const step = card.getBoundingClientRect().width + gap;
+    slider.scrollTo({ left: index * step, behavior: "smooth" });
+    setClientSlide(index);
+  }, []);
 
-    useEffect(() => {
-      const timer = window.setInterval(() => scrollClientSlider(1), 3500);
-      return () => window.clearInterval(timer);
-    }, [scrollClientSlider]);
+  useEffect(() => {
+    const timer = window.setInterval(() => scrollClientSlider(1), 3500);
+    return () => window.clearInterval(timer);
+  }, [scrollClientSlider]);
 
-    const clearFilters = () => {
+  const clearFilters = () => {
 
-      setSearchTerm("");
+    setSearchTerm("");
 
-      setSelectedStatus("All");
+    setSelectedStatus("All");
 
-    };
+  };
 
-    /* =======================================================
+  /* =======================================================
 
-      CRUD ACTIONS
+    CRUD ACTIONS
 
-      ======================================================= */
+    ======================================================= */
 
-    const openCreateModal = (target) => {
+  const openCreateModal = (target) => {
 
-      setModalMode("create");
+    setModalMode("create");
 
-      setModalTarget(target);
+    setModalTarget(target);
 
-      setFormState(emptyForm);
+    setFormState(emptyForm);
 
-      setFormFiles([]);
+    setFormFiles([]);
 
-      setModalOpen(true);
+    setModalOpen(true);
 
-    };
+  };
 
-    const openEditModal = (vehicle, target) => {
+  const openEditModal = (vehicle, target) => {
 
-      setModalMode("edit");
+    setModalMode("edit");
 
-      setModalTarget(target);
+    setModalTarget(target);
 
-      setFormState({
+    setFormState({
 
-        _id: getId(vehicle),
+      _id: getId(vehicle),
 
-        vehicleNo: getVehicleNumber(vehicle) === "N/A" ? "" : getVehicleNumber(vehicle),
+      vehicleNo: getVehicleNumber(vehicle) === "N/A" ? "" : getVehicleNumber(vehicle),
 
-        vehicleType: getVehicleType(vehicle) === "Unknown" ? "" : getVehicleType(vehicle),
+      vehicleType: getVehicleType(vehicle) === "Unknown" ? "" : getVehicleType(vehicle),
 
-        status: getStatus(vehicle) === "Unknown" ? "Available" : getStatus(vehicle),
+      status: getStatus(vehicle) === "Unknown" ? "Available" : getStatus(vehicle),
 
-        vehicleSource: getSource(vehicle) || (target === "own" ? "Own" : "Intercarting"),
+      vehicleSource: getSource(vehicle) || (target === "own" ? "Own" : "Intercarting"),
 
-        siteName: getSiteName(vehicle) === "Not Assigned" ? "" : getSiteName(vehicle),
+      siteName: getSiteName(vehicle) === "Not Assigned" ? "" : getSiteName(vehicle),
 
-        driverName: getDriverName(vehicle) === "Not Assigned" ? "" : getDriverName(vehicle),
+      driverName: getDriverName(vehicle) === "Not Assigned" ? "" : getDriverName(vehicle),
 
-        vehicleInDate: safeDate(getVehicleInDate(vehicle))
+      vehicleInDate: safeDate(getVehicleInDate(vehicle))
 
-          ? safeDate(getVehicleInDate(vehicle)).toISOString().slice(0, 10)
+        ? safeDate(getVehicleInDate(vehicle)).toISOString().slice(0, 10)
 
-          : "",
+        : "",
 
-        vehicleOutDate: safeDate(getVehicleOutDate(vehicle))
+      vehicleOutDate: safeDate(getVehicleOutDate(vehicle))
 
-          ? safeDate(getVehicleOutDate(vehicle)).toISOString().slice(0, 10)
+        ? safeDate(getVehicleOutDate(vehicle)).toISOString().slice(0, 10)
 
-          : "",
+        : "",
 
-        documentStatus: getDocumentStatus(vehicle) || "Valid",
+      documentStatus: getDocumentStatus(vehicle) || "Valid",
 
-      });
+    });
 
-      setFormFiles([]);
+    setFormFiles([]);
 
-      setModalOpen(true);
+    setModalOpen(true);
 
-    };
+  };
 
-    const closeModal = () => {
+  const closeModal = () => {
 
-      setModalOpen(false);
+    setModalOpen(false);
 
-      setModalTarget(null);
+    setModalTarget(null);
 
-      setFormState(emptyForm);
+    setFormState(emptyForm);
 
-      setFormFiles([]);
+    setFormFiles([]);
 
-    };
+  };
 
-    const handleFormChange = (field, value) => {
+  const handleFormChange = (field, value) => {
 
-      setFormState((prev) => ({ ...prev, [field]: value }));
+    setFormState((prev) => ({ ...prev, [field]: value }));
 
-    };
+  };
 
-    const handleSubmitForm = async (e) => {
+  const handleSubmitForm = async (e) => {
 
-      e.preventDefault();
+    e.preventDefault();
 
-      setSaving(true);
+    setSaving(true);
 
-      try {
+    try {
 
-        const isOwn = modalTarget === "own";
+      const isOwn = modalTarget === "own";
 
-        if (isOwn) {
+      if (isOwn) {
 
-          const fields = { ...formState };
+        const fields = { ...formState };
 
-          delete fields._id;
+        delete fields._id;
 
-          if (modalMode === "create") {
+        if (modalMode === "create") {
 
-            await apiAddOwnVehicle(fields, formFiles);
+          await apiAddOwnVehicle(fields, formFiles);
 
-          } else {
+        } else {
 
-            await apiUpdateOwnVehicle(formState._id, fields, formFiles);
+          await apiUpdateOwnVehicle(formState._id, fields, formFiles);
 
-          }
+        }
 
-        } else {
+      } else {
 
-          const payload = { ...formState };
+        const payload = { ...formState };
 
-          delete payload._id;
+        delete payload._id;
 
-          if (modalMode === "create") {
+        if (modalMode === "create") {
 
-            await apiAddVehicle(payload);
+          await apiAddVehicle(payload);
 
-          } else {
+        } else {
 
-            await apiUpdateVehicle(formState._id, payload);
+          await apiUpdateVehicle(formState._id, payload);
 
-          }
+        }
 
-        }
+      }
 
-        closeModal();
+      closeModal();
 
-        await fetchAll(true);
+      await fetchAll(true);
 
-      } catch (err) {
+    } catch (err) {
 
-        console.error("Save vehicle error:", err);
+      console.error("Save vehicle error:", err);
 
-        setError("Unable to save the vehicle. Check the console for [API ERROR] details.");
+      setError("Unable to save the vehicle. Check the console for [API ERROR] details.");
 
-      } finally {
+    } finally {
 
-        setSaving(false);
+      setSaving(false);
 
-      }
+    }
 
-    };
+  };
 
-    const confirmDelete = (vehicle, source) => {
+  const confirmDelete = (vehicle, source) => {
 
-      setDeleteTarget({ id: getId(vehicle), source, label: getVehicleNumber(vehicle) });
+    setDeleteTarget({ id: getId(vehicle), source, label: getVehicleNumber(vehicle) });
 
-    };
+  };
 
-    const performDelete = async () => {
+  const performDelete = async () => {
 
-      if (!deleteTarget) return;
+    if (!deleteTarget) return;
 
-      try {
+    try {
 
-        if (deleteTarget.source === "own") {
+      if (deleteTarget.source === "own") {
 
-          await apiDeleteOwnVehicle(deleteTarget.id);
+        await apiDeleteOwnVehicle(deleteTarget.id);
 
-        } else {
+      } else {
 
-          await apiDeleteVehicle(deleteTarget.id);
+        await apiDeleteVehicle(deleteTarget.id);
 
-        }
+      }
 
-        setDeleteTarget(null);
+      setDeleteTarget(null);
 
-        await fetchAll(true);
+      await fetchAll(true);
 
-      } catch (err) {
+    } catch (err) {
 
-        console.error("Delete vehicle error:", err);
+      console.error("Delete vehicle error:", err);
 
-        setError("Unable to delete the vehicle. Check the console for [API ERROR] details.");
+      setError("Unable to delete the vehicle. Check the console for [API ERROR] details.");
 
-        setDeleteTarget(null);
+      setDeleteTarget(null);
 
-      }
+    }
 
-    };
+  };
 
-    const openDocuments = (vehicle) => setDocsVehicle(vehicle);
+  const openDocuments = (vehicle) => setDocsVehicle(vehicle);
 
-    const closeDocuments = () => setDocsVehicle(null);
+  const closeDocuments = () => setDocsVehicle(null);
 
-    const handleDownloadDocument = (fileName) => {
+  const handleDownloadDocument = (fileName) => {
 
-      apiDownloadVehicleDocument(fileName);
+    apiDownloadVehicleDocument(fileName);
 
-    };
+  };
 
-    const rowSource = (vehicle) => (vehicle.__isOwnFleet ? "own" : "fleet");
+  const rowSource = (vehicle) => (vehicle.__isOwnFleet ? "own" : "fleet");
 
-    /* =======================================================
+  /* =======================================================
 
-      LOADING
+    LOADING
 
-      ======================================================= */
+    ======================================================= */
 
-    if (loading) {
+  if (loading) {
 
-      return (
+    return (
 
-        <div className="dashboard-loading">
+      <div className="dashboard-loading">
 
-          <div className="loading-spinner"></div>
+        <div className="loading-spinner"></div>
 
-          <h3>Loading Dashboard</h3>
+        <h3>Loading Dashboard</h3>
 
-          <p>Fetching the latest fleet information...</p>
+        <p>Fetching the latest fleet information...</p>
 
-        </div>
+      </div>
 
-      );
+    );
 
-    }
+  }
 
-    /* =======================================================
+  /* =======================================================
 
-      MAIN RETURN
+    MAIN RETURN
 
-      ======================================================= */
+    ======================================================= */
 
-    return (
+  return (
 
-      <div className="dashboard-overview">
+    <div className="dashboard-overview">
 
-        {/* TOPBAR */}
+      {/* TOPBAR */}
 
-        <div className="dashboard-topbar">
+      <div className="dashboard-topbar">
 
-          <div>
+        <div>
 
-            <span className="topbar-label">OTC GROUPS / DASHBOARD</span>
+          <span className="topbar-label">OTC GROUPS / DASHBOARD</span>
 
-            <h1>Dashboard Overview</h1>
+          <h1>Dashboard Overview</h1>
 
-            <p>Monitor fleet operations, vehicle activity and company performance from one place.</p>
+          <p>Monitor fleet operations, vehicle activity and company performance from one place.</p>
 
-          </div>
+        </div>
 
-          <div className="topbar-actions">
+        <div className="topbar-actions">
 
-            {lastUpdated && (
+          {lastUpdated && (
 
-              <div className="last-updated">
+            <div className="last-updated">
 
-                <FaClock />
+              <FaClock />
 
-                <span>Updated {lastUpdated.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}</span>
+              <span>Updated {lastUpdated.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}</span>
 
-              </div>
+            </div>
 
-            )}
+          )}
 
-            <button
+          <button
 
-              className={`refresh-button ${refreshing ? "refreshing" : ""}`}
+            className={`refresh-button ${refreshing ? "refreshing" : ""}`}
 
-              onClick={() => fetchAll(true)}
+            onClick={() => fetchAll(true)}
 
-              disabled={refreshing}
+            disabled={refreshing}
 
-            >
+          >
 
-              <FaSyncAlt />
+            <FaSyncAlt />
 
-              {refreshing ? "Refreshing..." : "Refresh"}
+            {refreshing ? "Refreshing..." : "Refresh"}
 
-            </button>
+          </button>
 
-          </div>
+        </div>
 
-        </div>
+      </div>
 
-        {error && (
+      {error && (
 
-          <div className="api-error">
+        <div className="api-error">
 
-            <div className="api-error-icon"><FaExclamationTriangle /></div>
+          <div className="api-error-icon"><FaExclamationTriangle /></div>
 
-            <div>
+          <div>
 
-              <strong>Vehicle data unavailable</strong>
+            <strong>Vehicle data unavailable</strong>
 
-              <span>{error}</span>
+            <span>{error}</span>
 
-            </div>
+          </div>
 
-            <button onClick={() => fetchAll()}>Retry</button>
+          <button onClick={() => fetchAll()}>Retry</button>
 
-          </div>
+        </div>
 
-        )}
+      )}
 
-        {/* HERO */}
+      {/* HERO */}
 
-        <section className="dashboard-hero">
+      <section className="dashboard-hero">
 
-          <div className="hero-content">
+        <div className="hero-content">
 
-            <span className="hero-eyebrow">WELCOME TO OTC GROUPS</span>
+          <span className="hero-eyebrow">WELCOME TO OTC GROUPS</span>
 
-            <h2>Moving Business <span>Forward</span></h2>
+          <h2>Moving Business <span>Forward</span></h2>
 
-            <p className="hero-subtitle">Transportation<b>•</b>Logistics<b>•</b>Fleet Management</p>
+          <p className="hero-subtitle">Transportation<b>•</b>Logistics<b>•</b>Fleet Management</p>
 
-            <p className="hero-description">
+          <p className="hero-description">
 
-              Reliable transportation solutions powered by experienced teams, efficient operations and
+            Reliable transportation solutions powered by experienced teams, efficient operations and
 
-              technology-driven fleet management.
+            technology-driven fleet management.
 
-            </p>
+          </p>
 
-            <div className="hero-mini-stats">
+          <div className="hero-mini-stats">
 
-              <div><strong>{combinedFleet.length}</strong><span>Vehicles</span></div>
+            <div><strong>{combinedFleet.length}</strong><span>Vehicles</span></div>
 
-              <div><strong>{statistics.inTransit}</strong><span>In Transit</span></div>
+            <div><strong>{statistics.inTransit}</strong><span>In Transit</span></div>
 
-              <div><strong>{statistics.available}</strong><span>Available</span></div>
+            <div><strong>{statistics.available}</strong><span>Available</span></div>
 
-            </div>
+          </div>
 
-          </div>
+        </div>
 
-          <div
+        <div
 
-            className="hero-visual"
+          className="hero-visual"
 
-            style={{ backgroundImage: `url(${windmillTransport})` }}
+          style={{ backgroundImage: `url(${windmillTransport})` }}
 
-          >
+        >
 
-            <div className="hero-overlay"></div>
+          <div className="hero-overlay"></div>
 
-            <div className="hero-floating-card">
+          <div className="hero-floating-card">
 
-              <div className="hero-floating-icon"><FaRoute /></div>
+            <div className="hero-floating-icon"><FaRoute /></div>
 
-              <div>
+            <div>
 
-                <strong>Fleet Operations</strong>
+              <strong>Fleet Operations</strong>
 
-                <span>Connected • Efficient • Reliable</span>
+              <span>Connected • Efficient • Reliable</span>
 
-              </div>
+            </div>
 
-            </div>
+          </div>
 
-          </div>
+        </div>
 
-        </section>
+      </section>
 
-        {/* WIND ENERGY PROJECT LOGISTICS */}
+      {/* WIND ENERGY PROJECT LOGISTICS */}
 
-        <section className="dashboard-section wind-project-section">
+      <section className="dashboard-section wind-project-section">
 
-          <div className="wind-project-visual">
+        <div className="wind-project-visual">
 
-            <img
+          <img
 
-              src={windProjectTransport}
+            src={windProjectTransport}
 
-              alt="Wind turbine blade transportation"
+            alt="Wind turbine blade transportation"
 
-            />
+          />
 
-            <div className="wind-project-image-overlay"></div>
+          <div className="wind-project-image-overlay"></div>
 
-            <div className="wind-project-image-badge">
+          <div className="wind-project-image-badge">
 
-              <FaShippingFast />
+            <FaShippingFast />
 
-              <div>
+            <div>
 
-                <strong>Specialized Project Logistics</strong>
+              <strong>Specialized Project Logistics</strong>
 
-                <span>Planning • Transport • Tracking</span>
+              <span>Planning • Transport • Tracking</span>
 
-              </div>
+            </div>
 
-            </div>
+          </div>
 
-          </div>
+        </div>
 
-          <div className="wind-project-content">
+        <div className="wind-project-content">
 
-            <span className="section-label">WIND ENERGY LOGISTICS</span>
+          <span className="section-label">WIND ENERGY LOGISTICS</span>
 
-            <h2>End-to-End Wind Project Logistics</h2>
+          <h2>End-to-End Wind Project Logistics</h2>
 
-            <p>
+          <p>
 
-              OTC Groups delivers safe, reliable and efficient transportation for wind turbine blades and heavy project components with coordinated route planning, specialized vehicles and end-to-end movement visibility.
+            OTC Groups delivers safe, reliable and efficient transportation for wind turbine blades and heavy project components with coordinated route planning, specialized vehicles and end-to-end movement visibility.
 
-            </p>
+          </p>
 
-            <div className="wind-capability-grid">
+          <div className="wind-capability-grid">
 
-              <div className="wind-capability-card">
+            <div className="wind-capability-card">
 
-                <div className="wind-capability-icon"><FaRoute /></div>
+              <div className="wind-capability-icon"><FaRoute /></div>
 
-                <div><strong>Route Planning</strong><span>Movement planning for long and oversized cargo.</span></div>
+              <div><strong>Route Planning</strong><span>Movement planning for long and oversized cargo.</span></div>
 
-              </div>
+            </div>
 
-              <div className="wind-capability-card">
+            <div className="wind-capability-card">
 
-                <div className="wind-capability-icon"><FaTruck /></div>
+              <div className="wind-capability-icon"><FaTruck /></div>
 
-                <div><strong>Specialized Transport</strong><span>Vehicle coordination for blades and project cargo.</span></div>
+              <div><strong>Specialized Transport</strong><span>Vehicle coordination for blades and project cargo.</span></div>
 
-              </div>
+            </div>
 
-              <div className="wind-capability-card">
+            <div className="wind-capability-card">
 
-                <div className="wind-capability-icon"><FaMapMarkerAlt /></div>
+              <div className="wind-capability-icon"><FaMapMarkerAlt /></div>
 
-                <div><strong>Movement Visibility</strong><span>Operational tracking from loading point to destination.</span></div>
+              <div><strong>Movement Visibility</strong><span>Operational tracking from loading point to destination.</span></div>
 
-              </div>
+            </div>
 
-              <div className="wind-capability-card">
+            <div className="wind-capability-card">
 
-                <div className="wind-capability-icon"><FaCheckCircle /></div>
+              <div className="wind-capability-icon"><FaCheckCircle /></div>
 
-                <div><strong>Execution Control</strong><span>Structured coordination across every movement stage.</span></div>
+              <div><strong>Execution Control</strong><span>Structured coordination across every movement stage.</span></div>
 
-              </div>
+            </div>
 
-            </div>
+          </div>
 
-            <div className="wind-project-footer">
+          <div className="wind-project-footer">
 
-              <div><strong>End-to-End</strong><span>Project Coordination</span></div>
+            <div><strong>End-to-End</strong><span>Project Coordination</span></div>
 
-              <div><strong>24/7</strong><span>Operational Support</span></div>
+            <div><strong>24/7</strong><span>Operational Support</span></div>
 
-              <div><strong>Live</strong><span>Movement Visibility</span></div>
+            <div><strong>Live</strong><span>Movement Visibility</span></div>
 
-            </div>
+          </div>
 
-          </div>
+        </div>
 
-        </section>
+      </section>
 
-        {/* ACHIEVEMENTS */}
+      {/* ACHIEVEMENTS */}
 
-        <section className="dashboard-section">
+      <section className="dashboard-section">
 
-          <div className="section-heading">
+        <div className="section-heading">
 
-            <div>
+          <div>
 
-              <span className="section-label">OUR JOURNEY</span>
+            <span className="section-label">OUR JOURNEY</span>
 
-              <h2>OTC Groups at a Glance</h2>
+            <h2>OTC Groups at a Glance</h2>
 
-            </div>
+          </div>
 
-            <p>Built through experience, reliability and continuous operational improvement.</p>
+          <p>Built through experience, reliability and continuous operational improvement.</p>
 
-          </div>
+        </div>
 
-          <div className="achievements-grid">
+        <div className="achievements-grid">
 
-            {achievements.map((achievement, index) => (
+          {achievements.map((achievement, index) => (
 
-              <div className="achievement-card" key={index}>
+            <div className="achievement-card" key={index}>
 
-                <div className="achievement-icon">
+              <div className="achievement-icon">
 
-                  {index === 0 ? <FaTrophy /> : index === 1 ? <FaBuilding /> : index === 2 ? <FaUsers /> : <FaClock />}
+                {index === 0 ? <FaTrophy /> : index === 1 ? <FaBuilding /> : index === 2 ? <FaUsers /> : <FaClock />}
 
-                </div>
+              </div>
 
-                <strong>{achievement.number}</strong>
+              <strong>{achievement.number}</strong>
 
-                <h3>{achievement.title}</h3>
+              <h3>{achievement.title}</h3>
 
-                <p>{achievement.description}</p>
+              <p>{achievement.description}</p>
 
-              </div>
+            </div>
 
-            ))}
+          ))}
 
-          </div>
+        </div>
 
-        </section>
+      </section>
 
-        {/* =========================================================
+      {/* =========================================================
        OUR CLIENTS - IMAGE SLIDER
        ========================================================= */}
       <section className="dashboard-section otc-clients-section client-logo-section">
@@ -1611,7 +1611,7 @@ import suzlonLogo from "../asset/suzlon.png";
         </div>
         <div className="client-logo-window" ref={clientSliderRef}>
           <div className="client-logo-track">
-            {[...clients, ...clients].map((client,index)=>(
+            {[...clients, ...clients].map((client, index) => (
               <article className={`client-logo-slide client-logo-${client.tone}`} key={`${client.name}-${index}`}>
                 <div className="client-logo-image">
                   <img src={client.logo} alt={`${client.name} logo`} />
@@ -1626,12 +1626,12 @@ import suzlonLogo from "../asset/suzlon.png";
           </div>
         </div>
         <div className="client-logo-pagination">
-          {clients.map((client,index)=>(
+          {clients.map((client, index) => (
             <button
               type="button"
               key={client.name}
-              className={clientSlide===index?"active":""}
-              onClick={()=>goToClientSlide(index)}
+              className={clientSlide === index ? "active" : ""}
+              onClick={() => goToClientSlide(index)}
               aria-label={`Show ${client.name}`}
             />
           ))}
@@ -1640,554 +1640,554 @@ import suzlonLogo from "../asset/suzlon.png";
 
       <section className="dashboard-section simple-order-operations">
 
-          <div className="simple-operations-header">
+        <div className="simple-operations-header">
 
-            <span className="simple-operations-kicker">ORDER OPERATIONS</span>
+          <span className="simple-operations-kicker">ORDER OPERATIONS</span>
 
-            <h2>End-to-End <span>Order Management</span></h2>
+          <h2>End-to-End <span>Order Management</span></h2>
 
-            <p>Manage enquiries, approvals, quotations, vehicle allocation, documentation and trip execution in one streamlined workflow.</p>
+          <p>Manage enquiries, approvals, quotations, vehicle allocation, documentation and trip execution in one streamlined workflow.</p>
 
-          </div>
+        </div>
 
-          <div className="simple-operations-flow">
+        <div className="simple-operations-flow">
 
-            <div className="simple-operation-item">
+          <div className="simple-operation-item">
 
-              <div className="simple-operation-main">
+            <div className="simple-operation-main">
 
-                <div className="simple-operation-icon"><FaFileAlt /></div>
+              <div className="simple-operation-icon"><FaFileAlt /></div>
 
-                <div className="simple-operation-title"><span>01</span><h3>Order &amp; Enquiry</h3></div>
+              <div className="simple-operation-title"><span>01</span><h3>Order &amp; Enquiry</h3></div>
 
-              </div>
+            </div>
 
-              <p>Capture customer requirements and initiate the operational order.</p>
+            <p>Capture customer requirements and initiate the operational order.</p>
 
-            </div>
+          </div>
 
-            <div className="simple-operation-connector"><span></span><div><FaChevronRight /></div><span></span></div>
+          <div className="simple-operation-connector"><span></span><div><FaChevronRight /></div><span></span></div>
 
-            <div className="simple-operation-item">
+          <div className="simple-operation-item">
 
-              <div className="simple-operation-main">
+            <div className="simple-operation-main">
 
-                <div className="simple-operation-icon"><FaCheckCircle /></div>
+              <div className="simple-operation-icon"><FaCheckCircle /></div>
 
-                <div className="simple-operation-title"><span>02</span><h3>Quotation &amp; Approval</h3></div>
+              <div className="simple-operation-title"><span>02</span><h3>Quotation &amp; Approval</h3></div>
 
-              </div>
+            </div>
 
-              <p>Manage traffic quotations, commercial review and approvals.</p>
+            <p>Manage traffic quotations, commercial review and approvals.</p>
 
-            </div>
+          </div>
 
-            <div className="simple-operation-connector"><span></span><div><FaChevronRight /></div><span></span></div>
+          <div className="simple-operation-connector"><span></span><div><FaChevronRight /></div><span></span></div>
 
-            <div className="simple-operation-item">
+          <div className="simple-operation-item">
 
-              <div className="simple-operation-main">
+            <div className="simple-operation-main">
 
-                <div className="simple-operation-icon"><FaShippingFast /></div>
+              <div className="simple-operation-icon"><FaShippingFast /></div>
 
-                <div className="simple-operation-title"><span>03</span><h3>Vehicle &amp; Movement</h3></div>
+              <div className="simple-operation-title"><span>03</span><h3>Vehicle &amp; Movement</h3></div>
 
-              </div>
+            </div>
 
-              <p>Allocate vehicles and maintain visibility of trip movement.</p>
+            <p>Allocate vehicles and maintain visibility of trip movement.</p>
 
-            </div>
+          </div>
 
-            <div className="simple-operation-connector"><span></span><div><FaChevronRight /></div><span></span></div>
+          <div className="simple-operation-connector"><span></span><div><FaChevronRight /></div><span></span></div>
 
-            <div className="simple-operation-item">
+          <div className="simple-operation-item">
 
-              <div className="simple-operation-main">
+            <div className="simple-operation-main">
 
-                <div className="simple-operation-icon"><FaFileAlt /></div>
+              <div className="simple-operation-icon"><FaFileAlt /></div>
 
-                <div className="simple-operation-title"><span>04</span><h3>PO, LR &amp; POD</h3></div>
+              <div className="simple-operation-title"><span>04</span><h3>PO, LR &amp; POD</h3></div>
 
-              </div>
+            </div>
 
-              <p>Keep operational documents organized through order completion.</p>
+            <p>Keep operational documents organized through order completion.</p>
 
-            </div>
+          </div>
 
-          </div>
+        </div>
 
-        </section>
+      </section>
 
-        <section className="dashboard-section otc-network-section professional-network-section">
+      <section className="dashboard-section otc-network-section professional-network-section">
 
-          <div className="professional-network-head">
+        <div className="professional-network-head">
 
-            <div>
+          <div>
 
-              <span className="professional-network-kicker">OUR NETWORK</span>
+            <span className="professional-network-kicker">OUR NETWORK</span>
 
-              <h2>Company Presence</h2>
+            <h2>Company Presence</h2>
 
-              <p>Strategically positioned offices supporting customers and operations across key logistics markets.</p>
+            <p>Strategically positioned offices supporting customers and operations across key logistics markets.</p>
 
-            </div>
+          </div>
 
-            <div className="professional-network-total">
+          <div className="professional-network-total">
 
-              <strong>{locations.length}</strong>
+            <strong>{locations.length}</strong>
 
-              <span>Locations</span>
+            <span>Locations</span>
 
-            </div>
+          </div>
 
-          </div>
+        </div>
 
-          <div className="professional-location-grid">
+        <div className="professional-location-grid">
 
-            {locations.map((location,index)=>{
+          {locations.map((location, index) => {
 
-              const stateMap={
+            const stateMap = {
 
-                "Mumbai":"Maharashtra",
+              "Mumbai": "Maharashtra",
 
-                Chennai:"Tamil Nadu",
+              Chennai: "Tamil Nadu",
 
-                Bangalore:"Karnataka",
+              Bangalore: "Karnataka",
 
-                Pune:"Maharashtra",
+              Pune: "Maharashtra",
 
-              };
+            };
 
-              return(
+            return (
 
-                <article className={`professional-location-card ${index===0?"professional-location-hq":""}`} key={location.name}>
+              <article className={`professional-location-card ${index === 0 ? "professional-location-hq" : ""}`} key={location.name}>
 
-                  <div className="professional-location-top">
+                <div className="professional-location-top">
 
-                    <div className="professional-location-icon"><FaMapMarkerAlt /></div>
+                  <div className="professional-location-icon"><FaMapMarkerAlt /></div>
 
-                    {index===0&&<span className="professional-location-hq-badge">HQ</span>}
+                  {index === 0 && <span className="professional-location-hq-badge">HQ</span>}
 
-                  </div>
+                </div>
 
-                  <span className="professional-location-type">{location.type}</span>
+                <span className="professional-location-type">{location.type}</span>
 
-                  <h3>{location.name}</h3>
+                <h3>{location.name}</h3>
 
-                  <div className="professional-location-address">
+                <div className="professional-location-address">
 
-                    <span>OFFICE ADDRESS</span>
+                  <span>OFFICE ADDRESS</span>
 
-                    <p>{location.address}</p>
+                  <p>{location.address}</p>
 
-                  </div>
+                </div>
 
-                  <div className="professional-location-footer">
+                <div className="professional-location-footer">
 
-                    <strong>{stateMap[location.name]||"India"}</strong>
+                  <strong>{stateMap[location.name] || "India"}</strong>
 
-                    <span>INDIA</span>
+                  <span>INDIA</span>
 
-                  </div>
+                </div>
 
-                </article>
+              </article>
 
-              );
+            );
 
-            })}
+          })}
 
-          </div>
+        </div>
 
-        </section>
+      </section>
 
-        {/* FOOTER */}
+      {/* FOOTER */}
 
-        <section className="dashboard-footer">
+      <section className="dashboard-footer">
 
-          <div className="footer-logo"><FaTruck /></div>
+        <div className="footer-logo"><FaTruck /></div>
 
-          <div>
+        <div>
 
-            <span>OTC GROUPS</span>
+          <span>OTC GROUPS</span>
 
-            <h2>Moving Business Forward</h2>
+          <h2>Moving Business Forward</h2>
 
-          </div>
+        </div>
 
-          <div className="footer-right"><span>Transportation • Logistics • Fleet</span></div>
+        <div className="footer-right"><span>Transportation • Logistics • Fleet</span></div>
 
-        </section>
+      </section>
 
-        {/* =====================================================
+      {/* =====================================================
 
             ADD / EDIT VEHICLE MODAL
 
             ===================================================== */}
 
-        {modalOpen && (
+      {modalOpen && (
 
-          <div className="modal-backdrop" onClick={closeModal}>
+        <div className="modal-backdrop" onClick={closeModal}>
 
-            <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
 
-              <div className="modal-header">
+            <div className="modal-header">
 
-                <h3>
+              <h3>
 
-                  {modalMode === "create" ? "Add" : "Edit"} {modalTarget === "own" ? "Own" : "Fleet"} Vehicle
+                {modalMode === "create" ? "Add" : "Edit"} {modalTarget === "own" ? "Own" : "Fleet"} Vehicle
 
-                </h3>
+              </h3>
 
-                <button onClick={closeModal}><FaTimes /></button>
+              <button onClick={closeModal}><FaTimes /></button>
 
-              </div>
+            </div>
 
-              <form className="modal-form" onSubmit={handleSubmitForm}>
+            <form className="modal-form" onSubmit={handleSubmitForm}>
 
-                <div className="form-grid">
+              <div className="form-grid">
 
-                  <label>
+                <label>
 
-                    Vehicle No
+                  Vehicle No
 
-                    <input
+                  <input
 
-                      required
+                    required
 
-                      value={formState.vehicleNo}
+                    value={formState.vehicleNo}
 
-                      onChange={(e) => handleFormChange("vehicleNo", e.target.value)}
+                    onChange={(e) => handleFormChange("vehicleNo", e.target.value)}
 
-                      placeholder="KA-01-AB-1234"
+                    placeholder="KA-01-AB-1234"
 
-                    />
+                  />
 
-                  </label>
+                </label>
 
-                  <label>
+                <label>
 
-                    Vehicle Type
+                  Vehicle Type
 
-                    <input
+                  <input
 
-                      value={formState.vehicleType}
+                    value={formState.vehicleType}
 
-                      onChange={(e) => handleFormChange("vehicleType", e.target.value)}
+                    onChange={(e) => handleFormChange("vehicleType", e.target.value)}
 
-                      placeholder="Truck / Van / Trailer"
+                    placeholder="Truck / Van / Trailer"
 
-                    />
+                  />
 
-                  </label>
+                </label>
 
-                  <label>
+                <label>
 
-                    Status
+                  Status
 
-                    <select value={formState.status} onChange={(e) => handleFormChange("status", e.target.value)}>
+                  <select value={formState.status} onChange={(e) => handleFormChange("status", e.target.value)}>
 
-                      <option>Available</option>
+                    <option>Available</option>
 
-                      <option>In Transit</option>
+                    <option>In Transit</option>
 
-                      <option>Maintenance</option>
+                    <option>Maintenance</option>
 
-                      <option>Idle</option>
+                    <option>Idle</option>
 
-                    </select>
+                  </select>
 
-                  </label>
+                </label>
 
-                  <label>
+                <label>
 
-                    Source
+                  Source
 
-                    <select value={formState.vehicleSource} onChange={(e) => handleFormChange("vehicleSource", e.target.value)}>
+                  <select value={formState.vehicleSource} onChange={(e) => handleFormChange("vehicleSource", e.target.value)}>
 
-                      <option>Own</option>
+                    <option>Own</option>
 
-                      <option>Intercarting</option>
+                    <option>Intercarting</option>
 
-                    </select>
+                  </select>
 
-                  </label>
+                </label>
 
-                  <label>
+                <label>
 
-                    Site
+                  Site
 
-                    <input
+                  <input
 
-                      value={formState.siteName}
+                    value={formState.siteName}
 
-                      onChange={(e) => handleFormChange("siteName", e.target.value)}
+                    onChange={(e) => handleFormChange("siteName", e.target.value)}
 
-                      placeholder="Assigned site"
+                    placeholder="Assigned site"
 
-                    />
+                  />
 
-                  </label>
+                </label>
 
-                  <label>
+                <label>
 
-                    Driver
+                  Driver
 
-                    <input
+                  <input
 
-                      value={formState.driverName}
+                    value={formState.driverName}
 
-                      onChange={(e) => handleFormChange("driverName", e.target.value)}
+                    onChange={(e) => handleFormChange("driverName", e.target.value)}
 
-                      placeholder="Driver name"
+                    placeholder="Driver name"
 
-                    />
+                  />
 
-                  </label>
+                </label>
 
-                  <label>
+                <label>
 
-                    Vehicle In Date
+                  Vehicle In Date
 
-                    <input
+                  <input
 
-                      type="date"
+                    type="date"
 
-                      value={formState.vehicleInDate}
+                    value={formState.vehicleInDate}
 
-                      onChange={(e) => handleFormChange("vehicleInDate", e.target.value)}
+                    onChange={(e) => handleFormChange("vehicleInDate", e.target.value)}
 
-                    />
+                  />
 
-                  </label>
+                </label>
 
-                  <label>
+                <label>
 
-                    Vehicle Out Date
+                  Vehicle Out Date
 
-                    <input
+                  <input
 
-                      type="date"
+                    type="date"
 
-                      value={formState.vehicleOutDate}
+                    value={formState.vehicleOutDate}
 
-                      onChange={(e) => handleFormChange("vehicleOutDate", e.target.value)}
+                    onChange={(e) => handleFormChange("vehicleOutDate", e.target.value)}
 
-                    />
+                  />
 
-                  </label>
+                </label>
 
-                  <label>
+                <label>
 
-                    Document Status
+                  Document Status
 
-                    <select value={formState.documentStatus} onChange={(e) => handleFormChange("documentStatus", e.target.value)}>
+                  <select value={formState.documentStatus} onChange={(e) => handleFormChange("documentStatus", e.target.value)}>
 
-                      <option>Valid</option>
+                    <option>Valid</option>
 
-                      <option>Due for Renewal</option>
+                    <option>Due for Renewal</option>
 
-                      <option>Expired</option>
+                    <option>Expired</option>
 
-                    </select>
+                  </select>
 
-                  </label>
+                </label>
 
-                  {modalTarget === "own" && (
+                {modalTarget === "own" && (
 
-                    <label className="full-width">
+                  <label className="full-width">
 
-                      Upload Documents
+                    Upload Documents
 
-                      <input
+                    <input
 
-                        type="file"
+                      type="file"
 
-                        multiple
+                      multiple
 
-                        onChange={(e) => setFormFiles(Array.from(e.target.files || []))}
+                      onChange={(e) => setFormFiles(Array.from(e.target.files || []))}
 
-                      />
+                    />
 
-                      {formFiles.length > 0 && (
+                    {formFiles.length > 0 && (
 
-                        <small>{formFiles.length} file{formFiles.length !== 1 ? "s" : ""} selected</small>
+                      <small>{formFiles.length} file{formFiles.length !== 1 ? "s" : ""} selected</small>
 
-                      )}
+                    )}
 
-                    </label>
+                  </label>
 
-                  )}
+                )}
 
-                </div>
+              </div>
 
-                <div className="modal-actions">
+              <div className="modal-actions">
 
-                  <button type="button" className="secondary-button" onClick={closeModal}>Cancel</button>
+                <button type="button" className="secondary-button" onClick={closeModal}>Cancel</button>
 
-                  <button type="submit" className="primary-button" disabled={saving}>
+                <button type="submit" className="primary-button" disabled={saving}>
 
-                    <FaSave /> {saving ? "Saving..." : "Save Vehicle"}
+                  <FaSave /> {saving ? "Saving..." : "Save Vehicle"}
 
-                  </button>
+                </button>
 
-                </div>
+              </div>
 
-              </form>
+            </form>
 
-            </div>
+          </div>
 
-          </div>
+        </div>
 
-        )}
+      )}
 
-        {/* =====================================================
+      {/* =====================================================
 
             DELETE CONFIRMATION
 
             ===================================================== */}
 
-        {deleteTarget && (
+      {deleteTarget && (
 
-          <div className="modal-backdrop" onClick={() => setDeleteTarget(null)}>
+        <div className="modal-backdrop" onClick={() => setDeleteTarget(null)}>
 
-            <div className="modal-card modal-card-small" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-card modal-card-small" onClick={(e) => e.stopPropagation()}>
 
-              <div className="modal-header">
+            <div className="modal-header">
 
-                <h3>Delete Vehicle</h3>
+              <h3>Delete Vehicle</h3>
 
-                <button onClick={() => setDeleteTarget(null)}><FaTimes /></button>
+              <button onClick={() => setDeleteTarget(null)}><FaTimes /></button>
 
-              </div>
+            </div>
 
-              <div className="modal-body">
+            <div className="modal-body">
 
-                <p>Are you sure you want to delete <strong>{deleteTarget.label}</strong>? This action cannot be undone.</p>
+              <p>Are you sure you want to delete <strong>{deleteTarget.label}</strong>? This action cannot be undone.</p>
 
-              </div>
+            </div>
 
-              <div className="modal-actions">
+            <div className="modal-actions">
 
-                <button className="secondary-button" onClick={() => setDeleteTarget(null)}>Cancel</button>
+              <button className="secondary-button" onClick={() => setDeleteTarget(null)}>Cancel</button>
 
-                <button className="danger-button" onClick={performDelete}><FaTrash /> Delete</button>
+              <button className="danger-button" onClick={performDelete}><FaTrash /> Delete</button>
 
-              </div>
+            </div>
 
-            </div>
+          </div>
 
-          </div>
+        </div>
 
-        )}
+      )}
 
-        {/* =====================================================
+      {/* =====================================================
 
             DOCUMENTS DRAWER (own vehicles only)
 
             ===================================================== */}
 
-        {docsVehicle && (
+      {docsVehicle && (
 
-          <div className="modal-backdrop" onClick={closeDocuments}>
+        <div className="modal-backdrop" onClick={closeDocuments}>
 
-            <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
 
-              <div className="modal-header">
+            <div className="modal-header">
 
-                <h3>Documents — {getVehicleNumber(docsVehicle)}</h3>
+              <h3>Documents — {getVehicleNumber(docsVehicle)}</h3>
 
-                <button onClick={closeDocuments}><FaTimes /></button>
+              <button onClick={closeDocuments}><FaTimes /></button>
 
-              </div>
+            </div>
 
-              <div className="modal-body">
+            <div className="modal-body">
 
-                {(docsVehicle.documents || []).length > 0 ? (
+              {(docsVehicle.documents || []).length > 0 ? (
 
-                  <div className="documents-list">
+                <div className="documents-list">
 
-                    {docsVehicle.documents.map((doc, i) => (
+                  {docsVehicle.documents.map((doc, i) => (
 
-                      <div className="document-row" key={i}>
+                    <div className="document-row" key={i}>
 
-                        <div className="document-row-icon"><FaFileAlt /></div>
+                      <div className="document-row-icon"><FaFileAlt /></div>
 
-                        <div className="document-row-info">
+                      <div className="document-row-info">
 
-                          <strong>{doc.name || doc.docType || `Document ${i + 1}`}</strong>
+                        <strong>{doc.name || doc.docType || `Document ${i + 1}`}</strong>
 
-                          <span>Expires: {formatDate(doc.expiryDate)}</span>
+                        <span>Expires: {formatDate(doc.expiryDate)}</span>
 
-                        </div>
+                      </div>
 
-                        <button onClick={() => handleDownloadDocument(doc.fileName || doc.fileUrl)}>
+                      <button onClick={() => handleDownloadDocument(doc.fileName || doc.fileUrl)}>
 
-                          <FaDownload /> Download
+                        <FaDownload /> Download
 
-                        </button>
+                      </button>
 
-                      </div>
+                    </div>
 
-                    ))}
+                  ))}
 
-                  </div>
+                </div>
 
-                ) : (
+              ) : (
 
-                  <div className="empty-list">No documents uploaded for this vehicle</div>
+                <div className="empty-list">No documents uploaded for this vehicle</div>
 
-                )}
+              )}
 
-                <label className="upload-more">
+              <label className="upload-more">
 
-                  <FaUpload /> Upload additional documents
+                <FaUpload /> Upload additional documents
 
-                  <input
+                <input
 
-                    type="file"
+                  type="file"
 
-                    multiple
+                  multiple
 
-                    onChange={async (e) => {
+                  onChange={async (e) => {
 
-                      const files = Array.from(e.target.files || []);
+                    const files = Array.from(e.target.files || []);
 
-                      if (!files.length) return;
+                    if (!files.length) return;
 
-                      try {
+                    try {
 
-                        await apiSaveVehicleDocuments(getId(docsVehicle), files);
+                      await apiSaveVehicleDocuments(getId(docsVehicle), files);
 
-                        closeDocuments();
+                      closeDocuments();
 
-                        await fetchAll(true);
+                      await fetchAll(true);
 
-                      } catch (err) {
+                    } catch (err) {
 
-                        console.error("Upload documents error:", err);
+                      console.error("Upload documents error:", err);
 
-                        setError("Unable to upload documents. Check the console for [API ERROR] details.");
+                      setError("Unable to upload documents. Check the console for [API ERROR] details.");
 
-                      }
+                    }
 
-                    }}
+                  }}
 
-                  />
+                />
 
-                </label>
+              </label>
 
-              </div>
+            </div>
 
-            </div>
+          </div>
 
-          </div>
+        </div>
 
-        )}
+      )}
 
-      </div>
+    </div>
 
-    );
+  );
 
-  };
+};
 
-  export default DashContent;
+export default DashContent;
