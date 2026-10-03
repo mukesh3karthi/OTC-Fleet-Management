@@ -888,6 +888,7 @@ const getDisplayStage = (order = {}) => {
 
   /* =========================================================
     PROFESSIONAL PDF EXPORT
+    REPORT FORMAT ONLY - NO UI / FUNCTION FLOW CHANGES
   ========================================================= */
 
   const pdfText = (value) => {
@@ -908,269 +909,785 @@ const getDisplayStage = (order = {}) => {
     });
   };
 
-  const humanizePdfKey = (key = "") =>
-    String(key)
-      .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
-      .replace(/[_-]+/g, " ")
-      .replace(/\b\w/g, (letter) => letter.toUpperCase());
-
-  const flattenPdfObject = (value, prefix = "", rows = []) => {
-    if (value === null || value === undefined || value === "") return rows;
-
-    if (Array.isArray(value)) {
-      if (!value.length) return rows;
-      value.forEach((item, index) => {
-        const label = `${prefix}${prefix ? " " : ""}${index + 1}`;
-        if (item && typeof item === "object") {
-          flattenPdfObject(item, label, rows);
-        } else {
-          rows.push([label, pdfText(item)]);
-        }
-      });
-      return rows;
-    }
-
-    if (typeof value === "object") {
-      Object.entries(value).forEach(([key, item]) => {
-        if (["__v"].includes(key)) return;
-        const label = prefix
-          ? `${prefix} / ${humanizePdfKey(key)}`
-          : humanizePdfKey(key);
-        if (item && typeof item === "object" && !item.$date) {
-          flattenPdfObject(item, label, rows);
-        } else if (item !== "" && item !== null && item !== undefined) {
-          rows.push([label, item?.$date ? pdfDate(item.$date) : pdfText(item)]);
-        }
-      });
-      return rows;
-    }
-
-    rows.push([prefix || "Value", pdfText(value)]);
-    return rows;
+  const pdfAmount = (value) => {
+    if (value === null || value === undefined || value === "") return "—";
+    const amount = Number(value);
+    if (Number.isNaN(amount)) return pdfText(value);
+    return `INR ${amount.toLocaleString("en-IN")}`;
   };
 
+  const hasPdfValue = (value) =>
+    value !== null &&
+    value !== undefined &&
+    value !== "" &&
+    value !== "—";
+
   const downloadOrderPdf = (order = {}) => {
-    const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+    const doc = new jsPDF({
+      orientation: "portrait",
+      unit: "mm",
+      format: "a4",
+    });
+
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
     const margin = 14;
+    const contentWidth = pageWidth - margin * 2;
     let y = 18;
 
+    const requirements = Array.isArray(order.vehicleRequirements)
+      ? order.vehicleRequirements
+      : [];
+
+    const quotations = Array.isArray(order.trafficQuotations)
+      ? order.trafficQuotations
+      : [];
+
+    const confirmations = Array.isArray(order.vehicleConfirmations)
+      ? order.vehicleConfirmations
+      : [];
+
+    const allocatedVehicles = Array.isArray(order.allocatedVehicles)
+      ? order.allocatedVehicles
+      : [];
+
+    const approvedConfirmations = confirmations.filter(
+      (item) =>
+        String(
+          item?.status ||
+          item?.approvalStatus ||
+          item?.confirmationStatus ||
+          ""
+        ).toLowerCase() === "approved"
+    );
+
+    const getRequirementForPdf = (requirementId) =>
+      requirements.find(
+        (item) =>
+          String(item?.requirementId || "") ===
+          String(requirementId || "")
+      ) || {};
+
+    const getQuotationForPdf = (confirmation = {}) => {
+      const quotationId =
+        confirmation?.quotationId ||
+        confirmation?.trafficQuotationId ||
+        confirmation?.selectedQuotationId;
+
+      if (quotationId) {
+        const byId = quotations.find(
+          (item) =>
+            String(
+              item?.quotationId ||
+              item?._id ||
+              ""
+            ) === String(quotationId)
+        );
+        if (byId) return byId;
+      }
+
+      return (
+        quotations.find(
+          (item) =>
+            String(item?.requirementId || "") ===
+              String(confirmation?.requirementId || "") &&
+            String(
+              item?.status ||
+              item?.approvalStatus ||
+              ""
+            ).toLowerCase() === "approved"
+        ) ||
+        quotations.find(
+          (item) =>
+            String(item?.requirementId || "") ===
+            String(confirmation?.requirementId || "")
+        ) ||
+        {}
+      );
+    };
+
     const addPageHeader = () => {
-      doc.setFillColor(15, 56, 68);
-      doc.rect(0, 0, pageWidth, 23, "F");
-      doc.setTextColor(255, 255, 255);
+      doc.setFillColor(10, 55, 72);
+      doc.rect(0, 0, pageWidth, 25, "F");
+
       doc.setFont("helvetica", "bold");
       doc.setFontSize(15);
+      doc.setTextColor(255, 255, 255);
       doc.text("OTC GROUPS", margin, 10);
-      doc.setFontSize(8.5);
+
       doc.setFont("helvetica", "normal");
-      doc.text("Trip Order & Logistics Lifecycle Report", margin, 16);
-      doc.text(`Order ID: ${pdfText(order.tripId)}`, pageWidth - margin, 10, { align: "right" });
-      doc.text(`Generated: ${new Date().toLocaleString("en-IN")}`, pageWidth - margin, 16, { align: "right" });
+      doc.setFontSize(8);
+      doc.setTextColor(208, 231, 235);
+      doc.text(
+        "TRANSPORTATION & PROJECT LOGISTICS",
+        margin,
+        16
+      );
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.setTextColor(255, 255, 255);
+      doc.text(
+        "TRIP ORDER REPORT",
+        pageWidth - margin,
+        10,
+        { align: "right" }
+      );
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7.5);
+      doc.setTextColor(208, 231, 235);
+      doc.text(
+        `Order ID: ${pdfText(order.tripId)}`,
+        pageWidth - margin,
+        16,
+        { align: "right" }
+      );
+
+      doc.setDrawColor(16, 151, 143);
+      doc.setLineWidth(1.2);
+      doc.line(0, 25, pageWidth, 25);
+
       doc.setTextColor(30, 41, 59);
-      y = 31;
+      y = 33;
     };
 
     const ensureSpace = (needed = 22) => {
-      if (y + needed > pageHeight - 18) {
+      if (y + needed > pageHeight - 19) {
         doc.addPage();
         addPageHeader();
       }
     };
 
-    const addSectionTitle = (title) => {
-      ensureSpace(14);
-      doc.setFillColor(232, 246, 246);
-      doc.roundedRect(margin, y, pageWidth - margin * 2, 8, 1.5, 1.5, "F");
-      doc.setTextColor(15, 93, 102);
+    const addSectionTitle = (title, subtitle = "") => {
+      ensureSpace(subtitle ? 17 : 13);
+
+      doc.setFillColor(239, 248, 248);
+      doc.roundedRect(
+        margin,
+        y,
+        contentWidth,
+        subtitle ? 11 : 8,
+        1.4,
+        1.4,
+        "F"
+      );
+
+      doc.setFillColor(12, 143, 136);
+      doc.roundedRect(
+        margin,
+        y,
+        2.2,
+        subtitle ? 11 : 8,
+        1,
+        1,
+        "F"
+      );
+
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(10);
-      doc.text(title, margin + 3, y + 5.3);
+      doc.setFontSize(9.5);
+      doc.setTextColor(10, 75, 83);
+      doc.text(title, margin + 5, y + 5.2);
+
+      if (subtitle) {
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(6.8);
+        doc.setTextColor(100, 116, 139);
+        doc.text(subtitle, margin + 5, y + 8.7);
+      }
+
       doc.setTextColor(30, 41, 59);
-      y += 11;
+      y += subtitle ? 14 : 11;
     };
 
-    const addKeyValueTable = (title, rows) => {
-      const cleanRows = rows.filter((row) => row[1] !== undefined && row[1] !== null && row[1] !== "");
+    const addKeyValueGrid = (title, rows, subtitle = "") => {
+      const cleanRows = rows.filter(
+        ([, value]) => hasPdfValue(value)
+      );
+
       if (!cleanRows.length) return;
-      addSectionTitle(title);
+
+      addSectionTitle(title, subtitle);
+
+      const tableRows = [];
+      for (let index = 0; index < cleanRows.length; index += 2) {
+        const first = cleanRows[index];
+        const second = cleanRows[index + 1];
+
+        tableRows.push([
+          first?.[0] || "",
+          pdfText(first?.[1]),
+          second?.[0] || "",
+          second ? pdfText(second[1]) : "",
+        ]);
+      }
+
       autoTable(doc, {
         startY: y,
-        body: cleanRows.map(([label, value]) => [label, pdfText(value)]),
-        theme: "grid",
-        margin: { left: margin, right: margin },
-        styles: { font: "helvetica", fontSize: 8.2, cellPadding: 2.4, textColor: [30, 41, 59], lineColor: [220, 228, 232], lineWidth: 0.15 },
-        columnStyles: { 0: { cellWidth: 48, fontStyle: "bold", fillColor: [248, 250, 252] } },
-        didDrawPage: () => {},
+        body: tableRows,
+        theme: "plain",
+        margin: {
+          left: margin,
+          right: margin,
+        },
+        tableWidth: contentWidth,
+        styles: {
+          font: "helvetica",
+          fontSize: 8,
+          cellPadding: {
+            top: 2.3,
+            right: 2.2,
+            bottom: 2.3,
+            left: 2.2,
+          },
+          textColor: [38, 56, 69],
+          lineColor: [225, 233, 237],
+          lineWidth: {
+            bottom: 0.15,
+          },
+          valign: "middle",
+          overflow: "linebreak",
+        },
+        columnStyles: {
+          0: {
+            cellWidth: 31,
+            fontStyle: "bold",
+            textColor: [100, 116, 139],
+          },
+          1: {
+            cellWidth: 58,
+            fontStyle: "bold",
+            textColor: [22, 50, 67],
+          },
+          2: {
+            cellWidth: 31,
+            fontStyle: "bold",
+            textColor: [100, 116, 139],
+          },
+          3: {
+            cellWidth: 58,
+            fontStyle: "bold",
+            textColor: [22, 50, 67],
+          },
+        },
       });
-      y = doc.lastAutoTable.finalY + 7;
+
+      y = doc.lastAutoTable.finalY + 6;
     };
 
-    const addDataTable = (title, headers, body) => {
-      if (!Array.isArray(body) || !body.length) return;
-      addSectionTitle(title);
+    const addDataTable = (
+      title,
+      headers,
+      body,
+      options = {}
+    ) => {
+      const cleanBody = Array.isArray(body)
+        ? body.filter(
+            (row) =>
+              Array.isArray(row) &&
+              row.some((value) => hasPdfValue(value))
+          )
+        : [];
+
+      if (!cleanBody.length) return;
+
+      addSectionTitle(
+        title,
+        options.subtitle || ""
+      );
+
       autoTable(doc, {
         startY: y,
         head: [headers],
-        body,
+        body: cleanBody,
         theme: "grid",
-        margin: { left: margin, right: margin },
-        headStyles: { fillColor: [15, 93, 102], textColor: [255, 255, 255], fontStyle: "bold", fontSize: 7.5 },
-        styles: { font: "helvetica", fontSize: 7.2, cellPadding: 2, textColor: [30, 41, 59], lineColor: [220, 228, 232], lineWidth: 0.15, overflow: "linebreak" },
-        alternateRowStyles: { fillColor: [248, 250, 252] },
+        margin: {
+          left: margin,
+          right: margin,
+        },
+        tableWidth: contentWidth,
+        headStyles: {
+          fillColor: [10, 96, 101],
+          textColor: [255, 255, 255],
+          fontStyle: "bold",
+          fontSize: options.headFontSize || 7,
+          cellPadding: 2.1,
+          halign: "left",
+          valign: "middle",
+        },
+        styles: {
+          font: "helvetica",
+          fontSize: options.fontSize || 7.2,
+          cellPadding: 2,
+          textColor: [38, 56, 69],
+          lineColor: [220, 229, 233],
+          lineWidth: 0.12,
+          overflow: "linebreak",
+          valign: "middle",
+        },
+        alternateRowStyles: {
+          fillColor: [248, 251, 252],
+        },
+        columnStyles: options.columnStyles || {},
+        didDrawPage: () => {},
       });
-      y = doc.lastAutoTable.finalY + 7;
+
+      y = doc.lastAutoTable.finalY + 6;
     };
 
     addPageHeader();
 
-    addKeyValueTable("ORDER OVERVIEW", [
-      ["Order ID", order.tripId],
-      ["Movement Type", order.movementType],
-      ["Stage", getDisplayStage(order)],
-      ["Order Status", getDisplayOrderStatus(order)],
-      ["Customer", order.customer],
-      ["Assigned KAM", order.assignedKam],
-      ["Material Type", order.materialType],
-      ["Total Vehicles", order.totalVehicles],
-      ["Enquiry Date", pdfDate(order.enquiryDate)],
-      ["Placement Date", pdfDate(order.placementDate)],
-    ]);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(17);
+    doc.setTextColor(15, 47, 63);
+    doc.text(
+      "Trip Order & Logistics Report",
+      margin,
+      y
+    );
 
-    addKeyValueTable("CUSTOMER & CONTACT DETAILS", [
-      ["Customer", order.customer],
-      ["Contact Person", order.contactPerson],
-      ["Contact Number", order.contactNumber],
-      ["Email", order.email],
-      ["Assigned KAM", order.assignedKam],
-      ["Remark", order.remark],
-    ]);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.setTextColor(100, 116, 139);
+    doc.text(
+      "Operational summary from enquiry through vehicle execution and tracking",
+      margin,
+      y + 5
+    );
 
-    addKeyValueTable("ROUTE & MOVEMENT DETAILS", [
-      ["Origin", order.origin],
-      ["Route Locations", Array.isArray(order.routeLocations) && order.routeLocations.length ? order.routeLocations.join("  →  ") : "—"],
-      ["Destination", order.destination],
-      ["Planned Distance", order.distance ? `${order.distance} KM` : "—"],
-      ["Site Location", order.siteLocation],
-      ["Period", order.period],
-      ["Diesel Scope", order.dieselScope],
-    ]);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    doc.setTextColor(12, 143, 136);
+    doc.text(
+      `Generated ${new Date().toLocaleString("en-IN")}`,
+      pageWidth - margin,
+      y,
+      { align: "right" }
+    );
+
+    y += 12;
+
+    addKeyValueGrid(
+      "ORDER SUMMARY",
+      [
+        ["Order ID", order.tripId],
+        ["Current Stage", getDisplayStage(order)],
+        ["Customer", order.customer],
+        ["Movement Type", order.movementType],
+        ["Material", order.materialType],
+        ["Order Status", getDisplayOrderStatus(order)],
+        ["Assigned KAM", order.assignedKam],
+        ["Total Vehicles", order.totalVehicles],
+        ["Enquiry Date", pdfDate(order.enquiryDate)],
+        ["Placement Date", pdfDate(order.placementDate)],
+      ],
+      "Core commercial and operational order information"
+    );
+
+    addKeyValueGrid(
+      "CUSTOMER & CONTACT",
+      [
+        ["Contact Person", order.contactPerson],
+        ["Contact Number", order.contactNumber],
+        ["Email", order.email],
+        ["Remarks", order.remark],
+      ]
+    );
+
+    const routeText =
+      Array.isArray(order.routeLocations) &&
+      order.routeLocations.length
+        ? order.routeLocations.join("  >  ")
+        : "";
+
+    addKeyValueGrid(
+      "ROUTE & MOVEMENT",
+      [
+        ["Origin", order.origin],
+        ["Destination", order.destination],
+        ["Route", routeText],
+        [
+          "Planned Distance",
+          hasPdfValue(order.distance)
+            ? `${order.distance} KM`
+            : "",
+        ],
+        ["Site Location", order.siteLocation],
+        ["Period", order.period],
+        ["Diesel Scope", order.dieselScope],
+      ]
+    );
 
     addDataTable(
       "VEHICLE REQUIREMENTS",
-      ["#", "Requirement ID", "Vehicle Type", "Configuration", "Class", "Qty", "Weight", "Dimensions (L×W×H)"],
-      (order.vehicleRequirements || []).map((item, index) => [
+      [
+        "#",
+        "Vehicle Type",
+        "Configuration",
+        "Class",
+        "Qty",
+        "Weight",
+        "Dimensions",
+      ],
+      requirements.map((item, index) => [
         index + 1,
-        pdfText(item.requirementId),
         pdfText(item.vehicleType),
         pdfText(item.configuration),
         pdfText(item.classification),
         pdfText(item.quantity),
-        item.weight !== undefined && item.weight !== "" ? `${item.weight} Ton` : "—",
-        `${pdfText(item.dimensions?.length)} × ${pdfText(item.dimensions?.width)} × ${pdfText(item.dimensions?.height)}`,
-      ])
+        hasPdfValue(item.weight)
+          ? `${item.weight} Ton`
+          : "—",
+        [
+          item.dimensions?.length,
+          item.dimensions?.width,
+          item.dimensions?.height,
+        ].some(hasPdfValue)
+          ? `${pdfText(item.dimensions?.length)} × ${pdfText(
+              item.dimensions?.width
+            )} × ${pdfText(item.dimensions?.height)}`
+          : "—",
+      ]),
+      {
+        columnStyles: {
+          0: { cellWidth: 8 },
+          1: { cellWidth: 35 },
+          2: { cellWidth: 34 },
+          3: { cellWidth: 25 },
+          4: { cellWidth: 13 },
+          5: { cellWidth: 22 },
+          6: { cellWidth: 41 },
+        },
+      }
     );
 
-    addKeyValueTable("FIRST APPROVAL", [
-      ["Status", order.orderApproval?.status],
-      ["Approved By", order.orderApproval?.approvedBy],
-      ["Approved At", pdfDate(order.orderApproval?.approvedAt)],
-      ["Remarks", order.orderApproval?.remarks],
-      ["Rejection Reason", order.orderApproval?.rejectionReason],
-    ]);
-
-    addDataTable(
-      "TRAFFIC QUOTATIONS",
-      ["#", "Requirement", "Transporter", "Vehicle", "Rate", "Allocator", "Contact", "Status"],
-      (order.trafficQuotations || []).map((item, index) => [
-        index + 1,
-        pdfText(item.requirementId),
-        pdfText(item.selectedTransport || item.transportProvider || item.vendorAssigned || item.vendorName),
-        pdfText(item.vehicleType || item.type),
-        pdfText(item.finalRate ?? item.rate ?? item.quotedRate),
-        pdfText(item.allocatorName),
-        pdfText(item.contactNumber),
-        pdfText(item.status),
-      ])
-    );
-
-    addDataTable(
-      "VEHICLE / QUOTATION APPROVALS",
-      ["#", "Requirement", "Vehicle", "Transporter", "Status", "Approved By", "Remarks"],
-      (order.vehicleConfirmations || []).map((item, index) => [
-        index + 1,
-        pdfText(item.requirementId),
-        pdfText(item.vehicleType || item.type),
-        pdfText(item.selectedTransport || item.transportProvider || item.vendorAssigned || item.vendorName),
-        pdfText(item.status),
-        pdfText(item.approvedBy || item.confirmedBy),
-        pdfText(item.remarks || item.remark),
-      ])
-    );
-
-    addKeyValueTable("PO & ORDER PLACEMENT", [
-      ["PO Status", order.poDocument?.status],
-      ["PO Number", order.poDocument?.poNumber],
-      ["PO File", order.poDocument?.fileName],
-      ["PO Uploaded At", pdfDate(order.poDocument?.uploadedAt || order.poDocument?.updatedAt)],
-      ["Vendor Finalization", order.vendorFinalization?.status],
-      ["Order Placed Status", order.orderPlaced?.status],
-      ["Order Placed At", pdfDate(order.orderPlaced?.placedAt || order.orderPlaced?.updatedAt)],
-    ]);
-
-    (order.allocatedVehicles || []).forEach((vehicle, index) => {
-      addKeyValueTable(`ALLOCATED VEHICLE ${index + 1}`, [
-        ["Vehicle Number", vehicle.vehicleNumber],
-        ["Vehicle Type", vehicle.vehicleType || vehicle.type],
-        ["Transporter", vehicle.transportProvider || vehicle.selectedTransport || vehicle.vendorName],
-        ["Driver Name", vehicle.driverName],
-        ["Driver Contact", vehicle.driverNumber || vehicle.contactNumber],
-        ["Escort Name", vehicle.escortName],
-        ["Escort Vehicle", vehicle.escortVehicleNumber],
-        ["Supervisor", vehicle.supervisorName],
-        ["Loading Point", vehicle.loadingPoint],
-        ["Unloading Point", vehicle.unloadingPoint],
-        ["Placement Date", pdfDate(vehicle.placementDate)],
-        ["Loading Status", vehicle.loading?.status],
-        ["Unloading Status", vehicle.unloading?.status],
-      ]);
-
-      addDataTable(
-        `DAILY TRACKING — ${pdfText(vehicle.vehicleNumber)}`,
-        ["#", "Date", "Current Location", "Yesterday Location", "Today KM", "Yesterday KM", "Day KM", "Status", "Remarks"],
-        (vehicle.dailyTracking || []).map((track, trackIndex) => [
-          trackIndex + 1,
-          pdfDate(track.date || track.trackingDate || track.createdAt),
-          pdfText(track.currentLocation || track.todayLocation),
-          pdfText(track.yesterdayLocation),
-          pdfText(track.todayKm),
-          pdfText(track.yesterdayKm),
-          pdfText(track.dayKm),
-          pdfText(track.status),
-          pdfText(track.remarks || track.remark),
-        ])
+    if (
+      order.orderApproval &&
+      Object.keys(order.orderApproval).length
+    ) {
+      addKeyValueGrid(
+        "ORDER APPROVAL",
+        [
+          ["Status", order.orderApproval?.status],
+          ["Approved By", order.orderApproval?.approvedBy],
+          [
+            "Approval Date",
+            pdfDate(
+              order.orderApproval?.approvedAt ||
+              order.orderApproval?.updatedAt
+            ),
+          ],
+          [
+            "Remarks",
+            order.orderApproval?.remarks ||
+            order.orderApproval?.rejectionReason,
+          ],
+        ]
       );
-    });
-
-    // Complete appendix ensures backend fields added later are not silently omitted.
-    const appendixRows = flattenPdfObject(order).filter(([key]) => !/^_id$/i.test(key));
-    addKeyValueTable("COMPLETE ORDER DATA APPENDIX", appendixRows);
-
-    const totalPages = doc.getNumberOfPages();
-    for (let page = 1; page <= totalPages; page += 1) {
-      doc.setPage(page);
-      doc.setDrawColor(220, 228, 232);
-      doc.line(margin, pageHeight - 12, pageWidth - margin, pageHeight - 12);
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(7.5);
-      doc.setTextColor(100, 116, 139);
-      doc.text("OTC Groups • Confidential Operational Report", margin, pageHeight - 7);
-      doc.text(`Page ${page} of ${totalPages}`, pageWidth - margin, pageHeight - 7, { align: "right" });
     }
 
-    const safeId = String(order.tripId || "order").replace(/[^a-z0-9-_]+/gi, "-");
-    doc.save(`OTC-Trip-Report-${safeId}.pdf`);
+    const approvedVendorRows = approvedConfirmations.map(
+      (confirmation, index) => {
+        const requirement =
+          getRequirementForPdf(
+            confirmation?.requirementId
+          );
+
+        const quotation =
+          getQuotationForPdf(confirmation);
+
+        return [
+          index + 1,
+          pdfText(
+            requirement?.vehicleType ||
+            confirmation?.vehicleType ||
+            confirmation?.type
+          ),
+          pdfText(
+            requirement?.configuration ||
+            confirmation?.configuration
+          ),
+          pdfText(
+            quotation?.transporter ||
+            quotation?.selectedTransport ||
+            quotation?.transportProvider ||
+            quotation?.vendorAssigned ||
+            quotation?.vendorName ||
+            confirmation?.selectedTransport ||
+            confirmation?.transportProvider ||
+            confirmation?.vendorName
+          ),
+          pdfText(
+            quotation?.quantity ??
+            quotation?.vehicleQuantity ??
+            requirement?.quantity ??
+            1
+          ),
+          pdfAmount(
+            quotation?.amount ??
+            quotation?.finalRate ??
+            quotation?.rate ??
+            quotation?.quotedRate
+          ),
+          pdfText(
+            confirmation?.confirmedBy ||
+            confirmation?.approvedBy
+          ),
+        ];
+      }
+    );
+
+    addDataTable(
+      "FINALIZED TRANSPORT & COMMERCIAL",
+      [
+        "#",
+        "Vehicle Type",
+        "Configuration",
+        "Transporter",
+        "Qty",
+        "Final Amount",
+        "Confirmed By",
+      ],
+      approvedVendorRows,
+      {
+        subtitle:
+          "Only approved / finalized transporter details are shown",
+        columnStyles: {
+          0: { cellWidth: 8 },
+          1: { cellWidth: 31 },
+          2: { cellWidth: 30 },
+          3: { cellWidth: 39 },
+          4: { cellWidth: 13 },
+          5: { cellWidth: 30 },
+          6: { cellWidth: 27 },
+        },
+      }
+    );
+
+    const poRows = [
+      ["PO Number", order.poDocument?.poNumber],
+      ["PO Status", order.poDocument?.status],
+      ["PO File", order.poDocument?.fileName],
+      [
+        "PO Uploaded",
+        pdfDate(
+          order.poDocument?.uploadedAt ||
+          order.poDocument?.updatedAt
+        ),
+      ],
+      [
+        "Vendor Status",
+        order.vendorFinalization?.status,
+      ],
+      [
+        "Order Placed",
+        order.orderPlaced?.status,
+      ],
+      [
+        "Placed Date",
+        pdfDate(
+          order.orderPlaced?.placedAt ||
+          order.orderPlaced?.updatedAt
+        ),
+      ],
+    ];
+
+    if (
+      poRows.some(([, value]) => hasPdfValue(value))
+    ) {
+      addKeyValueGrid(
+        "PO & ORDER PLACEMENT",
+        poRows
+      );
+    }
+
+    addDataTable(
+      "ALLOCATED VEHICLES",
+      [
+        "#",
+        "Vehicle No.",
+        "Vehicle Type",
+        "Transporter",
+        "Driver",
+        "Driver Contact",
+        "Loading",
+        "Unloading",
+        "Status",
+      ],
+      allocatedVehicles.map((vehicle, index) => [
+        index + 1,
+        pdfText(vehicle.vehicleNumber),
+        pdfText(
+          vehicle.vehicleType ||
+          vehicle.type
+        ),
+        pdfText(
+          vehicle.transportProvider ||
+          vehicle.selectedTransport ||
+          vehicle.vendorName
+        ),
+        pdfText(vehicle.driverName),
+        pdfText(
+          vehicle.driverNumber ||
+          vehicle.contactNumber
+        ),
+        pdfText(
+          vehicle.loadingPoint ||
+          vehicle.loading?.status
+        ),
+        pdfText(
+          vehicle.unloadingPoint ||
+          vehicle.unloading?.status
+        ),
+        pdfText(
+          vehicle.status ||
+          vehicle.movementStatus
+        ),
+      ]),
+      {
+        fontSize: 6.6,
+        headFontSize: 6.5,
+        columnStyles: {
+          0: { cellWidth: 7 },
+          1: { cellWidth: 22 },
+          2: { cellWidth: 25 },
+          3: { cellWidth: 28 },
+          4: { cellWidth: 22 },
+          5: { cellWidth: 23 },
+          6: { cellWidth: 22 },
+          7: { cellWidth: 22 },
+          8: { cellWidth: 17 },
+        },
+      }
+    );
+
+    allocatedVehicles.forEach(
+      (vehicle) => {
+        const tracking = Array.isArray(
+          vehicle.dailyTracking
+        )
+          ? vehicle.dailyTracking
+          : [];
+
+        if (!tracking.length) return;
+
+        addDataTable(
+          `MOVEMENT HISTORY - ${pdfText(
+            vehicle.vehicleNumber
+          )}`,
+          [
+            "#",
+            "Date",
+            "Current Location",
+            "Previous Location",
+            "Today KM",
+            "Day KM",
+            "Status",
+            "Remarks",
+          ],
+          tracking.map(
+            (track, trackIndex) => [
+              trackIndex + 1,
+              pdfDate(
+                track.date ||
+                track.trackingDate ||
+                track.createdAt
+              ),
+              pdfText(
+                track.currentLocation ||
+                track.todayLocation
+              ),
+              pdfText(
+                track.yesterdayLocation
+              ),
+              pdfText(track.todayKm),
+              pdfText(track.dayKm),
+              pdfText(track.status),
+              pdfText(
+                track.remarks ||
+                track.remark
+              ),
+            ]
+          ),
+          {
+            fontSize: 6.7,
+            headFontSize: 6.5,
+            columnStyles: {
+              0: { cellWidth: 7 },
+              1: { cellWidth: 22 },
+              2: { cellWidth: 34 },
+              3: { cellWidth: 34 },
+              4: { cellWidth: 18 },
+              5: { cellWidth: 18 },
+              6: { cellWidth: 20 },
+              7: { cellWidth: 25 },
+            },
+          }
+        );
+      }
+    );
+
+    const totalPages =
+      doc.getNumberOfPages();
+
+    for (
+      let page = 1;
+      page <= totalPages;
+      page += 1
+    ) {
+      doc.setPage(page);
+
+      doc.setDrawColor(
+        220,
+        228,
+        232
+      );
+      doc.setLineWidth(0.2);
+      doc.line(
+        margin,
+        pageHeight - 13,
+        pageWidth - margin,
+        pageHeight - 13
+      );
+
+      doc.setFont(
+        "helvetica",
+        "normal"
+      );
+      doc.setFontSize(7);
+      doc.setTextColor(
+        100,
+        116,
+        139
+      );
+
+      doc.text(
+        "OTC Groups  |  Confidential Operational Report",
+        margin,
+        pageHeight - 8
+      );
+
+      doc.text(
+        `Order ${pdfText(
+          order.tripId
+        )}  |  Page ${page} of ${totalPages}`,
+        pageWidth - margin,
+        pageHeight - 8,
+        { align: "right" }
+      );
+    }
+
+    const safeId = String(
+      order.tripId ||
+      "order"
+    ).replace(
+      /[^a-z0-9-_]+/gi,
+      "-"
+    );
+
+    doc.save(
+      `OTC-Trip-Report-${safeId}.pdf`
+    );
   };
 
   /* =========================================================

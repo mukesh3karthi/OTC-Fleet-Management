@@ -1450,6 +1450,56 @@ const DashContent = () => {
 
       </section>
 
+      {/* =========================================================
+       OUR CLIENTS - IMAGE SLIDER
+       ========================================================= */}
+      <section className="dashboard-section otc-clients-section client-logo-section">
+        <div className="client-logo-header">
+          <div>
+            <span className="client-logo-kicker">OUR CLIENTS</span>
+            <h2>Trusted By Leading <span>Companies</span></h2>
+            <p>Powering progress with reliable transportation, project logistics and fleet operations.</p>
+          </div>
+          <div className="client-logo-header-right">
+            <div className="client-logo-total">
+              <div className="client-logo-total-icon"><FaUsers /></div>
+              <div><strong>{clients.length}</strong><span>Key Clients</span></div>
+            </div>
+            <div className="client-logo-buttons">
+              <button type="button" onClick={() => scrollClientSlider(-1)} aria-label="Previous client"><FaChevronLeft /></button>
+              <button type="button" onClick={() => scrollClientSlider(1)} aria-label="Next client"><FaChevronRight /></button>
+            </div>
+          </div>
+        </div>
+        <div className="client-logo-window" ref={clientSliderRef}>
+          <div className="client-logo-track">
+            {[...clients, ...clients].map((client, index) => (
+              <article className={`client-logo-slide client-logo-${client.tone}`} key={`${client.name}-${index}`}>
+                <div className="client-logo-image">
+                  <img src={client.logo} alt={`${client.name} logo`} />
+                </div>
+                <div className="client-logo-text">
+                  <strong>{client.short}</strong>
+                  <span>Valued Client</span>
+                </div>
+                <div className="client-logo-arrow"><FaChevronRight /></div>
+              </article>
+            ))}
+          </div>
+        </div>
+        <div className="client-logo-pagination">
+          {clients.map((client, index) => (
+            <button
+              type="button"
+              key={client.name}
+              className={clientSlide === index ? "active" : ""}
+              onClick={() => goToClientSlide(index)}
+              aria-label={`Show ${client.name}`}
+            />
+          ))}
+        </div>
+      </section>
+
       {/* WIND ENERGY PROJECT LOGISTICS */}
 
       <section className="dashboard-section wind-project-section">
@@ -1588,55 +1638,7 @@ const DashContent = () => {
 
       </section>
 
-      {/* =========================================================
-       OUR CLIENTS - IMAGE SLIDER
-       ========================================================= */}
-      <section className="dashboard-section otc-clients-section client-logo-section">
-        <div className="client-logo-header">
-          <div>
-            <span className="client-logo-kicker">OUR CLIENTS</span>
-            <h2>Trusted By Leading <span>Companies</span></h2>
-            <p>Powering progress with reliable transportation, project logistics and fleet operations.</p>
-          </div>
-          <div className="client-logo-header-right">
-            <div className="client-logo-total">
-              <div className="client-logo-total-icon"><FaUsers /></div>
-              <div><strong>{clients.length}</strong><span>Key Clients</span></div>
-            </div>
-            <div className="client-logo-buttons">
-              <button type="button" onClick={() => scrollClientSlider(-1)} aria-label="Previous client"><FaChevronLeft /></button>
-              <button type="button" onClick={() => scrollClientSlider(1)} aria-label="Next client"><FaChevronRight /></button>
-            </div>
-          </div>
-        </div>
-        <div className="client-logo-window" ref={clientSliderRef}>
-          <div className="client-logo-track">
-            {[...clients, ...clients].map((client, index) => (
-              <article className={`client-logo-slide client-logo-${client.tone}`} key={`${client.name}-${index}`}>
-                <div className="client-logo-image">
-                  <img src={client.logo} alt={`${client.name} logo`} />
-                </div>
-                <div className="client-logo-text">
-                  <strong>{client.short}</strong>
-                  <span>Valued Client</span>
-                </div>
-                <div className="client-logo-arrow"><FaChevronRight /></div>
-              </article>
-            ))}
-          </div>
-        </div>
-        <div className="client-logo-pagination">
-          {clients.map((client, index) => (
-            <button
-              type="button"
-              key={client.name}
-              className={clientSlide === index ? "active" : ""}
-              onClick={() => goToClientSlide(index)}
-              aria-label={`Show ${client.name}`}
-            />
-          ))}
-        </div>
-      </section>
+      
 
       <section className="dashboard-section simple-order-operations">
 
