@@ -53,7 +53,7 @@ const API_BASE_URL = (
 const OWN_VEHICLE_API =
   `${API_BASE_URL}/api/ownvehicles`;
 
-const RECORDS_PER_PAGE = 5;
+const RECORDS_PER_PAGE = 10;
 
 /* =========================================
    NORMALIZE VEHICLE

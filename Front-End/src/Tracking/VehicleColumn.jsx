@@ -129,9 +129,8 @@ const formatDays = (value) => {
   if (!Number.isFinite(numericValue)) {
     return "-";
   }
-  return `${numericValue} ${
-    numericValue === 1 ? "Day" : "Days"
-  }`;
+  return `${numericValue} ${numericValue === 1 ? "Day" : "Days"
+    }`;
 };
 /* =========================================================
    ALLOCATED VEHICLE HELPERS
@@ -158,12 +157,26 @@ const getLatestTracking = (vehicle) => {
   ];
 };
 const getVehicleStatus = (vehicle) => {
-  const latestTracking =
-    getLatestTracking(vehicle);
-  return safeText(
-    latestTracking?.status,
-    "Idle"
+  const latestTracking = getLatestTracking(vehicle);
+  const rawStatus = safeText(latestTracking?.status, "Idle");
+  if (rawStatus.trim().toLowerCase() !== "reached") {
+    return rawStatus;
+  }
+  const unloadingCompleted =
+    String(vehicle?.unloading?.status || "").trim().toLowerCase() === "completed";
+  const lrCompleted = Boolean(
+    vehicle?.lr?.number ||
+    vehicle?.lr?.date ||
+    vehicle?.pod?.fileName
   );
+  const ewayStatus = String(vehicle?.ewayBill?.status || "").trim().toLowerCase();
+  const ewayCompleted = Boolean(
+    (vehicle?.ewayBill?.number || vehicle?.ewayBill?.fileName) &&
+    ewayStatus !== "pending"
+  );
+  return unloadingCompleted && lrCompleted && ewayCompleted
+    ? "Reached"
+    : "Pending";
 };
 /* =========================================================
    REQUIREMENT
@@ -222,10 +235,10 @@ const getConfirmation = (trip, vehicle) => {
           item.requirementId,
           ""
         ) ===
-          safeText(
-            vehicle.requirementId,
-            ""
-          ) &&
+        safeText(
+          vehicle.requirementId,
+          ""
+        ) &&
         item.status === "Approved"
     ) || null
   );
@@ -291,9 +304,8 @@ const DetailRow = ({
       :
     </span>
     <strong
-      className={`simple-detail-value ${
-        halting ? "halting" : ""
-      }`}
+      className={`simple-detail-value ${halting ? "halting" : ""
+        }`}
     >
       {safeText(value)}
     </strong>
@@ -377,9 +389,9 @@ const VehicleColumn = ({
     typeof selectedVehicle === "object"
       ? getVehicleId(selectedVehicle)
       : safeText(
-          selectedVehicle,
-          ""
-        );
+        selectedVehicle,
+        ""
+      );
   const activeVehicle =
     vehicles.find(
       (vehicle) =>
@@ -496,21 +508,27 @@ const VehicleColumn = ({
   /* =======================================================
      DISTANCE
   ======================================================= */
-  const totalKm =
-    Number(trip.distance) || 0;
+  const totalKm = Number(trip.distance) || 0;
   /*
-   * todayKm represents the latest cumulative
-   * travelled KM.
+   * yesterdayKm / todayKm are vehicle odometer readings.
+   * runningKm is the actual distance travelled for each daily update.
+   *
+   * Example:
+   * yesterdayKm = 18500
+   * todayKm = 18750
+   * runningKm = 250
+   *
+   * KM Covered = 250 km, not 18,750 km.
    */
-  const kmCovered =
-    Number(
-      latestTracking?.todayKm
-    ) || 0;
-  const balanceKm =
-    Math.max(
-      totalKm - kmCovered,
-      0
-    );
+  const trackingHistory = safeArray(activeVehicle?.dailyTracking);
+  const kmCovered = trackingHistory.reduce((total, tracking) => {
+    const dailyRunningKm = Number(tracking?.runningKm);
+    if (!Number.isFinite(dailyRunningKm) || dailyRunningKm < 0) {
+      return total;
+    }
+    return total + dailyRunningKm;
+  }, 0);
+  const balanceKm = Math.max(totalKm - kmCovered, 0);
   /* =======================================================
      MOVEMENT
   ======================================================= */
@@ -535,10 +553,10 @@ const VehicleColumn = ({
     if (value && typeof value === "object") {
       return safeText(
         value.location ||
-          value.name ||
-          value.city ||
-          value.place ||
-          value.label,
+        value.name ||
+        value.city ||
+        value.place ||
+        value.label,
         ""
       ).trim();
     }
@@ -556,7 +574,7 @@ const VehicleColumn = ({
     }
     if (typeof trip?.route === "string") {
       return trip.route
-        .split(/\s*(?:→|->|>|,|\\|)\s*/)
+        .split(/\s\*(?:→|->|>|,|\\\\|)\s*/)
         .filter(Boolean);
     }
     return [];
@@ -590,10 +608,10 @@ const VehicleColumn = ({
   const currentRouteIndex =
     currentPosition && currentPosition !== "-"
       ? routeLocations.findIndex(
-          (location) =>
-            normalizeRouteLocation(location) ===
-            normalizeRouteLocation(currentPosition)
-        )
+        (location) =>
+          normalizeRouteLocation(location) ===
+          normalizeRouteLocation(currentPosition)
+      )
       : -1;
   const yesterdayPosition =
     safeText(
@@ -636,9 +654,9 @@ const VehicleColumn = ({
       quotation?.transporter
     );
   /*
-   * IMPORTANT:
-   * Quotation amount is intentionally NOT
-   * displayed anywhere in Tracking UI.
+   \* IMPORTANT:
+   \* Quotation amount is intentionally NOT
+   \* displayed anywhere in Tracking UI.
    */
   /* =======================================================
      LOADING
@@ -745,7 +763,10 @@ const VehicleColumn = ({
   const ewayBill = activeVehicle?.ewayBill || {};
   const lrNumber = safeText(lr.number);
   const lrDate = formatDate(lr.date);
-  const lrStatus = safeText(lr.status, "Pending");
+  const lrStatus =
+    lr.number || lr.date || pod.fileName
+      ? "Completed"
+      : "Pending";
   const podStatus = safeText(
     pod.status,
     pod.fileName ? "Uploaded" : "Pending"
@@ -765,7 +786,7 @@ const VehicleColumn = ({
     }
     window.open(
       `${TRIP_API_URL}/${mongoId}/allocated-vehicles/${allocationId}/${type}/file?disposition=inline`,
-      "_blank",
+      "\_blank",
       "noopener,noreferrer"
     );
   };
@@ -803,7 +824,7 @@ const VehicleColumn = ({
                   const active =
                     selectedVehicleId
                       ? selectedVehicleId ===
-                        vehicleId
+                      vehicleId
                       : index === 0;
                   const status =
                     getVehicleStatus(
@@ -816,11 +837,10 @@ const VehicleColumn = ({
                         vehicleId ||
                         index
                       }
-                      className={`vehicle-number-card ${
-                        active
-                          ? "active"
-                          : ""
-                      }`}
+                      className={`vehicle-number-card ${active
+                        ? "active"
+                        : ""
+                        }`}
                       onClick={() =>
                         handleVehicleSelect(
                           vehicle
@@ -828,16 +848,14 @@ const VehicleColumn = ({
                       }
                       title={safeText(
                         vehicle.vehicleNumber,
-                        `Vehicle ${
-                          index + 1
+                        `Vehicle ${index + 1
                         }`
                       )}
                     >
                       <span>
                         {safeText(
                           vehicle.vehicleNumber,
-                          `Vehicle ${
-                            index + 1
+                          `Vehicle ${index + 1
                           }`
                         )}
                       </span>
@@ -858,114 +876,111 @@ const VehicleColumn = ({
             </div>
             {extraVehicles.length >
               0 && (
-              <div className="vehicle-more-dropdown">
-                <button
-                  type="button"
-                  className={`vehicle-more-button ${
-                    selectedExtraVehicle
+                <div className="vehicle-more-dropdown">
+                  <button
+                    type="button"
+                    className={`vehicle-more-button ${selectedExtraVehicle
                       ? "active"
                       : ""
-                  }`}
-                  onClick={() =>
-                    setShowExtraVehicles(
-                      (current) =>
-                        !current
-                    )
-                  }
-                  aria-expanded={
-                    showExtraVehicles
-                  }
-                  aria-haspopup="listbox"
-                >
-                  <span className="vehicle-more-button-text">
-                    {selectedExtraVehicle
-                      ? safeText(
+                      }`}
+                    onClick={() =>
+                      setShowExtraVehicles(
+                        (current) =>
+                          !current
+                      )
+                    }
+                    aria-expanded={
+                      showExtraVehicles
+                    }
+                    aria-haspopup="listbox"
+                  >
+                    <span className="vehicle-more-button-text">
+                      {selectedExtraVehicle
+                        ? safeText(
                           selectedExtraVehicle.vehicleNumber,
                           "More Vehicles"
                         )
-                      : `More (${extraVehicles.length})`}
-                  </span>
-                  {showExtraVehicles ? (
-                    <ChevronUp
-                      size={15}
-                    />
-                  ) : (
-                    <ChevronDown
-                      size={15}
-                    />
-                  )}
-                </button>
-                {showExtraVehicles && (
-                  <div
-                    className="vehicle-more-menu"
-                    role="listbox"
-                  >
-                    {extraVehicles.map(
-                      (
-                        vehicle,
-                        index
-                      ) => {
-                        const vehicleId =
-                          getVehicleId(
-                            vehicle
-                          );
-                        const active =
-                          selectedVehicleId ===
-                          vehicleId;
-                        const status =
-                          getVehicleStatus(
-                            vehicle
-                          );
-                        return (
-                          <button
-                            type="button"
-                            role="option"
-                            aria-selected={
-                              active
-                            }
-                            key={
-                              vehicleId ||
-                              `extra-${index}`
-                            }
-                            className={`vehicle-more-option ${
-                              active
+                        : `More (${extraVehicles.length})`}
+                    </span>
+                    {showExtraVehicles ? (
+                      <ChevronUp
+                        size={15}
+                      />
+                    ) : (
+                      <ChevronDown
+                        size={15}
+                      />
+                    )}
+                  </button>
+                  {showExtraVehicles && (
+                    <div
+                      className="vehicle-more-menu"
+                      role="listbox"
+                    >
+                      {extraVehicles.map(
+                        (
+                          vehicle,
+                          index
+                        ) => {
+                          const vehicleId =
+                            getVehicleId(
+                              vehicle
+                            );
+                          const active =
+                            selectedVehicleId ===
+                            vehicleId;
+                          const status =
+                            getVehicleStatus(
+                              vehicle
+                            );
+                          return (
+                            <button
+                              type="button"
+                              role="option"
+                              aria-selected={
+                                active
+                              }
+                              key={
+                                vehicleId ||
+                                `extra-${index}`
+                              }
+                              className={`vehicle-more-option ${active
                                 ? "active"
                                 : ""
-                            }`}
-                            onClick={() =>
-                              handleVehicleSelect(
-                                vehicle
-                              )
-                            }
-                          >
-                            <span>
-                              {safeText(
-                                vehicle.vehicleNumber,
-                                `Vehicle ${
-                                  VISIBLE_VEHICLE_COUNT +
+                                }`}
+                              onClick={() =>
+                                handleVehicleSelect(
+                                  vehicle
+                                )
+                              }
+                            >
+                              <span>
+                                {safeText(
+                                  vehicle.vehicleNumber,
+                                  `Vehicle ${VISIBLE_VEHICLE_COUNT +
                                   index +
                                   1
-                                }`
-                              )}
-                            </span>
-                            <span
-                              className={`vehicle-mini-status ${getVehicleStatusClass(
-                                status
-                              )}`}
-                            >
-                              {getVehicleStatusIcon(
-                                status
-                              )}
-                              {status}
-                            </span>
-                          </button>
-                        );
-                      }
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
+                                  }`
+                                )}
+                              </span>
+                              <span
+                                className={`vehicle-mini-status ${getVehicleStatusClass(
+                                  status
+                                )}`}
+                              >
+                                {getVehicleStatusIcon(
+                                  status
+                                )}
+                                {status}
+                              </span>
+                            </button>
+                          );
+                        }
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
           </>
         ) : (
           <div className="vehicle-mini-empty">
@@ -1008,13 +1023,12 @@ const VehicleColumn = ({
                       key={`${location}-${index}`}
                     >
                       <div
-                        className={`trip-route-step ${
-                          isCurrent
-                            ? "current"
-                            : isCompleted
+                        className={`trip-route-step ${isCurrent
+                          ? "current"
+                          : isCompleted
                             ? "completed"
                             : "upcoming"
-                        }`}
+                          }`}
                       >
                         <div className="trip-route-step-marker">
                           {isCurrent ? (
@@ -1030,25 +1044,20 @@ const VehicleColumn = ({
                             {location}
                           </strong>
                           <span>
-                            {isCurrent
-                              ? "Current Location"
-                              : isFirst
+                            {isFirst
                               ? "Origin"
                               : isLast
-                              ? "Destination"
-                              : isCompleted
-                              ? "Completed"
-                              : `Stop ${index}`}
+                                ? "Destination"
+                                : ""}
                           </span>
                         </div>
                       </div>
                       {index < routeLocations.length - 1 && (
                         <div
-                          className={`trip-route-step-line ${
-                            currentRouteIndex > index
-                              ? "completed"
-                              : ""
-                          }`}
+                          className={`trip-route-step-line ${currentRouteIndex > index
+                            ? "completed"
+                            : ""
+                            }`}
                         />
                       )}
                     </React.Fragment>
@@ -1097,132 +1106,146 @@ const VehicleColumn = ({
             </div>
           </div>
           {/* =================================
-              MOVEMENT
+              MOVEMENT + VEHICLE DETAILS
           ================================= */}
-          <div className="movement-card-section">
-            <div className="movement-heading-row">
-              <span className="section-heading-icon blue">
-                <Navigation
-                  size={12}
-                />
-              </span>
-              <div className="movement-heading-content">
-                <div className="movement-title-line">
-                  <strong>
-                    Movement Status
-                  </strong>
-                  <span className="movement-vehicle-badge">
-                    {vehicleNumber}
+          <div className="movement-vehicle-row">
+            <div className="movement-card-section">
+              <div className="movement-heading-row">
+                <span className="section-heading-icon blue">
+                  <Navigation
+                    size={12}
+                  />
+                </span>
+                <div className="movement-heading-content">
+                  <div className="movement-title-line">
+                    <strong>
+                      Movement Status
+                    </strong>
+                    <span className="movement-vehicle-badge">
+                      {vehicleNumber}
+                    </span>
+                  </div>
+                  <span className="movement-heading-subtitle">
+                    Latest daily movement
                   </span>
                 </div>
-                <span className="movement-heading-subtitle">
-                  Latest daily movement
-                </span>
+              </div>
+              <div className="movement-card-grid">
+                <div className="movement-info-card">
+                  <span>
+                    Current Position
+                  </span>
+                  <span className="movement-info-colon">:</span>
+                  <strong>
+                    {currentPosition}
+                  </strong>
+                </div>
+                <div className="movement-info-card">
+                  <span>
+                    Yesterday Position
+                  </span>
+                  <span className="movement-info-colon">:</span>
+                  <strong>
+                    {yesterdayPosition}
+                  </strong>
+                </div>
+                <div className="movement-info-card">
+                  <span>
+                    Yesterday KM
+                  </span>
+                  <span className="movement-info-colon">:</span>
+                  <strong>
+                    {formatKm(
+                      yesterdayKm
+                    )}
+                  </strong>
+                </div>
+                <div className="movement-info-card">
+                  <span>
+                    Today KM
+                  </span>
+                  <span className="movement-info-colon">:</span>
+                  <strong>
+                    {formatKm(
+                      todayKm
+                    )}
+                  </strong>
+                </div>
+                <div className="movement-info-card">
+                  <span>
+                    Running KM
+                  </span>
+                  <span className="movement-info-colon">:</span>
+                  <strong>
+                    {formatKm(
+                      runningKm
+                    )}
+                  </strong>
+                </div>
+                <div className="movement-info-card">
+                  <span>
+                    Current Day
+                  </span>
+                  <span className="movement-info-colon">:</span>
+                  <strong>
+                    {currentDay ===
+                      null ||
+                      currentDay ===
+                      undefined
+                      ? "-"
+                      : `Day ${currentDay}`}
+                  </strong>
+                </div>
+                <div className="movement-info-card">
+                  <span>
+                    Status
+                  </span>
+                  <span className="movement-info-colon">:</span>
+                  <strong>
+                    {vehicleStatus}
+                  </strong>
+                </div>
               </div>
             </div>
-            <div className="movement-card-grid">
-              <div className="movement-info-card">
-                <span>
-                  Current Position
-                </span>
-                <strong>
-                  {currentPosition}
-                </strong>
-              </div>
-              <div className="movement-info-card">
-                <span>
-                  Yesterday Position
-                </span>
-                <strong>
-                  {yesterdayPosition}
-                </strong>
-              </div>
-              <div className="movement-info-card">
-                <span>
-                  Yesterday KM
-                </span>
-                <strong>
-                  {formatKm(
-                    yesterdayKm
-                  )}
-                </strong>
-              </div>
-              <div className="movement-info-card">
-                <span>
-                  Today KM
-                </span>
-                <strong>
-                  {formatKm(
-                    todayKm
-                  )}
-                </strong>
-              </div>
-              <div className="movement-info-card">
-                <span>
-                  Running KM
-                </span>
-                <strong>
-                  {formatKm(
-                    runningKm
-                  )}
-                </strong>
-              </div>
-              <div className="movement-info-card">
-                <span>
-                  Current Day
-                </span>
-                <strong>
-                  {currentDay ===
-                    null ||
-                  currentDay ===
-                    undefined
-                    ? "-"
-                    : `Day ${currentDay}`}
-                </strong>
-              </div>
-              <div className="movement-info-card">
-                <span>
-                  Status
-                </span>
-                <strong>
-                  {vehicleStatus}
-                </strong>
-              </div>
-            </div>
-          </div>
-          {/* =================================
+            {/* =================================
               VEHICLE + TRANSPORT SUMMARY
           ================================= */}
-          <div className="vehicle-transport-summary">
-            <div className="vehicle-transport-header">
-              <span className="vehicle-transport-icon">
-                <Truck size={14} />
-              </span>
-              <div className="vehicle-transport-heading">
-                <strong>Vehicle &amp; Transport Details</strong>
-                <span>Vehicle specification and assigned transporter</span>
+            <div className="vehicle-transport-summary">
+              <div className="vehicle-transport-header">
+                <span className="vehicle-transport-icon">
+                  <Truck size={14} />
+                </span>
+                <div className="vehicle-transport-heading">
+                  <strong>Vehicle &amp; Transport Details</strong>
+                  <span>Vehicle specification and assigned transporter</span>
+                </div>
               </div>
-            </div>
-            <div className="vehicle-transport-grid">
-              <div className="vehicle-transport-item">
-                <span>Vehicle Type</span>
-                <strong>{vehicleType || "-"}</strong>
-              </div>
-              <div className="vehicle-transport-item">
-                <span>Configuration</span>
-                <strong>{configuration || "-"}</strong>
-              </div>
-              <div className="vehicle-transport-item">
-                <span>Classification</span>
-                <strong>{classification || "-"}</strong>
-              </div>
-              <div className="vehicle-transport-item vehicle-number">
-                <span>Vehicle Number</span>
-                <strong>{vehicleNumber || "-"}</strong>
-              </div>
-              <div className="vehicle-transport-item transporter">
-                <span>Transporter</span>
-                <strong>{transporter || "-"}</strong>
+              <div className="vehicle-transport-grid">
+                <div className="vehicle-transport-item">
+                  <span>Vehicle Type</span>
+                  <span className="vehicle-transport-colon">:</span>
+                  <strong>{vehicleType || "-"}</strong>
+                </div>
+                <div className="vehicle-transport-item">
+                  <span>Configuration</span>
+                  <span className="vehicle-transport-colon">:</span>
+                  <strong>{configuration || "-"}</strong>
+                </div>
+                <div className="vehicle-transport-item">
+                  <span>Classification</span>
+                  <span className="vehicle-transport-colon">:</span>
+                  <strong>{classification || "-"}</strong>
+                </div>
+                <div className="vehicle-transport-item vehicle-number">
+                  <span>Vehicle Number</span>
+                  <span className="vehicle-transport-colon">:</span>
+                  <strong>{vehicleNumber || "-"}</strong>
+                </div>
+                <div className="vehicle-transport-item transporter">
+                  <span>Transporter</span>
+                  <span className="vehicle-transport-colon">:</span>
+                  <strong>{transporter || "-"}</strong>
+                </div>
               </div>
             </div>
           </div>
@@ -1385,7 +1408,6 @@ const VehicleColumn = ({
                       <FileText size={14} />
                     </span>
                     <div>
-                      
                       <strong>LR Document</strong>
                       <span>Dispatch document</span>
                     </div>
@@ -1437,7 +1459,6 @@ const VehicleColumn = ({
                       <FileText size={14} />
                     </span>
                     <div>
-                      
                       <strong>E-Way Bill Document</strong>
                       <span>Transport document</span>
                     </div>

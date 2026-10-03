@@ -1845,6 +1845,7 @@ const Traffic = () => {
           "Transport quotations submitted successfully for management approval.";
         setMessage(text);
         showToast(text, "success");
+        handleCloseOrder();
 
       } catch (err) {
 

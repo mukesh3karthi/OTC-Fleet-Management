@@ -1170,10 +1170,23 @@ const Approvalmanagement = () => {
                     : currentOrder
               )
           );
+
+          // Keep the currently opened Order Approval Details modal
+          // synchronized with the latest approval response.
+          setOrderDetailsModal((currentModalOrder) =>
+            currentModalOrder?._id === updatedOrder._id
+              ? updatedOrder
+              : currentModalOrder
+          );
         } else {
           await fetchApprovals(
             true
           );
+
+          // If the API does not return the updated order object,
+          // refresh and close the stale modal so it cannot keep
+          // displaying the old Pending state.
+          setOrderDetailsModal(null);
         }
 
         const successText =
@@ -2570,14 +2583,34 @@ const Approvalmanagement = () => {
                                         {String(index + 1).padStart(2, "0")}
                                       </div>
 
-                                      <div className="approval-qv-title">
-                                        <span>VEHICLE REQUIREMENT</span>
-                                        <h4>{requirement.vehicleType || "Vehicle"}</h4>
-                                        <div className="approval-qv-tags">
-                                          <span>{requirement.configuration || "—"}</span>
-                                          <span>{requirement.classification || "—"}</span>
-                                          <span>Qty {requirement.quantity || 0}</span>
-                                          <span>
+                                      <div className="approval-qv-content">
+                                        <span className="approval-qv-label">
+                                          VEHICLE REQUIREMENT
+                                        </span>
+
+                                        <div className="approval-qv-data-row">
+                                          <h4 className="approval-qv-vehicle-type">
+                                            {requirement.vehicleType || "Vehicle"}
+                                          </h4>
+
+                                          <span
+                                            className="approval-qv-divider"
+                                            aria-hidden="true"
+                                          />
+
+                                          <span className="approval-qv-data-item">
+                                            {requirement.configuration || "—"}
+                                          </span>
+
+                                          <span className="approval-qv-data-item">
+                                            {requirement.classification || "—"}
+                                          </span>
+
+                                          <span className="approval-qv-data-item">
+                                            Qty {requirement.quantity || 0}
+                                          </span>
+
+                                          <span className="approval-qv-data-item">
                                             {requirement.weight ?? "—"}
                                             {requirement.weight !== null &&
                                             requirement.weight !== undefined &&
@@ -2585,7 +2618,10 @@ const Approvalmanagement = () => {
                                               ? " Ton"
                                               : ""}
                                           </span>
-                                          <span>{formatDimension(requirement.dimensions)}</span>
+
+                                          <span className="approval-qv-data-item">
+                                            {formatDimension(requirement.dimensions)}
+                                          </span>
                                         </div>
                                       </div>
 
@@ -3715,6 +3751,48 @@ const Approvalmanagement = () => {
                 >
                   Close
                 </button>
+                <div className="approval-order-details-decision-actions">
+                  {status === "Pending" && (
+                    <>
+                      <button
+                        type="button"
+                        className="approval-order-details-reject"
+                        onClick={() => openOrderActionModal(order, "Rejected")}
+                        disabled={orderUpdatingId === order._id}
+                      >
+                        Reject
+                      </button>
+                      <button
+                        type="button"
+                        className="approval-order-details-approve"
+                        onClick={() => openOrderActionModal(order, "Approved")}
+                        disabled={orderUpdatingId === order._id}
+                      >
+                        Approve
+                      </button>
+                    </>
+                  )}
+
+                  {status === "Approved" && (
+                    <button
+                      type="button"
+                      className="approval-order-details-approve"
+                      disabled
+                    >
+                      ✓ Approved
+                    </button>
+                  )}
+
+                  {status === "Rejected" && (
+                    <button
+                      type="button"
+                      className="approval-order-details-reject"
+                      disabled
+                    >
+                      × Rejected
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>

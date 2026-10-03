@@ -322,138 +322,50 @@ const getLatestTracking = (
 
 ========================================= */
 
-const getTripStatus = (
+const getVehicleDisplayStatus = (vehicle) => {
+  const latest = getLatestTracking(vehicle);
+  const rawStatus = safeText(latest?.status, "Idle");
 
-  trip
-
-) => {
-
-  const vehicles =
-
-    safeArray(
-
-      trip?.allocatedVehicles
-
-    );
-
-  if (!vehicles.length) {
-
-    return "Pending";
-
+  if (rawStatus.trim().toLowerCase() !== "reached") {
+    return rawStatus;
   }
 
-  const statuses =
+  const unloadingCompleted =
+    String(vehicle?.unloading?.status || "").trim().toLowerCase() === "completed";
 
-    vehicles.map(
+  const lrCompleted = Boolean(
+    vehicle?.lr?.number ||
+    vehicle?.lr?.date ||
+    vehicle?.pod?.fileName
+  );
 
-      (vehicle) =>
+  const ewayStatus = String(vehicle?.ewayBill?.status || "").trim().toLowerCase();
+  const ewayCompleted = Boolean(
+    (vehicle?.ewayBill?.number || vehicle?.ewayBill?.fileName) &&
+    ewayStatus !== "pending"
+  );
 
-        safeText(
+  return unloadingCompleted && lrCompleted && ewayCompleted
+    ? "Reached"
+    : "Pending";
+};
 
-          getLatestTracking(
+const getTripStatus = (trip) => {
+  const vehicles = safeArray(trip?.allocatedVehicles);
 
-            vehicle
+  if (!vehicles.length) return "Pending";
 
-          )?.status,
+  const statuses = vehicles.map(getVehicleDisplayStatus);
+  const normalized = statuses.map((status) =>
+    String(status || "").trim().toLowerCase()
+  );
 
-          "Idle"
-
-        )
-
-    );
-
-  if (
-
-    statuses.length > 0 &&
-
-    statuses.every(
-
-      (status) =>
-
-        status
-
-          .trim()
-
-          .toLowerCase() ===
-
-        "reached"
-
-    )
-
-  ) {
-
-    return "Reached";
-
-  }
-
-  if (
-
-    statuses.some(
-
-      (status) =>
-
-        status
-
-          .trim()
-
-          .toLowerCase() ===
-
-        "breakdown"
-
-    )
-
-  ) {
-
-    return "Breakdown";
-
-  }
-
-  if (
-
-    statuses.some(
-
-      (status) =>
-
-        status
-
-          .trim()
-
-          .toLowerCase() ===
-
-        "moving"
-
-    )
-
-  ) {
-
-    return "Moving";
-
-  }
-
-  if (
-
-    statuses.some(
-
-      (status) =>
-
-        status
-
-          .trim()
-
-          .toLowerCase() ===
-
-        "stopped"
-
-    )
-
-  ) {
-
-    return "Stopped";
-
-  }
-
+  if (normalized.every((status) => status === "reached")) return "Reached";
+  if (normalized.some((status) => status === "breakdown")) return "Breakdown";
+  if (normalized.some((status) => status === "moving")) return "Moving";
+  if (normalized.some((status) => status === "stopped")) return "Stopped";
+  if (normalized.some((status) => status === "pending")) return "Pending";
   return "Idle";
-
 };
 
 /* =========================================
@@ -1106,7 +1018,12 @@ const Tripdetails = () => {
 
     const date = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
 
-    const previousTodayKm = Number(latest?.todayKm ?? 0);
+    const previousTodayKm =
+      latest?.todayKm !== undefined &&
+        latest?.todayKm !== null &&
+        latest?.todayKm !== ""
+        ? Number(latest.todayKm)
+        : null;
 
     return {
 
@@ -1114,7 +1031,10 @@ const Tripdetails = () => {
 
       day: history.length + 1,
 
-      yesterdayKm: Number.isFinite(previousTodayKm) ? previousTodayKm : 0,
+      yesterdayKm:
+        history.length > 0 && Number.isFinite(previousTodayKm)
+          ? previousTodayKm
+          : "",
 
       todayKm: "",
 
@@ -1419,324 +1339,550 @@ const Tripdetails = () => {
     if (!movementTrip || !movementForm || !movementVehicleId) return;
 
     const vehicle = safeArray(movementTrip.allocatedVehicles).find(
-
       (item) => (item.allocationId || item._id) === movementVehicleId
-
     );
 
     if (!vehicle) return;
 
     const history = safeArray(vehicle.dailyTracking);
-
     const latest = history.length ? history[history.length - 1] : null;
 
-    const currentLocation = String(movementForm.currentLocation || "").trim();
+    const currentLocation = String(
+      movementForm.currentLocation || ""
+    ).trim();
 
-    const updatedBy = String(movementForm.updatedBy || "").trim();
+    const updatedBy = String(
+      movementForm.updatedBy || ""
+    ).trim();
 
-    const selectedDate = String(movementForm.date || "").trim();
+    const selectedDate = String(
+      movementForm.date || ""
+    ).trim();
 
-    const yesterdayKm = Number(movementForm.yesterdayKm);
+    const yesterdayKm = Number(
+      movementForm.yesterdayKm
+    );
 
-    const todayKm = Number(movementForm.todayKm);
+    const todayKm = Number(
+      movementForm.todayKm
+    );
 
-    if (!selectedDate) { setMovementError("Movement date is required."); return; }
+    /*
+      IMPORTANT:
+      If the last saved movement is already Reached, the user may still
+      need to finish Unloading / LR / POD / E-Way Bill.
 
-    if (!currentLocation) { setMovementError("Current location is required."); return; }
+      In that case we save vehicle operations + documents without forcing
+      another daily movement entry.
 
-    if (!updatedBy) { setMovementError("Updated By is required."); return; }
+      If the user starts entering a new movement (location/KM/updated by),
+      the normal movement validation and tracking POST still run.
+    */
+    const latestRawStatus = String(
+      latest?.status || ""
+    ).trim().toLowerCase();
 
-    if (movementForm.todayKm === "" || movementForm.todayKm === null || movementForm.todayKm === undefined) { setMovementError("Today KM is required."); return; }
+    const hasMovementEntryData = Boolean(
+      currentLocation ||
+      updatedBy ||
+      movementForm.todayKm !== "" &&
+      movementForm.todayKm !== null &&
+      movementForm.todayKm !== undefined ||
+      String(movementForm.remarks || "").trim()
+    );
 
-    if (!Number.isFinite(yesterdayKm) || yesterdayKm < 0) { setMovementError("Yesterday KM must be a valid non-negative number."); return; }
-
-    if (!Number.isFinite(todayKm) || todayKm < 0) { setMovementError("Today KM must be a valid non-negative number."); return; }
-
-    if (todayKm < yesterdayKm) { setMovementError(`Today KM cannot be less than Yesterday KM (${yesterdayKm} KM).`); return; }
-
-    const latestDate = latest?.date ? String(latest.date).slice(0, 10) : "";
-
-    if (latestDate && selectedDate <= latestDate) { setMovementError(`Movement date must be after the previous update (${formatDate(latest.date)}).`); return; }
-
-    if (history.some((item) => String(item?.date || "").slice(0, 10) === selectedDate)) { setMovementError("A movement update already exists for this date."); return; }
+    const shouldSaveTracking =
+      latestRawStatus !== "reached" ||
+      hasMovementEntryData;
 
     const validateDateOrder = (label, values) => {
-
       const dates = values.filter(Boolean);
 
-      for (let index = 1; index < dates.length; index += 1) if (dates[index] < dates[index - 1]) return `${label} dates are not in the correct order.`;
+      for (
+        let index = 1;
+        index < dates.length;
+        index += 1
+      ) {
+        if (dates[index] < dates[index - 1]) {
+          return `${label} dates are not in the correct order.`;
+        }
+      }
 
       return "";
-
     };
 
-    const loadingDateError = validateDateOrder("Loading", [movementForm.loadingPointInDate, movementForm.loadingDate, movementForm.loadingPointOutDate]);
+    /*
+      Loading / unloading validations must always run because these
+      details are saved even when no new daily tracking row is created.
+    */
+    const loadingDateError = validateDateOrder(
+      "Loading",
+      [
+        movementForm.loadingPointInDate,
+        movementForm.loadingDate,
+        movementForm.loadingPointOutDate,
+      ]
+    );
 
-    if (loadingDateError) { setMovementError(loadingDateError); return; }
+    if (loadingDateError) {
+      setMovementError(loadingDateError);
+      return;
+    }
 
-    const unloadingDateError = validateDateOrder("Unloading", [movementForm.unloadingPointInDate, movementForm.unloadingDate, movementForm.unloadingPointOutDate]);
+    const unloadingDateError = validateDateOrder(
+      "Unloading",
+      [
+        movementForm.unloadingPointInDate,
+        movementForm.unloadingDate,
+        movementForm.unloadingPointOutDate,
+      ]
+    );
 
-    if (unloadingDateError) { setMovementError(unloadingDateError); return; }
+    if (unloadingDateError) {
+      setMovementError(unloadingDateError);
+      return;
+    }
 
-    if (movementForm.loadingStatus === "Completed" && !movementForm.loadingPointOutDate) { setMovementError("Loading Point Out Date is required when loading is completed."); return; }
+    if (
+      movementForm.loadingStatus === "Completed" &&
+      !movementForm.loadingPointOutDate
+    ) {
+      setMovementError(
+        "Loading Point Out Date is required when loading is completed."
+      );
+      return;
+    }
 
-    if (movementForm.unloadingStatus === "Completed" && !movementForm.unloadingPointOutDate) { setMovementError("Unloading Point Out Date is required when unloading is completed."); return; }
+    if (
+      movementForm.unloadingStatus === "Completed" &&
+      !movementForm.unloadingPointOutDate
+    ) {
+      setMovementError(
+        "Unloading Point Out Date is required when unloading is completed."
+      );
+      return;
+    }
 
-    const runningKm = todayKm - yesterdayKm;
+    /*
+      Run the original movement validations only when a new movement
+      record really needs to be saved.
+    */
+    if (shouldSaveTracking) {
 
-    const payload = {
+      if (!selectedDate) {
+        setMovementError("Movement date is required.");
+        return;
+      }
 
-      date: movementForm.date,
+      if (!currentLocation) {
+        setMovementError("Current location is required.");
+        return;
+      }
 
-      day: history.length + 1,
+      if (!updatedBy) {
+        setMovementError("Updated By is required.");
+        return;
+      }
 
-      yesterdayKm,
+      if (
+        movementForm.todayKm === "" ||
+        movementForm.todayKm === null ||
+        movementForm.todayKm === undefined
+      ) {
+        setMovementError("Today KM is required.");
+        return;
+      }
 
-      todayKm,
+      if (
+        !Number.isFinite(yesterdayKm) ||
+        yesterdayKm < 0
+      ) {
+        setMovementError(
+          "Yesterday KM must be a valid non-negative number."
+        );
+        return;
+      }
 
-      runningKm,
+      if (
+        !Number.isFinite(todayKm) ||
+        todayKm < 0
+      ) {
+        setMovementError(
+          "Today KM must be a valid non-negative number."
+        );
+        return;
+      }
 
-      yesterdayLocation: String(movementForm.yesterdayLocation || "").trim(),
+      if (todayKm < yesterdayKm) {
+        setMovementError(
+          `Today KM cannot be less than Yesterday KM (${yesterdayKm} KM).`
+        );
+        return;
+      }
 
-      currentLocation,
+      const latestDate = latest?.date
+        ? String(latest.date).slice(0, 10)
+        : "";
 
-      status: movementForm.status || "Idle",
+      if (
+        latestDate &&
+        selectedDate <= latestDate
+      ) {
+        setMovementError(
+          `Movement date must be after the previous update (${formatDate(
+            latest.date
+          )}).`
+        );
+        return;
+      }
 
-      remarks: String(movementForm.remarks || "").trim(),
+      if (
+        history.some(
+          (item) =>
+            String(item?.date || "").slice(0, 10) ===
+            selectedDate
+        )
+      ) {
+        setMovementError(
+          "A movement update already exists for this date."
+        );
+        return;
+      }
 
-      updatedBy,
+    }
 
-    };
+    const runningKm = shouldSaveTracking
+      ? todayKm - yesterdayKm
+      : 0;
+
+    const payload = shouldSaveTracking
+      ? {
+        date: movementForm.date,
+        day: history.length + 1,
+        yesterdayKm,
+        todayKm,
+        runningKm,
+        yesterdayLocation: String(
+          movementForm.yesterdayLocation || ""
+        ).trim(),
+        currentLocation,
+        status: movementForm.status || "Idle",
+        remarks: String(
+          movementForm.remarks || ""
+        ).trim(),
+        updatedBy,
+      }
+      : null;
 
     try {
 
       setMovementSaving(true);
-
       setMovementError("");
-
       setMovementSuccess("");
 
-      const mongoId = movementTrip._id?.$oid || movementTrip._id;
+      const mongoId =
+        movementTrip._id?.$oid ||
+        movementTrip._id;
 
+      /*
+        ALWAYS save Loading / Unloading.
+        This is the important fix for a reached vehicle where the user
+        completes unloading and then uploads the remaining documents.
+      */
       const allocationPayload = {
 
-        vehicleNumber: String(vehicle.vehicleNumber || "").trim().toUpperCase(),
+        vehicleNumber: String(
+          vehicle.vehicleNumber || ""
+        )
+          .trim()
+          .toUpperCase(),
 
         driver: {
-
-          name: String(vehicle?.driver?.name || "").trim(),
-
-          contactNumber: String(vehicle?.driver?.contactNumber || "").trim(),
-
+          name: String(
+            vehicle?.driver?.name || ""
+          ).trim(),
+          contactNumber: String(
+            vehicle?.driver?.contactNumber || ""
+          ).trim(),
         },
 
         escort: {
-
-          vehicleNumber: String(vehicle?.escort?.vehicleNumber || "").trim().toUpperCase(),
-
-          name: String(vehicle?.escort?.name || "").trim(),
-
-          contactNumber: String(vehicle?.escort?.contactNumber || "").trim(),
-
+          vehicleNumber: String(
+            vehicle?.escort?.vehicleNumber || ""
+          )
+            .trim()
+            .toUpperCase(),
+          name: String(
+            vehicle?.escort?.name || ""
+          ).trim(),
+          contactNumber: String(
+            vehicle?.escort?.contactNumber || ""
+          ).trim(),
         },
 
         supervisor: {
-
-          name: String(vehicle?.supervisor?.name || "").trim(),
-
-          contactNumber: String(vehicle?.supervisor?.contactNumber || "").trim(),
-
+          name: String(
+            vehicle?.supervisor?.name || ""
+          ).trim(),
+          contactNumber: String(
+            vehicle?.supervisor?.contactNumber || ""
+          ).trim(),
         },
 
         loading: {
-
-          status: movementForm.loadingStatus || "Pending",
-
-          pointInDate: movementForm.loadingPointInDate || null,
-
-          loadingDate: movementForm.loadingDate || null,
-
-          pointOutDate: movementForm.loadingPointOutDate || null,
-
-          haltingDays: Number(movementForm.loadingHaltingDays || 0),
-
-          remarks: String(movementForm.loadingRemarks || "").trim(),
-
+          status:
+            movementForm.loadingStatus ||
+            "Pending",
+          pointInDate:
+            movementForm.loadingPointInDate ||
+            null,
+          loadingDate:
+            movementForm.loadingDate ||
+            null,
+          pointOutDate:
+            movementForm.loadingPointOutDate ||
+            null,
+          haltingDays: Number(
+            movementForm.loadingHaltingDays || 0
+          ),
+          remarks: String(
+            movementForm.loadingRemarks || ""
+          ).trim(),
         },
 
         unloading: {
-
-          status: movementForm.unloadingStatus || "Pending",
-
-          pointInDate: movementForm.unloadingPointInDate || null,
-
-          unloadingDate: movementForm.unloadingDate || null,
-
-          pointOutDate: movementForm.unloadingPointOutDate || null,
-
-          haltingDays: Number(movementForm.unloadingHaltingDays || 0),
-
-          remarks: String(movementForm.unloadingRemarks || "").trim(),
-
+          status:
+            movementForm.unloadingStatus ||
+            "Pending",
+          pointInDate:
+            movementForm.unloadingPointInDate ||
+            null,
+          unloadingDate:
+            movementForm.unloadingDate ||
+            null,
+          pointOutDate:
+            movementForm.unloadingPointOutDate ||
+            null,
+          haltingDays: Number(
+            movementForm.unloadingHaltingDays || 0
+          ),
+          remarks: String(
+            movementForm.unloadingRemarks || ""
+          ).trim(),
         },
 
       };
 
       const allocationResponse = await fetch(
-
         `${API_URL}/${mongoId}/allocated-vehicles/${vehicle.allocationId}`,
-
         {
-
           method: "PUT",
-
-          headers: { "Content-Type": "application/json" },
-
-          body: JSON.stringify(allocationPayload),
-
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(
+            allocationPayload
+          ),
         }
-
       );
 
-      const allocationResult = await allocationResponse.json().catch(() => ({}));
+      const allocationResult =
+        await allocationResponse
+          .json()
+          .catch(() => ({}));
 
       if (!allocationResponse.ok) {
-
         throw new Error(
-
           allocationResult?.message ||
-
           "Unable to update loading / unloading details."
-
         );
+      }
+
+      /*
+        Only create a daily tracking row when this is an actual new
+        movement update. A reached vehicle can therefore save only
+        operations/documents without Current Location / KM / Updated By.
+      */
+      if (shouldSaveTracking) {
+
+        const response = await fetch(
+          `${API_URL}/${mongoId}/allocated-vehicles/${vehicle.allocationId}/tracking`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+            body: JSON.stringify(payload),
+          }
+        );
+
+        const result = await response
+          .json()
+          .catch(() => ({}));
+
+        if (!response.ok) {
+          throw new Error(
+            result?.message ||
+            "Unable to save movement."
+          );
+        }
 
       }
 
-      const response = await fetch(
+      /*
+        Documents are independent from daily tracking.
+        Keep the existing upload endpoints and validation behavior.
+      */
+      const savedLr =
+        await uploadMovementDocument({
+          mongoId,
+          allocationId:
+            vehicle.allocationId,
+          type: "lr",
+          number:
+            movementForm.lrNumber,
+          date:
+            movementForm.lrDate,
+          remarks:
+            movementForm.lrRemarks,
+          file: null,
+          existingDocument:
+            vehicle?.lr,
+          uploadedBy:
+            movementForm.updatedBy ||
+            "Tracking",
+          requireFile: false,
+        });
 
-        `${API_URL}/${mongoId}/allocated-vehicles/${vehicle.allocationId}/tracking`,
+      const savedPod =
+        await uploadMovementDocument({
+          mongoId,
+          allocationId:
+            vehicle.allocationId,
+          type: "pod",
+          file:
+            movementForm.podFile,
+          existingDocument:
+            vehicle?.pod,
+          uploadedBy:
+            movementForm.updatedBy ||
+            "Tracking",
+          requireFile: true,
+        });
 
-        {
+      const savedEwayBill =
+        await uploadMovementDocument({
+          mongoId,
+          allocationId:
+            vehicle.allocationId,
+          type: "ewayBill",
+          number:
+            movementForm.ewayBillNumber,
+          validUpto:
+            movementForm.ewayBillValidUpto,
+          status:
+            movementForm.ewayBillStatus,
+          file:
+            movementForm.ewayBillFile,
+          existingDocument:
+            vehicle?.ewayBill,
+          uploadedBy:
+            movementForm.updatedBy ||
+            "Tracking",
+          requireFile: true,
+        });
 
-          method: "POST",
-
-          headers: { "Content-Type": "application/json" },
-
-          body: JSON.stringify(payload),
-
-        }
-
-      );
-
-      const result = await response.json().catch(() => ({}));
-
-      if (!response.ok) throw new Error(result?.message || "Unable to save movement.");
-
-      const savedLr = await uploadMovementDocument({
-
-        mongoId,
-
-        allocationId: vehicle.allocationId,
-
-        type: "lr",
-
-        number: movementForm.lrNumber,
-
-        date: movementForm.lrDate,
-
-        remarks: movementForm.lrRemarks,
-
-        file: null,
-
-        existingDocument: vehicle?.lr,
-
-        uploadedBy: movementForm.updatedBy,
-
-        requireFile: false,
-
-      });
-
-      const savedPod = await uploadMovementDocument({
-
-        mongoId,
-
-        allocationId: vehicle.allocationId,
-
-        type: "pod",
-
-        file: movementForm.podFile,
-
-        existingDocument: vehicle?.pod,
-
-        uploadedBy: movementForm.updatedBy,
-
-        requireFile: true,
-
-      });
-
-      const savedEwayBill = await uploadMovementDocument({
-
-        mongoId,
-
-        allocationId: vehicle.allocationId,
-
-        type: "ewayBill",
-
-        number: movementForm.ewayBillNumber,
-
-        validUpto: movementForm.ewayBillValidUpto,
-
-        status: movementForm.ewayBillStatus,
-
-        file: movementForm.ewayBillFile,
-
-        existingDocument: vehicle?.ewayBill,
-
-        uploadedBy: movementForm.updatedBy,
-
-        requireFile: true,
-
-      });
-
-      setMovementSuccess(`Movement updated for ${vehicle.vehicleNumber || "vehicle"}.`);
-
-      await fetchTrips(true);
-
+      /*
+        Build the selected vehicle locally with the exact values just
+        saved so the popup does not jump back to old Pending data.
+      */
       const nextVehicle = {
 
         ...vehicle,
 
-        loading: allocationPayload.loading,
+        loading:
+          allocationPayload.loading,
 
-        unloading: allocationPayload.unloading,
+        unloading:
+          allocationPayload.unloading,
 
-        lr: savedLr || vehicle?.lr || {},
+        lr:
+          savedLr ||
+          vehicle?.lr ||
+          {},
 
-        pod: savedPod || vehicle?.pod || {},
+        pod:
+          savedPod ||
+          vehicle?.pod ||
+          {},
 
-        ewayBill: savedEwayBill || vehicle?.ewayBill || {},
+        ewayBill:
+          savedEwayBill ||
+          vehicle?.ewayBill ||
+          {},
 
-        dailyTracking: [...safeArray(vehicle.dailyTracking), payload],
+        dailyTracking:
+          shouldSaveTracking && payload
+            ? [
+              ...safeArray(
+                vehicle.dailyTracking
+              ),
+              payload,
+            ]
+            : safeArray(
+              vehicle.dailyTracking
+            ),
 
       };
 
+      /*
+        Update the popup immediately before/while the main trip list is
+        refreshed from the server.
+      */
       setMovementTrip((previous) => ({
 
         ...previous,
 
-        allocatedVehicles: safeArray(previous?.allocatedVehicles).map((item) =>
-
-          (item.allocationId || item._id) === movementVehicleId ? nextVehicle : item
-
-        ),
+        allocatedVehicles:
+          safeArray(
+            previous?.allocatedVehicles
+          ).map((item) =>
+            (item.allocationId ||
+              item._id) ===
+              movementVehicleId
+              ? nextVehicle
+              : item
+          ),
 
       }));
 
-      setMovementForm(buildMovementForm(nextVehicle));
+      setMovementForm(
+        buildMovementForm(nextVehicle)
+      );
+
+      setMovementSuccess(
+        shouldSaveTracking
+          ? `Movement updated for ${vehicle.vehicleNumber ||
+          "vehicle"
+          }.`
+          : `Loading, unloading and documents updated for ${vehicle.vehicleNumber ||
+          "vehicle"
+          }.`
+      );
+
+      /*
+        Refresh the main Tracking page data after the local popup state
+        has been updated.
+      */
+      await fetchTrips(true);
 
     } catch (saveError) {
 
-      setMovementError(saveError?.message || "Unable to save movement.");
+      setMovementError(
+        saveError?.message ||
+        "Unable to save movement."
+      );
 
     } finally {
 
@@ -1745,12 +1891,6 @@ const Tripdetails = () => {
     }
 
   };
-
-  /* =====================================
-
-     BACK
-
-  ===================================== */
 
   const handleBack =
 
@@ -2725,7 +2865,7 @@ const Tripdetails = () => {
                               </em>
                             )}
 
-                            <small>{safeText(latest?.status, "No movement")}</small>
+                            <small>{getVehicleDisplayStatus(vehicle)}</small>
 
                           </span>
 
@@ -2749,6 +2889,10 @@ const Tripdetails = () => {
 
                     const latest = getLatestTracking(vehicle);
 
+                    const unloadingEnabled =
+                      String(latest?.status || "").trim().toLowerCase() === "reached" ||
+                      String(movementForm.status || "").trim().toLowerCase() === "reached";
+
                     const history = safeArray(vehicle.dailyTracking).slice().reverse();
 
                     return (
@@ -2763,7 +2907,7 @@ const Tripdetails = () => {
 
                           <div><span>Running KM</span><strong><Route size={13} />{latest?.runningKm ?? 0} KM</strong></div>
 
-                          <div><span>Status</span><strong>{safeText(latest?.status, "Idle")}</strong></div>
+                          <div><span>Status</span><strong>{getVehicleDisplayStatus(vehicle)}</strong></div>
 
                           <div><span>Driver</span><strong><UserRound size={13} />{safeText(vehicle?.driver?.name)}</strong></div>
 
@@ -2785,7 +2929,17 @@ const Tripdetails = () => {
 
                             <label><span>Day</span><input type="number" min="1" value={movementForm.day} readOnly /></label>
 
-                            <label><span>Yesterday KM</span><input type="number" min="0" value={movementForm.yesterdayKm} readOnly /></label>
+                            <label>
+                              <span>{movementForm.day === 1 ? "Starting Odometer KM *" : "Yesterday KM"}</span>
+                              <input
+                                type="number"
+                                min="0"
+                                value={movementForm.yesterdayKm}
+                                onChange={(e) => updateMovementField("yesterdayKm", e.target.value)}
+                                readOnly={movementForm.day > 1}
+                                placeholder={movementForm.day === 1 ? "Enter vehicle odometer KM" : ""}
+                              />
+                            </label>
 
                             <label><span>Today KM *</span><input type="number" min={movementForm.yesterdayKm || 0} value={movementForm.todayKm} onChange={(e) => updateMovementField("todayKm", e.target.value)} placeholder="Enter cumulative KM" /></label>
 
@@ -2855,7 +3009,7 @@ const Tripdetails = () => {
 
                               <label><span>Status</span>
 
-                                <select value={movementForm.unloadingStatus} onChange={(e) => updateMovementField("unloadingStatus", e.target.value)}>
+                                <select value={movementForm.unloadingStatus} disabled={!unloadingEnabled} onChange={(e) => updateMovementField("unloadingStatus", e.target.value)}>
 
                                   <option>Pending</option><option>In Progress</option><option>Completed</option>
 
@@ -2863,15 +3017,15 @@ const Tripdetails = () => {
 
                               </label>
 
-                              <label><span>Point In Date</span><input type="date" value={movementForm.unloadingPointInDate} onChange={(e) => updateMovementField("unloadingPointInDate", e.target.value)} /></label>
+                              <label><span>Point In Date</span><input type="date" disabled={!unloadingEnabled} value={movementForm.unloadingPointInDate} onChange={(e) => updateMovementField("unloadingPointInDate", e.target.value)} /></label>
 
-                              <label><span>Unloading Date</span><input type="date" value={movementForm.unloadingDate} onChange={(e) => updateMovementField("unloadingDate", e.target.value)} /></label>
+                              <label><span>Unloading Date</span><input type="date" disabled={!unloadingEnabled} value={movementForm.unloadingDate} onChange={(e) => updateMovementField("unloadingDate", e.target.value)} /></label>
 
-                              <label><span>Point Out Date</span><input type="date" value={movementForm.unloadingPointOutDate} onChange={(e) => updateMovementField("unloadingPointOutDate", e.target.value)} /></label>
+                              <label><span>Point Out Date</span><input type="date" disabled={!unloadingEnabled} value={movementForm.unloadingPointOutDate} onChange={(e) => updateMovementField("unloadingPointOutDate", e.target.value)} /></label>
 
-                              <label><span>Halting Days</span><input type="number" min="0" value={movementForm.unloadingHaltingDays} onChange={(e) => updateMovementField("unloadingHaltingDays", e.target.value)} /></label>
+                              <label><span>Halting Days</span><input type="number" min="0" disabled={!unloadingEnabled} value={movementForm.unloadingHaltingDays} onChange={(e) => updateMovementField("unloadingHaltingDays", e.target.value)} /></label>
 
-                              <label className="remarks"><span>Remarks</span><input value={movementForm.unloadingRemarks} onChange={(e) => updateMovementField("unloadingRemarks", e.target.value)} placeholder="Unloading Details remarks" /></label>
+                              <label className="remarks"><span>Remarks</span><input disabled={!unloadingEnabled} value={movementForm.unloadingRemarks} onChange={(e) => updateMovementField("unloadingRemarks", e.target.value)} placeholder="Unloading Details remarks" /></label>
 
                             </div>
 
@@ -3249,105 +3403,105 @@ const Tripdetails = () => {
 
                         </section>
 
-                  {/* =========================================
+                        {/* =========================================
                       VEHICLE REPLACEMENT HISTORY
                   ========================================= */}
-                  <section className="movement-section movement-replacement-history-section">
-                    <div className="movement-section-header">
-                      <div>
-                        <span className="movement-section-eyebrow">HISTORY</span>
-                        <h3>Vehicle Replacement History</h3>
-                      </div>
+                        <section className="movement-section movement-replacement-history-section">
+                          <div className="movement-section-header">
+                            <div>
+                              <span className="movement-section-eyebrow">HISTORY</span>
+                              <h3>Vehicle Replacement History</h3>
+                            </div>
 
-                      <span className="movement-history-count">
-                        {safeArray(
-                          safeArray(movementTrip?.allocatedVehicles).find(
-                            (item) =>
-                              (item.allocationId || item._id) ===
-                              movementVehicleId
-                          )?.replacementHistory
-                        ).length}{" "}
-                        Replacements
-                      </span>
-                    </div>
-
-                    {(() => {
-                      const selectedVehicle = safeArray(
-                        movementTrip?.allocatedVehicles
-                      ).find(
-                        (item) =>
-                          (item.allocationId || item._id) ===
-                          movementVehicleId
-                      );
-
-                      const replacementHistory = safeArray(
-                        selectedVehicle?.replacementHistory
-                      )
-                        .slice()
-                        .reverse();
-
-                      if (!replacementHistory.length) {
-                        return (
-                          <div className="movement-replacement-empty">
-                            <RefreshCw size={16} />
-                            <span>No vehicle replacement history.</span>
-                          </div>
-                        );
-                      }
-
-                      return (
-                        <div className="movement-replacement-table-wrap">
-                          <div className="movement-replacement-table-head">
-                            <span>DATE</span>
-                            <span>PREVIOUS VEHICLE</span>
-                            <span>REPLACED WITH</span>
-                            <span>SOURCE</span>
-                            <span>REASON</span>
-                            <span>REPLACED BY</span>
-                            <span>REMARKS</span>
+                            <span className="movement-history-count">
+                              {safeArray(
+                                safeArray(movementTrip?.allocatedVehicles).find(
+                                  (item) =>
+                                    (item.allocationId || item._id) ===
+                                    movementVehicleId
+                                )?.replacementHistory
+                              ).length}{" "}
+                              Replacements
+                            </span>
                           </div>
 
-                          <div className="movement-replacement-table-body">
-                            {replacementHistory.map((item, index) => (
-                              <div
-                                className="movement-replacement-table-row"
-                                key={
-                                  item?.replacementId ||
-                                  `${selectedVehicle?.allocationId}-replacement-${index}`
-                                }
-                              >
-                                <span>
-                                  {item?.replacedAt
-                                    ? formatDate(item.replacedAt)
-                                    : "-"}
-                                </span>
+                          {(() => {
+                            const selectedVehicle = safeArray(
+                              movementTrip?.allocatedVehicles
+                            ).find(
+                              (item) =>
+                                (item.allocationId || item._id) ===
+                                movementVehicleId
+                            );
 
-                                <strong className="movement-replacement-old-vehicle">
-                                  {safeText(item?.oldVehicleNumber)}
-                                </strong>
+                            const replacementHistory = safeArray(
+                              selectedVehicle?.replacementHistory
+                            )
+                              .slice()
+                              .reverse();
 
-                                <strong className="movement-replacement-new-vehicle">
-                                  {safeText(item?.newVehicleNumber)}
-                                </strong>
+                            if (!replacementHistory.length) {
+                              return (
+                                <div className="movement-replacement-empty">
+                                  <RefreshCw size={16} />
+                                  <span>No vehicle replacement history.</span>
+                                </div>
+                              );
+                            }
 
-                                <span>
-                                  {safeText(
-                                    item?.replacementSource || item?.source
-                                  )}
-                                </span>
+                            return (
+                              <div className="movement-replacement-table-wrap">
+                                <div className="movement-replacement-table-head">
+                                  <span>DATE</span>
+                                  <span>PREVIOUS VEHICLE</span>
+                                  <span>REPLACED WITH</span>
+                                  <span>SOURCE</span>
+                                  <span>REASON</span>
+                                  <span>REPLACED BY</span>
+                                  <span>REMARKS</span>
+                                </div>
 
-                                <span>{safeText(item?.reason)}</span>
+                                <div className="movement-replacement-table-body">
+                                  {replacementHistory.map((item, index) => (
+                                    <div
+                                      className="movement-replacement-table-row"
+                                      key={
+                                        item?.replacementId ||
+                                        `${selectedVehicle?.allocationId}-replacement-${index}`
+                                      }
+                                    >
+                                      <span>
+                                        {item?.replacedAt
+                                          ? formatDate(item.replacedAt)
+                                          : "-"}
+                                      </span>
 
-                                <span>{safeText(item?.replacedBy)}</span>
+                                      <strong className="movement-replacement-old-vehicle">
+                                        {safeText(item?.oldVehicleNumber)}
+                                      </strong>
 
-                                <span>{safeText(item?.remarks)}</span>
+                                      <strong className="movement-replacement-new-vehicle">
+                                        {safeText(item?.newVehicleNumber)}
+                                      </strong>
+
+                                      <span>
+                                        {safeText(
+                                          item?.replacementSource || item?.source
+                                        )}
+                                      </span>
+
+                                      <span>{safeText(item?.reason)}</span>
+
+                                      <span>{safeText(item?.replacedBy)}</span>
+
+                                      <span>{safeText(item?.remarks)}</span>
+                                    </div>
+                                  ))}
+                                </div>
                               </div>
-                            ))}
-                          </div>
-                        </div>
-                      );
-                    })()}
-                  </section>
+                            );
+                          })()}
+                        </section>
 
                       </>
 

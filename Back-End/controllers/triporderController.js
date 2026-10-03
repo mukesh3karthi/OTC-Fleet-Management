@@ -171,7 +171,7 @@ const isDuplicateVehicleNumber = (
   getAllocatedVehicles(trip).some(
     (vehicle) =>
       vehicle.allocationId !==
-        cleanString(ignoredAllocationId) &&
+      cleanString(ignoredAllocationId) &&
       cleanUpperString(
         vehicle.vehicleNumber
       ) === cleanUpperString(vehicleNumber)
@@ -1117,28 +1117,13 @@ const updateTrip = async (
     trip.vehicleRequirements =
       data.vehicleRequirements;
 
-    if (
-      trip.orderApproval?.status ===
-      "Rejected"
-    ) {
-      trip.orderApproval = {
-        status: "Pending",
-
-        requestedAt: null,
-
-        approvedBy: "",
-
-        approvedAt: null,
-
-        remarks: "",
-
-        rejectionReason: "",
-      };
-
-      trip.status = "Pending";
-
-      trip.stage =
-        "Order Approval";
+    /*
+     * Editing / requotation keeps the previous rejection.
+     * It is cleared only by an explicit approval request.
+     */
+    if (trip.orderApproval?.status === "Rejected") {
+      trip.status = "Rejected";
+      trip.stage = "Order Rejected";
     }
 
     trip.markModified(
@@ -1352,6 +1337,10 @@ const saveOrderFinalization = async (
     );
 
     if (requestApproval) {
+      /*
+       * NEW APPROVAL CYCLE:
+       * Request Approval / Resubmit clears the old rejection.
+       */
       trip.orderApproval = {
         status: "Pending",
 
@@ -1371,7 +1360,7 @@ const saveOrderFinalization = async (
         "Pending";
 
       trip.stage =
-        "Order Approval";
+        "Order Finalization";
 
       trip.markModified(
         "orderApproval"
@@ -1859,9 +1848,9 @@ const addTrafficQuotation = async (
         .filter(
           (confirmation) =>
             confirmation.requirementId ===
-              requirementId &&
+            requirementId &&
             confirmation.status ===
-              "Approved"
+            "Approved"
         )
         .reduce(
           (total, confirmation) => {
@@ -2181,7 +2170,7 @@ const confirmVehicleQuotation = async (
       Math.max(
         0,
         requiredQuantity -
-          alreadyApprovedQuantity
+        alreadyApprovedQuantity
       );
 
     if (
@@ -2212,9 +2201,9 @@ const confirmVehicleQuotation = async (
         getConfirmations(trip).find(
           (confirmation) =>
             confirmation.requirementId ===
-              requirementId &&
+            requirementId &&
             confirmation.quotationId ===
-              targetQuotation.quotationId
+            targetQuotation.quotationId
         );
 
       if (existingConfirmation) {
@@ -2230,7 +2219,7 @@ const confirmVehicleQuotation = async (
         if (
           allocationExists &&
           existingConfirmation.status !==
-            confirmationStatus
+          confirmationStatus
         ) {
           return {
             error:
@@ -2252,7 +2241,7 @@ const confirmVehicleQuotation = async (
 
         existingConfirmation.rejectionReason =
           confirmationStatus ===
-          "Rejected"
+            "Rejected"
             ? confirmationRejectionReason
             : "";
 
@@ -2283,7 +2272,7 @@ const confirmVehicleQuotation = async (
 
         rejectionReason:
           confirmationStatus ===
-          "Rejected"
+            "Rejected"
             ? confirmationRejectionReason
             : "",
       };
@@ -2367,9 +2356,9 @@ const confirmVehicleQuotation = async (
               .filter(
                 (confirmation) =>
                   confirmation.requirementId ===
-                    item.requirementId &&
+                  item.requirementId &&
                   confirmation.status ===
-                    "Approved"
+                  "Approved"
               )
               .reduce(
                 (
@@ -3149,16 +3138,14 @@ const reviewTransportReplacement = async (req, res) => {
         amount: toNumber(replacementRequest.proposedAmount, 0),
         quotedBy: replacementRequest.requestedBy || "Traffic Team",
         quotedAt: now,
-        remarks: `Approved transport replacement for ${replacementRequest.currentTransporter}. ${
-          replacementRequest.remarks || ""
-        }`.trim(),
+        remarks: `Approved transport replacement for ${replacementRequest.currentTransporter}. ${replacementRequest.remarks || ""
+          }`.trim(),
       });
 
       currentConfirmation.status = "Replaced";
       currentConfirmation.confirmedAt = now;
-      currentConfirmation.remarks = `Replaced by ${replacementRequest.proposedTransporter}. ${
-        reviewRemarks || ""
-      }`.trim();
+      currentConfirmation.remarks = `Replaced by ${replacementRequest.proposedTransporter}. ${reviewRemarks || ""
+        }`.trim();
       currentConfirmation.rejectionReason = "";
 
       trip.vehicleConfirmations.push({
@@ -3312,9 +3299,9 @@ const allocateTrafficVehicle = async (req, res) => {
 
     if (
       confirmation.requirementId !==
-        requirementId ||
+      requirementId ||
       confirmation.quotationId !==
-        quotationId
+      quotationId
     ) {
       return sendError(
         res,
@@ -3332,7 +3319,7 @@ const allocateTrafficVehicle = async (req, res) => {
     if (
       !quotation ||
       quotation.requirementId !==
-        requirementId
+      requirementId
     ) {
       return sendError(
         res,
@@ -3359,7 +3346,7 @@ const allocateTrafficVehicle = async (req, res) => {
         .filter(
           (vehicle) =>
             vehicle.requirementId ===
-              requirementId
+            requirementId
         ).length;
 
     if (
@@ -3827,7 +3814,7 @@ const updateAllocatedVehicle = async (
     if (
       req.body.vehicleNumber !== undefined &&
       cleanUpperString(req.body.vehicleNumber) !==
-        cleanUpperString(vehicle.vehicleNumber)
+      cleanUpperString(vehicle.vehicleNumber)
     ) {
       return sendError(
         res,
@@ -4103,7 +4090,7 @@ const updateAllocatedVehicle = async (
     const allRequiredVehiclesAllocated =
       requiredVehicleCount > 0 &&
       allocatedVehicles.length >=
-        requiredVehicleCount;
+      requiredVehicleCount;
 
     const allAllocatedVehiclesUnloaded =
       allocatedVehicles.length > 0 &&
@@ -4122,27 +4109,118 @@ const updateAllocatedVehicle = async (
       allAllocatedVehiclesUnloaded;
 
     /* =====================================================
-       UPDATE ORDER STAGE
+       STRICT TRIP COMPLETION VALIDATION
+
+       Trip Complete is allowed ONLY when:
+       1. Order Finalization / first approval is approved
+       2. PO Document is fully completed
+       3. Vendor Finalization is completed
+       4. Order Placed is completed
+       5. All required vehicles are allocated
+       6. EVERY allocated vehicle has completed unloading
     ===================================================== */
 
-    if (allVehiclesCompleted) {
-      trip.stage =
-        "Trip Complete";
+    const orderFinalizationCompleted =
+      cleanString(
+        trip?.orderApproval?.status
+      ).toLowerCase() === "approved";
 
-      trip.status =
-        "Completed";
+    const poDocumentCompleted =
+      cleanString(
+        trip?.poDocument?.status
+      ).toLowerCase() === "completed" &&
+      Boolean(cleanString(trip?.poDocument?.poNumber)) &&
+      Boolean(trip?.poDocument?.poValidityPeriod) &&
+      Boolean(cleanString(trip?.poDocument?.billingGstin)) &&
+      Boolean(
+        trip?.poDocument?.fileName ||
+        trip?.poDocument?.fileUrl ||
+        trip?.poDocument?.documentUrl
+      );
+
+    const lifecycleQuotations = getQuotations(trip);
+    const approvedConfirmations = getConfirmations(trip).filter(
+      (confirmation) =>
+        cleanString(confirmation?.status).toLowerCase() === "approved"
+    );
+
+    const requiredVendorVehicleCount = getRequirements(trip).reduce(
+      (total, requirement) =>
+        total + Math.max(0, Math.floor(toNumber(requirement?.quantity, 0))),
+      0
+    );
+
+    const approvedVendorVehicleCount = approvedConfirmations.reduce(
+      (total, confirmation) => {
+        const confirmationQuotationId = cleanString(
+          confirmation?.quotationId || confirmation?.trafficQuotationId
+        );
+
+        const quotation = lifecycleQuotations.find((quote) =>
+          cleanString(quote?.quotationId || quote?._id || quote?.id) ===
+          confirmationQuotationId
+        );
+
+        if (!quotation) return total;
+
+        return total + Math.max(
+          1,
+          Math.floor(
+            toNumber(
+              quotation?.quantity ??
+              quotation?.vehicleQuantity ??
+              quotation?.approvedQuantity ??
+              quotation?.allocatedQuantity,
+              1
+            )
+          )
+        );
+      },
+      0
+    );
+
+    const transportReplacementPending =
+      getTransportReplacementRequests(trip).some(
+        (request) =>
+          cleanString(request?.status).toLowerCase() === "pending"
+      );
+
+    const vendorFinalizationCompleted =
+      !transportReplacementPending &&
+      requiredVendorVehicleCount > 0 &&
+      approvedVendorVehicleCount >= requiredVendorVehicleCount;
+
+    const orderPlacedCompleted =
+      cleanString(
+        trip?.orderPlaced?.status
+      ).toLowerCase() === "completed";
+
+    const canCompleteTrip =
+      orderFinalizationCompleted &&
+      poDocumentCompleted &&
+      vendorFinalizationCompleted &&
+      orderPlacedCompleted &&
+      allRequiredVehiclesAllocated &&
+      allAllocatedVehiclesUnloaded;
+
+    if (canCompleteTrip) {
+      trip.stage = "Trip Complete";
+      trip.status = "Completed";
+    } else if (!orderFinalizationCompleted) {
+      trip.stage = "Order Finalization";
+      trip.status = "Pending";
+    } else if (!poDocumentCompleted) {
+      trip.stage = "PO Document";
+      trip.status = "Pending";
+    } else if (!vendorFinalizationCompleted) {
+      trip.stage = "Vendor Finalization";
+      trip.status = "Pending";
+    } else if (!orderPlacedCompleted) {
+      trip.stage = "Order Placed";
+      trip.status = "Pending";
     } else {
-      /*
-       * Keep order under Tracking while
-       * one or more vehicles are still
-       * incomplete.
-       */
-
-      trip.stage =
-        "Tracking";
-
-      trip.status =
-        "Active";
+      trip.stage = "Tracking";
+      trip.status = "Active";
     }
 
     /* =====================================================
@@ -4158,8 +4236,8 @@ const updateAllocatedVehicle = async (
     return sendSuccess(
       res,
       200,
-      allVehiclesCompleted
-        ? "Vehicle details saved successfully. All vehicles have completed unloading and the trip is now complete."
+      canCompleteTrip
+        ? "Vehicle details saved successfully. All lifecycle stages are complete and every allocated vehicle has completed unloading. The trip is now complete."
         : "Vehicle details updated successfully.",
       trip
     );
@@ -4416,7 +4494,7 @@ const downloadMovementDocument = async (
     res.setHeader(
       "Content-Type",
       document.mimeType ||
-        "application/octet-stream"
+      "application/octet-stream"
     );
 
     res.setHeader(
@@ -4793,12 +4871,13 @@ const updateRouteLocations = async (
        Tracking
 
    IMPORTANT:
-   These are NOT mandatory before Tracking:
-   - PO Document
-   - Traffic Quotation
-   - Quotation Approval
-   - Vendor Finalization
-   - Vehicle Allocation
+   Place Order rule:
+   - Order Approval must be Approved.
+   - At least ONE transporter quotation must be confirmed.
+   - Full Vendor Finalization is NOT mandatory.
+   - Remaining transporter confirmations can continue later.
+   - Vehicle Allocation is NOT mandatory before Place Order.
+   - Actual vehicle allocation happens in Tracking.
 ========================================================= */
 
 const placeOrder = async (req, res) => {
@@ -4841,40 +4920,37 @@ const placeOrder = async (req, res) => {
     }
 
     /* =====================================================
-       2. AT LEAST ONE TRANSPORT VEHICLE MUST BE ALLOCATED
+       2. AT LEAST ONE TRANSPORTER MUST BE CONFIRMED
 
-       This is the main workflow lock:
-       0 allocated vehicles -> Place Order blocked
-       1+ allocated vehicles -> Place Order allowed
-
-       The backend check is mandatory so the rule cannot be
-       bypassed by calling the API directly.
+       IMPORTANT WORKFLOW:
+       - Full Vendor Finalization is NOT required.
+       - If 1 or more transporter quotations are approved,
+         Place Order is allowed.
+       - Remaining vehicle/transporter approvals can continue later.
+       - Actual vehicle allocation happens AFTER Place Order
+         from the Tracking stage.
+       - allocatedVehicles is intentionally NOT checked here.
     ===================================================== */
 
-    const allocatedVehicles =
-      getAllocatedVehicles(trip);
-
-    const activeAllocatedVehicles =
-      allocatedVehicles.filter(
-        (vehicle) =>
+    const approvedConfirmations =
+      getConfirmations(trip).filter(
+        (confirmation) =>
           cleanString(
-            vehicle?.vehicleNumber
-          ) &&
-          cleanString(
-            vehicle?.vehicleStatus ||
-              "Active"
-          ).toLowerCase() !==
-            "replaced"
+            confirmation?.status
+          )
+            .trim()
+            .toLowerCase() ===
+          "approved"
       );
 
     if (
-      activeAllocatedVehicles.length ===
+      approvedConfirmations.length ===
       0
     ) {
       return sendError(
         res,
         409,
-        "Allocate at least one transport vehicle before placing the order."
+        "Confirm at least one transporter before placing the order."
       );
     }
 
@@ -4911,7 +4987,9 @@ const placeOrder = async (req, res) => {
     /* =====================================================
        5. PLACE ORDER
 
-       Only this action releases the order to Tracking.
+       This action releases the order to Tracking.
+       Actual vehicle allocation can then be completed
+       from the Tracking module.
     ===================================================== */
 
     trip.orderPlaced = {
@@ -4945,7 +5023,7 @@ const placeOrder = async (req, res) => {
     return sendSuccess(
       res,
       200,
-      `Order placed successfully with ${activeAllocatedVehicles.length} allocated transport vehicle(s) and moved to Tracking.`,
+      `Order placed successfully with ${approvedConfirmations.length} confirmed transporter quotation(s) and moved to Tracking.`,
       updatedTrip
     );
   } catch (error) {

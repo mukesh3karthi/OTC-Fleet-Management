@@ -317,224 +317,162 @@
 ========================================================= */
 
 const getDisplayStage = (order = {}) => {
-  const requirements = Array.isArray(
-    order?.vehicleRequirements
-  )
+  const requirements = Array.isArray(order?.vehicleRequirements)
     ? order.vehicleRequirements
     : [];
 
-  const confirmations = Array.isArray(
-    order?.vehicleConfirmations
-  )
+  const confirmations = Array.isArray(order?.vehicleConfirmations)
     ? order.vehicleConfirmations
     : [];
 
-  const allocatedVehicles = Array.isArray(
-    order?.allocatedVehicles
-  )
+  const allocatedVehicles = Array.isArray(order?.allocatedVehicles)
     ? order.allocatedVehicles
     : [];
 
-  const approvedConfirmations =
-    confirmations.filter(
-      (confirmation) =>
-        String(
-          confirmation?.status || ""
-        )
-          .trim()
-          .toLowerCase() === "approved"
-    );
+  const approvedConfirmations = confirmations.filter(
+    (confirmation) =>
+      String(confirmation?.status || "").trim().toLowerCase() === "approved"
+  );
 
-  /* =====================================================
-     VEHICLE APPROVAL COMPLETED
-  ===================================================== */
+  const rawStage = String(order?.stage || "").trim().toLowerCase();
 
+  /* FIRST APPROVAL */
+  const orderApprovalCompleted =
+    String(order?.orderApproval?.status || "").trim().toLowerCase() === "approved";
+
+  /* QUOTATION / VEHICLE APPROVAL */
   const vehicleApprovalCompleted =
     requirements.length > 0 &&
-    requirements.every(
-      (requirement) =>
-        approvedConfirmations.some(
+    requirements.every((requirement) => {
+      const requiredQuantity = Math.max(1, Number(requirement?.quantity) || 1);
+
+      const approvedQuantity = approvedConfirmations
+        .filter(
           (confirmation) =>
-            confirmation?.requirementId ===
-            requirement?.requirementId
+            String(confirmation?.requirementId || "") ===
+            String(requirement?.requirementId || "")
         )
-    );
+        .reduce((total, confirmation) => {
+          const quotation = Array.isArray(order?.trafficQuotations)
+            ? order.trafficQuotations.find(
+                (item) => item?.quotationId === confirmation?.quotationId
+              )
+            : null;
 
-  /* =====================================================
-     RAW BACKEND STAGE
-  ===================================================== */
+          return total + Math.max(1, Number(quotation?.quantity) || 1);
+        }, 0);
 
-  const rawStage = String(
-    order?.stage || ""
-  )
-    .trim()
-    .toLowerCase();
+      return approvedQuantity >= requiredQuantity;
+    });
 
-  const rawStatus = String(
-    order?.status || ""
-  )
-    .trim()
-    .toLowerCase();
+  /* PO DOCUMENT - keep aligned with lifecycle validation */
+  const poCompleted = Boolean(
+    String(order?.poDocument?.status || "").trim().toLowerCase() === "completed" &&
+      String(order?.poDocument?.poNumber || "").trim() &&
+      String(order?.poDocument?.poValidityPeriod || "").trim() &&
+      String(order?.poDocument?.billingGstin || "").trim() &&
+      (order?.poDocument?.fileName ||
+        order?.poDocument?.documentName ||
+        order?.poDocument?.fileUrl ||
+        order?.poDocument?.documentUrl)
+  );
 
-  /* =====================================================
-     TRIP COMPLETE
+  /* VENDOR FINALIZATION */
+  const vendorCompleted =
+    !Array.isArray(order?.transportReplacementRequests) ||
+    !order.transportReplacementRequests.some(
+      (request) =>
+        String(request?.status || "").trim().toLowerCase() === "pending"
+    )
+      ? vehicleApprovalCompleted
+      : false;
 
-     Trip is complete when:
-     1. Backend stage = Trip Complete
-        OR
-     2. Backend status = Completed
-        OR
-     3. All allocated vehicles have
-        unloading.status = Completed
-  ===================================================== */
+  /* ORDER PLACED */
+  const orderPlacedCompleted =
+    String(order?.orderPlaced?.status || "").trim().toLowerCase() === "completed";
 
-  const allVehiclesUnloaded =
+  /* REQUIRED VEHICLE COUNT */
+  const requirementVehicleCount = requirements.reduce(
+    (total, requirement) =>
+      total + Math.max(0, Math.floor(Number(requirement?.quantity) || 0)),
+    0
+  );
+
+  const explicitTotalVehicles = Math.max(
+    0,
+    Math.floor(Number(order?.totalVehicles) || 0)
+  );
+
+  const requiredVehicleCount =
+    explicitTotalVehicles > 0 ? explicitTotalVehicles : requirementVehicleCount;
+
+  /* ALL REQUIRED VEHICLES MUST BE ALLOCATED */
+  const allRequiredVehiclesAllocated =
+    requiredVehicleCount > 0 &&
+    allocatedVehicles.length === requiredVehicleCount;
+
+  /* EVERY ALLOCATED VEHICLE MUST COMPLETE UNLOADING */
+  const allAllocatedVehiclesUnloaded =
     allocatedVehicles.length > 0 &&
     allocatedVehicles.every(
       (vehicle) =>
-        String(
-          vehicle?.unloading?.status || ""
-        )
-          .trim()
-          .toLowerCase() === "completed"
+        String(vehicle?.unloading?.status || "").trim().toLowerCase() ===
+        "completed"
     );
 
+  /* FINAL TRIP COMPLETE RULE */
   const tripCompleted =
-    rawStage === "trip complete" ||
-    rawStatus === "completed" ||
-    allVehiclesUnloaded;
-
-  /*
-   * IMPORTANT:
-   * Check Trip Complete BEFORE Tracking.
-   */
+    orderApprovalCompleted &&
+    poCompleted &&
+    vendorCompleted &&
+    orderPlacedCompleted &&
+    allRequiredVehiclesAllocated &&
+    allAllocatedVehiclesUnloaded;
 
   if (tripCompleted) {
     return "Trip Complete";
   }
 
-  /* =====================================================
-     APPROVAL MANAGEMENT
-  ===================================================== */
+  /* Never trust a stale backend Trip Complete value over missing prerequisites. */
+  if (!orderApprovalCompleted) {
+    const backendStage = String(order?.stage || "").trim();
 
-  const approvalManagementApproved =
-    vehicleApprovalCompleted ||
-    rawStage === "tracking input";
+    if (backendStage.toLowerCase() === "first approval management") {
+      return "Order Approval";
+    }
 
-  /* =====================================================
-     PO DOCUMENT
-  ===================================================== */
+    return backendStage || "Order Approval";
+  }
 
-  const poCompleted =
-    String(
-      order?.poDocument?.status || ""
-    )
-      .trim()
-      .toLowerCase() === "completed" ||
-    Boolean(
-      order?.poDocument?.poNumber &&
-        (
-          order?.poDocument?.fileName ||
-          order?.poDocument?.fileUrl ||
-          order?.poDocument?.documentUrl
-        )
-    );
+  if (!poCompleted) {
+    return "PO Document";
+  }
 
-  /* =====================================================
-     VENDOR FINALIZATION
-  ===================================================== */
+  if (!vendorCompleted) {
+    return "Vendor Finalization";
+  }
 
-  const vendorCompleted =
-    String(
-      order?.vendorFinalization?.status || ""
-    )
-      .trim()
-      .toLowerCase() === "completed" ||
-    vehicleApprovalCompleted;
+  if (!orderPlacedCompleted) {
+    return "Order Placed";
+  }
 
-  /* =====================================================
-     ORDER PLACED
-  ===================================================== */
-
-  const orderPlacedCompleted =
-    String(
-      order?.orderPlaced?.status || ""
-    )
-      .trim()
-      .toLowerCase() === "completed";
-
-  /* =====================================================
-     TRACKING
-  ===================================================== */
-
+  /* Once order is placed, remain in Tracking until every required vehicle unloads. */
   if (
     orderPlacedCompleted ||
-    rawStage === "tracking"
+    rawStage === "tracking" ||
+    rawStage === "trip complete" ||
+    rawStage === "completed"
   ) {
     return "Tracking";
   }
 
-  /* =====================================================
-     PO DOCUMENT
-  ===================================================== */
+  const backendStage = String(order?.stage || "").trim();
 
-  if (
-    approvalManagementApproved &&
-    !poCompleted
-  ) {
-    return "PO Document";
-  }
-
-  /* =====================================================
-     VENDOR FINALIZATION
-  ===================================================== */
-
-  if (
-    poCompleted &&
-    !vendorCompleted
-  ) {
-    return "Vendor Finalization";
-  }
-
-  /* =====================================================
-     ORDER PLACED
-  ===================================================== */
-
-  if (
-    poCompleted &&
-    vendorCompleted &&
-    !orderPlacedCompleted
-  ) {
-    return "Order Placed";
-  }
-
-  /* =====================================================
-     DEFAULT
-  ===================================================== */
-
-  const backendStage =
-    String(order?.stage || "").trim();
-
-  // Display-only stage names.
-  // Backend/API values remain unchanged.
-  if (
-    backendStage.toLowerCase() ===
-    "first approval management"
-  ) {
-    return "Order Approval";
-  }
-
-  if (
-    backendStage.toLowerCase() ===
-    "second approval management"
-  ) {
+  if (backendStage.toLowerCase() === "second approval management") {
     return "Quotation Approval";
   }
 
-  return (
-    backendStage ||
-    "Order Approval"
-  );
+  return backendStage || "Order Approval";
 };
 
   /* =========================================================

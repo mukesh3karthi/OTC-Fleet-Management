@@ -108,9 +108,8 @@ const formatDimensions = (dimensions = {}) => {
     return "—";
   }
 
-  return `${length ?? "—"} × ${
-    height ?? "—"
-  } × ${width ?? "—"}`;
+  return `${length ?? "—"} × ${height ?? "—"
+    } × ${width ?? "—"}`;
 };
 
 const getStatusClass = (status) => {
@@ -118,7 +117,11 @@ const getStatusClass = (status) => {
     .trim()
     .toLowerCase();
 
-  if (value === "approved") {
+  if (
+    value === "approved" ||
+    value === "completed" ||
+    value === "tracking"
+  ) {
     return "approved";
   }
 
@@ -126,11 +129,24 @@ const getStatusClass = (status) => {
     return "rejected";
   }
 
-  if (
-    value === "completed" ||
-    value === "tracking"
-  ) {
-    return "approved";
+  if (value === "moving") {
+    return "moving";
+  }
+
+  if (value === "idle") {
+    return "idle";
+  }
+
+  if (value === "reached") {
+    return "reached";
+  }
+
+  if (value === "breakdown") {
+    return "breakdown";
+  }
+
+  if (value === "stopped") {
+    return "stopped";
   }
 
   return "pending";
@@ -207,73 +223,36 @@ const isPoDocumentComplete = (order) => {
 ========================================================= */
 
 const buildLifecycle = (order) => {
-  const requirements = safeArray(
-    order?.vehicleRequirements
+  const requirements = safeArray(order?.vehicleRequirements);
+  const confirmations = safeArray(order?.vehicleConfirmations);
+  const quotations = safeArray(order?.trafficQuotations);
+  const allocations = safeArray(order?.allocatedVehicles);
+
+  const approvedConfirmations = confirmations.filter(
+    (confirmation) =>
+      String(confirmation?.status || "").trim().toLowerCase() === "approved"
   );
 
-  const confirmations = safeArray(
-    order?.vehicleConfirmations
-  );
+  const enquiryStatus = requirements.length > 0 ? "Completed" : "Pending";
 
-  const allocations = safeArray(
-    order?.allocatedVehicles
-  );
-
-  const approvedConfirmations =
-    confirmations.filter(
-      (confirmation) =>
-        confirmation?.status === "Approved"
-    );
-
-  const hasTracking = allocations.some(
-    (allocation) =>
-      safeArray(allocation?.dailyTracking)
-        .length > 0
-  );
-
-  const latestTrackingStatuses = allocations
-    .map((allocation) =>
-      getLatestTracking(allocation)
-    )
-    .filter(Boolean)
-    .map((tracking) =>
-      String(tracking?.status || "")
-        .trim()
-        .toLowerCase()
-    );
-
-  const allVehiclesCompleted =
-    String(order?.stage || "").trim().toLowerCase() === "trip complete" ||
-    (allocations.length > 0 &&
-      allocations.every(
-        (allocation) =>
-          String(allocation?.unloading?.status || "")
-            .trim()
-            .toLowerCase() === "completed"
-      ));
-
-  const enquiryStatus =
-    requirements.length > 0
-      ? "Completed"
-      : "Pending";
+  const approvalStatus = String(order?.orderApproval?.status || "")
+    .trim()
+    .toLowerCase();
 
   const orderFinalizationStatus =
-    order?.orderFinalization?.status ||
-    (order?.orderApproval?.status === "Approved"
-      ? "Completed"
-      : order?.orderApproval?.status === "Rejected"
+    approvalStatus === "rejected"
       ? "Rejected"
-      : "Pending");
+      : approvalStatus === "approved"
+        ? "Completed"
+        : approvalStatus === "pending" && order?.orderApproval?.requestedAt
+          ? "Pending"
+          : order?.orderFinalization?.status || "Pending";
 
-  // PO is completed only when all required PO fields are actually saved.
-  // Do not trust a stale `status: Completed` by itself.
   const poDocumentStatus = isPoDocumentComplete(order)
     ? "Completed"
     : "Pending";
 
-  const lifecycleQuotations = safeArray(order?.trafficQuotations);
-
-  const lifecycleRequiredVehicleCount = requirements.reduce(
+  const requiredVendorVehicleCount = requirements.reduce(
     (total, requirement) => {
       const quantity = Number(
         requirement?.quantity ??
@@ -291,7 +270,7 @@ const buildLifecycle = (order) => {
     0
   );
 
-  const lifecycleApprovedVehicleCount = approvedConfirmations.reduce(
+  const approvedVendorVehicleCount = approvedConfirmations.reduce(
     (total, confirmation) => {
       const confirmationQuotationId = String(
         confirmation?.quotationId ||
@@ -299,7 +278,7 @@ const buildLifecycle = (order) => {
         ""
       ).trim();
 
-      const quotation = lifecycleQuotations.find((quote) => {
+      const quotation = quotations.find((quote) => {
         const quoteId = String(
           quote?.quotationId ||
           quote?._id ||
@@ -307,16 +286,10 @@ const buildLifecycle = (order) => {
           ""
         ).trim();
 
-        return (
-          quoteId &&
-          confirmationQuotationId &&
-          quoteId === confirmationQuotationId
-        );
+        return quoteId && confirmationQuotationId && quoteId === confirmationQuotationId;
       });
 
-      if (!quotation) {
-        return total;
-      }
+      if (!quotation) return total;
 
       const quantity = Number(
         quotation?.quantity ??
@@ -333,69 +306,87 @@ const buildLifecycle = (order) => {
     0
   );
 
-  const transportReplacementPending =
-    hasPendingTransportReplacement(order);
+  const transportReplacementPending = hasPendingTransportReplacement(order);
 
   const vendorFinalizationStatus =
     transportReplacementPending
       ? "Replacement Pending"
-      : lifecycleRequiredVehicleCount > 0 &&
-        lifecycleApprovedVehicleCount >= lifecycleRequiredVehicleCount
+      : requiredVendorVehicleCount > 0 &&
+        approvedVendorVehicleCount >= requiredVendorVehicleCount
+        ? "Completed"
+        : "Pending";
+
+  const orderPlacedStatus =
+    String(order?.orderPlaced?.status || "").trim().toLowerCase() === "completed"
       ? "Completed"
       : "Pending";
 
-  const orderPlacedStatus =
-    order?.orderPlaced?.status ||
-    (String(order?.stage || "").trim().toLowerCase() === "tracking"
-      ? "Completed"
-      : "Pending");
+  const requiredVehicleCount =
+    Math.max(0, Math.floor(Number(order?.totalVehicles) || 0)) ||
+    requirements.reduce((total, requirement) => {
+      const quantity = Number(requirement?.quantity || 0);
+      return total + (
+        Number.isFinite(quantity) && quantity > 0
+          ? Math.floor(quantity)
+          : 0
+      );
+    }, 0);
 
-  const trackingStatus =
-    order?.tracking?.status ||
-    (hasTracking ? "Tracking" : "Pending");
+  const allRequiredVehiclesAllocated =
+    requiredVehicleCount > 0 &&
+    allocations.length >= requiredVehicleCount;
 
-  const tripCompleteStatus =
-    order?.tripCompletion?.status ||
-    (allVehiclesCompleted
-      ? "Completed"
-      : "Pending");
+  const allAllocatedVehiclesUnloaded =
+    allocations.length > 0 &&
+    allocations.every(
+      (allocation) =>
+        String(allocation?.unloading?.status || "")
+          .trim()
+          .toLowerCase() === "completed"
+    );
+
+  const hasTracking = allocations.some(
+    (allocation) =>
+      safeArray(allocation?.dailyTracking).length > 0 ||
+      String(allocation?.loading?.status || "")
+        .trim()
+        .toLowerCase() === "completed" ||
+      String(allocation?.unloading?.status || "")
+        .trim()
+        .toLowerCase() === "completed"
+  );
+
+  const orderFinalizationCompleted = orderFinalizationStatus === "Completed";
+  const poCompleted = poDocumentStatus === "Completed";
+  const vendorCompleted = vendorFinalizationStatus === "Completed";
+  const orderPlacedCompleted = orderPlacedStatus === "Completed";
+
+  const tripCompleted =
+    orderFinalizationCompleted &&
+    poCompleted &&
+    vendorCompleted &&
+    orderPlacedCompleted &&
+    allRequiredVehiclesAllocated &&
+    allAllocatedVehiclesUnloaded;
+
+  const trackingStatus = tripCompleted
+    ? "Completed"
+    : orderPlacedCompleted && hasTracking
+      ? "Tracking"
+      : orderPlacedCompleted
+        ? "Pending"
+        : "Pending";
+
+  const tripCompleteStatus = tripCompleted ? "Completed" : "Pending";
 
   return [
-    {
-      key: "enquiry-details",
-      title: "Enquiry Details",
-      status: enquiryStatus,
-    },
-    {
-      key: "order-finalization",
-      title: "Order Finalization",
-      status: orderFinalizationStatus,
-    },
-    {
-      key: "po-document",
-      title: "PO Document",
-      status: poDocumentStatus,
-    },
-    {
-      key: "vendor-finalization",
-      title: "Vendor Finalization",
-      status: vendorFinalizationStatus,
-    },
-    {
-      key: "order-placed",
-      title: "Order Placed",
-      status: orderPlacedStatus,
-    },
-    {
-      key: "tracking",
-      title: "Tracking",
-      status: trackingStatus,
-    },
-    {
-      key: "trip-complete",
-      title: "Trip Complete",
-      status: tripCompleteStatus,
-    },
+    { key: "enquiry-details", title: "Enquiry Details", status: enquiryStatus },
+    { key: "order-finalization", title: "Order Finalization", status: orderFinalizationStatus },
+    { key: "po-document", title: "PO Document", status: poDocumentStatus },
+    { key: "vendor-finalization", title: "Vendor Finalization", status: vendorFinalizationStatus },
+    { key: "order-placed", title: "Order Placed", status: orderPlacedStatus },
+    { key: "tracking", title: "Tracking", status: trackingStatus },
+    { key: "trip-complete", title: "Trip Complete", status: tripCompleteStatus },
   ];
 };
 
@@ -407,114 +398,39 @@ const getLifecycleCurrentIndex = (
   order,
   lifecycle
 ) => {
-  const stage = String(order?.stage || "")
-    .trim()
-    .toLowerCase();
-
-  const allocations = safeArray(order?.allocatedVehicles);
-
-  const orderApproved =
-    String(order?.orderApproval?.status || "")
+  const getStepStatus = (key) =>
+    String(
+      lifecycle.find((step) => step.key === key)?.status || "Pending"
+    )
       .trim()
-      .toLowerCase() === "approved";
+      .toLowerCase();
 
-  const orderPlacedCompleted =
-    String(order?.orderPlaced?.status || "")
-      .trim()
-      .toLowerCase() === "completed";
-
-  const transportReplacementPending =
-    hasPendingTransportReplacement(order);
-
-  const hasTrackingProgress = allocations.some(
-    (allocation) =>
-      safeArray(allocation?.dailyTracking).length > 0 ||
-      String(allocation?.loading?.status || "")
-        .trim()
-        .toLowerCase() === "completed" ||
-      String(allocation?.unloading?.status || "")
-        .trim()
-        .toLowerCase() === "completed"
-  );
-
-  if (
-    stage === "trip complete" ||
-    stage === "trip completed" ||
-    stage === "completed" ||
-    stage === "complete"
-  ) {
+  if (getStepStatus("trip-complete") === "completed") {
     return 6;
   }
 
-  if (
-    orderPlacedCompleted ||
-    hasTrackingProgress ||
-    stage === "tracking" ||
-    stage === "tracking input"
-  ) {
-    return 5;
+  if (getStepStatus("order-finalization") === "rejected") {
+    return 1;
   }
 
-  /*
-   * A pending transporter replacement is an active Vendor Finalization
-   * approval. Do not display Order Placed as the current stage until that
-   * replacement is reviewed, unless the order was already truly placed.
-   */
-  if (
-    transportReplacementPending &&
-    !orderPlacedCompleted &&
-    stage !== "tracking" &&
-    stage !== "tracking input"
-  ) {
+  if (getStepStatus("order-finalization") !== "completed") {
+    return 1;
+  }
+
+  if (getStepStatus("po-document") !== "completed") {
+    return 2;
+  }
+
+  if (getStepStatus("vendor-finalization") !== "completed") {
     return 3;
   }
 
-  /*
-   * Once commercial/order approval is Approved and there is no active
-   * transporter replacement approval, Order Placed is the next stage.
-   */
-  if (
-    orderApproved ||
-    stage === "order placed" ||
-    stage === "vehicle allocation"
-  ) {
+  if (getStepStatus("order-placed") !== "completed") {
     return 4;
   }
 
-  const stageMap = {
-    enquiry: 0,
-    "enquiry details": 0,
-    "key account": 0,
-    "order approval": 1,
-    "order finalization": 1,
-    traffic: 1,
-    "traffic quotation": 1,
-    "quotation approval": 1,
-    "quotation confirmation": 1,
-    po: 2,
-    "po document": 2,
-    "vendor finalization": 3,
-    "order placed": 4,
-    "vehicle allocation": 4,
-    "tracking input": 5,
-    tracking: 5,
-    "trip complete": 6,
-    "trip completed": 6,
-    completed: 6,
-    complete: 6,
-  };
-
-  if (stageMap[stage] !== undefined) {
-    return stageMap[stage];
-  }
-
-  const rejectedIndex = lifecycle.findIndex(
-    (step) => getStatusClass(step.status) === "rejected"
-  );
-
-  return rejectedIndex >= 0 ? rejectedIndex : 0;
+  return 5;
 };
-
 
 /* =========================================================
    READ ONLY FIELD
@@ -734,10 +650,10 @@ const Lifecyclemodal = ({
     setApprovalRequested,
   ] = useState(
     order?.orderApproval?.status ===
-      "Pending" &&
-      Boolean(
-        order?.orderApproval?.requestedAt
-      )
+    "Pending" &&
+    Boolean(
+      order?.orderApproval?.requestedAt
+    )
   );
 
   const [finalizationSaving, setFinalizationSaving] =
@@ -844,12 +760,18 @@ const Lifecyclemodal = ({
   ]);
 
   useEffect(() => {
+    const status = String(workingOrder?.orderApproval?.status || "")
+      .trim()
+      .toLowerCase();
+
+    if (status === "rejected") {
+      setApprovalRequested(false);
+      return;
+    }
+
     setApprovalRequested(
-      workingOrder?.orderApproval?.status ===
-        "Pending" &&
-        Boolean(
-          workingOrder?.orderApproval?.requestedAt
-        )
+      status === "pending" &&
+      Boolean(workingOrder?.orderApproval?.requestedAt)
     );
   }, [
     workingOrder?.orderApproval?.status,
@@ -956,11 +878,19 @@ const Lifecyclemodal = ({
        status is stored as Completed.
   ========================================================= */
 
+  const orderApprovalStatus = String(order?.orderApproval?.status || "")
+    .trim()
+    .toLowerCase();
+
+  const orderApprovalRejected = orderApprovalStatus === "rejected";
+  const orderApprovalApproved = orderApprovalStatus === "approved";
+  const orderApprovalPending =
+    orderApprovalStatus === "pending" &&
+    Boolean(order?.orderApproval?.requestedAt);
+
+  // Pending/Approved orders are read-only. Rejected orders reopen for editing.
   const finalizationLocked =
-    Boolean(order?.orderFinalization?.updatedAt) ||
-    String(order?.orderApproval?.status || "")
-      .trim()
-      .toLowerCase() === "approved";
+    orderApprovalApproved || orderApprovalPending;
 
   const poLocked =
     String(order?.poDocument?.status || "")
@@ -1057,8 +987,8 @@ const Lifecyclemodal = ({
       formData.append(
         "uploadedBy",
         poForm.uploadedBy.trim() ||
-          sessionStorage.getItem("kamUsername") ||
-          "Key Account"
+        sessionStorage.getItem("kamUsername") ||
+        "Key Account"
       );
 
       if (poFile) {
@@ -1190,16 +1120,18 @@ const Lifecyclemodal = ({
       const updatedVehicleApprovalCompleted =
         updatedRequiredVehicleCount > 0 &&
         updatedApprovedVehicleCount >=
-          updatedRequiredVehicleCount;
+        updatedRequiredVehicleCount;
 
-      const vendorAlreadyApproved =
-        getStatusClass(
-          updatedOrder?.vendorFinalization?.status
-        ) === "approved" ||
-        updatedVehicleApprovalCompleted;
+      const hasAtLeastOneConfirmedTransporter =
+        safeArray(updatedOrder?.vehicleConfirmations).some(
+          (confirmation) =>
+            String(confirmation?.status || "")
+              .trim()
+              .toLowerCase() === "approved"
+        );
 
-      if (vendorAlreadyApproved) {
-        // Step 5: Order Placed
+      if (hasAtLeastOneConfirmedTransporter) {
+        // Step 5: Order Placed is available after at least one transporter is confirmed.
         setActiveStepIndex(4);
       } else {
         // Step 4: Vendor Finalization
@@ -1235,6 +1167,25 @@ const Lifecyclemodal = ({
       return;
     }
 
+    // Place Order is allowed once at least ONE transporter is confirmed.
+    // Actual vehicle allocation happens later in Tracking.
+    const confirmedTransporterCount = safeArray(
+      order?.vehicleConfirmations
+    ).filter(
+      (confirmation) =>
+        String(confirmation?.status || "")
+          .trim()
+          .toLowerCase() === "approved"
+    ).length;
+
+    if (confirmedTransporterCount < 1) {
+      const message =
+        "Confirm at least one transporter before placing the order.";
+      setPlaceOrderError(message);
+      showToast(message, "warning");
+      return;
+    }
+
     if (hasPendingTransportReplacement(order)) {
       const message =
         "Transport replacement approval is pending. Complete the replacement approval before placing the order.";
@@ -1245,9 +1196,9 @@ const Lifecyclemodal = ({
 
     /*
      * IMPORTANT:
-     * PO Document and Vendor Finalization are optional.
-     * Missing PO/vendor details must NOT block Place Order.
-     * Vehicle allocation can also be partial after the order is placed.
+     * Place Order requires at least one confirmed transporter.
+     * All remaining transporter confirmations may be completed later.
+     * Actual vehicle allocation happens after Order Placed, in Tracking.
      */
     try {
       setPlaceOrderSaving(true);
@@ -1396,7 +1347,7 @@ const Lifecyclemodal = ({
       if (!response.ok) {
         throw new Error(
           payload?.message ||
-            "Unable to save order finalization."
+          "Unable to save order finalization."
         );
       }
 
@@ -1440,6 +1391,18 @@ const Lifecyclemodal = ({
   };
 
   const handleStepClick = (index) => {
+    // Trip Complete can never be opened from a stale backend stage/status.
+    // It is available only when buildLifecycle() has independently validated
+    // every prerequisite and every required vehicle unloading.
+    if (
+      index === 6 &&
+      String(lifecycle.find((step) => step.key === "trip-complete")?.status || "")
+        .trim()
+        .toLowerCase() !== "completed"
+    ) {
+      return;
+    }
+
     const orderApproved =
       String(order?.orderApproval?.status || "")
         .trim()
@@ -1489,6 +1452,213 @@ const Lifecyclemodal = ({
 
   // Traffic quotations used by Vendor Finalization.
   const quotations = safeArray(order?.trafficQuotations);
+
+  // Transport replacement requests used by Vendor Finalization history.
+  const replacementRequests = safeArray(
+    order?.transportReplacementRequests
+  );
+
+  const normalizeText = (value) =>
+    String(value ?? "").trim();
+
+  const normalizeLower = (value) =>
+    normalizeText(value).toLowerCase();
+
+  const getReplacementRequirementKey = (item) =>
+    normalizeText(
+      item?.requirementId ||
+      item?.vehicleRequirementId ||
+      item?.requirement?.requirementId ||
+      item?.requirement?.id ||
+      item?.requirement?._id ||
+      ""
+    );
+
+  const getReplacementRequestsForRequirement = (requirementId) =>
+    replacementRequests
+      .filter(
+        (item) =>
+          getReplacementRequirementKey(item) ===
+          normalizeText(requirementId)
+      )
+      .sort((a, b) => {
+        const aDate = new Date(
+          a?.requestedAt ||
+          a?.createdAt ||
+          a?.updatedAt ||
+          0
+        ).getTime();
+
+        const bDate = new Date(
+          b?.requestedAt ||
+          b?.createdAt ||
+          b?.updatedAt ||
+          0
+        ).getTime();
+
+        return aDate - bDate;
+      });
+
+  const findConfirmationForRequirement = (requirementId) => {
+    const requirementKey = normalizeText(requirementId);
+
+    const matches = confirmations.filter(
+      (confirmation) =>
+        normalizeText(
+          confirmation?.requirementId ||
+          confirmation?.vehicleRequirementId
+        ) === requirementKey
+    );
+
+    if (!matches.length) {
+      return null;
+    }
+
+    const approved = [...matches]
+      .reverse()
+      .find(
+        (confirmation) =>
+          normalizeLower(confirmation?.status) === "approved"
+      );
+
+    return approved || matches[matches.length - 1];
+  };
+
+  const findQuotationForConfirmation = (
+    confirmation,
+    requirementId
+  ) => {
+    if (!confirmation) {
+      return null;
+    }
+
+    const confirmationQuotationId = normalizeText(
+      confirmation?.quotationId ||
+      confirmation?.trafficQuotationId
+    );
+
+    const directMatch = quotations.find(
+      (quotation) =>
+        normalizeText(
+          quotation?.quotationId ||
+          quotation?.trafficQuotationId ||
+          quotation?._id ||
+          quotation?.id
+        ) === confirmationQuotationId
+    );
+
+    if (directMatch) {
+      return directMatch;
+    }
+
+    return quotations.find(
+      (quotation) =>
+        normalizeText(
+          quotation?.requirementId ||
+          quotation?.vehicleRequirementId
+        ) === normalizeText(requirementId) &&
+        normalizeLower(quotation?.status) !== "rejected"
+    ) || null;
+  };
+
+  const getReplacementOldTransporter = (item, fallback = "—") =>
+    normalizeText(
+      item?.previousTransporter ||
+      item?.previousTransportName ||
+      item?.oldTransporter ||
+      item?.oldTransportName ||
+      item?.currentTransporter ||
+      item?.currentTransportName ||
+      item?.fromTransporter ||
+      item?.fromTransportName
+    ) || fallback;
+
+  const getReplacementNewTransporter = (item) =>
+    normalizeText(
+      item?.proposedTransporter ||
+      item?.proposedTransportName ||
+      item?.replacementTransporter ||
+      item?.replacementTransportName ||
+      item?.newTransporter ||
+      item?.newTransportName ||
+      item?.selectedTransporter ||
+      item?.selectedTransport ||
+      item?.toTransporter ||
+      item?.toTransportName
+    ) || "—";
+
+  const getReplacementOldAmount = (item, fallback) => {
+    const value =
+      item?.previousAmount ??
+      item?.oldAmount ??
+      item?.previousQuotedAmount ??
+      item?.currentAmount ??
+      item?.fromAmount ??
+      fallback;
+
+    return value;
+  };
+
+  const getReplacementNewAmount = (item) =>
+    item?.proposedAmount ??
+    item?.replacementAmount ??
+    item?.newAmount ??
+    item?.quotedAmount ??
+    item?.approvedAmount ??
+    item?.selectedAmount ??
+    item?.toAmount ??
+    null;
+
+  const getVehicleVendorStatus = (
+    requirementId,
+    confirmation
+  ) => {
+    const history =
+      getReplacementRequestsForRequirement(
+        requirementId
+      );
+
+    const latestReplacement =
+      history.length > 0
+        ? history[history.length - 1]
+        : null;
+
+    const replacementStatus = normalizeLower(
+      latestReplacement?.status
+    );
+
+    if (replacementStatus === "pending") {
+      return {
+        label: "Replacement Pending",
+        className: "replacement-pending",
+      };
+    }
+
+    if (
+      replacementStatus === "approved" ||
+      replacementStatus === "completed" ||
+      replacementStatus === "replaced"
+    ) {
+      return {
+        label: "Replaced",
+        className: "replaced",
+      };
+    }
+
+    if (
+      normalizeLower(confirmation?.status) === "approved"
+    ) {
+      return {
+        label: "Approved",
+        className: "approved",
+      };
+    }
+
+    return {
+      label: "Approval Pending",
+      className: "approval-pending",
+    };
+  };
 
   // IMPORTANT:
   // Total order quantity is still the original enquiry requirement quantity.
@@ -1573,11 +1743,11 @@ const Lifecyclemodal = ({
         getRequirementKey(quote) &&
         getRequirementKey(quote) === getRequirementKey(confirmation) &&
         String(quote?.transporter || "").trim().toLowerCase() ===
-          String(
-            confirmation?.transporter ||
-            confirmation?.transportProvider ||
-            ""
-          ).trim().toLowerCase()
+        String(
+          confirmation?.transporter ||
+          confirmation?.transportProvider ||
+          ""
+        ).trim().toLowerCase()
       );
     });
 
@@ -1624,7 +1794,7 @@ const Lifecyclemodal = ({
         (quote) =>
           getQuotationKey(quote) &&
           getQuotationKey(quote) ===
-            confirmationQuotationKey
+          confirmationQuotationKey
       );
 
       if (!quotation) {
@@ -1809,9 +1979,8 @@ const Lifecyclemodal = ({
         className="kam-workflow-modal"
         role="dialog"
         aria-modal="true"
-        aria-label={`Order lifecycle ${
-          order.tripId || ""
-        }`}
+        aria-label={`Order lifecycle ${order.tripId || ""
+          }`}
         onMouseDown={(event) =>
           event.stopPropagation()
         }
@@ -1907,21 +2076,14 @@ const Lifecyclemodal = ({
                 const isCurrent =
                   index === activeStepIndex;
 
+                // A step is completed only when its own calculated lifecycle
+                // status says Completed/Approved. Never mark earlier steps complete
+                // only because a later page was selected or because MongoDB contains
+                // a stale stage value.
                 const completed =
                   !rejected &&
                   !optionalPending &&
-                  (
-                    index <
-                      activeStepIndex ||
-                    (
-                      index ===
-                        lifecycle.length -
-                          1 &&
-                      isCurrent &&
-                      statusClass ===
-                        "approved"
-                    )
-                  );
+                  (statusClass === "approved");
 
                 return (
                   <React.Fragment
@@ -1931,11 +2093,16 @@ const Lifecyclemodal = ({
                     {index > 0 && (
                       <span
                         className={`kam-top-step-line ${
-                          index <=
-                          currentLifecycleIndex
+                          lifecycle
+                            .slice(0, index)
+                            .every((previousStep) =>
+                              String(previousStep?.status || "")
+                                .trim()
+                                .toLowerCase() === "completed"
+                            )
                             ? "completed"
                             : ""
-                        }`}
+                          }`}
                         aria-hidden="true"
                       />
                     )}
@@ -1948,6 +2115,17 @@ const Lifecyclemodal = ({
                         )
                       }
                       disabled={(() => {
+                        const tripCompleteValidated =
+                          String(
+                            lifecycle.find((item) => item.key === "trip-complete")?.status || ""
+                          )
+                            .trim()
+                            .toLowerCase() === "completed";
+
+                        if (index === 6 && !tripCompleteValidated) {
+                          return true;
+                        }
+
                         const orderApproved =
                           String(order?.orderApproval?.status || "")
                             .trim()
@@ -2000,7 +2178,7 @@ const Lifecyclemodal = ({
                           : "",
 
                         activeStepIndex ===
-                        index
+                          index
                           ? "selected"
                           : "",
                       ]
@@ -2162,9 +2340,9 @@ const Lifecyclemodal = ({
                     suffix={
                       order.totalVehicles !==
                         "" &&
-                      order.totalVehicles !==
+                        order.totalVehicles !==
                         null &&
-                      order.totalVehicles !==
+                        order.totalVehicles !==
                         undefined
                         ? " NOS"
                         : ""
@@ -2193,9 +2371,9 @@ const Lifecyclemodal = ({
                     suffix={
                       order.distance !==
                         "" &&
-                      order.distance !==
+                        order.distance !==
                         null &&
-                      order.distance !==
+                        order.distance !==
                         undefined
                         ? " KM"
                         : ""
@@ -2482,6 +2660,33 @@ const Lifecyclemodal = ({
 
               <section className="kam-client-vehicle-section">
 
+                {orderApprovalRejected && (
+                  <div
+                    className="kam-finalization-error"
+                    style={{
+                      display: "block",
+                      marginBottom: "14px",
+                      padding: "12px 14px",
+                      border: "1px solid #fecaca",
+                      borderLeft: "4px solid #dc2626",
+                      borderRadius: "8px",
+                      background: "#fff7f7",
+                      color: "#991b1b",
+                      lineHeight: 1.45,
+                    }}
+                  >
+                    <strong style={{ display: "block", marginBottom: "3px" }}>
+                      Approval Rejected - Edit and Resubmit
+                    </strong>
+                    <span>
+                      {order?.orderApproval?.remarks ||
+                        order?.orderApproval?.rejectionRemarks ||
+                        order?.orderApproval?.comments ||
+                        "Please update the required details and request approval again."}
+                    </span>
+                  </div>
+                )}
+
                 <div className="kam-client-trip-grid">
 
                   {/* QUOTED RATE */}
@@ -2606,28 +2811,6 @@ const Lifecyclemodal = ({
                     )}
                   </div>
 
-                  {finalizationLocked ? (
-                    <button
-                      type="button"
-                      className="kam-save-finalization-btn"
-                      disabled
-                    >
-                      ✓ Saved
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      className="kam-save-finalization-btn"
-                      disabled={finalizationSaving}
-                      onClick={() =>
-                        saveOrderFinalization(false)
-                      }
-                    >
-                      {finalizationSaving
-                        ? "Saving..."
-                        : "Save Changes"}
-                    </button>
-                  )}
                 </div>
 
               </section>
@@ -2667,139 +2850,294 @@ const Lifecyclemodal = ({
                     title="Confirmed Transporters"
                     description="Approved transporter quotation for each vehicle requirement."
                     count={
-                      approvedConfirmations.length
+                      requirements.length
                     }
                   />
 
-                  {approvedConfirmations.length > 0 ? (
-
+                  {requirements.length > 0 ? (
                     <div className="kam-client-vehicle-table-wrap">
-
-                      <table className="kam-client-vehicle-table">
-
+                      <table className="kam-client-vehicle-table kam-vendor-history-table">
                         <thead>
                           <tr>
                             <th>#</th>
-
-                            <th>
-                              Vehicle Requirement
-                            </th>
-
-                            <th>
-                              Transporter
-                            </th>
-
-                            <th>
-                              Confirmed Amount
-                            </th>
-
-                            <th>
-                              Confirmed By
-                            </th>
-
-                            <th>
-                              Confirmed At
-                            </th>
+                            <th>Vehicle Requirement</th>
+                            <th>Current Transporter</th>
+                            <th>Current Amount</th>
+                            <th>Status</th>
+                            <th>Confirmed By</th>
+                            <th>Confirmed At</th>
+                            <th>Replacement History</th>
                           </tr>
                         </thead>
-
                         <tbody>
+                          {requirements.map((requirement, index) => {
+                            const requirementId =
+                              requirement?.requirementId ||
+                              requirement?._id ||
+                              requirement?.id ||
+                              "";
 
-                          {approvedConfirmations.map(
-                            (
-                              confirmation,
-                              index
-                            ) => {
-
-                              const requirement =
-                                getRequirement(
-                                  order,
-                                  confirmation.requirementId
-                                );
-
-                              const quotation =
-                                getQuotation(
-                                  order,
-                                  confirmation.quotationId
-                                );
-
-                              return (
-
-                                <tr
-                                  key={
-                                    confirmation.confirmationId ||
-                                    index
-                                  }
-                                >
-
-                                  <td>
-                                    <span className="kam-client-row-no">
-                                      {index + 1}
-                                    </span>
-                                  </td>
-
-                                  <td>
-                                    <strong>
-                                      {requirement?.vehicleType ||
-                                        confirmation.requirementId ||
-                                        "—"}
-                                    </strong>
-
-                                    {requirement?.configuration && (
-                                      <small
-                                        style={{
-                                          display: "block",
-                                        }}
-                                      >
-                                        {
-                                          requirement.configuration
-                                        }
-                                      </small>
-                                    )}
-                                  </td>
-
-                                  <td>
-                                    <strong>
-                                      {quotation?.transporter ||
-                                        "—"}
-                                    </strong>
-                                  </td>
-
-                                  <td>
-                                    {formatAmount(
-                                      quotation?.amount
-                                    )}
-                                  </td>
-
-                                  <td>
-                                    {confirmation.confirmedBy ||
-                                      "—"}
-                                  </td>
-
-                                  <td>
-                                    {formatDateTime(
-                                      confirmation.confirmedAt
-                                    )}
-                                  </td>
-
-                                </tr>
-
+                            const confirmation =
+                              findConfirmationForRequirement(
+                                requirementId
                               );
-                            }
-                          )}
 
+                            const quotation =
+                              findQuotationForConfirmation(
+                                confirmation,
+                                requirementId
+                              );
+
+                            const history =
+                              getReplacementRequestsForRequirement(
+                                requirementId
+                              );
+
+                            const latestReplacement =
+                              history.length > 0
+                                ? history[history.length - 1]
+                                : null;
+
+                            const latestReplacementStatus =
+                              normalizeLower(
+                                latestReplacement?.status
+                              );
+
+                            const currentTransporter =
+                              latestReplacement &&
+                                (
+                                  latestReplacementStatus === "approved" ||
+                                  latestReplacementStatus === "completed" ||
+                                  latestReplacementStatus === "replaced"
+                                )
+                                ? getReplacementNewTransporter(
+                                  latestReplacement
+                                )
+                                : quotation?.transporter ||
+                                confirmation?.transporter ||
+                                confirmation?.transportProvider ||
+                                "—";
+
+                            const currentAmount =
+                              latestReplacement &&
+                                (
+                                  latestReplacementStatus === "approved" ||
+                                  latestReplacementStatus === "completed" ||
+                                  latestReplacementStatus === "replaced"
+                                )
+                                ? getReplacementNewAmount(
+                                  latestReplacement
+                                ) ??
+                                quotation?.amount
+                                : quotation?.amount ??
+                                confirmation?.amount ??
+                                confirmation?.confirmedAmount;
+
+                            const vehicleStatus =
+                              getVehicleVendorStatus(
+                                requirementId,
+                                confirmation
+                              );
+
+                            return (
+                              <tr
+                                key={
+                                  requirementId ||
+                                  `vendor-row-${index}`
+                                }
+                              >
+                                <td>
+                                  <span className="kam-client-row-no">
+                                    {index + 1}
+                                  </span>
+                                </td>
+                                <td>
+                                  <strong>
+                                    {requirement?.vehicleType ||
+                                      requirementId ||
+                                      "—"}
+                                  </strong>
+                                  {requirement?.configuration && (
+                                    <small className="kam-vendor-config">
+                                      {requirement.configuration}
+                                    </small>
+                                  )}
+                                </td>
+                                <td>
+                                  <strong>
+                                    {currentTransporter}
+                                  </strong>
+                                </td>
+                                <td>
+                                  <strong className="kam-vendor-current-amount">
+                                    {formatAmount(currentAmount)}
+                                  </strong>
+                                </td>
+                                <td>
+                                  <span
+                                    className={`kam-vehicle-vendor-status ${vehicleStatus.className}`}
+                                  >
+                                    <span className="kam-vehicle-vendor-status-dot" />
+                                    {vehicleStatus.label}
+                                  </span>
+                                </td>
+                                <td>
+                                  {confirmation?.confirmedBy || "—"}
+                                </td>
+                                <td>
+                                  {formatDateTime(
+                                    confirmation?.confirmedAt
+                                  )}
+                                </td>
+                                <td>
+                                  {history.length > 0 ? (
+                                    <div className="kam-replacement-history">
+                                      {history.map(
+                                        (
+                                          item,
+                                          historyIndex
+                                        ) => {
+                                          const historyStatus =
+                                            normalizeLower(
+                                              item?.status
+                                            );
+
+                                          const previousItem =
+                                            historyIndex > 0
+                                              ? history[
+                                              historyIndex - 1
+                                              ]
+                                              : null;
+
+                                          const previousNewTransporter =
+                                            previousItem
+                                              ? getReplacementNewTransporter(
+                                                previousItem
+                                              )
+                                              : currentTransporter;
+
+                                          const previousNewAmount =
+                                            previousItem
+                                              ? getReplacementNewAmount(
+                                                previousItem
+                                              )
+                                              : currentAmount;
+
+                                          const oldTransporter =
+                                            getReplacementOldTransporter(
+                                              item,
+                                              previousNewTransporter
+                                            );
+
+                                          const newTransporter =
+                                            getReplacementNewTransporter(
+                                              item
+                                            );
+
+                                          const oldAmount =
+                                            getReplacementOldAmount(
+                                              item,
+                                              previousNewAmount
+                                            );
+
+                                          const newAmount =
+                                            getReplacementNewAmount(
+                                              item
+                                            );
+
+                                          const historyLabel =
+                                            historyStatus === "approved" ||
+                                              historyStatus === "completed" ||
+                                              historyStatus === "replaced"
+                                              ? "Replaced"
+                                              : historyStatus === "rejected"
+                                                ? "Rejected"
+                                                : "Pending";
+
+                                          const historyClass =
+                                            historyStatus === "approved" ||
+                                              historyStatus === "completed" ||
+                                              historyStatus === "replaced"
+                                              ? "replaced"
+                                              : historyStatus === "rejected"
+                                                ? "rejected"
+                                                : "pending";
+
+                                          return (
+                                            <div
+                                              className={`kam-replacement-timeline-item ${historyClass}`}
+                                              key={
+                                                item?._id ||
+                                                item?.requestId ||
+                                                `${requirementId}-replacement-${historyIndex}`
+                                              }
+                                            >
+                                              <div className="kam-replacement-timeline-rail">
+                                                <span className="kam-replacement-timeline-dot">
+                                                  {historyClass === "replaced"
+                                                    ? "✓"
+                                                    : historyClass === "rejected"
+                                                      ? "×"
+                                                      : ""}
+                                                </span>
+                                                {historyIndex < history.length - 1 && (
+                                                  <span className="kam-replacement-timeline-line" />
+                                                )}
+                                              </div>
+                                              <div className="kam-replacement-timeline-content">
+                                                <div className="kam-replacement-timeline-route">
+                                                  <div className="kam-replacement-timeline-party old">
+                                                    <strong title={oldTransporter}>
+                                                      {oldTransporter}
+                                                    </strong>
+                                                    <span>{formatAmount(oldAmount)}</span>
+                                                  </div>
+                                                  <span className="kam-replacement-timeline-arrow">
+                                                    →
+                                                  </span>
+                                                  <div className="kam-replacement-timeline-party current">
+                                                    <strong title={newTransporter}>
+                                                      {newTransporter}
+                                                    </strong>
+                                                    <span>{formatAmount(newAmount)}</span>
+                                                  </div>
+                                                </div>
+                                                <div className="kam-replacement-timeline-meta">
+                                                  <span className={`kam-replacement-timeline-state ${historyClass}`}>
+                                                    {historyLabel}
+                                                  </span>
+                                                  <time>
+                                                    {formatDateTime(
+                                                      item?.approvedAt ||
+                                                      item?.replacedAt ||
+                                                      item?.requestedAt ||
+                                                      item?.updatedAt ||
+                                                      item?.createdAt
+                                                    )}
+                                                  </time>
+                                                </div>
+                                              </div>
+                                            </div>
+                                          );
+                                        }
+                                      )}
+                                    </div>
+                                  ) : (
+                                    <span className="kam-no-replacement-history">
+                                      —
+                                    </span>
+                                  )}
+                                </td>
+                              </tr>
+                            );
+                          })}
                         </tbody>
-
                       </table>
-
                     </div>
-
                   ) : (
-
                     <div className="kam-lifecycle-empty">
-                      No transporter has been confirmed yet.
+                      No vehicle requirements are available.
                     </div>
-
                   )}
 
                 </section>
@@ -2920,29 +3258,28 @@ const Lifecyclemodal = ({
 
                   {(quotationPendingVehicleCount > 0 ||
                     hasPendingTransportReplacement(order)) && (
-                    <div
-                      style={{
-                        marginTop: "12px",
-                        padding: "10px 12px",
-                        border: "1px solid #f0c56a",
-                        borderLeft: "4px solid #e5a62f",
-                        borderRadius: "8px",
-                        background: "#fff8e8",
-                        color: "#8a5a00",
-                        fontSize: "10px",
-                        fontWeight: 700,
-                        lineHeight: 1.5,
-                      }}
-                    >
-                      {hasPendingTransportReplacement(order)
-                        ? "⚠ Transport replacement approval pending"
-                        : `⚠ ${quotationPendingVehicleCount} vehicle${
-                            quotationPendingVehicleCount === 1 ? "" : "s"
+                      <div
+                        style={{
+                          marginTop: "12px",
+                          padding: "10px 12px",
+                          border: "1px solid #f0c56a",
+                          borderLeft: "4px solid #e5a62f",
+                          borderRadius: "8px",
+                          background: "#fff8e8",
+                          color: "#8a5a00",
+                          fontSize: "10px",
+                          fontWeight: 700,
+                          lineHeight: 1.5,
+                        }}
+                      >
+                        {hasPendingTransportReplacement(order)
+                          ? "⚠ Transport replacement approval pending"
+                          : `⚠ ${quotationPendingVehicleCount} vehicle${quotationPendingVehicleCount === 1 ? "" : "s"
                           } pending`}
-                      quotation/finalization. Order Placed and Tracking can still
-                      continue.
-                    </div>
-                  )}
+                        quotation/finalization. Order Placed and Tracking can still
+                        continue.
+                      </div>
+                    )}
 
                 </section>
 
@@ -3093,7 +3430,7 @@ const Lifecyclemodal = ({
                       {poFile
                         ? `Selected: ${poFile.name}`
                         : order?.poDocument?.fileName ||
-                          "PDF, Word, JPG or PNG"}
+                        "PDF, Word, JPG or PNG"}
                     </small>
                   </div>
 
@@ -3124,21 +3461,21 @@ const Lifecyclemodal = ({
                   !isPoDocumentComplete(order) ||
                   getStatusClass(lifecycle?.[3]?.status) === "pending"
                 ) && (
-                  <div className="kam-optional-commercial-warning">
-                    <strong>⚠ Optional items pending</strong>
-                    <span>
-                      {!isPoDocumentComplete(order) && "PO Document"}
-                      {!isPoDocumentComplete(order) &&
-                        getStatusClass(lifecycle?.[3]?.status) === "pending" &&
-                        " • "}
-                      {getStatusClass(lifecycle?.[3]?.status) === "pending" &&
-                        "Vendor Finalization"}
-                    </span>
-                    <small>
-                      You can place the order and start tracking. These items can be completed later.
-                    </small>
-                  </div>
-                )}
+                    <div className="kam-optional-commercial-warning">
+                      <strong>⚠ Optional items pending</strong>
+                      <span>
+                        {!isPoDocumentComplete(order) && "PO Document"}
+                        {!isPoDocumentComplete(order) &&
+                          getStatusClass(lifecycle?.[3]?.status) === "pending" &&
+                          " • "}
+                        {getStatusClass(lifecycle?.[3]?.status) === "pending" &&
+                          "Vendor Finalization"}
+                      </span>
+                      <small>
+                        You can place the order and start tracking. These items can be completed later.
+                      </small>
+                    </div>
+                  )}
 
                 <div className="kam-place-order-heading">
                   <div>
@@ -3170,7 +3507,7 @@ const Lifecyclemodal = ({
                     <strong>
                       {formatAmount(
                         order?.orderFinalization?.finalRate ??
-                          order?.finalRate
+                        order?.finalRate
                       )}
                     </strong>
                   </div>
@@ -3283,8 +3620,8 @@ const Lifecyclemodal = ({
                                 <strong>
                                   {formatNumber(
                                     quotation?.quantity ??
-                                      quotation?.vehicleQuantity ??
-                                      1
+                                    quotation?.vehicleQuantity ??
+                                    1
                                   )}
                                 </strong>
                               </td>
@@ -3484,10 +3821,14 @@ const Lifecyclemodal = ({
                           const quotation = getQuotation(
                             order,
                             allocation.quotationId ||
-                              confirmation?.quotationId
+                            confirmation?.quotationId
                           );
 
                           const latest = getLatestTracking(allocation);
+                          const vehicleStatus =
+                            latest?.status ||
+                            allocation?.status ||
+                            "Idle";
 
                           return (
                             <tr key={allocation.allocationId || index}>
@@ -3535,7 +3876,7 @@ const Lifecyclemodal = ({
                                               <span
                                                 className={
                                                   index ===
-                                                  uniqueVehicleChain.length - 1
+                                                    uniqueVehicleChain.length - 1
                                                     ? "current"
                                                     : "previous"
                                                 }
@@ -3545,8 +3886,8 @@ const Lifecyclemodal = ({
 
                                               {index <
                                                 uniqueVehicleChain.length - 1 && (
-                                                <b>→</b>
-                                              )}
+                                                  <b>→</b>
+                                                )}
                                             </React.Fragment>
                                           )
                                         )}
@@ -3578,11 +3919,11 @@ const Lifecyclemodal = ({
 
                                 {(allocation?.driver?.contactNumber ||
                                   allocation?.driverNumber) && (
-                                  <small style={{ display: "block" }}>
-                                    {allocation?.driver?.contactNumber ||
-                                      allocation?.driverNumber}
-                                  </small>
-                                )}
+                                    <small style={{ display: "block" }}>
+                                      {allocation?.driver?.contactNumber ||
+                                        allocation?.driverNumber}
+                                    </small>
+                                  )}
                               </td>
 
                               <td>
@@ -3598,10 +3939,10 @@ const Lifecyclemodal = ({
                               <td>
                                 <span
                                   className={`approval-status ${getStatusClass(
-                                    latest?.status || "Pending"
+                                    vehicleStatus
                                   )}`}
                                 >
-                                  {latest?.status || "Pending"}
+                                  {vehicleStatus}
                                 </span>
                               </td>
                             </tr>
@@ -3756,7 +4097,10 @@ const Lifecyclemodal = ({
               READ ONLY
           ================================================= */}
 
-          {activeStepIndex === 6 && (
+          {activeStepIndex === 6 &&
+            String(lifecycle.find((step) => step.key === "trip-complete")?.status || "")
+              .trim()
+              .toLowerCase() === "completed" && (
             <div className="kam-step-page kam-step-page-trip-complete">
 
               {/* ORDER SUMMARY */}
@@ -3786,8 +4130,8 @@ const Lifecyclemodal = ({
                       Number(order?.totalVehicles) > 0
                         ? `${order.totalVehicles} NOS`
                         : totalRequiredVehicles > 0
-                        ? `${totalRequiredVehicles} NOS`
-                        : "—"
+                          ? `${totalRequiredVehicles} NOS`
+                          : "—"
                     }
                   />
                 </div>
@@ -3889,8 +4233,8 @@ const Lifecyclemodal = ({
                                 <span
                                   className={`approval-status ${getStatusClass(
                                     allocation?.unloading?.status ||
-                                      latest?.status ||
-                                      "Pending"
+                                    latest?.status ||
+                                    "Pending"
                                   )}`}
                                 >
                                   {allocation?.unloading?.status ||
@@ -3921,14 +4265,13 @@ const Lifecyclemodal = ({
                   <ReadOnlyField label="Trip Status" value={order?.status || "Completed"} />
                   <ReadOnlyField
                     label="Completed Vehicles"
-                    value={`${
-                      allocations.filter(
-                        (item) =>
-                          String(item?.unloading?.status || "")
-                            .trim()
-                            .toLowerCase() === "completed"
-                      ).length
-                    } / ${allocations.length}`}
+                    value={`${allocations.filter(
+                      (item) =>
+                        String(item?.unloading?.status || "")
+                          .trim()
+                          .toLowerCase() === "completed"
+                    ).length
+                      } / ${allocations.length}`}
                   />
                 </div>
               </section>
@@ -3947,7 +4290,7 @@ const Lifecyclemodal = ({
           <div className="kam-readonly-field">
             Current Stage:{" "}
             <strong>
-{displayCurrentStage}
+              {displayCurrentStage}
             </strong>
           </div>
 
@@ -3959,11 +4302,10 @@ const Lifecyclemodal = ({
 
               <button
                 type="button"
-                className={`kam-request-approval-btn ${
-                  currentLifecycleIndex > 0
-                    ? "kam-approval-approved-btn"
-                    : ""
-                }`}
+                className={`kam-request-approval-btn ${currentLifecycleIndex > 0
+                  ? "kam-approval-approved-btn"
+                  : ""
+                  }`}
                 disabled={currentLifecycleIndex > 0}
                 onClick={() => {
                   if (currentLifecycleIndex === 0) {
@@ -3996,7 +4338,7 @@ const Lifecyclemodal = ({
               <>
 
                 {order?.orderApproval?.status ===
-                "Approved" ? (
+                  "Approved" ? (
 
                   <button
                     type="button"
@@ -4015,7 +4357,7 @@ const Lifecyclemodal = ({
                 ) : approvalRequested ||
                   (
                     order?.orderApproval?.status ===
-                      "Pending" &&
+                    "Pending" &&
                     Boolean(
                       order?.orderApproval
                         ?.requestedAt
@@ -4076,7 +4418,9 @@ const Lifecyclemodal = ({
                     </svg>
 
                     <span>
-                      Request for Approval
+                      {orderApprovalRejected
+                        ? "Request Approval Again"
+                        : "Request for Approval"}
                     </span>
 
                   </button>
@@ -4162,12 +4506,12 @@ const Lifecyclemodal = ({
 
             {activeStepIndex === 4 && (
               currentLifecycleIndex >= 5 ||
-              String(order?.stage || "")
-                .trim()
-                .toLowerCase() === "tracking" ||
-              String(order?.orderPlaced?.status || "")
-                .trim()
-                .toLowerCase() === "completed" ? (
+                String(order?.stage || "")
+                  .trim()
+                  .toLowerCase() === "tracking" ||
+                String(order?.orderPlaced?.status || "")
+                  .trim()
+                  .toLowerCase() === "completed" ? (
                 <button
                   type="button"
                   className="kam-request-approval-btn kam-place-order-btn kam-approval-approved-btn"
@@ -4191,8 +4535,8 @@ const Lifecyclemodal = ({
                     {placeOrderSaving
                       ? "Placing Order..."
                       : hasPendingTransportReplacement(order)
-                      ? "Replacement Pending"
-                      : "Place Order"}
+                        ? "Replacement Pending"
+                        : "Place Order"}
                   </span>
                   {!placeOrderSaving && (
                     <span aria-hidden="true">→</span>
@@ -4227,10 +4571,10 @@ const Lifecyclemodal = ({
             {toast.type === "success"
               ? "✓"
               : toast.type === "error"
-              ? "!"
-              : toast.type === "warning"
-              ? "!"
-              : "i"}
+                ? "!"
+                : toast.type === "warning"
+                  ? "!"
+                  : "i"}
           </div>
 
           <div className="kam-toast-content">
@@ -4238,10 +4582,10 @@ const Lifecyclemodal = ({
               {toast.type === "success"
                 ? "Success"
                 : toast.type === "error"
-                ? "Action Failed"
-                : toast.type === "warning"
-                ? "Required"
-                : "Information"}
+                  ? "Action Failed"
+                  : toast.type === "warning"
+                    ? "Required"
+                    : "Information"}
             </strong>
             <span>{toast.message}</span>
           </div>

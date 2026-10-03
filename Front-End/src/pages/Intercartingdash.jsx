@@ -51,7 +51,7 @@ const API_BASE_URL =
 const VEHICLE_API =
   `${API_BASE_URL}/api/vehicles`;
 
-const RECORDS_PER_PAGE = 15;
+const RECORDS_PER_PAGE = 10;
 
 
 /* =========================================================
