@@ -4260,60 +4260,138 @@ const updateAllocatedVehicle = async (
    SAVE LR / POD / E-WAY BILL DOCUMENT FOR ALLOCATED VEHICLE
 ========================================================= */
 
-const saveMovementDocument = async (req, res, documentType) => {
+const saveMovementDocument = async (
+  req,
+  res,
+  documentType
+) => {
   try {
-    const result = await getTripDocument(req.params.id);
-
-    if (result.error) {
-      return sendError(res, result.status, result.error);
-    }
-
-    const trip = result.trip;
-    const allocationId = cleanString(req.params.allocationId);
-
-    const vehicle = getAllocatedVehicles(trip).find(
-      (item) => item.allocationId === allocationId
-    );
-
-    if (!vehicle) {
-      return sendError(res, 404, "Allocated vehicle not found.");
-    }
-
-    if (!["lr", "pod", "ewayBill"].includes(documentType)) {
-      return sendError(res, 400, "Invalid movement document type.");
-    }
-
-    const currentDocument = vehicle[documentType] || {};
-    const number = cleanString(req.body.number);
-    const date = toDateOrNull(req.body.date);
-    const validUpto = toDateOrNull(req.body.validUpto);
-    const status = cleanString(req.body.status) || "Pending";
-    const remarks = cleanString(req.body.remarks);
-    const uploadedBy =
-      cleanString(req.body.uploadedBy) || "Tracking";
-
-    if (documentType === "lr" && !number) {
-      return sendError(res, 400, "LR Number is required.");
-    }
-
-    if (
-      documentType !== "lr" &&
-      !req.file &&
-      !currentDocument.fileName
-    ) {
-      const label =
-        documentType === "ewayBill"
-          ? "E-Way Bill"
-          : documentType.toUpperCase();
-
+    if (!isValidMongoId(req.params.id)) {
       return sendError(
         res,
         400,
-        `${label} document is required.`
+        "Invalid order database ID."
       );
     }
 
-    vehicle[documentType] = {
+    if (
+      !["lr", "pod", "ewayBill"].includes(
+        documentType
+      )
+    ) {
+      return sendError(
+        res,
+        400,
+        "Invalid movement document type."
+      );
+    }
+
+    /*
+      IMPORTANT:
+      fileData has select:false in schema.
+
+      We must explicitly load the binary data,
+      especially when replacing/updating an
+      existing document.
+    */
+    const trip = await TripOrder.findById(
+      req.params.id
+    ).select(
+      "+allocatedVehicles.lr.fileData +allocatedVehicles.pod.fileData +allocatedVehicles.ewayBill.fileData"
+    );
+
+    if (!trip) {
+      return sendError(
+        res,
+        404,
+        "Order not found."
+      );
+    }
+
+    const allocationId = cleanString(
+      req.params.allocationId
+    );
+
+    const vehicle =
+      getAllocatedVehicles(trip).find(
+        (item) =>
+          item.allocationId === allocationId
+      );
+
+    if (!vehicle) {
+      return sendError(
+        res,
+        404,
+        "Allocated vehicle not found."
+      );
+    }
+
+    const currentDocument =
+      vehicle[documentType] || {};
+
+    const number = cleanString(
+      req.body.number
+    );
+
+    const date = toDateOrNull(
+      req.body.date
+    );
+
+    const validUpto = toDateOrNull(
+      req.body.validUpto
+    );
+
+    const status =
+      cleanString(req.body.status) ||
+      "Pending";
+
+    const remarks = cleanString(
+      req.body.remarks
+    );
+
+    const uploadedBy =
+      cleanString(req.body.uploadedBy) ||
+      "Tracking";
+
+    /* ================================
+       LR VALIDATION
+    ================================= */
+
+    if (
+      documentType === "lr" &&
+      !number
+    ) {
+      return sendError(
+        res,
+        400,
+        "LR Number is required."
+      );
+    }
+
+    /* ================================
+       POD VALIDATION
+
+       Only POD requires a file.
+       E-Way Bill is details only.
+    ================================= */
+
+    if (
+      documentType === "pod" &&
+      !req.file &&
+      !currentDocument.fileName
+    ) {
+      return sendError(
+        res,
+        400,
+        "POD document is required."
+      );
+    }
+
+    /* ================================
+       BUILD DOCUMENT
+    ================================= */
+
+    const documentData = {
       number:
         documentType === "pod"
           ? currentDocument.number || ""
@@ -4327,12 +4405,14 @@ const saveMovementDocument = async (req, res, documentType) => {
       validUpto:
         documentType === "ewayBill"
           ? validUpto
-          : currentDocument.validUpto || null,
+          : currentDocument.validUpto ||
+          null,
 
       status:
         documentType === "ewayBill"
           ? status
-          : currentDocument.status || "Pending",
+          : currentDocument.status ||
+          "Pending",
 
       remarks:
         documentType === "lr"
@@ -4340,12 +4420,16 @@ const saveMovementDocument = async (req, res, documentType) => {
           : currentDocument.remarks || "",
 
       documentName:
-        cleanString(req.body.documentName) ||
+        cleanString(
+          req.body.documentName
+        ) ||
         req.file?.originalname ||
         currentDocument.documentName ||
         (documentType === "ewayBill"
-          ? "E-Way Bill Document"
-          : `${documentType.toUpperCase()} Document`),
+          ? "E-Way Bill"
+          : documentType === "pod"
+            ? "POD Document"
+            : "LR Document"),
 
       fileName:
         req.file?.originalname ||
@@ -4362,6 +4446,11 @@ const saveMovementDocument = async (req, res, documentType) => {
         currentDocument.fileSize ||
         0,
 
+      /*
+        IMPORTANT:
+        If a new file exists use it.
+        Otherwise preserve existing binary.
+      */
       fileData:
         req.file?.buffer ||
         currentDocument.fileData ||
@@ -4369,17 +4458,38 @@ const saveMovementDocument = async (req, res, documentType) => {
 
       uploadedBy,
 
-      uploadedAt:
-        req.file
-          ? new Date()
-          : currentDocument.uploadedAt || null,
+      uploadedAt: req.file
+        ? new Date()
+        : currentDocument.uploadedAt ||
+        null,
     };
 
-    trip.markModified("allocatedVehicles");
+    vehicle[documentType] =
+      documentData;
+
+    trip.markModified(
+      "allocatedVehicles"
+    );
+
     await trip.save();
 
+    /*
+      Return normal trip without binary
+      file content.
+    */
     const updatedTrip =
-      await TripOrder.findById(trip._id).lean();
+      await TripOrder.findById(
+        trip._id
+      ).lean();
+
+    /* Do not send binary movement files back in JSON responses. */
+    if (Array.isArray(updatedTrip?.allocatedVehicles)) {
+      updatedTrip.allocatedVehicles.forEach((item) => {
+        if (item?.lr) item.lr.fileData = undefined;
+        if (item?.pod) item.pod.fileData = undefined;
+        if (item?.ewayBill) item.ewayBill.fileData = undefined;
+      });
+    }
 
     const label =
       documentType === "ewayBill"
@@ -4398,7 +4508,10 @@ const saveMovementDocument = async (req, res, documentType) => {
         ? "E-Way Bill"
         : documentType.toUpperCase();
 
-    console.error(`Save ${label} Error:`, error);
+    console.error(
+      `Save ${label} Error:`,
+      error
+    );
 
     return sendError(
       res,
@@ -4447,7 +4560,7 @@ const downloadMovementDocument = async (
     const trip = await TripOrder.findById(
       req.params.id
     ).select(
-      `+allocatedVehicles.${documentType}.fileData`
+      "+allocatedVehicles.lr.fileData +allocatedVehicles.pod.fileData +allocatedVehicles.ewayBill.fileData"
     );
 
     if (!trip) {
@@ -4495,6 +4608,11 @@ const downloadMovementDocument = async (
       "Content-Type",
       document.mimeType ||
       "application/octet-stream"
+    );
+
+    res.setHeader(
+      "Content-Length",
+      document.fileData.length
     );
 
     res.setHeader(

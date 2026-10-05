@@ -37,7 +37,9 @@ const {
   confirmVehicleQuotation,
 
   /* TRANSPORT REPLACEMENT APPROVAL */
+
   requestTransportReplacement,
+
   reviewTransportReplacement,
 
   /* VEHICLE ALLOCATION / REPLACEMENT */
@@ -148,7 +150,7 @@ const uploadPoDocument = (req, res, next) => {
 
         : error.message ||
 
-          "Unable to upload PO document.";
+        "Unable to upload PO document.";
 
     return res.status(400).json({
 
@@ -240,7 +242,7 @@ const uploadCraneDocument = (req, res, next) => {
 
         : error.message ||
 
-          "Unable to upload Crane vehicle requirement document.";
+        "Unable to upload Crane vehicle requirement document.";
 
     return res.status(400).json({
 
@@ -326,7 +328,7 @@ const uploadMovementDocument = (req, res, next) => {
 
         : error.message ||
 
-          "Unable to upload movement document.";
+        "Unable to upload movement document.";
 
     return res.status(400).json({
 
@@ -431,17 +433,25 @@ router.put(
 );
 
 /* =========================================================
+
    TRANSPORT REPLACEMENT APPROVAL
+
 ========================================================= */
 
 router.post(
+
   "/:id/transport-replacement-requests",
+
   requestTransportReplacement
+
 );
 
 router.put(
+
   "/:id/transport-replacement-requests/:requestId/review",
+
   reviewTransportReplacement
+
 );
 
 /* =========================================================

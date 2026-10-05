@@ -1783,14 +1783,13 @@ const Tripdetails = () => {
             movementForm.ewayBillValidUpto,
           status:
             movementForm.ewayBillStatus,
-          file:
-            movementForm.ewayBillFile,
+          file: null,
           existingDocument:
             vehicle?.ewayBill,
           uploadedBy:
             movementForm.updatedBy ||
             "Tracking",
-          requireFile: true,
+          requireFile: false,
         });
 
       /*
@@ -3034,347 +3033,154 @@ const Tripdetails = () => {
                         </section>
 
                         <section className="trip-movement-documents">
-
                           <div className="trip-movement-section-title">
-
                             <div>
-
                               <small>TRIP DOCUMENTS</small>
-
-                              <h3>LR, POD & E-Way Bill Documents</h3>
-
+                              <h3>LR, E-Way Bill & POD Documents</h3>
                             </div>
-
                             <span>Selected Vehicle</span>
-
                           </div>
 
                           <div className="trip-movement-document-grid">
-
                             <div className="trip-movement-document-card">
-
                               <div className="trip-movement-document-head">
-
                                 <span className="trip-movement-document-icon">
-
                                   <FileText size={16} />
-
                                 </span>
-
                                 <div>
-
                                   <small>LORRY RECEIPT</small>
-
-                                  <h4>LR Document</h4>
-
+                                  <h4>LR Details</h4>
                                 </div>
-
-                                <b className={vehicle?.pod?.fileName ? "uploaded" : ""}>
-
-                                  {vehicle?.pod?.fileName ? "POD Uploaded" : "Pending"}
-
+                                <b className={movementForm.lrNumber ? "uploaded" : ""}>
+                                  {movementForm.lrNumber ? "Entered" : "Pending"}
                                 </b>
-
                               </div>
 
                               <div className="trip-movement-document-fields">
-
                                 <label>
-
                                   <span>LR Number *</span>
-
                                   <input
-
                                     value={movementForm.lrNumber}
-
                                     onChange={(e) => updateMovementField("lrNumber", e.target.value)}
-
                                     placeholder="Enter LR number"
-
                                   />
-
                                 </label>
-
                                 <label>
-
                                   <span>LR Date</span>
-
                                   <input
-
                                     type="date"
-
                                     value={movementForm.lrDate}
-
                                     onChange={(e) => updateMovementField("lrDate", e.target.value)}
-
                                   />
-
                                 </label>
-
                                 <label>
-
                                   <span>Remarks</span>
-
                                   <input
-
                                     value={movementForm.lrRemarks}
-
                                     onChange={(e) => updateMovementField("lrRemarks", e.target.value)}
-
                                     placeholder="Enter remarks"
-
                                   />
-
                                 </label>
-
                               </div>
-
-                              <div className="trip-movement-document-actions">
-
-                                <span title={movementForm.podFile?.name || vehicle?.pod?.fileName || ""}>
-
-                                  {movementForm.podFile?.name ||
-
-                                    vehicle?.pod?.fileName ||
-
-                                    "No POD file selected"}
-
-                                </span>
-
-                                <div>
-
-                                  <label className="trip-document-upload-button">
-
-                                    <Upload size={13} />
-
-                                    {vehicle?.pod?.fileName ? "Replace" : "Choose File"}
-
-                                    <input
-
-                                      type="file"
-
-                                      accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-
-                                      onChange={(e) =>
-
-                                        updateMovementField("podFile", e.target.files?.[0] || null)
-
-                                      }
-
-                                    />
-
-                                  </label>
-
-                                  {vehicle?.pod?.fileName && (
-
-                                    <button
-
-                                      type="button"
-
-                                      className="trip-document-view-button"
-
-                                      onClick={() => viewMovementDocument(vehicle, "pod")}
-
-                                    >
-
-                                      <Eye size={13} />
-
-                                      View
-
-                                    </button>
-
-                                  )}
-
-                                </div>
-
-                              </div>
-
                             </div>
 
                             <div className="trip-movement-document-card">
-
                               <div className="trip-movement-document-head">
-
                                 <span className="trip-movement-document-icon">
-
                                   <FileText size={16} />
-
                                 </span>
-
                                 <div>
-
                                   <small>E-WAY BILL</small>
-
-                                  <h4>E-Way Bill Document</h4>
-
+                                  <h4>E-Way Bill Details</h4>
                                 </div>
-
-                                <b className={vehicle?.ewayBill?.fileName ? "uploaded" : ""}>
-
-                                  {vehicle?.ewayBill?.fileName
-
-                                    ? "Uploaded"
-
-                                    : movementForm.ewayBillStatus}
-
+                                <b className={movementForm.ewayBillNumber ? "uploaded" : ""}>
+                                  {movementForm.ewayBillNumber ? movementForm.ewayBillStatus : "Pending"}
                                 </b>
-
                               </div>
 
                               <div className="trip-movement-document-fields">
-
                                 <label>
-
                                   <span>E-Way Bill Number</span>
-
                                   <input
-
                                     value={movementForm.ewayBillNumber}
-
-                                    onChange={(e) =>
-
-                                      updateMovementField("ewayBillNumber", e.target.value)
-
-                                    }
-
+                                    onChange={(e) => updateMovementField("ewayBillNumber", e.target.value)}
                                     placeholder="Enter E-Way Bill number"
-
                                   />
-
                                 </label>
-
                                 <label>
-
                                   <span>Valid Upto</span>
-
                                   <input
-
                                     type="date"
-
                                     value={movementForm.ewayBillValidUpto}
-
-                                    onChange={(e) =>
-
-                                      updateMovementField("ewayBillValidUpto", e.target.value)
-
-                                    }
-
+                                    onChange={(e) => updateMovementField("ewayBillValidUpto", e.target.value)}
                                   />
-
                                 </label>
-
                                 <label>
-
                                   <span>Status</span>
-
                                   <select
-
                                     value={movementForm.ewayBillStatus}
-
-                                    onChange={(e) =>
-
-                                      updateMovementField("ewayBillStatus", e.target.value)
-
-                                    }
-
+                                    onChange={(e) => updateMovementField("ewayBillStatus", e.target.value)}
                                   >
-
                                     <option value="Pending">Pending</option>
-
                                     <option value="Active">Active</option>
-
                                     <option value="Expired">Expired</option>
-
                                     <option value="Completed">Completed</option>
-
                                   </select>
-
                                 </label>
-
                               </div>
-
-                              <div className="trip-movement-document-actions">
-
-                                <span
-
-                                  title={
-
-                                    movementForm.ewayBillFile?.name ||
-
-                                    vehicle?.ewayBill?.fileName ||
-
-                                    ""
-
-                                  }
-
-                                >
-
-                                  {movementForm.ewayBillFile?.name ||
-
-                                    vehicle?.ewayBill?.fileName ||
-
-                                    "No E-Way Bill file selected"}
-
-                                </span>
-
-                                <div>
-
-                                  <label className="trip-document-upload-button">
-
-                                    <Upload size={13} />
-
-                                    {vehicle?.ewayBill?.fileName ? "Replace" : "Choose File"}
-
-                                    <input
-
-                                      type="file"
-
-                                      accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-
-                                      onChange={(e) =>
-
-                                        updateMovementField(
-
-                                          "ewayBillFile",
-
-                                          e.target.files?.[0] || null
-
-                                        )
-
-                                      }
-
-                                    />
-
-                                  </label>
-
-                                  {vehicle?.ewayBill?.fileName && (
-
-                                    <button
-
-                                      type="button"
-
-                                      className="trip-document-view-button"
-
-                                      onClick={() => viewMovementDocument(vehicle, "ewayBill")}
-
-                                    >
-
-                                      <Eye size={13} />
-
-                                      View
-
-                                    </button>
-
-                                  )}
-
-                                </div>
-
-                              </div>
-
                             </div>
 
-                          </div>
+                            <div className="trip-movement-document-card trip-pod-full-row">
+                              <div className="trip-movement-document-head">
+                                <span className="trip-movement-document-icon">
+                                  <FileText size={16} />
+                                </span>
+                                <div>
+                                  <small>PROOF OF DELIVERY</small>
+                                  <h4>POD Document</h4>
+                                </div>
+                                <b className={vehicle?.pod?.fileName || movementForm.podFile ? "uploaded" : ""}>
+                                  {vehicle?.pod?.fileName || movementForm.podFile ? "Uploaded" : "Pending"}
+                                </b>
+                              </div>
 
+                              <div className="trip-pod-upload-row">
+                                <div className="trip-pod-file-info">
+                                  <span className="trip-pod-file-icon">
+                                    <FileText size={16} />
+                                  </span>
+                                  <div>
+                                    <small>POD FILE</small>
+                                    <strong title={movementForm.podFile?.name || vehicle?.pod?.fileName || ""}>
+                                      {movementForm.podFile?.name || vehicle?.pod?.fileName || "No POD file selected"}
+                                    </strong>
+                                  </div>
+                                </div>
+
+                                <div className="trip-pod-actions">
+                                  <label className="trip-document-upload-button">
+                                    <Upload size={13} />
+                                    {vehicle?.pod?.fileName ? "Replace" : "Choose File"}
+                                    <input
+                                      type="file"
+                                      accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                                      onChange={(e) => updateMovementField("podFile", e.target.files?.[0] || null)}
+                                    />
+                                  </label>
+                                  {vehicle?.pod?.fileName && (
+                                    <button
+                                      type="button"
+                                      className="trip-document-view-button"
+                                      onClick={() => viewMovementDocument(vehicle, "pod")}
+                                    >
+                                      <Eye size={13} />
+                                      View
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
                         </section>
 
                         <section className="trip-movement-history">

@@ -20,9 +20,6 @@ const API_BASE_URL = (
   "http://localhost:5000"
 ).replace(/\/+$/, "");
 const TRIP_API_URL = `${API_BASE_URL}/api/triporders`;
-/* =========================================================
-   HELPERS
-========================================================= */
 const safeArray = (value) =>
   Array.isArray(value) ? value : [];
 const safeText = (value, fallback = "-") => {
@@ -132,9 +129,6 @@ const formatDays = (value) => {
   return `${numericValue} ${numericValue === 1 ? "Day" : "Days"
     }`;
 };
-/* =========================================================
-   ALLOCATED VEHICLE HELPERS
-========================================================= */
 const getVehicleId = (vehicle) => {
   if (!vehicle) {
     return "";
@@ -178,9 +172,6 @@ const getVehicleStatus = (vehicle) => {
     ? "Reached"
     : "Pending";
 };
-/* =========================================================
-   REQUIREMENT
-========================================================= */
 const getRequirement = (trip, vehicle) => {
   if (!trip || !vehicle) {
     return null;
@@ -201,9 +192,6 @@ const getRequirement = (trip, vehicle) => {
     ) || null
   );
 };
-/* =========================================================
-   CONFIRMATION
-========================================================= */
 const getConfirmation = (trip, vehicle) => {
   if (!trip || !vehicle) {
     return null;
@@ -243,9 +231,6 @@ const getConfirmation = (trip, vehicle) => {
     ) || null
   );
 };
-/* =========================================================
-   QUOTATION / TRANSPORTER
-========================================================= */
 const getQuotation = (trip, vehicle) => {
   if (!trip || !vehicle) {
     return null;
@@ -288,9 +273,6 @@ const getQuotation = (trip, vehicle) => {
     ) || null
   );
 };
-/* =========================================================
-   DETAIL ROW
-========================================================= */
 const DetailRow = ({
   label,
   value,
@@ -311,9 +293,6 @@ const DetailRow = ({
     </strong>
   </div>
 );
-/* =========================================================
-   PERSON SECTION
-========================================================= */
 const PersonSection = ({
   className = "",
   icon,
@@ -345,9 +324,6 @@ const PersonSection = ({
     </div>
   </div>
 );
-/* =========================================================
-   COMPONENT
-========================================================= */
 const VehicleColumn = ({
   trip,
   selectedVehicle,
@@ -358,9 +334,6 @@ const VehicleColumn = ({
     showExtraVehicles,
     setShowExtraVehicles,
   ] = useState(false);
-  /* =======================================================
-     EMPTY TRIP
-  ======================================================= */
   if (!trip) {
     return (
       <section className="vehicle-column-panel">
@@ -379,9 +352,6 @@ const VehicleColumn = ({
       </section>
     );
   }
-  /* =======================================================
-     ALLOCATED VEHICLES
-  ======================================================= */
   const vehicles = safeArray(
     trip.allocatedVehicles
   );
@@ -403,9 +373,6 @@ const VehicleColumn = ({
       : null) ||
     vehicles[0] ||
     null;
-  /* =======================================================
-     VEHICLE SELECTOR
-  ======================================================= */
   const VISIBLE_VEHICLE_COUNT = 5;
   const visibleVehicles =
     vehicles.slice(
@@ -433,9 +400,6 @@ const VehicleColumn = ({
     onSelectVehicle?.(vehicleId);
     setShowExtraVehicles(false);
   };
-  /* =======================================================
-     STATUS
-  ======================================================= */
   const getVehicleStatusIcon = (
     status
   ) => {
@@ -482,9 +446,6 @@ const VehicleColumn = ({
       .toLowerCase()
       .replaceAll(" ", "-");
   };
-  /* =======================================================
-     ACTIVE VEHICLE DATA
-  ======================================================= */
   const latestTracking =
     getLatestTracking(activeVehicle);
   const requirement =
@@ -505,21 +466,7 @@ const VehicleColumn = ({
     safeText(
       activeVehicle?.vehicleNumber
     );
-  /* =======================================================
-     DISTANCE
-  ======================================================= */
   const totalKm = Number(trip.distance) || 0;
-  /*
-   * yesterdayKm / todayKm are vehicle odometer readings.
-   * runningKm is the actual distance travelled for each daily update.
-   *
-   * Example:
-   * yesterdayKm = 18500
-   * todayKm = 18750
-   * runningKm = 250
-   *
-   * KM Covered = 250 km, not 18,750 km.
-   */
   const trackingHistory = safeArray(activeVehicle?.dailyTracking);
   const kmCovered = trackingHistory.reduce((total, tracking) => {
     const dailyRunningKm = Number(tracking?.runningKm);
@@ -529,18 +476,10 @@ const VehicleColumn = ({
     return total + dailyRunningKm;
   }, 0);
   const balanceKm = Math.max(totalKm - kmCovered, 0);
-  /* =======================================================
-     MOVEMENT
-  ======================================================= */
   const currentPosition =
     safeText(
       latestTracking?.currentLocation
     );
-  /* =======================================================
-     DYNAMIC ROUTE STEPPER
-     - Uses entered route locations
-     - Highlights the step that exactly matches currentLocation
-  ======================================================= */
   const normalizeRouteLocation = (value) =>
     safeText(value, "")
       .trim()
@@ -574,7 +513,7 @@ const VehicleColumn = ({
     }
     if (typeof trip?.route === "string") {
       return trip.route
-        .split(/\s\*(?:→|->|>|,|\\\\|)\s*/)
+        .split(/\s\\\\\\\\\\\\\\\\*(?:→|->|>|,|\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\|)\s*/)
         .filter(Boolean);
     }
     return [];
@@ -634,9 +573,6 @@ const VehicleColumn = ({
     formatLastUpdated(
       latestTracking?.updatedAt
     );
-  /* =======================================================
-     REQUIREMENT DETAILS
-  ======================================================= */
   const vehicleType =
     safeText(
       requirement?.vehicleType
@@ -653,14 +589,6 @@ const VehicleColumn = ({
     safeText(
       quotation?.transporter
     );
-  /*
-   \* IMPORTANT:
-   \* Quotation amount is intentionally NOT
-   \* displayed anywhere in Tracking UI.
-   */
-  /* =======================================================
-     LOADING
-  ======================================================= */
   const loading =
     activeVehicle?.loading || {};
   const loadingStatus =
@@ -687,9 +615,6 @@ const VehicleColumn = ({
     safeText(
       loading.remarks
     );
-  /* =======================================================
-     UNLOADING
-  ======================================================= */
   const unloading =
     activeVehicle?.unloading || {};
   const unloadingStatus =
@@ -716,9 +641,6 @@ const VehicleColumn = ({
     safeText(
       unloading.remarks
     );
-  /* =======================================================
-     DRIVER
-  ======================================================= */
   const driver =
     activeVehicle?.driver || {};
   const driverName =
@@ -727,9 +649,6 @@ const VehicleColumn = ({
     safeText(
       driver.contactNumber
     );
-  /* =======================================================
-     ESCORT
-  ======================================================= */
   const escort =
     activeVehicle?.escort || {};
   const escortVehicleNumber =
@@ -742,9 +661,6 @@ const VehicleColumn = ({
     safeText(
       escort.contactNumber
     );
-  /* =======================================================
-     SUPERVISOR
-  ======================================================= */
   const supervisor =
     activeVehicle?.supervisor || {};
   const supervisorName =
@@ -755,14 +671,12 @@ const VehicleColumn = ({
     safeText(
       supervisor.contactNumber
     );
-  /* =======================================================
-     LR / POD / E-WAY BILL DOCUMENTS
-  ======================================================= */
   const lr = activeVehicle?.lr || {};
   const pod = activeVehicle?.pod || {};
   const ewayBill = activeVehicle?.ewayBill || {};
   const lrNumber = safeText(lr.number);
   const lrDate = formatDate(lr.date);
+  const lrRemarks = safeText(lr.remarks);
   const lrStatus =
     lr.number || lr.date || pod.fileName
       ? "Completed"
@@ -786,13 +700,22 @@ const VehicleColumn = ({
     }
     window.open(
       `${TRIP_API_URL}/${mongoId}/allocated-vehicles/${allocationId}/${type}/file?disposition=inline`,
-      "\_blank",
+      "\\\\\\\\\\\\\\\\_blank",
       "noopener,noreferrer"
     );
   };
-  /* =======================================================
-     CUSTOMER
-  ======================================================= */
+  const downloadVehicleDocument = (type) => {
+    const mongoId = trip?._id?.$oid || trip?._id;
+    const allocationId = activeVehicle?.allocationId;
+    if (!mongoId || !allocationId) {
+      return;
+    }
+    window.open(
+      `${TRIP_API_URL}/${mongoId}/allocated-vehicles/${allocationId}/${type}/file?disposition=attachment`,
+      "_blank",
+      "noopener,noreferrer"
+    );
+  };
   const customerName =
     safeText(trip.customer);
   const customerContact =
@@ -803,14 +726,8 @@ const VehicleColumn = ({
     safeText(
       trip.contactNumber
     );
-  /* =======================================================
-     RENDER
-  ======================================================= */
   return (
     <section className="vehicle-column-panel">
-      {/* =====================================
-          VEHICLE SELECTOR
-      ===================================== */}
       <div className="vehicle-selector-row">
         {vehicles.length > 0 ? (
           <>
@@ -1003,9 +920,6 @@ const VehicleColumn = ({
         </div>
       ) : (
         <>
-          {/* =================================
-              ROUTE
-          ================================= */}
           <div className="trip-route-stepper-card">
             <div className="trip-route-stepper-scroll">
               {routeLocations.length > 0 ? (
@@ -1070,9 +984,6 @@ const VehicleColumn = ({
               )}
             </div>
           </div>
-          {/* =================================
-              DISTANCE
-          ================================= */}
           <div className="trip-distance-summary">
             <div className="distance-summary-item total">
               <span>
@@ -1105,9 +1016,6 @@ const VehicleColumn = ({
               </strong>
             </div>
           </div>
-          {/* =================================
-              MOVEMENT + VEHICLE DETAILS
-          ================================= */}
           <div className="movement-vehicle-row">
             <div className="movement-card-section">
               <div className="movement-heading-row">
@@ -1207,9 +1115,6 @@ const VehicleColumn = ({
                 </div>
               </div>
             </div>
-            {/* =================================
-              VEHICLE + TRANSPORT SUMMARY
-          ================================= */}
             <div className="vehicle-transport-summary">
               <div className="vehicle-transport-header">
                 <span className="vehicle-transport-icon">
@@ -1249,12 +1154,8 @@ const VehicleColumn = ({
               </div>
             </div>
           </div>
-          {/* =================================
-              LOADING + UNLOADING
-          ================================= */}
           <div className="operation-details-section">
             <div className="operation-main-grid">
-              {/* LOADING */}
               <div className="simple-operation-card loading-card">
                 <div className="simple-operation-header">
                   <div className="simple-operation-title">
@@ -1317,7 +1218,6 @@ const VehicleColumn = ({
                   </div>
                 </div>
               </div>
-              {/* UNLOADING */}
               <div className="simple-operation-card unloading-card">
                 <div className="simple-operation-header">
                   <div className="simple-operation-title">
@@ -1382,131 +1282,84 @@ const VehicleColumn = ({
               </div>
             </div>
           </div>
-          {/* =================================
-              TRIP DOCUMENTS
-          ================================= */}
-          <div className="vehicle-document-section">
-            <div className="vehicle-document-main-header">
-              <div className="vehicle-document-main-title">
-                <span className="vehicle-document-eyebrow">
-                  TRIP DOCUMENTS
-                </span>
-                <strong>LR, POD &amp; E-Way Bill Documents</strong>
-              </div>
-              <div className="vehicle-document-selected-vehicle">
-                <Truck size={12} />
-                <span>Selected Vehicle</span>
-                <strong>{vehicleNumber || "-"}</strong>
-              </div>
-            </div>
-            <div className="vehicle-document-grid">
-              {/* LR + POD */}
-              <div className="vehicle-document-card">
-                <div className="vehicle-document-card-head">
-                  <div className="vehicle-document-card-title">
-                    <span className="vehicle-document-icon">
-                      <FileText size={14} />
+          <div className="operation-details-section document-operation-section">
+            <div className="operation-main-grid">
+              <div className="simple-operation-card document-operation-card">
+                <div className="simple-operation-header">
+                  <div className="simple-operation-title">
+                    <span className="simple-operation-icon document">
+                      <FileText size={13} />
                     </span>
                     <div>
-                      <strong>LR Document</strong>
-                      <span>Dispatch document</span>
+                      <strong>LR Details</strong>
                     </div>
                   </div>
-                  <span
-                    className={`vehicle-document-status ${getDocumentStatusClass(lrStatus)}`}
-                  >
-                    {lrStatus}
+                  <span className={`simple-operation-status document ${getDocumentStatusClass(lrStatus)}`}>
+                    {lrStatus === "Completed" ? "Entered" : lrStatus}
                   </span>
                 </div>
-                <div className="vehicle-document-body">
-                  <div className="vehicle-document-row">
-                    <span>LR Number</span>
-                    <span className="vehicle-document-colon">:</span>
-                    <strong>{lrNumber}</strong>
-                  </div>
-                  <div className="vehicle-document-row">
-                    <span>LR Date</span>
-                    <span className="vehicle-document-colon">:</span>
-                    <strong>{lrDate}</strong>
-                  </div>
-                  <div className="vehicle-document-row">
-                    <span>POD Document</span>
-                    <span className="vehicle-document-colon">:</span>
-                    <div className="vehicle-document-action">
-                      {pod?.fileName ? (
-                        <button
-                          type="button"
-                          className="vehicle-document-view-button"
-                          onClick={() => viewVehicleDocument("pod")}
-                          title={pod.fileName}
-                        >
-                          <FileText size={10} />
-                          <span>View</span>
-                          <ExternalLink size={9} />
-                        </button>
-                      ) : (
-                        <span className="vehicle-document-not-available">-</span>
-                      )}
-                    </div>
-                  </div>
+                <div className="simple-operation-details">
+                  <DetailRow label="LR Number" value={lrNumber} />
+                  <DetailRow label="LR Date" value={lrDate} />
+                  <DetailRow label="Remarks" value={lrRemarks} />
                 </div>
               </div>
-              {/* E-WAY BILL */}
-              <div className="vehicle-document-card">
-                <div className="vehicle-document-card-head">
-                  <div className="vehicle-document-card-title">
-                    <span className="vehicle-document-icon">
-                      <FileText size={14} />
+              <div className="simple-operation-card document-operation-card">
+                <div className="simple-operation-header">
+                  <div className="simple-operation-title">
+                    <span className="simple-operation-icon document">
+                      <FileText size={13} />
                     </span>
                     <div>
-                      <strong>E-Way Bill Document</strong>
-                      <span>Transport document</span>
+                      <strong>E-Way Bill Details</strong>
                     </div>
                   </div>
-                  <span
-                    className={`vehicle-document-status ${getDocumentStatusClass(ewayBillStatus)}`}
-                  >
+                  <span className={`simple-operation-status document ${getDocumentStatusClass(ewayBillStatus)}`}>
                     {ewayBillStatus}
                   </span>
                 </div>
-                <div className="vehicle-document-body">
-                  <div className="vehicle-document-row">
-                    <span>E-Way Bill Number</span>
-                    <span className="vehicle-document-colon">:</span>
-                    <strong>{ewayBillNumber}</strong>
+                <div className="simple-operation-details">
+                  <DetailRow label="E-Way Bill No" value={ewayBillNumber} />
+                  <DetailRow label="Valid Upto" value={ewayBillValidUpto} />
+                  <DetailRow label="Status" value={ewayBillStatus} />
+                </div>
+              </div>
+            </div>
+            <div className="simple-operation-card document-operation-card pod-operation-card">
+              <div className="simple-operation-header">
+                <div className="simple-operation-title">
+                  <span className="simple-operation-icon document">
+                    <FileText size={13} />
+                  </span>
+                  <div>
+                    <strong>POD Document</strong>
                   </div>
-                  <div className="vehicle-document-row">
-                    <span>Valid Upto</span>
-                    <span className="vehicle-document-colon">:</span>
-                    <strong>{ewayBillValidUpto}</strong>
-                  </div>
-                  <div className="vehicle-document-row">
-                    <span>Document</span>
-                    <span className="vehicle-document-colon">:</span>
-                    <div className="vehicle-document-action">
-                      {ewayBill?.fileName ? (
-                        <button
-                          type="button"
-                          className="vehicle-document-view-button"
-                          onClick={() => viewVehicleDocument("ewayBill")}
-                          title={ewayBill.fileName}
-                        >
-                          <FileText size={10} />
-                          <span>View</span>
-                          <ExternalLink size={9} />
-                        </button>
-                      ) : (
-                        <span className="vehicle-document-not-available">-</span>
-                      )}
+                </div>
+                <span className={`simple-operation-status document ${getDocumentStatusClass(podStatus)}`}>
+                  {podStatus}
+                </span>
+              </div>
+              <div className="simple-operation-details">
+                <div className="simple-detail-row pod-document-row">
+                  <span className="simple-detail-label">POD File</span>
+                  <span className="simple-detail-colon">:</span>
+                  <strong className="simple-detail-value">{safeText(pod?.fileName)}</strong>
+                  {pod?.fileName && (
+                    <div className="pod-document-actions">
+                      <button type="button" onClick={() => viewVehicleDocument("pod")} title="View POD">
+                        <ExternalLink size={10} />
+                        <span>View</span>
+                      </button>
+                      <button type="button" onClick={() => downloadVehicleDocument("pod")} title="Download POD">
+                        <FileText size={10} />
+                        <span>Download</span>
+                      </button>
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
             </div>
           </div>
-          {/* =================================
-              DRIVER / ESCORT / SUPERVISOR
-          ================================= */}
           <div className="lr-pod-card">
             <PersonSection
               className="driver-section"
@@ -1575,9 +1428,6 @@ const VehicleColumn = ({
     </section>
   );
 };
-/* =========================================================
-   TRIP DETAIL ROW
-========================================================= */
 const TripDetailRow = ({
   label,
   value,

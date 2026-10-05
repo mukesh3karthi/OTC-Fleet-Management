@@ -4,2360 +4,2352 @@ const { Schema } = mongoose;
 
 /* =========================================================
 
-   DIMENSIONS
+   DIMENSIONS
 
 ========================================================= */
 
 const dimensionsSchema = new Schema(
 
-  {
+  {
 
-    length: {
+    length: {
 
-      type: Number,
+      type: Number,
 
-      default: null,
+      default: null,
 
-    },
+    },
 
-    height: {
+    height: {
 
-      type: Number,
+      type: Number,
 
-      default: null,
+      default: null,
 
-    },
+    },
 
-    width: {
+    width: {
 
-      type: Number,
+      type: Number,
 
-      default: null,
+      default: null,
 
-    },
+    },
 
-  },
+  },
 
-  {
+  {
 
-    _id: false,
+    _id: false,
 
-  }
+  }
 
 );
 
 /* =========================================================
 
-   VEHICLE REQUIREMENT
+   VEHICLE REQUIREMENT
 
-   Created by Key Account
+   Created by Key Account
 
 ========================================================= */
 
 const vehicleRequirementSchema = new Schema(
 
-  {
+  {
 
-    requirementId: {
+    requirementId: {
 
-      type: String,
+      type: String,
 
-      required: true,
+      required: true,
 
-      trim: true,
+      trim: true,
 
-    },
+    },
 
-    vehicleType: {
+    vehicleType: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "",
+      default: "",
 
-    },
+    },
 
-    configuration: {
+    configuration: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "",
+      default: "",
 
-    },
+    },
 
-    classification: {
+    classification: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "",
+      default: "",
 
-    },
+    },
 
-    quantity: {
+    quantity: {
 
-      type: Number,
+      type: Number,
 
-      min: 1,
+      min: 1,
 
-      default: 1,
+      default: 1,
 
-    },
+    },
 
-    weight: {
+    weight: {
 
-      type: Number,
+      type: Number,
 
-      min: 0,
+      min: 0,
 
-      default: 0,
+      default: 0,
 
-    },
+    },
 
-    dimensions: {
+    dimensions: {
 
-      type: dimensionsSchema,
+      type: dimensionsSchema,
 
-      default: () => ({}),
+      default: () => ({}),
 
-    },
+    },
 
-  },
+  },
 
-  {
+  {
 
-    _id: false,
+    _id: false,
 
-  }
+  }
 
 );
 
 /* =========================================================
 
-   ORDER FINALIZATION
+   ORDER FINALIZATION
 
-   Created by Key Account before Approval Management
+   Created by Key Account before Approval Management
 
-   Stores:
+   Stores:
 
-   - Quoted Rate
+   - Quoted Rate
 
-   - Final Rate
+   - Final Rate
 
-   - Commercial Terms & Payment SLAs
+   - Commercial Terms & Payment SLAs
 
-   - Delivery Commitments & Transit SLAs
+   - Delivery Commitments & Transit SLAs
 
-   - Client Confirmation Notes
+   - Client Confirmation Notes
 
 ========================================================= */
 
 const orderFinalizationSchema = new Schema(
 
-  {
+  {
 
-    quotedRate: {
+    quotedRate: {
 
-      type: Number,
+      type: Number,
 
-      min: 0,
+      min: 0,
 
-      default: null,
+      default: null,
 
-    },
+    },
 
-    finalRate: {
+    finalRate: {
 
-      type: Number,
+      type: Number,
 
-      min: 0,
+      min: 0,
 
-      default: null,
+      default: null,
 
-    },
+    },
 
-    commercialTerms: {
+    commercialTerms: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "",
+      default: "",
 
-    },
+    },
 
-    deliveryCommitments: {
+    deliveryCommitments: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "",
+      default: "",
 
-    },
+    },
 
-    clientConfirmationNotes: {
+    clientConfirmationNotes: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "",
+      default: "",
 
-    },
+    },
 
-    updatedBy: {
+    updatedBy: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "",
+      default: "",
 
-    },
+    },
 
-    updatedAt: {
+    updatedAt: {
 
-      type: Date,
+      type: Date,
 
-      default: null,
+      default: null,
 
-    },
+    },
 
-  },
+  },
 
-  {
+  {
 
-    _id: false,
+    _id: false,
 
-  }
+  }
 
 );
 
 /* =========================================================
 
-   PO DOCUMENT
+   PO DOCUMENT
 
 ========================================================= */
 
 const poDocumentSchema = new Schema(
 
-  {
+  {
 
-    poNumber: { type: String, trim: true, default: "" },
+    poNumber: { type: String, trim: true, default: "" },
 
-    poValidityPeriod: { type: Date, default: null },
+    poValidityPeriod: { type: Date, default: null },
 
-    billingGstin: {
+    billingGstin: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      uppercase: true,
+      uppercase: true,
 
-      default: "",
+      default: "",
 
-    },
+    },
 
-    status: {
+    status: {
 
-      type: String,
+      type: String,
 
-      enum: ["Pending", "Completed"],
+      enum: ["Pending", "Completed"],
 
-      default: "Pending",
+      default: "Pending",
 
-    },
+    },
 
-    documentName: { type: String, trim: true, default: "" },
+    documentName: { type: String, trim: true, default: "" },
 
-    fileName: { type: String, trim: true, default: "" },
+    fileName: { type: String, trim: true, default: "" },
 
-    mimeType: { type: String, trim: true, default: "" },
+    mimeType: { type: String, trim: true, default: "" },
 
-    fileSize: { type: Number, min: 0, default: 0 },
+    fileSize: { type: Number, min: 0, default: 0 },
 
-    fileData: { type: Buffer, select: false, default: null },
+    fileData: { type: Buffer, select: false, default: null },
 
-    uploadedBy: { type: String, trim: true, default: "" },
+    uploadedBy: { type: String, trim: true, default: "" },
 
-    uploadedAt: { type: Date, default: null },
+    uploadedAt: { type: Date, default: null },
 
-  },
+  },
 
-  { _id: false }
+  { _id: false }
 
 );
 
 /* =========================================================
 
-   CRANE REQUIREMENT DOCUMENT
+   CRANE REQUIREMENT DOCUMENT
 
-   Used only for Crane movement.
+   Used only for Crane movement.
 
-   Existing vehicle / PO flows remain unchanged.
+   Existing vehicle / PO flows remain unchanged.
 
 ========================================================= */
 
 const craneDocumentSchema = new Schema(
 
-  {
+  {
 
-    documentName: { type: String, trim: true, default: "" },
+    documentName: { type: String, trim: true, default: "" },
 
-    fileName: { type: String, trim: true, default: "" },
+    fileName: { type: String, trim: true, default: "" },
 
-    mimeType: { type: String, trim: true, default: "" },
+    mimeType: { type: String, trim: true, default: "" },
 
-    fileSize: { type: Number, min: 0, default: 0 },
+    fileSize: { type: Number, min: 0, default: 0 },
 
-    fileData: { type: Buffer, select: false, default: null },
+    fileData: { type: Buffer, select: false, default: null },
 
-    uploadedBy: { type: String, trim: true, default: "" },
+    uploadedBy: { type: String, trim: true, default: "" },
 
-    uploadedAt: { type: Date, default: null },
+    uploadedAt: { type: Date, default: null },
 
-  },
+  },
 
-  { _id: false }
+  { _id: false }
 
 );
 
 /* =========================================================
 
-   ORDER APPROVAL
+   ORDER APPROVAL
 
-   First Approval Management stage
+   First Approval Management stage
 
-   Key Account
+   Key Account
 
-        ↓
+        ↓
 
-   Approval Management
+   Approval Management
 
-        ↓
+        ↓
 
-   Traffic
+   Traffic
 
 ========================================================= */
 
 const orderApprovalSchema = new Schema(
 
-  {
+  {
 
-    status: {
+    status: {
 
-      type: String,
+      type: String,
 
-      enum: [
+      enum: [
 
-        "Pending",
+        "Pending",
 
-        "Approved",
+        "Approved",
 
-        "Rejected",
+        "Rejected",
 
-      ],
+      ],
 
-      default: "Pending",
+      default: "Pending",
 
-    },
+    },
 
-    /*
+    /*
 
-      Set when Key Account clicks
+      Set when Key Account clicks
 
-      Request for Approval.
+      Request for Approval.
 
-    */
+    */
 
-    requestedAt: {
+    requestedAt: {
 
-      type: Date,
+      type: Date,
 
-      default: null,
+      default: null,
 
-    },
+    },
 
-    approvedBy: {
+    approvedBy: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "",
+      default: "",
 
-    },
+    },
 
-    approvedAt: {
+    approvedAt: {
 
-      type: Date,
+      type: Date,
 
-      default: null,
+      default: null,
 
-    },
+    },
 
-    remarks: {
+    remarks: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "",
+      default: "",
 
-    },
+    },
 
-    rejectionReason: {
+    rejectionReason: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "",
+      default: "",
 
-    },
+    },
 
-  },
+  },
 
-  {
+  {
 
-    _id: false,
+    _id: false,
 
-  }
+  }
 
 );
 
 /* =========================================================
 
-   TRAFFIC QUOTATION
+   TRAFFIC QUOTATION
 
-   Created by Traffic only after order approval
+   Created by Traffic only after order approval
 
 ========================================================= */
 
 const trafficQuotationSchema = new Schema(
 
-  {
+  {
 
-    quotationId: {
+    quotationId: {
 
-      type: String,
+      type: String,
 
-      required: true,
+      required: true,
 
-      trim: true,
+      trim: true,
 
-    },
+    },
 
-    requirementId: {
+    requirementId: {
 
-      type: String,
+      type: String,
 
-      required: true,
+      required: true,
 
-      trim: true,
+      trim: true,
 
-    },
+    },
 
-    transporter: {
+    transporter: {
 
-      type: String,
+      type: String,
 
-      required: true,
+      required: true,
 
-      trim: true,
+      trim: true,
 
-    },
+    },
 
-    quantity: {
+    quantity: {
 
-      type: Number,
+      type: Number,
 
-      required: true,
+      required: true,
 
-      min: 1,
+      min: 1,
 
-      default: 1,
+      default: 1,
 
-    },
+    },
 
-    allocatedBy: {
+    allocatedBy: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "",
+      default: "",
 
-    },
+    },
 
-    amount: {
+    amount: {
 
-      type: Number,
+      type: Number,
 
-      required: true,
+      required: true,
 
-      min: 0,
+      min: 0,
 
-    },
+    },
 
-    quotedBy: {
+    quotedBy: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "",
+      default: "",
 
-    },
+    },
 
-    quotedAt: {
+    quotedAt: {
 
-      type: Date,
+      type: Date,
 
-      default: Date.now,
+      default: Date.now,
 
-    },
+    },
 
-    remarks: {
+    remarks: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "",
+      default: "",
 
-    },
+    },
 
-  },
+  },
 
-  {
+  {
 
-    _id: false,
+    _id: false,
 
-  }
+  }
 
 );
 
 /* =========================================================
 
-   VEHICLE / QUOTATION CONFIRMATION
+   VEHICLE / QUOTATION CONFIRMATION
 
-   Second Approval Management stage
+   Second Approval Management stage
 
-   Traffic
+   Traffic
 
-       ↓
+       ↓
 
-   Approval Management
+   Approval Management
 
-       ↓
+       ↓
 
-   Tracking Input
+   Tracking Input
 
 ========================================================= */
 
 /* =========================================================
 
-   TRANSPORT REPLACEMENT REQUEST
+   TRANSPORT REPLACEMENT REQUEST
 
-   Traffic requests a transporter change only after a
+   Traffic requests a transporter change only after a
 
-   transporter quotation has already been approved.
+   transporter quotation has already been approved.
 
-   Pending  -> existing approved transporter remains current.
+   Pending  -> existing approved transporter remains current.
 
-   Approved -> proposed transporter becomes current.
+   Approved -> proposed transporter becomes current.
 
-   Rejected -> existing approved transporter remains current.
+   Rejected -> existing approved transporter remains current.
 
 ========================================================= */
 
 const transportReplacementRequestSchema = new Schema(
 
-  {
+  {
 
-    requestId: {
+    requestId: {
 
-      type: String,
+      type: String,
 
-      required: true,
+      required: true,
 
-      trim: true,
+      trim: true,
 
-    },
+    },
 
-    requirementId: {
+    requirementId: {
 
-      type: String,
+      type: String,
 
-      required: true,
+      required: true,
 
-      trim: true,
+      trim: true,
 
-    },
+    },
 
-    currentConfirmationId: {
+    currentConfirmationId: {
 
-      type: String,
+      type: String,
 
-      required: true,
+      required: true,
 
-      trim: true,
+      trim: true,
 
-    },
+    },
 
-    currentQuotationId: {
+    currentQuotationId: {
 
-      type: String,
+      type: String,
 
-      required: true,
+      required: true,
 
-      trim: true,
+      trim: true,
 
-    },
+    },
 
-    currentTransporter: {
+    currentTransporter: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "",
+      default: "",
 
-    },
+    },
 
-    currentAmount: {
+    currentAmount: {
 
-      type: Number,
+      type: Number,
 
-      min: 0,
+      min: 0,
 
-      default: 0,
+      default: 0,
 
-    },
+    },
 
-    proposedTransporter: {
+    proposedTransporter: {
 
-      type: String,
+      type: String,
 
-      required: true,
+      required: true,
 
-      trim: true,
+      trim: true,
 
-    },
+    },
 
-    proposedAmount: {
+    proposedAmount: {
 
-      type: Number,
+      type: Number,
 
-      required: true,
+      required: true,
 
-      min: 0,
+      min: 0,
 
-    },
+    },
 
-    quantity: {
+    quantity: {
 
-      type: Number,
+      type: Number,
 
-      min: 1,
+      min: 1,
 
-      default: 1,
+      default: 1,
 
-    },
+    },
 
-    reason: {
+    reason: {
 
-      type: String,
+      type: String,
 
-      required: true,
+      required: true,
 
-      trim: true,
+      trim: true,
 
-    },
+    },
 
-    remarks: {
+    remarks: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "",
+      default: "",
 
-    },
+    },
 
-    requestedBy: {
+    requestedBy: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "",
+      default: "",
 
-    },
+    },
 
-    requestedAt: {
+    requestedAt: {
 
-      type: Date,
+      type: Date,
 
-      default: Date.now,
+      default: Date.now,
 
-    },
+    },
 
-    status: {
+    status: {
 
-      type: String,
+      type: String,
 
-      enum: ["Pending", "Approved", "Rejected"],
+      enum: ["Pending", "Approved", "Rejected"],
 
-      default: "Pending",
+      default: "Pending",
 
-    },
+    },
 
-    reviewedBy: {
+    reviewedBy: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "",
+      default: "",
 
-    },
+    },
 
-    reviewedAt: {
+    reviewedAt: {
 
-      type: Date,
+      type: Date,
 
-      default: null,
+      default: null,
 
-    },
+    },
 
-    reviewRemarks: {
+    reviewRemarks: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "",
+      default: "",
 
-    },
+    },
 
-    replacementQuotationId: {
+    replacementQuotationId: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "",
+      default: "",
 
-    },
+    },
 
-    replacementConfirmationId: {
+    replacementConfirmationId: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "",
+      default: "",
 
-    },
+    },
 
-  },
+  },
 
-  {
+  {
 
-    _id: false,
+    _id: false,
 
-  }
+  }
 
 );
 
 const vehicleConfirmationSchema = new Schema(
 
-  {
+  {
 
-    confirmationId: {
+    confirmationId: {
 
-      type: String,
+      type: String,
 
-      required: true,
+      required: true,
 
-      trim: true,
+      trim: true,
 
-    },
+    },
 
-    requirementId: {
+    requirementId: {
 
-      type: String,
+      type: String,
 
-      required: true,
+      required: true,
 
-      trim: true,
+      trim: true,
 
-    },
+    },
 
-    quotationId: {
+    quotationId: {
 
-      type: String,
+      type: String,
 
-      required: true,
+      required: true,
 
-      trim: true,
+      trim: true,
 
-    },
+    },
 
-    status: {
+    status: {
 
-      type: String,
+      type: String,
 
-      enum: ["Pending", "Approved", "Rejected", "Replaced"],
+      enum: ["Pending", "Approved", "Rejected", "Replaced"],
 
-      default: "Pending",
+      default: "Pending",
 
-    },
+    },
 
-    confirmedBy: {
+    confirmedBy: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "",
+      default: "",
 
-    },
+    },
 
-    confirmedAt: {
+    confirmedAt: {
 
-      type: Date,
+      type: Date,
 
-      default: null,
+      default: null,
 
-    },
+    },
 
-    remarks: {
+    remarks: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "",
+      default: "",
 
-    },
+    },
 
-    rejectionReason: {
+    rejectionReason: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "",
+      default: "",
 
-    },
+    },
 
-  },
+  },
 
-  {
+  {
 
-    _id: false,
+    _id: false,
 
-  }
+  }
 
 );
 
 /* =========================================================
 
-   DRIVER
+   DRIVER
 
 ========================================================= */
 
 const driverSchema = new Schema(
 
-  {
+  {
 
-    name: {
+    name: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "",
+      default: "",
 
-    },
+    },
 
-    contactNumber: {
+    contactNumber: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "",
+      default: "",
 
-    },
+    },
 
-  },
+  },
 
-  {
+  {
 
-    _id: false,
+    _id: false,
 
-  }
+  }
 
 );
 
 /* =========================================================
 
-   ESCORT
+   ESCORT
 
 ========================================================= */
 
 const escortSchema = new Schema(
 
-  {
+  {
 
-    vehicleNumber: {
+    vehicleNumber: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      uppercase: true,
+      uppercase: true,
 
-      default: "",
+      default: "",
 
-    },
+    },
 
-    name: {
+    name: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "",
+      default: "",
 
-    },
+    },
 
-    contactNumber: {
+    contactNumber: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "",
+      default: "",
 
-    },
+    },
 
-  },
+  },
 
-  {
+  {
 
-    _id: false,
+    _id: false,
 
-  }
+  }
 
 );
 
 /* =========================================================
 
-   SUPERVISOR
+   SUPERVISOR
 
 ========================================================= */
 
 const supervisorSchema = new Schema(
 
-  {
+  {
 
-    name: {
+    name: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "",
+      default: "",
 
-    },
+    },
 
-    contactNumber: {
+    contactNumber: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "",
+      default: "",
 
-    },
+    },
 
-  },
+  },
 
-  {
+  {
 
-    _id: false,
+    _id: false,
 
-  }
+  }
 
 );
 
 /* =========================================================
 
-   LOADING DETAILS
+   LOADING DETAILS
 
 ========================================================= */
 
 const loadingSchema = new Schema(
 
-  {
+  {
 
-    status: {
+    status: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "Pending",
+      default: "Pending",
 
-    },
+    },
 
-    pointInDate: {
+    pointInDate: {
 
-      type: Date,
+      type: Date,
 
-      default: null,
+      default: null,
 
-    },
+    },
 
-    loadingDate: {
+    loadingDate: {
 
-      type: Date,
+      type: Date,
 
-      default: null,
+      default: null,
 
-    },
+    },
 
-    pointOutDate: {
+    pointOutDate: {
 
-      type: Date,
+      type: Date,
 
-      default: null,
+      default: null,
 
-    },
+    },
 
-    haltingDays: {
+    haltingDays: {
 
-      type: Number,
+      type: Number,
 
-      min: 0,
+      min: 0,
 
-      default: 0,
+      default: 0,
 
-    },
+    },
 
-    remarks: {
+    remarks: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "",
+      default: "",
 
-    },
+    },
 
-  },
+  },
 
-  {
+  {
 
-    _id: false,
+    _id: false,
 
-  }
+  }
 
 );
 
 /* =========================================================
 
-   UNLOADING DETAILS
+   UNLOADING DETAILS
 
 ========================================================= */
 
 const unloadingSchema = new Schema(
 
-  {
+  {
 
-    status: {
+    status: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "Pending",
+      default: "Pending",
 
-    },
+    },
 
-    pointInDate: {
+    pointInDate: {
 
-      type: Date,
+      type: Date,
 
-      default: null,
+      default: null,
 
-    },
+    },
 
-    unloadingDate: {
+    unloadingDate: {
 
-      type: Date,
+      type: Date,
 
-      default: null,
+      default: null,
 
-    },
+    },
 
-    pointOutDate: {
+    pointOutDate: {
 
-      type: Date,
+      type: Date,
 
-      default: null,
+      default: null,
 
-    },
+    },
 
-    haltingDays: {
+    haltingDays: {
 
-      type: Number,
+      type: Number,
 
-      min: 0,
+      min: 0,
 
-      default: 0,
+      default: 0,
 
-    },
+    },
 
-    remarks: {
+    remarks: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "",
+      default: "",
 
-    },
+    },
 
-  },
+  },
 
-  {
+  {
 
-    _id: false,
+    _id: false,
 
-  }
+  }
 
 );
 
 /* =========================================================
 
-   LR / POD DOCUMENT
+   LR / POD DOCUMENT
 
-   Stored per allocated vehicle
+   Stored per allocated vehicle
 
 ========================================================= */
 
 const movementDocumentSchema = new Schema(
 
-  {
+  {
 
-    number: {
+    number: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "",
+      default: "",
 
-    },
+    },
 
-    date: {
+    date: {
 
-      type: Date,
+      type: Date,
 
-      default: null,
+      default: null,
 
-    },
+    },
 
-    validUpto: {
+    validUpto: {
 
-      type: Date,
+      type: Date,
 
-      default: null,
+      default: null,
 
-    },
+    },
 
-    remarks: {
+    remarks: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "",
+      default: "",
 
-    },
+    },
 
-    status: {
+    status: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "Pending",
+      default: "Pending",
 
-    },
+    },
 
-    documentName: {
+    documentName: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "",
+      default: "",
 
-    },
+    },
 
-    fileName: {
+    fileName: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "",
+      default: "",
 
-    },
+    },
 
-    mimeType: {
+    mimeType: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "",
+      default: "",
 
-    },
+    },
 
-    fileSize: {
+    fileSize: {
 
-      type: Number,
+      type: Number,
 
-      min: 0,
+      min: 0,
 
-      default: 0,
+      default: 0,
 
-    },
+    },
 
-    fileData: {
+    fileData: { type: Buffer, select: false, default: null },
 
-      type: Buffer,
+    uploadedBy: {
 
-      select: false,
+      type: String,
 
-      default: null,
+      trim: true,
 
-    },
+      default: "",
 
-    uploadedBy: {
+    },
 
-      type: String,
+    uploadedAt: {
 
-      trim: true,
+      type: Date,
 
-      default: "",
+      default: null,
 
-    },
+    },
 
-    uploadedAt: {
+  },
 
-      type: Date,
+  {
 
-      default: null,
+    _id: false,
 
-    },
-
-  },
-
-  {
-
-    _id: false,
-
-  }
+  }
 
 );
 
 /* =========================================================
 
-   DAILY TRACKING
+   DAILY TRACKING
 
 ========================================================= */
 
 const dailyTrackingSchema = new Schema(
 
-  {
+  {
 
-    trackingId: {
+    trackingId: {
 
-      type: String,
+      type: String,
 
-      required: true,
+      required: true,
 
-      trim: true,
+      trim: true,
 
-    },
+    },
 
-    date: {
+    date: {
 
-      type: Date,
+      type: Date,
 
-      default: Date.now,
+      default: Date.now,
 
-    },
+    },
 
-    day: {
+    day: {
 
-      type: Number,
+      type: Number,
 
-      min: 0,
+      min: 0,
 
-      default: 0,
+      default: 0,
 
-    },
+    },
 
-    yesterdayKm: {
+    yesterdayKm: {
 
-      type: Number,
+      type: Number,
 
-      min: 0,
+      min: 0,
 
-      default: 0,
+      default: 0,
 
-    },
+    },
 
-    todayKm: {
+    todayKm: {
 
-      type: Number,
+      type: Number,
 
-      min: 0,
+      min: 0,
 
-      default: 0,
+      default: 0,
 
-    },
+    },
 
-    runningKm: {
+    runningKm: {
 
-      type: Number,
+      type: Number,
 
-      min: 0,
+      min: 0,
 
-      default: 0,
+      default: 0,
 
-    },
+    },
 
-    yesterdayLocation: {
+    yesterdayLocation: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "",
+      default: "",
 
-    },
+    },
 
-    currentLocation: {
+    currentLocation: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "",
+      default: "",
 
-    },
+    },
 
-    latitude: {
+    latitude: {
 
-      type: Number,
+      type: Number,
 
-      default: null,
+      default: null,
 
-    },
+    },
 
-    longitude: {
+    longitude: {
 
-      type: Number,
+      type: Number,
 
-      default: null,
+      default: null,
 
-    },
+    },
 
-    speed: {
+    speed: {
 
-      type: Number,
+      type: Number,
 
-      min: 0,
+      min: 0,
 
-      default: 0,
+      default: 0,
 
-    },
+    },
 
-    status: {
+    status: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "Idle",
+      default: "Idle",
 
-    },
+    },
 
-    remarks: {
+    remarks: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "",
+      default: "",
 
-    },
+    },
 
-    updatedBy: {
+    updatedBy: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "",
+      default: "",
 
-    },
+    },
 
-    updatedAt: {
+    updatedAt: {
 
-      type: Date,
+      type: Date,
 
-      default: Date.now,
+      default: Date.now,
 
-    },
+    },
 
-  },
+  },
 
-  {
+  {
 
-    _id: false,
+    _id: false,
 
-  }
+  }
 
 );
 
 /* =========================================================
 
-   ACTUAL ALLOCATED VEHICLE
+   ACTUAL ALLOCATED VEHICLE
 
-   Created from Traffic after quotation approval or from Tracking Input
+   Created from Traffic after quotation approval or from Tracking Input
 
-   IMPORTANT:
+   IMPORTANT:
 
-   transporter and amount are NOT duplicated here.
+   transporter and amount are NOT duplicated here.
 
-   They are resolved through:
+   They are resolved through:
 
-   allocation
+   allocation
 
-       ↓
+       ↓
 
-   confirmationId
+   confirmationId
 
-       ↓
+       ↓
 
-   quotationId
+   quotationId
 
-       ↓
+       ↓
 
-   trafficQuotations
+   trafficQuotations
 
 ========================================================= */
 
 /* =========================================================
 
-   VEHICLE REPLACEMENT HISTORY
+   VEHICLE REPLACEMENT HISTORY
 
-   Used by both Traffic and Tracking.
+   Used by both Traffic and Tracking.
 
 ========================================================= */
 
 const vehicleReplacementSchema = new Schema(
 
-  {
+  {
 
-    replacementId: {
+    replacementId: {
 
-      type: String,
+      type: String,
 
-      required: true,
+      required: true,
 
-      trim: true,
+      trim: true,
 
-    },
+    },
 
-    replacementSource: {
+    replacementSource: {
 
-      type: String,
+      type: String,
 
-      enum: ["Traffic", "Tracking"],
+      enum: ["Traffic", "Tracking"],
 
-      required: true,
+      required: true,
 
-    },
+    },
 
-    oldVehicleNumber: {
+    oldVehicleNumber: {
 
-      type: String,
+      type: String,
 
-      required: true,
+      required: true,
 
-      trim: true,
+      trim: true,
 
-      uppercase: true,
+      uppercase: true,
 
-    },
+    },
 
-    newVehicleNumber: {
+    newVehicleNumber: {
 
-      type: String,
+      type: String,
 
-      required: true,
+      required: true,
 
-      trim: true,
+      trim: true,
 
-      uppercase: true,
+      uppercase: true,
 
-    },
+    },
 
-    oldDriver: {
+    oldDriver: {
 
-      type: driverSchema,
+      type: driverSchema,
 
-      default: () => ({}),
+      default: () => ({}),
 
-    },
+    },
 
-    newDriver: {
+    newDriver: {
 
-      type: driverSchema,
+      type: driverSchema,
 
-      default: () => ({}),
+      default: () => ({}),
 
-    },
+    },
 
-    reason: {
+    reason: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "",
+      default: "",
 
-    },
+    },
 
-    remarks: {
+    remarks: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "",
+      default: "",
 
-    },
+    },
 
-    replacedBy: {
+    replacedBy: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "",
+      default: "",
 
-    },
+    },
 
-    replacedAt: {
+    replacedAt: {
 
-      type: Date,
+      type: Date,
 
-      default: Date.now,
+      default: Date.now,
 
-    },
+    },
 
-  },
+  },
 
-  {
+  {
 
-    _id: false,
+    _id: false,
 
-  }
+  }
 
 );
 
 const allocatedVehicleSchema = new Schema(
 
-  {
+  {
 
-    allocationId: {
+    allocationId: {
 
-      type: String,
+      type: String,
 
-      required: true,
+      required: true,
 
-      trim: true,
+      trim: true,
 
-    },
+    },
 
-    requirementId: {
+    requirementId: {
 
-      type: String,
+      type: String,
 
-      required: true,
+      required: true,
 
-      trim: true,
+      trim: true,
 
-    },
+    },
 
-    confirmationId: {
+    confirmationId: {
 
-      type: String,
+      type: String,
 
-      required: true,
+      required: true,
 
-      trim: true,
+      trim: true,
 
-    },
+    },
 
-    quotationId: {
+    quotationId: {
 
-      type: String,
+      type: String,
 
-      required: true,
+      required: true,
 
-      trim: true,
+      trim: true,
 
-    },
+    },
 
-    vehicleNumber: {
+    vehicleNumber: {
 
-      type: String,
+      type: String,
 
-      required: true,
+      required: true,
 
-      trim: true,
+      trim: true,
 
-      uppercase: true,
+      uppercase: true,
 
-    },
+    },
 
-    allocatedSource: {
+    allocatedSource: {
 
-      type: String,
+      type: String,
 
-      enum: ["Traffic", "Tracking"],
+      enum: ["Traffic", "Tracking"],
 
-      default: "Tracking",
+      default: "Tracking",
 
-    },
+    },
 
-    vehicleStatus: {
+    vehicleStatus: {
 
-      type: String,
+      type: String,
 
-      enum: ["Active", "Replaced"],
+      enum: ["Active", "Replaced"],
 
-      default: "Active",
+      default: "Active",
 
-    },
+    },
 
-    replacementCount: {
+    replacementCount: {
 
-      type: Number,
+      type: Number,
 
-      min: 0,
+      min: 0,
 
-      default: 0,
+      default: 0,
 
-    },
+    },
 
-    replacementHistory: {
+    replacementHistory: {
 
-      type: [vehicleReplacementSchema],
+      type: [vehicleReplacementSchema],
 
-      default: [],
+      default: [],
 
-    },
+    },
 
-    driver: {
+    driver: {
 
-      type: driverSchema,
+      type: driverSchema,
 
-      default: () => ({}),
+      default: () => ({}),
 
-    },
+    },
 
-    escort: {
+    escort: {
 
-      type: escortSchema,
+      type: escortSchema,
 
-      default: () => ({}),
+      default: () => ({}),
 
-    },
+    },
 
-    supervisor: {
+    supervisor: {
 
-      type: supervisorSchema,
+      type: supervisorSchema,
 
-      default: () => ({}),
+      default: () => ({}),
 
-    },
+    },
 
-    loading: {
+    loading: {
 
-      type: loadingSchema,
+      type: loadingSchema,
 
-      default: () => ({}),
+      default: () => ({}),
 
-    },
+    },
 
-    unloading: {
+    unloading: {
 
-      type: unloadingSchema,
+      type: unloadingSchema,
 
-      default: () => ({}),
+      default: () => ({}),
 
-    },
+    },
 
-    lr: {
+    lr: {
 
-      type: movementDocumentSchema,
+      type: movementDocumentSchema,
 
-      default: () => ({}),
+      default: () => ({}),
 
-    },
+    },
 
-    pod: {
+    pod: {
 
-      type: movementDocumentSchema,
+      type: movementDocumentSchema,
 
-      default: () => ({}),
+      default: () => ({}),
 
-    },
+    },
 
-    ewayBill: {
+    ewayBill: {
 
-      type: movementDocumentSchema,
+      type: movementDocumentSchema,
 
-      default: () => ({}),
+      default: () => ({}),
 
-    },
+    },
 
-    dailyTracking: {
+    dailyTracking: {
 
-      type: [dailyTrackingSchema],
+      type: [dailyTrackingSchema],
 
-      default: [],
+      default: [],
 
-    },
+    },
 
-  },
+  },
 
-  {
+  {
 
-    _id: false,
+    _id: false,
 
-  }
+  }
 
 );
 
 /* =========================================================
 
-   MAIN TRIP ORDER SCHEMA
+   MAIN TRIP ORDER SCHEMA
 
 ========================================================= */
 
 /* =========================================================
 
-   ORDER PLACED
+   ORDER PLACED
 
-   KEY ACCOUNT -> TRACKING
+   KEY ACCOUNT -> TRACKING
 
 ========================================================= */
 
 const orderPlacedSchema = new Schema(
 
-  {
+  {
 
-    status: {
+    status: {
 
-      type: String,
+      type: String,
 
-      enum: ["Pending", "Completed"],
+      enum: ["Pending", "Completed"],
 
-      default: "Pending",
+      default: "Pending",
 
-    },
+    },
 
-    placedBy: {
+    placedBy: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "",
+      default: "",
 
-    },
+    },
 
-    placedAt: {
+    placedAt: {
 
-      type: Date,
+      type: Date,
 
-      default: null,
+      default: null,
 
-    },
+    },
 
-  },
+  },
 
-  {
+  {
 
-    _id: false,
+    _id: false,
 
-  }
+  }
 
 );
 
 const tripOrderSchema = new Schema(
 
-  {
+  {
 
-    /* =====================================================
+    /* =====================================================
 
-       BUSINESS ID
+       BUSINESS ID
 
-    ===================================================== */
+    ===================================================== */
 
-    tripId: {
+    tripId: {
 
-      type: String,
+      type: String,
 
-      required: true,
+      required: true,
 
-      unique: true,
+      unique: true,
 
-      index: true,
+      index: true,
 
-      trim: true,
+      trim: true,
 
-      uppercase: true,
+      uppercase: true,
 
-    },
+    },
 
-    /* =====================================================
+    /* =====================================================
 
-       KEY ACCOUNT DETAILS
+       KEY ACCOUNT DETAILS
 
-    ===================================================== */
+    ===================================================== */
 
-    movementType: {
+    movementType: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "",
+      default: "",
 
-    },
+    },
 
-    customer: {
+    customer: {
 
-      type: String,
+      type: String,
 
-      required: true,
+      required: true,
 
-      trim: true,
+      trim: true,
 
-    },
+    },
 
-    contactPerson: {
+    contactPerson: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "",
+      default: "",
 
-    },
+    },
 
-    contactNumber: {
+    contactNumber: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "",
+      default: "",
 
-    },
+    },
 
-    email: {
+    email: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      lowercase: true,
+      lowercase: true,
 
-      default: "",
+      default: "",
 
-    },
+    },
 
-    assignedKam: {
+    assignedKam: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "",
+      default: "",
 
-    },
+    },
 
-    /* =====================================================
+    /* =====================================================
 
-       DATES
+       DATES
 
-    ===================================================== */
+    ===================================================== */
 
-    enquiryDate: {
+    enquiryDate: {
 
-      type: Date,
+      type: Date,
 
-      default: null,
+      default: null,
 
-    },
+    },
 
-    placementDate: {
+    placementDate: {
 
-      type: Date,
+      type: Date,
 
-      default: null,
+      default: null,
 
-    },
+    },
 
-    /* =====================================================
+    /* =====================================================
 
-       ROUTE
+       ROUTE
 
-    ===================================================== */
+    ===================================================== */
 
-    origin: {
+    origin: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "",
+      default: "",
 
-    },
+    },
 
-    destination: {
+    destination: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "",
+      default: "",
 
-    },
+    },
 
-    distance: {
+    distance: {
 
-      type: Number,
+      type: Number,
 
-      min: 0,
+      min: 0,
 
-      default: 0,
+      default: 0,
 
-    },
+    },
 
-    /* =====================================================
+    /* =====================================================
 
-       TOTAL VEHICLES
+       TOTAL VEHICLES
 
-       Manually entered during Trip Creation
+       Manually entered during Trip Creation
 
-    ===================================================== */
+    ===================================================== */
 
-    totalVehicles: {
+    totalVehicles: {
 
-      type: Number,
+      type: Number,
 
-      min: 0,
+      min: 0,
 
-      default: 0,
+      default: 0,
 
-    },
+    },
 
-    routeLocations: {
+    routeLocations: {
 
-      type: [String],
+      type: [String],
 
-      default: [],
+      default: [],
 
-    },
+    },
 
-    /* =====================================================
+    /* =====================================================
 
-       MATERIAL
+       MATERIAL
 
-    ===================================================== */
+    ===================================================== */
 
-    materialType: {
+    materialType: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "",
+      default: "",
 
-    },
+    },
 
-    remark: {
+    remark: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "",
+      default: "",
 
-    },
+    },
 
-    /* =====================================================
+    /* =====================================================
 
-       ADDITIONAL ORDER DETAILS
+       ADDITIONAL ORDER DETAILS
 
-    ===================================================== */
+    ===================================================== */
 
-    siteLocation: {
+    siteLocation: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "",
+      default: "",
 
-    },
+    },
 
-    period: {
+    period: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "",
+      default: "",
 
-    },
+    },
 
-    dieselScope: {
+    dieselScope: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "",
+      default: "",
 
-    },
+    },
 
-    /* =====================================================
+    /* =====================================================
 
-       GENERAL WORKFLOW STATUS
+       GENERAL WORKFLOW STATUS
 
-    ===================================================== */
+    ===================================================== */
 
-    status: {
+    status: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "Pending",
+      default: "Pending",
 
-    },
+    },
 
-    stage: {
+    stage: {
 
-      type: String,
+      type: String,
 
-      trim: true,
+      trim: true,
 
-      default: "Order Approval",
+      default: "Order Approval",
 
-    },
+    },
 
-    /* =====================================================
+    /* =====================================================
 
-       VEHICLE REQUIREMENTS
+       VEHICLE REQUIREMENTS
 
-       Created by Key Account
+       Created by Key Account
 
-    ===================================================== */
+    ===================================================== */
 
-    vehicleRequirements: {
+    vehicleRequirements: {
 
-      type: [vehicleRequirementSchema],
+      type: [vehicleRequirementSchema],
 
-      default: [],
+      default: [],
 
-    },
+    },
 
-    /* =====================================================
+    /* =====================================================
 
-       ORDER FINALIZATION
+       ORDER FINALIZATION
 
-       Created by Key Account
+       Created by Key Account
 
-       Saved from Lifecyclemodal:
+       Saved from Lifecyclemodal:
 
-       - quotedRate
+       - quotedRate
 
-       - finalRate
+       - finalRate
 
-       - commercialTerms
+       - commercialTerms
 
-       - deliveryCommitments
+       - deliveryCommitments
 
-       - clientConfirmationNotes
+       - clientConfirmationNotes
 
-    ===================================================== */
+    ===================================================== */
 
-    /* =====================================================
+    /* =====================================================
 
-       CRANE REQUIREMENT DOCUMENT
+       CRANE REQUIREMENT DOCUMENT
 
-       Stored only for Crane movement.
+       Stored only for Crane movement.
 
-    ===================================================== */
+    ===================================================== */
 
-    craneDocument: {
+    craneDocument: {
 
-      type: craneDocumentSchema,
+      type: craneDocumentSchema,
 
-      default: () => ({}),
+      default: () => ({}),
 
-    },
+    },
 
-    orderFinalization: {
+    orderFinalization: {
 
-      type: orderFinalizationSchema,
+      type: orderFinalizationSchema,
 
-      default: () => ({}),
+      default: () => ({}),
 
-    },
+    },
 
-    poDocument: {
+    poDocument: {
 
-      type: poDocumentSchema,
+      type: poDocumentSchema,
 
-      default: () => ({}),
+      default: () => ({}),
 
-    },
+    },
 
-    /* =====================================================
+    /* =====================================================
 
-       ORDER PLACED
+       ORDER PLACED
 
-       Final Key Account verification before Tracking
+       Final Key Account verification before Tracking
 
-    ===================================================== */
+    ===================================================== */
 
-    orderPlaced: {
+    orderPlaced: {
 
-      type: orderPlacedSchema,
+      type: orderPlacedSchema,
 
-      default: () => ({}),
+      default: () => ({}),
 
-    },
+    },
 
-    /* =====================================================
+    /* =====================================================
 
-       FIRST APPROVAL
+       FIRST APPROVAL
 
-       Approval Management confirms order
+       Approval Management confirms order
 
-    ===================================================== */
+    ===================================================== */
 
-    orderApproval: {
+    orderApproval: {
 
-      type: orderApprovalSchema,
+      type: orderApprovalSchema,
 
-      default: () => ({}),
+      default: () => ({}),
 
-    },
+    },
 
-    /* =====================================================
+    /* =====================================================
 
-       TRAFFIC QUOTATIONS
+       TRAFFIC QUOTATIONS
 
-       Available after order approval
+       Available after order approval
 
-    ===================================================== */
+    ===================================================== */
 
-    trafficQuotations: {
+    trafficQuotations: {
 
-      type: [trafficQuotationSchema],
+      type: [trafficQuotationSchema],
 
-      default: [],
+      default: [],
 
-    },
+    },
 
-    /* =====================================================
+    /* =====================================================
 
-       SECOND APPROVAL
+       SECOND APPROVAL
 
-       Approval Management confirms quotation
+       Approval Management confirms quotation
 
-    ===================================================== */
+    ===================================================== */
 
-    vehicleConfirmations: {
+    vehicleConfirmations: {
 
-      type: [vehicleConfirmationSchema],
+      type: [vehicleConfirmationSchema],
 
-      default: [],
+      default: [],
 
-    },
+    },
 
-    /* =====================================================
+    /* =====================================================
 
-       ACTUAL VEHICLES
+       ACTUAL VEHICLES
 
-       Created from Traffic / Tracking Input
+       Created from Traffic / Tracking Input
 
-    ===================================================== */
+    ===================================================== */
 
-    /* =====================================================
+    /* =====================================================
 
-       TRANSPORT REPLACEMENT APPROVAL
+       TRANSPORT REPLACEMENT APPROVAL
 
-    ===================================================== */
+    ===================================================== */
 
-    transportReplacementRequests: {
+    transportReplacementRequests: {
 
-      type: [transportReplacementRequestSchema],
+      type: [transportReplacementRequestSchema],
 
-      default: [],
+      default: [],
 
-    },
+    },
 
-    allocatedVehicles: {
+    allocatedVehicles: {
 
-      type: [allocatedVehicleSchema],
+      type: [allocatedVehicleSchema],
 
-      default: [],
+      default: [],
 
-    },
+    },
 
-  },
+  },
 
-  {
+  {
 
-    timestamps: true,
+    timestamps: true,
 
-  }
+  }
 
 );
 
 /* =========================================================
 
-   INDEXES
+   INDEXES
 
 ========================================================= */
 
 tripOrderSchema.index({
 
-  customer: 1,
+  customer: 1,
 
 });
 
 tripOrderSchema.index({
 
-  status: 1,
+  status: 1,
 
 });
 
 tripOrderSchema.index({
 
-  stage: 1,
+  stage: 1,
 
 });
 
 tripOrderSchema.index({
 
-  placementDate: 1,
+  placementDate: 1,
 
 });
 
 tripOrderSchema.index({
 
-  "orderApproval.status": 1,
+  "orderApproval.status": 1,
 
 });
 
 tripOrderSchema.index({
 
-  "vehicleRequirements.requirementId": 1,
+  "vehicleRequirements.requirementId": 1,
 
 });
 
 tripOrderSchema.index({
 
-  "trafficQuotations.quotationId": 1,
+  "trafficQuotations.quotationId": 1,
 
 });
 
 tripOrderSchema.index({
 
-  "trafficQuotations.requirementId": 1,
+  "trafficQuotations.requirementId": 1,
 
 });
 
 tripOrderSchema.index({
 
-  "vehicleConfirmations.confirmationId": 1,
+  "vehicleConfirmations.confirmationId": 1,
 
 });
 
 tripOrderSchema.index({
 
-  "vehicleConfirmations.requirementId": 1,
+  "vehicleConfirmations.requirementId": 1,
 
 });
 
 tripOrderSchema.index({
 
-  "allocatedVehicles.allocationId": 1,
+  "allocatedVehicles.allocationId": 1,
 
 });
 
 tripOrderSchema.index({
 
-  "allocatedVehicles.vehicleNumber": 1,
+  "allocatedVehicles.vehicleNumber": 1,
 
 });
 
 /* =========================================================
 
-   MODEL
+   MODEL
 
 ========================================================= */
 
 module.exports =
 
-  mongoose.models.TripOrder ||
+  mongoose.models.TripOrder ||
 
-  mongoose.model(
+  mongoose.model(
 
-    "TripOrder",
+    "TripOrder",
 
-    tripOrderSchema
+    tripOrderSchema
 
-  );
+  );
