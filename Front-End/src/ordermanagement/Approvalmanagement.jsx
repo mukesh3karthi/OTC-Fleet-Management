@@ -532,9 +532,21 @@ const Approvalmanagement = () => {
     setSelectedTransportReplacement,
   ] = useState(null);
 
-  const openTransportReplacementDetails = (order, request) => {
-    if (!order || !request) return;
-    setSelectedTransportReplacement({ order, request });
+  const openTransportReplacementDetails = (order, requests) => {
+    if (!order) return;
+
+    const replacementRequests = Array.isArray(requests)
+      ? requests
+      : requests
+        ? [requests]
+        : [];
+
+    if (!replacementRequests.length) return;
+
+    setSelectedTransportReplacement({
+      order,
+      requests: replacementRequests,
+    });
   };
 
   const closeTransportReplacementDetails = () => {
@@ -1880,12 +1892,68 @@ const Approvalmanagement = () => {
   };
 
   const renderTransportReplacementApproval = () => {
-    const rows = transportReplacementRows
-      .slice()
+    const groupedOrders = transportReplacementRows.reduce(
+      (groups, { order, request }) => {
+        const orderKey = String(order?._id || order?.tripId || "");
+
+        if (!groups[orderKey]) {
+          groups[orderKey] = {
+            order,
+            requests: [],
+          };
+        }
+
+        groups[orderKey].requests.push(request);
+        return groups;
+      },
+      {}
+    );
+
+    const rows = Object.values(groupedOrders)
+      .map(({ order, requests }) => {
+        const sortedRequests = requests.slice().sort((a, b) => {
+          if (a.status === "Pending" && b.status !== "Pending") return -1;
+          if (b.status === "Pending" && a.status !== "Pending") return 1;
+          return new Date(b.requestedAt || 0) - new Date(a.requestedAt || 0);
+        });
+
+        const pendingCount = sortedRequests.filter(
+          (request) => request.status === "Pending"
+        ).length;
+
+        const approvedCount = sortedRequests.filter(
+          (request) => request.status === "Approved"
+        ).length;
+
+        const rejectedCount = sortedRequests.filter(
+          (request) => request.status === "Rejected"
+        ).length;
+
+        const totalQuantity = sortedRequests.reduce(
+          (total, request) =>
+            total + Math.max(1, Number(request.quantity) || 1),
+          0
+        );
+
+        const latestRequestedAt = sortedRequests.reduce((latest, request) => {
+          const time = new Date(request.requestedAt || 0).getTime();
+          return time > latest ? time : latest;
+        }, 0);
+
+        return {
+          order,
+          requests: sortedRequests,
+          pendingCount,
+          approvedCount,
+          rejectedCount,
+          totalQuantity,
+          latestRequestedAt,
+        };
+      })
       .sort((a, b) => {
-        if (a.request.status === "Pending" && b.request.status !== "Pending") return -1;
-        if (b.request.status === "Pending" && a.request.status !== "Pending") return 1;
-        return new Date(b.request.requestedAt || 0) - new Date(a.request.requestedAt || 0);
+        if (a.pendingCount > 0 && b.pendingCount === 0) return -1;
+        if (b.pendingCount > 0 && a.pendingCount === 0) return 1;
+        return b.latestRequestedAt - a.latestRequestedAt;
       });
 
     return (
@@ -1893,93 +1961,127 @@ const Approvalmanagement = () => {
         <div className="approval-table-head">
           <div>
             <h3>Transport Replacement Approval</h3>
-            <p>Click a row to view the complete replacement request and take action.</p>
+            <p>Each order is shown once. Click the row to see all replacement vehicles.</p>
           </div>
+
           <span className="approval-table-count">
             {pendingTransportReplacementCount} Pending
           </span>
         </div>
 
         {rows.length === 0 ? (
-          <div className="approval-empty">No transport replacement requests.</div>
+          <div className="approval-empty">
+            No transport replacement requests.
+          </div>
         ) : (
           <div className="approval-replacement-table-wrap">
-            <table className="approval-replacement-table approval-replacement-click-table">
+            <table className="approval-replacement-table approval-replacement-order-table">
               <thead>
                 <tr>
                   <th>S.No</th>
                   <th>Order ID</th>
                   <th>Customer / Route</th>
-                  <th>Current Transport</th>
-                  <th>Proposed Transport</th>
-                  <th>Qty</th>
-                  <th>Requested By</th>
+                  <th>Movement Type</th>
+                  <th>Placement Date</th>
+                  <th>Replacement Vehicles</th>
+                  <th>Total Qty</th>
                   <th>Status</th>
                 </tr>
               </thead>
+
               <tbody>
-                {rows.map(({ order, request }, index) => (
-                  <tr
-                    key={request.requestId}
-                    className={`approval-replacement-click-row ${
-                      request.status === "Pending" ? "is-pending" : ""
-                    }`}
-                    tabIndex="0"
-                    role="button"
-                    onClick={() => openTransportReplacementDetails(order, request)}
-                    onKeyDown={(event) => {
-                      if (event.key === "Enter" || event.key === " ") {
-                        event.preventDefault();
-                        openTransportReplacementDetails(order, request);
+                {rows.map(
+                  ({
+                    order,
+                    requests,
+                    pendingCount,
+                    approvedCount,
+                    rejectedCount,
+                    totalQuantity,
+                  }, index) => (
+                    <tr
+                      key={order._id || order.tripId}
+                      className={`approval-replacement-click-row ${
+                        pendingCount > 0 ? "is-pending" : ""
+                      }`}
+                      tabIndex="0"
+                      role="button"
+                      onClick={() =>
+                        openTransportReplacementDetails(order, requests)
                       }
-                    }}
-                  >
-                    <td>
-                      <span className="approval-replacement-serial">
-                        {String(index + 1).padStart(2, "0")}
-                      </span>
-                    </td>
-                    <td>
-                      <strong className="approval-replacement-order-id">
-                        {order.tripId || "—"}
-                      </strong>
-                    </td>
-                    <td>
-                      <div className="approval-replacement-order">
-                        <strong>{order.customer || "—"}</strong>
-                        <span>{order.origin || "—"} → {order.destination || "—"}</span>
-                      </div>
-                    </td>
-                    <td>
-                      <div className="approval-replacement-transport current">
-                        <strong>{request.currentTransporter || "—"}</strong>
-                        <span>{formatAmount(request.currentAmount)}</span>
-                      </div>
-                    </td>
-                    <td>
-                      <div className="approval-replacement-transport proposed">
-                        <strong>{request.proposedTransporter || "—"}</strong>
-                        <span>{formatAmount(request.proposedAmount)}</span>
-                      </div>
-                    </td>
-                    <td>
-                      <strong className="approval-replacement-qty">
-                        {Math.max(1, Number(request.quantity) || 1)} NOS
-                      </strong>
-                    </td>
-                    <td>
-                      <div className="approval-replacement-requested">
-                        <strong>{request.requestedBy || "Traffic Team"}</strong>
-                        <span>{formatDateTime(request.requestedAt)}</span>
-                      </div>
-                    </td>
-                    <td>
-                      <span className={`approval-status ${getStatusClass(request.status)}`}>
-                        {request.status || "Pending"}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          openTransportReplacementDetails(order, requests);
+                        }
+                      }}
+                    >
+                      <td>
+                        <span className="approval-replacement-serial">
+                          {String(index + 1).padStart(2, "0")}
+                        </span>
+                      </td>
+
+                      <td>
+                        <strong className="approval-replacement-order-id">
+                          {order.tripId || "—"}
+                        </strong>
+                      </td>
+
+                      <td>
+                        <div className="approval-replacement-order">
+                          <strong>{order.customer || "—"}</strong>
+                          <span>
+                            {order.origin || "—"} → {order.destination || "—"}
+                          </span>
+                        </div>
+                      </td>
+
+                      <td>
+                        <span className="approval-replacement-movement">
+                          {order.movementType || "—"}
+                        </span>
+                      </td>
+
+                      <td>
+                        <span className="approval-replacement-placement">
+                          {formatDate(order.placementDate)}
+                        </span>
+                      </td>
+
+                      <td>
+                        <strong>{requests.length} Vehicle{requests.length === 1 ? "" : "s"}</strong>
+                      </td>
+
+                      <td>
+                        <strong className="approval-replacement-qty">
+                          {totalQuantity} NOS
+                        </strong>
+                      </td>
+
+                      <td>
+                        <div className="approval-replacement-order-statuses">
+                          {pendingCount > 0 && (
+                            <span className="approval-status pending">
+                              {pendingCount} Pending
+                            </span>
+                          )}
+                          {approvedCount > 0 && (
+                            <span className="approval-status approved">
+                              {approvedCount} Approved
+                            </span>
+                          )}
+                          {rejectedCount > 0 && (
+                            <span className="approval-status rejected">
+                              {rejectedCount} Rejected
+                            </span>
+                          )}
+                        </div>
+                      </td>
+
+                    </tr>
+                  )
+                )}
               </tbody>
             </table>
           </div>
@@ -1999,7 +2101,7 @@ const Approvalmanagement = () => {
         <div className="approval-section-head-actions">
           <div className="approval-section-filters">
             <label className="approval-filter-field">
-              <span>Movement</span>
+              
               <select
                 value={orderMovementFilter}
                 onChange={(event) => setOrderMovementFilter(event.target.value)}
@@ -2013,7 +2115,7 @@ const Approvalmanagement = () => {
             </label>
 
             <label className="approval-filter-field">
-              <span>Status</span>
+              
               <select
                 value={orderStatusFilter}
                 onChange={(event) => setOrderStatusFilter(event.target.value)}
@@ -2974,7 +3076,7 @@ const Approvalmanagement = () => {
   ======================================================= */
 
   return (
-    <div className="approval-management-page">
+    <div id="approval-management-root" className="approval-management-page">
       {toast && (
         <div
           className={`approval-toast approval-toast-${toast.type}`}
@@ -3020,9 +3122,6 @@ const Approvalmanagement = () => {
 
         <div>
 
-          <span className="approval-page-eyebrow">
-            KEY ACCOUNT MANAGEMENT
-          </span>
 
           <h2>
             Approval Management
@@ -3078,99 +3177,89 @@ const Approvalmanagement = () => {
         </div>
       )}
 
-      {successMessage && (
-        <div className="approval-alert approval-alert-success">
-          <span>
-            ✓
-          </span>
-
-          <p>
-            {successMessage}
-          </p>
-
-          <button
-            type="button"
-            onClick={() =>
-              setSuccessMessage(
-                ""
-              )
-            }
-          >
-            ×
-          </button>
-        </div>
-      )}
+      
 
       {/* ===================================================
           SUMMARY
       =================================================== */}
 
       <div className="approval-summary-grid">
-
-        <div className="approval-summary-card">
-
-          <span>
-            Pending Orders
-          </span>
-
-          <strong>
-            {summary.pendingOrders}
-          </strong>
-
-          <small>
-            Awaiting first approval
-          </small>
-
+        <div className="approval-summary-card approval-summary-pending">
+          <div className="approval-summary-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M6 3h9l4 4v14H6z" />
+              <path d="M15 3v5h5" />
+              <path d="M9 12h6M9 16h4" />
+            </svg>
+          </div>
+          <div className="approval-summary-content">
+            <span>Pending Orders</span>
+            <small>Awaiting first approval</small>
+          </div>
+          <strong>{summary.pendingOrders}</strong>
+          <div className="approval-summary-wave" aria-hidden="true">
+            <svg viewBox="0 0 400 55" preserveAspectRatio="none">
+              <path d="M0 31C62 8 111 52 176 33C241 14 280 5 334 22C361 30 382 31 400 25V55H0Z" fill="currentColor" />
+            </svg>
+          </div>
         </div>
 
-        <div className="approval-summary-card">
-
-          <span>
-            Approved Orders
-          </span>
-
-          <strong>
-            {summary.approvedOrders}
-          </strong>
-
-          <small>
-            Released to Traffic
-          </small>
-
+        <div className="approval-summary-card approval-summary-approved">
+          <div className="approval-summary-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M5 12.5l4 4L19 7" />
+            </svg>
+          </div>
+          <div className="approval-summary-content">
+            <span>Approved Orders</span>
+            <small>Released to Traffic</small>
+          </div>
+          <strong>{summary.approvedOrders}</strong>
+          <div className="approval-summary-wave" aria-hidden="true">
+            <svg viewBox="0 0 400 55" preserveAspectRatio="none">
+              <path d="M0 31C62 8 111 52 176 33C241 14 280 5 334 22C361 30 382 31 400 25V55H0Z" fill="currentColor" />
+            </svg>
+          </div>
         </div>
 
-        <div className="approval-summary-card">
-
-          <span>
-            Pending Quotations
-          </span>
-
-          <strong>
-            {summary.pendingQuotations}
-          </strong>
-
-          <small>
-            Awaiting transporter selection
-          </small>
-
+        <div className="approval-summary-card approval-summary-quotation">
+          <div className="approval-summary-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 5h16v11H8l-4 4z" />
+              <path d="M8 9h8M8 12h5" />
+            </svg>
+          </div>
+          <div className="approval-summary-content">
+            <span>Pending Quotations</span>
+            <small>Awaiting transporter selection</small>
+          </div>
+          <strong>{summary.pendingQuotations}</strong>
+          <div className="approval-summary-wave" aria-hidden="true">
+            <svg viewBox="0 0 400 55" preserveAspectRatio="none">
+              <path d="M0 31C62 8 111 52 176 33C241 14 280 5 334 22C361 30 382 31 400 25V55H0Z" fill="currentColor" />
+            </svg>
+          </div>
         </div>
 
-        <div className="approval-summary-card">
-
-          <span>
-            Confirmed Vehicles
-          </span>
-
-          <strong>
-            {summary.approvedQuotations}
-          </strong>
-
-          <small>
-            Released to Tracking Input
-          </small>
-
+        <div className="approval-summary-card approval-summary-vehicle">
+          <div className="approval-summary-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 7h11v10H3zM14 10h4l3 3v4h-7z" />
+              <circle cx="7" cy="18" r="2" />
+              <circle cx="18" cy="18" r="2" />
+            </svg>
+          </div>
+          <div className="approval-summary-content">
+            <span>Confirmed Vehicles</span>
+            <small>Released to Tracking Input</small>
+          </div>
+          <strong>{summary.approvedQuotations}</strong>
+          <div className="approval-summary-wave" aria-hidden="true">
+            <svg viewBox="0 0 400 55" preserveAspectRatio="none">
+              <path d="M0 31C62 8 111 52 176 33C241 14 280 5 334 22C361 30 382 31 400 25V55H0Z" fill="currentColor" />
+            </svg>
+          </div>
         </div>
-
       </div>
 
       {/* ===================================================
@@ -3309,13 +3398,20 @@ const Approvalmanagement = () => {
       )}
 
       {selectedTransportReplacement && (() => {
-        const { order, request } = selectedTransportReplacement;
-        const key = `${order._id}::${request.requestId}`;
-        const updating = replacementUpdatingKey === key;
-        const currentAmount = Number(request.currentAmount) || 0;
-        const proposedAmount = Number(request.proposedAmount) || 0;
-        const amountDifference = proposedAmount - currentAmount;
-        const isPending = request.status === "Pending";
+        const { order, requests } = selectedTransportReplacement;
+
+        const pendingCount = requests.filter(
+          (request) => request.status === "Pending"
+        ).length;
+
+        const overallStatus =
+          pendingCount > 0
+            ? "Pending"
+            : requests.every((request) => request.status === "Approved")
+              ? "Approved"
+              : requests.some((request) => request.status === "Rejected")
+                ? "Reviewed"
+                : "Completed";
 
         return (
           <div
@@ -3327,7 +3423,7 @@ const Approvalmanagement = () => {
             }}
           >
             <div
-              className="approval-replacement-detail-modal"
+              className="approval-replacement-detail-modal approval-replacement-order-detail-modal"
               role="dialog"
               aria-modal="true"
               aria-label="Transport Replacement Details"
@@ -3335,19 +3431,27 @@ const Approvalmanagement = () => {
             >
               <div className="approval-replacement-detail-head">
                 <div>
-                  <span>Transport Replacement</span>
-                  <h3>{order.tripId || "—"} • {order.customer || "—"}</h3>
-                  <p>{order.origin || "—"} → {order.destination || "—"}</p>
+                  <span>Transport Replacement Details</span>
+                  <h3>{order.tripId || "—"}</h3>
+                  <p>
+                    {order.customer || "—"} • {order.origin || "—"} →{" "}
+                    {order.destination || "—"}
+                  </p>
                 </div>
 
                 <div className="approval-replacement-detail-head-right">
-                  <span className={`approval-status ${getStatusClass(request.status)}`}>
-                    {request.status || "Pending"}
+                  <span
+                    className={`approval-status ${getStatusClass(
+                      overallStatus === "Reviewed" ? "Approved" : overallStatus
+                    )}`}
+                  >
+                    {overallStatus}
                   </span>
+
                   <button
                     type="button"
                     onClick={closeTransportReplacementDetails}
-                    disabled={updating}
+                    disabled={Boolean(replacementUpdatingKey)}
                     aria-label="Close transport replacement details"
                   >
                     ×
@@ -3355,130 +3459,224 @@ const Approvalmanagement = () => {
                 </div>
               </div>
 
-              <div className="approval-replacement-detail-body">
-                <div className="approval-replacement-compare">
-                  <div className="approval-replacement-compare-card current">
-                    <span>Current Transport</span>
-                    <strong>{request.currentTransporter || "—"}</strong>
-                    <div>
-                      <small>Current Amount</small>
-                      <b>{formatAmount(currentAmount)}</b>
-                    </div>
-                  </div>
-
-                  <div className="approval-replacement-arrow">→</div>
-
-                  <div className="approval-replacement-compare-card proposed">
-                    <span>Proposed Transport</span>
-                    <strong>{request.proposedTransporter || "—"}</strong>
-                    <div>
-                      <small>Proposed Amount</small>
-                      <b>{formatAmount(proposedAmount)}</b>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="approval-replacement-detail-grid">
+              <div className="approval-replacement-detail-body approval-replacement-order-detail-body">
+                <div className="approval-replacement-popup-summary">
                   <div>
-                    <span>Amount Difference</span>
-                    <strong className={
-                      amountDifference < 0
-                        ? "replacement-value-decrease"
-                        : amountDifference > 0
-                          ? "replacement-value-increase"
-                          : ""
-                    }>
-                      {amountDifference === 0
-                        ? "No Change"
-                        : `${amountDifference > 0 ? "+" : "−"}${formatAmount(
-                            Math.abs(amountDifference)
-                          )}`}
+                    <span>Replacement Vehicles</span>
+                    <strong>{requests.length}</strong>
+                  </div>
+                  <div>
+                    <span>Total Quantity</span>
+                    <strong>
+                      {requests.reduce(
+                        (total, request) =>
+                          total + Math.max(1, Number(request.quantity) || 1),
+                        0
+                      )}{" "}
+                      NOS
                     </strong>
                   </div>
                   <div>
-                    <span>Quantity</span>
-                    <strong>{Math.max(1, Number(request.quantity) || 1)} NOS</strong>
-                  </div>
-                  <div>
-                    <span>Reason</span>
-                    <strong>{request.reason || "—"}</strong>
-                  </div>
-                  <div>
-                    <span>Requested By</span>
-                    <strong>{request.requestedBy || "Traffic Team"}</strong>
-                  </div>
-                  <div>
-                    <span>Requested At</span>
-                    <strong>{formatDateTime(request.requestedAt)}</strong>
-                  </div>
-                  <div>
-                    <span>Movement</span>
-                    <strong>{order.movementType || "—"}</strong>
+                    <span>Pending</span>
+                    <strong>{pendingCount}</strong>
                   </div>
                 </div>
 
-                <div className="approval-replacement-detail-note">
-                  <span>Traffic Remarks</span>
-                  <p>{request.remarks || "No remarks provided."}</p>
+                <div className="approval-replacement-popup-list">
+                  {requests.map((request, requestIndex) => {
+                    const key = `${order._id}::${request.requestId}`;
+                    const updating = replacementUpdatingKey === key;
+                    const currentAmount = Number(request.currentAmount) || 0;
+                    const proposedAmount = Number(request.proposedAmount) || 0;
+                    const amountDifference = proposedAmount - currentAmount;
+                    const isPending = request.status === "Pending";
+
+                    return (
+                      <section
+                        key={request.requestId}
+                        className={`approval-replacement-popup-vehicle ${
+                          isPending ? "is-pending" : ""
+                        }`}
+                      >
+                        <div className="approval-replacement-popup-vehicle-head">
+                          <div>
+                            <small>
+                              VEHICLE {String(requestIndex + 1).padStart(2, "0")}
+                            </small>
+                            <strong>
+                              {request.requirementId ||
+                                request.requestId ||
+                                "Replacement Vehicle"}
+                            </strong>
+                          </div>
+
+                          <span
+                            className={`approval-status ${getStatusClass(
+                              request.status
+                            )}`}
+                          >
+                            {request.status || "Pending"}
+                          </span>
+                        </div>
+
+                        <div className="approval-replacement-compare">
+                          <div className="approval-replacement-compare-card current">
+                            <span>Current Transport</span>
+                            <strong>{request.currentTransporter || "—"}</strong>
+                            <div>
+                              <small>Current Amount</small>
+                              <b>{formatAmount(currentAmount)}</b>
+                            </div>
+                          </div>
+
+                          <div className="approval-replacement-arrow">→</div>
+
+                          <div className="approval-replacement-compare-card proposed">
+                            <span>Proposed Transport</span>
+                            <strong>{request.proposedTransporter || "—"}</strong>
+                            <div>
+                              <small>Proposed Amount</small>
+                              <b>{formatAmount(proposedAmount)}</b>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="approval-replacement-detail-grid">
+                          <div>
+                            <span>Amount Difference</span>
+                            <strong
+                              className={
+                                amountDifference < 0
+                                  ? "replacement-value-decrease"
+                                  : amountDifference > 0
+                                    ? "replacement-value-increase"
+                                    : ""
+                              }
+                            >
+                              {amountDifference === 0
+                                ? "No Change"
+                                : `${amountDifference > 0 ? "+" : "−"}${formatAmount(
+                                    Math.abs(amountDifference)
+                                  )}`}
+                            </strong>
+                          </div>
+
+                          <div>
+                            <span>Quantity</span>
+                            <strong>
+                              {Math.max(1, Number(request.quantity) || 1)} NOS
+                            </strong>
+                          </div>
+
+                          <div>
+                            <span>Reason</span>
+                            <strong>{request.reason || "—"}</strong>
+                          </div>
+
+                          <div>
+                            <span>Requested By</span>
+                            <strong>
+                              {request.requestedBy || "Traffic Team"}
+                            </strong>
+                          </div>
+
+                          <div>
+                            <span>Requested At</span>
+                            <strong>
+                              {formatDateTime(request.requestedAt)}
+                            </strong>
+                          </div>
+
+                          <div>
+                            <span>Movement</span>
+                            <strong>{order.movementType || "—"}</strong>
+                          </div>
+                        </div>
+
+                        <div className="approval-replacement-detail-note">
+                          <span>Traffic Remarks</span>
+                          <p>{request.remarks || "No remarks provided."}</p>
+                        </div>
+
+                        {isPending ? (
+                          <div className="approval-replacement-detail-review">
+                            <label>
+                              <span>
+                                Approval Remarks / Rejection Reason
+                              </span>
+                              <textarea
+                                value={replacementRemarks[key] || ""}
+                                onChange={(event) =>
+                                  setReplacementRemarks((previous) => ({
+                                    ...previous,
+                                    [key]: event.target.value,
+                                  }))
+                                }
+                                placeholder="Add approval remarks or enter the rejection reason..."
+                                disabled={updating}
+                              />
+                            </label>
+
+                            <div className="approval-replacement-detail-actions">
+                              <button
+                                type="button"
+                                className="approval-replacement-reject"
+                                disabled={updating}
+                                onClick={() =>
+                                  updateTransportReplacement(
+                                    order,
+                                    request,
+                                    "Rejected"
+                                  )
+                                }
+                              >
+                                Reject
+                              </button>
+
+                              <button
+                                type="button"
+                                className="approval-replacement-approve"
+                                disabled={updating}
+                                onClick={() =>
+                                  updateTransportReplacement(
+                                    order,
+                                    request,
+                                    "Approved"
+                                  )
+                                }
+                              >
+                                {updating
+                                  ? "Updating..."
+                                  : "Approve Replacement"}
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="approval-replacement-review-result">
+                            <div>
+                              <span>Reviewed By</span>
+                              <strong>
+                                {request.reviewedBy || "Approval Management"}
+                              </strong>
+                            </div>
+                            <div>
+                              <span>Reviewed At</span>
+                              <strong>
+                                {formatDateTime(request.reviewedAt)}
+                              </strong>
+                            </div>
+                            <div className="wide">
+                              <span>Review Remarks</span>
+                              <strong>
+                                {request.reviewRemarks || "—"}
+                              </strong>
+                            </div>
+                          </div>
+                        )}
+                      </section>
+                    );
+                  })}
                 </div>
-
-                {isPending ? (
-                  <div className="approval-replacement-detail-review">
-                    <label>
-                      <span>Approval Remarks / Rejection Reason</span>
-                      <textarea
-                        value={replacementRemarks[key] || ""}
-                        onChange={(event) =>
-                          setReplacementRemarks((previous) => ({
-                            ...previous,
-                            [key]: event.target.value,
-                          }))
-                        }
-                        placeholder="Add approval remarks or enter the rejection reason..."
-                        disabled={updating}
-                      />
-                    </label>
-
-                    <div className="approval-replacement-detail-actions">
-                      <button
-                        type="button"
-                        className="approval-replacement-reject"
-                        disabled={updating}
-                        onClick={() =>
-                          updateTransportReplacement(order, request, "Rejected")
-                        }
-                      >
-                        Reject
-                      </button>
-
-                      <button
-                        type="button"
-                        className="approval-replacement-approve"
-                        disabled={updating}
-                        onClick={() =>
-                          updateTransportReplacement(order, request, "Approved")
-                        }
-                      >
-                        {updating ? "Updating..." : "Approve Replacement"}
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="approval-replacement-review-result">
-                    <div>
-                      <span>Reviewed By</span>
-                      <strong>{request.reviewedBy || "Approval Management"}</strong>
-                    </div>
-                    <div>
-                      <span>Reviewed At</span>
-                      <strong>{formatDateTime(request.reviewedAt)}</strong>
-                    </div>
-                    <div className="wide">
-                      <span>Review Remarks</span>
-                      <strong>{request.reviewRemarks || "—"}</strong>
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           </div>
