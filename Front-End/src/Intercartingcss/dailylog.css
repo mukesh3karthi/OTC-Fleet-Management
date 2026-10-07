@@ -3,9 +3,9 @@ body.daily-modal-open {
   overflow: hidden;
 }
 .daily-log-page,
-.daily-log-page \\*,
-.daily-log-page \\*::before,
-.daily-log-page \\*::after {
+.daily-log-page *,
+.daily-log-page *::before,
+.daily-log-page *::after {
   box-sizing: border-box;
 }
 .daily-log-page {
