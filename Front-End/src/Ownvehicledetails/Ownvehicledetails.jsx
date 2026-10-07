@@ -39,7 +39,7 @@ const API_OPTIONS = {
   timeout: 60000,
 };
 
-const RECORDS_PER_PAGE = 4;
+const RECORDS_PER_PAGE = 10;
 
 /*
  * IMPORTANT:

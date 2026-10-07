@@ -982,7 +982,6 @@ const Vehicledocument = () => {
     URL.revokeObjectURL(url);
   };
 
-
   const downloadVehicleDetails = (
     vehicle
   ) => {
@@ -1113,7 +1112,6 @@ const Vehicledocument = () => {
     window.location.assign(downloadUrl);
   };
 
-
   const getDocumentDownloadUrl = (
     vehicle,
     documentKey
@@ -1187,8 +1185,6 @@ const Vehicledocument = () => {
       }
     );
   };
-
-
 
   const getImageMimeType = (
     documentData,
@@ -1270,7 +1266,6 @@ const Vehicledocument = () => {
     return "";
   };
 
-
   const normalizeImageBlob = (
     blob,
     mimeType
@@ -1297,7 +1292,6 @@ const Vehicledocument = () => {
       }
     );
   };
-
 
   const blobToDataUrl = (blob) =>
     new Promise((resolve, reject) => {
@@ -1445,7 +1439,6 @@ const Vehicledocument = () => {
       };
     };
 
-
   const getUploadedDocumentType = ({
     mimeType,
     fileName,
@@ -1503,7 +1496,6 @@ const Vehicledocument = () => {
     return "unknown";
   };
 
-
   const downloadPdfBytes = (
     pdfBytes,
     fileName
@@ -1548,7 +1540,6 @@ const Vehicledocument = () => {
     );
   };
 
-
   const addImageDocumentPage =
     async ({
       finalPdf,
@@ -1564,11 +1555,11 @@ const Vehicledocument = () => {
       const embeddedImage =
         imageType === "png"
           ? await finalPdf.embedPng(
-              arrayBuffer
-            )
+            arrayBuffer
+          )
           : await finalPdf.embedJpg(
-              arrayBuffer
-            );
+            arrayBuffer
+          );
 
       const page =
         finalPdf.addPage([
@@ -1667,10 +1658,10 @@ const Vehicledocument = () => {
       const scale =
         Math.min(
           availableWidth /
-            imageSize.width,
+          imageSize.width,
 
           availableHeight /
-            imageSize.height,
+          imageSize.height,
 
           1
         );
@@ -1707,7 +1698,6 @@ const Vehicledocument = () => {
         }
       );
     };
-
 
   const addUploadedDocumentToPdf =
     async ({
@@ -1837,7 +1827,6 @@ const Vehicledocument = () => {
         }
       );
 
-
       /* =====================================
          PDF -> COPY ORIGINAL PDF PAGES
       ===================================== */
@@ -1899,7 +1888,7 @@ const Vehicledocument = () => {
           return true;
 
         } catch (
-          pdfError
+        pdfError
         ) {
           console.error(
             `❌ PDF MERGE FAILED: ${label}`,
@@ -2072,7 +2061,6 @@ const Vehicledocument = () => {
         }
       }
 
-
       /* =====================================
          PNG
       ===================================== */
@@ -2101,7 +2089,7 @@ const Vehicledocument = () => {
 
           return true;
         } catch (
-          imageError
+        imageError
         ) {
           console.error(
             `PNG ERROR ${label}:`,
@@ -2111,7 +2099,6 @@ const Vehicledocument = () => {
           return false;
         }
       }
-
 
       /* =====================================
          JPG / JPEG
@@ -2141,7 +2128,7 @@ const Vehicledocument = () => {
 
           return true;
         } catch (
-          imageError
+        imageError
         ) {
           console.error(
             `JPG ERROR ${label}:`,
@@ -2151,7 +2138,6 @@ const Vehicledocument = () => {
           return false;
         }
       }
-
 
       console.error(
         "❌ Unsupported uploaded document:",
@@ -2178,7 +2164,6 @@ const Vehicledocument = () => {
 
       return false;
     };
-
 
   const addVehicleSummaryPage =
     async ({
@@ -2384,15 +2369,15 @@ const Vehicledocument = () => {
               color:
                 hasDocument
                   ? rgb(
-                      0.05,
-                      0.55,
-                      0.45
-                    )
+                    0.05,
+                    0.55,
+                    0.45
+                  )
                   : rgb(
-                      0.60,
-                      0.65,
-                      0.70
-                    ),
+                    0.60,
+                    0.65,
+                    0.70
+                  ),
             }
           );
 
@@ -2433,7 +2418,6 @@ const Vehicledocument = () => {
 
       return page;
     };
-
 
   const downloadAllDocumentsAsPdf =
     async (vehicle) => {
@@ -2534,11 +2518,10 @@ const Vehicledocument = () => {
                 1;
             }
           } catch (
-            documentError
+          documentError
           ) {
             console.error(
-              `Unable to add ${
-                documentItem.label
+              `Unable to add ${documentItem.label
               }:`,
               documentError
             );
@@ -2582,7 +2565,6 @@ const Vehicledocument = () => {
         );
       }
     };
-
 
   const openExportPopup = (
     mode,
@@ -2660,9 +2642,9 @@ const Vehicledocument = () => {
                   documentData?.expiryDate
                 ),
                 documentData?.originalName ||
-                  documentData?.fileName ||
-                  documentData?.filename ||
-                  "-",
+                documentData?.fileName ||
+                documentData?.filename ||
+                "-",
               ];
             }
           ),
@@ -2719,9 +2701,9 @@ const Vehicledocument = () => {
             ),
             expiryState.text,
             documentData?.originalName ||
-              documentData?.fileName ||
-              documentData?.filename ||
-              "-",
+            documentData?.fileName ||
+            documentData?.filename ||
+            "-",
           ];
         }
       );
@@ -2796,7 +2778,7 @@ const Vehicledocument = () => {
     return getVehicleExportData(
       exportPopup.vehicle,
       exportPopup.mode ===
-        "allDocuments"
+      "allDocuments"
     );
   };
 
@@ -2933,15 +2915,13 @@ const Vehicledocument = () => {
                   1;
               }
             } catch (
-              documentError
+            documentError
             ) {
               console.error(
-                `Unable to add ${
-                  label
-                } for ${
-                  getVehicleNumber(
-                    vehicle
-                  )
+                `Unable to add ${label
+                } for ${getVehicleNumber(
+                  vehicle
+                )
                 }:`,
                 documentError
               );
@@ -2993,7 +2973,6 @@ const Vehicledocument = () => {
         return;
       }
     }
-
 
     /*
       SINGLE EXPORT POPUP PDF:
@@ -3115,7 +3094,6 @@ const Vehicledocument = () => {
     closeExportPopup();
   };
 
-
   return (
     <section className="vehicle-document-page">
 
@@ -3214,7 +3192,6 @@ const Vehicledocument = () => {
           </div>
         </article>
       </section>
-
 
       {/* ======================================
           Document Expiry Summary
@@ -3661,9 +3638,9 @@ const Vehicledocument = () => {
                               )}`}
                             >
                               {downloadingDocumentsId ===
-                              getVehicleId(
-                                vehicle
-                              ) ? (
+                                getVehicleId(
+                                  vehicle
+                                ) ? (
                                 <RefreshCw
                                   size={14}
                                   className="is-spinning"
@@ -3674,9 +3651,9 @@ const Vehicledocument = () => {
 
                               <span>
                                 {downloadingDocumentsId ===
-                                getVehicleId(
-                                  vehicle
-                                )
+                                  getVehicleId(
+                                    vehicle
+                                  )
                                   ? "Creating PDF..."
                                   : "All Documents"}
                               </span>

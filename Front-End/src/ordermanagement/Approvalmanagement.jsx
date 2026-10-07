@@ -2332,7 +2332,7 @@ const Approvalmanagement = () => {
         <div className="approval-section-head-actions">
           <div className="approval-section-filters">
             <label className="approval-filter-field">
-              <span>Movement</span>
+              
               <select
                 value={quotationMovementFilter}
                 onChange={(event) => setQuotationMovementFilter(event.target.value)}
@@ -2346,7 +2346,7 @@ const Approvalmanagement = () => {
             </label>
 
             <label className="approval-filter-field">
-              <span>Status</span>
+              
               <select
                 value={quotationStatusFilter}
                 onChange={(event) => setQuotationStatusFilter(event.target.value)}

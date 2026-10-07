@@ -1,6 +1,37 @@
-/* *{
-  font-family:'Poppins',sans-serif;
+* {
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
-} */
+}
 
+html,
+body,
+#root {
+  width: 100%;
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: "Poppins", sans-serif;
+  color: #0f2942;
+  background: #f4f8fa;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}

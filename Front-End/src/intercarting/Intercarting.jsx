@@ -239,11 +239,10 @@ const Intercarting = () => {
           >
             <button
               type="button"
-              className={`fleet-range-button ${
-                range === "Week"
+              className={`fleet-range-button ${range === "Week"
                   ? "active"
                   : ""
-              }`}
+                }`}
               onClick={() =>
                 setRange("Week")
               }
@@ -256,11 +255,10 @@ const Intercarting = () => {
 
             <button
               type="button"
-              className={`fleet-range-button ${
-                range === "Month"
+              className={`fleet-range-button ${range === "Month"
                   ? "active"
                   : ""
-              }`}
+                }`}
               onClick={() =>
                 setRange("Month")
               }
@@ -338,10 +336,9 @@ const Intercarting = () => {
                     <Cell
                       key={`${entry.name}-${entry.value}`}
                       fill={
-                        index ===
-                        highlightIndex
-                          ? "#123e91"
-                          : "#c8dbf7"
+                        index === highlightIndex
+                          ? "#079b91"
+                          : "#b9ddd9"
                       }
                     />
                   )

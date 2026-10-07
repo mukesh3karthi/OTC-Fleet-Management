@@ -1,7 +1,6 @@
 /* =========================================================
    GLOBAL
-========================================================= */
-
+\========================================================= */
 * {
   box-sizing: border-box;
 }
@@ -12,86 +11,63 @@ body {
   padding: 0;
 }
 
-
 /* =========================================================
    PAGE
-========================================================= */
-
+\========================================================= */
 .own-vehicle-page {
   width: 100%;
   min-width: 0;
   min-height: 100%;
-
   padding: 16px 18px !important;
-
   background: #f4f7f9;
-
   color: #0b2942;
-
   font-family:
     Inter,
     "Segoe UI",
     Roboto,
     Arial,
     sans-serif !important;
-
   overflow-x: hidden;
 }
 
-
 /* =========================================================
    API ERROR
-========================================================= */
-
+\========================================================= */
 .own-page-error {
   width: 100%;
-
   margin: 0 0 12px;
-
   padding: 9px 12px;
-
   display: flex;
   align-items: center;
   gap: 8px;
-
   border: 1px solid #f3c4c4;
   border-radius: 8px;
-
   background: #fff1f1;
-
   color: #c93f3f;
-
   font-size: 11px;
   font-weight: 500;
 }
 
 .own-page-error svg {
   flex-shrink: 0;
-
   font-size: 13px;
 }
 
 .own-page-error span {
   flex: 1;
-
   line-height: 1.4;
 }
 
 .own-page-error button {
   padding: 5px 10px;
-
   border: 1px solid #c93f3f;
   border-radius: 6px;
-
   background: transparent;
   color: #c93f3f;
-
   font: inherit;
   font-size: 10px;
   font-weight: 600;
-
   cursor: pointer;
-
   transition:
     background 0.2s ease,
     color 0.2s ease;
@@ -99,205 +75,212 @@ body {
 
 .own-page-error button:hover {
   background: #c93f3f;
-
   color: #fff;
 }
 
-
 /* =========================================================
    SUMMARY CARDS
-========================================================= */
-
+\========================================================= */
 .own-vehicle-stats {
   width: 100%;
-
   display: grid;
-
   grid-template-columns:
     repeat(4, minmax(0, 1fr));
-
   gap: 12px;
-
   margin: 0 0 12px;
 }
 
-
 /* =========================================================
-   STAT CARD
+   STAT CARD - DIAGONAL RIGHT ACCENT
 ========================================================= */
-
 .own-stat-card {
+  --card-accent: #0f9488;
+  --card-soft: rgba(15, 148, 136, .09);
+  --card-soft-strong: rgba(15, 148, 136, .15);
+  position: relative;
   width: 100%;
   min-width: 0;
   min-height: 88px;
-
-  padding: 12px 15px;
-
+  padding: 11px 82px 10px 15px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-
-  gap: 10px;
-
+  overflow: hidden;
+  isolation: isolate;
   border: 1px solid #dce4e9;
   border-radius: 11px;
-
-  background: #ffffff;
-
-  box-shadow:
-    0 3px 10px rgba(11, 41, 66, 0.04);
-
-  transition:
-    transform 0.18s ease,
-    border-color 0.18s ease,
-    box-shadow 0.18s ease;
+  background: #fff;
+  box-shadow: 0 3px 10px rgba(11, 41, 66, .04);
+  transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
 }
 
 .own-stat-card:hover {
   transform: translateY(-1px);
-
   border-color: #c7d5dc;
+  box-shadow: 0 5px 14px rgba(11, 41, 66, .065);
+}
 
-  box-shadow:
-    0 5px 14px rgba(11, 41, 66, 0.065);
+.own-stat-card:has(.own-stat-icon.truck) {
+  --card-accent: #0f9488;
+  --card-soft: rgba(15, 148, 136, .09);
+  --card-soft-strong: rgba(15, 148, 136, .15);
+}
+
+.own-stat-card:has(.own-stat-icon.active) {
+  --card-accent: #15945a;
+  --card-soft: rgba(21, 148, 90, .09);
+  --card-soft-strong: rgba(21, 148, 90, .14);
+}
+
+.own-stat-card:has(.own-stat-icon.idle) {
+  --card-accent: #667085;
+  --card-soft: rgba(102, 112, 133, .08);
+  --card-soft-strong: rgba(102, 112, 133, .13);
+}
+
+.own-stat-card:has(.own-stat-icon.maintenance) {
+  --card-accent: #d9870f;
+  --card-soft: rgba(217, 135, 15, .09);
+  --card-soft-strong: rgba(217, 135, 15, .14);
+}
+
+.own-stat-card::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  top: -30px;
+  right: -8px;
+  width: 108px;
+  height: 150px;
+  background: linear-gradient(180deg, var(--card-soft), var(--card-soft-strong));
+  transform: skewX(-35deg);
+  transform-origin: center;
+  pointer-events: none;
+}
+
+.own-stat-card::after {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  top: -28px;
+  right: 43px;
+  width: 42px;
+  height: 150px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, .16), var(--card-soft));
+  transform: skewX(-35deg);
+  pointer-events: none;
 }
 
 .own-stat-content {
+  position: relative;
+  z-index: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .own-stat-title {
   margin: 0 0 4px;
-
-  color: #718096;
-
+  color: #243f62;
   font-size: 10px;
-  font-weight: 600;
-
-  line-height: 1.2;
+  font-weight: 750;
+  line-height: 1.15;
+  letter-spacing: .02em;
+  text-transform: uppercase;
 }
 
 .own-stat-card h2 {
   margin: 0;
-
-  color: #0b2942;
-
-  font-size: 25px;
-  font-weight: 750;
-
+  color: #061b55;
+  font-size: 27px;
+  font-weight: 800;
   line-height: 1;
+  letter-spacing: -.02em;
 }
 
 .own-stat-subtitle {
   display: block;
-
-  margin-top: 5px;
-
-  color: #96a4b0;
-
+  max-width: 190px;
+  margin-top: 6px;
+  overflow: hidden;
+  color: #617894;
   font-size: 9px;
-
+  font-weight: 500;
   line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-
 /* =========================================================
-   STAT ICON
+   STAT ICON - RIGHT GLASS BOX
 ========================================================= */
-
 .own-stat-icon {
-  width: 40px;
-  height: 40px;
-
-  min-width: 40px;
-
-  flex: 0 0 40px;
-
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  z-index: 2;
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  flex: 0 0 48px;
   display: flex;
   align-items: center;
   justify-content: center;
-
-  border-radius: 10px;
-
+  border: 1px solid rgba(255, 255, 255, .45);
+  border-radius: 11px;
+  color: var(--card-accent) !important;
+  background: rgba(239, 247, 255, .72) !important;
+  box-shadow: 0 2px 8px rgba(11, 41, 66, .035);
   font-size: 16px;
 }
 
-.own-stat-icon.truck {
-  color: #2d6fbe;
-
-  background: #eaf2fb;
+.own-stat-icon svg {
+  width: 21px;
+  height: 21px;
 }
 
-.own-stat-icon.active {
-  color: #15945a;
-
-  background: #e7f5ed;
-}
-
-.own-stat-icon.idle {
-  color: #667085;
-
-  background: #eef1f5;
-}
-
+.own-stat-icon.truck,
+.own-stat-icon.active,
+.own-stat-icon.idle,
 .own-stat-icon.maintenance {
-  color: #c67a12;
-
-  background: #fff3df;
+  color: var(--card-accent) !important;
+  background: rgba(239, 247, 255, .72) !important;
 }
 
 .text-icon {
   font-size: 14px;
-
   line-height: 1;
-
   font-weight: 800;
 }
 
-
 /* =========================================================
    CHART GRID
-========================================================= */
-
+\========================================================= */
 .own-mini-charts {
   width: 100%;
-
   display: grid;
-
   grid-template-columns:
     repeat(2, minmax(0, 1fr));
-
   gap: 12px;
-
   margin: 0 0 12px;
 }
 
-
 /* =========================================================
    CHART CARD
-========================================================= */
-
+\========================================================= */
 .own-mini-chart-card {
   width: 100%;
   min-width: 0;
-
   padding: 13px 16px;
-
   border: 1px solid #dce4e9;
   border-radius: 11px;
-
   background:
-    linear-gradient(
-      145deg,
+    linear-gradient(145deg,
       #ffffff,
-      #fcfefe
-    );
-
+      #fcfefe);
   box-shadow:
     0 3px 10px rgba(11, 41, 66, 0.04);
-
   overflow: hidden;
-
   transition:
     transform 0.18s ease,
     border-color 0.18s ease,
@@ -306,360 +289,244 @@ body {
 
 .own-mini-chart-card:hover {
   transform: translateY(-1px);
-
   border-color: #c8d8dd;
-
   box-shadow:
     0 6px 16px rgba(11, 41, 66, 0.065);
 }
 
-
 /* =========================================================
    WIDE CHART
    Vehicles by Make
-========================================================= */
-
+\========================================================= */
 .own-wide-chart {
   grid-column: 1 / -1;
-
   padding: 12px 16px 8px;
-
   background: #ffffff;
 }
 
-
 /* =========================================================
    CHART HEADER
-========================================================= */
-
+\========================================================= */
 .own-mini-chart-header {
   width: 100%;
   min-height: 42px;
-
   margin-bottom: 3px;
-
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-
   gap: 12px;
 }
 
-.own-mini-chart-header > div:first-child {
+.own-mini-chart-header>div:first-child {
   min-width: 0;
 }
 
-.own-mini-chart-header
-  > div:first-child
-  > span {
+.own-mini-chart-header>div:first-child>span {
   display: block;
-
   margin-bottom: 2px;
-
   color: #0f9488;
-
   font-size: 7.5px;
   font-weight: 750;
-
   letter-spacing: 0.1em;
-
   text-transform: uppercase;
 }
 
 .own-mini-chart-header h2 {
   margin: 0;
-
   color: #0b2942;
-
   font-size: 15px;
   font-weight: 750;
-
   line-height: 1.15;
 }
 
 .own-mini-chart-header p {
   margin: 3px 0 0;
-
   color: #8293a2;
-
   font-size: 8.5px;
-
   line-height: 1.3;
 }
 
-
 /* =========================================================
    WIDE CHART HEADER
-========================================================= */
-
-.own-wide-chart
-  .own-mini-chart-header
-  > div:first-child
-  > span {
+\========================================================= */
+.own-wide-chart .own-mini-chart-header>div:first-child>span {
   font-size: 8px;
-
   letter-spacing: 0.08em;
 }
 
-.own-wide-chart
-  .own-mini-chart-header
-  h2 {
+.own-wide-chart .own-mini-chart-header h2 {
   font-size: 17px;
 }
 
-.own-wide-chart
-  .own-mini-chart-header
-  p {
+.own-wide-chart .own-mini-chart-header p {
   font-size: 9px;
 }
 
-
 /* =========================================================
    HEADER VALUE
-========================================================= */
-
-.own-mini-chart-header > strong {
+\========================================================= */
+.own-mini-chart-header>strong {
   min-width: 52px;
-
   padding: 4px 7px;
-
   align-self: flex-start;
-
   flex-shrink: 0;
-
   border: 1px solid #d9ebe8;
   border-radius: 8px;
-
   background: #f2faf8;
-
   color: #0f9488;
-
   font-size: 17px;
   font-weight: 750;
-
   text-align: center;
 }
 
-.own-wide-chart
-  .own-mini-chart-header
-  > strong {
+.own-wide-chart .own-mini-chart-header>strong {
   min-width: 66px;
-
   padding: 5px 8px;
-
   border-color: #cce7e3;
-
   background: #f0faf8;
-
   font-size: 20px;
 }
 
-
 /* =========================================================
    CHART BODIES
-========================================================= */
-
+\========================================================= */
 .own-make-chart-container {
   position: relative;
-
   width: 100%;
   height: 180px;
-
   min-width: 0;
 }
 
 .own-small-chart-container {
   position: relative;
-
   width: 100%;
   height: 165px;
-
   min-width: 0;
 }
-
 
 /* =========================================================
    CHART.JS CANVAS
-========================================================= */
-
+\========================================================= */
 .own-make-chart-container canvas,
 .own-small-chart-container canvas {
   display: block;
-
   width: 100% !important;
   height: 100% !important;
-
   max-width: 100%;
 }
 
-
 /* =========================================================
    CHART.JS WRAPPER
-========================================================= */
-
-.own-make-chart-container
-  > div,
-.own-small-chart-container
-  > div {
+\========================================================= */
+.own-make-chart-container>div,
+.own-small-chart-container>div {
   width: 100% !important;
-
   height: 100% !important;
-
   min-width: 0;
-
   position: relative;
 }
 
-
 /* =========================================================
    CHART.JS TOOLTIP
-========================================================= */
-
-.own-make-chart-container
-  .chartjs-tooltip,
-.own-small-chart-container
-  .chartjs-tooltip {
+\========================================================= */
+.own-make-chart-container .chartjs-tooltip,
+.own-small-chart-container .chartjs-tooltip {
   pointer-events: none;
 }
 
-
 /* =========================================================
    LOADING / EMPTY CHART STATE
-========================================================= */
-
+\========================================================= */
 .own-loading-state {
   width: 100%;
   height: 100%;
-
   display: grid;
-
   place-items: center;
-
   color: #718096;
-
   font-size: 11px;
   font-weight: 500;
 }
 
-
 /* =========================================================
    RECORD CARD
-========================================================= */
-
+\========================================================= */
 .own-record-card {
   width: 100%;
   min-width: 0;
-
   margin: 0;
-
   overflow: hidden;
-
   border: 1px solid #dce4e9;
   border-radius: 11px;
-
   background: #ffffff;
-
   box-shadow:
     0 3px 10px rgba(11, 41, 66, 0.04);
 }
 
-
 /* =========================================================
    RECORD HEADER
-========================================================= */
-
+\========================================================= */
 .own-record-header {
   min-height: 54px;
-
   padding: 9px 13px;
-
   display: flex;
   align-items: center;
   justify-content: space-between;
-
   gap: 12px;
-
   border-bottom: 1px solid #e3e9ed;
 }
 
-.own-record-header > div:first-child {
+.own-record-header>div:first-child {
   min-width: 0;
 }
 
 .own-section-label {
   display: block;
-
   margin-bottom: 2px;
-
   color: #0f9488;
-
   font-size: 7.5px;
   font-weight: 700;
-
   letter-spacing: 0.08em;
-
   text-transform: uppercase;
 }
 
 .own-record-header h2 {
   margin: 0;
-
   color: #0b2942;
-
   font-size: 17px;
   font-weight: 700;
 }
 
 .own-record-header p {
   margin: 3px 0 0;
-
   color: #81909d;
-
   font-size: 9.5px;
-
   line-height: 1.3;
 }
 
 .own-record-count {
   height: 34px;
-
   padding: 0 9px;
-
   display: inline-flex;
-
   align-items: center;
-
   gap: 5px;
-
   border-radius: 8px;
-
   background: #e7f5f3;
-
   color: #087f76;
-
   font-size: 9.5px;
   font-weight: 650;
-
   white-space: nowrap;
 }
 
-
 /* =========================================================
    TABLE WRAPPER
-========================================================= */
-
+\========================================================= */
 .own-table-wrapper {
   width: 100%;
-
   overflow-x: auto;
-
   border-top: 1px solid #e5ecef;
-
   scrollbar-width: thin;
-
   scrollbar-color:
-    #bbc7cf
-    #f3f6f8;
+    #bbc7cf #f3f6f8;
 }
 
 .own-table-wrapper::-webkit-scrollbar {
@@ -673,72 +540,48 @@ body {
 
 .own-table-wrapper::-webkit-scrollbar-thumb {
   border-radius: 999px;
-
   background: #bbc7cf;
 }
 
-
 /* =========================================================
    TABLE
-========================================================= */
-
+\========================================================= */
 .own-vehicle-table {
   width: 100%;
-
   min-width: 1150px;
-
   border-collapse: separate;
-
   border-spacing: 0;
-
   table-layout: auto;
 }
 
 .own-vehicle-table th,
 .own-vehicle-table td {
   padding: 9px;
-
   text-align: left;
-
   vertical-align: middle;
-
   white-space: nowrap;
 }
 
 .own-vehicle-table thead th {
   position: sticky;
-
   top: 0;
-
   z-index: 1;
-
   border-bottom: 1px solid #e7ecf0;
-
   background: #f5f7f9;
-
   color: #667788;
-
   font-size: 9px;
   font-weight: 700;
-
   line-height: 1.2;
-
   letter-spacing: 0.03em;
-
   text-transform: uppercase;
 }
 
 .own-vehicle-table tbody td {
   border-bottom: 1px solid #e7ecf0;
-
   background: #ffffff;
-
   color: #334b5f;
-
   font-size: 10.5px;
-
   line-height: 1.35;
-
   font-weight: 400;
 }
 
@@ -747,216 +590,142 @@ body {
     background 0.2s ease;
 }
 
-.own-vehicle-table
-  tbody
-  tr:hover
-  td {
+.own-vehicle-table tbody tr:hover td {
   background: #f5faf9;
 }
 
-.own-vehicle-table
-  tbody
-  tr:last-child
-  td {
+.own-vehicle-table tbody tr:last-child td {
   border-bottom: none;
 }
 
-
 /* =========================================================
    TABLE COLUMN WIDTHS
-========================================================= */
-
-.own-vehicle-table
-  th:first-child,
-.own-vehicle-table
-  td:first-child {
+\========================================================= */
+.own-vehicle-table th:first-child,
+.own-vehicle-table td:first-child {
   width: 45px;
-
   text-align: center;
 }
 
-.own-vehicle-table
-  th:nth-child(2),
-.own-vehicle-table
-  td:nth-child(2) {
+.own-vehicle-table th:nth-child(2),
+.own-vehicle-table td:nth-child(2) {
   min-width: 95px;
 }
 
-.own-vehicle-table
-  th:nth-child(3),
-.own-vehicle-table
-  td:nth-child(3) {
+.own-vehicle-table th:nth-child(3),
+.own-vehicle-table td:nth-child(3) {
   min-width: 80px;
 }
 
-.own-vehicle-table
-  th:nth-child(4),
-.own-vehicle-table
-  td:nth-child(4) {
+.own-vehicle-table th:nth-child(4),
+.own-vehicle-table td:nth-child(4) {
   min-width: 100px;
 }
 
-.own-vehicle-table
-  th:nth-child(5),
-.own-vehicle-table
-  td:nth-child(5) {
+.own-vehicle-table th:nth-child(5),
+.own-vehicle-table td:nth-child(5) {
   min-width: 110px;
 }
 
-.own-vehicle-table
-  th:nth-child(6),
-.own-vehicle-table
-  td:nth-child(6) {
+.own-vehicle-table th:nth-child(6),
+.own-vehicle-table td:nth-child(6) {
   min-width: 100px;
 }
 
-.own-vehicle-table
-  th:nth-child(7),
-.own-vehicle-table
-  td:nth-child(7) {
+.own-vehicle-table th:nth-child(7),
+.own-vehicle-table td:nth-child(7) {
   min-width: 100px;
 }
 
-.own-vehicle-table
-  th:nth-child(8),
-.own-vehicle-table
-  td:nth-child(8) {
+.own-vehicle-table th:nth-child(8),
+.own-vehicle-table td:nth-child(8) {
   min-width: 95px;
 }
 
-.own-vehicle-table
-  th:nth-child(9),
-.own-vehicle-table
-  td:nth-child(9) {
+.own-vehicle-table th:nth-child(9),
+.own-vehicle-table td:nth-child(9) {
   min-width: 100px;
 }
 
-.own-vehicle-table
-  th:nth-child(10),
-.own-vehicle-table
-  td:nth-child(10) {
+.own-vehicle-table th:nth-child(10),
+.own-vehicle-table td:nth-child(10) {
   min-width: 85px;
 }
 
-.own-vehicle-table
-  th:nth-child(11),
-.own-vehicle-table
-  td:nth-child(11) {
+.own-vehicle-table th:nth-child(11),
+.own-vehicle-table td:nth-child(11) {
   min-width: 90px;
 }
 
-
 /* =========================================================
    VEHICLE NUMBER
-========================================================= */
-
+\========================================================= */
 .own-vehicle-number {
   color: #0f9488;
-
   font-weight: 700;
-
   letter-spacing: 0.1px;
 }
 
-
 /* =========================================================
    EMPTY / LOADING TABLE ROW
-========================================================= */
-
+\========================================================= */
 .own-empty-row {
   padding: 28px 15px !important;
-
   color: #7c899c !important;
-
   font-size: 11px !important;
-
   font-weight: 500 !important;
-
   text-align: center !important;
 }
 
-
 /* =========================================================
    PAGINATION
-========================================================= */
-
+\========================================================= */
 .own-pagination-card {
   width: 100%;
-
   min-height: 46px;
-
   margin-top: 12px;
-
   padding: 7px 11px;
-
   display: flex;
-
   align-items: center;
-
   justify-content: space-between;
-
   gap: 10px;
-
   border: 1px solid #dce4e9;
-
   border-radius: 8px;
-
   background: #ffffff;
-
   box-shadow:
     0 3px 10px rgba(11, 41, 66, 0.04);
 }
 
 .own-pagination-card p {
   margin: 0;
-
   color: #718096;
-
   font-size: 9.5px;
-
   line-height: 1.4;
-
   font-weight: 500;
 }
 
 .own-pagination-controls {
   display: flex;
-
   align-items: center;
-
   gap: 4px;
 }
 
 .own-page-arrow,
 .own-page-number {
   min-width: 27px;
-
   height: 27px;
-
   padding: 0 5px;
-
   display: inline-flex;
-
   align-items: center;
-
   justify-content: center;
-
   border: 1px solid #d7e0e6;
-
   border-radius: 6px;
-
   background: #ffffff;
-
   color: #536879;
-
   font: inherit;
-
   font-size: 10px;
-
   font-weight: 600;
-
   cursor: pointer;
-
   transition:
     background 0.2s ease,
     border-color 0.2s ease,
@@ -970,42 +739,32 @@ body {
 .own-page-arrow:hover:not(:disabled),
 .own-page-number:hover:not(.active):not(:disabled) {
   border-color: #0f9488;
-
   background: #eef8f7;
-
   color: #0f9488;
 }
 
 .own-page-number.active {
   border-color: #0f9488;
-
   background: #0f9488;
-
   color: #ffffff;
 }
 
 .own-page-arrow:disabled,
 .own-page-number:disabled {
   opacity: 0.4;
-
   cursor: not-allowed;
 }
 
 .own-page-arrow:focus-visible,
 .own-page-number:focus-visible {
-  outline: 3px solid
-    rgba(15, 148, 136, 0.14);
-
+  outline: 3px solid rgba(15, 148, 136, 0.14);
   outline-offset: 2px;
 }
 
-
 /* =========================================================
    RESPONSIVE
-========================================================= */
-
+\========================================================= */
 @media (max-width: 1200px) {
-
   .own-vehicle-stats {
     grid-template-columns:
       repeat(2, minmax(0, 1fr));
@@ -1016,13 +775,10 @@ body {
   }
 }
 
-
 /* =========================================================
    900
-========================================================= */
-
+\========================================================= */
 @media (max-width: 900px) {
-
   .own-mini-charts {
     grid-template-columns: 1fr;
   }
@@ -1036,13 +792,10 @@ body {
   }
 }
 
-
 /* =========================================================
    TABLET
-========================================================= */
-
+\========================================================= */
 @media (max-width: 768px) {
-
   .own-vehicle-page {
     padding: 13px 11px !important;
   }
@@ -1065,18 +818,14 @@ body {
 
   .own-record-header {
     flex-direction: column;
-
     align-items: stretch;
   }
 }
 
-
 /* =========================================================
    MOBILE
-========================================================= */
-
+\========================================================= */
 @media (max-width: 480px) {
-
   .own-vehicle-page {
     padding: 11px 8px !important;
   }
@@ -1087,8 +836,7 @@ body {
 
   .own-stat-card {
     min-height: 82px;
-
-    padding: 11px 13px;
+    padding: 10px 70px 9px 13px;
   }
 
   .own-stat-card h2 {
@@ -1096,12 +844,12 @@ body {
   }
 
   .own-stat-icon {
-    width: 36px;
-    height: 36px;
-
-    min-width: 36px;
-
-    flex-basis: 36px;
+    top: 17px;
+    right: 14px;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    flex-basis: 44px;
   }
 
   .own-make-chart-container {
@@ -1114,22 +862,18 @@ body {
 
   .own-pagination-card {
     flex-direction: column;
-
     align-items: flex-start;
   }
 
   .own-pagination-controls {
     width: 100%;
-
     overflow-x: auto;
   }
 }
 
-
 /* =========================================================
    OWN VEHICLE - STAGGERED OPENING
-========================================================= */
-
+\========================================================= */
 .own-vehicle-stats {
   animation: ownVehicleSectionOpen 0.5s ease-out 0.08s both;
 }

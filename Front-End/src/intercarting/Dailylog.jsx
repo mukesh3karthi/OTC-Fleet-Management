@@ -4,7 +4,6 @@ import axios from "axios";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-
 import {
   ArrowLeft,
   CalendarDays,
@@ -19,76 +18,57 @@ import {
   Search,
   X,
 } from "lucide-react";
-
 import "../Intercartingcss/dailylog.css";
-
 const API_BASE_URL = (
   import.meta.env.VITE_API_URL ||
   "http://localhost:5000"
 ).replace(/\/+$/, "");
-
 const API_URL = `${API_BASE_URL}/api/vehicles`;
-
 const API_OPTIONS = {
   timeout: 60000,
 };
-
 const getCurrentDate = () => {
   const today = new Date();
   const year = today.getFullYear();
   const month = String(today.getMonth() + 1).padStart(2, "0");
   const day = String(today.getDate()).padStart(2, "0");
-
   return `${year}-${month}-${day}`;
 };
-
 const formatSelectedDate = (dateValue) => {
   if (!dateValue) {
     return "";
   }
-
   return new Date(`${dateValue}T00:00:00`).toLocaleDateString("en-IN", {
     day: "2-digit",
     month: "short",
     year: "numeric",
   });
 };
-
 const getPreviousDateKey = (dateValue) => {
   if (!dateValue) {
     return "";
   }
-
   const previousDate = new Date(`${dateValue}T00:00:00`);
-
   previousDate.setDate(previousDate.getDate() - 1);
-
   const year = previousDate.getFullYear();
   const month = String(previousDate.getMonth() + 1).padStart(2, "0");
   const day = String(previousDate.getDate()).padStart(2, "0");
-
   return `${year}-${month}-${day}`;
 };
-
 const normalizeText = (value) =>
   String(value ?? "")
     .trim()
     .toLowerCase();
-
 const getVehicleId = (vehicle) =>
   vehicle?.id ?? vehicle?._id ?? null;
-
 const normalizeMonthlyOpenKmLogs = (vehicle) => {
   const rawLogs = vehicle?.monthlyOpenKmLogs;
-
   let logs = {};
-
   if (rawLogs instanceof Map) {
     logs = Object.fromEntries(rawLogs);
   } else if (rawLogs && typeof rawLogs === "object" && !Array.isArray(rawLogs)) {
     logs = { ...rawLogs };
   }
-
   /*
     Backward compatibility:
     Existing vehicles may only have the old monthOpenKm field.
@@ -100,12 +80,10 @@ const normalizeMonthlyOpenKmLogs = (vehicle) => {
     vehicle?.dailyLogDate
   ) {
     const legacyMonth = String(vehicle.dailyLogDate).slice(0, 7);
-
     if (legacyMonth) {
       logs[legacyMonth] = Number(vehicle.monthOpenKm || 0);
     }
   }
-
   return Object.fromEntries(
     Object.entries(logs).map(([month, km]) => [
       String(month).slice(0, 7),
@@ -113,29 +91,22 @@ const normalizeMonthlyOpenKmLogs = (vehicle) => {
     ])
   );
 };
-
 const getMonthOpenKmForDate = (vehicle, dateValue) => {
   const monthKey = String(dateValue || "").slice(0, 7);
   const logs = normalizeMonthlyOpenKmLogs(vehicle);
-
   if (!monthKey || !Object.prototype.hasOwnProperty.call(logs, monthKey)) {
     return "";
   }
-
   return Number(logs[monthKey] || 0);
 };
-
 const normalizeDailyKmLogs = (vehicle) => {
   const rawLogs = vehicle?.dailyKmLogs;
-
   let logs = {};
-
   if (rawLogs instanceof Map) {
     logs = Object.fromEntries(rawLogs);
   } else if (rawLogs && typeof rawLogs === "object" && !Array.isArray(rawLogs)) {
     logs = { ...rawLogs };
   }
-
   // Supports older records saved before dailyKmLogs was added.
   if (
     Object.keys(logs).length === 0 &&
@@ -146,7 +117,6 @@ const normalizeDailyKmLogs = (vehicle) => {
       vehicle.todayKm || 0
     );
   }
-
   return Object.fromEntries(
     Object.entries(logs).map(([date, km]) => [
       String(date).slice(0, 10),
@@ -154,7 +124,6 @@ const normalizeDailyKmLogs = (vehicle) => {
     ])
   );
 };
-
 const getLatestPreviousLoadIdle = (logs, selectedDateKey) => {
   if (
     !selectedDateKey ||
@@ -163,7 +132,6 @@ const getLatestPreviousLoadIdle = (logs, selectedDateKey) => {
   ) {
     return "";
   }
-
   const previousDates = Object.keys(logs)
     .map((date) => String(date).slice(0, 10))
     .filter(
@@ -175,21 +143,16 @@ const getLatestPreviousLoadIdle = (logs, selectedDateKey) => {
     .sort((first, second) =>
       second.localeCompare(first)
     );
-
   if (previousDates.length === 0) {
     return "";
   }
-
   return String(
     logs[previousDates[0]] ?? ""
   ).trim();
 };
-
 const normalizeDailyLoadIdleLogs = (vehicle) => {
   const rawLogs = vehicle?.dailyLoadIdleLogs;
-
   let logs = {};
-
   if (rawLogs instanceof Map) {
     logs = Object.fromEntries(rawLogs);
   } else if (
@@ -199,7 +162,6 @@ const normalizeDailyLoadIdleLogs = (vehicle) => {
   ) {
     logs = { ...rawLogs };
   }
-
   // Backward compatibility for records that only have loadIdle.
   if (
     Object.keys(logs).length === 0 &&
@@ -209,7 +171,6 @@ const normalizeDailyLoadIdleLogs = (vehicle) => {
     const savedDate = String(vehicle.dailyLogDate).slice(0, 10);
     logs[savedDate] = String(vehicle.loadIdle || "").trim();
   }
-
   return Object.fromEntries(
     Object.entries(logs).map(([date, description]) => [
       String(date).slice(0, 10),
@@ -217,64 +178,48 @@ const normalizeDailyLoadIdleLogs = (vehicle) => {
     ])
   );
 };
-
 const getMonthKey = (dateValue) => String(dateValue || "").slice(0, 7);
-
 const getTodayKmForDate = (vehicle, dateValue) => {
   if (!dateValue) {
     return 0;
   }
-
   const logs = normalizeDailyKmLogs(vehicle);
-
   return Number(logs[dateValue] || 0);
 };
-
 const getMonthlyKmForDate = (vehicle, dateValue) => {
   const monthKey = getMonthKey(dateValue);
-
   if (!monthKey) {
     return 0;
   }
-
   const logs = normalizeDailyKmLogs(vehicle);
-
   return Object.entries(logs).reduce((total, [date, km]) => {
     if (getMonthKey(date) !== monthKey) {
       return total;
     }
-
     return total + Number(km || 0);
   }, 0);
 };
-
 const getVehicleForSelectedDate = (vehicle, dateValue) => {
   const dailyKmLogs = normalizeDailyKmLogs(vehicle);
   const dailyLoadIdleLogs = normalizeDailyLoadIdleLogs(vehicle);
-
   const selectedDateKey = String(dateValue || "").slice(0, 10);
   const lastSavedDate = String(vehicle?.dailyLogDate || "").slice(0, 10);
-
   const hasSelectedDateLog = Object.prototype.hasOwnProperty.call(
     dailyKmLogs,
     selectedDateKey
   );
-
   const hasSelectedLoadIdle = Object.prototype.hasOwnProperty.call(
     dailyLoadIdleLogs,
     selectedDateKey
   );
-
   const selectedTodayKm = hasSelectedDateLog
     ? Number(dailyKmLogs[selectedDateKey] || 0)
     : 0;
-
   const latestPreviousLoadIdle =
     getLatestPreviousLoadIdle(
       dailyLoadIdleLogs,
       selectedDateKey
     );
-
   /*
     Carry forward Load / Idle:
     - A value saved for the selected date has first priority.
@@ -286,16 +231,13 @@ const getVehicleForSelectedDate = (vehicle, dateValue) => {
   const fallbackLoadIdle =
     latestPreviousLoadIdle ||
     String(vehicle?.loadIdle || "").trim();
-
   const selectedLoadIdle = hasSelectedLoadIdle
     ? String(dailyLoadIdleLogs[selectedDateKey] || "")
     : fallbackLoadIdle;
-
   let selectedStartingKm = Number(vehicle?.startingKm || 0);
   let selectedClosingKm = hasSelectedDateLog
     ? selectedStartingKm + Number(selectedTodayKm || 0)
     : selectedStartingKm;
-
   /*
     New-day rollover:
     When the selected date is after the last saved daily-log date,
@@ -311,7 +253,6 @@ const getVehicleForSelectedDate = (vehicle, dateValue) => {
       ? selectedStartingKm + Number(selectedTodayKm || 0)
       : selectedStartingKm;
   }
-
   // Reopen the latest saved date with its stored KM values.
   if (selectedDateKey === lastSavedDate) {
     selectedStartingKm = Number(vehicle?.startingKm || 0);
@@ -319,14 +260,12 @@ const getVehicleForSelectedDate = (vehicle, dateValue) => {
       ? Number(vehicle?.closingKm || 0)
       : selectedStartingKm;
   }
-
   const monthlyOpenKmLogs = normalizeMonthlyOpenKmLogs(vehicle);
   const selectedMonthKey = getMonthKey(dateValue);
   const hasMonthOpenKm = Object.prototype.hasOwnProperty.call(
     monthlyOpenKmLogs,
     selectedMonthKey
   );
-
   return {
     ...vehicle,
     monthOpenKm: hasMonthOpenKm
@@ -336,62 +275,49 @@ const getVehicleForSelectedDate = (vehicle, dateValue) => {
     closingKm: selectedClosingKm,
     todayKm: selectedTodayKm,
     monthlyKm: getMonthlyKmForDate(vehicle, dateValue),
-
     // Load / Idle value belonging only to the selected date.
     loadIdle: selectedLoadIdle,
-
     dailyKmLogs,
     dailyLoadIdleLogs,
     monthlyOpenKmLogs,
     hasMonthOpenKm,
   };
 };
-
 const isVehicleAvailableOnDate = (vehicle, selectedDate) => {
   if (!selectedDate) {
     return true;
   }
-
   const selected = new Date(`${selectedDate}T00:00:00`);
-
   const vehicleInDate = vehicle.vehicleInDate
     ? new Date(`${String(vehicle.vehicleInDate).slice(0, 10)}T00:00:00`)
     : null;
-
   const vehicleOutDate = vehicle.vehicleOutDate
     ? new Date(`${String(vehicle.vehicleOutDate).slice(0, 10)}T00:00:00`)
     : null;
-
   if (vehicleInDate && selected < vehicleInDate) {
     return false;
   }
-
   if (vehicleOutDate && selected > vehicleOutDate) {
     return false;
   }
-
   return true;
 };
-
 const getVehicleStatus = (vehicle) => {
   const status = normalizeText(
     vehicle.vehicleStatus || vehicle.status
   );
-
   if (
     status === "under maintenance" ||
     status === "maintenance"
   ) {
     return "Under Maintenance";
   }
-
   if (
     status === "under induction" ||
     status === "induction"
   ) {
     return "Under Induction";
   }
-
   if (
     status === "inactive" ||
     status === "off duty" ||
@@ -400,20 +326,15 @@ const getVehicleStatus = (vehicle) => {
   ) {
     return "Inactive";
   }
-
   return "Active";
 };
-
 const emptyToZero = (value) => {
   if (value === "" || value === null || value === undefined) {
     return 0;
   }
-
   const numberValue = Number(value);
-
   return Number.isFinite(numberValue) ? numberValue : 0;
 };
-
 const zeroToEmpty = (value) => {
   if (
     value === 0 ||
@@ -423,10 +344,8 @@ const zeroToEmpty = (value) => {
   ) {
     return "";
   }
-
   return value;
 };
-
 const displayKm = (value) => {
   if (
     value === "" ||
@@ -436,23 +355,21 @@ const displayKm = (value) => {
   ) {
     return "-";
   }
-
   return value;
 };
-
 const displayTodayKm = (value) => {
   const numericValue = Number(value);
-
   return Number.isFinite(numericValue)
     ? numericValue
     : 0;
 };
-
 const Dailylog = () => {
   const navigate = useNavigate();
   const [vehicles, setVehicles] = useState([]);
   const [selectedSite, setSelectedSite] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const rowsPerPage = 10;
   const [selectedDate, setSelectedDate] = useState(getCurrentDate());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -467,21 +384,17 @@ const Dailylog = () => {
     message: "",
     type: "success",
   });
-
   const toastTimerRef = useRef(null);
   const siteSelectorRef = useRef(null);
-
   const showToast = (message, type = "success") => {
     if (toastTimerRef.current) {
       clearTimeout(toastTimerRef.current);
     }
-
     setToast({
       show: true,
       message,
       type,
     });
-
     toastTimerRef.current = setTimeout(() => {
       setToast({
         show: false,
@@ -490,7 +403,6 @@ const Dailylog = () => {
       });
     }, 3000);
   };
-
   useEffect(() => {
     return () => {
       if (toastTimerRef.current) {
@@ -498,25 +410,20 @@ const Dailylog = () => {
       }
     };
   }, []);
-
   useEffect(() => {
     const fetchVehicles = async () => {
       try {
         setLoading(true);
         setError("");
-
         const response = await axios.get(API_URL, API_OPTIONS);
-
         const list = Array.isArray(response.data)
           ? response.data
           : Array.isArray(response.data?.vehicles)
             ? response.data.vehicles
             : [];
-
         setVehicles(list);
       } catch (apiError) {
         console.error("Failed to load vehicles:", apiError);
-
         setError(
           apiError.response?.data?.message ||
           "Unable to load vehicle data. Please check whether the backend server is running."
@@ -525,10 +432,8 @@ const Dailylog = () => {
         setLoading(false);
       }
     };
-
     fetchVehicles();
   }, []);
-
   useEffect(() => {
     const closeOutside = (event) => {
       if (
@@ -538,39 +443,30 @@ const Dailylog = () => {
         setShowSiteDropdown(false);
       }
     };
-
     document.addEventListener("mousedown", closeOutside);
-
     return () => {
       document.removeEventListener("mousedown", closeOutside);
     };
   }, []);
-
   useEffect(() => {
     const handleEscape = (event) => {
       if (event.key !== "Escape") {
         return;
       }
-
       if (showBulkEdit && !savingBulk) {
         setShowBulkEdit(false);
       }
-
       if (downloadType) {
         setDownloadType(null);
       }
     };
-
     document.addEventListener("keydown", handleEscape);
-
     return () => {
       document.removeEventListener("keydown", handleEscape);
     };
   }, [showBulkEdit, savingBulk, downloadType]);
-
   useEffect(() => {
     const modalIsOpen = showBulkEdit || Boolean(downloadType);
-
     document.documentElement.classList.toggle(
       "daily-modal-open",
       modalIsOpen
@@ -579,13 +475,11 @@ const Dailylog = () => {
       "daily-modal-open",
       modalIsOpen
     );
-
     return () => {
       document.documentElement.classList.remove("daily-modal-open");
       document.body.classList.remove("daily-modal-open");
     };
   }, [showBulkEdit, downloadType]);
-
   const sites = useMemo(() => {
     return [
       ...new Set(
@@ -595,7 +489,6 @@ const Dailylog = () => {
       ),
     ].sort((first, second) => first.localeCompare(second));
   }, [vehicles]);
-
   const vehiclesForSelectedDate = useMemo(
     () =>
       vehicles.map((vehicle) =>
@@ -603,20 +496,16 @@ const Dailylog = () => {
       ),
     [vehicles, selectedDate]
   );
-
   const filteredVehicles = useMemo(() => {
     const search = normalizeText(searchTerm);
-
     return vehiclesForSelectedDate.filter((vehicle) => {
       const availableOnSelectedDate = isVehicleAvailableOnDate(
         vehicle,
         selectedDate
       );
-
       const siteMatches =
         !selectedSite ||
         normalizeText(vehicle.siteName) === normalizeText(selectedSite);
-
       const searchMatches =
         !search ||
         [
@@ -630,56 +519,69 @@ const Dailylog = () => {
           vehicle.vehicleStatus,
           vehicle.attendance,
         ].some((value) => normalizeText(value).includes(search));
-
       return availableOnSelectedDate && siteMatches && searchMatches;
     });
   }, [vehiclesForSelectedDate, selectedSite, searchTerm, selectedDate]);
-
+  const totalPages = Math.max(1, Math.ceil(filteredVehicles.length / rowsPerPage));
+  const paginatedVehicles = useMemo(() => {
+    const startIndex = (currentPage - 1) * rowsPerPage;
+    return filteredVehicles.slice(startIndex, startIndex + rowsPerPage);
+  }, [filteredVehicles, currentPage]);
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedSite, searchTerm, selectedDate]);
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+  const getPageNumbers = () => {
+    if (totalPages <= 5) {
+      return Array.from({ length: totalPages }, (_, index) => index + 1);
+    }
+    if (currentPage <= 3) {
+      return [1, 2, 3, 4, "...", totalPages];
+    }
+    if (currentPage >= totalPages - 2) {
+      return [1, "...", totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+    }
+    return [1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages];
+  };
   const selectedSiteVehicles = useMemo(() => {
     if (!selectedSite) {
       return [];
     }
-
     return vehiclesForSelectedDate.filter((vehicle) => {
       const siteMatches =
         normalizeText(vehicle.siteName) === normalizeText(selectedSite);
-
       const availableOnSelectedDate = isVehicleAvailableOnDate(
         vehicle,
         selectedDate
       );
-
       return siteMatches && availableOnSelectedDate;
     });
   }, [vehiclesForSelectedDate, selectedSite, selectedDate]);
-
   const activeVehicles = filteredVehicles.filter(
     (vehicle) => getVehicleStatus(vehicle) === "Active"
   ).length;
-
   const maintenanceVehicles = filteredVehicles.filter(
     (vehicle) => getVehicleStatus(vehicle) === "Under Maintenance"
   ).length;
-
   const inductionVehicles = filteredVehicles.filter(
     (vehicle) => getVehicleStatus(vehicle) === "Under Induction"
   ).length;
-
   const inactiveVehicles = filteredVehicles.filter(
     (vehicle) => getVehicleStatus(vehicle) === "Inactive"
   ).length;
-
   const totalDistance = filteredVehicles.reduce(
     (sum, vehicle) => sum + Number(vehicle.todayKm || 0),
     0
   );
-
   const totalDiesel = filteredVehicles.reduce(
     (sum, vehicle) =>
       sum + Number(vehicle.diesel ?? vehicle.dieselConsumption ?? 0),
     0
   );
-
   const exportRows = filteredVehicles.map((vehicle, index) => ({
     "S.No": index + 1,
     "Vehicle No": vehicle.vehicleNumber || "-",
@@ -696,44 +598,34 @@ const Dailylog = () => {
     "Vehicle Status": getVehicleStatus(vehicle),
     Attendance: vehicle.attendance || "Present",
   }));
-
   const createFileName = (extension) => {
     const safeSite = (selectedSite || "All-Sites").replace(
       /[^a-z0-9]+/gi,
       "-"
     );
-
     return `vehicle-log-${safeSite}-${selectedDate}.${extension}`;
   };
-
   const downloadExcel = () => {
     const worksheet = XLSX.utils.json_to_sheet(exportRows);
-
     worksheet["!cols"] = Array(14).fill({
       wch: 18,
     });
-
     const workbook = XLSX.utils.book_new();
-
     XLSX.utils.book_append_sheet(
       workbook,
       worksheet,
       "Vehicle Information"
     );
-
     XLSX.writeFile(workbook, createFileName("xlsx"));
   };
-
   const downloadPdf = () => {
     const document = new jsPDF({
       orientation: "landscape",
       unit: "mm",
       format: "a4",
     });
-
     document.setFontSize(16);
     document.text("Vehicle Information Report", 14, 15);
-
     document.setFontSize(9);
     document.text(
       `Site: ${selectedSite || "All Sites"}   Date: ${formatSelectedDate(
@@ -742,10 +634,8 @@ const Dailylog = () => {
       14,
       22
     );
-
     autoTable(document, {
       startY: 27,
-
       head: [
         [
           "S.No",
@@ -764,48 +654,37 @@ const Dailylog = () => {
           "Attendance",
         ],
       ],
-
       body: exportRows.map((row) => Object.values(row)),
-
       styles: {
         fontSize: 6,
         cellPadding: 1.5,
       },
-
       headStyles: {
         fontSize: 6,
       },
     });
-
     document.save(createFileName("pdf"));
   };
-
   const confirmDownload = () => {
     if (downloadType === "excel") {
       downloadExcel();
     }
-
     if (downloadType === "pdf") {
       downloadPdf();
     }
-
     setDownloadType(null);
   };
-
   const openBulkEdit = () => {
     if (!selectedSite) {
       setError("Please select a site before editing the table.");
       return;
     }
-
     if (selectedSiteVehicles.length === 0) {
       setError("No vehicles are available for the selected site.");
       return;
     }
-
     setError("");
     setBulkError("");
-
     setBulkRows(
       selectedSiteVehicles.map((vehicle) => ({
         ...vehicle,
@@ -832,10 +711,8 @@ const Dailylog = () => {
         _hasMonthOpenKm: Boolean(vehicle.hasMonthOpenKm),
       }))
     );
-
     setShowBulkEdit(true);
   };
-
   const handleBulkChange = (rowIndex, field, value) => {
     const numericFields = [
       "monthOpenKm",
@@ -844,7 +721,6 @@ const Dailylog = () => {
       "todayKm",
       "monthlyKm",
     ];
-
     if (
       numericFields.includes(field) &&
       value !== "" &&
@@ -852,13 +728,11 @@ const Dailylog = () => {
     ) {
       return;
     }
-
     setBulkRows((previous) =>
       previous.map((row, index) => {
         if (index !== rowIndex) {
           return row;
         }
-
         const updatedRow = {
           ...row,
           [field]:
@@ -866,31 +740,25 @@ const Dailylog = () => {
               ? value.replace(/[^a-zA-Z0-9/]/g, "").toUpperCase()
               : value,
         };
-
         if (field === "monthOpenKm") {
           const monthKey = getMonthKey(selectedDate);
           const updatedMonthlyOpenKmLogs = {
             ...(updatedRow._monthlyOpenKmLogs || {}),
           };
-
           if (value === "") {
             delete updatedMonthlyOpenKmLogs[monthKey];
           } else {
             updatedMonthlyOpenKmLogs[monthKey] = emptyToZero(value);
           }
-
           updatedRow._monthlyOpenKmLogs = updatedMonthlyOpenKmLogs;
         }
-
         if (field === "todayKm" || field === "startingKm") {
           const startingKm = emptyToZero(updatedRow.startingKm);
           const todayKm = emptyToZero(updatedRow.todayKm);
           const closingKm = startingKm + todayKm;
-
           const updatedLogs = {
             ...(updatedRow._dailyKmLogs || {}),
           };
-
           /*
             Today KM defaults to zero for every selected date.
             If the field is temporarily cleared, save zero until
@@ -899,7 +767,6 @@ const Dailylog = () => {
           updatedLogs[selectedDate] = todayKm;
           updatedRow.closingKm = closingKm;
           updatedRow._dailyKmLogs = updatedLogs;
-
           updatedRow.monthlyKm = Object.entries(updatedLogs).reduce(
             (total, [date, km]) =>
               getMonthKey(date) === getMonthKey(selectedDate)
@@ -908,30 +775,23 @@ const Dailylog = () => {
             0
           );
         }
-
         return updatedRow;
       })
     );
   };
-
   const saveAllChanges = async (event) => {
   event.preventDefault();
-
   setBulkError("");
-
   if (!selectedDate) {
     setBulkError("Please select a date.");
     return;
   }
-
   if (!Array.isArray(bulkRows) || bulkRows.length === 0) {
     setBulkError("No vehicle rows are available to save.");
     return;
   }
-
   for (const row of bulkRows) {
     const vehicleId = row.id ?? row._id;
-
     if (!vehicleId) {
       setBulkError(
         `Vehicle ID is missing for ${
@@ -940,129 +800,100 @@ const Dailylog = () => {
       );
       return;
     }
-
     if (!row.vehicleNumber?.trim()) {
       setBulkError("Vehicle number is required.");
       return;
     }
   }
-
   try {
     setSavingBulk(true);
-
     const payload = {
       selectedDate,
-
       vehicles: bulkRows.map((row) => ({
         _id: row._id || null,
         id: row.id || null,
-
         vehicleNumber:
           row.vehicleNumber
             ?.replace(/[^a-zA-Z0-9/]/g, "")
             .toUpperCase()
             .trim() || "",
-
         manufacturingYear:
           row.manufacturingYear === "" ||
           row.manufacturingYear === null ||
           row.manufacturingYear === undefined
             ? null
             : Number(row.manufacturingYear),
-
         siteName:
           row.siteName?.trim() || "",
-
         vehicleType:
           row.vehicleType?.trim() || "",
-
         transportProvider:
           row.transportProvider?.trim() || "",
-
         dieselScope:
           row.dieselScope?.trim() || "",
-
         hireAmount:
           row.hireAmount === "" ||
           row.hireAmount === null ||
           row.hireAmount === undefined
             ? 0
             : Number(row.hireAmount),
-
         vehicleInDate:
           row.vehicleInDate || null,
-
         vehicleOutDate:
           row.vehicleOutDate || null,
-
         status:
           row.status || "Active",
-
         activeStatus:
           row.activeStatus !== undefined
             ? Boolean(row.activeStatus)
             : true,
-
         vehicleStatus:
           row.vehicleStatus || "Active",
-
         driverName:
           row.driverName?.trim() || "",
-
         driverNumber:
           row.driverNumber?.trim() || "",
-
         vendorName:
           row.vendorName?.trim() || "",
-
         vendorEmail:
           row.vendorEmail
             ?.trim()
             .toLowerCase() || "",
-
         monthOpenKm:
           row.monthOpenKm === "" ||
           row.monthOpenKm === null ||
           row.monthOpenKm === undefined
             ? ""
             : Number(row.monthOpenKm),
-
         startingKm:
           row.startingKm === "" ||
           row.startingKm === null ||
           row.startingKm === undefined
             ? ""
             : Number(row.startingKm),
-
         closingKm:
           row.closingKm === "" ||
           row.closingKm === null ||
           row.closingKm === undefined
             ? ""
             : Number(row.closingKm),
-
         todayKm: Number(row.todayKm || 0),
-
         monthlyKm:
           row.monthlyKm === "" ||
           row.monthlyKm === null ||
           row.monthlyKm === undefined
             ? 0
             : Number(row.monthlyKm),
-
         loadIdle:
           row.loadIdle?.trim() || "",
-
         attendance:
           row.attendance || "Present",
-
         diesel:
           row.diesel === "" ||
           row.diesel === null ||
           row.diesel === undefined
             ? 0
             : Number(row.diesel),
-
         dieselConsumption:
           row.dieselConsumption === "" ||
           row.dieselConsumption === null ||
@@ -1071,9 +902,7 @@ const Dailylog = () => {
             : Number(row.dieselConsumption),
       })),
     };
-
     console.log("Bulk daily-log payload:", payload);
-
     const response = await axios.put(
       `${API_URL}/daily-log/bulk`,
       payload,
@@ -1084,19 +913,15 @@ const Dailylog = () => {
         },
       }
     );
-
     const updatedVehicles = Array.isArray(
       response.data?.vehicles
     )
       ? response.data.vehicles
       : [];
-
     const updatedById = new Map();
-
     updatedVehicles.forEach((vehicle) => {
       const vehicleId =
         vehicle.id ?? vehicle._id;
-
       if (vehicleId) {
         updatedById.set(
           String(vehicleId),
@@ -1104,25 +929,20 @@ const Dailylog = () => {
         );
       }
     });
-
     setVehicles((previousVehicles) =>
       previousVehicles.map((vehicle) => {
         const currentId =
           vehicle.id ?? vehicle._id;
-
         const updatedVehicle =
           updatedById.get(
             String(currentId)
           );
-
         return updatedVehicle || vehicle;
       })
     );
-
     setShowBulkEdit(false);
     setBulkRows([]);
     setBulkError("");
-
     showToast(
       response.data?.message ||
         "All vehicle records saved successfully.",
@@ -1134,20 +954,17 @@ const Dailylog = () => {
       data: saveError.response?.data,
       message: saveError.message,
     });
-
     const backendMessage =
       saveError.response?.data?.message ||
       saveError.response?.data?.error ||
       saveError.message ||
       "Unable to save vehicle records.";
-
     setBulkError(backendMessage);
     showToast(backendMessage, "error");
   } finally {
     setSavingBulk(false);
   }
 };
-
   return (
     <div className="daily-log-page">
       {toast.show && (
@@ -1159,11 +976,9 @@ const Dailylog = () => {
           <span className="daily-toast-icon" aria-hidden="true">
             {toast.type === "success" ? "✓" : "!"}
           </span>
-
           <span>{toast.message}</span>
         </div>
       )}
-
       <div className="daily-log-top-section">
         <div className="daily-log-header">
           <div className="daily-log-title-row">
@@ -1176,25 +991,21 @@ const Dailylog = () => {
             >
               <ArrowLeft size={20} />
             </button>
-
             <div>
               <h1>Daily Log Entry</h1>
               <p>Manage daily operational data across all active sites</p>
             </div>
           </div>
         </div>
-
         <div className="daily-header-actions">
           <div className="daily-search-box">
             <Search size={18} />
-
             <input
               type="search"
               placeholder="Search vehicle, site or description..."
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
             />
-
             {searchTerm && (
               <button
                 type="button"
@@ -1205,13 +1016,10 @@ const Dailylog = () => {
               </button>
             )}
           </div>
-
           <div className="daily-date-section">
             <label htmlFor="daily-log-date">Select Date</label>
-
             <div className="daily-date-input-wrapper">
               <CalendarDays size={18} />
-
               <input
                 id="daily-log-date"
                 type="date"
@@ -1220,20 +1028,16 @@ const Dailylog = () => {
                 onChange={(event) => setSelectedDate(event.target.value)}
               />
             </div>
-
             <span>{formatSelectedDate(selectedDate)}</span>
           </div>
         </div>
       </div>
-
       {loading && (
         <div className="daily-log-message">Loading vehicle data...</div>
       )}
-
       {!loading && error && (
         <div className="daily-log-error">{error}</div>
       )}
-
       {!loading && (
         <div className="daily-filter-row">
           <div
@@ -1241,7 +1045,6 @@ const Dailylog = () => {
             ref={siteSelectorRef}
           >
             <label>Select Site</label>
-
             <button
               type="button"
               className="single-site-button"
@@ -1253,10 +1056,8 @@ const Dailylog = () => {
                 <MapPin size={17} />
                 {selectedSite || "All Sites"}
               </span>
-
               <ChevronDown size={18} />
             </button>
-
             {showSiteDropdown && (
               <div className="site-dropdown-list">
                 <button
@@ -1270,7 +1071,6 @@ const Dailylog = () => {
                 >
                   All Sites
                 </button>
-
                 {sites.map((site) => (
                   <button
                     type="button"
@@ -1290,7 +1090,6 @@ const Dailylog = () => {
               </div>
             )}
           </div>
-
           {(selectedSite || searchTerm) && (
             <button
               type="button"
@@ -1307,59 +1106,47 @@ const Dailylog = () => {
           )}
         </div>
       )}
-
       <div className="vehicle-status-bar">
         <span>
           <i className="status-dot total-records-dot" />
           Total Records: <strong>{vehicles.length}</strong>
         </span>
-
         <span>
           <i className="status-dot active-dot" />
           Active: <strong>{activeVehicles}</strong>
         </span>
-
         <span>
           <i className="status-dot maintenance-dot" />
           Under Maintenance: <strong>{maintenanceVehicles}</strong>
         </span>
-
         <span>
           <i className="status-dot induction-dot" />
           Under Induction: <strong>{inductionVehicles}</strong>
         </span>
-
         <span>
           <i className="status-dot inactive-dot" />
           Inactive: <strong>{inactiveVehicles}</strong>
         </span>
       </div>
-
       <div className="daily-log-information">
         <span>
           Site: <strong>{selectedSite || "All Sites"}</strong>
         </span>
-
         <span>
           Date: <strong>{formatSelectedDate(selectedDate)}</strong>
         </span>
-
         <span>
           Showing: <strong>{filteredVehicles.length}</strong>
         </span>
       </div>
-
-
       <div className="daily-table-toolbar">
         <div>
           <h2>Vehicle Information</h2>
-
           <p>
             Select a site and click Edit Table to edit every vehicle
             in that site.
           </p>
         </div>
-
         <div className="daily-toolbar-actions">
           <button
             type="button"
@@ -1372,7 +1159,6 @@ const Dailylog = () => {
             <Pencil size={17} />
             Edit Table
           </button>
-
           <button
             type="button"
             className="excel-button"
@@ -1382,7 +1168,6 @@ const Dailylog = () => {
             <FileSpreadsheet size={17} />
             Excel
           </button>
-
           <button
             type="button"
             className="pdf-button"
@@ -1394,7 +1179,6 @@ const Dailylog = () => {
           </button>
         </div>
       </div>
-
       <div className="daily-log-table-wrapper">
         <table className="daily-log-table">
           <thead>
@@ -1402,7 +1186,6 @@ const Dailylog = () => {
               <th colSpan={7}>VEHICLE INFO</th>
               <th colSpan={7}>DAILY LOG DATA</th>
             </tr>
-
             <tr className="column-heading-row">
               <th>S.NO</th>
               <th>VEHICLE NO</th>
@@ -1420,7 +1203,6 @@ const Dailylog = () => {
               <th>ATTENDANCE</th>
             </tr>
           </thead>
-
           <tbody>
             {loading ? (
               <tr>
@@ -1429,14 +1211,14 @@ const Dailylog = () => {
                 </td>
               </tr>
             ) : filteredVehicles.length > 0 ? (
-              filteredVehicles.map((vehicle, index) => (
+              paginatedVehicles.map((vehicle, index) => (
                 <tr
                   key={
                     getVehicleId(vehicle) ??
                     `${vehicle.vehicleNumber}-${index}`
                   }
                 >
-                  <td>{index + 1}</td>
+                  <td>{(currentPage - 1) * rowsPerPage + index + 1}</td>
                   <td>{vehicle.vehicleNumber || "-"}</td>
                   <td>{vehicle.driverNumber || "-"}</td>
                   <td>{vehicle.transportProvider || "-"}</td>
@@ -1447,11 +1229,9 @@ const Dailylog = () => {
                   <td>{displayKm(vehicle.closingKm)}</td>
                   <td>{displayTodayKm(vehicle.todayKm)}</td>
                   <td>{displayKm(vehicle.monthlyKm)}</td>
-
                   <td className="load-idle-description">
                     {vehicle.loadIdle || "-"}
                   </td>
-
                   <td>
                     <span
                       className={`vehicle-status-badge ${getVehicleStatus(vehicle)
@@ -1461,7 +1241,6 @@ const Dailylog = () => {
                       {getVehicleStatus(vehicle)}
                     </span>
                   </td>
-
                   <td>
                     <span
                       className={
@@ -1485,31 +1264,50 @@ const Dailylog = () => {
           </tbody>
         </table>
       </div>
-
-      <div className="daily-summary-grid">
-        <div className="daily-summary-card">
-          <div className="daily-summary-icon">
-            <Route size={22} />
-          </div>
-
-          <div>
-            <span>Total Distance</span>
-            <h2>{totalDistance.toLocaleString("en-IN")} km</h2>
+      {!loading && filteredVehicles.length > 0 && (
+        <div className="daily-pagination">
+          <p>
+            Showing <strong>{(currentPage - 1) * rowsPerPage + 1}</strong>{" "}
+            to <strong>{Math.min(currentPage * rowsPerPage, filteredVehicles.length)}</strong>{" "}
+            of <strong>{filteredVehicles.length}</strong> records
+          </p>
+          <div className="daily-page-buttons">
+            <button
+              type="button"
+              onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+              disabled={currentPage === 1}
+              aria-label="Previous page"
+            >
+              &lt;
+            </button>
+            {getPageNumbers().map((page, index) =>
+              page === "..." ? (
+                <span className="daily-pagination-ellipsis" key={`ellipsis-${index}`}>
+                  ...
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  key={page}
+                  className={currentPage === page ? "active" : ""}
+                  onClick={() => setCurrentPage(page)}
+                  aria-current={currentPage === page ? "page" : undefined}
+                >
+                  {page}
+                </button>
+              )
+            )}
+            <button
+              type="button"
+              onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+              disabled={currentPage === totalPages}
+              aria-label="Next page"
+            >
+              &gt;
+            </button>
           </div>
         </div>
-
-        <div className="daily-summary-card">
-          <div className="daily-summary-icon">
-            <Fuel size={22} />
-          </div>
-
-          <div>
-            <span>Total Diesel</span>
-            <h2>{totalDiesel.toLocaleString("en-IN")} L</h2>
-          </div>
-        </div>
-      </div>
-
+      )}
       {showBulkEdit && (
         <div
           className="bulk-edit-overlay"
@@ -1532,7 +1330,6 @@ const Dailylog = () => {
             <div className="bulk-edit-header">
               <div>
                 <h2 id="bulk-edit-title">Edit Site Vehicle Table</h2>
-
                 <p>
                   Site: <strong>{selectedSite}</strong>
                   {" · "}
@@ -1543,7 +1340,6 @@ const Dailylog = () => {
                   Month Open KM can be entered only once per month
                 </p>
               </div>
-
               <button
                 type="button"
                 onClick={() => setShowBulkEdit(false)}
@@ -1553,7 +1349,6 @@ const Dailylog = () => {
                 <X size={20} />
               </button>
             </div>
-
             <div className="bulk-edit-table-wrapper">
               <table className="bulk-edit-table">
                 <thead>
@@ -1574,12 +1369,10 @@ const Dailylog = () => {
                     <th>Attendance</th>
                   </tr>
                 </thead>
-
                 <tbody>
                   {bulkRows.map((row, rowIndex) => (
                     <tr key={getVehicleId(row) ?? rowIndex}>
                       <td>{rowIndex + 1}</td>
-
                       <td>
                         <input
                           type="text"
@@ -1593,7 +1386,6 @@ const Dailylog = () => {
                           }
                         />
                       </td>
-
                       <td>
                         <input
                           type="text"
@@ -1607,7 +1399,6 @@ const Dailylog = () => {
                           }
                         />
                       </td>
-
                       <td>
                         <input
                           type="text"
@@ -1621,7 +1412,6 @@ const Dailylog = () => {
                           }
                         />
                       </td>
-
                       <td>
                         <input
                           type="text"
@@ -1635,7 +1425,6 @@ const Dailylog = () => {
                           }
                         />
                       </td>
-
                       <td>
                         <input
                           type="text"
@@ -1649,7 +1438,6 @@ const Dailylog = () => {
                           }
                         />
                       </td>
-
                       <td>
                         <input
                           type="text"
@@ -1671,7 +1459,6 @@ const Dailylog = () => {
                           }
                         />
                       </td>
-
                       <td>
                         <input
                           type="text"
@@ -1687,7 +1474,6 @@ const Dailylog = () => {
                           }
                         />
                       </td>
-
                       <td>
                         <input
                           type="text"
@@ -1697,7 +1483,6 @@ const Dailylog = () => {
                           readOnly
                         />
                       </td>
-
                       <td>
                         <input
                           type="text"
@@ -1713,7 +1498,6 @@ const Dailylog = () => {
                           }
                         />
                       </td>
-
                       <td>
                         <input
                           type="text"
@@ -1723,7 +1507,6 @@ const Dailylog = () => {
                           readOnly
                         />
                       </td>
-
                       <td>
                         <input
                           type="text"
@@ -1738,7 +1521,6 @@ const Dailylog = () => {
                           }
                         />
                       </td>
-
                       <td>
                         <select
                           value={row.vehicleStatus || "Active"}
@@ -1759,7 +1541,6 @@ const Dailylog = () => {
                           </option>
                         </select>
                       </td>
-
                       <td>
                         <select
                           value={row.attendance}
@@ -1780,11 +1561,9 @@ const Dailylog = () => {
                 </tbody>
               </table>
             </div>
-
             {bulkError && (
               <div className="bulk-edit-error">{bulkError}</div>
             )}
-
             <div className="bulk-edit-actions">
               <button
                 type="button"
@@ -1794,14 +1573,12 @@ const Dailylog = () => {
               >
                 Cancel
               </button>
-
               <button
                 type="submit"
                 className="save-all-button"
                 disabled={savingBulk}
               >
                 <Save size={17} />
-
                 {savingBulk
                   ? "Saving All..."
                   : "Save All Changes"}
@@ -1810,7 +1587,6 @@ const Dailylog = () => {
           </form>
         </div>
       )}
-
       {downloadType && (
         <div
           className="download-confirm-overlay"
@@ -1829,12 +1605,10 @@ const Dailylog = () => {
             <h2 id="download-confirm-title">
               Download {downloadType === "excel" ? "Excel" : "PDF"}?
             </h2>
-
             <p>
               {filteredVehicles.length} currently displayed records
               will be downloaded.
             </p>
-
             <div className="download-confirm-actions">
               <button
                 type="button"
@@ -1842,7 +1616,6 @@ const Dailylog = () => {
               >
                 Cancel
               </button>
-
               <button type="button" onClick={confirmDownload}>
                 Download
               </button>
@@ -1853,5 +1626,4 @@ const Dailylog = () => {
     </div>
   );
 };
-
 export default Dailylog;
