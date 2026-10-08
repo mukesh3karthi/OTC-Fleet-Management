@@ -5234,7 +5234,96 @@ const deleteTrip = async (
   }
 };
 
+const correctLifecycleDetails = async (req, res) => {
+  try {
+    const result = await getTripDocument(req.params.id);
+    if (result.error) return sendError(res, result.status, result.error);
+    const trip = result.trip;
+    const body = req.body || {};
+    const allowed = ["customer", "contactPerson", "contactNumber", "email", "assignedKam", "origin", "destination", "materialType", "remark", "siteLocation", "period", "dieselScope"];
+    for (const key of allowed) {
+      if (Object.prototype.hasOwnProperty.call(body, key)) {
+        trip[key] = cleanString(body[key]);
+      }
+    }
+    if (!cleanString(trip.customer)) return sendError(res, 400, "Customer is required.");
+    if (body.placementDate !== undefined) {
+      const date = toDateOrNull(body.placementDate);
+      if (body.placementDate && !date) return sendError(res, 400, "Invalid placement date.");
+      trip.placementDate = date;
+    }
+    if (body.distance !== undefined) {
+      const distance = Number(body.distance);
+      if (!Number.isFinite(distance) || distance < 0) return sendError(res, 400, "Invalid distance.");
+      trip.distance = distance;
+    }
+    if (body.orderFinalization && typeof body.orderFinalization === "object") {
+      const existing = trip.orderFinalization?.toObject?.() || trip.orderFinalization || {};
+      const patch = {};
+      for (const key of ["commercialTerms", "deliveryCommitments", "clientConfirmationNotes"]) {
+        if (body.orderFinalization[key] !== undefined) patch[key] = cleanString(body.orderFinalization[key]);
+      }
+      for (const key of ["quotedRate", "finalRate"]) {
+        if (body.orderFinalization[key] !== undefined) {
+          const val = body.orderFinalization[key];
+          const num = val === "" || val === null ? null : Number(val);
+          if (num !== null && (!Number.isFinite(num) || num < 0)) return sendError(res, 400, `Invalid ${key}.`);
+          patch[key] = num;
+        }
+      }
+      trip.orderFinalization = { ...existing, ...patch };
+    }
+    if (Array.isArray(body.vehicleRequirements)) {
+      if (trip.orderApproval?.status === "Approved" || (trip.trafficQuotations || []).length || (trip.allocatedVehicles || []).length) {
+        return sendError(res, 409, "Vehicle requirements cannot be changed after approval, quotation, or allocation. Use the appropriate workflow.");
+      }
+      if (body.vehicleRequirements.length !== trip.vehicleRequirements.length) return sendError(res, 400, "Requirement rows cannot be added or removed here.");
+      const original = new Map(trip.vehicleRequirements.map(r => [r.requirementId, r]));
+      for (const reqItem of body.vehicleRequirements) {
+        const target = original.get(reqItem.requirementId);
+        if (!target) return sendError(res, 400, "Unknown vehicle requirement.");
+        for (const key of ["vehicleType", "configuration", "classification"]) {
+          if (reqItem[key] !== undefined) target[key] = cleanString(reqItem[key]);
+        }
+        for (const key of ["quantity", "weight"]) {
+          if (reqItem[key] !== undefined) {
+            const n = Number(reqItem[key]);
+            if (!Number.isFinite(n) || n < (key === "quantity" ? 1 : 0) || (key === "quantity" && !Number.isInteger(n))) return sendError(res, 400, `Invalid ${key}.`);
+            target[key] = n;
+          }
+        }
+      }
+    }
+    if (Array.isArray(body.allocatedVehicles)) {
+      const original = new Map((trip.allocatedVehicles || []).map(v => [v.allocationId, v]));
+      for (const item of body.allocatedVehicles) {
+        const target = original.get(item.allocationId);
+        if (!target) return sendError(res, 400, "Unknown allocated vehicle.");
+        for (const key of ["driver", "escort", "supervisor"]) {
+          if (item[key] && typeof item[key] === "object") {
+            const existing = target[key]?.toObject?.() || target[key] || {};
+            const next = { ...existing };
+            for (const field of key === "escort" ? ["name", "contactNumber", "vehicleNumber"] : ["name", "contactNumber"]) {
+              if (item[key][field] !== undefined) next[field] = cleanString(item[key][field]);
+            }
+            target[key] = next;
+          }
+        }
+      }
+    }
+    // Deliberately never mutate tripId, approval states, stage, document buffers,
+    // tracking history, or vehicle numbers through this correction endpoint.
+    await trip.save();
+    const updated = await TripOrder.findById(trip._id).lean();
+    return sendSuccess(res, 200, "Order corrections saved successfully.", updated);
+  } catch (error) {
+    console.error("Lifecycle Correction Error:", error);
+    return sendError(res, 500, "Unable to save order corrections.", error);
+  }
+};
+
 module.exports = {
+  correctLifecycleDetails,
   saveLrDocument,
   downloadLrDocument,
   savePodDocument,

@@ -3326,3 +3326,69 @@
     grid-column: auto;
   }
 }
+
+/* Compact single-row vehicle requirement toolbar */
+.traffic-toolbar-single-row {
+  min-height: 58px;
+  padding: 9px 12px;
+  gap: 12px;
+  background: #fff;
+  flex-wrap: nowrap
+}
+
+.traffic-toolbar-heading {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex: 0 0 auto;
+  min-width: 0
+}
+
+.traffic-toolbar-heading h2 {
+  margin: 0;
+  color: #193e4d;
+  font-size: 14px;
+  font-weight: 800;
+  white-space: nowrap
+}
+
+.traffic-toolbar-single-row .traffic-search {
+  flex: 1 1 260px;
+  width: auto;
+  min-width: 130px;
+  max-width: 420px
+}
+
+.traffic-toolbar-single-row .traffic-filter-select {
+  flex: 0 0 170px
+}
+
+.traffic-toolbar-single-row .traffic-order-count {
+  flex: 0 0 auto;
+  margin-left: auto;
+  white-space: nowrap;
+  gap: 4px
+}
+
+.traffic-toolbar-single-row .traffic-order-count strong {
+  color: #173c4e;
+  font-size: 13px
+}
+
+@media(max-width:850px) {
+  .traffic-toolbar-single-row {
+    flex-wrap: wrap
+  }
+
+  .traffic-toolbar-heading {
+    width: 100%
+  }
+
+  .traffic-toolbar-single-row .traffic-search {
+    max-width: none
+  }
+
+  .traffic-toolbar-single-row .traffic-order-count {
+    margin-left: auto
+  }
+}

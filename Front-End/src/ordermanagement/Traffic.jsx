@@ -1729,32 +1729,11 @@ const Traffic = () => {
           MAIN CARD
       ===================================================== */}
       <section className="traffic-card">
-        <div className="traffic-card-title">
-          <div>
-            <div className="traffic-title-icon">
-              <Truck size={17} />
-            </div>
-            <div>
-              <h2>
-                Vehicle Requirement Requests
-              </h2>
-              <p>
-                Click View Order to enter
-                transporter quotations for each
-                vehicle requirement.
-              </p>
-            </div>
+        <div className="traffic-toolbar traffic-toolbar-single-row">
+          <div className="traffic-toolbar-heading">
+            <div className="traffic-title-icon"><Truck size={17} /></div>
+            <h2>Vehicle Requirement Requests</h2>
           </div>
-          <span className="traffic-order-count">
-            {filteredOrders.length}
-            {" "}
-            Orders
-          </span>
-        </div>
-        {/* =================================================
-            FILTERS
-        ================================================= */}
-        <div className="traffic-toolbar">
           <div className="traffic-search">
             <Search
               size={15}
@@ -1810,6 +1789,7 @@ const Traffic = () => {
               size={14}
             />
           </div>
+          <span className="traffic-order-count"><strong>{filteredOrders.length}</strong> of {orders.length} orders</span>
         </div>
         {/* =================================================
             TABLE
@@ -1924,9 +1904,9 @@ const Traffic = () => {
                           <td>
                             <span
                               className={`traffic-movement-badge ${String(order.movementType || "")
-                                  .trim()
-                                  .toLowerCase()
-                                  .replace(/\s+/g, "-")
+                                .trim()
+                                .toLowerCase()
+                                .replace(/\s+/g, "-")
                                 }`}
                             >
                               {order.movementType || "—"}
@@ -2149,8 +2129,8 @@ const Traffic = () => {
                       </button>
                       <a
                         className={`traffic-crane-download-btn ${!selectedOrder?.craneDocument?.fileName
-                            ? "disabled"
-                            : ""
+                          ? "disabled"
+                          : ""
                           }`}
                         href={
                           selectedOrder?.craneDocument?.fileName
@@ -2228,8 +2208,8 @@ const Traffic = () => {
                   return (
                     <section
                       className={`traffic-vehicle-card ${isCraneMovement(selectedOrder)
-                          ? "traffic-crane-quotation-card"
-                          : ""
+                        ? "traffic-crane-quotation-card"
+                        : ""
                         }`}
                       key={
                         requirementKey

@@ -510,7 +510,7 @@ const VehicleColumn = ({
     }
     if (typeof trip?.route === "string") {
       return trip.route
-        .split(/\s\\*(?:→|->|>|,|\\\\\\\\|)\s\\*/)
+        .split(/\s*(?:→|->|>|,|\|)\s*/)
         .filter(Boolean);
     }
     return [];
@@ -1240,7 +1240,7 @@ const VehicleColumn = ({
             </div>
           </div>
           <div className="operation-details-section document-operation-section">
-            <div className="operation-main-grid">
+            <div className="operation-main-grid document-three-column-grid">
               <div className="simple-operation-card document-operation-card">
                 <div className="simple-operation-header common-detail-header">
                   <div className="simple-operation-title">
@@ -1281,7 +1281,6 @@ const VehicleColumn = ({
                   <DetailRow label="Status" value={ewayBillStatus} />
                 </div>
               </div>
-            </div>
             <div className="simple-operation-card document-operation-card pod-operation-card">
               <div className="simple-operation-header common-detail-header">
                 <div className="simple-operation-title">
@@ -1297,24 +1296,24 @@ const VehicleColumn = ({
                 </span>
               </div>
               <div className="simple-operation-details">
-                <div className="simple-detail-row pod-document-row">
-                  <span className="simple-detail-label">POD File</span>
-                  <span className="simple-detail-colon">:</span>
-                  <strong className="simple-detail-value">{safeText(pod?.fileName)}</strong>
-                  {pod?.fileName && (
-                    <div className="pod-document-actions">
-                      <button type="button" onClick={() => viewVehicleDocument("pod")} title="View POD">
-                        <ExternalLink size={10} />
-                        <span>View</span>
-                      </button>
-                      <button type="button" onClick={() => downloadVehicleDocument("pod")} title="Download POD">
-                        <FileText size={10} />
-                        <span>Download</span>
-                      </button>
-                    </div>
-                  )}
+                <div className="pod-file-info">
+                  <span className="pod-file-label">POD File</span>
+                  <span className="pod-file-name" title={safeText(pod?.fileName)}>{safeText(pod?.fileName)}</span>
                 </div>
+                {pod?.fileName && (
+                  <div className="pod-file-buttons">
+                    <button type="button" onClick={() => viewVehicleDocument("pod")} title="View POD">
+                      <ExternalLink size={12} />
+                      <span>View</span>
+                    </button>
+                    <button type="button" onClick={() => downloadVehicleDocument("pod")} title="Download POD">
+                      <FileText size={12} />
+                      <span>Download</span>
+                    </button>
+                  </div>
+                )}
               </div>
+            </div>
             </div>
           </div>
           <div className="person-grid">

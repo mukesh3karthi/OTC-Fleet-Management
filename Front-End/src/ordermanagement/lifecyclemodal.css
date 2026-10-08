@@ -8185,3 +8185,385 @@
   font-size: 9px;
   font-weight: 800;
 }
+
+/* Order Lifecycle edit dialog: isolated selectors, no existing styles overridden */
+.kam-lifecycle-edit-trigger {
+  border: 1px solid #b4e0db;
+  background: #e9f7f5;
+  color: #087c75;
+  border-radius: 8px;
+  padding: 9px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer
+}
+
+.kam-lifecycle-edit-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  background: rgba(4, 20, 31, .65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 22px
+}
+
+.kam-lifecycle-edit-dialog {
+  width: min(920px, 100%);
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 1px solid #dce4e9;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 24px 80px #001b303d;
+  color: #17374a
+}
+
+.kam-lifecycle-edit-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 17px 22px;
+  background: #f1f5f7;
+  border-bottom: 1px solid #dce4e9
+}
+
+.kam-lifecycle-edit-header>div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px
+}
+
+.kam-lifecycle-edit-header strong {
+  font-size: 15px
+}
+
+.kam-lifecycle-edit-header span {
+  font-size: 11px;
+  color: #698091
+}
+
+.kam-lifecycle-edit-header button {
+  border: 0;
+  background: transparent;
+  font-size: 24px;
+  cursor: pointer;
+  color: #526777
+}
+
+.kam-lifecycle-edit-body {
+  padding: 18px 22px;
+  overflow-y: auto;
+  min-height: 0
+}
+
+.kam-lifecycle-edit-body h3 {
+  font-size: 12px;
+  font-weight: 750;
+  margin: 14px 0 12px;
+  padding-bottom: 9px;
+  border-bottom: 1px solid #e3e9ed;
+  color: #17374a
+}
+
+.kam-lifecycle-edit-body h3:first-child {
+  margin-top: 0
+}
+
+.kam-lifecycle-edit-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px
+}
+
+.kam-lifecycle-edit-grid label {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px
+}
+
+.kam-lifecycle-edit-grid label span {
+  font-size: 11px;
+  font-weight: 650;
+  color: #5d7283
+}
+
+.kam-lifecycle-edit-grid input,
+.kam-lifecycle-edit-grid textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 36px;
+  border: 1px solid #d5e0e6;
+  background: #fff;
+  border-radius: 7px;
+  padding: 8px 10px;
+  font: inherit;
+  font-size: 12px;
+  color: #17374a;
+  outline: none
+}
+
+.kam-lifecycle-edit-grid input:focus,
+.kam-lifecycle-edit-grid textarea:focus {
+  border-color: #0d9488;
+  box-shadow: 0 0 0 2px #0d94881b
+}
+
+.kam-lifecycle-edit-grid input:disabled {
+  background: #f3f5f7;
+  color: #8596a2
+}
+
+.kam-lifecycle-edit-group {
+  padding: 12px;
+  border: 1px solid #e1e8ec;
+  border-radius: 9px;
+  margin-bottom: 10px
+}
+
+.kam-lifecycle-edit-group>strong {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 12px
+}
+
+.kam-lifecycle-edit-note {
+  font-size: 11px;
+  color: #8b620c;
+  background: #fff9e9;
+  padding: 9px;
+  border-radius: 7px;
+  margin-bottom: 12px
+}
+
+.kam-lifecycle-edit-footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 9px;
+  padding: 13px 22px;
+  border-top: 1px solid #dce4e9;
+  background: #f7f9fa
+}
+
+.kam-lifecycle-edit-footer span {
+  margin-right: auto;
+  color: #b42318;
+  font-size: 11px
+}
+
+.kam-lifecycle-edit-footer button {
+  border: 1px solid #d0dce3;
+  background: #fff;
+  color: #385366;
+  border-radius: 7px;
+  padding: 9px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer
+}
+
+.kam-lifecycle-edit-footer button:last-child {
+  background: #0d9488;
+  color: #fff;
+  border-color: #0d9488
+}
+
+.kam-lifecycle-edit-footer button:disabled {
+  opacity: .6;
+  cursor: not-allowed
+}
+
+@media(max-width:760px) {
+  .kam-lifecycle-edit-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr))
+  }
+}
+
+@media(max-width:500px) {
+  .kam-lifecycle-edit-grid {
+    grid-template-columns: 1fr
+  }
+
+  .kam-lifecycle-edit-overlay {
+    padding: 8px
+  }
+}
+
+/* Inline lifecycle editing; no second modal */
+.kam-inline-edit-panel {
+  margin: 0 0 16px;
+  padding: 16px 18px;
+  border: 1px solid #b7dad7;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 3px 12px #102f440a
+}
+
+.kam-inline-edit-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e2ecee
+}
+
+.kam-inline-edit-heading h3 {
+  margin: 0;
+  color: #103e4c;
+  font-size: 14px
+}
+
+.kam-inline-edit-heading>span {
+  color: #07877e;
+  font-size: 11px;
+  font-weight: 700
+}
+
+.kam-inline-edit-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px 14px
+}
+
+.kam-inline-edit-grid label,
+.kam-inline-edit-remarks {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0
+}
+
+.kam-inline-edit-grid label span,
+.kam-inline-edit-remarks span {
+  color: #24475a;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase
+}
+
+.kam-inline-edit-grid input,
+.kam-inline-edit-grid textarea,
+.kam-inline-edit-remarks textarea {
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  padding: 9px 11px;
+  border: 1px solid #c9dce3;
+  border-radius: 9px;
+  background: #fff;
+  color: #193b4b;
+  font-size: 12px;
+  outline: 0
+}
+
+.kam-inline-edit-grid input:focus,
+.kam-inline-edit-grid textarea:focus,
+.kam-inline-edit-remarks textarea:focus {
+  border-color: #07998d;
+  box-shadow: 0 0 0 2px #07998d1f
+}
+
+.kam-inline-edit-requirement {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #e1ebee
+}
+
+.kam-inline-edit-requirement h4 {
+  margin: 0 0 12px;
+  color: #087f77;
+  font-size: 12px
+}
+
+.kam-inline-edit-requirement p {
+  color: #956b19;
+  font-size: 11px
+}
+
+.kam-inline-edit-remarks {
+  margin-top: 14px
+}
+
+.kam-inline-edit-remarks textarea {
+  min-height: 60px
+}
+
+@media(max-width:1050px) {
+  .kam-inline-edit-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr))
+  }
+}
+
+@media(max-width:600px) {
+  .kam-inline-edit-grid {
+    grid-template-columns: 1fr
+  }
+}
+
+/* Completed orders: read-only across every lifecycle stage */
+.kam-trip-readonly .kam-card-body input,
+.kam-trip-readonly .kam-card-body select,
+.kam-trip-readonly .kam-card-body textarea {
+  pointer-events: none;
+  opacity: .75;
+  background: #f3f7f8
+}
+
+.kam-trip-readonly .kam-card-body button {
+  pointer-events: none;
+  opacity: .65;
+  cursor: not-allowed
+}
+
+.kam-trip-readonly .kam-card-body a {
+  pointer-events: auto
+}
+
+.kam-completed-readonly-label {
+  font-size: 12px;
+  font-weight: 800;
+  color: #c9f1e9;
+  margin-right: 12px
+}
+
+/* Compact lifecycle edit control */
+.kam-lifecycle-edit-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: 31px;
+  padding: 0 11px;
+  border: 1px solid #b9e0da;
+  border-radius: 7px;
+  background: #edf9f6;
+  color: #087b72;
+  font-size: 11px;
+  font-weight: 750;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: none;
+}
+
+.kam-lifecycle-edit-trigger:hover {
+  background: #dcf3ee;
+}
+
+.kam-lifecycle-edit-trigger:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}
+
+.kam-inline-edit-error {
+  margin: 0 0 10px;
+  color: #b42318;
+  font-size: 11px;
+  font-weight: 650;
+}

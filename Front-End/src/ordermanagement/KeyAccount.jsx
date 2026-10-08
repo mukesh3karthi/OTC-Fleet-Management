@@ -1502,6 +1502,7 @@ const KeyAccount = () => {
     editingOrderId,
     setEditingOrderId,
   ] = useState(null);
+  const [lifecycleEditOrderId, setLifecycleEditOrderId] = useState(null);
   const [
     isSaving,
     setIsSaving,
@@ -1835,6 +1836,7 @@ const KeyAccount = () => {
     };
   const handleBackFromDetail =
     () => {
+      setLifecycleEditOrderId(null);
       setSelectedOrderId(
         null
       );
@@ -1865,113 +1867,17 @@ const KeyAccount = () => {
     EDIT TRIP
     All orders can be edited.
   ======================================================= */
-  const handleEditTrip =
-    (order) => {
-      const orderId =
-        getMongoId(
-          order._id
-        );
-      if (!orderId) {
-        setToast(
-          "Order database ID is missing."
-        );
-        return;
-      }
-      setEditingOrderId(
-        orderId
-      );
-      setTripUpload(
-        null
-      );
-      setTripForm({
-        ...createEmptyTripForm(
-          order.tripId || ""
-        ),
-        tripId:
-          order.tripId || "",
-        movementType:
-          getEditableMovementType(
-            order
-          ),
-        customer:
-          order.customer ||
-          "",
-        contactPerson:
-          order.contactPerson ||
-          "",
-        contactNumber:
-          order.contactNumber ||
-          "",
-        email:
-          order.email ||
-          "",
-        assignedKam:
-          order.assignedKam ||
-          "",
-        enquiryDate:
-          toDateInput(
-            order.enquiryDate
-          ),
-        placementDate:
-          toDateInput(
-            order.placementDate
-          ),
-        origin:
-          order.origin || "",
-        destination:
-          order.destination ||
-          "",
-        distance:
-          numberText(
-            order.distance
-          ),
-        totalVehicles:
-          numberText(
-            order.totalVehicles
-          ),
-        materialType:
-          order.materialType ||
-          "",
-        remark:
-          order.remark || "",
-        siteLocation:
-          order.siteLocation ||
-          "",
-        period:
-          order.period || "",
-        dieselScope:
-          order.dieselScope ||
-          "",
-        routeLocations:
-          Array.isArray(
-            order.routeLocations
-          )
-            ? [
-              ...order
-                .routeLocations,
-            ]
-            : [],
-        vehicleRequirements:
-          Array.isArray(
-            order
-              .vehicleRequirements
-          ) &&
-            order
-              .vehicleRequirements
-              .length
-            ? order
-              .vehicleRequirements
-              .map(
-                normalizeRequirement
-              )
-            : [
-              createEmptyVehicleRequirement(),
-            ],
-      });
-      setShowTripModal(
-        true
-      );
-    };
+  const handleEditTrip = (order) => {
+    if (getDisplayStage(order) === "Trip Complete") {
+      setToast("Completed trips are read-only.");
+      return;
+    }
+    setOpenActionMenu(null);
+    setShowTripModal(false);
+    setEditingOrderId(null);
+    setLifecycleEditOrderId(getOrderKey(order));
+    setSelectedOrderId(getOrderKey(order));
+  };
   /* =======================================================
     CLOSE MODAL
   ======================================================= */
@@ -2883,21 +2789,8 @@ const KeyAccount = () => {
               ORDER LIST
           ================================================= */}
         <section className="key-account-container">
-          <div className="key-account-header">
-            <div className="key-account-header-left">
-              <h2>
-                Running Order List
-              </h2>
-            </div>
-            <div className="kam-header-indicator">
-              <span className="kam-status-dot" />
-              Live workspace
-            </div>
-          </div>
-          {/* ===============================================
-                FILTERS
-            =============================================== */}
           <div className="key-account-filters">
+            <h2 className="kam-list-title">Running Order List</h2>
             <div className="key-search-box">
               <svg
                 viewBox="0 0 24 24"
@@ -3423,6 +3316,14 @@ const KeyAccount = () => {
           order={
             selectedOrder
           }
+          initialEdit={lifecycleEditOrderId === getOrderKey(selectedOrder)}
+          onOrderUpdated={(updated) => {
+            const mapped = mapDbTripToOrder(updated);
+            setOrders((previous) => previous.map((item) =>
+              getOrderKey(item) === getOrderKey(mapped) ? mapped : item
+            ));
+            setLifecycleEditOrderId(null);
+          }}
           onClose={
             handleBackFromDetail
           }
