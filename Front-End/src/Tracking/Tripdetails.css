@@ -3968,3 +3968,33 @@
     font-size: 10px;
   }
 }
+
+.trip-movement-document-head b.eway-status-active {
+  border-color: #bfe0dc;
+  color: #08776f;
+  background: #ecfaf7
+}
+
+.trip-movement-document-head b.eway-status-expiring-soon {
+  border-color: #f4d28a;
+  color: #995e08;
+  background: #fff6df
+}
+
+.trip-movement-document-head b.eway-status-expires-today {
+  border-color: #f0b88e;
+  color: #a74e16;
+  background: #fff0e5
+}
+
+.trip-movement-document-head b.eway-status-expired {
+  border-color: #f1bfc4;
+  color: #b82f41;
+  background: #fff0f2
+}
+
+.trip-movement-document-head b.eway-status-pending {
+  border-color: #d7e0e5;
+  color: #667985;
+  background: #f4f7f8
+}

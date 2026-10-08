@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
-
 import {
   FaArrowRight,
   FaBoxOpen,
@@ -14,27 +13,20 @@ import {
   FaShippingFast,
   FaTruck,
 } from "react-icons/fa";
-
 import "../pagescss/ordermanagement.css";
-
 /* =========================================================
    API CONFIGURATION
 ========================================================= */
-
 const API_BASE_URL =
   import.meta.env.VITE_API_URL || "http://localhost:5000";
-
 const TRIP_API = `${API_BASE_URL}/api/triporders`;
-
 /* =========================================================
    HELPERS
 ========================================================= */
-
 const normalize = (value) =>
   String(value ?? "")
     .trim()
     .toLowerCase();
-
 const getFirstValue = (...values) => {
   const value = values.find(
     (item) =>
@@ -42,19 +34,15 @@ const getFirstValue = (...values) => {
       item !== null &&
       String(item).trim() !== ""
   );
-
   return value ?? "";
 };
-
 const getArray = (...values) => {
   const value = values.find((item) => Array.isArray(item));
   return value || [];
 };
-
 /* =========================================================
    TRIP FIELD HELPERS
 ========================================================= */
-
 const getTripId = (trip) =>
   getFirstValue(
     trip?.tripId,
@@ -63,7 +51,6 @@ const getTripId = (trip) =>
     trip?.id,
     trip?._id
   );
-
 const getCustomer = (trip) =>
   getFirstValue(
     trip?.customer,
@@ -72,7 +59,6 @@ const getCustomer = (trip) =>
     trip?.enquiryDetails?.customer,
     trip?.enquiryDetails?.customerName
   );
-
 const getMaterial = (trip) =>
   getFirstValue(
     trip?.materialType,
@@ -82,7 +68,6 @@ const getMaterial = (trip) =>
     trip?.enquiryDetails?.materialType,
     trip?.enquiryDetails?.material
   );
-
 const getOrigin = (trip) =>
   getFirstValue(
     trip?.origin,
@@ -91,7 +76,6 @@ const getOrigin = (trip) =>
     trip?.route?.origin,
     trip?.enquiryDetails?.origin
   );
-
 const getDestination = (trip) =>
   getFirstValue(
     trip?.destination,
@@ -100,7 +84,6 @@ const getDestination = (trip) =>
     trip?.route?.destination,
     trip?.enquiryDetails?.destination
   );
-
 const getMovement = (trip) =>
   getFirstValue(
     trip?.movement,
@@ -109,7 +92,6 @@ const getMovement = (trip) =>
     trip?.enquiryDetails?.movementType,
     "General"
   );
-
 const getStage = (trip) =>
   getFirstValue(
     trip?.currentStage,
@@ -118,7 +100,6 @@ const getStage = (trip) =>
     trip?.lifecycleStage,
     "Enquiry Details"
   );
-
 const getStatus = (trip) =>
   getFirstValue(
     trip?.status,
@@ -127,11 +108,9 @@ const getStatus = (trip) =>
     trip?.currentStatus,
     "Pending"
   );
-
 /* =========================================================
    VEHICLE HELPERS
 ========================================================= */
-
 const getAllocatedVehicles = (trip) =>
   getArray(
     trip?.allocatedVehicles,
@@ -139,17 +118,14 @@ const getAllocatedVehicles = (trip) =>
     trip?.tracking?.allocatedVehicles,
     trip?.trackingInput?.allocatedVehicles
   );
-
 const getVehicleRequirements = (trip) =>
   getArray(
     trip?.vehicleRequirements,
     trip?.vehicles,
     trip?.requiredVehicles
   );
-
 const getVehicleNumber = (trip) => {
   const allocated = getAllocatedVehicles(trip);
-
   if (allocated.length > 0) {
     return getFirstValue(
       allocated[0]?.vehicleNumber,
@@ -157,7 +133,6 @@ const getVehicleNumber = (trip) => {
       allocated[0]?.registrationNumber
     );
   }
-
   return getFirstValue(
     trip?.vehicleNumber,
     trip?.vehicleNo,
@@ -165,11 +140,9 @@ const getVehicleNumber = (trip) => {
     "-"
   );
 };
-
 /* =========================================================
    TRACKING HELPERS
 ========================================================= */
-
 const getDailyTracking = (trip) =>
   getArray(
     trip?.dailyTracking,
@@ -177,20 +150,15 @@ const getDailyTracking = (trip) =>
     trip?.tracking?.dailyTracking,
     trip?.trackingInput?.dailyTracking
   );
-
 const getLatestTracking = (trip) => {
   const tracking = getDailyTracking(trip);
-
   if (!tracking.length) {
     return null;
   }
-
   return tracking[tracking.length - 1];
 };
-
 const getMovementStatus = (trip) => {
   const latest = getLatestTracking(trip);
-
   return getFirstValue(
     latest?.status,
     latest?.movementStatus,
@@ -200,15 +168,12 @@ const getMovementStatus = (trip) => {
     ""
   );
 };
-
 /* =========================================================
    STATUS CHECKERS
 ========================================================= */
-
 const isCompletedTrip = (trip) => {
   const stage = normalize(getStage(trip));
   const status = normalize(getStatus(trip));
-
   return (
     stage.includes("trip complete") ||
     stage.includes("completed") ||
@@ -218,13 +183,10 @@ const isCompletedTrip = (trip) => {
     status === "delivered"
   );
 };
-
 const isMovingTrip = (trip) => {
   if (isCompletedTrip(trip)) return false;
-
   const status = normalize(getMovementStatus(trip));
   const stage = normalize(getStage(trip));
-
   return (
     status === "moving" ||
     status === "in transit" ||
@@ -233,13 +195,10 @@ const isMovingTrip = (trip) => {
     stage.includes("trip started")
   );
 };
-
 const isPendingTrip = (trip) => {
   if (isCompletedTrip(trip)) return false;
-
   const status = normalize(getStatus(trip));
   const stage = normalize(getStage(trip));
-
   return (
     status.includes("pending") ||
     status.includes("await") ||
@@ -249,11 +208,9 @@ const isPendingTrip = (trip) => {
     stage.includes("po document")
   );
 };
-
 /* =========================================================
    PIPELINE CONFIG
 ========================================================= */
-
 const PIPELINE_CONFIG = [
   {
     label: "Enquiry",
@@ -300,43 +257,30 @@ const PIPELINE_CONFIG = [
     ],
   },
 ];
-
 /* =========================================================
    COMPONENT
 ========================================================= */
-
 const OrderManagement = () => {
   /* =======================================================
      STATE
   ======================================================= */
-
   const [orders, setOrders] = useState([]);
-
   const [loading, setLoading] = useState(true);
-
   const [error, setError] = useState("");
-
   const [search, setSearch] = useState("");
-
   const [stageFilter, setStageFilter] =
     useState("All Stages");
-
   const [movementFilter, setMovementFilter] =
     useState("All Movements");
-
   /* =======================================================
      LOAD API DATA
   ======================================================= */
-
   const fetchOrders = async () => {
     try {
       setLoading(true);
       setError("");
-
       const response = await axios.get(TRIP_API);
-
       let result = [];
-
       if (Array.isArray(response.data)) {
         result = response.data;
       } else if (Array.isArray(response.data?.trips)) {
@@ -348,70 +292,57 @@ const OrderManagement = () => {
       ) {
         result = response.data.orders;
       }
-
       setOrders(result);
     } catch (err) {
       console.error(
         "Order dashboard API error:",
         err
       );
-
       setError(
         err?.response?.data?.message ||
-          err?.message ||
-          "Unable to load dashboard data."
+        err?.message ||
+        "Unable to load dashboard data."
       );
-
       setOrders([]);
     } finally {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     fetchOrders();
   }, []);
-
   /* =======================================================
      TOTAL KPI
   ======================================================= */
-
   const dashboardStats = useMemo(() => {
     const totalOrders = orders.length;
-
     const completed = orders.filter(
       isCompletedTrip
     ).length;
-
     const inTransit = orders.filter(
       isMovingTrip
     ).length;
-
     const pending = orders.filter(
       isPendingTrip
     ).length;
-
     const completedPercentage =
       totalOrders > 0
         ? Math.round(
-            (completed / totalOrders) * 100
-          )
+          (completed / totalOrders) * 100
+        )
         : 0;
-
     const transitPercentage =
       totalOrders > 0
         ? Math.round(
-            (inTransit / totalOrders) * 100
-          )
+          (inTransit / totalOrders) * 100
+        )
         : 0;
-
     const pendingPercentage =
       totalOrders > 0
         ? Math.round(
-            (pending / totalOrders) * 100
-          )
+          (pending / totalOrders) * 100
+        )
         : 0;
-
     return {
       totalOrders,
       completed,
@@ -422,20 +353,16 @@ const OrderManagement = () => {
       pendingPercentage,
     };
   }, [orders]);
-
   /* =======================================================
      PIPELINE DATA
   ======================================================= */
-
   const pipelineData = useMemo(() => {
     const total = orders.length || 1;
-
     return PIPELINE_CONFIG.map((config) => {
       const value = orders.filter((trip) => {
         const stage = normalize(
           getStage(trip)
         );
-
         return config.keywords.some(
           (keyword) =>
             stage.includes(
@@ -443,7 +370,6 @@ const OrderManagement = () => {
             )
         );
       }).length;
-
       return {
         ...config,
         value,
@@ -451,11 +377,9 @@ const OrderManagement = () => {
       };
     });
   }, [orders]);
-
   /* =======================================================
      MOVEMENT DATA
   ======================================================= */
-
   const movementData = useMemo(() => {
     const counters = {
       moving: 0,
@@ -464,19 +388,16 @@ const OrderManagement = () => {
       breakdown: 0,
       reached: 0,
     };
-
     orders.forEach((trip) => {
       const status = normalize(
         getMovementStatus(trip)
       );
-
       if (
         status.includes("breakdown")
       ) {
         counters.breakdown += 1;
         return;
       }
-
       if (
         status.includes("halt") ||
         status.includes("idle") ||
@@ -485,14 +406,12 @@ const OrderManagement = () => {
         counters.halted += 1;
         return;
       }
-
       if (
         status.includes("loading")
       ) {
         counters.loading += 1;
         return;
       }
-
       if (
         status.includes("reach") ||
         status.includes("deliver") ||
@@ -501,7 +420,6 @@ const OrderManagement = () => {
         counters.reached += 1;
         return;
       }
-
       if (
         status.includes("moving") ||
         status.includes("transit")
@@ -509,7 +427,6 @@ const OrderManagement = () => {
         counters.moving += 1;
       }
     });
-
     return [
       {
         label: "Moving",
@@ -538,7 +455,6 @@ const OrderManagement = () => {
       },
     ];
   }, [orders]);
-
   const activeMovementTotal =
     movementData
       .filter(
@@ -550,24 +466,19 @@ const OrderManagement = () => {
           sum + item.value,
         0
       );
-
   /* =======================================================
      OPERATION HEALTH
   ======================================================= */
-
   const healthStats = useMemo(() => {
     const completedTrips =
       orders.filter(
         isCompletedTrip
       ).length;
-
     let breakdowns = 0;
     let minorHalts = 0;
-
     orders.forEach((trip) => {
       const tracking =
         getDailyTracking(trip);
-
       const hasBreakdown =
         tracking.some((item) =>
           normalize(
@@ -578,7 +489,6 @@ const OrderManagement = () => {
             )
           ).includes("breakdown")
         );
-
       const hasHalt =
         tracking.some((item) => {
           const status = normalize(
@@ -588,28 +498,23 @@ const OrderManagement = () => {
               item?.vehicleStatus
             )
           );
-
           return (
             status.includes("halt") ||
             status.includes("idle") ||
             status.includes("stopped")
           );
         });
-
       if (hasBreakdown) {
         breakdowns += 1;
       }
-
       if (hasHalt) {
         minorHalts += 1;
       }
     });
-
     const issueTrips =
       orders.filter((trip) => {
         const tracking =
           getDailyTracking(trip);
-
         return tracking.some((item) => {
           const status = normalize(
             getFirstValue(
@@ -618,7 +523,6 @@ const OrderManagement = () => {
               item?.vehicleStatus
             )
           );
-
           return (
             status.includes("breakdown") ||
             status.includes("halt") ||
@@ -627,22 +531,19 @@ const OrderManagement = () => {
           );
         });
       }).length;
-
     const issueFreeTrips =
       Math.max(
         completedTrips - issueTrips,
         0
       );
-
     const issueFreePercentage =
       completedTrips > 0
         ? (
-            (issueFreeTrips /
-              completedTrips) *
-            100
-          ).toFixed(1)
+          (issueFreeTrips /
+            completedTrips) *
+          100
+        ).toFixed(1)
         : "0.0";
-
     return {
       completedTrips,
       breakdowns,
@@ -651,23 +552,18 @@ const OrderManagement = () => {
       issueFreePercentage,
     };
   }, [orders]);
-
   /* =======================================================
      MONTHLY PERFORMANCE
   ======================================================= */
-
   const monthlyData = useMemo(() => {
     const today = new Date();
-
     const months = [];
-
     for (let i = 5; i >= 0; i -= 1) {
       const date = new Date(
         today.getFullYear(),
         today.getMonth() - i,
         1
       );
-
       months.push({
         year: date.getFullYear(),
         monthIndex: date.getMonth(),
@@ -680,7 +576,6 @@ const OrderManagement = () => {
         orders: 0,
       });
     }
-
     orders.forEach((trip) => {
       const createdDate = getFirstValue(
         trip?.createdAt,
@@ -688,33 +583,25 @@ const OrderManagement = () => {
         trip?.createdDate,
         trip?.date
       );
-
       if (!createdDate) return;
-
       const date = new Date(createdDate);
-
       if (
         Number.isNaN(date.getTime())
       ) {
         return;
       }
-
       const target = months.find(
         (month) =>
           month.year ===
-            date.getFullYear() &&
+          date.getFullYear() &&
           month.monthIndex ===
-            date.getMonth()
+          date.getMonth()
       );
-
       if (!target) return;
-
       target.enquiries += 1;
-
       const stage = normalize(
         getStage(trip)
       );
-
       if (
         !stage.includes("enquiry") ||
         isCompletedTrip(trip)
@@ -722,10 +609,8 @@ const OrderManagement = () => {
         target.orders += 1;
       }
     });
-
     return months;
   }, [orders]);
-
   const maxChartValue = Math.max(
     1,
     ...monthlyData.flatMap((item) => [
@@ -733,44 +618,35 @@ const OrderManagement = () => {
       item.orders,
     ])
   );
-
   /* =======================================================
      DYNAMIC STAGE FILTER
   ======================================================= */
-
   const stages = useMemo(() => {
     const values = orders
       .map((trip) => getStage(trip))
       .filter(Boolean);
-
     return [
       "All Stages",
       ...Array.from(new Set(values)),
     ];
   }, [orders]);
-
   /* =======================================================
      DYNAMIC MOVEMENT FILTER
   ======================================================= */
-
   const movements = useMemo(() => {
     const values = orders
       .map((trip) => getMovement(trip))
       .filter(Boolean);
-
     return [
       "All Movements",
       ...Array.from(new Set(values)),
     ];
   }, [orders]);
-
   /* =======================================================
      FILTER ACTIVE ORDERS
   ======================================================= */
-
   const filteredOrders = useMemo(() => {
     const query = normalize(search);
-
     return orders.filter((trip) => {
       const tripId = getTripId(trip);
       const customer = getCustomer(trip);
@@ -786,7 +662,6 @@ const OrderManagement = () => {
       const status =
         getMovementStatus(trip) ||
         getStatus(trip);
-
       const searchableText = [
         tripId,
         customer,
@@ -801,21 +676,17 @@ const OrderManagement = () => {
         .filter(Boolean)
         .join(" ")
         .toLowerCase();
-
       const matchesSearch =
         !query ||
         searchableText.includes(query);
-
       const matchesStage =
         stageFilter ===
-          "All Stages" ||
+        "All Stages" ||
         stage === stageFilter;
-
       const matchesMovement =
         movementFilter ===
-          "All Movements" ||
+        "All Movements" ||
         movement === movementFilter;
-
       return (
         matchesSearch &&
         matchesStage &&
@@ -828,11 +699,9 @@ const OrderManagement = () => {
     stageFilter,
     movementFilter,
   ]);
-
   /* =======================================================
      CURRENT MONTH
   ======================================================= */
-
   const currentPeriod =
     new Date()
       .toLocaleString("en-US", {
@@ -840,11 +709,9 @@ const OrderManagement = () => {
         year: "numeric",
       })
       .toUpperCase();
-
   /* =======================================================
      LOADING
   ======================================================= */
-
   if (loading) {
     return (
       <div className="control-dashboard">
@@ -863,53 +730,43 @@ const OrderManagement = () => {
       </div>
     );
   }
-
   /* =======================================================
      RETURN
   ======================================================= */
-
   return (
     <div className="control-dashboard">
       {/* ===================================================
           PAGE HEADER
       =================================================== */}
-
       <section className="control-header">
         <div className="control-header-left">
           <div className="control-header-icon">
             <FaRoute />
           </div>
-
           <div>
             <span className="control-eyebrow">
               OPERATIONS CONTROL
             </span>
-
             <h1>
               Order Management Dashboard
             </h1>
-
             <p>
               Live operational overview of orders,
               movements and execution performance.
             </p>
           </div>
         </div>
-
         <div className="control-header-right">
           <span className="live-indicator">
             <span />
             Live Operations
           </span>
-
           <div className="dashboard-period">
             {currentPeriod}
           </div>
         </div>
       </section>
-
       {/* API ERROR */}
-
       {error && (
         <div
           style={{
@@ -925,7 +782,6 @@ const OrderManagement = () => {
           }}
         >
           {error}
-
           <button
             type="button"
             onClick={fetchOrders}
@@ -942,173 +798,65 @@ const OrderManagement = () => {
           </button>
         </div>
       )}
-
       {/* ===================================================
           KPI CARDS
       =================================================== */}
-
       <section className="control-kpi-grid">
-        {/* TOTAL ORDERS */}
-
-        <article className="control-kpi-card">
-          <div className="control-kpi-top">
-            <div className="control-kpi-icon total">
-              <FaClipboardCheck />
-            </div>
-
-            <span className="control-kpi-trend positive">
-              LIVE
-            </span>
-          </div>
-
-          <div className="control-kpi-label">
-            Total Orders
-          </div>
-
-          <div className="control-kpi-number">
-            {dashboardStats.totalOrders}
-          </div>
-
-          <div className="control-kpi-footer">
-            <span>Overall orders</span>
-            <strong>100%</strong>
-          </div>
+        <article className="control-kpi-card control-kpi-total">
+          <div className="control-kpi-icon total"><FaClipboardCheck /></div>
+          <div className="control-kpi-content"><span>Total Orders</span><small>Overall orders</small></div>
+          <strong className="control-kpi-number">{dashboardStats.totalOrders}</strong>
+          <div className="control-kpi-wave" aria-hidden="true"><svg viewBox="0 0 400 40" preserveAspectRatio="none"><path d="M0 20 C70 0 130 38 200 20 S330 0 400 20 V40 H0 Z" fill="currentColor" /></svg></div>
         </article>
-
-        {/* IN TRANSIT */}
-
-        <article className="control-kpi-card">
-          <div className="control-kpi-top">
-            <div className="control-kpi-icon transit">
-              <FaTruck />
-            </div>
-
-            <span className="control-kpi-status">
-              LIVE
-            </span>
-          </div>
-
-          <div className="control-kpi-label">
-            In Transit
-          </div>
-
-          <div className="control-kpi-number">
-            {dashboardStats.inTransit}
-          </div>
-
-          <div className="control-kpi-footer">
-            <span>Active movements</span>
-
-            <strong>
-              {dashboardStats.transitPercentage}%
-            </strong>
-          </div>
+        <article className="control-kpi-card control-kpi-transit">
+          <div className="control-kpi-icon transit"><FaTruck /></div>
+          <div className="control-kpi-content"><span>In Transit</span><small>Active movements</small></div>
+          <strong className="control-kpi-number">{dashboardStats.inTransit}</strong>
+          <div className="control-kpi-wave" aria-hidden="true"><svg viewBox="0 0 400 40" preserveAspectRatio="none"><path d="M0 20 C70 0 130 38 200 20 S330 0 400 20 V40 H0 Z" fill="currentColor" /></svg></div>
         </article>
-
-        {/* PENDING */}
-
-        <article className="control-kpi-card">
-          <div className="control-kpi-top">
-            <div className="control-kpi-icon pending">
-              <FaClock />
-            </div>
-
-            <span className="control-kpi-trend warning">
-              {dashboardStats.pending} Action
-            </span>
-          </div>
-
-          <div className="control-kpi-label">
-            Pending Action
-          </div>
-
-          <div className="control-kpi-number">
-            {dashboardStats.pending}
-          </div>
-
-          <div className="control-kpi-footer">
-            <span>Requires attention</span>
-
-            <strong>
-              {dashboardStats.pendingPercentage}%
-            </strong>
-          </div>
+        <article className="control-kpi-card control-kpi-pending">
+          <div className="control-kpi-icon pending"><FaClock /></div>
+          <div className="control-kpi-content"><span>Pending Action</span><small>Requires attention</small></div>
+          <strong className="control-kpi-number">{dashboardStats.pending}</strong>
+          <div className="control-kpi-wave" aria-hidden="true"><svg viewBox="0 0 400 40" preserveAspectRatio="none"><path d="M0 20 C70 0 130 38 200 20 S330 0 400 20 V40 H0 Z" fill="currentColor" /></svg></div>
         </article>
-
-        {/* COMPLETED */}
-
-        <article className="control-kpi-card">
-          <div className="control-kpi-top">
-            <div className="control-kpi-icon completed">
-              <FaCheckCircle />
-            </div>
-
-            <span className="control-kpi-trend positive">
-              COMPLETED
-            </span>
-          </div>
-
-          <div className="control-kpi-label">
-            Completed
-          </div>
-
-          <div className="control-kpi-number">
-            {dashboardStats.completed}
-          </div>
-
-          <div className="control-kpi-footer">
-            <span>
-              Successfully completed
-            </span>
-
-            <strong>
-              {
-                dashboardStats
-                  .completedPercentage
-              }
-              %
-            </strong>
-          </div>
+        <article className="control-kpi-card control-kpi-completed">
+          <div className="control-kpi-icon completed"><FaCheckCircle /></div>
+          <div className="control-kpi-content"><span>Completed</span><small>Successfully completed</small></div>
+          <strong className="control-kpi-number">{dashboardStats.completed}</strong>
+          <div className="control-kpi-wave" aria-hidden="true"><svg viewBox="0 0 400 40" preserveAspectRatio="none"><path d="M0 20 C70 0 130 38 200 20 S330 0 400 20 V40 H0 Z" fill="currentColor" /></svg></div>
         </article>
       </section>
-
       {/* ===================================================
           PIPELINE + MOVEMENT
       =================================================== */}
-
       <section className="control-main-grid">
         {/* PIPELINE */}
-
         <article className="control-card pipeline-card">
           <div className="control-card-header">
             <div>
               <span className="control-card-eyebrow">
                 WORKFLOW
               </span>
-
               <h2>Order Pipeline</h2>
-
               <p>
                 Current orders across lifecycle
                 stages
               </p>
             </div>
-
             <div className="control-card-header-icon">
               <FaShippingFast />
             </div>
           </div>
-
           <div className="pipeline-list">
             {pipelineData.map((item) => {
               const percentage =
                 Math.min(
                   (item.value /
                     item.total) *
-                    100,
+                  100,
                   100
                 );
-
               return (
                 <div
                   className="pipeline-row"
@@ -1118,12 +866,10 @@ const OrderManagement = () => {
                     <span className="pipeline-icon">
                       {item.icon}
                     </span>
-
                     <span>
                       {item.label}
                     </span>
                   </div>
-
                   <div className="pipeline-progress-area">
                     <div className="pipeline-track">
                       <span
@@ -1134,7 +880,6 @@ const OrderManagement = () => {
                       />
                     </div>
                   </div>
-
                   <strong className="pipeline-value">
                     {item.value}
                   </strong>
@@ -1143,29 +888,23 @@ const OrderManagement = () => {
             })}
           </div>
         </article>
-
         {/* LIVE MOVEMENT */}
-
         <article className="control-card movement-card">
           <div className="control-card-header">
             <div>
               <span className="control-card-eyebrow">
                 TRACKING
               </span>
-
               <h2>Live Movement</h2>
-
               <p>
                 Current vehicle movement status
               </p>
             </div>
-
             <div className="movement-live-badge">
               <span />
               LIVE
             </div>
           </div>
-
           <div className="movement-overview">
             <div className="movement-total">
               <div className="movement-ring">
@@ -1173,12 +912,10 @@ const OrderManagement = () => {
                   <strong>
                     {activeMovementTotal}
                   </strong>
-
                   <span>ACTIVE</span>
                 </div>
               </div>
             </div>
-
             <div className="movement-status-list">
               {movementData.map((item) => (
                 <div
@@ -1189,10 +926,8 @@ const OrderManagement = () => {
                     <span
                       className={`movement-dot ${item.className}`}
                     />
-
                     {item.label}
                   </div>
-
                   <strong>
                     {item.value}
                   </strong>
@@ -1202,44 +937,36 @@ const OrderManagement = () => {
           </div>
         </article>
       </section>
-
       {/* ===================================================
           ANALYTICS
       =================================================== */}
-
       <section className="control-analytics-grid">
         {/* MONTHLY PERFORMANCE */}
-
         <article className="control-card performance-card">
           <div className="control-card-header">
             <div>
               <span className="control-card-eyebrow">
                 ANALYTICS
               </span>
-
               <h2>
                 Monthly Performance
               </h2>
-
               <p>
                 Enquiries compared with
                 confirmed orders
               </p>
             </div>
-
             <div className="performance-legend">
               <span>
                 <i className="legend-enquiry" />
                 Enquiries
               </span>
-
               <span>
                 <i className="legend-order" />
                 Orders
               </span>
             </div>
           </div>
-
           <div className="performance-chart">
             <div className="chart-grid-lines">
               <span />
@@ -1247,7 +974,6 @@ const OrderManagement = () => {
               <span />
               <span />
             </div>
-
             <div className="performance-columns">
               {monthlyData.map((item) => (
                 <div
@@ -1258,26 +984,23 @@ const OrderManagement = () => {
                     <div
                       className="performance-bar enquiry"
                       style={{
-                        height: `${
-                          (item.enquiries /
+                        height: `${(item.enquiries /
                             maxChartValue) *
                           150
-                        }px`,
+                          }px`,
                       }}
                     >
                       <span>
                         {item.enquiries}
                       </span>
                     </div>
-
                     <div
                       className="performance-bar order"
                       style={{
-                        height: `${
-                          (item.orders /
+                        height: `${(item.orders /
                             maxChartValue) *
                           150
-                        }px`,
+                          }px`,
                       }}
                     >
                       <span>
@@ -1285,7 +1008,6 @@ const OrderManagement = () => {
                       </span>
                     </div>
                   </div>
-
                   <strong>
                     {item.month}
                   </strong>
@@ -1294,44 +1016,36 @@ const OrderManagement = () => {
             </div>
           </div>
         </article>
-
         {/* OPERATION HEALTH */}
-
         <article className="control-card health-card">
           <div className="control-card-header">
             <div>
               <span className="control-card-eyebrow">
                 PERFORMANCE
               </span>
-
               <h2>
                 Operation Health
               </h2>
-
               <p>
                 Trip execution and movement
                 quality
               </p>
             </div>
-
             <FaCheckCircle className="health-header-icon" />
           </div>
-
           <div className="health-content">
             <div className="health-score">
               <div
                 className="health-ring"
                 style={{
                   background: `conic-gradient(
-                    #0a978d 0deg ${
-                      Number(
-                        healthStats.issueFreePercentage
-                      ) * 3.6
+                    #0a978d 0deg ${Number(
+                    healthStats.issueFreePercentage
+                  ) * 3.6
                     }deg,
-                    #e0e9ea ${
-                      Number(
-                        healthStats.issueFreePercentage
-                      ) * 3.6
+                    #e0e9ea ${Number(
+                      healthStats.issueFreePercentage
+                    ) * 3.6
                     }deg 360deg
                   )`,
                 }}
@@ -1344,21 +1058,18 @@ const OrderManagement = () => {
                     }
                     %
                   </strong>
-
                   <span>
                     ISSUE FREE
                   </span>
                 </div>
               </div>
             </div>
-
             <div className="health-metrics">
               <div className="health-metric">
                 <div>
                   <span>
                     Completed Trips
                   </span>
-
                   <strong>
                     {
                       healthStats
@@ -1367,13 +1078,11 @@ const OrderManagement = () => {
                   </strong>
                 </div>
               </div>
-
               <div className="health-metric success">
                 <div>
                   <span>
                     Issue-Free Trips
                   </span>
-
                   <strong>
                     {
                       healthStats
@@ -1382,13 +1091,11 @@ const OrderManagement = () => {
                   </strong>
                 </div>
               </div>
-
               <div className="health-metric warning">
                 <div>
                   <span>
                     Minor Halts
                   </span>
-
                   <strong>
                     {
                       healthStats
@@ -1397,13 +1104,11 @@ const OrderManagement = () => {
                   </strong>
                 </div>
               </div>
-
               <div className="health-metric danger">
                 <div>
                   <span>
                     Breakdowns
                   </span>
-
                   <strong>
                     {
                       healthStats
@@ -1416,38 +1121,30 @@ const OrderManagement = () => {
           </div>
         </article>
       </section>
-
       {/* ===================================================
           ACTIVE ORDERS
       =================================================== */}
-
       <section className="active-orders-card">
         <div className="active-orders-header">
           <div>
             <span className="control-card-eyebrow">
               OPERATIONS
             </span>
-
             <h2>Active Orders</h2>
-
             <p>
               Monitor current customer orders
               and execution status.
             </p>
           </div>
-
           <div className="active-order-count">
             <span />
             {filteredOrders.length} Active
           </div>
         </div>
-
         {/* FILTER */}
-
         <div className="active-orders-toolbar">
           <div className="dashboard-search">
             <FaSearch />
-
             <input
               type="text"
               placeholder="Search order, customer, vehicle, route..."
@@ -1459,7 +1156,6 @@ const OrderManagement = () => {
               }
             />
           </div>
-
           <select
             value={movementFilter}
             onChange={(event) =>
@@ -1480,7 +1176,6 @@ const OrderManagement = () => {
               )
             )}
           </select>
-
           <select
             value={stageFilter}
             onChange={(event) =>
@@ -1500,9 +1195,7 @@ const OrderManagement = () => {
             ))}
           </select>
         </div>
-
         {/* TABLE */}
-
         <div className="active-orders-table-wrap">
           <table className="active-orders-table">
             <thead>
@@ -1516,10 +1209,9 @@ const OrderManagement = () => {
                 <th>STATUS</th>
               </tr>
             </thead>
-
             <tbody>
               {filteredOrders.length ===
-              0 ? (
+                0 ? (
                 <tr>
                   <td
                     colSpan="7"
@@ -1535,48 +1227,37 @@ const OrderManagement = () => {
                   (trip) => {
                     const tripId =
                       getTripId(trip);
-
                     const customer =
                       getCustomer(trip);
-
                     const material =
                       getMaterial(trip);
-
                     const movement =
                       getMovement(trip);
-
                     const origin =
                       getOrigin(trip);
-
                     const destination =
                       getDestination(trip);
-
                     const vehicle =
                       getVehicleNumber(trip);
-
                     const stage =
                       getStage(trip);
-
                     const status =
                       getMovementStatus(
                         trip
                       ) ||
                       getStatus(trip);
-
                     const movementClass =
                       normalize(movement)
                         .replace(
                           /[^a-z0-9]+/g,
                           "-"
                         );
-
                     const statusClass =
                       normalize(status)
                         .replace(
                           /[^a-z0-9]+/g,
                           "-"
                         );
-
                     return (
                       <tr
                         key={
@@ -1589,21 +1270,18 @@ const OrderManagement = () => {
                             {tripId || "-"}
                           </span>
                         </td>
-
                         <td>
                           <div className="customer-cell">
                             <strong>
                               {customer ||
                                 "-"}
                             </strong>
-
                             <span>
                               {material ||
                                 "-"}
                             </span>
                           </div>
                         </td>
-
                         <td>
                           <span
                             className={`movement-badge ${movementClass}`}
@@ -1612,46 +1290,38 @@ const OrderManagement = () => {
                               "-"}
                           </span>
                         </td>
-
                         <td>
                           <div className="dashboard-route">
                             <span>
                               {origin ||
                                 "-"}
                             </span>
-
                             <FaArrowRight />
-
                             <span>
                               {destination ||
                                 "-"}
                             </span>
                           </div>
                         </td>
-
                         <td>
                           <div className="vehicle-cell">
                             <FaTruck />
-
                             <span>
                               {vehicle ||
                                 "-"}
                             </span>
                           </div>
                         </td>
-
                         <td>
                           <span className="dashboard-stage">
                             {stage || "-"}
                           </span>
                         </td>
-
                         <td>
                           <span
                             className={`dashboard-status ${statusClass}`}
                           >
                             <i />
-
                             {status ||
                               "-"}
                           </span>
@@ -1668,5 +1338,4 @@ const OrderManagement = () => {
     </div>
   );
 };
-
 export default OrderManagement;

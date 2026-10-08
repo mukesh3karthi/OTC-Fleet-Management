@@ -299,26 +299,23 @@ const PersonSection = ({
   title,
   rows = [],
 }) => (
-  <div
-    className={`lr-person-section ${className}`}
-  >
-    <div className="lr-person-heading">
-      {icon}
-      <strong>{title}</strong>
+  <div className={`simple-operation-card person-operation-card lr-person-section ${className}`}>
+    <div className="simple-operation-header lr-person-heading common-detail-header">
+      <div className="simple-operation-title">
+        <span className="simple-operation-icon person">
+          {icon}
+        </span>
+        <div>
+          <strong>{title}</strong>
+        </div>
+      </div>
     </div>
-    <div className="lr-person-content">
+    <div className="simple-operation-details lr-person-content">
       {rows.map(([label, value]) => (
-        <div
-          className="lr-person-row"
-          key={label}
-        >
-          <span>{label}</span>
-          <span className="lr-person-colon">
-            :
-          </span>
-          <strong>
-            {safeText(value)}
-          </strong>
+        <div className="simple-detail-row lr-person-row" key={label}>
+          <span className="simple-detail-label">{label}</span>
+          <span className="simple-detail-colon lr-person-colon">:</span>
+          <strong className="simple-detail-value">{safeText(value)}</strong>
         </div>
       ))}
     </div>
@@ -513,7 +510,7 @@ const VehicleColumn = ({
     }
     if (typeof trip?.route === "string") {
       return trip.route
-        .split(/\s\*(?:→|->|>|,|\\|)\s\*/)
+        .split(/\s\\*(?:→|->|>|,|\\\\\\\\|)\s\\*/)
         .filter(Boolean);
     }
     return [];
@@ -687,10 +684,35 @@ const VehicleColumn = ({
   const ewayBillNumber = safeText(ewayBill.number);
   const ewayBillValidUpto = formatDate(ewayBill.validUpto);
   const ewayBillStatus = safeText(ewayBill.status, "Pending");
+  const getEwayDaysLeft = (value) => {
+    const raw = getSafeDateValue(value);
+    if (!raw) return null;
+    const date = typeof raw === "string" && /^\d{4}-\d{2}-\d{2}/.test(raw)
+      ? new Date(`${raw.slice(0, 10)}T00:00:00`)
+      : new Date(raw);
+    if (Number.isNaN(date.getTime())) return null;
+    const today = new Date();
+    const todayUTC = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
+    const expiryUTC = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate());
+    return Math.round((expiryUTC - todayUTC) / 86400000);
+  };
+  const ewayDaysLeft = getEwayDaysLeft(ewayBill.validUpto);
+  const ewayHeadingStatus = ewayDaysLeft === null
+    ? ewayBillStatus
+    : ewayDaysLeft < 0
+      ? "Expired"
+      : ewayDaysLeft === 0
+        ? "Expires Today"
+        : ewayDaysLeft <= 7
+          ? `${ewayDaysLeft} ${ewayDaysLeft === 1 ? "Day" : "Days"} Left`
+          : "Active";
   const getDocumentStatusClass = (status) =>
     safeText(status, "Pending")
       .toLowerCase()
       .replaceAll(" ", "-");
+  const ewayHeadingClass = ewayDaysLeft === null
+    ? getDocumentStatusClass(ewayBillStatus)
+    : ewayDaysLeft < 0 ? "expired" : ewayDaysLeft <= 7 ? "expiring-soon" : "active";
   const viewVehicleDocument = (type) => {
     const mongoId = trip?._id?.$oid || trip?._id;
     const allocationId = activeVehicle?.allocationId;
@@ -953,7 +975,7 @@ const VehicleColumn = ({
           </div>
           <div className="movement-vehicle-row">
             <div className="movement-card-section">
-              <div className="movement-heading-row">
+              <div className="movement-heading-row common-detail-header">
                 <span className="section-heading-icon blue">
                   <Navigation
                     size={12}
@@ -1051,7 +1073,7 @@ const VehicleColumn = ({
               </div>
             </div>
             <div className="vehicle-transport-summary">
-              <div className="vehicle-transport-header">
+              <div className="vehicle-transport-header common-detail-header">
                 <span className="vehicle-transport-icon">
                   <Truck size={14} />
                 </span>
@@ -1092,7 +1114,7 @@ const VehicleColumn = ({
           <div className="operation-details-section">
             <div className="operation-main-grid">
               <div className="simple-operation-card loading-card">
-                <div className="simple-operation-header">
+                <div className="simple-operation-header common-detail-header">
                   <div className="simple-operation-title">
                     <span className="simple-operation-icon loading">
                       <Truck
@@ -1154,7 +1176,7 @@ const VehicleColumn = ({
                 </div>
               </div>
               <div className="simple-operation-card unloading-card">
-                <div className="simple-operation-header">
+                <div className="simple-operation-header common-detail-header">
                   <div className="simple-operation-title">
                     <span className="simple-operation-icon unloading">
                       <PackageCheck
@@ -1220,7 +1242,7 @@ const VehicleColumn = ({
           <div className="operation-details-section document-operation-section">
             <div className="operation-main-grid">
               <div className="simple-operation-card document-operation-card">
-                <div className="simple-operation-header">
+                <div className="simple-operation-header common-detail-header">
                   <div className="simple-operation-title">
                     <span className="simple-operation-icon document">
                       <FileText size={13} />
@@ -1240,7 +1262,7 @@ const VehicleColumn = ({
                 </div>
               </div>
               <div className="simple-operation-card document-operation-card">
-                <div className="simple-operation-header">
+                <div className="simple-operation-header common-detail-header">
                   <div className="simple-operation-title">
                     <span className="simple-operation-icon document">
                       <FileText size={13} />
@@ -1249,8 +1271,8 @@ const VehicleColumn = ({
                       <strong>E-Way Bill Details</strong>
                     </div>
                   </div>
-                  <span className={`simple-operation-status document ${getDocumentStatusClass(ewayBillStatus)}`}>
-                    {ewayBillStatus}
+                  <span className={`simple-operation-status document ${ewayHeadingClass}`}>
+                    {ewayHeadingStatus}
                   </span>
                 </div>
                 <div className="simple-operation-details">
@@ -1261,7 +1283,7 @@ const VehicleColumn = ({
               </div>
             </div>
             <div className="simple-operation-card document-operation-card pod-operation-card">
-              <div className="simple-operation-header">
+              <div className="simple-operation-header common-detail-header">
                 <div className="simple-operation-title">
                   <span className="simple-operation-icon document">
                     <FileText size={13} />
@@ -1295,7 +1317,7 @@ const VehicleColumn = ({
               </div>
             </div>
           </div>
-          <div className="lr-pod-card">
+          <div className="person-grid">
             <PersonSection
               className="driver-section"
               icon={

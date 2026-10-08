@@ -317,6 +317,26 @@ const getLocalYmd = (date = new Date()) => {
   const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
 };
+const getEwayBillStatus = (number, validUpto, today = getLocalYmd()) => {
+  if (!String(number || "").trim() || !validUpto) return "Pending";
+  const date = String(validUpto).slice(0, 10);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || Number.isNaN(new Date(`${date}T00:00:00`).getTime())) return "Pending";
+  const expiry = Date.parse(`${date}T00:00:00`);
+  const current = Date.parse(`${today}T00:00:00`);
+  const daysRemaining = Math.round((expiry - current) / 86400000);
+  if (daysRemaining < 0) return "Expired";
+  if (daysRemaining === 0) return "Expires Today";
+  if (daysRemaining <= 7) return "Expiring Soon";
+  return "Active";
+};
+const getEwayBillHeading = (number, validUpto, today = getLocalYmd()) => {
+  const status = getEwayBillStatus(number, validUpto, today);
+  if (status !== "Expiring Soon") return status;
+  const [ey, em, ed] = String(validUpto).slice(0, 10).split("-").map(Number);
+  const [ty, tm, td] = today.split("-").map(Number);
+  const days = Math.round((Date.UTC(ey, em - 1, ed) - Date.UTC(ty, tm - 1, td)) / 86400000);
+  return `${days} ${days === 1 ? "Day" : "Days"} Left`;
+};
 const calculateHaltingDays = (pointInDate, pointOutDate = "") => {
   if (!pointInDate) return 0;
   const parseDate = (value) => {
@@ -347,6 +367,11 @@ const movementDayFromLoading = (pointInDate, movementDate) => {
 const Tripdetails = () => {
   const navigate =
     useNavigate();
+  const [ewayToday, setEwayToday] = useState(getLocalYmd());
+  useEffect(() => {
+    const timer = window.setInterval(() => setEwayToday(getLocalYmd()), 60000);
+    return () => window.clearInterval(timer);
+  }, []);
   /* =====================================
      STATE
   ===================================== */
@@ -602,7 +627,7 @@ const Tripdetails = () => {
       podFile: null,
       ewayBillNumber: vehicle?.ewayBill?.number || "",
       ewayBillValidUpto: vehicle?.ewayBill?.validUpto ? String(vehicle.ewayBill.validUpto).slice(0, 10) : "",
-      ewayBillStatus: vehicle?.ewayBill?.status || "Pending",
+      ewayBillStatus: getEwayBillStatus(vehicle?.ewayBill?.number, vehicle?.ewayBill?.validUpto),
       ewayBillFile: null,
     };
   };
@@ -639,6 +664,9 @@ const Tripdetails = () => {
     setMovementSuccess("");
     setMovementForm((previous) => {
       const next = { ...previous, [name]: value };
+      if (name === "ewayBillNumber" || name === "ewayBillValidUpto") {
+        next.ewayBillStatus = getEwayBillStatus(next.ewayBillNumber, next.ewayBillValidUpto);
+      }
       if (
         name === "loadingPointInDate" ||
         name === "loadingPointOutDate" ||
@@ -1157,7 +1185,7 @@ const Tripdetails = () => {
           validUpto:
             movementForm.ewayBillValidUpto,
           status:
-            movementForm.ewayBillStatus,
+            getEwayBillStatus(movementForm.ewayBillNumber, movementForm.ewayBillValidUpto),
           file: null,
           existingDocument:
             vehicle?.ewayBill,
@@ -1887,8 +1915,8 @@ const Tripdetails = () => {
                                   <small>E-WAY BILL</small>
                                   <h4>E-Way Bill Details</h4>
                                 </div>
-                                <b className={movementForm.ewayBillNumber ? "uploaded" : ""}>
-                                  {movementForm.ewayBillNumber ? movementForm.ewayBillStatus : "Pending"}
+                                <b className={`eway-status-${getEwayBillStatus(movementForm.ewayBillNumber, movementForm.ewayBillValidUpto, ewayToday).toLowerCase().replace(/\s+/g, "-")}`} >
+                                  {getEwayBillHeading(movementForm.ewayBillNumber, movementForm.ewayBillValidUpto, ewayToday)}
                                 </b>
                               </div>
                               <div className="trip-movement-document-fields">
@@ -1910,15 +1938,11 @@ const Tripdetails = () => {
                                 </label>
                                 <label>
                                   <span>Status</span>
-                                  <select
-                                    value={movementForm.ewayBillStatus}
-                                    onChange={(e) => updateMovementField("ewayBillStatus", e.target.value)}
-                                  >
-                                    <option value="Pending">Pending</option>
-                                    <option value="Active">Active</option>
-                                    <option value="Expired">Expired</option>
-                                    <option value="Completed">Completed</option>
-                                  </select>
+                                  <input
+                                    value={getEwayBillStatus(movementForm.ewayBillNumber, movementForm.ewayBillValidUpto, ewayToday)}
+                                    readOnly
+                                    aria-label="Automatically calculated E-Way Bill status"
+                                  />
                                 </label>
                               </div>
                             </div>

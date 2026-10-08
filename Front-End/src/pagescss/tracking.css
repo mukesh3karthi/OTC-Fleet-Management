@@ -966,13 +966,13 @@ body {
 }
 
 .tracking-status-filter button.active,
-.vehicle-mini-row.active {
+.vehicle-mini-row\.active {
   border-color: #c3bdea;
   background: #ffffff;
   color: #4337ac;
 }
 
-.vehicle-mini-row.active {
+.vehicle-mini-row\.active {
   box-shadow: inset 2px 0 0 #5548c8;
 }
 
