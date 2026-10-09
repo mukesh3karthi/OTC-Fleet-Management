@@ -11,14 +11,12 @@
       #0d4350 58%,
       #0b766f 100%);
 }
-
 .kam-modal-toolbar-left,
 .kam-modal-toolbar-right {
   display: flex;
   align-items: center;
   gap: 12px;
 }
-
 .kam-back-btn {
   width: 40px;
   height: 38px;
@@ -29,25 +27,21 @@
   font-size: 17px;
   cursor: pointer;
 }
-
 .kam-modal-heading {
   display: grid;
   gap: 2px;
 }
-
 .kam-modal-heading span {
   color: #8ee1d8;
   font-size: 8.5px;
   font-weight: 900;
   letter-spacing: 0.11em;
 }
-
 .kam-modal-heading strong {
   color: #ffffff;
   font-size: 12px;
   font-weight: 800;
 }
-
 .kam-detail-meta {
   display: flex;
   align-items: center;
@@ -55,7 +49,6 @@
   color: #c8dce2;
   font-size: 10.5px;
 }
-
 .kam-detail-meta strong {
   padding: 6px 9px;
   border-radius: 7px;
@@ -63,7 +56,6 @@
   color: #0b8379;
   font-size: 10px;
 }
-
 .kam-workflow-close {
   width: 36px;
   height: 36px;
@@ -76,7 +68,6 @@
   font-size: 20px;
   cursor: pointer;
 }
-
 .kam-stepper {
   display: flex;
   align-items: center;
@@ -86,7 +77,6 @@
   background: #ffffff;
   border-bottom: 1px solid #dce6e9;
 }
-
 .kam-step-pill {
   min-width: max-content;
   height: 36px;
@@ -102,20 +92,17 @@
   font-weight: 800;
   cursor: pointer;
 }
-
 .kam-step-pill.active {
   border-color: #24c2b4;
   background: #0a2f43;
   color: #ffffff;
   box-shadow: 0 7px 18px rgba(8, 143, 132, 0.2);
 }
-
 .kam-step-pill.completed {
   border-color: #a8ded8;
   background: #f1fbf9;
   color: #07887f;
 }
-
 .kam-step-number {
   width: 21px;
   height: 21px;
@@ -127,25 +114,21 @@
   font-size: 8.5px;
   font-weight: 900;
 }
-
 .kam-step-pill.active .kam-step-number {
   background: rgba(255, 255, 255, 0.18);
   color: #ffffff;
 }
-
 .kam-step-connector {
   min-width: 22px;
   flex: 1;
   height: 2px;
   background: #dce8eb;
 }
-
 .kam-step-connector.completed {
   background: linear-gradient(90deg,
       #10a79a,
       #35c8ba);
 }
-
 .kam-card-body {
   min-height: 0;
   flex: 1;
@@ -155,16 +138,13 @@
       #f7fafb 0%,
       #f2f6f7 100%);
 }
-
 .kam-card-body::-webkit-scrollbar {
   width: 7px;
 }
-
 .kam-card-body::-webkit-scrollbar-thumb {
   border-radius: 999px;
   background: #b9cbd0;
 }
-
 .kam-card-header {
   margin-bottom: 12px;
   padding-bottom: 11px;
@@ -174,7 +154,6 @@
   gap: 18px;
   border-bottom: 1px solid #dce6e9;
 }
-
 .kam-section-kicker {
   display: block;
   margin-bottom: 4px;
@@ -183,21 +162,18 @@
   font-weight: 900;
   letter-spacing: 0.14em;
 }
-
 .kam-card-header h2 {
   margin: 0;
   color: #102f44;
   font-size: 16px;
   font-weight: 900;
 }
-
 .kam-card-header p {
   margin: 4px 0 0;
   color: #5f7884;
   font-size: 10px;
   line-height: 1.4;
 }
-
 .kam-id-badge {
   min-width: 100px;
   padding: 7px 10px;
@@ -205,25 +181,21 @@
   border-radius: 8px;
   background: #eef8f6;
 }
-
 .kam-id-badge span,
 .kam-id-badge strong {
   display: block;
 }
-
 .kam-id-badge span {
   color: #6c8792;
   font-size: 7.5px;
   font-weight: 800;
 }
-
 .kam-id-badge strong {
   margin-top: 2px;
   color: #08776f;
   font-size: 10.5px;
   font-weight: 900;
 }
-
 .kam-order-overview {
   margin-bottom: 14px;
   padding: 11px 13px;
@@ -234,17 +206,14 @@
   border-radius: 10px;
   background: #ffffff;
 }
-
 .kam-order-overview>div {
   min-width: 0;
   display: grid;
   gap: 4px;
 }
-
 .kam-client-enquiry-content {
   width: 100%;
 }
-
 .kam-client-trip-info {
   width: 100%;
   margin-bottom: 12px;
@@ -254,7 +223,6 @@
   background: #ffffff;
   box-shadow: 0 3px 12px rgba(16, 47, 68, 0.04);
 }
-
 .kam-client-trip-header {
   min-height: 66px;
   padding: 10px 14px;
@@ -264,21 +232,18 @@
   gap: 18px;
   border-bottom: 1px solid #dfe9ec;
 }
-
 .kam-client-trip-header h3 {
   margin: 0;
   color: #12394b;
   font-size: 15px;
   font-weight: 900;
 }
-
 .kam-client-trip-header p {
   margin: 3px 0 0;
   color: #607b88;
   font-size: 9.5px;
   font-weight: 600;
 }
-
 .kam-client-trip-id {
   min-width: 128px;
   padding: 8px 12px;
@@ -286,7 +251,6 @@
   border-radius: 11px;
   background: #eff9f7;
 }
-
 .kam-client-trip-id span {
   display: block;
   color: #738994;
@@ -294,7 +258,6 @@
   font-weight: 900;
   letter-spacing: 0.07em;
 }
-
 .kam-client-trip-id strong {
   display: block;
   margin-top: 3px;
@@ -302,7 +265,6 @@
   font-size: 13px;
   font-weight: 900;
 }
-
 .kam-client-vehicle-heading>span {
   min-width: 28px;
   height: 28px;
@@ -317,13 +279,11 @@
   font-size: 10px;
   font-weight: 900;
 }
-
 .kam-client-vehicle-table {
   width: 100%;
   min-width: 900px;
   border-collapse: collapse;
 }
-
 .kam-client-vehicle-table th {
   height: 34px;
   padding: 0 12px;
@@ -336,7 +296,6 @@
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
-
 .kam-client-vehicle-table td {
   padding: 9px 12px;
   border-bottom: 1px solid #edf2f4;
@@ -344,15 +303,12 @@
   font-size: 10.3px;
   font-weight: 650;
 }
-
 .kam-client-vehicle-table tbody tr:last-child td {
   border-bottom: 0;
 }
-
 .kam-client-vehicle-table tbody tr:hover {
   background: #f8fcfb;
 }
-
 .kam-client-row-no {
   width: 24px;
   height: 24px;
@@ -365,7 +321,6 @@
   font-size: 9px;
   font-weight: 900;
 }
-
 .kam-client-remark {
   margin-bottom: 12px;
   padding: 10px 13px;
@@ -373,7 +328,6 @@
   border-radius: 10px;
   background: #ffffff;
 }
-
 .kam-client-remark span {
   display: block;
   margin-bottom: 5px;
@@ -382,14 +336,12 @@
   font-weight: 900;
   letter-spacing: 0.05em;
 }
-
 .kam-client-remark p {
   margin: 0;
   color: #294a5b;
   font-size: 10.5px;
   line-height: 1.5;
 }
-
 .kam-client-team {
   min-height: 45px;
   margin-bottom: 12px;
@@ -402,41 +354,34 @@
   border-radius: 9px;
   background: #eef8f6;
 }
-
 .kam-client-team>div {
   display: grid;
   gap: 2px;
 }
-
 .kam-client-team span {
   color: #66808b;
   font-size: 7.8px;
   font-weight: 900;
   letter-spacing: 0.05em;
 }
-
 .kam-client-team small {
   color: #78909a;
   font-size: 8.5px;
 }
-
 .kam-client-team strong {
   color: #087c74;
   font-size: 10.5px;
   font-weight: 850;
 }
-
 .kam-form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 13px 15px;
   margin-bottom: 14px;
 }
-
 .kam-field-group {
   min-width: 0;
 }
-
 .kam-field-group label {
   display: block;
   margin-bottom: 6px;
@@ -446,7 +391,6 @@
   letter-spacing: 0.05em;
   text-transform: uppercase;
 }
-
 .kam-input-wrap,
 .kam-select-wrap {
   position: relative;
@@ -459,20 +403,17 @@
   transition: border-color 0.18s ease,
     box-shadow 0.18s ease;
 }
-
 .kam-input-wrap:focus-within,
 .kam-select-wrap:focus-within {
   border-color: var(--kam-primary);
   box-shadow: 0 0 0 3px var(--kam-ring);
 }
-
 .kam-prefix {
   padding-left: 11px;
   color: #547585;
   font-size: 11px;
   font-weight: 900;
 }
-
 .kam-input-wrap input,
 .kam-select-wrap select {
   width: 100%;
@@ -485,20 +426,17 @@
   font-size: 11.5px;
   font-weight: 700;
 }
-
 .kam-select-wrap select {
   appearance: none;
   padding-right: 30px;
   cursor: pointer;
 }
-
 .select-chevron {
   position: absolute;
   right: 10px;
   color: #3f6879;
   pointer-events: none;
 }
-
 .kam-date-input,
 .kam-field-group textarea {
   width: 100%;
@@ -510,29 +448,24 @@
   font-size: 11.5px;
   font-weight: 700;
 }
-
 .kam-date-input {
   height: 40px;
   padding: 0 11px;
 }
-
 .kam-date-input:focus,
 .kam-field-group textarea:focus {
   border-color: var(--kam-primary);
   box-shadow: 0 0 0 3px var(--kam-ring);
 }
-
 .kam-field-group textarea {
   min-height: 82px;
   padding: 10px 11px;
   resize: vertical;
   line-height: 1.45;
 }
-
 .kam-field-full {
   margin-bottom: 15px;
 }
-
 .kam-readonly-field {
   min-height: 40px;
   padding: 0 11px;
@@ -545,14 +478,12 @@
   font-size: 10.5px;
   font-weight: 700;
 }
-
 .kam-field-hint {
   display: block;
   margin-top: 5px;
   color: var(--kam-muted);
   font-size: 9px;
 }
-
 .kam-actions {
   position: sticky;
   bottom: -20px;
@@ -568,7 +499,6 @@
       #0b766f 100%);
   z-index: 5;
 }
-
 .kam-btn-outline,
 .kam-btn-primary {
   min-height: 38px;
@@ -579,17 +509,14 @@
   cursor: pointer;
   transition: 0.18s ease;
 }
-
 .kam-btn-outline {
   border: 1px solid rgba(255, 255, 255, 0.38);
   background: rgba(255, 255, 255, 0.08);
   color: #ffffff;
 }
-
 .kam-btn-outline:hover {
   background: rgba(255, 255, 255, 0.15);
 }
-
 .kam-btn-primary {
   border: 0;
   display: inline-flex;
@@ -602,12 +529,10 @@
   color: #ffffff;
   box-shadow: 0 7px 17px rgba(5, 145, 133, 0.22);
 }
-
 .kam-btn-primary:hover {
   transform: translateY(-1px);
   box-shadow: 0 9px 20px rgba(5, 145, 133, 0.28);
 }
-
 .kam-btn-outline:disabled,
 .kam-btn-primary:disabled {
   cursor: not-allowed;
@@ -615,97 +540,77 @@
   transform: none;
   box-shadow: none;
 }
-
 @media (max-width: 1100px) {
   .kam-client-trip-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
-
   .kam-order-overview {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
-
 @media (max-width: 800px) {
   .kam-workflow-modal-overlay {
     padding: 10px;
   }
-
   .kam-workflow-modal {
     height: 96vh;
   }
-
   .kam-form-grid {
     grid-template-columns: 1fr;
   }
-
   .kam-client-trip-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-
   .kam-card-header {
     flex-direction: column;
   }
-
   .kam-id-badge {
     width: 100%;
   }
 }
-
 @media (max-width: 560px) {
   .kam-modal-heading {
     display: none;
   }
-
   .kam-detail-meta>span {
     display: none;
   }
-
   .kam-card-body {
     padding: 12px;
   }
-
   .kam-client-trip-header {
     align-items: flex-start;
     flex-direction: column;
   }
-
   .kam-client-trip-id {
     width: 100%;
   }
-
   .kam-client-trip-grid {
     grid-template-columns: 1fr;
     padding: 10px 10px 12px;
   }
-
   .kam-client-team {
     align-items: flex-start;
     flex-direction: column;
   }
-
   .kam-order-overview {
     grid-template-columns: 1fr;
   }
-
   .kam-actions {
     bottom: -12px;
     margin: 0 -12px -20px;
     padding: 10px 12px;
     flex-direction: column-reverse;
   }
-
   .kam-btn-outline,
   .kam-btn-primary {
     width: 100%;
   }
 }
-
 .kam-finalization-shell {
   display: grid;
   gap: 12px;
 }
-
 .kam-finalization-card {
   overflow: hidden;
   border: 1px solid #dce6ea;
@@ -713,15 +618,12 @@
   background: #ffffff;
   box-shadow: 0 4px 14px rgba(16, 47, 68, 0.045);
 }
-
 .kam-finalization-card-muted {
   background: #fbfcfd;
 }
-
 .kam-finalization-card-head>div:last-child {
   min-width: 0;
 }
-
 .kam-finalization-eyebrow {
   display: block;
   margin-bottom: 2px;
@@ -731,7 +633,6 @@
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
-
 .kam-finalization-card-head h3 {
   margin: 0;
   color: #173b4d;
@@ -739,32 +640,26 @@
   font-weight: 900;
   line-height: 1.25;
 }
-
 .kam-finalization-fields {
   padding: 13px 14px 14px;
   display: grid;
   gap: 12px 14px;
 }
-
 .kam-finalization-commercial-grid {
   grid-template-columns: minmax(220px, 0.75fr) minmax(0, 1.55fr);
 }
-
 .kam-finalization-two-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
-
 .kam-finalization-three-grid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
-
 .kam-finalization-footer-grid {
   padding: 0 14px 14px;
   display: grid;
   grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
   gap: 12px 14px;
 }
-
 .kam-finalization-card .kam-field-group label,
 .kam-finalization-card .kam-field-group>label {
   margin-bottom: 6px;
@@ -774,32 +669,27 @@
   letter-spacing: 0.025em;
   text-transform: none;
 }
-
 .kam-required-mark {
   margin-left: 4px;
   color: #c8473d;
   font-size: 10px;
   font-weight: 900;
 }
-
 .kam-finalization-card .kam-input-wrap:hover,
 .kam-finalization-card .kam-select-wrap:hover,
 .kam-finalization-textarea:hover {
   border-color: #b8ccd2;
 }
-
 .kam-finalization-card .kam-input-wrap:focus-within,
 .kam-finalization-card .kam-select-wrap:focus-within {
   border-color: #24a99d;
   background: #ffffff;
   box-shadow: 0 0 0 3px rgba(36, 169, 157, 0.11);
 }
-
 .kam-finalization-card .kam-prefix {
   color: #6b8792;
   font-size: 11px;
 }
-
 .kam-finalization-textarea {
   width: 100%;
   min-height: 76px;
@@ -815,19 +705,16 @@
   resize: vertical;
   transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
 }
-
 .kam-finalization-textarea-compact {
   min-height: 42px;
   height: 42px;
   resize: none;
 }
-
 .kam-finalization-textarea:focus {
   border-color: #24a99d;
   background: #ffffff;
   box-shadow: 0 0 0 3px rgba(36, 169, 157, 0.11);
 }
-
 .kam-finalization-card .kam-readonly-field {
   min-height: 42px;
   border: 1px solid #d5e3e6;
@@ -835,89 +722,71 @@
   background: #f1f6f7;
   color: #54717d;
 }
-
 @media (max-width: 980px) {
-
   .kam-finalization-commercial-grid,
   .kam-finalization-three-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-
   .kam-finalization-wide-field {
     grid-column: 1 / -1;
   }
 }
-
 @media (max-width: 700px) {
-
   .kam-finalization-commercial-grid,
   .kam-finalization-two-grid,
   .kam-finalization-three-grid,
   .kam-finalization-footer-grid {
     grid-template-columns: 1fr;
   }
-
   .kam-finalization-wide-field {
     grid-column: auto;
   }
-
   .kam-finalization-textarea-compact {
     min-height: 70px;
     height: auto;
     resize: vertical;
   }
 }
-
 .kam-finalization-flat-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px 16px;
   padding: 4px 0 8px;
 }
-
 .kam-finalization-flat-grid .kam-field-group {
   min-width: 0;
 }
-
 .kam-finalization-flat-grid .kam-field-group label {
   margin-bottom: 6px;
 }
-
 .kam-finalization-flat-grid .kam-finalization-textarea {
   min-height: 76px;
 }
-
 .kam-finalization-flat-grid .kam-finalization-textarea-compact {
   min-height: 40px;
 }
-
 .kam-finalization-full {
   grid-column: 1 / -1;
 }
-
 @media (max-width: 800px) {
   .kam-finalization-flat-grid {
     grid-template-columns: 1fr;
   }
-
   .kam-finalization-full {
     grid-column: auto;
   }
 }
-
 .kam-finalization-details-grid {
   grid-column: 1 / -1;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px 16px;
 }
-
 @media (max-width: 800px) {
   .kam-finalization-details-grid {
     grid-template-columns: 1fr;
   }
 }
-
 .kam-po-bottom-row {
   width: 100%;
   margin-top: 2px;
@@ -927,13 +796,11 @@
   gap: 15px;
   align-items: stretch;
 }
-
 .kam-po-bottom-row .kam-field-group {
   min-width: 0;
   display: flex;
   flex-direction: column;
 }
-
 .kam-po-file-input {
   position: absolute;
   width: 1px;
@@ -946,7 +813,6 @@
   white-space: nowrap;
   border: 0;
 }
-
 .kam-po-upload-modern {
   position: relative;
   width: 100%;
@@ -969,7 +835,6 @@
     transform 0.2s ease,
     background 0.2s ease;
 }
-
 .kam-po-upload-modern::after {
   content: "";
   position: absolute;
@@ -983,7 +848,6 @@
   transform: scaleY(0.45);
   transition: opacity 0.2s ease, transform 0.2s ease;
 }
-
 .kam-po-upload-modern:hover {
   border-color: #a8cbc7;
   background: #fcfefe;
@@ -991,25 +855,21 @@
     0 8px 22px rgba(16, 92, 86, 0.07);
   transform: translateY(-1px);
 }
-
 .kam-po-upload-modern:hover::after,
 .kam-po-upload-modern:focus-within::after,
 .kam-po-upload-modern.has-file::after {
   opacity: 1;
   transform: scaleY(1);
 }
-
 .kam-po-upload-modern:focus-within {
   border-color: #249f96;
   background: #ffffff;
   box-shadow: 0 0 0 3px rgba(36, 159, 150, 0.1);
 }
-
 .kam-po-upload-modern.has-file {
   border-color: #bddbd7;
   background: #fbfefd;
 }
-
 .kam-po-modern-icon {
   width: 46px;
   height: 46px;
@@ -1024,24 +884,20 @@
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
   transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
-
 .kam-po-modern-icon svg {
   width: 22px;
   height: 22px;
 }
-
 .kam-po-upload-modern:hover .kam-po-modern-icon {
   border-color: #b5d8d3;
   background: #e9f6f4;
   color: #087e76;
 }
-
 .kam-po-upload-modern.has-file .kam-po-modern-icon {
   border-color: #b6d9d4;
   background: #e8f6f3;
   color: #087b73;
 }
-
 .kam-po-modern-info {
   min-width: 0;
   flex: 1;
@@ -1050,30 +906,25 @@
   align-items: flex-start;
   gap: 5px;
 }
-
 .kam-po-upload-modern.has-file .kam-po-modern-info strong {
   color: #087c74;
 }
-
 .kam-po-upload-modern:hover .kam-po-modern-action {
   border-color: #188f86;
   background: #148f86;
   color: #ffffff;
   box-shadow: 0 4px 10px rgba(20, 143, 134, 0.15);
 }
-
 .kam-po-upload-modern.has-file .kam-po-modern-action {
   border-color: #b9d6d2;
   background: #eef8f6;
   color: #087c74;
 }
-
 .kam-po-upload-modern.has-file:hover .kam-po-modern-action {
   border-color: #168c83;
   background: #168c83;
   color: #ffffff;
 }
-
 .kam-po-bottom-row .kam-po-remarks {
   width: 100%;
   min-height: 92px;
@@ -1094,54 +945,45 @@
     box-shadow 0.18s ease,
     background 0.18s ease;
 }
-
 .kam-po-bottom-row .kam-po-remarks:hover {
   border-color: #b7cbd1;
 }
-
 .kam-po-bottom-row .kam-po-remarks:focus {
   border-color: #249f96;
   background: #ffffff;
   box-shadow: 0 0 0 3px rgba(36, 159, 150, 0.1);
 }
-
 @media (max-width: 800px) {
   .kam-po-bottom-row {
     grid-template-columns: 1fr;
   }
 }
-
 @media (max-width: 560px) {
   .kam-po-upload-modern {
     min-height: 86px;
     padding: 11px;
     gap: 10px;
   }
-
   .kam-po-modern-icon {
     width: 40px;
     height: 40px;
     flex-basis: 40px;
   }
-
   .kam-po-modern-icon svg {
     width: 19px;
     height: 19px;
   }
-
   .kam-po-modern-action {
     min-width: 78px;
     height: 32px;
     padding: 0 9px;
     font-size: 8.6px;
   }
-
   .kam-po-bottom-row .kam-po-remarks {
     min-height: 86px;
     height: 86px;
   }
 }
-
 .kam-approved-allocation-card {
   width: 100%;
   margin-bottom: 16px;
@@ -1151,7 +993,6 @@
   background: #ffffff;
   box-shadow: 0 6px 20px rgba(15, 56, 75, 0.055);
 }
-
 .kam-approved-allocation-head {
   min-height: 86px;
   padding: 14px 16px;
@@ -1164,14 +1005,12 @@
       #f7fbfa 0%,
       #ffffff 64%);
 }
-
 .kam-approved-allocation-title {
   min-width: 0;
   display: flex;
   align-items: center;
   gap: 12px;
 }
-
 .kam-approved-allocation-kicker {
   display: block;
   margin-bottom: 3px;
@@ -1180,7 +1019,6 @@
   font-weight: 900;
   letter-spacing: 0.12em;
 }
-
 .kam-approved-allocation-title h3 {
   margin: 0;
   color: #14384a;
@@ -1188,7 +1026,6 @@
   font-weight: 900;
   letter-spacing: -0.01em;
 }
-
 .kam-approved-allocation-title p {
   margin: 4px 0 0;
   max-width: 650px;
@@ -1197,14 +1034,12 @@
   line-height: 1.45;
   font-weight: 600;
 }
-
 .kam-approved-allocation-summary {
   display: flex;
   align-items: stretch;
   gap: 8px;
   flex-shrink: 0;
 }
-
 .kam-approved-allocation-summary>div {
   min-width: 108px;
   min-height: 52px;
@@ -1216,7 +1051,6 @@
   border-radius: 9px;
   background: #fbfdfd;
 }
-
 .kam-approved-allocation-summary span {
   color: #7c929c;
   font-size: 7px;
@@ -1224,34 +1058,28 @@
   letter-spacing: 0.045em;
   text-transform: uppercase;
 }
-
 .kam-approved-allocation-table-wrap {
   width: 100%;
   overflow-x: auto;
   scrollbar-width: thin;
   scrollbar-color: #aabdc2 transparent;
 }
-
 .kam-approved-allocation-table-wrap::-webkit-scrollbar {
   height: 7px;
 }
-
 .kam-approved-allocation-table-wrap::-webkit-scrollbar-track {
   background: transparent;
 }
-
 .kam-approved-allocation-table-wrap::-webkit-scrollbar-thumb {
   border-radius: 999px;
   background: #adbec3;
 }
-
 .kam-approved-allocation-table {
   width: 100%;
   min-width: 1120px;
   border-collapse: separate;
   border-spacing: 0;
 }
-
 .kam-approved-allocation-table th {
   height: 40px;
   padding: 0 14px;
@@ -1265,7 +1093,6 @@
   text-transform: uppercase;
   white-space: nowrap;
 }
-
 .kam-approved-allocation-table td {
   height: 64px;
   padding: 10px 14px;
@@ -1276,20 +1103,16 @@
   font-size: 10.5px;
   font-weight: 650;
 }
-
 .kam-approved-allocation-table tbody tr:last-child td {
   border-bottom: 0;
 }
-
 .kam-approved-allocation-table tbody tr {
   transition: background 0.15s ease,
     box-shadow 0.15s ease;
 }
-
 .kam-approved-allocation-table tbody tr:hover td {
   background: #f9fcfb;
 }
-
 .kam-approved-row-number {
   width: 30px;
   height: 30px;
@@ -1303,14 +1126,12 @@
   font-size: 9px;
   font-weight: 900;
 }
-
 .kam-approved-vehicle-cell {
   min-width: 230px;
   display: flex;
   align-items: center;
   gap: 10px;
 }
-
 .kam-approved-vehicle-mark {
   width: 30px;
   height: 30px;
@@ -1323,18 +1144,15 @@
   font-size: 10px;
   font-weight: 900;
 }
-
 .kam-approved-vehicle-cell>div:last-child {
   min-width: 0;
 }
-
 .kam-approved-vehicle-cell strong {
   display: block;
   color: #173d4c;
   font-size: 10.8px;
   font-weight: 900;
 }
-
 .kam-approved-vehicle-cell span {
   display: block;
   margin-top: 3px;
@@ -1342,30 +1160,25 @@
   font-size: 8.2px;
   font-weight: 700;
 }
-
 .kam-approved-qty {
   display: inline-flex;
   align-items: baseline;
   gap: 4px;
 }
-
 .kam-approved-qty strong {
   color: #173f4d;
   font-size: 12px;
   font-weight: 900;
 }
-
 .kam-approved-qty span {
   color: #83959d;
   font-size: 7.5px;
   font-weight: 900;
 }
-
 .kam-approved-vendor-cell,
 .kam-approved-contact-cell {
   min-width: 150px;
 }
-
 .kam-approved-vendor-cell strong,
 .kam-approved-contact-cell strong {
   display: block;
@@ -1373,7 +1186,6 @@
   font-size: 10.5px;
   font-weight: 850;
 }
-
 .kam-approved-vendor-cell span,
 .kam-approved-contact-cell span {
   display: block;
@@ -1382,7 +1194,6 @@
   font-size: 8px;
   font-weight: 650;
 }
-
 .kam-approved-rate {
   display: inline-flex;
   min-height: 30px;
@@ -1396,7 +1207,6 @@
   font-weight: 900;
   white-space: nowrap;
 }
-
 .kam-approved-status {
   min-width: 88px;
   height: 30px;
@@ -1415,7 +1225,6 @@
   text-transform: uppercase;
   white-space: nowrap;
 }
-
 .kam-approved-status>span {
   width: 15px;
   height: 15px;
@@ -1426,7 +1235,6 @@
   color: #118466;
   font-size: 8px;
 }
-
 .kam-approved-empty {
   min-height: 96px;
   margin: 14px;
@@ -1438,7 +1246,6 @@
   border-radius: 11px;
   background: #f8fbfb;
 }
-
 .kam-approved-empty-icon {
   width: 38px;
   height: 38px;
@@ -1451,14 +1258,12 @@
   font-size: 13px;
   font-weight: 900;
 }
-
 .kam-approved-empty strong {
   display: block;
   color: #365766;
   font-size: 10.5px;
   font-weight: 850;
 }
-
 .kam-approved-empty span {
   display: block;
   margin-top: 4px;
@@ -1466,7 +1271,6 @@
   font-size: 8.8px;
   font-weight: 600;
 }
-
 .kam-vendor-remarks-card {
   width: 100%;
   padding: 14px;
@@ -1475,11 +1279,9 @@
   background: #ffffff;
   box-shadow: 0 4px 14px rgba(15, 56, 75, 0.04);
 }
-
 .kam-vendor-remarks-head {
   margin-bottom: 9px;
 }
-
 .kam-vendor-remarks-head span {
   display: block;
   margin-bottom: 3px;
@@ -1488,21 +1290,18 @@
   font-weight: 900;
   letter-spacing: 0.1em;
 }
-
 .kam-vendor-remarks-head h3 {
   margin: 0;
   color: #173b4c;
   font-size: 11.5px;
   font-weight: 900;
 }
-
 .kam-vendor-remarks-head p {
   margin: 4px 0 0;
   color: #7e919a;
   font-size: 8.7px;
   line-height: 1.4;
 }
-
 .kam-vendor-remarks-card textarea {
   width: 100%;
   min-height: 82px;
@@ -1521,61 +1320,49 @@
     box-shadow 0.18s ease,
     background 0.18s ease;
 }
-
 .kam-vendor-remarks-card textarea::placeholder {
   color: #9aa9b0;
   font-weight: 500;
 }
-
 .kam-vendor-remarks-card textarea:focus {
   border-color: #24a99d;
   background: #ffffff;
   box-shadow: 0 0 0 3px rgba(36, 169, 157, 0.11);
 }
-
 @media (max-width: 900px) {
   .kam-approved-allocation-head {
     align-items: flex-start;
     flex-direction: column;
   }
-
   .kam-approved-allocation-summary {
     width: 100%;
   }
-
   .kam-approved-allocation-summary>div {
     flex: 1;
   }
 }
-
 @media (max-width: 560px) {
   .kam-approved-allocation-head {
     padding: 12px;
   }
-
   .kam-approved-allocation-title {
     align-items: flex-start;
   }
-
   .kam-approved-allocation-summary {
     flex-direction: column;
   }
-
   .kam-approved-allocation-summary>div {
     width: 100%;
   }
-
   .kam-vendor-remarks-card {
     padding: 12px;
   }
 }
-
 .kam-completion-shell {
   display: grid;
   gap: 10px;
   padding-bottom: 4px;
 }
-
 .kam-completion-card {
   overflow: hidden;
   border: 1px solid #d7e4e7;
@@ -1583,17 +1370,14 @@
   background: #ffffff;
   box-shadow: 0 4px 14px rgba(15, 56, 75, 0.04);
 }
-
 .kam-completion-card-head-between {
   justify-content: space-between;
 }
-
 .kam-completion-card-head-left {
   display: flex;
   align-items: center;
   gap: 10px;
 }
-
 .kam-completion-eyebrow {
   display: block;
   margin-bottom: 2px;
@@ -1602,21 +1386,18 @@
   font-weight: 900;
   letter-spacing: 0.11em;
 }
-
 .kam-completion-card-head h3 {
   margin: 0;
   color: #173b4d;
   font-size: 11.5px;
   font-weight: 900;
 }
-
 .kam-completion-card-head p {
   margin: 3px 0 0;
   color: #7c919a;
   font-size: 8.3px;
   line-height: 1.4;
 }
-
 .kam-completion-count {
   min-width: 105px;
   padding: 7px 10px;
@@ -1624,26 +1405,22 @@
   border-radius: 9px;
   background: #f5fbfa;
 }
-
 .kam-completion-count span,
 .kam-completion-count strong {
   display: block;
 }
-
 .kam-completion-count span {
   color: #788f99;
   font-size: 6.7px;
   font-weight: 900;
   text-transform: uppercase;
 }
-
 .kam-completion-info-grid {
   padding: 11px 13px 12px;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 9px 11px;
 }
-
 .kam-completion-info-grid span {
   display: block;
   margin-bottom: 4px;
@@ -1653,22 +1430,18 @@
   letter-spacing: 0.035em;
   text-transform: uppercase;
 }
-
 .kam-completion-rate {
   color: #0b766e;
 }
-
 .kam-completion-approved-text {
   color: #178263;
 }
-
 .kam-completion-notes-grid {
   padding: 0 13px 12px;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 9px;
 }
-
 .kam-completion-notes-grid>div {
   min-width: 0;
   padding: 9px 10px;
@@ -1676,7 +1449,6 @@
   border-radius: 8px;
   background: #fcfdfd;
 }
-
 .kam-completion-notes-grid span {
   display: block;
   margin-bottom: 5px;
@@ -1685,33 +1457,27 @@
   font-weight: 900;
   text-transform: uppercase;
 }
-
 .kam-completion-note-full {
   grid-column: 1 / -1;
 }
-
 .kam-completion-table-wrap {
   width: 100%;
   overflow-x: auto;
   scrollbar-width: thin;
   scrollbar-color: #a9bbc1 transparent;
 }
-
 .kam-completion-table-wrap::-webkit-scrollbar {
   height: 7px;
 }
-
 .kam-completion-table-wrap::-webkit-scrollbar-thumb {
   border-radius: 999px;
   background: #acbdc2;
 }
-
 .kam-completion-table {
   width: 100%;
   min-width: 1550px;
   border-collapse: collapse;
 }
-
 .kam-completion-table th {
   height: 34px;
   padding: 0 11px;
@@ -1725,7 +1491,6 @@
   text-transform: uppercase;
   white-space: nowrap;
 }
-
 .kam-completion-table td {
   height: 52px;
   padding: 7px 11px;
@@ -1736,15 +1501,12 @@
   vertical-align: middle;
   white-space: nowrap;
 }
-
 .kam-completion-table tbody tr:last-child td {
   border-bottom: 0;
 }
-
 .kam-completion-table tbody tr:hover td {
   background: #f9fcfb;
 }
-
 .kam-completion-row-no {
   width: 27px;
   height: 27px;
@@ -1757,12 +1519,10 @@
   font-size: 8px;
   font-weight: 900;
 }
-
 .kam-completion-vehicle-cell strong,
 .kam-completion-vehicle-cell span {
   display: block;
 }
-
 .kam-completion-status {
   min-height: 25px;
   padding: 0 9px;
@@ -1776,7 +1536,6 @@
   font-weight: 900;
   text-transform: uppercase;
 }
-
 .kam-completion-empty {
   margin: 12px;
   padding: 15px;
@@ -1788,57 +1547,45 @@
   font-weight: 700;
   text-align: center;
 }
-
 .kam-completion-final-card {
   margin-bottom: 2px;
 }
-
 .kam-completion-form-grid {
   padding: 11px 13px 0;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px 12px;
 }
-
 .kam-completion-instruction {
   padding: 0 13px 12px;
 }
-
 .kam-completion-instruction textarea {
   min-height: 64px;
   resize: vertical;
 }
-
 @media (max-width: 1100px) {
-
   .kam-completion-info-grid,
   .kam-completion-form-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
-
 @media (max-width: 700px) {
-
   .kam-completion-info-grid,
   .kam-completion-notes-grid,
   .kam-completion-form-grid {
     grid-template-columns: 1fr;
   }
-
   .kam-completion-note-full {
     grid-column: auto;
   }
-
   .kam-completion-card-head-between {
     align-items: flex-start;
     flex-direction: column;
   }
-
   .kam-completion-count {
     width: 100%;
   }
 }
-
 :root {
   --kam-primary: #0d9488;
   --kam-primary-dark: #0b8178;
@@ -1859,7 +1606,6 @@
   --kam-table-data: 10px;
   --kam-button-size: 10.5px;
 }
-
 .kam-stepper,
 .kam-vendor-step-active .kam-stepper,
 .kam-completion-step-active .kam-stepper {
@@ -1872,7 +1618,6 @@
   background: #ffffff;
   border-bottom: 1px solid #dce6e9;
 }
-
 .kam-step-pill,
 .kam-vendor-step-active .kam-step-pill,
 .kam-completion-step-active .kam-step-pill {
@@ -1888,7 +1633,6 @@
   font-weight: 800;
   line-height: 1;
 }
-
 .kam-step-number,
 .kam-vendor-step-active .kam-step-number,
 .kam-completion-step-active .kam-step-number {
@@ -1898,7 +1642,6 @@
   font-size: 8.5px;
   font-weight: 900;
 }
-
 .kam-card-body,
 .kam-vendor-step-active .kam-card-body,
 .kam-completion-step-active .kam-card-body {
@@ -1907,7 +1650,6 @@
   padding: 14px 18px 18px;
   overflow-y: auto;
 }
-
 .kam-card-header,
 .kam-vendor-step-active .kam-card-header,
 .kam-completion-step-active .kam-card-header {
@@ -1919,7 +1661,6 @@
   justify-content: space-between;
   gap: 18px;
 }
-
 .kam-section-kicker,
 .kam-vendor-step-active .kam-section-kicker,
 .kam-completion-step-active .kam-section-kicker {
@@ -1929,7 +1670,6 @@
   line-height: 1;
   letter-spacing: 0.14em;
 }
-
 .kam-card-header h2,
 .kam-vendor-step-active .kam-card-header h2,
 .kam-completion-step-active .kam-card-header h2 {
@@ -1938,7 +1678,6 @@
   font-weight: 900;
   line-height: 1.25;
 }
-
 .kam-card-header p,
 .kam-vendor-step-active .kam-card-header p,
 .kam-completion-step-active .kam-card-header p {
@@ -1947,27 +1686,23 @@
   font-weight: 500;
   line-height: 1.4;
 }
-
 .kam-id-badge,
 .kam-client-trip-id {
   min-width: 100px;
   padding: 7px 10px;
   border-radius: 8px;
 }
-
 .kam-id-badge span,
 .kam-client-trip-id span {
   font-size: var(--kam-label-size);
   font-weight: 800;
 }
-
 .kam-id-badge strong,
 .kam-client-trip-id strong {
   margin-top: 2px;
   font-size: var(--kam-data-size);
   font-weight: 900;
 }
-
 .kam-order-overview,
 .kam-vendor-step-active .kam-order-overview,
 .kam-completion-step-active .kam-order-overview {
@@ -1976,14 +1711,12 @@
   padding: 10px 13px;
   gap: 12px;
 }
-
 .kam-order-overview span {
   color: #718a96;
   font-size: var(--kam-label-size);
   font-weight: 900;
   text-transform: uppercase;
 }
-
 .kam-order-overview strong {
   overflow: hidden;
   color: #15384a;
@@ -1992,7 +1725,6 @@
   text-overflow: ellipsis;
   font-weight: 800;
 }
-
 .kam-client-trip-header h3,
 .kam-client-vehicle-heading h3,
 .kam-finalization-card-head h3,
@@ -2005,7 +1737,6 @@
   font-weight: 900;
   line-height: 1.25;
 }
-
 .kam-client-trip-header p,
 .kam-client-vehicle-heading p,
 .kam-approved-allocation-title p,
@@ -2017,7 +1748,6 @@
   font-weight: 600;
   line-height: 1.4;
 }
-
 .kam-finalization-eyebrow,
 .kam-approved-allocation-kicker,
 .kam-vendor-remarks-head>div>span,
@@ -2027,7 +1757,6 @@
   line-height: 1;
   letter-spacing: 0.1em;
 }
-
 .kam-field-group label,
 .kam-field-group>label,
 .kam-finalization-card .kam-field-group label,
@@ -2043,7 +1772,6 @@
   font-weight: 900;
   line-height: 1.15;
 }
-
 .kam-input-wrap input,
 .kam-select-wrap select,
 .kam-finalization-card .kam-input-wrap input,
@@ -2055,7 +1783,6 @@
   font-weight: 700;
   line-height: 1.35;
 }
-
 .kam-field-group textarea,
 .kam-finalization-textarea,
 .kam-po-bottom-row .kam-po-remarks,
@@ -2065,13 +1792,11 @@
   font-weight: 650;
   line-height: 1.45;
 }
-
 .kam-client-remark p,
 .kam-client-team strong,
 .kam-client-team small {
   font-size: var(--kam-data-size);
 }
-
 .kam-finalization-card-head {
   min-height: 58px;
   padding: 10px 14px;
@@ -2081,7 +1806,6 @@
   border-bottom: 1px solid #e6edef;
   background: linear-gradient(90deg, #f7fbfb 0%, #ffffff 72%);
 }
-
 .kam-finalization-step-icon {
   width: 32px;
   height: 32px;
@@ -2096,7 +1820,6 @@
   font-weight: 900;
   letter-spacing: 0.04em;
 }
-
 .kam-finalization-card .kam-input-wrap,
 .kam-finalization-card .kam-select-wrap {
   min-height: 40px;
@@ -2105,7 +1828,6 @@
   background: #f8fafb;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
 }
-
 .kam-finalization-card .kam-input-wrap input,
 .kam-finalization-card .kam-select-wrap select {
   height: 38px;
@@ -2113,13 +1835,11 @@
   font-size: 11px;
   font-weight: 700;
 }
-
 .kam-approved-allocation-head,
 .kam-vendor-step-active .kam-approved-allocation-head {
   min-height: 66px;
   padding: 10px 14px;
 }
-
 .kam-approved-allocation-icon {
   width: 36px;
   height: 36px;
@@ -2136,13 +1856,11 @@
   font-weight: 900;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85);
 }
-
 .kam-approved-allocation-summary strong {
   color: #17675f;
   font-size: var(--kam-data-size);
   font-weight: 900;
 }
-
 .kam-approved-vehicle-cell strong,
 .kam-approved-vendor-cell strong,
 .kam-approved-contact-cell strong,
@@ -2150,14 +1868,12 @@
 .kam-approved-rate {
   font-size: var(--kam-data-size);
 }
-
 .kam-approved-vehicle-cell span,
 .kam-approved-vendor-cell span,
 .kam-approved-contact-cell span,
 .kam-approved-qty span {
   font-size: 8px;
 }
-
 .kam-po-modern-info strong {
   max-width: 100%;
   overflow: hidden;
@@ -2169,7 +1885,6 @@
   white-space: nowrap;
   text-overflow: ellipsis;
 }
-
 .kam-po-modern-file-name {
   display: block;
   width: 100%;
@@ -2182,7 +1897,6 @@
   white-space: nowrap;
   text-overflow: ellipsis;
 }
-
 .kam-po-modern-action {
   min-width: 94px;
   height: 34px;
@@ -2205,7 +1919,6 @@
     color 0.2s ease,
     box-shadow 0.2s ease;
 }
-
 .kam-completion-card-head {
   min-height: 58px;
   padding: 10px 14px;
@@ -2217,7 +1930,6 @@
       #f7fbfb 0%,
       #ffffff 76%);
 }
-
 .kam-completion-step-icon {
   width: 32px;
   height: 32px;
@@ -2231,7 +1943,6 @@
   font-size: 9px;
   font-weight: 900;
 }
-
 .kam-completion-info-grid>div {
   min-width: 0;
   min-height: 52px;
@@ -2240,7 +1951,6 @@
   border-radius: 8px;
   background: #fbfcfd;
 }
-
 .kam-completion-info-grid strong {
   display: block;
   overflow: hidden;
@@ -2251,7 +1961,6 @@
   white-space: nowrap;
   text-overflow: ellipsis;
 }
-
 .kam-completion-notes-grid p {
   margin: 0;
   color: #405f6c;
@@ -2260,14 +1969,12 @@
   line-height: 1.5;
   white-space: pre-wrap;
 }
-
 .kam-completion-count strong {
   margin-top: 2px;
   color: #087e75;
   font-size: var(--kam-data-size);
   font-weight: 900;
 }
-
 .kam-client-vehicle-table th,
 .kam-approved-allocation-table th,
 .kam-completion-table th {
@@ -2278,7 +1985,6 @@
   font-weight: 900;
   line-height: 1;
 }
-
 .kam-client-vehicle-table td,
 .kam-approved-allocation-table td,
 .kam-completion-table td {
@@ -2287,33 +1993,28 @@
   font-weight: 650;
   line-height: 1.35;
 }
-
 .kam-completion-vehicle-cell strong {
   color: #163c4b;
   font-size: var(--kam-table-data);
   font-weight: 900;
 }
-
 .kam-completion-vehicle-cell span {
   margin-top: 2px;
   color: #82969f;
   font-size: 8px;
   font-weight: 650;
 }
-
 .kam-approved-status,
 .kam-completion-status {
   min-height: 28px;
   font-size: 8px;
   font-weight: 900;
 }
-
 .kam-approved-rate,
 .kam-completion-rate {
   font-size: var(--kam-data-size);
   font-weight: 900;
 }
-
 .kam-actions,
 .kam-vendor-step-active .kam-actions,
 .kam-completion-step-active .kam-actions {
@@ -2325,7 +2026,6 @@
   justify-content: flex-end;
   gap: 9px;
 }
-
 .kam-btn-outline,
 .kam-btn-primary,
 .kam-vendor-step-active .kam-btn-outline,
@@ -2338,54 +2038,43 @@
   font-size: var(--kam-button-size);
   font-weight: 850;
 }
-
 @media (max-width: 1100px) {
   .kam-order-overview {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-
   .kam-completion-info-grid,
   .kam-completion-form-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
-
 @media (max-width: 800px) {
   .kam-form-grid {
     grid-template-columns: 1fr;
   }
-
   .kam-client-trip-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-
   .kam-card-header {
     align-items: flex-start;
     flex-direction: column;
   }
-
   .kam-id-badge {
     width: 100%;
   }
 }
-
 @media (max-width: 700px) {
-
   .kam-completion-info-grid,
   .kam-completion-notes-grid,
   .kam-completion-form-grid {
     grid-template-columns: 1fr;
   }
 }
-
 @media (max-width: 560px) {
-
   .kam-stepper,
   .kam-vendor-step-active .kam-stepper,
   .kam-completion-step-active .kam-stepper {
     padding: 10px 12px;
   }
-
   .kam-step-pill,
   .kam-vendor-step-active .kam-step-pill,
   .kam-completion-step-active .kam-step-pill {
@@ -2394,7 +2083,6 @@
     padding: 0 10px 0 7px;
     font-size: 10px;
   }
-
   .kam-step-number,
   .kam-vendor-step-active .kam-step-number,
   .kam-completion-step-active .kam-step-number {
@@ -2403,21 +2091,17 @@
     min-width: 20px;
     font-size: 8px;
   }
-
   .kam-card-body,
   .kam-vendor-step-active .kam-card-body,
   .kam-completion-step-active .kam-card-body {
     padding: 12px;
   }
-
   .kam-client-trip-grid {
     grid-template-columns: 1fr;
   }
-
   .kam-order-overview {
     grid-template-columns: 1fr;
   }
-
   .kam-actions,
   .kam-vendor-step-active .kam-actions,
   .kam-completion-step-active .kam-actions {
@@ -2426,65 +2110,52 @@
     padding: 10px 12px;
     flex-direction: column-reverse;
   }
-
   .kam-btn-outline,
   .kam-btn-primary {
     width: 100%;
   }
 }
-
 @media (max-width: 900px) {
   .kam-top-lifecycle {
     padding: 10px 14px 11px;
   }
-
   .kam-top-lifecycle-track {
     min-width: 850px;
   }
-
   .kam-top-step {
     font-size: 9px;
   }
-
   .kam-top-step-line {
     min-width: 20px;
     margin: 0 6px;
   }
 }
-
 @media (max-width: 560px) {
   .kam-top-lifecycle {
     padding: 9px 11px 10px;
   }
-
   .kam-top-lifecycle-track {
     min-width: 790px;
   }
-
   .kam-top-step-marker {
     width: 25px;
     height: 25px;
     flex-basis: 25px;
   }
-
   .kam-top-step {
     font-size: 8.5px;
   }
-
   .kam-professional-order-heading {
     min-height: 68px;
     padding: 11px 12px;
   }
-
   .kam-order-title-row h2 {
     font-size: 16px;
   }
-
   .kam-professional-order-heading .kam-order-title-block>p {
     display: none;
   }
 }
-
 .kam-workflow-toolbar {
   min-height: 78px;
   padding: 0 18px;
@@ -2493,37 +2164,30 @@
   justify-content: space-between;
   flex-shrink: 0;
 }
-
 .kam-workflow-toolbar-left,
 .kam-workflow-toolbar-right {
   display: flex;
   align-items: center;
 }
-
 .kam-workflow-toolbar-left {
   gap: 14px;
 }
-
 .kam-workflow-toolbar-right {
   gap: 12px;
 }
-
 .kam-workflow-toolbar-copy {
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
-
 .kam-workflow-toolbar-copy small {
   margin: 0 0 3px;
   line-height: 1;
 }
-
 .kam-workflow-toolbar-copy strong {
   margin: 0;
   line-height: 1.15;
 }
-
 .kam-professional-order-heading .kam-order-title-block>p {
   margin: 7px 0 0;
   color: #758d98;
@@ -2531,13 +2195,11 @@
   font-weight: 600;
   line-height: 1.25;
 }
-
 .kam-client-enquiry-heading .approval-status {
   align-self: center;
   margin: 0;
   flex-shrink: 0;
 }
-
 .approval-status {
   display: inline-flex;
   align-items: center;
@@ -2553,25 +2215,21 @@
   white-space: nowrap;
   box-sizing: border-box;
 }
-
 .approval-status.approved {
   border: 1px solid #a7ddd1;
   background: #eaf8f4;
   color: #087a68;
 }
-
 .approval-status.pending {
   border: 1px solid #ead6a4;
   background: #fff8e8;
   color: #946a08;
 }
-
 .approval-status.rejected {
   border: 1px solid #efc2c2;
   background: #fff1f1;
   color: #b23b3b;
 }
-
 .kam-client-enquiry-grid {
   width: 100%;
   padding: 16px 18px 18px;
@@ -2581,14 +2239,12 @@
   row-gap: 13px;
   box-sizing: border-box;
 }
-
 .kam-client-readonly-field {
   min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
-
 .kam-client-readonly-field label {
   min-height: 10px;
   margin: 0;
@@ -2601,7 +2257,6 @@
   letter-spacing: 0.02em;
   text-transform: uppercase;
 }
-
 .kam-client-readonly-value {
   width: 100%;
   height: 54px;
@@ -2620,14 +2275,12 @@
   white-space: nowrap;
   box-sizing: border-box;
 }
-
 .kam-client-vehicle-heading>div {
   min-width: 0;
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
-
 .kam-client-vehicle-heading h3 {
   margin: 0;
   color: #143d4e;
@@ -2636,7 +2289,6 @@
   letter-spacing: -0.01em;
   line-height: 1.15;
 }
-
 .kam-client-vehicle-heading p {
   margin: 4px 0 0;
   color: #7c929c;
@@ -2645,18 +2297,15 @@
   font-weight: 600;
   line-height: 1.2;
 }
-
 .kam-client-table-wrap {
   width: 100%;
   overflow-x: auto;
 }
-
 .kam-client-table {
   width: 100%;
   border-collapse: collapse;
   table-layout: auto;
 }
-
 .kam-client-table thead th {
   height: 48px;
   padding: 0 14px;
@@ -2667,7 +2316,6 @@
   text-align: left;
   white-space: nowrap;
 }
-
 .kam-client-table tbody td {
   min-height: 48px;
   padding: 12px 14px;
@@ -2676,7 +2324,6 @@
   font-size: 9px;
   font-weight: 700;
 }
-
 .kam-workflow-footer {
   min-height: 66px;
   padding: 0 18px;
@@ -2686,69 +2333,55 @@
   gap: 12px;
   flex-shrink: 0;
 }
-
 @media (max-width: 1200px) {
   .kam-client-enquiry-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
-
   .kam-top-lifecycle-track {
     min-width: 1050px;
   }
 }
-
 @media (max-width: 900px) {
   .kam-workflow-content {
     padding: 14px 14px 88px;
   }
-
   .kam-client-enquiry-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     padding: 14px;
   }
-
   .kam-top-lifecycle {
     padding: 0 15px;
   }
-
   .kam-top-lifecycle-track {
     min-width: 980px;
   }
-
   .kam-top-step-line {
     margin: 0 7px;
   }
 }
-
 @media (max-width: 600px) {
   .kam-client-enquiry-grid {
     grid-template-columns: 1fr;
   }
-
   .kam-professional-order-heading {
     padding: 14px 15px;
   }
-
   .kam-order-title-row h2 {
     font-size: 18px;
   }
-
   .kam-client-readonly-value {
     height: 50px;
   }
-
   .kam-client-vehicle-heading {
     padding: 11px 13px 11px 17px;
   }
 }
-
 .kam-detail-toolbar,
 .kam-workflow-toolbar {
   position: relative;
   flex: 0 0 auto;
   z-index: 30;
 }
-
 .kam-detail-card {
   min-height: 0;
   flex: 1 1 auto;
@@ -2756,16 +2389,13 @@
   flex-direction: column;
   overflow: hidden;
 }
-
 .kam-top-lifecycle::-webkit-scrollbar-track {
   background: transparent;
 }
-
 .kam-top-lifecycle::-webkit-scrollbar-thumb {
   border-radius: 999px;
   background: #c5d7dc;
 }
-
 .kam-workflow-content,
 .kam-card-body {
   min-height: 0;
@@ -2778,23 +2408,19 @@
   scrollbar-width: thin;
   scrollbar-color: #aabdc3 transparent;
 }
-
 .kam-workflow-content::-webkit-scrollbar,
 .kam-card-body::-webkit-scrollbar {
   width: 6px;
 }
-
 .kam-workflow-content::-webkit-scrollbar-track,
 .kam-card-body::-webkit-scrollbar-track {
   background: transparent;
 }
-
 .kam-workflow-content::-webkit-scrollbar-thumb,
 .kam-card-body::-webkit-scrollbar-thumb {
   border-radius: 999px;
   background: #aabdc3;
 }
-
 .kam-client-enquiry-grid,
 .kam-client-trip-grid {
   width: 100%;
@@ -2805,12 +2431,10 @@
   row-gap: 13px;
   box-sizing: border-box;
 }
-
 .kam-client-readonly-field,
 .kam-client-trip-field {
   min-width: 0;
 }
-
 .kam-client-readonly-value,
 .kam-client-trip-field>strong {
   width: 100%;
@@ -2827,7 +2451,6 @@
   white-space: nowrap;
   box-sizing: border-box;
 }
-
 .kam-client-vehicle-section {
   width: 100%;
   margin-bottom: 12px;
@@ -2839,7 +2462,6 @@
   margin: 14px 0 0;
   box-sizing: border-box;
 }
-
 .kam-client-vehicle-heading {
   min-height: 60px;
   padding: 11px 16px 11px 20px;
@@ -2852,7 +2474,6 @@
   background: #ffffff;
   box-sizing: border-box;
 }
-
 .kam-client-vehicle-heading::before {
   content: "";
   position: absolute;
@@ -2863,7 +2484,6 @@
   border-radius: 0 4px 4px 0;
   background: linear-gradient(180deg, #079b8f, #075b6a);
 }
-
 .kam-client-vehicle-table-wrap,
 .kam-client-table-wrap,
 .kam-approved-allocation-table-wrap {
@@ -2871,109 +2491,87 @@
   overflow-x: auto;
   overflow-y: hidden;
 }
-
 .kam-client-vehicle-table th,
 .kam-client-table thead th,
 .kam-approved-allocation-table th {
   vertical-align: middle;
   white-space: nowrap;
 }
-
 .kam-client-vehicle-table td,
 .kam-client-table tbody td,
 .kam-approved-allocation-table td {
   vertical-align: middle;
 }
-
 .kam-workflow-content> :last-child,
 .kam-card-body> :last-child {
   margin-bottom: 0;
 }
-
 @media (max-width: 1200px) {
-
   .kam-client-enquiry-grid,
   .kam-client-trip-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
-
   .kam-top-lifecycle-track {
     min-width: 1050px;
   }
 }
-
 @media (max-width: 900px) {
   .kam-workflow-modal-overlay {
     padding: 10px;
   }
-
   .kam-workflow-modal {
     width: 100%;
     height: 96vh;
     max-height: 96vh;
   }
-
   .kam-workflow-content,
   .kam-card-body {
     padding: 14px;
   }
-
   .kam-client-enquiry-grid,
   .kam-client-trip-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     padding: 14px;
   }
-
   .kam-top-lifecycle {
     padding: 0 15px;
   }
-
   .kam-top-lifecycle-track {
     min-width: 980px;
   }
-
   .kam-top-step-line {
     margin: 0 7px;
   }
 }
-
 @media (max-width: 600px) {
-
   .kam-client-enquiry-grid,
   .kam-client-trip-grid {
     grid-template-columns: 1fr;
   }
-
   .kam-professional-order-heading {
     min-height: 60px;
     padding: 12px 14px;
   }
-
   .kam-order-title-row h2 {
     font-size: 17px;
   }
-
   .kam-top-lifecycle {
     min-height: 58px;
     flex-basis: 58px;
     padding: 0 11px;
   }
-
   .kam-top-lifecycle-track {
     min-width: 860px;
   }
-
   .kam-top-step {
     font-size: 8.7px;
   }
-
   .kam-top-step-marker {
     width: 28px;
     height: 28px;
     min-width: 28px;
     flex-basis: 28px;
   }
-
   .kam-workflow-footer,
   .kam-actions.kam-workflow-footer {
     min-height: 60px;
@@ -2983,40 +2581,33 @@
     flex-direction: row;
   }
 }
-
 .kam-workflow-modal,
 .kam-detail-card {
   min-height: 0;
   overflow: hidden;
 }
-
 .kam-workflow-content::-webkit-scrollbar {
   width: 7px;
 }
-
 .kam-workflow-content::-webkit-scrollbar-track {
   background: transparent;
 }
-
 .kam-workflow-content::-webkit-scrollbar-thumb {
   border: 2px solid transparent;
   border-radius: 999px;
   background: #aabdc3;
   background-clip: padding-box;
 }
-
 .kam-workflow-content::-webkit-scrollbar-thumb:hover {
   background: #879fa6;
   background-clip: padding-box;
 }
-
 .kam-workflow-toolbar,
 .kam-top-lifecycle,
 .kam-workflow-footer,
 .kam-actions.kam-workflow-footer {
   flex-shrink: 0;
 }
-
 .kam-workflow-footer,
 .kam-actions.kam-workflow-footer {
   position: relative;
@@ -3039,21 +2630,17 @@
   box-sizing: border-box;
   z-index: 30;
 }
-
 .kam-workflow-content * {
   scroll-margin-top: 12px;
 }
-
 @media (max-width: 900px) {
   .kam-workflow-content {
     scrollbar-gutter: auto;
   }
 }
-
 .kam-top-step:not(:disabled):hover .kam-top-step-text {
   color: #007f78;
 }
-
 .kam-step-page-header {
   display: flex;
   align-items: center;
@@ -3065,11 +2652,9 @@
   border-radius: 14px;
   background: linear-gradient(135deg, #ffffff 0%, #f5fbfb 100%);
 }
-
 .kam-step-page-header>div {
   min-width: 0;
 }
-
 .kam-step-page-header>div>span {
   display: block;
   margin-bottom: 4px;
@@ -3078,103 +2663,85 @@
   font-weight: 900;
   letter-spacing: .1em;
 }
-
 .kam-step-page-header h2 {
   margin: 0;
   color: #10384b;
   font-size: 17px;
   font-weight: 850;
 }
-
 .kam-step-page-header p {
   margin: 4px 0 0;
   color: #718995;
   font-size: 10px;
   font-weight: 550;
 }
-
 @keyframes kamStepPageIn {
   from {
     opacity: 0;
     transform: translateY(5px);
   }
-
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
-
 @media (max-width:700px) {
   .kam-step-page-header {
     padding: 13px 14px;
     align-items: flex-start;
   }
-
   .kam-step-page-header h2 {
     font-size: 15px;
   }
 }
-
 .kam-top-step:not(:disabled) {
   cursor: pointer;
 }
-
 .kam-top-step:disabled {
   cursor: not-allowed;
   opacity: .58;
 }
-
 .kam-top-step:not(:disabled):focus-visible {
   outline: 2px solid #159d93;
   outline-offset: 5px;
   border-radius: 8px;
 }
-
 .kam-top-step.selected .kam-top-step-marker {
   box-shadow: 0 0 0 5px rgba(11, 160, 149, .13), 0 4px 10px rgba(10, 94, 92, .14);
 }
-
 .kam-top-step.selected .kam-top-step-text {
   color: #07566a;
   font-weight: 900;
 }
-
 .kam-step-page {
   animation: kamStepPageIn .18s ease;
 }
-
 @keyframes kamStepPageIn {
   from {
     opacity: 0;
     transform: translateY(4px);
   }
-
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
-
 @media (max-width: 600px) {
   .kam-actions.kam-workflow-footer {
     min-height: 58px;
     padding: 8px 12px;
     flex-direction: row;
   }
-
   .kam-actions.kam-workflow-footer .kam-readonly-field {
     min-width: 0;
     flex: 1;
   }
 }
-
 @media (max-width: 1420px),
 (max-height: 820px) {
   .kam-workflow-modal-overlay {
     padding: 14px;
   }
-
   .kam-workflow-modal {
     width: calc(100vw - 28px);
     height: calc(100dvh - 28px);
@@ -3184,12 +2751,10 @@
     max-height: 780px;
   }
 }
-
 @media (max-width: 1100px) {
   .kam-workflow-modal-overlay {
     padding: 10px;
   }
-
   .kam-workflow-modal {
     width: calc(100vw - 20px);
     height: calc(100dvh - 20px);
@@ -3199,17 +2764,14 @@
     max-height: none;
     border-radius: 15px;
   }
-
   .kam-workflow-content {
     padding: 14px;
   }
 }
-
 @media (max-width: 520px) {
   .kam-workflow-modal-overlay {
     padding: 4px;
   }
-
   .kam-workflow-modal {
     width: calc(100vw - 8px);
     height: calc(100dvh - 8px);
@@ -3219,11 +2781,9 @@
     max-height: none;
     border-radius: 11px;
   }
-
   .kam-workflow-content {
     padding: 12px;
   }
-
   .kam-actions.kam-workflow-footer {
     min-height: 58px;
     height: 58px;
@@ -3231,7 +2791,6 @@
     padding: 8px 12px;
   }
 }
-
 .kam-workflow-modal-overlay {
   position: fixed;
   inset: 0;
@@ -3246,12 +2805,10 @@
   overflow: hidden;
   box-sizing: border-box;
 }
-
 .kam-detail-toolbar,
 .kam-top-lifecycle {
   flex-shrink: 0;
 }
-
 .kam-workflow-content .kam-card-body {
   min-height: auto;
   height: auto;
@@ -3261,7 +2818,6 @@
   overscroll-behavior: auto;
   overflow: visible;
 }
-
 .kam-workflow-content .kam-client-vehicle-table-wrap,
 .kam-workflow-content .kam-approved-allocation-table-wrap,
 .kam-workflow-content .kam-table-wrap,
@@ -3270,12 +2826,10 @@
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
 }
-
 .kam-actions.kam-workflow-footer .kam-readonly-field strong {
   margin-left: 5px;
   color: #fff;
 }
-
 .kam-client-enquiry-section {
   overflow: hidden;
   border: 1px solid #d5e3e7;
@@ -3286,7 +2840,6 @@
   margin: 0 0 14px;
   box-sizing: border-box;
 }
-
 .kam-professional-order-heading {
   min-height: 60px;
   padding: 14px 18px;
@@ -3298,14 +2851,12 @@
   box-sizing: border-box;
   gap: 18px;
 }
-
 .kam-order-title-block {
   min-width: 0;
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
-
 .kam-order-eyebrow {
   display: block;
   margin-bottom: 5px;
@@ -3317,7 +2868,6 @@
   margin: 0 0 6px;
   line-height: 1;
 }
-
 .kam-order-title-row {
   display: flex;
   align-items: center;
@@ -3326,7 +2876,6 @@
   flex-wrap: wrap;
   min-height: 24px;
 }
-
 .kam-order-title-row h2 {
   margin: 0;
   color: #12394b;
@@ -3335,7 +2884,6 @@
   line-height: 1;
   letter-spacing: -0.02em;
 }
-
 .kam-order-readonly-badge {
   padding: 5px 8px;
   border: 1px solid #c9dcdf;
@@ -3351,14 +2899,12 @@
   justify-content: center;
   line-height: 1;
 }
-
 .kam-professional-order-heading p {
   margin: 7px 0 0;
   color: #718995;
   font-size: 9px;
   font-weight: 600;
 }
-
 .kam-order-approval-card {
   min-width: 205px;
   min-height: 56px;
@@ -3370,7 +2916,6 @@
   border-radius: 12px;
   background: #f8fbfb;
 }
-
 .kam-order-approval-tick {
   width: 36px;
   height: 36px;
@@ -3381,80 +2926,65 @@
   font-size: 18px;
   font-weight: 900;
 }
-
 .kam-order-approval-tick svg {
   width: 19px;
   height: 19px;
 }
-
 .kam-order-approval-copy {
   min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
-
 .kam-order-approval-copy strong {
   font-size: 12px;
   line-height: 1.2;
   font-weight: 900;
 }
-
 .kam-order-approval-copy small {
   font-size: 8px;
   line-height: 1.3;
   font-weight: 650;
   white-space: nowrap;
 }
-
 .kam-order-approval-card.approved {
   border-color: #b9e0d8;
   background: linear-gradient(135deg, #f1fbf8, #fbfefd);
 }
-
 .kam-order-approval-card.approved .kam-order-approval-tick {
   color: #fff;
   background: linear-gradient(135deg, #0ca493, #087d74);
   box-shadow: 0 0 0 5px rgba(12, 164, 147, .10), 0 7px 16px rgba(8, 125, 116, .18);
 }
-
 .kam-order-approval-card.approved .kam-order-approval-copy strong {
   color: #08776f;
 }
-
 .kam-order-approval-card.approved .kam-order-approval-copy small {
   color: #63847e;
 }
-
 .kam-order-approval-card.pending {
   border-color: #ead9aa;
   background: #fffaf0;
 }
-
 .kam-order-approval-card.pending .kam-order-approval-tick {
   color: #9b7318;
   background: #fff1c9;
 }
-
 .kam-order-approval-card.pending .kam-order-approval-copy strong {
   color: #896617;
 }
-
 .kam-order-approval-card.rejected {
   border-color: #efc7c7;
   background: #fff7f7;
 }
-
 .kam-order-approval-card.rejected .kam-order-approval-tick {
   color: #fff;
   background: #c84d4d;
   box-shadow: 0 0 0 5px rgba(200, 77, 77, .08);
 }
-
 .kam-order-approval-card.rejected .kam-order-approval-copy strong {
   color: #aa3f3f;
 }
-
 .kam-client-trip-grid {
   width: 100%;
   padding: 16px 18px 18px;
@@ -3463,11 +2993,9 @@
   gap: 13px 16px;
   box-sizing: border-box;
 }
-
 .kam-client-trip-field {
   min-width: 0;
 }
-
 .kam-client-trip-field>span {
   display: block;
   margin-bottom: 6px;
@@ -3478,7 +3006,6 @@
   letter-spacing: .035em;
   text-transform: uppercase;
 }
-
 .kam-client-trip-field>strong {
   width: 100%;
   min-height: 40px;
@@ -3496,7 +3023,6 @@
   text-overflow: ellipsis;
   box-sizing: border-box;
 }
-
 .kam-professional-remark {
   margin: 0 18px 18px;
   padding: 13px 15px;
@@ -3509,7 +3035,6 @@
   background: linear-gradient(90deg, #f5fbfa 0%, #fff 70%);
   box-shadow: 0 3px 12px rgba(15, 56, 75, .035);
 }
-
 .kam-professional-remark-icon {
   width: 34px;
   height: 34px;
@@ -3521,17 +3046,14 @@
   background: #eaf8f5;
   color: #07877e;
 }
-
 .kam-professional-remark-icon svg {
   width: 17px;
   height: 17px;
 }
-
 .kam-professional-remark-copy {
   min-width: 0;
   flex: 1;
 }
-
 .kam-professional-remark-copy>span {
   display: block;
   margin-bottom: 2px;
@@ -3541,7 +3063,6 @@
   font-weight: 900;
   letter-spacing: .11em;
 }
-
 .kam-professional-remark-copy>strong {
   display: block;
   margin-bottom: 4px;
@@ -3550,7 +3071,6 @@
   line-height: 1.2;
   font-weight: 900;
 }
-
 .kam-professional-remark-copy p {
   margin: 0;
   color: #365766;
@@ -3559,13 +3079,11 @@
   font-weight: 600;
   word-break: break-word;
 }
-
 @media (max-width:1420px),
 (max-height:820px) {
   .kam-workflow-modal-overlay {
     padding: 14px;
   }
-
   .kam-workflow-modal {
     width: calc(100vw - 28px);
     height: calc(100dvh - 28px);
@@ -3575,12 +3093,10 @@
     max-height: 780px;
   }
 }
-
 @media (max-width:1100px) {
   .kam-workflow-modal-overlay {
     padding: 10px;
   }
-
   .kam-workflow-modal {
     width: calc(100vw - 20px);
     height: calc(100dvh - 20px);
@@ -3590,35 +3106,28 @@
     max-height: none;
     border-radius: 15px;
   }
-
   .kam-client-trip-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
-
   .kam-workflow-content {
     padding: 14px;
   }
 }
-
 @media (max-width:800px) {
   .kam-client-trip-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-
   .kam-professional-order-heading {
     align-items: flex-start;
   }
-
   .kam-order-approval-card {
     min-width: 185px;
   }
 }
-
 @media (max-width:560px) {
   .kam-workflow-modal-overlay {
     padding: 4px;
   }
-
   .kam-workflow-modal {
     width: calc(100vw - 8px);
     height: calc(100dvh - 8px);
@@ -3628,30 +3137,24 @@
     max-height: none;
     border-radius: 11px;
   }
-
   .kam-workflow-content {
     padding: 12px;
   }
-
   .kam-professional-order-heading {
     flex-direction: column;
     padding: 13px;
   }
-
   .kam-client-enquiry-status,
   .kam-order-approval-card {
     width: 100%;
   }
-
   .kam-client-trip-grid {
     grid-template-columns: 1fr;
     padding: 13px;
   }
-
   .kam-professional-remark {
     margin: 0 13px 13px;
   }
-
   .kam-actions.kam-workflow-footer {
     height: 58px;
     min-height: 58px;
@@ -3660,7 +3163,6 @@
     flex-direction: row;
   }
 }
-
 .kam-order-movement-right {
   margin-left: auto;
   min-width: 180px;
@@ -3670,7 +3172,6 @@
   gap: 12px;
   flex-shrink: 0;
 }
-
 .kam-order-movement-label {
   color: #78909c;
   font-size: 8px;
@@ -3680,7 +3181,6 @@
   text-transform: uppercase;
   white-space: nowrap;
 }
-
 .kam-order-movement-value {
   position: relative;
   min-width: 105px;
@@ -3700,7 +3200,6 @@
   white-space: nowrap;
   box-shadow: 0 2px 7px rgba(20, 57, 75, 0.04);
 }
-
 .kam-order-movement-value::before {
   content: "";
   position: absolute;
@@ -3711,19 +3210,16 @@
   background: #0d9488;
   box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1);
 }
-
 @media (max-width: 700px) {
   .kam-order-movement-right {
     width: 100%;
     margin-left: 0;
     justify-content: space-between;
   }
-
   .kam-order-movement-value {
     min-width: 100px;
   }
 }
-
 .kam-top-lifecycle {
   width: 100%;
   flex-shrink: 0;
@@ -3743,12 +3239,10 @@
   flex: 0 0 48px;
   overflow-y: hidden;
 }
-
 .kam-top-lifecycle::-webkit-scrollbar {
   height: 4px;
   display: none;
 }
-
 .kam-top-lifecycle-track {
   width: 100%;
   min-width: 980px;
@@ -3757,7 +3251,6 @@
   justify-content: space-between;
   height: 100%;
 }
-
 .kam-top-step {
   position: relative;
   min-width: max-content;
@@ -3781,7 +3274,6 @@
   font-family: inherit;
   letter-spacing: 0.01em;
 }
-
 .kam-top-step-marker {
   width: 26px;
   height: 26px;
@@ -3802,14 +3294,12 @@
   line-height: 1;
   transition: all 0.2s ease;
 }
-
 .kam-top-step-marker svg {
   width: 11px;
   height: 11px;
   display: block;
   stroke-width: 2.2;
 }
-
 .kam-top-step-text {
   line-height: 1;
   display: inline-flex;
@@ -3820,7 +3310,6 @@
   font-weight: inherit;
   letter-spacing: 0.01em;
 }
-
 .kam-top-step-line {
   height: 1px;
   min-width: 20px;
@@ -3829,136 +3318,111 @@
   border-radius: 999px;
   background: #d8e3e6;
 }
-
 .kam-top-step.completed {
   color: #0b8c83;
   font-weight: 600;
 }
-
 .kam-top-step.completed .kam-top-step-marker {
   border-color: #a5ddd7;
   background: #eff9f8;
   color: #078c82;
   box-shadow: 0 0 0 3px rgba(11, 160, 149, .07);
 }
-
 .kam-top-step-line.completed {
   background: #54bdb4;
 }
-
 .kam-top-step.completed.selected {
   color: #123f50;
   font-weight: 700;
 }
-
 .kam-top-step.completed.selected .kam-top-step-marker {
   background: #0a9288;
   border-color: #0a9288;
   color: #ffffff;
   box-shadow: 0 0 0 3px rgba(10, 146, 136, 0.10);
 }
-
 .kam-top-step.active {
   color: #123f50;
   font-weight: 700;
 }
-
 .kam-top-step.active .kam-top-step-marker {
   border-color: #087f77;
   background: #087f77;
   color: #ffffff;
   box-shadow: 0 0 0 3px rgba(8, 127, 119, 0.10);
 }
-
 .kam-top-step.active .kam-top-step-text {
   color: #123f50;
 }
-
 .kam-top-step.pending {
   color: #a5b3b9;
   font-weight: 500;
 }
-
 .kam-top-step.pending .kam-top-step-marker {
   border-color: #dfe8eb;
   background: #fafcfc;
   color: #a5b3b9;
 }
-
 .kam-top-step.rejected {
   color: #b74343;
   font-weight: 600;
 }
-
 .kam-top-step.rejected .kam-top-step-marker {
   border-color: #e5b8b8;
   background: #fff4f4;
   color: #bd4545;
 }
-
 .kam-top-step:hover .kam-top-step-marker {
   border-color: #9bcfc9;
 }
-
 @media (max-width: 900px) {
   .kam-top-lifecycle {
     min-height: 46px;
     padding: 0 14px;
     flex-basis: 46px;
   }
-
   .kam-top-lifecycle-track {
     min-width: 900px;
   }
-
   .kam-top-step,
   .kam-top-step-text {
     font-size: 8.5px;
   }
-
   .kam-top-step-line {
     min-width: 17px;
     margin: 0 6px;
   }
 }
-
 @media (max-width: 600px) {
   .kam-top-lifecycle {
     min-height: 44px;
     padding: 0 10px;
     flex-basis: 44px;
   }
-
   .kam-top-lifecycle-track {
     min-width: 820px;
   }
-
   .kam-top-step,
   .kam-top-step-text {
     font-size: 8px;
   }
-
   .kam-top-step {
     gap: 5px;
   }
-
   .kam-top-step-marker {
     width: 24px;
     height: 24px;
     min-width: 24px;
     flex-basis: 24px;
   }
-
   .kam-top-step-marker svg {
     width: 10px;
     height: 10px;
   }
 }
-
 .kam-common-step-item:first-child {
   padding-left: 2px;
 }
-
 .kam-common-step-item span {
   display: block;
   margin-bottom: 3px;
@@ -3969,7 +3433,6 @@
   letter-spacing: 0.045em;
   text-transform: uppercase;
 }
-
 .kam-common-step-item strong {
   display: block;
   overflow: hidden;
@@ -3980,32 +3443,26 @@
   white-space: nowrap;
   text-overflow: ellipsis;
 }
-
 @media (max-width: 1000px) {
   .kam-common-step-details {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     row-gap: 8px;
   }
-
   .kam-common-step-item:nth-child(3) {
     border-right: 0;
   }
 }
-
 @media (max-width: 620px) {
   .kam-common-step-details {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-
   .kam-common-step-item:nth-child(3) {
     border-right: 1px solid #e5edef;
   }
-
   .kam-common-step-item:nth-child(even) {
     border-right: 0;
   }
 }
-
 .kam-request-approval-btn {
   height: 42px;
   padding: 0 17px;
@@ -4024,23 +3481,19 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
 }
-
 .kam-request-approval-btn svg {
   width: 16px;
   height: 16px;
   flex-shrink: 0;
 }
-
 .kam-request-approval-btn:hover {
   background: #f1fbf9;
   transform: translateY(-1px);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
-
 .kam-request-approval-btn:active {
   transform: translateY(0);
 }
-
 .kam-footer-close-btn {
   height: 42px;
   min-width: 82px;
@@ -4057,36 +3510,29 @@
   cursor: pointer;
   transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
 }
-
 .kam-footer-close-btn:hover {
   background: rgba(255, 255, 255, 0.16);
   border-color: rgba(255, 255, 255, 0.58);
   transform: translateY(-1px);
 }
-
 .kam-footer-close-btn:active {
   transform: translateY(0);
 }
-
 @media (max-width: 560px) {
   .kam-footer-action-buttons {
     width: 100%;
   }
-
   .kam-request-approval-btn {
     flex: 1;
   }
-
   .kam-footer-close-btn {
     min-width: 76px;
   }
 }
-
 .kam-step-page-first-approval .kam-client-vehicle-section {
   overflow: visible;
   background: #ffffff;
 }
-
 .kam-step-page-first-approval .kam-client-trip-grid {
   width: 100%;
   padding: 14px;
@@ -4094,13 +3540,11 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px 16px;
 }
-
 .kam-step-page-first-approval .kam-client-trip-field {
   min-width: 0;
   display: flex;
   flex-direction: column;
 }
-
 .kam-step-page-first-approval .kam-client-trip-field>span {
   display: block;
   margin-bottom: 6px;
@@ -4111,7 +3555,6 @@
   letter-spacing: 0.025em;
   text-transform: none;
 }
-
 .kam-step-page-first-approval .kam-client-trip-field>input {
   width: 100%;
   height: 42px;
@@ -4129,18 +3572,15 @@
     box-shadow 0.18s ease,
     background 0.18s ease;
 }
-
 .kam-step-page-first-approval .kam-client-trip-field input[type="number"] {
   appearance: textfield;
   -moz-appearance: textfield;
 }
-
 .kam-step-page-first-approval .kam-client-trip-field input[type="number"]::-webkit-inner-spin-button,
 .kam-step-page-first-approval .kam-client-trip-field input[type="number"]::-webkit-outer-spin-button {
   margin: 0;
   -webkit-appearance: none;
 }
-
 .kam-step-page-first-approval .kam-client-trip-field>textarea {
   width: 100%;
   min-height: 76px;
@@ -4160,32 +3600,27 @@
     box-shadow 0.18s ease,
     background 0.18s ease;
 }
-
 .kam-step-page-first-approval .kam-client-trip-field input::placeholder,
 .kam-step-page-first-approval .kam-client-trip-field textarea::placeholder {
   color: #93a5ad;
   font-weight: 500;
   opacity: 1;
 }
-
 .kam-step-page-first-approval .kam-client-trip-field input:hover,
 .kam-step-page-first-approval .kam-client-trip-field textarea:hover {
   border-color: #b8ccd2;
   background: #ffffff;
 }
-
 .kam-step-page-first-approval .kam-client-trip-field input:focus,
 .kam-step-page-first-approval .kam-client-trip-field textarea:focus {
   border-color: #24a99d;
   background: #ffffff;
   box-shadow: 0 0 0 3px rgba(36, 169, 157, 0.11);
 }
-
 .kam-step-page-first-approval .kam-client-trip-field input:not(:placeholder-shown),
 .kam-step-page-first-approval .kam-client-trip-field textarea:not(:placeholder-shown) {
   background: #ffffff;
 }
-
 .kam-step-page-first-approval .kam-client-trip-field input:disabled,
 .kam-step-page-first-approval .kam-client-trip-field textarea:disabled {
   cursor: not-allowed;
@@ -4194,23 +3629,19 @@
   color: #7d929b;
   box-shadow: none;
 }
-
 .kam-step-page-first-approval .kam-client-trip-field:last-child {
   grid-column: 1 / -1;
 }
-
 .kam-common-step-item {
   min-width: 0;
   padding: 1px 12px;
   border-right: 1px solid #edf2f3;
   padding-right: 10px;
 }
-
 .kam-common-step-item:last-child {
   padding-right: 0;
   border-right: 0;
 }
-
 .kam-common-step-item>span {
   display: block;
   margin-bottom: 4px;
@@ -4220,7 +3651,6 @@
   letter-spacing: 0.055em;
   text-transform: uppercase;
 }
-
 .kam-common-step-item>strong {
   display: block;
   overflow: hidden;
@@ -4231,7 +3661,6 @@
   white-space: nowrap;
   text-overflow: ellipsis;
 }
-
 .kam-step-page-order-summary .kam-client-trip-field>strong {
   width: 100%;
   min-height: 32px;
@@ -4249,7 +3678,6 @@
   white-space: nowrap;
   text-overflow: ellipsis;
 }
-
 .kam-step-page-po-document .kam-client-trip-field>input {
   width: 100%;
   height: 42px;
@@ -4267,33 +3695,27 @@
     box-shadow 0.18s ease,
     background 0.18s ease;
 }
-
 .kam-step-page-po-document .kam-client-trip-field>input:hover {
   border-color: #b8ccd2;
   background: #ffffff;
 }
-
 .kam-step-page-po-document .kam-client-trip-field>input:focus {
   border-color: #24a99d;
   background: #ffffff;
   box-shadow: 0 0 0 3px rgba(36, 169, 157, 0.11);
 }
-
 .kam-step-page-first-approval input:focus-visible,
 .kam-step-page-first-approval textarea:focus-visible,
 .kam-step-page-po-document input:focus-visible {
   outline: none;
 }
-
 @media (max-width: 1100px) {
   .kam-common-step-details {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
-
   .kam-common-step-item:nth-child(3) {
     border-right: 0;
   }
-
   .kam-common-step-item:nth-child(4),
   .kam-common-step-item:nth-child(5),
   .kam-common-step-item:nth-child(6) {
@@ -4301,67 +3723,55 @@
     border-top: 1px solid #edf2f3;
   }
 }
-
 @media (max-width: 800px) {
   .kam-step-page-first-approval .kam-client-trip-grid {
     grid-template-columns: 1fr;
   }
-
   .kam-step-page-first-approval .kam-client-trip-field:last-child {
     grid-column: auto;
   }
-
   .kam-common-step-details {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-
   .kam-common-step-item {
     border-right: 0;
     padding-right: 0;
     padding-bottom: 7px;
     border-bottom: 1px solid #edf2f3;
   }
-
   .kam-common-step-item:nth-last-child(-n + 2) {
     padding-bottom: 0;
     border-bottom: 0;
   }
 }
-
 @media (max-width: 560px) {
   .kam-step-page-first-approval .kam-client-trip-grid {
     padding: 11px;
     gap: 12px;
   }
-
   .kam-common-step-details {
     padding: 10px 12px;
     grid-template-columns: 1fr;
     gap: 8px;
   }
-
   .kam-common-step-item,
   .kam-common-step-item:nth-last-child(-n + 2) {
     padding: 0 0 8px;
     border-right: 0;
     border-bottom: 1px solid #edf2f3;
   }
-
   .kam-common-step-item:last-child {
     padding-bottom: 0;
     border-bottom: 0;
   }
-
   .kam-step-page-first-approval .kam-client-trip-field>input,
   .kam-step-page-po-document .kam-client-trip-field>input {
     height: 40px;
   }
-
   .kam-step-page-first-approval .kam-client-trip-field>textarea {
     min-height: 70px;
   }
 }
-
 .kam-common-step-details {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -4432,7 +3842,6 @@
   }
   .kam-common-step-details .kam-common-step-item:last-child { border-bottom: 0; }
 }
-
 .kam-finalization-actions {
   margin-top: 12px;
   display: flex;
@@ -4440,27 +3849,22 @@
   justify-content: space-between;
   gap: 12px;
 }
-
 .kam-finalization-feedback {
   min-height: 18px;
   display: flex;
   align-items: center;
 }
-
 .kam-finalization-error,
 .kam-finalization-success {
   font-size: 11px;
   font-weight: 700;
 }
-
 .kam-finalization-error {
   color: #b64249;
 }
-
 .kam-finalization-success {
   color: #237354;
 }
-
 .kam-save-finalization-btn {
   min-width: 118px;
   height: 36px;
@@ -4475,36 +3879,30 @@
   cursor: pointer;
   transition: 0.16s ease;
 }
-
 .kam-save-finalization-btn:hover:not(:disabled) {
   background: #e5f6f3;
   border-color: #8fc6c0;
   transform: translateY(-1px);
 }
-
 .kam-save-finalization-btn:disabled {
   opacity: 0.55;
   cursor: not-allowed;
 }
-
 @media (max-width: 650px) {
   .kam-finalization-actions {
     align-items: stretch;
     flex-direction: column;
   }
-
   .kam-save-finalization-btn {
     width: 100%;
   }
 }
-
 .kam-step-page-po-document .kam-client-trip-field>input[type="text"]:hover,
 .kam-step-page-po-document .kam-client-trip-field>input[type="date"]:hover,
 .kam-step-page-po-document .kam-client-trip-field>select:hover {
   border-color: #9ebfc8;
   background-color: #ffffff;
 }
-
 .kam-step-page-po-document .kam-client-trip-field>input[type="text"]:focus,
 .kam-step-page-po-document .kam-client-trip-field>input[type="date"]:focus,
 .kam-step-page-po-document .kam-client-trip-field>select:focus {
@@ -4512,17 +3910,14 @@
   background-color: #ffffff;
   box-shadow: 0 0 0 4px rgba(10, 145, 136, 0.12);
 }
-
 .kam-step-page-po-document .kam-client-trip-field>input[name="billingGstin"] {
   text-transform: uppercase;
   letter-spacing: 0.045em;
 }
-
 .kam-step-page-po-document .kam-po-upload-field>input[type="file"]:hover::file-selector-button {
   background: #0b8c84;
   color: #ffffff;
 }
-
 .kam-footer-action-buttons .kam-request-approval-btn {
   min-width: 108px;
   height: 44px;
@@ -4535,7 +3930,6 @@
   font-weight: 800;
   box-shadow: 0 5px 14px rgba(3, 35, 48, 0.13);
 }
-
 .kam-footer-action-buttons .kam-request-approval-btn:hover:not(:disabled) {
   border-color: #ffffff;
   background: #e9f8f6;
@@ -4543,76 +3937,63 @@
   transform: translateY(-1px);
   box-shadow: 0 7px 18px rgba(3, 35, 48, 0.18);
 }
-
 @media (max-width: 1050px) {
   .kam-step-page-po-document .kam-client-trip-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
-
 @media (max-width: 640px) {
   .kam-step-page-po-document .kam-client-trip-grid {
     grid-template-columns: 1fr;
     gap: 14px;
     padding: 16px;
   }
-
   .kam-step-page-po-document .kam-po-upload-field {
     grid-column: 1;
   }
-
   .kam-footer-action-buttons .kam-request-approval-btn {
     min-width: 0;
     padding: 0 14px;
   }
 }
-
 .kam-step-page-po-document .kam-section-heading {
   min-height: 54px;
   padding: 12px 20px;
 }
-
 @media (max-height: 760px) and (min-width: 901px) {
   .kam-workflow-modal {
     height: 96vh;
     min-height: 0;
     max-height: 96vh;
   }
-
   .kam-common-step-details {
     margin-bottom: 9px;
   }
-
   .kam-common-step-details .kam-common-step-item {
     min-height: 50px;
     padding-top: 8px;
     padding-bottom: 8px;
   }
-
   .kam-step-page-po-document .kam-client-trip-grid {
     gap: 10px 14px;
     padding-top: 13px;
     padding-bottom: 14px;
   }
-
   .kam-step-page-po-document .kam-client-trip-field>input[type="text"],
   .kam-step-page-po-document .kam-client-trip-field>input[type="date"],
   .kam-step-page-po-document .kam-client-trip-field>select {
     height: 40px;
   }
 }
-
 @media (max-width: 1050px) {
   .kam-step-page-po-document .kam-client-trip-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
-
 @media (max-width: 640px) {
   .kam-workflow-modal-overlay {
     padding: 0;
   }
-
   .kam-workflow-modal {
     width: 100vw;
     height: 100dvh;
@@ -4620,27 +4001,22 @@
     max-height: 100dvh;
     border-radius: 0;
   }
-
   .kam-step-page-po-document .kam-client-trip-grid {
     grid-template-columns: 1fr;
     padding: 14px;
   }
-
   .kam-actions.kam-workflow-footer {
     height: auto;
     min-height: 72px;
     flex-basis: auto;
     padding: 9px 12px;
   }
-
   .kam-actions.kam-workflow-footer .kam-readonly-field {
     display: none;
   }
-
   .kam-footer-action-buttons {
     width: 100%;
   }
-
   .kam-footer-action-buttons .kam-request-approval-btn,
   .kam-footer-action-buttons .kam-footer-close-btn {
     min-width: 0;
@@ -4648,7 +4024,6 @@
     padding: 0 10px;
   }
 }
-
 .kam-workflow-content {
   padding-top: 12px;
   flex: 1;
@@ -4668,41 +4043,34 @@
   scrollbar-color: #aabdc3 transparent;
   overscroll-behavior: contain;
 }
-
 .kam-step-page-po-document {
   min-height: 0;
   width: 100%;
 }
-
 .kam-step-page-po-document .kam-client-trip-field {
   min-width: 0;
 }
-
 .kam-step-page-po-document .kam-client-trip-field>span>em {
   margin-left: 3px;
   color: #d04b4b;
   font-style: normal;
   font-size: 12px;
 }
-
 .kam-step-page-po-document .kam-client-trip-field>input::placeholder {
   color: #9aadb5;
   font-weight: 500;
 }
-
 .kam-step-page-po-document .kam-client-trip-field>input:hover,
 .kam-step-page-po-document .kam-client-trip-field>select:hover {
   border-color: #a9c3cb;
   background: #ffffff;
 }
-
 .kam-step-page-po-document .kam-client-trip-field>input:focus,
 .kam-step-page-po-document .kam-client-trip-field>select:focus {
   border-color: #15958b;
   background: #ffffff;
   box-shadow: 0 0 0 2px rgba(21, 149, 139, 0.09);
 }
-
 .kam-step-page-po-document .kam-client-trip-field>select {
   cursor: pointer;
   appearance: none;
@@ -4721,19 +4089,16 @@
     4px 4px;
   background-repeat: no-repeat;
 }
-
 .kam-step-page-po-document input[name="billingGstin"] {
   text-transform: uppercase;
   letter-spacing: 0.035em;
 }
-
 .kam-step-page-po-document .kam-po-upload-field:hover,
 .kam-step-page-po-document .kam-po-upload-field:focus-within {
   border-color: #168e86;
   background: #f3faf9;
   box-shadow: 0 0 0 4px rgba(10, 145, 136, 0.08);
 }
-
 .kam-step-page-po-document .kam-po-upload-field>input[type="file"] ::file-selector-button {
   height: 27px;
   margin-right: 9px;
@@ -4747,11 +4112,9 @@
   font-weight: 800;
   cursor: pointer;
 }
-
 .kam-step-page-po-document .kam-po-upload-field>input[type="file"]:hover ::file-selector-button {
   background: #d9efec;
 }
-
 .kam-step-page-po-document .kam-form-success,
 .kam-step-page-po-document .kam-form-error {
   margin: 0 16px 10px;
@@ -4760,141 +4123,116 @@
   font-size: 9.5px;
   font-weight: 700;
 }
-
 .kam-step-page-po-document .kam-form-success {
   border: 1px solid #b9e0d1;
   background: #eef8f4;
   color: #187056;
 }
-
 .kam-step-page-po-document .kam-form-error {
   border: 1px solid #ecc7c7;
   background: #fff5f5;
   color: #ad4040;
 }
-
 .kam-footer-action-buttons .kam-po-save-btn:hover:not(:disabled) {
   background: #edf9f7;
   border-color: #edf9f7;
   transform: translateY(-1px);
 }
-
 .kam-footer-action-buttons .kam-po-next-btn:hover:not(:disabled) {
   border-color: #087b73;
   background: #087b73;
   color: #ffffff;
   transform: translateY(-1px);
 }
-
 .kam-footer-action-buttons .kam-footer-close-btn:hover {
   border-color: rgba(255, 255, 255, 0.5);
   background: rgba(255, 255, 255, 0.13);
 }
-
 .kam-footer-action-buttons button:disabled {
   opacity: 0.55;
   cursor: not-allowed;
   transform: none !important;
   box-shadow: none;
 }
-
 @media (max-height: 780px) and (min-width: 900px) {
   .kam-workflow-modal {
     height: 96vh;
     max-height: 96vh;
   }
-
   .kam-workflow-content {
     padding-top: 8px;
     padding-bottom: 8px;
   }
-
   .kam-step-page-po-document .kam-client-vehicle-heading {
     min-height: 43px;
     padding: 7px 14px;
   }
-
   .kam-step-page-po-document .kam-client-trip-grid {
     gap: 8px 12px;
     padding: 10px 14px 11px;
   }
-
   .kam-step-page-po-document .kam-client-trip-field>span {
     margin-bottom: 4px;
     font-size: 7.5px;
   }
-
   .kam-step-page-po-document .kam-client-trip-field>input[type="text"],
   .kam-step-page-po-document .kam-client-trip-field>input[type="date"],
   .kam-step-page-po-document .kam-client-trip-field>select {
     height: 32px;
     font-size: 10px;
   }
-
   .kam-step-page-po-document .kam-po-upload-field {
     padding: 7px 10px;
   }
-
   .kam-actions.kam-workflow-footer {
     height: 52px;
     min-height: 52px;
     flex-basis: 52px;
   }
-
   .kam-footer-action-buttons .kam-request-approval-btn,
   .kam-footer-action-buttons .kam-footer-close-btn {
     height: 32px;
     min-height: 32px;
   }
 }
-
 @media (max-width: 1050px) {
   .kam-step-page-po-document .kam-client-trip-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
-
 @media (max-width: 640px) {
   .kam-workflow-modal-overlay {
     padding: 0;
   }
-
   .kam-workflow-modal {
     width: 100vw;
     height: 100dvh;
     max-height: 100dvh;
     border-radius: 0;
   }
-
   .kam-workflow-content {
     padding: 10px;
   }
-
   .kam-step-page-po-document .kam-client-trip-grid {
     grid-template-columns: 1fr;
     gap: 10px;
     padding: 12px;
   }
-
   .kam-step-page-po-document .kam-po-upload-field {
     grid-column: 1;
   }
-
   .kam-actions.kam-workflow-footer {
     height: auto;
     min-height: 58px;
     padding: 7px 9px;
   }
-
   .kam-actions.kam-workflow-footer .kam-readonly-field {
     display: none;
   }
-
   .kam-footer-action-buttons {
     width: 100%;
     justify-content: flex-end;
   }
-
   .kam-footer-action-buttons .kam-request-approval-btn,
   .kam-footer-action-buttons .kam-footer-close-btn {
     min-width: 0;
@@ -4903,7 +4241,6 @@
     font-size: 9px;
   }
 }
-
 .kam-step-page-po-document .kam-client-vehicle-section {
   overflow: hidden;
   border: 1px solid #d8e4e8;
@@ -4914,7 +4251,6 @@
   margin: 0;
   min-height: 410px;
 }
-
 .kam-step-page-po-document .kam-client-vehicle-heading {
   min-height: 62px;
   padding: 12px 18px;
@@ -4925,14 +4261,12 @@
       #f7fbfb 0%,
       #ffffff 75%);
 }
-
 .kam-step-page-po-document .kam-client-vehicle-heading h3 {
   margin: 0;
   color: #12394b;
   font-size: 15px;
   font-weight: 850;
 }
-
 .kam-step-page-po-document .kam-client-vehicle-heading p {
   margin: 2px 0 0;
   color: #718792;
@@ -4940,7 +4274,6 @@
   font-weight: 550;
   margin-top: 3px;
 }
-
 .kam-step-page-po-document .kam-client-trip-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -4949,7 +4282,6 @@
   background: #ffffff;
   width: 100%;
 }
-
 .kam-step-page-po-document .kam-client-trip-field>span {
   display: block;
   margin: 0 0 5px;
@@ -4961,7 +4293,6 @@
   text-transform: uppercase;
   margin-bottom: 7px;
 }
-
 .kam-step-page-po-document .kam-client-trip-field>input[type="text"],
 .kam-step-page-po-document .kam-client-trip-field>input[type="date"],
 .kam-step-page-po-document .kam-client-trip-field>select {
@@ -4982,7 +4313,6 @@
     background 0.16s ease;
   box-sizing: border-box;
 }
-
 .kam-step-page-po-document .kam-po-upload-field {
   grid-column: 1 / -1;
   position: relative;
@@ -4994,12 +4324,10 @@
     background 0.16s ease;
   min-height: 92px;
 }
-
 .kam-step-page-po-document .kam-po-upload-field>span {
   margin-bottom: 7px;
   font-size: 9px;
 }
-
 .kam-step-page-po-document .kam-po-upload-field>input[type="file"] {
   width: 100%;
   min-height: 43px;
@@ -5014,7 +4342,6 @@
   cursor: pointer;
   box-sizing: border-box;
 }
-
 .kam-step-page-po-document .kam-po-upload-field>input[type="file"]::file-selector-button {
   height: 33px;
   margin-right: 11px;
@@ -5029,7 +4356,6 @@
   cursor: pointer;
   transition: background 160ms ease, color 160ms ease;
 }
-
 .kam-step-page-po-document .kam-po-upload-field>small {
   display: block;
   margin-top: 6px;
@@ -5037,7 +4363,6 @@
   font-size: 9px;
   font-weight: 550;
 }
-
 .kam-actions.kam-workflow-footer {
   position: relative;
   inset: auto;
@@ -5063,7 +4388,6 @@
       #087b73 100%);
   box-shadow: 0 -5px 16px rgba(10, 44, 58, 0.08);
 }
-
 .kam-actions.kam-workflow-footer .kam-readonly-field {
   min-height: 38px;
   border-color: rgba(255, 255, 255, .22);
@@ -5076,14 +4400,12 @@
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
   font-size: 10px;
 }
-
 .kam-footer-action-buttons {
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: 9px;
 }
-
 .kam-footer-action-buttons .kam-request-approval-btn,
 .kam-footer-action-buttons .kam-footer-close-btn {
   height: 40px;
@@ -5106,7 +4428,6 @@
     transform 0.16s ease,
     box-shadow 0.16s ease;
 }
-
 .kam-footer-action-buttons .kam-po-save-btn {
   min-width: 108px;
   border-color: rgba(255, 255, 255, 0.5);
@@ -5115,7 +4436,6 @@
   border: 1px solid #ffffff;
   box-shadow: 0 2px 7px rgba(2, 37, 48, 0.12);
 }
-
 .kam-footer-action-buttons .kam-po-next-btn {
   min-width: 106px;
   border-color: #0a8c82;
@@ -5124,7 +4444,6 @@
   box-shadow: 0 3px 9px rgba(3, 51, 56, 0.18);
   border: 1px solid #17a197;
 }
-
 .kam-footer-action-buttons .kam-footer-close-btn {
   min-width: 92px;
   border-color: rgba(255, 255, 255, 0.38);
@@ -5133,29 +4452,24 @@
   color: #ffffff;
   box-shadow: none;
 }
-
 @media (min-width: 1100px) and (max-height: 850px) {
   .kam-step-page-po-document .kam-client-vehicle-section {
     min-height: 390px;
   }
-
   .kam-step-page-po-document .kam-client-trip-grid {
     padding: 16px 18px 18px;
     gap: 14px;
   }
-
   .kam-step-page-po-document .kam-client-trip-field>input[type="text"],
   .kam-step-page-po-document .kam-client-trip-field>input[type="date"],
   .kam-step-page-po-document .kam-client-trip-field>select {
     height: 42px;
   }
 }
-
 .kam-step-page-place-order {
   display: grid;
   gap: 12px;
 }
-
 .kam-place-order-section {
   overflow: hidden;
   border: 1px solid #d5e3e7;
@@ -5163,7 +4477,6 @@
   background: #ffffff;
   box-shadow: 0 3px 12px rgba(15, 56, 75, 0.04);
 }
-
 .kam-place-order-heading {
   min-height: 58px;
   padding: 10px 14px;
@@ -5174,11 +4487,9 @@
   border-bottom: 1px solid #e1eaed;
   background: linear-gradient(90deg, #f7fbfb 0%, #ffffff 72%);
 }
-
 .kam-place-order-heading>div {
   min-width: 0;
 }
-
 .kam-place-order-kicker {
   display: block;
   margin-bottom: 3px;
@@ -5187,21 +4498,18 @@
   font-weight: 900;
   letter-spacing: 0.1em;
 }
-
 .kam-place-order-heading h3 {
   margin: 0;
   color: #12394b;
   font-size: 12.5px;
   font-weight: 900;
 }
-
 .kam-place-order-heading p {
   margin: 3px 0 0;
   color: #6b838e;
   font-size: 8.8px;
   line-height: 1.4;
 }
-
 .kam-place-order-ready,
 .kam-place-order-transport-count {
   min-height: 28px;
@@ -5217,14 +4525,12 @@
   font-weight: 900;
   white-space: nowrap;
 }
-
 .kam-place-order-detail-grid {
   padding: 13px 14px 14px;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
 }
-
 .kam-place-order-detail {
   min-width: 0;
   min-height: 50px;
@@ -5236,11 +4542,9 @@
   border-radius: 9px;
   background: #fbfdfd;
 }
-
 .kam-place-order-detail-wide {
   grid-column: span 2;
 }
-
 .kam-place-order-detail span {
   margin-bottom: 5px;
   color: #718995;
@@ -5249,7 +4553,6 @@
   letter-spacing: 0.05em;
   text-transform: uppercase;
 }
-
 .kam-place-order-detail strong {
   overflow: hidden;
   color: #15394b;
@@ -5258,18 +4561,15 @@
   line-height: 1.35;
   text-overflow: ellipsis;
 }
-
 .kam-place-order-table-wrap {
   width: 100%;
   overflow-x: auto;
 }
-
 .kam-place-order-table {
   width: 100%;
   min-width: 900px;
   border-collapse: collapse;
 }
-
 .kam-place-order-table th {
   height: 34px;
   padding: 0 12px;
@@ -5282,7 +4582,6 @@
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
-
 .kam-place-order-table td {
   padding: 10px 12px;
   border-bottom: 1px solid #edf2f4;
@@ -5290,15 +4589,12 @@
   font-size: 10px;
   font-weight: 650;
 }
-
 .kam-place-order-table tbody tr:last-child td {
   border-bottom: 0;
 }
-
 .kam-place-order-table tbody tr:hover {
   background: #f8fcfb;
 }
-
 .kam-place-order-note {
   min-height: 62px;
   padding: 10px 13px;
@@ -5309,7 +4605,6 @@
   border-radius: 11px;
   background: #f0f9f7;
 }
-
 .kam-place-order-note-icon {
   width: 30px;
   height: 30px;
@@ -5322,20 +4617,17 @@
   font-size: 11px;
   font-weight: 900;
 }
-
 .kam-place-order-note strong {
   color: #15394b;
   font-size: 10px;
   font-weight: 900;
 }
-
 .kam-place-order-note p {
   margin: 2px 0 0;
   color: #68808b;
   font-size: 8.7px;
   line-height: 1.4;
 }
-
 .kam-footer-action-buttons .kam-place-order-btn {
   min-width: 128px;
   border-color: #27a89e;
@@ -5343,39 +4635,32 @@
   color: #ffffff;
   box-shadow: 0 6px 15px rgba(5, 145, 133, 0.2);
 }
-
 .kam-footer-action-buttons .kam-place-order-btn:hover:not(:disabled) {
   border-color: #0b8178;
   background: linear-gradient(135deg, #0b887e, #08766e);
   transform: translateY(-1px);
 }
-
 @media (max-width: 1100px) {
   .kam-place-order-detail-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
-
 @media (max-width: 620px) {
   .kam-place-order-heading {
     align-items: flex-start;
     flex-direction: column;
   }
-
   .kam-place-order-detail-grid {
     grid-template-columns: 1fr;
   }
-
   .kam-place-order-detail-wide {
     grid-column: auto;
   }
-
   .kam-place-order-ready,
   .kam-place-order-transport-count {
     width: 100%;
   }
 }
-
 .kam-toast {
   position: fixed;
   right: 18px;
@@ -5395,7 +4680,6 @@
     0 3px 9px rgba(15, 42, 55, 0.07);
   animation: kamToastIn 0.24s ease-out;
 }
-
 .kam-toast-icon {
   width: 32px;
   height: 32px;
@@ -5406,7 +4690,6 @@
   font-size: 17px;
   font-weight: 900;
 }
-
 .kam-toast-content {
   min-width: 0;
   flex: 1;
@@ -5414,7 +4697,6 @@
   flex-direction: column;
   gap: 2px;
 }
-
 .kam-toast-content strong {
   margin: 0;
   color: #17384a;
@@ -5422,7 +4704,6 @@
   font-weight: 800;
   line-height: 1.25;
 }
-
 .kam-toast-content span {
   margin: 0;
   color: #647d89;
@@ -5431,7 +4712,6 @@
   line-height: 1.4;
   overflow-wrap: anywhere;
 }
-
 .kam-toast-close {
   position: absolute;
   top: 7px;
@@ -5452,63 +4732,51 @@
   transition: background 0.16s ease,
     color 0.16s ease;
 }
-
 .kam-toast-close:hover {
   background: #f1f5f6;
   color: #294b5b;
 }
-
 .kam-toast-success {
   border-left-color: #0b8f83;
 }
-
 .kam-toast-success .kam-toast-icon {
   background: #eaf8f5;
   color: #078577;
 }
-
 .kam-toast-error {
   border-color: #f0d3d0;
   border-left-color: #d34b45;
 }
-
 .kam-toast-error .kam-toast-icon {
   background: #fff0ef;
   color: #cc433d;
 }
-
 .kam-toast-warning {
   border-color: #eadcb8;
   border-left-color: #d59a18;
 }
-
 .kam-toast-warning .kam-toast-icon {
   background: #fff7df;
   color: #b77a00;
 }
-
 .kam-toast-info {
   border-color: #d2e3f2;
   border-left-color: #2f7db6;
 }
-
 .kam-toast-info .kam-toast-icon {
   background: #edf6fd;
   color: #2b73a8;
 }
-
 @keyframes kamToastIn {
   from {
     opacity: 0;
     transform: translate3d(14px, 8px, 0) scale(0.98);
   }
-
   to {
     opacity: 1;
     transform: translate3d(0, 0, 0) scale(1);
   }
 }
-
 @media (max-width: 600px) {
   .kam-toast {
     right: 12px;
@@ -5516,45 +4784,38 @@
     width: calc(100vw - 24px);
   }
 }
-
 .kam-top-step.warning {
   border-color: #f2c56b;
   background: #fff8e8;
   color: #9a6200;
   box-shadow: 0 4px 12px rgba(197, 126, 0, 0.08);
 }
-
 .kam-top-step.warning .kam-top-step-marker {
   border-color: #e5a62f;
   background: #f3ad2f;
   color: #ffffff;
   box-shadow: 0 0 0 3px rgba(243, 173, 47, 0.12);
 }
-
 .kam-top-step.warning .kam-top-step-text {
   color: #9a6200;
   font-weight: 900;
 }
-
 .kam-top-step.warning:hover {
   border-color: #dfa02c;
   background: #fff3d6;
   box-shadow: 0 6px 15px rgba(197, 126, 0, 0.12);
 }
-
 .kam-top-step.warning.selected,
 .kam-top-step.warning.active {
   border-color: #e5a62f;
   background: #fff4d8;
   color: #8a5700;
 }
-
 .kam-top-step.warning.selected .kam-top-step-marker,
 .kam-top-step.warning.active .kam-top-step-marker {
   background: #e5a62f;
   color: #ffffff;
 }
-
 .kam-optional-commercial-warning {
   margin-bottom: 14px;
   padding: 11px 14px;
@@ -5567,13 +4828,11 @@
   border-radius: 10px;
   background: #fff8e8;
 }
-
 .kam-optional-commercial-warning strong {
   color: #925c00;
   font-size: 11px;
   font-weight: 900;
 }
-
 .kam-optional-commercial-warning span {
   padding: 4px 8px;
   border-radius: 999px;
@@ -5582,7 +4841,6 @@
   font-size: 9px;
   font-weight: 900;
 }
-
 .kam-optional-commercial-warning small {
   flex-basis: 100%;
   color: #80622e;
@@ -5590,25 +4848,21 @@
   font-weight: 650;
   line-height: 1.45;
 }
-
 .kam-vendor-warning {
   margin-bottom: 14px;
   flex-shrink: 0;
 }
-
 .kam-simple-vehicle-number {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 5px;
 }
-
 .kam-simple-vehicle-number>strong {
   color: #173a4c;
   font-size: 10.3px;
   font-weight: 850;
 }
-
 .kam-simple-replacement-chain {
   max-width: 100%;
   display: flex;
@@ -5621,43 +4875,36 @@
   background: #f2faf8;
   line-height: 1.15;
 }
-
 .kam-simple-replacement-chain span {
   font-size: 7.5px;
   font-weight: 800;
   white-space: nowrap;
 }
-
 .kam-simple-replacement-chain .previous {
   color: #a95860;
   text-decoration: line-through;
   text-decoration-thickness: 1px;
 }
-
 .kam-simple-replacement-chain .current {
   color: #087e76;
   text-decoration: none;
 }
-
 .kam-simple-replacement-chain b {
   color: #78909a;
   font-size: 7.5px;
   font-weight: 850;
 }
-
 .kam-client-vehicle-table-wrap {
   width: 100%;
   overflow-x: hidden;
   max-width: 100%;
 }
-
 .kam-vendor-history-table {
   width: 100%;
   min-width: 0 !important;
   table-layout: fixed;
   border-collapse: collapse;
 }
-
 .kam-vendor-history-table th,
 .kam-vendor-history-table td {
   padding: 9px 8px;
@@ -5665,47 +4912,38 @@
   overflow: hidden;
   word-break: break-word;
 }
-
 .kam-vendor-history-table th:nth-child(1),
 .kam-vendor-history-table td:nth-child(1) {
   width: 4%;
 }
-
 .kam-vendor-history-table th:nth-child(2),
 .kam-vendor-history-table td:nth-child(2) {
   width: 11%;
 }
-
 .kam-vendor-history-table th:nth-child(3),
 .kam-vendor-history-table td:nth-child(3) {
   width: 12%;
 }
-
 .kam-vendor-history-table th:nth-child(4),
 .kam-vendor-history-table td:nth-child(4) {
   width: 9%;
 }
-
 .kam-vendor-history-table th:nth-child(5),
 .kam-vendor-history-table td:nth-child(5) {
   width: 11%;
 }
-
 .kam-vendor-history-table th:nth-child(6),
 .kam-vendor-history-table td:nth-child(6) {
   width: 12%;
 }
-
 .kam-vendor-history-table th:nth-child(7),
 .kam-vendor-history-table td:nth-child(7) {
   width: 13%;
 }
-
 .kam-vendor-history-table th:nth-child(8),
 .kam-vendor-history-table td:nth-child(8) {
   width: 28%;
 }
-
 .kam-vendor-config {
   display: block;
   margin-top: 2px;
@@ -5713,12 +4951,10 @@
   font-size: 8.5px;
   font-weight: 700;
 }
-
 .kam-vendor-current-amount {
   color: #087f76;
   font-weight: 900;
 }
-
 .kam-vehicle-vendor-status {
   display: inline-flex;
   align-items: center;
@@ -5734,7 +4970,6 @@
   font-weight: 900;
   white-space: nowrap;
 }
-
 .kam-vehicle-vendor-status-dot {
   width: 6px;
   height: 6px;
@@ -5742,38 +4977,32 @@
   border-radius: 50%;
   background: currentColor;
 }
-
 .kam-vehicle-vendor-status.approval-pending {
   border-color: #efd18e;
   background: #fff8e8;
   color: #a66b00;
 }
-
 .kam-vehicle-vendor-status.approved {
   border-color: #a9ddd3;
   background: #edf9f6;
   color: #07846f;
 }
-
 .kam-vehicle-vendor-status.replacement-pending {
   border-color: #efc66f;
   background: #fff5df;
   color: #b36b00;
 }
-
 .kam-vehicle-vendor-status.replaced {
   border-color: #a9c9ee;
   background: #eef6ff;
   color: #2563a9;
 }
-
 .kam-replacement-history {
   width: 100%;
   min-width: 0;
   display: flex;
   flex-direction: column;
 }
-
 .kam-replacement-timeline-item {
   position: relative;
   width: 100%;
@@ -5782,13 +5011,11 @@
   grid-template-columns: 18px minmax(0, 1fr);
   column-gap: 7px;
 }
-
 .kam-replacement-timeline-rail {
   position: relative;
   display: flex;
   justify-content: center;
 }
-
 .kam-replacement-timeline-dot {
   position: relative;
   z-index: 2;
@@ -5804,25 +5031,21 @@
   font-size: 8px;
   font-weight: 900;
 }
-
 .kam-replacement-timeline-item.replaced .kam-replacement-timeline-dot {
   border-color: #9bd8d0;
   background: #eaf8f6;
   color: #07877d;
 }
-
 .kam-replacement-timeline-item.pending .kam-replacement-timeline-dot {
   border-color: #ebca83;
   background: #fff7e7;
   color: #a66b00;
 }
-
 .kam-replacement-timeline-item.rejected .kam-replacement-timeline-dot {
   border-color: #efb7b7;
   background: #fff1f1;
   color: #c43d3d;
 }
-
 .kam-replacement-timeline-line {
   position: absolute;
   top: 16px;
@@ -5832,16 +5055,13 @@
   transform: translateX(-50%);
   background: #d7e4e8;
 }
-
 .kam-replacement-timeline-content {
   min-width: 0;
   padding: 0 0 9px;
 }
-
 .kam-replacement-timeline-item:last-child .kam-replacement-timeline-content {
   padding-bottom: 0;
 }
-
 .kam-replacement-timeline-route {
   min-width: 0;
   display: grid;
@@ -5849,14 +5069,12 @@
   align-items: center;
   gap: 5px;
 }
-
 .kam-replacement-timeline-party {
   min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 1px;
 }
-
 .kam-replacement-timeline-party strong {
   display: block;
   min-width: 0;
@@ -5868,7 +5086,6 @@
   white-space: nowrap;
   text-overflow: ellipsis;
 }
-
 .kam-replacement-timeline-party span {
   color: #07867c;
   font-size: 7.8px;
@@ -5876,15 +5093,12 @@
   line-height: 1.25;
   white-space: nowrap;
 }
-
 .kam-replacement-timeline-party.old strong {
   color: #5f7782;
 }
-
 .kam-replacement-timeline-party.current strong {
   color: #123e50;
 }
-
 .kam-replacement-timeline-arrow {
   display: grid;
   place-items: center;
@@ -5892,7 +5106,6 @@
   font-size: 10px;
   font-weight: 900;
 }
-
 .kam-replacement-timeline-meta {
   min-width: 0;
   margin-top: 4px;
@@ -5901,7 +5114,6 @@
   justify-content: space-between;
   gap: 6px;
 }
-
 .kam-replacement-timeline-state {
   flex: 0 0 auto;
   display: inline-flex;
@@ -5913,22 +5125,18 @@
   font-weight: 900;
   line-height: 1;
 }
-
 .kam-replacement-timeline-state.replaced {
   background: #eaf8f6;
   color: #07877d;
 }
-
 .kam-replacement-timeline-state.pending {
   background: #fff5df;
   color: #a66b00;
 }
-
 .kam-replacement-timeline-state.rejected {
   background: #fff0f0;
   color: #c43d3d;
 }
-
 .kam-replacement-timeline-meta time {
   min-width: 0;
   overflow: hidden;
@@ -5938,13 +5146,11 @@
   white-space: nowrap;
   text-overflow: ellipsis;
 }
-
 .kam-no-replacement-history {
   color: #93a4ab;
   font-size: 9px;
   font-weight: 800;
 }
-
 .kam-lifecycle-edit-overlay {
   position: fixed;
   inset: 0;
@@ -5955,7 +5161,6 @@
   justify-content: center;
   padding: 22px;
 }
-
 .kam-lifecycle-edit-dialog {
   width: min(920px, 100%);
   max-height: 92vh;
@@ -5968,7 +5173,6 @@
   box-shadow: 0 24px 80px #001b303d;
   color: #17374a;
 }
-
 .kam-lifecycle-edit-header {
   display: flex;
   align-items: center;
@@ -5977,22 +5181,18 @@
   background: #f1f5f7;
   border-bottom: 1px solid #dce4e9;
 }
-
 .kam-lifecycle-edit-header>div {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
-
 .kam-lifecycle-edit-header strong {
   font-size: 15px;
 }
-
 .kam-lifecycle-edit-header span {
   font-size: 11px;
   color: #698091;
 }
-
 .kam-lifecycle-edit-header button {
   border: 0;
   background: transparent;
@@ -6000,13 +5200,11 @@
   cursor: pointer;
   color: #526777;
 }
-
 .kam-lifecycle-edit-body {
   padding: 18px 22px;
   overflow-y: auto;
   min-height: 0;
 }
-
 .kam-lifecycle-edit-body h3 {
   font-size: 12px;
   font-weight: 750;
@@ -6015,30 +5213,25 @@
   border-bottom: 1px solid #e3e9ed;
   color: #17374a;
 }
-
 .kam-lifecycle-edit-body h3:first-child {
   margin-top: 0;
 }
-
 .kam-lifecycle-edit-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
 }
-
 .kam-lifecycle-edit-grid label {
   min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
-
 .kam-lifecycle-edit-grid label span {
   font-size: 11px;
   font-weight: 650;
   color: #5d7283;
 }
-
 .kam-lifecycle-edit-grid input,
 .kam-lifecycle-edit-grid textarea {
   box-sizing: border-box;
@@ -6053,31 +5246,26 @@
   color: #17374a;
   outline: none;
 }
-
 .kam-lifecycle-edit-grid input:focus,
 .kam-lifecycle-edit-grid textarea:focus {
   border-color: #0d9488;
   box-shadow: 0 0 0 2px #0d94881b;
 }
-
 .kam-lifecycle-edit-grid input:disabled {
   background: #f3f5f7;
   color: #8596a2;
 }
-
 .kam-lifecycle-edit-group {
   padding: 12px;
   border: 1px solid #e1e8ec;
   border-radius: 9px;
   margin-bottom: 10px;
 }
-
 .kam-lifecycle-edit-group>strong {
   display: block;
   margin-bottom: 10px;
   font-size: 12px;
 }
-
 .kam-lifecycle-edit-note {
   font-size: 11px;
   color: #8b620c;
@@ -6086,7 +5274,6 @@
   border-radius: 7px;
   margin-bottom: 12px;
 }
-
 .kam-lifecycle-edit-footer {
   display: flex;
   justify-content: flex-end;
@@ -6096,13 +5283,11 @@
   border-top: 1px solid #dce4e9;
   background: #f7f9fa;
 }
-
 .kam-lifecycle-edit-footer span {
   margin-right: auto;
   color: #b42318;
   font-size: 11px;
 }
-
 .kam-lifecycle-edit-footer button {
   border: 1px solid #d0dce3;
   background: #fff;
@@ -6113,34 +5298,28 @@
   font-weight: 700;
   cursor: pointer;
 }
-
 .kam-lifecycle-edit-footer button:last-child {
   background: #0d9488;
   color: #fff;
   border-color: #0d9488;
 }
-
 .kam-lifecycle-edit-footer button:disabled {
   opacity: .6;
   cursor: not-allowed;
 }
-
 @media (max-width:760px) {
   .kam-lifecycle-edit-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
-
 @media (max-width:500px) {
   .kam-lifecycle-edit-grid {
     grid-template-columns: 1fr;
   }
-
   .kam-lifecycle-edit-overlay {
     padding: 8px;
   }
 }
-
 .kam-inline-edit-panel {
   margin: 0 0 16px;
   padding: 16px 18px;
@@ -6149,7 +5328,6 @@
   background: #fff;
   box-shadow: 0 3px 12px #102f440a;
 }
-
 .kam-inline-edit-heading {
   display: flex;
   align-items: center;
@@ -6159,40 +5337,33 @@
   padding-bottom: 10px;
   border-bottom: 1px solid #e2ecee;
 }
-
 .kam-inline-edit-heading h3 {
   margin: 0;
   color: #103e4c;
   font-size: 14px;
 }
-
 .kam-inline-edit-heading>span {
   color: #07877e;
   font-size: 11px;
   font-weight: 700;
 }
-
 .kam-inline-edit-requirement p {
   color: #956b19;
   font-size: 11px;
 }
-
 .kam-inline-edit-remarks textarea {
   min-height: 60px;
 }
-
 @media (max-width:1050px) {
   .kam-inline-edit-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
-
 @media (max-width:600px) {
   .kam-inline-edit-grid {
     grid-template-columns: 1fr;
   }
 }
-
 .kam-trip-readonly .kam-card-body input,
 .kam-trip-readonly .kam-card-body select,
 .kam-trip-readonly .kam-card-body textarea {
@@ -6200,24 +5371,20 @@
   opacity: .75;
   background: #f3f7f8;
 }
-
 .kam-trip-readonly .kam-card-body button {
   pointer-events: none;
   opacity: .65;
   cursor: not-allowed;
 }
-
 .kam-trip-readonly .kam-card-body a {
   pointer-events: auto;
 }
-
 .kam-completed-readonly-label {
   font-size: 12px;
   font-weight: 800;
   color: #c9f1e9;
   margin-right: 12px;
 }
-
 .kam-lifecycle-edit-trigger {
   border: 1px solid #b9e0da;
   background: #edf9f6;
@@ -6235,23 +5402,19 @@
   white-space: nowrap;
   box-shadow: none;
 }
-
 .kam-lifecycle-edit-trigger:hover {
   background: #dcf3ee;
 }
-
 .kam-lifecycle-edit-trigger:disabled {
   opacity: .55;
   cursor: not-allowed;
 }
-
 .kam-inline-edit-error {
   margin: 0 0 10px;
   color: #b42318;
   font-size: 11px;
   font-weight: 650;
 }
-
 .kam-inline-edit-panel,
 .kam-change-history {
   margin: 0 0 16px;
@@ -6261,7 +5424,6 @@
   background: #fff;
   box-shadow: 0 3px 12px rgba(16, 47, 68, .04);
 }
-
 .kam-inline-edit-heading,
 .kam-change-history-header {
   display: flex;
@@ -6272,7 +5434,6 @@
   margin-bottom: 14px;
   border-bottom: 1px solid #e1eaed;
 }
-
 .kam-inline-edit-heading h3,
 .kam-change-history-header h3 {
   margin: 0;
@@ -6280,19 +5441,16 @@
   font-size: 14px;
   font-weight: 700;
 }
-
 .kam-inline-edit-heading span,
 .kam-change-history-header span {
   font-size: 11px;
   color: #6c8490;
 }
-
 .kam-inline-edit-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px 14px;
 }
-
 .kam-inline-edit-grid label,
 .kam-inline-edit-remarks {
   display: flex;
@@ -6300,7 +5458,6 @@
   gap: 6px;
   min-width: 0;
 }
-
 .kam-inline-edit-grid label span,
 .kam-inline-edit-remarks span {
   color: #607b88;
@@ -6308,7 +5465,6 @@
   font-weight: 600;
   text-transform: uppercase;
 }
-
 .kam-inline-edit-grid input,
 .kam-inline-edit-grid textarea,
 .kam-inline-edit-remarks textarea {
@@ -6325,7 +5481,6 @@
   box-sizing: border-box;
   font: inherit;
 }
-
 .kam-inline-edit-grid input:focus,
 .kam-inline-edit-grid textarea:focus,
 .kam-inline-edit-remarks textarea:focus {
@@ -6333,12 +5488,10 @@
   box-shadow: 0 0 0 2px #07998d1f;
   background: #fff;
 }
-
 .kam-inline-edit-grid input:disabled {
   background: #f0f4f5;
   color: #778b95;
 }
-
 .kam-inline-edit-requirement {
   margin-top: 14px;
   padding-top: 12px;
@@ -6347,28 +5500,23 @@
   border: 1px solid #e0e9ec;
   border-radius: 9px;
 }
-
 .kam-inline-edit-requirement h4 {
   margin: 0 0 12px;
   color: #12394b;
   font-size: 12px;
 }
-
 .kam-inline-edit-remarks {
   margin-top: 14px;
 }
-
 .kam-history-table-wrap {
   overflow-x: auto;
 }
-
 .kam-history-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 11px;
   text-align: left;
 }
-
 .kam-history-table th {
   padding: 10px;
   background: #f3f7f8;
@@ -6376,7 +5524,6 @@
   font-weight: 700;
   white-space: nowrap;
 }
-
 .kam-history-table td {
   padding: 10px;
   border-top: 1px solid #e6edef;
@@ -6384,14 +5531,12 @@
   max-width: 210px;
   overflow-wrap: anywhere;
 }
-
 .kam-history-empty {
   margin: 0;
   padding: 12px;
   color: #78909b;
   font-size: 12px;
 }
-
 .kam-save-confirm-overlay {
   position: fixed;
   inset: 0;
@@ -6402,7 +5547,6 @@
   padding: 18px;
   background: rgba(9, 27, 39, .58);
 }
-
 .kam-save-confirm-dialog {
   width: min(420px, 100%);
   padding: 22px;
@@ -6410,19 +5554,16 @@
   background: #fff;
   box-shadow: 0 20px 65px rgba(0, 0, 0, .24);
 }
-
 .kam-save-confirm-dialog h3 {
   margin: 0 0 8px;
   font-size: 17px;
   color: #12394b;
 }
-
 .kam-save-confirm-dialog p {
   font-size: 12px;
   color: #617b87;
   line-height: 1.5;
 }
-
 .kam-save-confirm-dialog label {
   display: grid;
   gap: 7px;
@@ -6431,7 +5572,6 @@
   font-weight: 600;
   color: #254757;
 }
-
 .kam-save-confirm-dialog input {
   height: 40px;
   padding: 0 11px;
@@ -6440,13 +5580,11 @@
   font: inherit;
   font-size: 12px;
 }
-
 .kam-save-confirm-actions {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
 }
-
 .kam-save-confirm-actions button {
   min-height: 36px;
   padding: 0 14px;
@@ -6454,30 +5592,25 @@
   border-radius: 8px;
   cursor: pointer;
 }
-
 .kam-save-confirm-actions button:last-child {
   border-color: #087f75;
   background: #087f75;
   color: #fff;
 }
-
 .kam-save-confirm-actions button:disabled {
   opacity: .5;
   cursor: not-allowed;
 }
-
 @media (max-width:850px) {
   .kam-inline-edit-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
-
 @media (max-width:500px) {
   .kam-inline-edit-grid {
     grid-template-columns: 1fr;
   }
 }
-
 .kam-client-trip-field .kam-original-edit-input {
   width: 100%;
   min-height: 32px;
@@ -6491,14 +5624,12 @@
   outline: none;
   box-sizing: border-box;
 }
-
 .kam-client-trip-field .kam-original-edit-input:focus,
 .kam-original-edit-textarea:focus,
 .kam-original-vehicle-input:focus {
   border-color: #0d9488;
   box-shadow: 0 0 0 2px rgba(13, 148, 136, .12);
 }
-
 .kam-original-edit-textarea {
   width: 100%;
   min-height: 60px;
@@ -6509,7 +5640,6 @@
   box-sizing: border-box;
   font: inherit;
 }
-
 .kam-client-vehicle-table .kam-original-vehicle-input {
   width: 100%;
   min-width: 75px;
@@ -6521,24 +5651,20 @@
   font: inherit;
   box-sizing: border-box;
 }
-
 .kam-original-dimensions {
   display: flex;
   gap: 5px;
 }
-
 .kam-original-dimensions label {
   min-width: 70px;
   flex: 1;
   font-size: 9px;
   color: #68818c;
 }
-
 .kam-original-dimensions input {
   display: block;
   min-width: 0;
 }
-
 .kam-workflow-modal .kam-card-body :is(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), select),
 .kam-workflow-modal .kam-client-trip-field>strong,
 .kam-workflow-modal .kam-readonly-field {
@@ -6556,14 +5682,12 @@
   font-weight: 600;
   line-height: 1.4;
 }
-
 .kam-workflow-modal .kam-card-body :is(.kam-input-wrap, .kam-select-wrap) {
   box-sizing: border-box;
   height: var(--kam-control-height);
   min-height: var(--kam-control-height);
   border-radius: var(--kam-control-radius);
 }
-
 .kam-workflow-modal .kam-card-body textarea {
   box-sizing: border-box;
   width: 100%;
@@ -6577,18 +5701,15 @@
   font-weight: 600;
   line-height: 1.5;
 }
-
 .kam-workflow-modal .kam-card-body :is(input, select, textarea):focus {
   outline: none;
   border-color: #0d9488;
   box-shadow: 0 0 0 2px rgba(13, 148, 136, .12);
 }
-
 .kam-workflow-modal .kam-card-body .kam-client-trip-field>strong {
   display: flex;
   align-items: center;
 }
-
 .kam-workflow-modal .kam-card-body :is(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), select),
 .kam-workflow-modal .kam-card-body :is(.kam-client-trip-field > strong, .kam-readonly-field),
 .kam-workflow-modal .kam-card-body :is(.kam-input-wrap, .kam-select-wrap) {
@@ -6598,7 +5719,6 @@
   font-size: var(--kam-control-font);
   font-weight: 500;
 }
-
 .kam-workflow-modal .kam-card-body :is(textarea, .kam-original-edit-textarea) {
   min-height: 76px;
   padding: 10px 12px;
@@ -6608,7 +5728,6 @@
   border-radius: var(--kam-control-radius);
   resize: vertical;
 }
-
 .kam-workflow-modal .kam-card-body :is(.kam-field-group > label, .kam-field-group label, .kam-client-trip-field > span, .kam-inline-edit-grid label span, .kam-inline-edit-remarks span, .kam-common-step-item > span, .kam-finalization-card .kam-field-group label) {
   display: block;
   margin-bottom: 6px;
@@ -6618,30 +5737,25 @@
   letter-spacing: 0;
   color: #56717e;
 }
-
 .kam-workflow-modal .kam-card-body :is(.kam-client-trip-grid, .kam-finalization-fields, .kam-form-grid, .kam-inline-edit-grid) {
   row-gap: 12px;
   column-gap: 14px;
 }
-
 .kam-workflow-modal .kam-card-body :is(.kam-client-trip-header h3, .kam-client-vehicle-heading h3, .kam-finalization-card-head h3, .kam-card-header h2) {
   font-size: 15px;
   font-weight: 650;
   line-height: 1.4;
 }
-
 .kam-workflow-modal .kam-card-body :is(input, select, textarea):focus-visible {
   outline: none;
   border-color: #0d9488;
   box-shadow: 0 0 0 2px rgba(13, 148, 136, 0.12);
 }
-
 .kam-workflow-modal .kam-card-body :is(input, select, textarea):disabled {
   background: #f1f5f6;
   color: #738a95;
   cursor: not-allowed;
 }
-
 .kam-workflow-modal {
   width: min(96vw, 1540px);
   height: 94vh;

@@ -2,7 +2,6 @@
    APPROVAL MANAGEMENT
    Matching stylesheet for the current Approvalmanagement.jsx
 ========================================================= */
-
 :root {
   --ap-primary: #0f766e;
   --ap-primary-dark: #0b5f59;
@@ -38,7 +37,6 @@
 }
 
 /* HEADER */
-
 .approval-page-header {
   display: flex;
   align-items: center;
@@ -103,7 +101,6 @@
 }
 
 /* ALERTS */
-
 .approval-alert {
   min-height: 42px;
   margin-bottom: 12px;
@@ -143,7 +140,6 @@
 }
 
 /* SUMMARY */
-
 .approval-summary-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -287,7 +283,6 @@
 }
 
 /* TOOLBAR */
-
 .approval-toolbar {
   min-height: 58px;
   margin-bottom: 14px;
@@ -402,7 +397,6 @@
 }
 
 /* TABLE CARD */
-
 .approval-table-card {
   overflow: hidden;
   border: 1px solid var(--ap-border);
@@ -569,7 +563,6 @@
 }
 
 /* EXPANDED ORDER */
-
 .approval-row-expanded td {
   background: #f7fafb;
 }
@@ -621,7 +614,6 @@
 }
 
 /* VEHICLE REQUIREMENT CARDS */
-
 .approval-request-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -688,7 +680,6 @@
 }
 
 /* REVIEW / DECISION */
-
 .approval-review-box {
   padding: 11px;
   border: 1px solid #dbe5e9;
@@ -798,7 +789,6 @@
 }
 
 /* QUOTATION APPROVAL */
-
 .approval-quotation-orders {
   display: grid;
   gap: 12px;
@@ -915,7 +905,6 @@
 }
 
 /* EMPTY / LOADING */
-
 .approval-empty {
   min-height: 130px;
   padding: 30px;
@@ -955,7 +944,6 @@
 }
 
 /* RESPONSIVE */
-
 @media (max-width: 1100px) {
   .approval-summary-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1015,7 +1003,6 @@
 /* =========================================================
    MD ORDER APPROVAL TABLE - REFERENCE IMAGE STYLE
 ========================================================= */
-
 .approval-table.approval-md-table {
   width: 100%;
   min-width: 1280px;
@@ -1440,7 +1427,6 @@
    FINAL VEHICLE DETAILS - CLEAN HORIZONTAL READ-ONLY ROW
    This replaces the old vehicle card/column appearance.
 ========================================================= */
-
 .approval-vehicle-readonly-list {
   width: 100%;
   border: 1px solid #dfe8eb;
@@ -1573,7 +1559,6 @@
 
 /* Hide any old vehicle-card structures if they remain elsewhere
    inside the expanded vehicle section. */
-
 .approval-md-expand-section .approval-request-grid:has(.approval-vehicle-readonly-list),
 .approval-md-expand-section .approval-request-card:has(.approval-vehicle-readonly-list) {
   display: contents;
@@ -1640,7 +1625,6 @@
 }
 
 /* MD ACTION ICONS + DECISION MODAL */
-
 .approval-md-icon-actions {
   justify-content: center;
   align-items: center;
@@ -1895,7 +1879,6 @@
 /* =========================================================
    ORDER APPROVAL - FINAL CLEAN LAYOUT
 ========================================================= */
-
 .approval-table-wrap {
   width: 100%;
   overflow-x: hidden;
@@ -1909,7 +1892,6 @@
 }
 
 /* 10-column viewport layout */
-
 .approval-md-table th:nth-child(1),
 .approval-md-table td:nth-child(1) {
   width: 8%;
@@ -1971,7 +1953,6 @@
 }
 
 /* Main order row */
-
 .approval-md-main-row {
   cursor: pointer;
   transition: background 0.16s ease;
@@ -1985,7 +1966,6 @@
 }
 
 /* Expanded row: light background + bold teal vertical line */
-
 .approval-md-main-row.approval-row-expanded>td {
   background: #eef7f8;
 }
@@ -2069,7 +2049,6 @@
 }
 
 /* Expanded area */
-
 .approval-md-table .approval-expand-row>td {
   width: 100%;
   height: auto;
@@ -2079,7 +2058,6 @@
 }
 
 /* No vertical line around the complete expanded area */
-
 .approval-expand-row>td::before {
   display: none;
 }
@@ -2091,7 +2069,6 @@
 }
 
 /* Compact order data */
-
 .approval-md-expand-section {
   width: 100%;
   margin: 0 0 6px;
@@ -2153,7 +2130,6 @@
 }
 
 /* Vehicle Details heading */
-
 .approval-md-section-head {
   min-height: 35px;
   padding: 6px 10px;
@@ -2181,7 +2157,6 @@
 }
 
 /* Vehicle table: bold vertical line INSIDE table only */
-
 .approval-vehicle-readonly-list {
   position: relative;
   width: 100%;
@@ -2267,7 +2242,6 @@
 }
 
 /* Old expanded rejection textarea is not used */
-
 .approval-md-rejection-box {
   display: none;
 }
@@ -2309,7 +2283,6 @@
 /* =========================================================
    QUOTATION APPROVAL - COMPACT ORDER TABLE + EXPANDED REVIEW
 ========================================================= */
-
 .approval-quotation-main-table {
   width: 100%;
   min-width: 1180px;
@@ -2964,7 +2937,6 @@
 }
 
 /* QUOTATION ACTION MODAL */
-
 .approval-qaction-overlay {
   position: fixed;
   inset: 0;
@@ -3236,7 +3208,6 @@
 /* =========================================================
    QUOTATION APPROVAL - MAIN ROW EXTRA DATA
 ========================================================= */
-
 .approval-quotation-row-value {
   display: block;
   overflow: hidden;
@@ -3253,7 +3224,6 @@
    Keeps the existing quotation logic, but presents expanded
    vehicle requirements in a viewport-friendly modal.
 ========================================================= */
-
 #approval-management-root .approval-quotation-expand-row>td {
   height: 0;
   padding: 0;
@@ -3501,7 +3471,6 @@
 /* =========================================================
    COMPACT APPROVAL TOAST - BOTTOM RIGHT
 ========================================================= */
-
 .approval-toast {
   position: fixed;
   right: 16px;
@@ -3631,15 +3600,12 @@
    USER-FRIENDLY QUOTATION REVIEW - FINAL PROFESSIONAL UI
    Visual redesign only: content, APIs and actions stay intact.
 ========================================================= */
-
 /* Modal / expanded review shell */
-
 #approval-management-root .approval-quotation-expand-panel {
   background: #f5f8f9;
 }
 
 /* Requirements container */
-
 #approval-management-root .approval-qv-list,
 #approval-management-root .approval-quotation-requirements {
   padding: 14px 16px 18px;
@@ -3648,7 +3614,6 @@
 }
 
 /* Individual vehicle card */
-
 .approval-qv-requirement-card {
   position: relative;
   overflow: hidden;
@@ -3674,7 +3639,6 @@
 }
 
 /* Vehicle heading: compact and left aligned */
-
 #approval-management-root .approval-qv-requirement-head {
   min-height: 62px;
   padding: 9px 14px 9px 16px;
@@ -3753,7 +3717,6 @@
 }
 
 /* Table: compact, readable, no oversized empty rows */
-
 #approval-management-root .approval-qv-table-wrap {
   width: 100%;
   overflow-x: auto;
@@ -3790,7 +3753,6 @@
 }
 
 /* sensible column widths */
-
 #approval-management-root .approval-qv-table th:nth-child(1),
 #approval-management-root .approval-qv-table td:nth-child(1) {
   width: 58px;
@@ -3832,7 +3794,6 @@
 }
 
 /* Selected / confirmed quotation is the visual focus */
-
 #approval-management-root .approval-qv-table tbody tr:has(input[type="radio"]:checked) td {
   background: #f0f9f6;
   border-top: 1px solid #c6e4da;
@@ -3876,7 +3837,6 @@
 }
 
 /* Status pills */
-
 #approval-management-root .approval-qv-table .approval-status {
   min-width: 64px;
   min-height: 23px;
@@ -3888,13 +3848,11 @@
 
 /* The confirmed summary repeats the same transporter data.
    Keep it in DOM/data flow but remove the duplicated visual block. */
-
 #approval-management-root .approval-qv-confirmed-bar {
   display: none;
 }
 
 /* For unapproved requirement: one compact decision footer */
-
 #approval-management-root .approval-qv-actionbar {
   min-height: 48px;
   padding: 7px 11px;
@@ -3971,7 +3929,6 @@
 }
 
 /* Make modal feel less overwhelming on desktop */
-
 @media (min-width: 1100px) {
   #approval-management-root .approval-quotation-expand-panel {
     max-height: calc(100vh - 92px);
@@ -4014,7 +3971,6 @@
    QUOTATION APPROVAL MODAL
    Single-row professional header
 ========================================================= */
-
 .approval-quotation-expand-panel {
   width: min(1360px, calc(100vw - 64px));
   height: min(760px, calc(100vh - 64px));
@@ -4078,7 +4034,6 @@
 }
 
 /* Important order information is now inside the same teal header */
-
 .approval-quotation-head-details {
   min-width: 0;
   display: grid;
@@ -4147,7 +4102,6 @@
 }
 
 /* The old second information row is intentionally removed. */
-
 .approval-quotation-modal-info,
 .approval-quotation-modal-summary {
   display: none;
@@ -4221,7 +4175,6 @@
 /* =========================================================
    TAB FILTERS
 ========================================================= */
-
 .approval-tab-filters {
   margin-left: auto;
   display: flex;
@@ -4290,7 +4243,6 @@
 /* =========================================================
    MOVEMENT TYPE COLORS
 ========================================================= */
-
 .approval-md-movement,
 .approval-quotation-movement {
   min-width: 70px;
@@ -4363,7 +4315,6 @@
 /* =========================================================
    FILTERS INSIDE EACH TAB SECTION HEADER
 ========================================================= */
-
 .approval-section-head-actions {
   margin-left: auto;
   display: flex;
@@ -4436,7 +4387,6 @@
    Color-only update to match the Order Lifecycle reference.
    No layout, sizing, spacing, or JSX behavior is changed.
 ========================================================= */
-
 :root {
   --otc-modal-navy: #0b3447;
   --otc-modal-navy-2: #0b4f59;
@@ -4454,7 +4404,6 @@
 }
 
 /* Shared dark modal backdrop */
-
 .approval-action-modal-overlay,
 .approval-qaction-overlay {
   background: rgba(4, 30, 42, 0.48);
@@ -4463,7 +4412,6 @@
 /* ---------------------------------------------------------
    ORDER APPROVE / REJECT MODAL
 --------------------------------------------------------- */
-
 .approval-action-modal {
   border-color: var(--otc-modal-border);
   background: var(--otc-modal-card);
@@ -4522,7 +4470,6 @@
 /* ---------------------------------------------------------
    QUOTATION APPROVE / REJECT ACTION MODAL
 --------------------------------------------------------- */
-
 .approval-qaction-modal {
   border-color: var(--otc-modal-border);
   background: var(--otc-modal-card);
@@ -4555,7 +4502,6 @@
 }
 
 /* Generic qaction content controls */
-
 .approval-qaction-modal input,
 .approval-qaction-modal textarea,
 .approval-qaction-modal select {
@@ -4574,7 +4520,6 @@
 /* ---------------------------------------------------------
    TRANSPORTER QUOTATION DETAILS MODAL
 --------------------------------------------------------- */
-
 .approval-quotation-expand-panel {
   border-color: var(--otc-modal-border);
   background: var(--otc-modal-bg);
@@ -4644,7 +4589,6 @@
 }
 
 /* Cards and controls inside quotation modal */
-
 .approval-quotation-modal-body .approval-qv-card,
 .approval-quotation-modal-body .approval-qv-requirement-card,
 .approval-quotation-modal-body .approval-quotation-requirement-card,
@@ -4685,7 +4629,6 @@
    QUOTATION APPROVAL - QUANTITY
    Keeps the existing Approval Management design unchanged.
 ========================================================= */
-
 .approval-qv-quantity {
   display: inline-flex;
   align-items: center;
@@ -4707,7 +4650,6 @@
    Professional left-aligned layout + slightly larger fonts.
    This final block intentionally overrides only this header.
 ========================================================= */
-
 #approval-management-root .approval-qv-requirement-head {
   min-height: 84px;
   padding: 13px 16px;
@@ -4806,7 +4748,6 @@
 }
 
 /* Slight font increase inside quotation approval */
-
 #approval-management-root .approval-qv-table th {
   font-size: 9.5px;
 }
@@ -4842,7 +4783,6 @@
 /* =========================================================
    MULTI TRANSPORTER QUANTITY APPROVAL
 ========================================================= */
-
 .approval-qv-radio input[type="checkbox"] {
   position: absolute;
   opacity: 0;
@@ -4962,7 +4902,6 @@
    ORDER APPROVAL - ROW CLICK DETAILS MODAL
    Inline Order Approval expansion removed.
 ========================================================= */
-
 .approval-md-clickable-row {
   cursor: pointer;
 }
@@ -5258,7 +5197,6 @@
 /* =========================================================
    ORDER APPROVAL TABLE - FINAL PROFESSIONAL ALIGNMENT
 ========================================================= */
-
 .approval-md-table th,
 .approval-md-table td {
   box-sizing: border-box;
@@ -5419,7 +5357,6 @@
 /* =========================================================
    MOVEMENT TYPE - DIFFERENT COLOR FOR EACH MOVEMENT
 ========================================================= */
-
 .approval-md-movement {
   min-height: 30px;
   padding: 0 11px;
@@ -5487,7 +5424,6 @@
 /* =========================================================
    ROUTE - PROFESSIONAL HIGHLIGHT
 ========================================================= */
-
 .approval-md-route {
   min-height: 32px;
   padding: 5px 9px;
@@ -5538,7 +5474,6 @@
    ORDER APPROVAL - FINAL 9 COLUMN FIX
    Keeps MD ACTION visible as the last column
 ========================================================= */
-
 .approval-table-wrap {
   width: 100%;
   max-width: 100%;
@@ -5662,7 +5597,6 @@
 /* =========================================================
    TRANSPORT REPLACEMENT APPROVAL
 ========================================================= */
-
 .approval-replacement-table-card {
   overflow: hidden;
 }
@@ -5982,7 +5916,6 @@
 /* =========================================================
    TRANSPORT REPLACEMENT APPROVAL POPUP
 ========================================================= */
-
 .approval-transport-popup-tab {
   white-space: nowrap;
 }
@@ -6108,7 +6041,6 @@
 /* =========================================================
    TRANSPORT REPLACEMENT - CLICK ROW / DETAILS POPUP
 ========================================================= */
-
 .approval-replacement-click-table {
   min-width: 1180px;
 }
@@ -6546,7 +6478,6 @@
    Keeps Order ID away from the left edge and MD Action
    away from the right edge without changing table functions.
 ========================================================= */
-
 #approval-management-root .approval-md-table th:first-child,
 #approval-management-root .approval-md-table td:first-child {
   padding-left: 26px;
@@ -6561,7 +6492,6 @@
    ORDER DETAILS MODAL - PROFESSIONAL OTC WEBSITE THEME
    Visual changes only. Existing data and API logic unchanged.
 ========================================================= */
-
 .approval-order-details-head {
   min-height: 92px;
   padding: 18px 22px;
@@ -6831,7 +6761,6 @@
    ORDER APPROVAL DETAILS MODAL - COMPACT PROFESSIONAL TYPOGRAPHY
    Keeps the existing layout, colors, data and functions.
 ========================================================= */
-
 .approval-order-details-modal {
   font-size: 10px;
 }
@@ -6981,7 +6910,6 @@
    Vehicle Requirement + Transporter Quotation Table
    Added 03 Oct 2026
 ========================================================= */
-
 .approval-qv-card {
   width: 100%;
   margin: 0 0 14px;
@@ -7003,7 +6931,6 @@
 }
 
 /* Vehicle Requirement Header */
-
 .approval-qv-header {
   min-height: 100px;
   padding: 15px 18px;
@@ -7129,7 +7056,6 @@
 }
 
 /* Quotation Table */
-
 .approval-qv-table-wrap {
   width: 100%;
   overflow-x: auto;
@@ -7272,7 +7198,6 @@
 }
 
 /* Pick checkbox */
-
 .approval-qv-radio {
   width: 30px;
   height: 30px;
@@ -7326,7 +7251,6 @@
 }
 
 /* Transporter */
-
 .approval-qv-transporter {
   min-width: 0;
 }
@@ -7357,7 +7281,6 @@
 }
 
 /* Quantity */
-
 .approval-qv-quantity {
   min-width: 58px;
   min-height: 29px;
@@ -7376,7 +7299,6 @@
 }
 
 /* Amount / Allocated By / Date */
-
 .approval-qv-amount {
   color: #0d3447;
   font-size: 11px;
@@ -7401,7 +7323,6 @@
 }
 
 /* Existing plain table values get the same professional treatment */
-
 .approval-qv-table td:nth-child(4) {
   color: #0d3447;
   font-size: 11px;
@@ -7457,7 +7378,6 @@
 }
 
 /* Support the current JSX status element if it uses approval-status */
-
 .approval-qv-table td:last-child .approval-status {
   min-width: 72px;
   min-height: 28px;
@@ -7467,7 +7387,6 @@
 }
 
 /* Responsive */
-
 @media (max-width: 1100px) {
   .approval-qv-header {
     grid-template-columns: 44px minmax(0, 1fr) auto;
@@ -7538,7 +7457,6 @@
    FINAL VEHICLE REQUIREMENT HEADER
    Compact professional row with subtle data separators
 ========================================================= */
-
 .approval-qv-header {
   width: 100%;
   min-height: 72px;
@@ -7812,9 +7730,7 @@
    Same hierarchy across page tables and all approval popups.
    Font sizing only; layout, colors and functionality unchanged.
 ========================================================= */
-
 /* Base content size */
-
 .approval-management-page,
 .approval-order-details-modal,
 .approval-quotation-modal,
@@ -7824,7 +7740,6 @@
 }
 
 /* Standard table body/value text */
-
 .approval-management-page table td,
 .approval-management-page table td strong,
 .approval-management-page table td span,
@@ -7856,7 +7771,6 @@
 }
 
 /* Standard table headings */
-
 .approval-management-page table th,
 .approval-order-details-modal table th,
 .approval-quotation-modal table th {
@@ -7870,7 +7784,6 @@
 }
 
 /* Standard field labels in popup cards */
-
 .approval-order-details-grid span,
 .approval-order-details-sla-grid span,
 .approval-order-details-decision>div>span,
@@ -7890,7 +7803,6 @@
 }
 
 /* Standard field values in popup cards */
-
 .approval-order-details-grid strong,
 .approval-order-details-sla-grid strong,
 .approval-order-details-decision>div>strong,
@@ -7916,7 +7828,6 @@
 }
 
 /* Section eyebrow / small uppercase headings */
-
 .approval-page-eyebrow,
 .approval-order-details-eyebrow,
 .approval-order-details-section-head span,
@@ -7934,7 +7845,6 @@
 }
 
 /* Section titles */
-
 .approval-table-head h3,
 .approval-order-details-section-head h4,
 .approval-qv-title h4,
@@ -7952,14 +7862,12 @@
 }
 
 /* Main popup/order title — intentionally larger for hierarchy */
-
 #approval-management-root .approval-order-details-head h3 {
   font-size: 24px;
   line-height: 1.1;
 }
 
 /* Header supporting text */
-
 .approval-order-details-head p,
 .approval-page-header p {
   line-height: 1.35;
@@ -7971,7 +7879,6 @@
 }
 
 /* Status badges */
-
 .approval-status,
 .approval-md-status,
 .approval-table-count,
@@ -7991,7 +7898,6 @@
 }
 
 /* Buttons */
-
 #approval-management-root button,
 #approval-management-root .approval-order-details-modal button,
 #approval-management-root .approval-quotation-modal button,
@@ -8001,7 +7907,6 @@
 }
 
 /* Inputs */
-
 #approval-management-root input,
 #approval-management-root textarea,
 #approval-management-root select,
@@ -8018,7 +7923,6 @@
 }
 
 /* Vehicle/read-only headers inside popups */
-
 #approval-management-root .approval-order-details-section .approval-vehicle-readonly-header>div,
 #approval-management-root .approval-order-details-section .approval-vehicle-row-number {
   font-size: 10px;
@@ -8027,7 +7931,6 @@
 /* =========================================================
    POPUP CLOSE BUTTON
 ========================================================= */
-
 .approval-order-details-close,
 .approval-quotation-modal-close,
 .approval-replacement-modal-close {
@@ -8054,7 +7957,6 @@
 /* =========================================================
    TRANSPORT REPLACEMENT - SINGLE ORDER GROUP
 ========================================================= */
-
 .approval-replacement-group-list {
   padding: 12px;
   display: grid;
@@ -8225,7 +8127,6 @@
 /* =========================================================
    TRANSPORT REPLACEMENT DETAILS - MATCH ORDER DETAILS HEADER
 ========================================================= */
-
 #approval-management-root .approval-replacement-detail-head {
   min-height: 92px;
   padding: 18px 22px;
@@ -8317,7 +8218,6 @@
 /* =========================================================
    TRANSPORT REPLACEMENT - ORDER ROW + ALL VEHICLES POPUP
 ========================================================= */
-
 .approval-replacement-order-table td {
   vertical-align: middle;
 }
@@ -8453,7 +8353,6 @@
 /* =========================================================
    TRANSPORT REPLACEMENT - FULL ORDER ROW CLICK
 ========================================================= */
-
 .approval-replacement-order-table tbody .approval-replacement-click-row {
   cursor: pointer;
   transition: background-color .16s ease, box-shadow .16s ease;
@@ -8475,7 +8374,6 @@
 /* =========================================================
    TRANSPORT REPLACEMENT POPUP - HIGHLIGHT EACH VEHICLE
 ========================================================= */
-
 #approval-management-root .approval-replacement-popup-list {
   gap: 12px;
 }
@@ -8524,19 +8422,16 @@
 }
 
 /* Approved vehicle */
-
 #approval-management-root .approval-replacement-popup-vehicle:has(.approval-status.approved) {
   border-left-color: #16a085;
 }
 
 /* Rejected vehicle */
-
 #approval-management-root .approval-replacement-popup-vehicle:has(.approval-status.rejected) {
   border-left-color: #d65a5a;
 }
 
 /* Pending vehicle */
-
 #approval-management-root .approval-replacement-popup-vehicle:has(.approval-status.pending) {
   border-left-color: #d99a20;
 }
@@ -8544,7 +8439,6 @@
 /* =========================================================
    REPLACEMENT VEHICLE HEADER - HIGHLIGHT
 ========================================================= */
-
 .approval-replacement-popup-vehicle-head {
   position: relative;
 }
@@ -8597,7 +8491,6 @@
 /* =========================================================
    REPLACEMENT POPUP - SMOOTH SCROLL / PERFORMANCE
 ========================================================= */
-
 #approval-management-root .approval-replacement-detail-modal {
   overflow: hidden;
 }
@@ -8642,7 +8535,6 @@
 }
 
 /* Remove expensive movement/shadow effects from long vehicle list */
-
 #approval-management-root .approval-replacement-popup-vehicle {
   transform: none;
   transition: border-color .14s ease, background-color .14s ease;
@@ -8660,7 +8552,6 @@
 /* =========================================================
    REPLACEMENT VEHICLE HEADER - CLEAN LIGHT/DARK COMBINATION
 ========================================================= */
-
 #approval-management-root .approval-replacement-popup-vehicle {
   border-left: 1px solid #c8dce2;
 }
@@ -8675,14 +8566,12 @@
 }
 
 /* Remove the vertical colored line from the vehicle header */
-
 #approval-management-root .approval-replacement-popup-vehicle-head::before {
   display: none;
   content: none;
 }
 
 /* Remove status-based header line colors */
-
 #approval-management-root .approval-replacement-popup-vehicle:has(.approval-status.pending) .approval-replacement-popup-vehicle-head::before,
 #approval-management-root .approval-replacement-popup-vehicle:has(.approval-status.rejected) .approval-replacement-popup-vehicle-head::before,
 #approval-management-root .approval-replacement-popup-vehicle:has(.approval-status.approved) .approval-replacement-popup-vehicle-head::before {
@@ -8933,7 +8822,6 @@
 /* =========================================================
    ORDER TABLE - SMALLER MOVEMENT + ROUTE
 ========================================================= */
-
 #approval-management-root .approval-md-table .approval-md-movement {
   padding: 3px 8px;
   min-height: 24px;
@@ -8979,4 +8867,251 @@
   white-space: nowrap;
   word-break: keep-all;
   overflow-wrap: normal;
+}
+
+/* Amount changes: isolated styles, no existing approval styles changed */
+.approval-amount-history {
+  background: #fff;
+  border: 1px solid #dce6ea;
+  border-radius: 12px;
+  overflow: hidden
+}
+
+.approval-amount-header {
+  padding: 17px 19px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid #dce6ea;
+  background: #f7fbfa
+}
+
+.approval-amount-header h2 {
+  margin: 0;
+  font-size: 15px;
+  color: #102f43
+}
+
+.approval-amount-header p {
+  margin: 5px 0 0;
+  font-size: 11px;
+  color: #758b96
+}
+
+.approval-amount-header>strong {
+  font-size: 11px;
+  color: #0f766e;
+  white-space: nowrap
+}
+
+.approval-amount-scroll {
+  overflow-x: auto
+}
+
+.approval-amount-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 11px
+}
+
+.approval-amount-table th {
+  padding: 12px 14px;
+  background: #f5f8fa;
+  color: #355867;
+  white-space: nowrap
+}
+
+.approval-amount-table td {
+  padding: 13px 14px;
+  border-top: 1px solid #e5edef;
+  color: #234657;
+  white-space: nowrap
+}
+
+.approval-amount-table td strong {
+  color: #0f766e
+}
+
+.approval-amount-empty {
+  text-align: center;
+  padding: 45px 15px;
+  color: #758b96;
+  font-size: 12px
+}
+
+.approval-tabs {
+  /* overflow-x: auto; */
+  max-width: 100%
+}
+
+.approval-tabs button {
+  white-space: nowrap
+}
+
+/* AMOUNT CHANGES — unread notification and audit-history polish */
+.approval-tabs > button .approval-amount-unread-badge {
+  min-width: 19px;
+  height: 19px;
+  margin-left: 7px;
+  padding: 0 5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #f0c4c0;
+  border-radius: 999px;
+  background: #fff0ef;
+  color: #bd4039;
+  font-size: 9px;
+  font-weight: 900;
+  line-height: 1;
+  box-shadow: 0 1px 3px rgba(189, 64, 57, 0.10);
+  animation: approvalUnreadAppear 180ms ease-out;
+}
+
+.approval-amount-history {
+  border-color: var(--ap-border);
+  box-shadow: var(--ap-shadow);
+}
+
+.approval-amount-header {
+  background: linear-gradient(90deg, #eff8f6 0%, #f9fbfb 58%, #fff 100%);
+}
+
+.approval-amount-header > strong {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid #b9ddd8;
+  border-radius: 999px;
+  background: #eef9f7;
+  color: var(--ap-primary);
+  font-size: 10px;
+  font-weight: 850;
+}
+
+.approval-amount-table th {
+  height: 42px;
+  padding: 0 14px;
+  border-bottom: 1px solid #dbe5e9;
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: 0.035em;
+  text-transform: uppercase;
+}
+
+.approval-amount-table td {
+  padding: 13px 14px;
+  border-top: 0;
+  border-bottom: 1px solid #e6ecef;
+  font-size: 10.5px;
+  line-height: 1.4;
+}
+
+.approval-amount-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.approval-amount-table tbody tr:hover td {
+  background: #f8fbfb;
+}
+
+.approval-amount-table td strong {
+  color: var(--ap-primary-dark);
+  font-weight: 850;
+}
+
+@keyframes approvalUnreadAppear {
+  from { transform: scale(0.82); opacity: 0.5; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@media (max-width: 760px) {
+  .approval-amount-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .approval-amount-header > strong {
+    align-self: flex-start;
+  }
+}
+
+
+
+/* Per-order amount-change identification: unread rows stay highlighted until individually viewed. */
+.approval-amount-table tbody tr.approval-amount-row-unread td {
+  background: #fff8ed;
+}
+
+.approval-amount-table tbody tr.approval-amount-row-unread td:first-child {
+  box-shadow: inset 3px 0 0 #e59b24;
+}
+
+.approval-amount-table tbody tr.approval-amount-row-unread:hover td {
+  background: #fff1d8;
+}
+
+.approval-amount-order-id {
+  color: #163f59;
+  font-weight: 800;
+}
+
+.approval-amount-new-tag {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 7px;
+  padding: 3px 6px;
+  border: 1px solid #f2d19b;
+  border-radius: 5px;
+  background: #fff0d5;
+  color: #a45b00;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: .04em;
+  vertical-align: middle;
+}
+
+.approval-amount-mark-viewed {
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid #e7bd76;
+  border-radius: 7px;
+  background: #fffaf1;
+  color: #925400;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background .15s ease, border-color .15s ease, transform .15s ease;
+}
+
+.approval-amount-mark-viewed:hover {
+  border-color: #d99a32;
+  background: #ffedc7;
+}
+
+.approval-amount-mark-viewed:active {
+  transform: translateY(1px);
+}
+
+.approval-amount-viewed-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #16805f;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.approval-amount-viewed-tag span {
+  display: inline-flex;
+  width: 16px;
+  height: 16px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #e3f6ed;
 }

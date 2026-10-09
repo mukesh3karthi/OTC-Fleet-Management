@@ -1,14 +1,11 @@
 const mongoose = require("mongoose");
 const TripOrder = require("../models/Triporder");
-
 const cleanString = (value) =>
   value === null || value === undefined
     ? ""
     : String(value).trim();
-
 const cleanUpperString = (value) =>
   cleanString(value).toUpperCase();
-
 const toNumber = (value, defaultValue = 0) => {
   if (
     value === "" ||
@@ -17,14 +14,11 @@ const toNumber = (value, defaultValue = 0) => {
   ) {
     return defaultValue;
   }
-
   const number = Number(value);
-
   return Number.isFinite(number)
     ? number
     : defaultValue;
 };
-
 const toNullableNumber = (value) => {
   if (
     value === "" ||
@@ -33,42 +27,32 @@ const toNullableNumber = (value) => {
   ) {
     return null;
   }
-
   const number = Number(value);
-
   return Number.isFinite(number)
     ? number
     : null;
 };
-
 const toDateOrNull = (value) => {
   if (!value) {
     return null;
   }
-
   const date = new Date(value);
-
   return Number.isNaN(date.getTime())
     ? null
     : date;
 };
-
 const makeId = (prefix) => {
   const timestamp = Date.now()
     .toString(36)
     .toUpperCase();
-
   const random = Math.random()
     .toString(36)
     .slice(2, 8)
     .toUpperCase();
-
   return `${prefix}-${timestamp}-${random}`;
 };
-
 const isValidMongoId = (id) =>
   mongoose.Types.ObjectId.isValid(id);
-
 const sendSuccess = (
   res,
   statusCode,
@@ -80,7 +64,6 @@ const sendSuccess = (
     message,
     data,
   });
-
 const sendError = (
   res,
   statusCode,
@@ -91,7 +74,6 @@ const sendError = (
     success: false,
     message,
   };
-
   if (
     process.env.NODE_ENV !== "production" &&
     error
@@ -99,47 +81,40 @@ const sendError = (
     response.error =
       error.message || String(error);
   }
-
   return res
     .status(statusCode)
     .json(response);
 };
-
 const getRequirements = (trip) =>
   Array.isArray(
     trip?.vehicleRequirements
   )
     ? trip.vehicleRequirements
     : [];
-
 const getQuotations = (trip) =>
   Array.isArray(
     trip?.trafficQuotations
   )
     ? trip.trafficQuotations
     : [];
-
 const getConfirmations = (trip) =>
   Array.isArray(
     trip?.vehicleConfirmations
   )
     ? trip.vehicleConfirmations
     : [];
-
 const getAllocatedVehicles = (trip) =>
   Array.isArray(
     trip?.allocatedVehicles
   )
     ? trip.allocatedVehicles
     : [];
-
 const getTransportReplacementRequests = (trip) =>
   Array.isArray(
     trip?.transportReplacementRequests
   )
     ? trip.transportReplacementRequests
     : [];
-
 const hasTrackingStarted = (trip) =>
   cleanString(
     trip?.orderPlaced?.status
@@ -152,7 +127,6 @@ const hasTrackingStarted = (trip) =>
       Array.isArray(vehicle?.dailyTracking) &&
       vehicle.dailyTracking.length > 0
   );
-
 const findAllocatedVehicle = (
   trip,
   allocationId
@@ -162,7 +136,6 @@ const findAllocatedVehicle = (
       vehicle.allocationId ===
       cleanString(allocationId)
   );
-
 const isDuplicateVehicleNumber = (
   trip,
   vehicleNumber,
@@ -176,7 +149,6 @@ const isDuplicateVehicleNumber = (
         vehicle.vehicleNumber
       ) === cleanUpperString(vehicleNumber)
   );
-
 const findRequirement = (
   trip,
   requirementId
@@ -186,7 +158,6 @@ const findRequirement = (
       requirement.requirementId ===
       requirementId
   );
-
 const findQuotation = (
   trip,
   quotationId
@@ -196,7 +167,6 @@ const findQuotation = (
       quotation.quotationId ===
       quotationId
   );
-
 const findConfirmation = (
   trip,
   confirmationId
@@ -206,14 +176,12 @@ const findConfirmation = (
       confirmation.confirmationId ===
       confirmationId
   );
-
 const findApprovedConfirmation = (
   trip,
   requirementId
 ) => {
   const confirmations =
     getConfirmations(trip);
-
   for (
     let index =
       confirmations.length - 1;
@@ -222,7 +190,6 @@ const findApprovedConfirmation = (
   ) {
     const confirmation =
       confirmations[index];
-
     if (
       confirmation.requirementId ===
       requirementId &&
@@ -231,10 +198,8 @@ const findApprovedConfirmation = (
       return confirmation;
     }
   }
-
   return null;
 };
-
 const normalizeRequirement = (
   requirement,
   index
@@ -244,22 +209,18 @@ const normalizeRequirement = (
       requirement?.requirementId
     ) ||
     makeId(`REQ${index + 1}`),
-
   vehicleType:
     cleanString(
       requirement?.vehicleType
     ),
-
   configuration:
     cleanString(
       requirement?.configuration
     ),
-
   classification:
     cleanString(
       requirement?.classification
     ),
-
   quantity: Math.max(
     1,
     toNumber(
@@ -267,7 +228,6 @@ const normalizeRequirement = (
       1
     )
   ),
-
   weight: Math.max(
     0,
     toNumber(
@@ -275,25 +235,21 @@ const normalizeRequirement = (
       0
     )
   ),
-
   dimensions: {
     length:
       toNullableNumber(
         requirement?.dimensions?.length
       ),
-
     height:
       toNullableNumber(
         requirement?.dimensions?.height
       ),
-
     width:
       toNullableNumber(
         requirement?.dimensions?.width
       ),
   },
 });
-
 const buildTripData = (
   body = {}
 ) => ({
@@ -301,57 +257,46 @@ const buildTripData = (
     cleanUpperString(
       body.tripId
     ),
-
   movementType:
     cleanString(
       body.movementType
     ),
-
   customer:
     cleanString(
       body.customer
     ),
-
   contactPerson:
     cleanString(
       body.contactPerson
     ),
-
   contactNumber:
     cleanString(
       body.contactNumber
     ),
-
   email:
     cleanString(
       body.email
     ).toLowerCase(),
-
   assignedKam:
     cleanString(
       body.assignedKam
     ),
-
   enquiryDate:
     toDateOrNull(
       body.enquiryDate
     ),
-
   placementDate:
     toDateOrNull(
       body.placementDate
     ),
-
   origin:
     cleanString(
       body.origin
     ),
-
   destination:
     cleanString(
       body.destination
     ),
-
   distance: Math.max(
     0,
     toNumber(
@@ -359,7 +304,6 @@ const buildTripData = (
       0
     )
   ),
-
   totalVehicles: Math.max(
     0,
     Math.floor(
@@ -369,7 +313,6 @@ const buildTripData = (
       )
     )
   ),
-
   routeLocations:
     Array.isArray(
       body.routeLocations
@@ -378,32 +321,26 @@ const buildTripData = (
         .map(cleanString)
         .filter(Boolean)
       : [],
-
   materialType:
     cleanString(
       body.materialType
     ),
-
   remark:
     cleanString(
       body.remark
     ),
-
   siteLocation:
     cleanString(
       body.siteLocation
     ),
-
   period:
     cleanString(
       body.period
     ),
-
   dieselScope:
     cleanString(
       body.dieselScope
     ),
-
   vehicleRequirements:
     Array.isArray(
       body.vehicleRequirements
@@ -413,7 +350,6 @@ const buildTripData = (
       )
       : [],
 });
-
 const getTripDocument = async (
   id
 ) => {
@@ -424,22 +360,18 @@ const getTripDocument = async (
       status: 400,
     };
   }
-
   const trip =
     await TripOrder.findById(id);
-
   if (!trip) {
     return {
       error: "Order not found.",
       status: 404,
     };
   }
-
   return {
     trip,
   };
 };
-
 const createTrip = async (
   req,
   res
@@ -447,7 +379,6 @@ const createTrip = async (
   try {
     const data =
       buildTripData(req.body);
-
     if (!data.tripId) {
       return sendError(
         res,
@@ -455,7 +386,6 @@ const createTrip = async (
         "Trip ID is required."
       );
     }
-
     if (!data.customer) {
       return sendError(
         res,
@@ -463,7 +393,6 @@ const createTrip = async (
         "Customer is required."
       );
     }
-
     if (
       !Array.isArray(
         data.vehicleRequirements
@@ -477,12 +406,10 @@ const createTrip = async (
         "At least one vehicle requirement is required."
       );
     }
-
     const duplicateTrip =
       await TripOrder.findOne({
         tripId: data.tripId,
       });
-
     if (duplicateTrip) {
       return sendError(
         res,
@@ -490,36 +417,23 @@ const createTrip = async (
         `Trip ID ${data.tripId} already exists.`
       );
     }
-
     const trip =
       await TripOrder.create({
         ...data,
-
         status: "Draft",
-
         stage: "Order Finalization",
-
         orderApproval: {
           status: "Pending",
-
           requestedAt: null,
-
           approvedBy: "",
-
           approvedAt: null,
-
           remarks: "",
-
           rejectionReason: "",
         },
-
         trafficQuotations: [],
-
         vehicleConfirmations: [],
-
         allocatedVehicles: [],
       });
-
     return sendSuccess(
       res,
       201,
@@ -531,7 +445,6 @@ const createTrip = async (
       "Create Trip Error:",
       error
     );
-
     if (error?.code === 11000) {
       return sendError(
         res,
@@ -540,7 +453,6 @@ const createTrip = async (
         error
       );
     }
-
     return sendError(
       res,
       500,
@@ -549,23 +461,19 @@ const createTrip = async (
     );
   }
 };
-
 /* =========================================================
    CREATE CRANE MOVEMENT
    Separate flow so the existing createTrip function is untouched.
-
    Expects multipart/form-data:
    - data: JSON string containing normal trip fields
    - document: Crane vehicle requirement file
 ========================================================= */
-
 const createCraneTrip = async (
   req,
   res
 ) => {
   try {
     let body = {};
-
     try {
       body =
         typeof req.body?.data === "string"
@@ -578,10 +486,8 @@ const createCraneTrip = async (
         "Invalid Crane order data."
       );
     }
-
     const data =
       buildTripData(body);
-
     if (!data.tripId) {
       return sendError(
         res,
@@ -589,7 +495,6 @@ const createCraneTrip = async (
         "Trip ID is required."
       );
     }
-
     if (!data.customer) {
       return sendError(
         res,
@@ -597,7 +502,6 @@ const createCraneTrip = async (
         "Customer is required."
       );
     }
-
     if (
       cleanString(data.movementType)
         .toLowerCase() !== "crane"
@@ -608,7 +512,6 @@ const createCraneTrip = async (
         "This endpoint is only for Crane movement."
       );
     }
-
     if (!req.file) {
       return sendError(
         res,
@@ -616,12 +519,10 @@ const createCraneTrip = async (
         "Crane vehicle requirement document is required."
       );
     }
-
     const duplicateTrip =
       await TripOrder.findOne({
         tripId: data.tripId,
       });
-
     if (duplicateTrip) {
       return sendError(
         res,
@@ -629,7 +530,6 @@ const createCraneTrip = async (
         `Trip ID ${data.tripId} already exists.`
       );
     }
-
     /*
      * Keep the existing quotation / approval / tracking functions working.
      * Crane gets one parent requirement linked to the uploaded vehicle list.
@@ -638,60 +538,45 @@ const createCraneTrip = async (
     const craneRequirement = {
       requirementId:
         `${data.tripId}-CRANE-REQ-1`,
-
       vehicleType:
         "Crane",
-
       configuration:
         "As per uploaded Crane vehicle requirement document",
-
       classification:
         "Crane Movement",
-
       quantity:
         Math.max(
           1,
           data.totalVehicles || 1
         ),
-
       weight: 0,
-
       dimensions: {
         length: null,
         height: null,
         width: null,
       },
     };
-
     const trip =
       await TripOrder.create({
         ...data,
-
         movementType: "Crane",
-
         vehicleRequirements: [
           craneRequirement,
         ],
-
         craneDocument: {
           documentName:
             cleanString(
               body.craneDocumentName
             ) ||
             "Crane Vehicle Requirement",
-
           fileName:
             req.file.originalname,
-
           mimeType:
             req.file.mimetype,
-
           fileSize:
             req.file.size,
-
           fileData:
             req.file.buffer,
-
           uploadedBy:
             cleanString(
               body.uploadedBy
@@ -700,15 +585,11 @@ const createCraneTrip = async (
               body.assignedKam
             ) ||
             "Key Account",
-
           uploadedAt:
             new Date(),
         },
-
         status: "Draft",
-
         stage: "Order Finalization",
-
         orderApproval: {
           status: "Pending",
           requestedAt: null,
@@ -717,17 +598,14 @@ const createCraneTrip = async (
           remarks: "",
           rejectionReason: "",
         },
-
         trafficQuotations: [],
         vehicleConfirmations: [],
         allocatedVehicles: [],
       });
-
     const createdTrip =
       await TripOrder.findById(
         trip._id
       ).lean();
-
     return sendSuccess(
       res,
       201,
@@ -739,7 +617,6 @@ const createCraneTrip = async (
       "Create Crane Trip Error:",
       error
     );
-
     if (error?.code === 11000) {
       return sendError(
         res,
@@ -748,7 +625,6 @@ const createCraneTrip = async (
         error
       );
     }
-
     return sendError(
       res,
       500,
@@ -757,11 +633,9 @@ const createCraneTrip = async (
     );
   }
 };
-
 /* =========================================================
    DOWNLOAD / VIEW CRANE REQUIREMENT DOCUMENT
 ========================================================= */
-
 const downloadCraneDocument = async (
   req,
   res
@@ -778,7 +652,6 @@ const downloadCraneDocument = async (
         "Invalid order database ID."
       );
     }
-
     const trip =
       await TripOrder.findById(
         req.params.id
@@ -786,7 +659,6 @@ const downloadCraneDocument = async (
         .select(
           "+craneDocument.fileData"
         );
-
     if (!trip) {
       return sendError(
         res,
@@ -794,10 +666,8 @@ const downloadCraneDocument = async (
         "Order not found."
       );
     }
-
     const document =
       trip.craneDocument;
-
     if (
       !document?.fileData ||
       !document?.fileName
@@ -808,32 +678,27 @@ const downloadCraneDocument = async (
         "Crane vehicle requirement document not found."
       );
     }
-
     const disposition =
       String(
         req.query.disposition || ""
       ).toLowerCase() === "inline"
         ? "inline"
         : "attachment";
-
     res.setHeader(
       "Content-Type",
       document.mimeType ||
       "application/octet-stream"
     );
-
     res.setHeader(
       "Content-Length",
       document.fileData.length
     );
-
     res.setHeader(
       "Content-Disposition",
       `${disposition}; filename="${String(
         document.fileName
       ).replace(/"/g, "")}"`
     );
-
     return res.send(
       document.fileData
     );
@@ -842,7 +707,6 @@ const downloadCraneDocument = async (
       "Download Crane Document Error:",
       error
     );
-
     return sendError(
       res,
       500,
@@ -851,7 +715,6 @@ const downloadCraneDocument = async (
     );
   }
 };
-
 const getAllTrips = async (
   req,
   res
@@ -863,7 +726,6 @@ const getAllTrips = async (
           createdAt: -1,
         })
         .lean();
-
     return sendSuccess(
       res,
       200,
@@ -875,7 +737,6 @@ const getAllTrips = async (
       "Get All Trips Error:",
       error
     );
-
     return sendError(
       res,
       500,
@@ -884,7 +745,6 @@ const getAllTrips = async (
     );
   }
 };
-
 const getTripById = async (
   req,
   res
@@ -894,7 +754,6 @@ const getTripById = async (
       await getTripDocument(
         req.params.id
       );
-
     if (result.error) {
       return sendError(
         res,
@@ -902,7 +761,6 @@ const getTripById = async (
         result.error
       );
     }
-
     return sendSuccess(
       res,
       200,
@@ -914,7 +772,6 @@ const getTripById = async (
       "Get Trip By ID Error:",
       error
     );
-
     return sendError(
       res,
       500,
@@ -923,7 +780,6 @@ const getTripById = async (
     );
   }
 };
-
 const getTripByTripId = async (
   req,
   res
@@ -933,7 +789,6 @@ const getTripByTripId = async (
       cleanUpperString(
         req.params.tripId
       );
-
     if (!tripId) {
       return sendError(
         res,
@@ -941,12 +796,10 @@ const getTripByTripId = async (
         "Trip ID is required."
       );
     }
-
     const trip =
       await TripOrder.findOne({
         tripId,
       });
-
     if (!trip) {
       return sendError(
         res,
@@ -954,7 +807,6 @@ const getTripByTripId = async (
         "Order not found."
       );
     }
-
     return sendSuccess(
       res,
       200,
@@ -966,7 +818,6 @@ const getTripByTripId = async (
       "Get Trip By Trip ID Error:",
       error
     );
-
     return sendError(
       res,
       500,
@@ -975,7 +826,6 @@ const getTripByTripId = async (
     );
   }
 };
-
 const updateTrip = async (
   req,
   res
@@ -985,7 +835,6 @@ const updateTrip = async (
       await getTripDocument(
         req.params.id
       );
-
     if (result.error) {
       return sendError(
         res,
@@ -993,9 +842,7 @@ const updateTrip = async (
         result.error
       );
     }
-
     const trip = result.trip;
-
     if (
       trip.orderApproval?.status ===
       "Approved"
@@ -1006,10 +853,8 @@ const updateTrip = async (
         "Approved orders cannot be edited from Key Account."
       );
     }
-
     const data =
       buildTripData(req.body);
-
     if (!data.tripId) {
       return sendError(
         res,
@@ -1017,7 +862,6 @@ const updateTrip = async (
         "Trip ID is required."
       );
     }
-
     if (!data.customer) {
       return sendError(
         res,
@@ -1025,7 +869,6 @@ const updateTrip = async (
         "Customer is required."
       );
     }
-
     if (
       !Array.isArray(
         data.vehicleRequirements
@@ -1039,16 +882,13 @@ const updateTrip = async (
         "At least one vehicle requirement is required."
       );
     }
-
     const duplicateTrip =
       await TripOrder.findOne({
         tripId: data.tripId,
-
         _id: {
           $ne: trip._id,
         },
       });
-
     if (duplicateTrip) {
       return sendError(
         res,
@@ -1056,67 +896,46 @@ const updateTrip = async (
         `Trip ID ${data.tripId} already exists.`
       );
     }
-
     trip.tripId =
       data.tripId;
-
     trip.movementType =
       data.movementType;
-
     trip.customer =
       data.customer;
-
     trip.contactPerson =
       data.contactPerson;
-
     trip.contactNumber =
       data.contactNumber;
-
     trip.email =
       data.email;
-
     trip.assignedKam =
       data.assignedKam;
-
     trip.enquiryDate =
       data.enquiryDate;
-
     trip.placementDate =
       data.placementDate;
-
     trip.origin =
       data.origin;
-
     trip.destination =
       data.destination;
-
     trip.distance =
       data.distance;
-
     trip.totalVehicles =
       data.totalVehicles;
-
     trip.routeLocations =
       data.routeLocations;
-
     trip.materialType =
       data.materialType;
-
     trip.remark =
       data.remark;
-
     trip.siteLocation =
       data.siteLocation;
-
     trip.period =
       data.period;
-
     trip.dieselScope =
       data.dieselScope;
-
     trip.vehicleRequirements =
       data.vehicleRequirements;
-
     /*
      * Editing / requotation keeps the previous rejection.
      * It is cleared only by an explicit approval request.
@@ -1125,18 +944,14 @@ const updateTrip = async (
       trip.status = "Rejected";
       trip.stage = "Order Rejected";
     }
-
     trip.markModified(
       "vehicleRequirements"
     );
-
     await trip.save();
-
     const updatedTrip =
       await TripOrder.findById(
         trip._id
       ).lean();
-
     return sendSuccess(
       res,
       200,
@@ -1148,7 +963,6 @@ const updateTrip = async (
       "Update Trip Error:",
       error
     );
-
     if (error?.code === 11000) {
       return sendError(
         res,
@@ -1157,7 +971,6 @@ const updateTrip = async (
         error
       );
     }
-
     return sendError(
       res,
       500,
@@ -1166,7 +979,20 @@ const updateTrip = async (
     );
   }
 };
-
+const recordAmountChanges = (trip, before, updatedBy, source) => {
+  const changes = [];
+  const numberOrNull = (value) => value === "" || value === null || value === undefined ? null : Number(value);
+  for (const [field, fieldLabel] of [["quotedRate", "Quoted Rate"], ["finalRate", "Final Rate"]]) {
+    const oldAmount = numberOrNull(before?.orderFinalization?.[field]);
+    const newAmount = numberOrNull(trip.orderFinalization?.[field]);
+    if (oldAmount === null || newAmount === null || !Number.isFinite(oldAmount) || !Number.isFinite(newAmount) || oldAmount === newAmount) continue;
+    changes.push({ field: `orderFinalization.${field}`, fieldLabel, oldAmount, newAmount, changedBy: cleanString(updatedBy) || "Unknown", source, changedAt: new Date() });
+  }
+  if (changes.length) {
+    trip.amountChangeHistory.push(...changes);
+    trip.markModified("amountChangeHistory");
+  }
+};
 const saveOrderFinalization = async (
   req,
   res
@@ -1176,7 +1002,6 @@ const saveOrderFinalization = async (
       await getTripDocument(
         req.params.id
       );
-
     if (result.error) {
       return sendError(
         res,
@@ -1184,9 +1009,8 @@ const saveOrderFinalization = async (
         result.error
       );
     }
-
     const trip = result.trip;
-
+    const amountBefore = trip.toObject();
     if (
       trip.orderApproval?.status ===
       "Approved"
@@ -1197,13 +1021,10 @@ const saveOrderFinalization = async (
         "Approved orders cannot be changed from Order Finalization."
       );
     }
-
     const quotedRateRaw =
       req.body.quotedRate;
-
     const finalRateRaw =
       req.body.finalRate;
-
     const quotedRate =
       quotedRateRaw === "" ||
         quotedRateRaw === null ||
@@ -1212,7 +1033,6 @@ const saveOrderFinalization = async (
         : Number(
           quotedRateRaw
         );
-
     const finalRate =
       finalRateRaw === "" ||
         finalRateRaw === null ||
@@ -1221,7 +1041,6 @@ const saveOrderFinalization = async (
         : Number(
           finalRateRaw
         );
-
     if (
       quotedRate !== null &&
       (
@@ -1237,7 +1056,6 @@ const saveOrderFinalization = async (
         "Quoted Rate must be a valid positive number."
       );
     }
-
     if (
       finalRate !== null &&
       (
@@ -1253,32 +1071,26 @@ const saveOrderFinalization = async (
         "Final Rate must be a valid positive number."
       );
     }
-
     const commercialTerms =
       cleanString(
         req.body.commercialTerms
       );
-
     const deliveryCommitments =
       cleanString(
         req.body.deliveryCommitments
       );
-
     const clientConfirmationNotes =
       cleanString(
         req.body
           .clientConfirmationNotes
       );
-
     const updatedBy =
       cleanString(
         req.body.updatedBy
       ) || "Key Account";
-
     const requestApproval =
       req.body.requestApproval ===
       true;
-
     if (requestApproval) {
       if (quotedRate === null) {
         return sendError(
@@ -1287,7 +1099,6 @@ const saveOrderFinalization = async (
           "Quoted Rate is required before requesting approval."
         );
       }
-
       if (finalRate === null) {
         return sendError(
           res,
@@ -1295,7 +1106,6 @@ const saveOrderFinalization = async (
           "Final Rate is required before requesting approval."
         );
       }
-
       if (!commercialTerms) {
         return sendError(
           res,
@@ -1303,7 +1113,6 @@ const saveOrderFinalization = async (
           "Commercial Terms & Payment SLAs are required before requesting approval."
         );
       }
-
       if (
         !deliveryCommitments
       ) {
@@ -1314,28 +1123,19 @@ const saveOrderFinalization = async (
         );
       }
     }
-
     trip.orderFinalization = {
       quotedRate,
-
       finalRate,
-
       commercialTerms,
-
       deliveryCommitments,
-
       clientConfirmationNotes,
-
       updatedBy,
-
       updatedAt:
         new Date(),
     };
-
     trip.markModified(
       "orderFinalization"
     );
-
     if (requestApproval) {
       /*
        * NEW APPROVAL CYCLE:
@@ -1343,37 +1143,27 @@ const saveOrderFinalization = async (
        */
       trip.orderApproval = {
         status: "Pending",
-
         requestedAt:
           new Date(),
-
         approvedBy: "",
-
         approvedAt: null,
-
         remarks: "",
-
         rejectionReason: "",
       };
-
       trip.status =
         "Pending";
-
       trip.stage =
         "Order Finalization";
-
       trip.markModified(
         "orderApproval"
       );
     }
-
+    recordAmountChanges(trip, amountBefore, updatedBy, "Order Finalization");
     await trip.save();
-
     const updatedTrip =
       await TripOrder.findById(
         trip._id
       ).lean();
-
     return sendSuccess(
       res,
       200,
@@ -1387,7 +1177,6 @@ const saveOrderFinalization = async (
       "Save Order Finalization Error:",
       error
     );
-
     return sendError(
       res,
       500,
@@ -1396,39 +1185,30 @@ const saveOrderFinalization = async (
     );
   }
 };
-
 /* =========================================================
    SAVE / DOWNLOAD PO DOCUMENT
 ========================================================= */
-
 const savePoDocument = async (req, res) => {
   try {
     const result = await getTripDocument(req.params.id);
-
     if (result.error) {
       return sendError(res, result.status, result.error);
     }
-
     const trip = result.trip;
     const updatedBy = cleanString(req.body?.updatedBy) || cleanString(req.body?.uploadedBy) || "Key Account";
     const beforePo = trip.poDocument?.toObject?.() || { ...trip.poDocument };
     const poNumber = cleanString(req.body.poNumber);
     const validityRaw = cleanString(req.body.poValidityPeriod);
     const billingGstin = cleanUpperString(req.body.billingGstin);
-
     if (!poNumber) {
       return sendError(res, 400, "PO Number is required.");
     }
-
     const poValidityPeriod = new Date(validityRaw);
-
     if (!validityRaw || Number.isNaN(poValidityPeriod.getTime())) {
       return sendError(res, 400, "A valid PO Validity Period is required.");
     }
-
     const gstinPattern =
       /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/;
-
     if (!gstinPattern.test(billingGstin)) {
       return sendError(
         res,
@@ -1436,11 +1216,9 @@ const savePoDocument = async (req, res) => {
         "Enter a valid 15-character Billing GSTIN."
       );
     }
-
     if (!req.file && !trip.poDocument?.fileName) {
       return sendError(res, 400, "Select a PO document before saving.");
     }
-
     trip.poDocument.poNumber = poNumber;
     trip.poDocument.poValidityPeriod = poValidityPeriod;
     trip.poDocument.billingGstin = billingGstin;
@@ -1452,16 +1230,13 @@ const savePoDocument = async (req, res) => {
     trip.poDocument.uploadedBy =
       cleanString(req.body.uploadedBy) || "Key Account";
     trip.poDocument.uploadedAt = new Date();
-
     if (req.file) {
       trip.poDocument.fileName = req.file.originalname;
       trip.poDocument.mimeType = req.file.mimetype;
       trip.poDocument.fileSize = req.file.size;
       trip.poDocument.fileData = req.file.buffer;
     }
-
     trip.markModified("poDocument");
-
     /*
      * PO SAVE WORKFLOW
      *
@@ -1475,7 +1250,6 @@ const savePoDocument = async (req, res) => {
     const approvedConfirmations = getConfirmations(trip).filter(
       (confirmation) => confirmation?.status === "Approved"
     );
-
     const vendorApprovalCompleted =
       requirements.length > 0 &&
       requirements.every((requirement) =>
@@ -1484,7 +1258,6 @@ const savePoDocument = async (req, res) => {
             confirmation?.requirementId === requirement?.requirementId
         )
       );
-
     const alreadyReleasedToTracking =
       cleanString(trip?.orderPlaced?.status).toLowerCase() === "completed" ||
       [
@@ -1495,19 +1268,15 @@ const savePoDocument = async (req, res) => {
       ].includes(
         cleanString(trip?.stage).toLowerCase()
       );
-
     if (!alreadyReleasedToTracking) {
       trip.stage = vendorApprovalCompleted
         ? "Order Placed"
         : "Vendor Finalization";
     }
-
     const poChanges = ["poNumber", "poValidityPeriod", "billingGstin", "documentName", "fileName"].map(field => [field, beforePo[field], trip.poDocument[field]]);
     recordLifecycleChanges(trip, beforePo, "PO Document", poChanges, updatedBy);
     await trip.save();
-
     const savedTrip = await TripOrder.findById(trip._id).lean();
-
     return sendSuccess(
       res,
       200,
@@ -1519,25 +1288,20 @@ const savePoDocument = async (req, res) => {
     return sendError(res, 500, "Unable to save PO document.", error);
   }
 };
-
 const downloadPoDocument = async (req, res) => {
   try {
     if (!isValidMongoId(req.params.id)) {
       return sendError(res, 400, "Invalid order database ID.");
     }
-
     const trip = await TripOrder.findById(req.params.id).select(
       "+poDocument.fileData"
     );
-
     if (!trip) {
       return sendError(res, 404, "Order not found.");
     }
-
     if (!trip.poDocument?.fileData) {
       return sendError(res, 404, "PO document file not found.");
     }
-
     res.setHeader(
       "Content-Type",
       trip.poDocument.mimeType || "application/octet-stream"
@@ -1548,14 +1312,12 @@ const downloadPoDocument = async (req, res) => {
         trip.poDocument.fileName || "po-document"
       ).replace(/"/g, "")}"`
     );
-
     return res.send(trip.poDocument.fileData);
   } catch (error) {
     console.error("Download PO Document Error:", error);
     return sendError(res, 500, "Unable to download PO document.", error);
   }
 };
-
 const approveOrder = async (
   req,
   res
@@ -1565,7 +1327,6 @@ const approveOrder = async (
       await getTripDocument(
         req.params.id
       );
-
     if (result.error) {
       return sendError(
         res,
@@ -1573,9 +1334,7 @@ const approveOrder = async (
         result.error
       );
     }
-
     const trip = result.trip;
-
     // Approval Management can act only after Key Account explicitly
     // requests approval from Order Finalization.
     if (!trip.orderApproval?.requestedAt) {
@@ -1585,27 +1344,22 @@ const approveOrder = async (
         "Order approval has not been requested by Key Account."
       );
     }
-
     const status =
       cleanString(
         req.body.status
       );
-
     const approvedBy =
       cleanString(
         req.body.approvedBy
       );
-
     const remarks =
       cleanString(
         req.body.remarks
       );
-
     const rejectionReason =
       cleanString(
         req.body.rejectionReason
       );
-
     if (
       ![
         "Approved",
@@ -1618,7 +1372,6 @@ const approveOrder = async (
         "Order approval status must be Approved or Rejected."
       );
     }
-
     if (!approvedBy) {
       return sendError(
         res,
@@ -1626,7 +1379,6 @@ const approveOrder = async (
         "Approved/Reviewed By is required."
       );
     }
-
     if (
       status === "Rejected" &&
       !rejectionReason
@@ -1637,7 +1389,6 @@ const approveOrder = async (
         "Rejection reason is required."
       );
     }
-
     if (
       getQuotations(
         trip
@@ -1649,46 +1400,35 @@ const approveOrder = async (
         "Order approval cannot be changed after Traffic quotations have been submitted."
       );
     }
-
     trip.orderApproval = {
       status,
-
       requestedAt:
         trip.orderApproval
           ?.requestedAt ||
         null,
-
       approvedBy,
-
       approvedAt:
         new Date(),
-
       remarks,
-
       rejectionReason:
         status === "Rejected"
           ? rejectionReason
           : "",
     };
-
     if (
       status === "Approved"
     ) {
       trip.status =
         "Approved";
-
       trip.stage =
         "Traffic Quotation";
     } else {
       trip.status =
         "Rejected";
-
       trip.stage =
         "Order Rejected";
     }
-
     await trip.save();
-
     return sendSuccess(
       res,
       200,
@@ -1702,7 +1442,6 @@ const approveOrder = async (
       "Order Approval Error:",
       error
     );
-
     return sendError(
       res,
       500,
@@ -1711,7 +1450,6 @@ const approveOrder = async (
     );
   }
 };
-
 const addTrafficQuotation = async (
   req,
   res
@@ -1721,7 +1459,6 @@ const addTrafficQuotation = async (
       await getTripDocument(
         req.params.id
       );
-
     if (result.error) {
       return sendError(
         res,
@@ -1729,9 +1466,7 @@ const addTrafficQuotation = async (
         result.error
       );
     }
-
     const trip = result.trip;
-
     if (
       trip.orderApproval?.status !==
       "Approved"
@@ -1742,38 +1477,31 @@ const addTrafficQuotation = async (
         "Traffic quotation can be added only after the order is approved."
       );
     }
-
     const requirementId =
       cleanString(
         req.body.requirementId
       );
-
     const transporter =
       cleanString(
         req.body.transporter
       );
-
     const quotedBy =
       cleanString(
         req.body.quotedBy
       );
-
     const allocatedBy =
       cleanString(
         req.body.allocatedBy
       ) ||
       quotedBy;
-
     const remarks =
       cleanString(
         req.body.remarks
       );
-
     const amount =
       Number(
         req.body.amount
       );
-
     const quantity =
       Math.max(
         1,
@@ -1784,7 +1512,6 @@ const addTrafficQuotation = async (
           )
         )
       );
-
     if (!requirementId) {
       return sendError(
         res,
@@ -1792,13 +1519,11 @@ const addTrafficQuotation = async (
         "Requirement ID is required."
       );
     }
-
     const requirement =
       findRequirement(
         trip,
         requirementId
       );
-
     if (!requirement) {
       return sendError(
         res,
@@ -1806,7 +1531,6 @@ const addTrafficQuotation = async (
         "Vehicle requirement not found."
       );
     }
-
     if (!transporter) {
       return sendError(
         res,
@@ -1814,7 +1538,6 @@ const addTrafficQuotation = async (
         "Transporter is required."
       );
     }
-
     if (
       !Number.isFinite(
         amount
@@ -1827,7 +1550,6 @@ const addTrafficQuotation = async (
         "A valid quotation amount is required."
       );
     }
-
     if (!quotedBy) {
       return sendError(
         res,
@@ -1835,7 +1557,6 @@ const addTrafficQuotation = async (
         "Quoted By is required."
       );
     }
-
     const requiredQuantity =
       Math.max(
         1,
@@ -1846,7 +1567,6 @@ const addTrafficQuotation = async (
           )
         )
       );
-
     const approvedQuantity =
       getConfirmations(trip)
         .filter(
@@ -1863,7 +1583,6 @@ const addTrafficQuotation = async (
                 trip,
                 confirmation.quotationId
               );
-
             return (
               total +
               Math.max(
@@ -1879,7 +1598,6 @@ const addTrafficQuotation = async (
           },
           0
         );
-
     if (
       approvedQuantity >=
       requiredQuantity
@@ -1890,45 +1608,30 @@ const addTrafficQuotation = async (
         "This vehicle requirement is already fully approved."
       );
     }
-
     const quotation = {
       quotationId:
         makeId("QT"),
-
       requirementId,
-
       transporter,
-
       quantity,
-
       amount,
-
       quotedBy,
-
       allocatedBy,
-
       quotedAt:
         new Date(),
-
       remarks,
     };
-
     trip.trafficQuotations.push(
       quotation
     );
-
     trip.status =
       "Pending";
-
     trip.stage =
       "Quotation Approval";
-
     trip.markModified(
       "trafficQuotations"
     );
-
     await trip.save();
-
     return sendSuccess(
       res,
       201,
@@ -1940,7 +1643,6 @@ const addTrafficQuotation = async (
       "Add Traffic Quotation Error:",
       error
     );
-
     return sendError(
       res,
       500,
@@ -1949,7 +1651,6 @@ const addTrafficQuotation = async (
     );
   }
 };
-
 const confirmVehicleQuotation = async (
   req,
   res
@@ -1959,7 +1660,6 @@ const confirmVehicleQuotation = async (
       await getTripDocument(
         req.params.id
       );
-
     if (result.error) {
       return sendError(
         res,
@@ -1967,9 +1667,7 @@ const confirmVehicleQuotation = async (
         result.error
       );
     }
-
     const trip = result.trip;
-
     if (
       trip.orderApproval?.status !==
       "Approved"
@@ -1980,39 +1678,32 @@ const confirmVehicleQuotation = async (
         "The order must be approved before quotation confirmation."
       );
     }
-
     const requirementId =
       cleanString(
         req.body.requirementId
       );
-
     const status =
       cleanString(
         req.body.status
       );
-
     const confirmedBy =
       cleanString(
         req.body.confirmedBy
       );
-
     const remarks =
       cleanString(
         req.body.remarks
       );
-
     const rejectionReason =
       cleanString(
         req.body.rejectionReason
       );
-
     const incomingQuotationIds =
       Array.isArray(
         req.body.quotationIds
       )
         ? req.body.quotationIds
         : [req.body.quotationId];
-
     const quotationIds = [
       ...new Set(
         incomingQuotationIds
@@ -2020,7 +1711,6 @@ const confirmVehicleQuotation = async (
           .filter(Boolean)
       ),
     ];
-
     if (!requirementId) {
       return sendError(
         res,
@@ -2028,7 +1718,6 @@ const confirmVehicleQuotation = async (
         "Requirement ID is required."
       );
     }
-
     if (!quotationIds.length) {
       return sendError(
         res,
@@ -2036,7 +1725,6 @@ const confirmVehicleQuotation = async (
         "Select at least one quotation."
       );
     }
-
     if (
       ![
         "Approved",
@@ -2049,7 +1737,6 @@ const confirmVehicleQuotation = async (
         "Quotation status must be Approved or Rejected."
       );
     }
-
     if (!confirmedBy) {
       return sendError(
         res,
@@ -2057,7 +1744,6 @@ const confirmVehicleQuotation = async (
         "Confirmed By is required."
       );
     }
-
     if (
       status === "Rejected" &&
       !rejectionReason
@@ -2068,13 +1754,11 @@ const confirmVehicleQuotation = async (
         "Rejection reason is required."
       );
     }
-
     const requirement =
       findRequirement(
         trip,
         requirementId
       );
-
     if (!requirement) {
       return sendError(
         res,
@@ -2082,14 +1766,12 @@ const confirmVehicleQuotation = async (
         "Vehicle requirement not found."
       );
     }
-
     const requirementQuotations =
       getQuotations(trip).filter(
         (item) =>
           item.requirementId ===
           requirementId
       );
-
     const selectedQuotations =
       requirementQuotations.filter(
         (item) =>
@@ -2097,7 +1779,6 @@ const confirmVehicleQuotation = async (
             item.quotationId
           )
       );
-
     if (
       selectedQuotations.length !==
       quotationIds.length
@@ -2108,7 +1789,6 @@ const confirmVehicleQuotation = async (
         "One or more selected quotations were not found for this vehicle requirement."
       );
     }
-
     const requiredQuantity =
       Math.max(
         1,
@@ -2119,7 +1799,6 @@ const confirmVehicleQuotation = async (
           )
         )
       );
-
     const selectedQuantity =
       selectedQuotations.reduce(
         (total, quotation) =>
@@ -2135,7 +1814,6 @@ const confirmVehicleQuotation = async (
           ),
         0
       );
-
     const alreadyApprovedQuantity =
       getConfirmations(trip)
         .filter(
@@ -2153,7 +1831,6 @@ const confirmVehicleQuotation = async (
                 trip,
                 confirmation.quotationId
               );
-
             return (
               total +
               Math.max(
@@ -2169,14 +1846,12 @@ const confirmVehicleQuotation = async (
           },
           0
         );
-
     const pendingQuantity =
       Math.max(
         0,
         requiredQuantity -
         alreadyApprovedQuantity
       );
-
     if (
       status === "Approved" &&
       (
@@ -2192,9 +1867,7 @@ const confirmVehicleQuotation = async (
           : `You can approve up to ${pendingQuantity} pending NOS. Selected ${selectedQuantity} NOS.`
       );
     }
-
     const now = new Date();
-
     const upsertConfirmation = (
       targetQuotation,
       confirmationStatus,
@@ -2209,7 +1882,6 @@ const confirmVehicleQuotation = async (
             confirmation.quotationId ===
             targetQuotation.quotationId
         );
-
       if (existingConfirmation) {
         const allocationExists =
           getAllocatedVehicles(
@@ -2219,7 +1891,6 @@ const confirmVehicleQuotation = async (
               vehicle.confirmationId ===
               existingConfirmation.confirmationId
           );
-
         if (
           allocationExists &&
           existingConfirmation.status !==
@@ -2230,67 +1901,50 @@ const confirmVehicleQuotation = async (
               "Quotation confirmation cannot be changed after vehicle allocation.",
           };
         }
-
         existingConfirmation.status =
           confirmationStatus;
-
         existingConfirmation.confirmedBy =
           confirmedBy;
-
         existingConfirmation.confirmedAt =
           now;
-
         existingConfirmation.remarks =
           confirmationRemarks;
-
         existingConfirmation.rejectionReason =
           confirmationStatus ===
             "Rejected"
             ? confirmationRejectionReason
             : "";
-
         return {
           confirmation:
             existingConfirmation,
         };
       }
-
       const newConfirmation = {
         confirmationId:
           makeId("CONF"),
-
         requirementId,
-
         quotationId:
           targetQuotation.quotationId,
-
         status:
           confirmationStatus,
-
         confirmedBy,
-
         confirmedAt: now,
-
         remarks:
           confirmationRemarks,
-
         rejectionReason:
           confirmationStatus ===
             "Rejected"
             ? confirmationRejectionReason
             : "",
       };
-
       trip.vehicleConfirmations.push(
         newConfirmation
       );
-
       return {
         confirmation:
           newConfirmation,
       };
     };
-
     if (status === "Approved") {
       // Partial approval is allowed.
       // Approve selected rows only; unselected balance remains pending.
@@ -2305,7 +1959,6 @@ const confirmVehicleQuotation = async (
             remarks,
             ""
           );
-
         if (updateResult.error) {
           return sendError(
             res,
@@ -2326,7 +1979,6 @@ const confirmVehicleQuotation = async (
             remarks,
             rejectionReason
           );
-
         if (updateResult.error) {
           return sendError(
             res,
@@ -2336,10 +1988,8 @@ const confirmVehicleQuotation = async (
         }
       }
     }
-
     const requirements =
       getRequirements(trip);
-
     const allRequirementsApproved =
       requirements.length > 0 &&
       requirements.every(
@@ -2354,7 +2004,6 @@ const confirmVehicleQuotation = async (
                 )
               )
             );
-
           const approvedQuantity =
             getConfirmations(trip)
               .filter(
@@ -2374,7 +2023,6 @@ const confirmVehicleQuotation = async (
                       trip,
                       confirmation.quotationId
                     );
-
                   return (
                     total +
                     Math.max(
@@ -2390,18 +2038,15 @@ const confirmVehicleQuotation = async (
                 },
                 0
               );
-
           return (
             approvedQuantity >=
             required
           );
         }
       );
-
     if (allRequirementsApproved) {
       trip.status =
         "Confirmed";
-
       /*
        * IMPORTANT:
        * Quotation approval must NOT move the order to Tracking.
@@ -2413,22 +2058,17 @@ const confirmVehicleQuotation = async (
     } else {
       trip.status =
         "Pending";
-
       trip.stage =
         "Quotation Approval";
     }
-
     trip.markModified(
       "vehicleConfirmations"
     );
-
     await trip.save();
-
     const updatedTrip =
       await TripOrder.findById(
         trip._id
       ).lean();
-
     return sendSuccess(
       res,
       200,
@@ -2442,7 +2082,6 @@ const confirmVehicleQuotation = async (
       "Confirm Quotation Error:",
       error
     );
-
     return sendError(
       res,
       500,
@@ -2451,7 +2090,6 @@ const confirmVehicleQuotation = async (
     );
   }
 };
-
 const allocateVehicle = async (
   req,
   res
@@ -2461,7 +2099,6 @@ const allocateVehicle = async (
       await getTripDocument(
         req.params.id
       );
-
     if (result.error) {
       return sendError(
         res,
@@ -2469,30 +2106,24 @@ const allocateVehicle = async (
         result.error
       );
     }
-
     const trip =
       result.trip;
-
     const requirementId =
       cleanString(
         req.body.requirementId
       );
-
     const confirmationId =
       cleanString(
         req.body.confirmationId
       );
-
     const quotationId =
       cleanString(
         req.body.quotationId
       );
-
     const vehicleNumber =
       cleanUpperString(
         req.body.vehicleNumber
       );
-
     if (!requirementId) {
       return sendError(
         res,
@@ -2500,7 +2131,6 @@ const allocateVehicle = async (
         "Requirement ID is required."
       );
     }
-
     if (!confirmationId) {
       return sendError(
         res,
@@ -2508,7 +2138,6 @@ const allocateVehicle = async (
         "Confirmation ID is required."
       );
     }
-
     if (!quotationId) {
       return sendError(
         res,
@@ -2516,7 +2145,6 @@ const allocateVehicle = async (
         "Quotation ID is required."
       );
     }
-
     if (!vehicleNumber) {
       return sendError(
         res,
@@ -2524,13 +2152,11 @@ const allocateVehicle = async (
         "Vehicle number is required."
       );
     }
-
     const requirement =
       findRequirement(
         trip,
         requirementId
       );
-
     if (!requirement) {
       return sendError(
         res,
@@ -2538,13 +2164,11 @@ const allocateVehicle = async (
         "Vehicle requirement not found."
       );
     }
-
     const confirmation =
       findConfirmation(
         trip,
         confirmationId
       );
-
     if (!confirmation) {
       return sendError(
         res,
@@ -2552,7 +2176,6 @@ const allocateVehicle = async (
         "Vehicle confirmation not found."
       );
     }
-
     if (
       confirmation.status !==
       "Approved"
@@ -2563,7 +2186,6 @@ const allocateVehicle = async (
         "Actual vehicles can be allocated only after quotation approval."
       );
     }
-
     if (
       confirmation.requirementId !==
       requirementId
@@ -2574,7 +2196,6 @@ const allocateVehicle = async (
         "Confirmation does not belong to the selected vehicle requirement."
       );
     }
-
     if (
       confirmation.quotationId !==
       quotationId
@@ -2585,13 +2206,11 @@ const allocateVehicle = async (
         "Quotation ID does not match the approved confirmation."
       );
     }
-
     const quotation =
       findQuotation(
         trip,
         quotationId
       );
-
     if (!quotation) {
       return sendError(
         res,
@@ -2599,7 +2218,6 @@ const allocateVehicle = async (
         "Approved quotation not found."
       );
     }
-
     if (
       quotation.requirementId !==
       requirementId
@@ -2610,7 +2228,6 @@ const allocateVehicle = async (
         "Quotation does not belong to the selected requirement."
       );
     }
-
     const duplicateVehicle =
       getAllocatedVehicles(
         trip
@@ -2621,7 +2238,6 @@ const allocateVehicle = async (
           ) ===
           vehicleNumber
       );
-
     if (duplicateVehicle) {
       return sendError(
         res,
@@ -2629,7 +2245,6 @@ const allocateVehicle = async (
         `${vehicleNumber} is already allocated to this order.`
       );
     }
-
     const allocatedCount =
       getAllocatedVehicles(
         trip
@@ -2638,7 +2253,6 @@ const allocateVehicle = async (
           vehicle.requirementId ===
           requirementId
       ).length;
-
     if (
       allocatedCount >=
       Number(
@@ -2651,98 +2265,77 @@ const allocateVehicle = async (
         `Required quantity for this vehicle requirement is ${requirement.quantity}. All vehicle slots are already allocated.`
       );
     }
-
     const allocatedVehicle = {
       allocationId:
         makeId("ALLOC"),
-
       requirementId,
-
       confirmationId,
-
       quotationId,
-
       vehicleNumber,
-
       allocatedSource: "Tracking",
-
       vehicleStatus: "Active",
-
       replacementCount: 0,
-
       replacementHistory: [],
-
       driver: {
         name:
           cleanString(
             req.body.driver?.name
           ),
-
         contactNumber:
           cleanString(
             req.body.driver
               ?.contactNumber
           ),
       },
-
       escort: {
         vehicleNumber:
           cleanUpperString(
             req.body.escort
               ?.vehicleNumber
           ),
-
         name:
           cleanString(
             req.body.escort?.name
           ),
-
         contactNumber:
           cleanString(
             req.body.escort
               ?.contactNumber
           ),
       },
-
       supervisor: {
         name:
           cleanString(
             req.body.supervisor
               ?.name
           ),
-
         contactNumber:
           cleanString(
             req.body.supervisor
               ?.contactNumber
           ),
       },
-
       loading: {
         status:
           cleanString(
             req.body.loading
               ?.status
           ) || "Pending",
-
         pointInDate:
           toDateOrNull(
             req.body.loading
               ?.pointInDate
           ),
-
         loadingDate:
           toDateOrNull(
             req.body.loading
               ?.loadingDate
           ),
-
         pointOutDate:
           toDateOrNull(
             req.body.loading
               ?.pointOutDate
           ),
-
         haltingDays:
           Math.max(
             0,
@@ -2752,39 +2345,33 @@ const allocateVehicle = async (
               0
             )
           ),
-
         remarks:
           cleanString(
             req.body.loading
               ?.remarks
           ),
       },
-
       unloading: {
         status:
           cleanString(
             req.body.unloading
               ?.status
           ) || "Pending",
-
         pointInDate:
           toDateOrNull(
             req.body.unloading
               ?.pointInDate
           ),
-
         unloadingDate:
           toDateOrNull(
             req.body.unloading
               ?.unloadingDate
           ),
-
         pointOutDate:
           toDateOrNull(
             req.body.unloading
               ?.pointOutDate
           ),
-
         haltingDays:
           Math.max(
             0,
@@ -2794,21 +2381,17 @@ const allocateVehicle = async (
               0
             )
           ),
-
         remarks:
           cleanString(
             req.body.unloading
               ?.remarks
           ),
       },
-
       dailyTracking: [],
     };
-
     trip.allocatedVehicles.push(
       allocatedVehicle
     );
-
     const tripAlreadyCompleted =
       [
         "trip complete",
@@ -2819,17 +2402,13 @@ const allocateVehicle = async (
           trip?.stage
         ).toLowerCase()
       );
-
     if (!tripAlreadyCompleted) {
       trip.status =
         "Active";
-
       trip.stage =
         "Tracking";
     }
-
     await trip.save();
-
     return sendSuccess(
       res,
       201,
@@ -2841,7 +2420,6 @@ const allocateVehicle = async (
       "Allocate Vehicle Error:",
       error
     );
-
     return sendError(
       res,
       500,
@@ -2850,48 +2428,36 @@ const allocateVehicle = async (
     );
   }
 };
-
 /* =========================================================
    UPDATE ALLOCATED VEHICLE
    TRACKING INPUT
-
    PUT
    /api/triporders/:id/allocated-vehicles/:allocationId
-
    AUTO TRIP COMPLETE:
    When ALL allocated vehicles have
    unloading.status === "Completed",
    the complete order moves to Trip Complete.
 ========================================================= */
-
 /* =========================================================
    TRAFFIC - ALLOCATE ACTUAL VEHICLE AFTER QUOTATION APPROVAL
-
    POST
    /api/triporders/:id/traffic-allocated-vehicles
-
    This creates the shared current vehicle BEFORE Tracking.
    The same allocatedVehicles record is read by Traffic,
    Lifecycle, Approval Management and Tracking.
 ========================================================= */
-
 /* =========================================================
    TRAFFIC - REQUEST TRANSPORT REPLACEMENT
-
    Does NOT replace the approved transporter immediately.
    Approval Management must approve the request first.
 ========================================================= */
-
 const requestTransportReplacement = async (req, res) => {
   try {
     const result = await getTripDocument(req.params.id);
-
     if (result.error) {
       return sendError(res, result.status, result.error);
     }
-
     const trip = result.trip;
-
     if (trip.orderApproval?.status !== "Approved") {
       return sendError(
         res,
@@ -2899,7 +2465,6 @@ const requestTransportReplacement = async (req, res) => {
         "Order must be approved before requesting a transport replacement."
       );
     }
-
     if (hasTrackingStarted(trip)) {
       return sendError(
         res,
@@ -2907,7 +2472,6 @@ const requestTransportReplacement = async (req, res) => {
         "Transport replacement cannot be requested after the order moves to Tracking."
       );
     }
-
     const requirementId = cleanString(req.body.requirementId);
     const currentConfirmationId = cleanString(req.body.currentConfirmationId);
     const currentQuotationId = cleanString(req.body.currentQuotationId);
@@ -2917,7 +2481,6 @@ const requestTransportReplacement = async (req, res) => {
     const reason = cleanString(req.body.reason);
     const remarks = cleanString(req.body.remarks);
     const requestedBy = cleanString(req.body.requestedBy) || "Traffic Team";
-
     if (!requirementId || !currentConfirmationId || !currentQuotationId) {
       return sendError(
         res,
@@ -2925,27 +2488,21 @@ const requestTransportReplacement = async (req, res) => {
         "Requirement, current confirmation and current quotation are required."
       );
     }
-
     if (!proposedTransporter) {
       return sendError(res, 400, "New transporter name is required.");
     }
-
     if (proposedAmount < 0) {
       return sendError(res, 400, "Valid proposed amount is required.");
     }
-
     if (!reason) {
       return sendError(res, 400, "Replacement reason is required.");
     }
-
     const requirement = findRequirement(trip, requirementId);
     const currentConfirmation = findConfirmation(trip, currentConfirmationId);
     const currentQuotation = findQuotation(trip, currentQuotationId);
-
     if (!requirement) {
       return sendError(res, 404, "Vehicle requirement not found.");
     }
-
     if (
       !currentConfirmation ||
       currentConfirmation.requirementId !== requirementId ||
@@ -2958,21 +2515,18 @@ const requestTransportReplacement = async (req, res) => {
         "The selected transporter is no longer the current approved transporter."
       );
     }
-
     if (
       !currentQuotation ||
       currentQuotation.requirementId !== requirementId
     ) {
       return sendError(res, 404, "Current approved quotation not found.");
     }
-
     const pendingRequest = getTransportReplacementRequests(trip).find(
       (item) =>
         item.requirementId === requirementId &&
         item.currentConfirmationId === currentConfirmationId &&
         item.status === "Pending"
     );
-
     if (pendingRequest) {
       return sendError(
         res,
@@ -2980,7 +2534,6 @@ const requestTransportReplacement = async (req, res) => {
         "A transport replacement request is already pending approval for this transporter."
       );
     }
-
     trip.transportReplacementRequests.push({
       requestId: makeId("TRR"),
       requirementId,
@@ -3002,12 +2555,9 @@ const requestTransportReplacement = async (req, res) => {
       replacementQuotationId: "",
       replacementConfirmationId: "",
     });
-
     trip.markModified("transportReplacementRequests");
     await trip.save();
-
     const updatedTrip = await TripOrder.findById(trip._id).lean();
-
     return sendSuccess(
       res,
       201,
@@ -3016,7 +2566,6 @@ const requestTransportReplacement = async (req, res) => {
     );
   } catch (error) {
     console.error("Request Transport Replacement Error:", error);
-
     return sendError(
       res,
       500,
@@ -3025,34 +2574,27 @@ const requestTransportReplacement = async (req, res) => {
     );
   }
 };
-
 /* =========================================================
    APPROVAL MANAGEMENT - REVIEW TRANSPORT REPLACEMENT
-
    Approved:
    - old approved confirmation becomes Replaced
    - new quotation is created
    - new quotation receives Approved confirmation
    - replacement request is marked Approved
-
    Rejected:
    - old approved transporter remains unchanged
 ========================================================= */
-
 const reviewTransportReplacement = async (req, res) => {
   try {
     const result = await getTripDocument(req.params.id);
-
     if (result.error) {
       return sendError(res, result.status, result.error);
     }
-
     const trip = result.trip;
     const requestId = cleanString(req.params.requestId);
     const status = cleanString(req.body.status);
     const reviewedBy = cleanString(req.body.reviewedBy) || "Approval Management";
     const reviewRemarks = cleanString(req.body.reviewRemarks);
-
     if (!["Approved", "Rejected"].includes(status)) {
       return sendError(
         res,
@@ -3060,7 +2602,6 @@ const reviewTransportReplacement = async (req, res) => {
         "Transport replacement status must be Approved or Rejected."
       );
     }
-
     if (status === "Rejected" && !reviewRemarks) {
       return sendError(
         res,
@@ -3068,11 +2609,9 @@ const reviewTransportReplacement = async (req, res) => {
         "Rejection reason is required."
       );
     }
-
     const replacementRequest = getTransportReplacementRequests(trip).find(
       (item) => item.requestId === requestId
     );
-
     if (!replacementRequest) {
       return sendError(
         res,
@@ -3080,7 +2619,6 @@ const reviewTransportReplacement = async (req, res) => {
         "Transport replacement request not found."
       );
     }
-
     if (replacementRequest.status !== "Pending") {
       return sendError(
         res,
@@ -3088,7 +2626,6 @@ const reviewTransportReplacement = async (req, res) => {
         `This transport replacement request is already ${replacementRequest.status.toLowerCase()}.`
       );
     }
-
     if (hasTrackingStarted(trip)) {
       return sendError(
         res,
@@ -3096,17 +2633,14 @@ const reviewTransportReplacement = async (req, res) => {
         "Transport replacement cannot be reviewed after the order moves to Tracking."
       );
     }
-
     const currentConfirmation = findConfirmation(
       trip,
       replacementRequest.currentConfirmationId
     );
-
     const currentQuotation = findQuotation(
       trip,
       replacementRequest.currentQuotationId
     );
-
     if (
       !currentConfirmation ||
       !currentQuotation ||
@@ -3118,18 +2652,14 @@ const reviewTransportReplacement = async (req, res) => {
         "The original approved transporter has changed. Refresh the order before reviewing this request."
       );
     }
-
     const now = new Date();
-
     replacementRequest.status = status;
     replacementRequest.reviewedBy = reviewedBy;
     replacementRequest.reviewedAt = now;
     replacementRequest.reviewRemarks = reviewRemarks;
-
     if (status === "Approved") {
       const replacementQuotationId = makeId("QUO");
       const replacementConfirmationId = makeId("CONF");
-
       trip.trafficQuotations.push({
         quotationId: replacementQuotationId,
         requirementId: replacementRequest.requirementId,
@@ -3145,13 +2675,11 @@ const reviewTransportReplacement = async (req, res) => {
         remarks: `Approved transport replacement for ${replacementRequest.currentTransporter}. ${replacementRequest.remarks || ""
           }`.trim(),
       });
-
       currentConfirmation.status = "Replaced";
       currentConfirmation.confirmedAt = now;
       currentConfirmation.remarks = `Replaced by ${replacementRequest.proposedTransporter}. ${reviewRemarks || ""
         }`.trim();
       currentConfirmation.rejectionReason = "";
-
       trip.vehicleConfirmations.push({
         confirmationId: replacementConfirmationId,
         requirementId: replacementRequest.requirementId,
@@ -3162,21 +2690,16 @@ const reviewTransportReplacement = async (req, res) => {
         remarks: reviewRemarks,
         rejectionReason: "",
       });
-
       replacementRequest.replacementQuotationId =
         replacementQuotationId;
       replacementRequest.replacementConfirmationId =
         replacementConfirmationId;
     }
-
     trip.markModified("trafficQuotations");
     trip.markModified("vehicleConfirmations");
     trip.markModified("transportReplacementRequests");
-
     await trip.save();
-
     const updatedTrip = await TripOrder.findById(trip._id).lean();
-
     return sendSuccess(
       res,
       200,
@@ -3187,7 +2710,6 @@ const reviewTransportReplacement = async (req, res) => {
     );
   } catch (error) {
     console.error("Review Transport Replacement Error:", error);
-
     return sendError(
       res,
       500,
@@ -3196,11 +2718,9 @@ const reviewTransportReplacement = async (req, res) => {
     );
   }
 };
-
 const allocateTrafficVehicle = async (req, res) => {
   try {
     const result = await getTripDocument(req.params.id);
-
     if (result.error) {
       return sendError(
         res,
@@ -3208,9 +2728,7 @@ const allocateTrafficVehicle = async (req, res) => {
         result.error
       );
     }
-
     const trip = result.trip;
-
     if (hasTrackingStarted(trip)) {
       return sendError(
         res,
@@ -3218,19 +2736,14 @@ const allocateTrafficVehicle = async (req, res) => {
         "The order is already in Tracking. Vehicle allocation must now be handled by the Tracking team."
       );
     }
-
     const requirementId =
       cleanString(req.body.requirementId);
-
     const confirmationId =
       cleanString(req.body.confirmationId);
-
     const quotationId =
       cleanString(req.body.quotationId);
-
     const vehicleNumber =
       cleanUpperString(req.body.vehicleNumber);
-
     if (!requirementId) {
       return sendError(
         res,
@@ -3238,7 +2751,6 @@ const allocateTrafficVehicle = async (req, res) => {
         "Requirement ID is required."
       );
     }
-
     if (!confirmationId) {
       return sendError(
         res,
@@ -3246,7 +2758,6 @@ const allocateTrafficVehicle = async (req, res) => {
         "Confirmation ID is required."
       );
     }
-
     if (!quotationId) {
       return sendError(
         res,
@@ -3254,7 +2765,6 @@ const allocateTrafficVehicle = async (req, res) => {
         "Quotation ID is required."
       );
     }
-
     if (!vehicleNumber) {
       return sendError(
         res,
@@ -3262,13 +2772,11 @@ const allocateTrafficVehicle = async (req, res) => {
         "Vehicle number is required."
       );
     }
-
     const requirement =
       findRequirement(
         trip,
         requirementId
       );
-
     if (!requirement) {
       return sendError(
         res,
@@ -3276,13 +2784,11 @@ const allocateTrafficVehicle = async (req, res) => {
         "Vehicle requirement not found."
       );
     }
-
     const confirmation =
       findConfirmation(
         trip,
         confirmationId
       );
-
     if (!confirmation) {
       return sendError(
         res,
@@ -3290,7 +2796,6 @@ const allocateTrafficVehicle = async (req, res) => {
         "Vehicle confirmation not found."
       );
     }
-
     if (
       confirmation.status !== "Approved"
     ) {
@@ -3300,7 +2805,6 @@ const allocateTrafficVehicle = async (req, res) => {
         "Traffic can allocate the actual vehicle only after quotation approval."
       );
     }
-
     if (
       confirmation.requirementId !==
       requirementId ||
@@ -3313,13 +2817,11 @@ const allocateTrafficVehicle = async (req, res) => {
         "Requirement, confirmation and quotation do not match."
       );
     }
-
     const quotation =
       findQuotation(
         trip,
         quotationId
       );
-
     if (
       !quotation ||
       quotation.requirementId !==
@@ -3331,7 +2833,6 @@ const allocateTrafficVehicle = async (req, res) => {
         "Approved quotation not found."
       );
     }
-
     if (
       isDuplicateVehicleNumber(
         trip,
@@ -3344,7 +2845,6 @@ const allocateTrafficVehicle = async (req, res) => {
         `${vehicleNumber} is already allocated to this order.`
       );
     }
-
     const allocatedCount =
       getAllocatedVehicles(trip)
         .filter(
@@ -3352,7 +2852,6 @@ const allocateTrafficVehicle = async (req, res) => {
             vehicle.requirementId ===
             requirementId
         ).length;
-
     if (
       allocatedCount >=
       Number(requirement.quantity || 1)
@@ -3363,77 +2862,60 @@ const allocateTrafficVehicle = async (req, res) => {
         `Required quantity for this vehicle requirement is ${requirement.quantity}. All vehicle slots are already allocated.`
       );
     }
-
     const allocatedVehicle = {
       allocationId:
         makeId("ALLOC"),
-
       requirementId,
-
       confirmationId,
-
       quotationId,
-
       vehicleNumber,
-
       allocatedSource:
         "Traffic",
-
       vehicleStatus:
         "Active",
-
       replacementCount:
         0,
-
       replacementHistory:
         [],
-
       driver: {
         name:
           cleanString(
             req.body.driver?.name
           ),
-
         contactNumber:
           cleanString(
             req.body.driver
               ?.contactNumber
           ),
       },
-
       escort: {
         vehicleNumber:
           cleanUpperString(
             req.body.escort
               ?.vehicleNumber
           ),
-
         name:
           cleanString(
             req.body.escort?.name
           ),
-
         contactNumber:
           cleanString(
             req.body.escort
               ?.contactNumber
           ),
       },
-
       supervisor: {
         name:
           cleanString(
             req.body.supervisor
               ?.name
           ),
-
         contactNumber:
           cleanString(
             req.body.supervisor
               ?.contactNumber
           ),
       },
-
       loading: {
         status: "Pending",
         pointInDate: null,
@@ -3442,7 +2924,6 @@ const allocateTrafficVehicle = async (req, res) => {
         haltingDays: 0,
         remarks: "",
       },
-
       unloading: {
         status: "Pending",
         pointInDate: null,
@@ -3451,25 +2932,19 @@ const allocateTrafficVehicle = async (req, res) => {
         haltingDays: 0,
         remarks: "",
       },
-
       dailyTracking: [],
     };
-
     trip.allocatedVehicles.push(
       allocatedVehicle
     );
-
     trip.markModified(
       "allocatedVehicles"
     );
-
     await trip.save();
-
     const updatedTrip =
       await TripOrder.findById(
         trip._id
       ).lean();
-
     return sendSuccess(
       res,
       201,
@@ -3481,7 +2956,6 @@ const allocateTrafficVehicle = async (req, res) => {
       "Traffic Allocate Vehicle Error:",
       error
     );
-
     return sendError(
       res,
       500,
@@ -3490,11 +2964,9 @@ const allocateTrafficVehicle = async (req, res) => {
     );
   }
 };
-
 /* =========================================================
    COMMON VEHICLE REPLACEMENT
 ========================================================= */
-
 const replaceAllocatedVehicle = async (
   req,
   res,
@@ -3505,7 +2977,6 @@ const replaceAllocatedVehicle = async (
       await getTripDocument(
         req.params.id
       );
-
     if (result.error) {
       return sendError(
         res,
@@ -3513,20 +2984,16 @@ const replaceAllocatedVehicle = async (
         result.error
       );
     }
-
     const trip = result.trip;
-
     const allocationId =
       cleanString(
         req.params.allocationId
       );
-
     const vehicle =
       findAllocatedVehicle(
         trip,
         allocationId
       );
-
     if (!vehicle) {
       return sendError(
         res,
@@ -3534,10 +3001,8 @@ const replaceAllocatedVehicle = async (
         "Allocated vehicle not found."
       );
     }
-
     const trackingStarted =
       hasTrackingStarted(trip);
-
     if (
       replacementSource === "Traffic" &&
       trackingStarted
@@ -3548,7 +3013,6 @@ const replaceAllocatedVehicle = async (
         "This order has already moved to Tracking. Use Tracking vehicle replacement."
       );
     }
-
     if (
       replacementSource === "Tracking" &&
       !trackingStarted
@@ -3559,13 +3023,11 @@ const replaceAllocatedVehicle = async (
         "Tracking vehicle replacement is available only after the order moves to Tracking."
       );
     }
-
     const newVehicleNumber =
       cleanUpperString(
         req.body.newVehicleNumber ??
         req.body.vehicleNumber
       );
-
     if (!newVehicleNumber) {
       return sendError(
         res,
@@ -3573,12 +3035,10 @@ const replaceAllocatedVehicle = async (
         "New vehicle number is required."
       );
     }
-
     const oldVehicleNumber =
       cleanUpperString(
         vehicle.vehicleNumber
       );
-
     if (
       oldVehicleNumber ===
       newVehicleNumber
@@ -3589,7 +3049,6 @@ const replaceAllocatedVehicle = async (
         "New vehicle number must be different from the current vehicle number."
       );
     }
-
     if (
       isDuplicateVehicleNumber(
         trip,
@@ -3603,12 +3062,10 @@ const replaceAllocatedVehicle = async (
         `${newVehicleNumber} is already allocated to this order.`
       );
     }
-
     const reason =
       cleanString(
         req.body.reason
       );
-
     if (!reason) {
       return sendError(
         res,
@@ -3616,20 +3073,17 @@ const replaceAllocatedVehicle = async (
         "Replacement reason is required."
       );
     }
-
     const oldDriver = {
       name:
         cleanString(
           vehicle.driver?.name
         ),
-
       contactNumber:
         cleanString(
           vehicle.driver
             ?.contactNumber
         ),
     };
-
     const newDriver = {
       name:
         cleanString(
@@ -3637,7 +3091,6 @@ const replaceAllocatedVehicle = async (
           req.body.newDriver?.name ??
           vehicle.driver?.name
         ),
-
       contactNumber:
         cleanString(
           req.body.driver
@@ -3648,38 +3101,27 @@ const replaceAllocatedVehicle = async (
             ?.contactNumber
         ),
     };
-
     const replacement = {
       replacementId:
         makeId("REPL"),
-
       replacementSource,
-
       oldVehicleNumber,
-
       newVehicleNumber,
-
       oldDriver,
-
       newDriver,
-
       reason,
-
       remarks:
         cleanString(
           req.body.remarks
         ),
-
       replacedBy:
         cleanString(
           req.body.replacedBy
         ) ||
         `${replacementSource} Team`,
-
       replacedAt:
         new Date(),
     };
-
     if (
       !Array.isArray(
         vehicle.replacementHistory
@@ -3687,37 +3129,27 @@ const replaceAllocatedVehicle = async (
     ) {
       vehicle.replacementHistory = [];
     }
-
     vehicle.replacementHistory.push(
       replacement
     );
-
     vehicle.vehicleNumber =
       newVehicleNumber;
-
     vehicle.driver =
       newDriver;
-
     vehicle.vehicleStatus =
       "Active";
-
     vehicle.allocatedSource =
       replacementSource;
-
     vehicle.replacementCount =
       vehicle.replacementHistory.length;
-
     trip.markModified(
       "allocatedVehicles"
     );
-
     await trip.save();
-
     const updatedTrip =
       await TripOrder.findById(
         trip._id
       ).lean();
-
     return sendSuccess(
       res,
       200,
@@ -3729,7 +3161,6 @@ const replaceAllocatedVehicle = async (
       `${replacementSource} Vehicle Replacement Error:`,
       error
     );
-
     return sendError(
       res,
       500,
@@ -3738,11 +3169,9 @@ const replaceAllocatedVehicle = async (
     );
   }
 };
-
 /* =========================================================
    TRAFFIC VEHICLE REPLACEMENT
 ========================================================= */
-
 const replaceTrafficVehicle = (
   req,
   res
@@ -3752,11 +3181,9 @@ const replaceTrafficVehicle = (
     res,
     "Traffic"
   );
-
 /* =========================================================
    TRACKING VEHICLE REPLACEMENT
 ========================================================= */
-
 const replaceTrackingVehicle = (
   req,
   res
@@ -3766,7 +3193,6 @@ const replaceTrackingVehicle = (
     res,
     "Tracking"
   );
-
 const updateAllocatedVehicle = async (
   req,
   res
@@ -3776,7 +3202,6 @@ const updateAllocatedVehicle = async (
       await getTripDocument(
         req.params.id
       );
-
     if (result.error) {
       return sendError(
         res,
@@ -3784,14 +3209,11 @@ const updateAllocatedVehicle = async (
         result.error
       );
     }
-
     const trip = result.trip;
-
     const allocationId =
       cleanString(
         req.params.allocationId
       );
-
     const vehicle =
       getAllocatedVehicles(
         trip
@@ -3800,7 +3222,6 @@ const updateAllocatedVehicle = async (
           item.allocationId ===
           allocationId
       );
-
     if (!vehicle) {
       return sendError(
         res,
@@ -3808,13 +3229,11 @@ const updateAllocatedVehicle = async (
         "Allocated vehicle not found."
       );
     }
-
     /* =====================================================
        VEHICLE NUMBER
        Vehicle number changes must use a replacement endpoint
        so replacement history is never lost.
     ===================================================== */
-
     if (
       req.body.vehicleNumber !== undefined &&
       cleanUpperString(req.body.vehicleNumber) !==
@@ -3826,11 +3245,9 @@ const updateAllocatedVehicle = async (
         "Use the Traffic or Tracking vehicle replacement API to change the vehicle number."
       );
     }
-
     /* =====================================================
        DRIVER
     ===================================================== */
-
     if (req.body.driver) {
       vehicle.driver = {
         name:
@@ -3838,7 +3255,6 @@ const updateAllocatedVehicle = async (
             req.body.driver.name ??
             vehicle.driver?.name
           ),
-
         contactNumber:
           cleanString(
             req.body.driver
@@ -3848,11 +3264,9 @@ const updateAllocatedVehicle = async (
           ),
       };
     }
-
     /* =====================================================
        ESCORT
     ===================================================== */
-
     if (req.body.escort) {
       vehicle.escort = {
         vehicleNumber:
@@ -3862,13 +3276,11 @@ const updateAllocatedVehicle = async (
             vehicle.escort
               ?.vehicleNumber
           ),
-
         name:
           cleanString(
             req.body.escort.name ??
             vehicle.escort?.name
           ),
-
         contactNumber:
           cleanString(
             req.body.escort
@@ -3878,11 +3290,9 @@ const updateAllocatedVehicle = async (
           ),
       };
     }
-
     /* =====================================================
        SUPERVISOR
     ===================================================== */
-
     if (req.body.supervisor) {
       vehicle.supervisor = {
         name:
@@ -3892,7 +3302,6 @@ const updateAllocatedVehicle = async (
             vehicle.supervisor
               ?.name
           ),
-
         contactNumber:
           cleanString(
             req.body.supervisor
@@ -3902,15 +3311,12 @@ const updateAllocatedVehicle = async (
           ),
       };
     }
-
     /* =====================================================
        LOADING
     ===================================================== */
-
     if (req.body.loading) {
       const loading =
         req.body.loading;
-
       if (
         loading.status !==
         undefined
@@ -3920,7 +3326,6 @@ const updateAllocatedVehicle = async (
             loading.status
           ) || "Pending";
       }
-
       if (
         loading.pointInDate !==
         undefined
@@ -3930,7 +3335,6 @@ const updateAllocatedVehicle = async (
             loading.pointInDate
           );
       }
-
       if (
         loading.loadingDate !==
         undefined
@@ -3940,7 +3344,6 @@ const updateAllocatedVehicle = async (
             loading.loadingDate
           );
       }
-
       if (
         loading.pointOutDate !==
         undefined
@@ -3950,7 +3353,6 @@ const updateAllocatedVehicle = async (
             loading.pointOutDate
           );
       }
-
       if (
         loading.haltingDays !==
         undefined
@@ -3964,7 +3366,6 @@ const updateAllocatedVehicle = async (
             )
           );
       }
-
       if (
         loading.remarks !==
         undefined
@@ -3975,15 +3376,12 @@ const updateAllocatedVehicle = async (
           );
       }
     }
-
     /* =====================================================
        UNLOADING
     ===================================================== */
-
     if (req.body.unloading) {
       const unloading =
         req.body.unloading;
-
       if (
         unloading.status !==
         undefined
@@ -3993,7 +3391,6 @@ const updateAllocatedVehicle = async (
             unloading.status
           ) || "Pending";
       }
-
       if (
         unloading.pointInDate !==
         undefined
@@ -4003,7 +3400,6 @@ const updateAllocatedVehicle = async (
             unloading.pointInDate
           );
       }
-
       if (
         unloading.unloadingDate !==
         undefined
@@ -4013,7 +3409,6 @@ const updateAllocatedVehicle = async (
             unloading.unloadingDate
           );
       }
-
       if (
         unloading.pointOutDate !==
         undefined
@@ -4023,7 +3418,6 @@ const updateAllocatedVehicle = async (
             unloading.pointOutDate
           );
       }
-
       if (
         unloading.haltingDays !==
         undefined
@@ -4037,7 +3431,6 @@ const updateAllocatedVehicle = async (
             )
           );
       }
-
       if (
         unloading.remarks !==
         undefined
@@ -4048,16 +3441,13 @@ const updateAllocatedVehicle = async (
           );
       }
     }
-
     /* =====================================================
        CHECK COMPLETE TRIP
     ===================================================== */
-
     const allocatedVehicles =
       getAllocatedVehicles(
         trip
       );
-
     /*
      * Trip becomes completed only when:
      *
@@ -4065,7 +3455,6 @@ const updateAllocatedVehicle = async (
      * 2. EVERY allocated vehicle has
      *    unloading status = Completed.
      */
-
     const requiredVehicleCount =
       Math.max(
         0,
@@ -4090,12 +3479,10 @@ const updateAllocatedVehicle = async (
           ),
         0
       );
-
     const allRequiredVehiclesAllocated =
       requiredVehicleCount > 0 &&
       allocatedVehicles.length >=
       requiredVehicleCount;
-
     const allAllocatedVehiclesUnloaded =
       allocatedVehicles.length > 0 &&
       allocatedVehicles.every(
@@ -4107,14 +3494,11 @@ const updateAllocatedVehicle = async (
           ).toLowerCase() ===
           "completed"
       );
-
     const allVehiclesCompleted =
       allRequiredVehiclesAllocated &&
       allAllocatedVehiclesUnloaded;
-
     /* =====================================================
        STRICT TRIP COMPLETION VALIDATION
-
        Trip Complete is allowed ONLY when:
        1. Order Finalization / first approval is approved
        2. PO Document is fully completed
@@ -4123,12 +3507,10 @@ const updateAllocatedVehicle = async (
        5. All required vehicles are allocated
        6. EVERY allocated vehicle has completed unloading
     ===================================================== */
-
     const orderFinalizationCompleted =
       cleanString(
         trip?.orderApproval?.status
       ).toLowerCase() === "approved";
-
     const poDocumentCompleted =
       cleanString(
         trip?.poDocument?.status
@@ -4141,32 +3523,26 @@ const updateAllocatedVehicle = async (
         trip?.poDocument?.fileUrl ||
         trip?.poDocument?.documentUrl
       );
-
     const lifecycleQuotations = getQuotations(trip);
     const approvedConfirmations = getConfirmations(trip).filter(
       (confirmation) =>
         cleanString(confirmation?.status).toLowerCase() === "approved"
     );
-
     const requiredVendorVehicleCount = getRequirements(trip).reduce(
       (total, requirement) =>
         total + Math.max(0, Math.floor(toNumber(requirement?.quantity, 0))),
       0
     );
-
     const approvedVendorVehicleCount = approvedConfirmations.reduce(
       (total, confirmation) => {
         const confirmationQuotationId = cleanString(
           confirmation?.quotationId || confirmation?.trafficQuotationId
         );
-
         const quotation = lifecycleQuotations.find((quote) =>
           cleanString(quote?.quotationId || quote?._id || quote?.id) ===
           confirmationQuotationId
         );
-
         if (!quotation) return total;
-
         return total + Math.max(
           1,
           Math.floor(
@@ -4182,23 +3558,19 @@ const updateAllocatedVehicle = async (
       },
       0
     );
-
     const transportReplacementPending =
       getTransportReplacementRequests(trip).some(
         (request) =>
           cleanString(request?.status).toLowerCase() === "pending"
       );
-
     const vendorFinalizationCompleted =
       !transportReplacementPending &&
       requiredVendorVehicleCount > 0 &&
       approvedVendorVehicleCount >= requiredVendorVehicleCount;
-
     const orderPlacedCompleted =
       cleanString(
         trip?.orderPlaced?.status
       ).toLowerCase() === "completed";
-
     const canCompleteTrip =
       orderFinalizationCompleted &&
       poDocumentCompleted &&
@@ -4206,7 +3578,6 @@ const updateAllocatedVehicle = async (
       orderPlacedCompleted &&
       allRequiredVehiclesAllocated &&
       allAllocatedVehiclesUnloaded;
-
     if (canCompleteTrip) {
       trip.stage = "Trip Complete";
       trip.status = "Completed";
@@ -4226,17 +3597,13 @@ const updateAllocatedVehicle = async (
       trip.stage = "Tracking";
       trip.status = "Active";
     }
-
     /* =====================================================
        SAVE EVERYTHING TO MONGODB
     ===================================================== */
-
     await trip.save();
-
     /* =====================================================
        RESPONSE
     ===================================================== */
-
     return sendSuccess(
       res,
       200,
@@ -4250,7 +3617,6 @@ const updateAllocatedVehicle = async (
       "Update Allocated Vehicle Error:",
       error
     );
-
     return sendError(
       res,
       500,
@@ -4259,11 +3625,9 @@ const updateAllocatedVehicle = async (
     );
   }
 };
-
 /* =========================================================
    SAVE LR / POD / E-WAY BILL DOCUMENT FOR ALLOCATED VEHICLE
 ========================================================= */
-
 const saveMovementDocument = async (
   req,
   res,
@@ -4277,7 +3641,6 @@ const saveMovementDocument = async (
         "Invalid order database ID."
       );
     }
-
     if (
       !["lr", "pod", "ewayBill"].includes(
         documentType
@@ -4289,11 +3652,9 @@ const saveMovementDocument = async (
         "Invalid movement document type."
       );
     }
-
     /*
       IMPORTANT:
       fileData has select:false in schema.
-
       We must explicitly load the binary data,
       especially when replacing/updating an
       existing document.
@@ -4303,7 +3664,6 @@ const saveMovementDocument = async (
     ).select(
       "+allocatedVehicles.lr.fileData +allocatedVehicles.pod.fileData +allocatedVehicles.ewayBill.fileData"
     );
-
     if (!trip) {
       return sendError(
         res,
@@ -4311,17 +3671,14 @@ const saveMovementDocument = async (
         "Order not found."
       );
     }
-
     const allocationId = cleanString(
       req.params.allocationId
     );
-
     const vehicle =
       getAllocatedVehicles(trip).find(
         (item) =>
           item.allocationId === allocationId
       );
-
     if (!vehicle) {
       return sendError(
         res,
@@ -4329,38 +3686,29 @@ const saveMovementDocument = async (
         "Allocated vehicle not found."
       );
     }
-
     const currentDocument =
       vehicle[documentType] || {};
-
     const number = cleanString(
       req.body.number
     );
-
     const date = toDateOrNull(
       req.body.date
     );
-
     const validUpto = toDateOrNull(
       req.body.validUpto
     );
-
     const status =
       cleanString(req.body.status) ||
       "Pending";
-
     const remarks = cleanString(
       req.body.remarks
     );
-
     const uploadedBy =
       cleanString(req.body.uploadedBy) ||
       "Tracking";
-
     /* ================================
        LR VALIDATION
     ================================= */
-
     if (
       documentType === "lr" &&
       !number
@@ -4371,14 +3719,11 @@ const saveMovementDocument = async (
         "LR Number is required."
       );
     }
-
     /* ================================
        POD VALIDATION
-
        Only POD requires a file.
        E-Way Bill is details only.
     ================================= */
-
     if (
       documentType === "pod" &&
       !req.file &&
@@ -4390,39 +3735,32 @@ const saveMovementDocument = async (
         "POD document is required."
       );
     }
-
     /* ================================
        BUILD DOCUMENT
     ================================= */
-
     const documentData = {
       number:
         documentType === "pod"
           ? currentDocument.number || ""
           : number,
-
       date:
         documentType === "lr"
           ? date
           : currentDocument.date || null,
-
       validUpto:
         documentType === "ewayBill"
           ? validUpto
           : currentDocument.validUpto ||
           null,
-
       status:
         documentType === "ewayBill"
           ? status
           : currentDocument.status ||
           "Pending",
-
       remarks:
         documentType === "lr"
           ? remarks
           : currentDocument.remarks || "",
-
       documentName:
         cleanString(
           req.body.documentName
@@ -4434,22 +3772,18 @@ const saveMovementDocument = async (
           : documentType === "pod"
             ? "POD Document"
             : "LR Document"),
-
       fileName:
         req.file?.originalname ||
         currentDocument.fileName ||
         "",
-
       mimeType:
         req.file?.mimetype ||
         currentDocument.mimeType ||
         "",
-
       fileSize:
         req.file?.size ||
         currentDocument.fileSize ||
         0,
-
       /*
         IMPORTANT:
         If a new file exists use it.
@@ -4459,24 +3793,18 @@ const saveMovementDocument = async (
         req.file?.buffer ||
         currentDocument.fileData ||
         null,
-
       uploadedBy,
-
       uploadedAt: req.file
         ? new Date()
         : currentDocument.uploadedAt ||
         null,
     };
-
     vehicle[documentType] =
       documentData;
-
     trip.markModified(
       "allocatedVehicles"
     );
-
     await trip.save();
-
     /*
       Return normal trip without binary
       file content.
@@ -4485,7 +3813,6 @@ const saveMovementDocument = async (
       await TripOrder.findById(
         trip._id
       ).lean();
-
     /* Do not send binary movement files back in JSON responses. */
     if (Array.isArray(updatedTrip?.allocatedVehicles)) {
       updatedTrip.allocatedVehicles.forEach((item) => {
@@ -4494,12 +3821,10 @@ const saveMovementDocument = async (
         if (item?.ewayBill) item.ewayBill.fileData = undefined;
       });
     }
-
     const label =
       documentType === "ewayBill"
         ? "E-Way Bill"
         : documentType.toUpperCase();
-
     return sendSuccess(
       res,
       200,
@@ -4511,12 +3836,10 @@ const saveMovementDocument = async (
       documentType === "ewayBill"
         ? "E-Way Bill"
         : documentType.toUpperCase();
-
     console.error(
       `Save ${label} Error:`,
       error
     );
-
     return sendError(
       res,
       500,
@@ -4525,20 +3848,15 @@ const saveMovementDocument = async (
     );
   }
 };
-
 const saveLrDocument = (req, res) =>
   saveMovementDocument(req, res, "lr");
-
 const savePodDocument = (req, res) =>
   saveMovementDocument(req, res, "pod");
-
 const saveEwayBillDocument = (req, res) =>
   saveMovementDocument(req, res, "ewayBill");
-
 /* =========================================================
    VIEW / DOWNLOAD LR / POD / E-WAY BILL DOCUMENT
 ========================================================= */
-
 const downloadMovementDocument = async (
   req,
   res,
@@ -4552,7 +3870,6 @@ const downloadMovementDocument = async (
         "Invalid order database ID."
       );
     }
-
     if (!["lr", "pod", "ewayBill"].includes(documentType)) {
       return sendError(
         res,
@@ -4560,24 +3877,19 @@ const downloadMovementDocument = async (
         "Invalid movement document type."
       );
     }
-
     const trip = await TripOrder.findById(
       req.params.id
     ).select(
       "+allocatedVehicles.lr.fileData +allocatedVehicles.pod.fileData +allocatedVehicles.ewayBill.fileData"
     );
-
     if (!trip) {
       return sendError(res, 404, "Order not found.");
     }
-
     const allocationId =
       cleanString(req.params.allocationId);
-
     const vehicle = getAllocatedVehicles(trip).find(
       (item) => item.allocationId === allocationId
     );
-
     if (!vehicle) {
       return sendError(
         res,
@@ -4585,59 +3897,49 @@ const downloadMovementDocument = async (
         "Allocated vehicle not found."
       );
     }
-
     const document = vehicle[documentType];
-
     if (!document?.fileData || !document?.fileName) {
       const label =
         documentType === "ewayBill"
           ? "E-Way Bill"
           : documentType.toUpperCase();
-
       return sendError(
         res,
         404,
         `${label} document not found.`
       );
     }
-
     const disposition =
       String(
         req.query.disposition || ""
       ).toLowerCase() === "inline"
         ? "inline"
         : "attachment";
-
     res.setHeader(
       "Content-Type",
       document.mimeType ||
       "application/octet-stream"
     );
-
     res.setHeader(
       "Content-Length",
       document.fileData.length
     );
-
     res.setHeader(
       "Content-Disposition",
       `${disposition}; filename="${String(
         document.fileName
       ).replace(/"/g, "")}"`
     );
-
     return res.send(document.fileData);
   } catch (error) {
     const label =
       documentType === "ewayBill"
         ? "E-Way Bill"
         : documentType.toUpperCase();
-
     console.error(
       `Download ${label} Error:`,
       error
     );
-
     return sendError(
       res,
       500,
@@ -4646,16 +3948,12 @@ const downloadMovementDocument = async (
     );
   }
 };
-
 const downloadLrDocument = (req, res) =>
   downloadMovementDocument(req, res, "lr");
-
 const downloadPodDocument = (req, res) =>
   downloadMovementDocument(req, res, "pod");
-
 const downloadEwayBillDocument = (req, res) =>
   downloadMovementDocument(req, res, "ewayBill");
-
 const addDailyTracking = async (
   req,
   res
@@ -4665,7 +3963,6 @@ const addDailyTracking = async (
       await getTripDocument(
         req.params.id
       );
-
     if (result.error) {
       return sendError(
         res,
@@ -4673,15 +3970,12 @@ const addDailyTracking = async (
         result.error
       );
     }
-
     const trip =
       result.trip;
-
     const allocationId =
       cleanString(
         req.params.allocationId
       );
-
     const vehicle =
       getAllocatedVehicles(
         trip
@@ -4690,7 +3984,6 @@ const addDailyTracking = async (
           item.allocationId ===
           allocationId
       );
-
     if (!vehicle) {
       return sendError(
         res,
@@ -4698,21 +3991,18 @@ const addDailyTracking = async (
         "Allocated vehicle not found."
       );
     }
-
     const history =
       Array.isArray(
         vehicle.dailyTracking
       )
         ? vehicle.dailyTracking
         : [];
-
     const previousEntry =
       history.length > 0
         ? history[
         history.length - 1
         ]
         : null;
-
     const yesterdayKm =
       req.body.yesterdayKm !==
         undefined
@@ -4731,7 +4021,6 @@ const addDailyTracking = async (
             0
           )
         );
-
     const todayKm =
       Math.max(
         0,
@@ -4740,7 +4029,6 @@ const addDailyTracking = async (
           yesterdayKm
         )
       );
-
     const runningKm =
       req.body.runningKm !==
         undefined
@@ -4756,7 +4044,6 @@ const addDailyTracking = async (
           todayKm -
           yesterdayKm
         );
-
     const yesterdayLocation =
       req.body
         .yesterdayLocation !==
@@ -4769,12 +4056,10 @@ const addDailyTracking = async (
           previousEntry
             ?.currentLocation
         );
-
     const currentLocation =
       cleanString(
         req.body.currentLocation
       );
-
     const day =
       req.body.day !==
         undefined
@@ -4786,39 +4071,28 @@ const addDailyTracking = async (
           )
         )
         : history.length + 1;
-
     const tracking = {
       trackingId:
         makeId("TRACK"),
-
       date:
         toDateOrNull(
           req.body.date
         ) ||
         new Date(),
-
       day,
-
       yesterdayKm,
-
       todayKm,
-
       runningKm,
-
       yesterdayLocation,
-
       currentLocation,
-
       latitude:
         toNullableNumber(
           req.body.latitude
         ),
-
       longitude:
         toNullableNumber(
           req.body.longitude
         ),
-
       speed:
         Math.max(
           0,
@@ -4827,38 +4101,29 @@ const addDailyTracking = async (
             0
           )
         ),
-
       status:
         cleanString(
           req.body.status
         ) || "Idle",
-
       remarks:
         cleanString(
           req.body.remarks
         ),
-
       updatedBy:
         cleanString(
           req.body.updatedBy
         ),
-
       updatedAt:
         new Date(),
     };
-
     vehicle.dailyTracking.push(
       tracking
     );
-
     trip.status =
       "Active";
-
     trip.stage =
       "Tracking";
-
     await trip.save();
-
     return sendSuccess(
       res,
       201,
@@ -4870,7 +4135,6 @@ const addDailyTracking = async (
       "Add Daily Tracking Error:",
       error
     );
-
     return sendError(
       res,
       500,
@@ -4879,14 +4143,11 @@ const addDailyTracking = async (
     );
   }
 };
-
 /* =========================================================
    UPDATE ROUTE LOCATIONS
    TRACKING INPUT
-
    PUT /api/triporders/:id/route-locations
 ========================================================= */
-
 const updateRouteLocations = async (
   req,
   res
@@ -4896,7 +4157,6 @@ const updateRouteLocations = async (
       await getTripDocument(
         req.params.id
       );
-
     if (result.error) {
       return sendError(
         res,
@@ -4904,9 +4164,7 @@ const updateRouteLocations = async (
         result.error
       );
     }
-
     const trip = result.trip;
-
     if (
       !Array.isArray(
         req.body.routeLocations
@@ -4918,12 +4176,10 @@ const updateRouteLocations = async (
         "Route locations must be an array."
       );
     }
-
     const cleanedLocations =
       req.body.routeLocations
         .map(cleanString)
         .filter(Boolean);
-
     // Remove duplicate locations while preserving entered order.
     const seen = new Set();
     const routeLocations =
@@ -4931,30 +4187,23 @@ const updateRouteLocations = async (
         (location) => {
           const key =
             location.toLowerCase();
-
           if (seen.has(key)) {
             return false;
           }
-
           seen.add(key);
           return true;
         }
       );
-
     trip.routeLocations =
       routeLocations;
-
     trip.markModified(
       "routeLocations"
     );
-
     await trip.save();
-
     const updatedTrip =
       await TripOrder.findById(
         trip._id
       ).lean();
-
     return sendSuccess(
       res,
       200,
@@ -4966,7 +4215,6 @@ const updateRouteLocations = async (
       "Update Route Locations Error:",
       error
     );
-
     return sendError(
       res,
       500,
@@ -4975,23 +4223,19 @@ const updateRouteLocations = async (
     );
   }
 };
-
 /* =========================================================
    PLACE ORDER
    KEY ACCOUNT -> TRACKING
 ========================================================= */
-
 /* =========================================================
    PLACE ORDER
    KEY ACCOUNT -> TRACKING
-
    FLOW:
    Order Approval Approved
           ↓
       Place Order
           ↓
        Tracking
-
    IMPORTANT:
    Place Order rule:
    - Order Approval must be Approved.
@@ -5001,14 +4245,12 @@ const updateRouteLocations = async (
    - Vehicle Allocation is NOT mandatory before Place Order.
    - Actual vehicle allocation happens in Tracking.
 ========================================================= */
-
 const placeOrder = async (req, res) => {
   try {
     const result =
       await getTripDocument(
         req.params.id
       );
-
     if (result.error) {
       return sendError(
         res,
@@ -5016,20 +4258,16 @@ const placeOrder = async (req, res) => {
         result.error
       );
     }
-
     const trip = result.trip;
-
     /* =====================================================
        1. ORDER APPROVAL MUST BE APPROVED
     ===================================================== */
-
     const orderApprovalStatus =
       cleanString(
         trip?.orderApproval?.status
       )
         .trim()
         .toLowerCase();
-
     if (
       orderApprovalStatus !==
       "approved"
@@ -5040,10 +4278,8 @@ const placeOrder = async (req, res) => {
         "Order Approval must be approved before placing the order."
       );
     }
-
     /* =====================================================
        2. AT LEAST ONE TRANSPORTER MUST BE CONFIRMED
-
        IMPORTANT WORKFLOW:
        - Full Vendor Finalization is NOT required.
        - If 1 or more transporter quotations are approved,
@@ -5053,7 +4289,6 @@ const placeOrder = async (req, res) => {
          from the Tracking stage.
        - allocatedVehicles is intentionally NOT checked here.
     ===================================================== */
-
     const approvedConfirmations =
       getConfirmations(trip).filter(
         (confirmation) =>
@@ -5064,7 +4299,6 @@ const placeOrder = async (req, res) => {
             .toLowerCase() ===
           "approved"
       );
-
     if (
       approvedConfirmations.length ===
       0
@@ -5075,11 +4309,9 @@ const placeOrder = async (req, res) => {
         "Confirm at least one transporter before placing the order."
       );
     }
-
     /* =====================================================
        3. PREVENT DUPLICATE PLACE ORDER
     ===================================================== */
-
     if (
       cleanString(
         trip?.orderPlaced?.status
@@ -5092,11 +4324,9 @@ const placeOrder = async (req, res) => {
         "This order has already been placed and moved to Tracking."
       );
     }
-
     /* =====================================================
        4. PLACED BY
     ===================================================== */
-
     const placedBy =
       cleanString(
         req.body?.orderPlaced?.placedBy
@@ -5105,43 +4335,32 @@ const placeOrder = async (req, res) => {
         req.body?.placedBy
       ) ||
       "Key Account";
-
     /* =====================================================
        5. PLACE ORDER
-
        This action releases the order to Tracking.
        Actual vehicle allocation can then be completed
        from the Tracking module.
     ===================================================== */
-
     trip.orderPlaced = {
       status: "Completed",
-
       placedBy,
-
       placedAt:
         new Date(),
     };
-
     trip.stage =
       "Tracking";
-
     trip.status =
       "Tracking";
-
     trip.markModified(
       "orderPlaced"
     );
-
     await trip.save();
-
     const updatedTrip =
       await TripOrder
         .findById(
           trip._id
         )
         .lean();
-
     return sendSuccess(
       res,
       200,
@@ -5153,7 +4372,6 @@ const placeOrder = async (req, res) => {
       "Place Order Error:",
       error
     );
-
     return sendError(
       res,
       500,
@@ -5162,7 +4380,6 @@ const placeOrder = async (req, res) => {
     );
   }
 };
-
 const deleteTrip = async (
   req,
   res
@@ -5172,7 +4389,6 @@ const deleteTrip = async (
       await getTripDocument(
         req.params.id
       );
-
     if (result.error) {
       return sendError(
         res,
@@ -5180,10 +4396,8 @@ const deleteTrip = async (
         result.error
       );
     }
-
     const trip =
       result.trip;
-
     const trackingStarted =
       getAllocatedVehicles(
         trip
@@ -5195,7 +4409,6 @@ const deleteTrip = async (
           vehicle.dailyTracking
             .length > 0
       );
-
     if (
       trackingStarted
     ) {
@@ -5205,12 +4418,10 @@ const deleteTrip = async (
         "Order cannot be deleted after vehicle tracking has started."
       );
     }
-
     await TripOrder
       .findByIdAndDelete(
         trip._id
       );
-
     return sendSuccess(
       res,
       200,
@@ -5218,7 +4429,6 @@ const deleteTrip = async (
       {
         _id:
           trip._id,
-
         tripId:
           trip.tripId,
       }
@@ -5228,7 +4438,6 @@ const deleteTrip = async (
       "Delete Trip Error:",
       error
     );
-
     return sendError(
       res,
       500,
@@ -5237,7 +4446,6 @@ const deleteTrip = async (
     );
   }
 };
-
 const lifecycleValue = (value) => {
   if (value === null || value === undefined) return "";
   if (value instanceof Date) return value.toISOString();
@@ -5378,6 +4586,7 @@ const correctLifecycleDetails = async (req, res) => {
       }
     }
     recordLifecycleChanges(trip, before, "Order Lifecycle", changedFields, updatedBy);
+    recordAmountChanges(trip, before, updatedBy, "Lifecycle Edit");
     await trip.save();
     const updated = await TripOrder.findById(trip._id).lean();
     return sendSuccess(res, 200, "Order corrections saved successfully.", updated);
@@ -5386,7 +4595,6 @@ const correctLifecycleDetails = async (req, res) => {
     return sendError(res, 500, "Unable to save order corrections.", error);
   }
 };
-
 module.exports = {
   correctLifecycleDetails,
   saveLrDocument,
@@ -5395,7 +4603,6 @@ module.exports = {
   downloadPodDocument,
   saveEwayBillDocument,
   downloadEwayBillDocument,
-
   createTrip,
   createCraneTrip,
   downloadCraneDocument,
@@ -5403,30 +4610,21 @@ module.exports = {
   getTripById,
   getTripByTripId,
   updateTrip,
-
   saveOrderFinalization,
   savePoDocument,
   downloadPoDocument,
-
   placeOrder,
-
   approveOrder,
-
   addTrafficQuotation,
-
   confirmVehicleQuotation,
-
   requestTransportReplacement,
   reviewTransportReplacement,
-
   allocateTrafficVehicle,
   replaceTrafficVehicle,
   replaceTrackingVehicle,
-
   allocateVehicle,
   updateAllocatedVehicle,
   addDailyTracking,
   updateRouteLocations,
-
   deleteTrip,
 };
