@@ -438,6 +438,10 @@ const ReadOnlyField = ({
   label,
   value,
   suffix = "",
+  editing = false,
+  fieldKey,
+  inputValue,
+  onEdit,
 }) => {
   const hasValue =
     value !== "" &&
@@ -448,11 +452,13 @@ const ReadOnlyField = ({
     <div className="kam-client-trip-field">
       <span>{label}</span>
 
-      <strong>
+      {editing && fieldKey ? (
+        <input className="kam-original-edit-input" type={["enquiryDate", "placementDate"].includes(fieldKey) ? "date" : ["distance", "totalVehicles"].includes(fieldKey) ? "number" : "text"} value={inputValue ?? ""} onChange={(event) => onEdit(fieldKey, event.target.value)} />
+      ) : <strong>
         {hasValue
           ? `${value}${suffix}`
           : "—"}
-      </strong>
+      </strong>}
     </div>
   );
 };
@@ -567,6 +573,8 @@ const Lifecyclemodal = ({
   const [editOpen, setEditOpen] = useState(false);
   const [editSaving, setEditSaving] = useState(false);
   const [editError, setEditError] = useState("");
+  const [confirmSaveOpen, setConfirmSaveOpen] = useState(false);
+  const [updatedByName, setUpdatedByName] = useState("");
   const [editForm, setEditForm] = useState({});
   const autoEditOpenedRef = useRef(false);
   const editBaselineRef = useRef("");
@@ -624,11 +632,16 @@ const Lifecyclemodal = ({
         {editForm.vehicleRequirements?.map((r, i) => <div className="kam-inline-edit-requirement" key={r.requirementId || i}><h4>Vehicle {i + 1}</h4>{editRequirementsLocked && <p>Vehicle requirements are locked after quotation, approval or allocation.</p>}<div className="kam-inline-edit-grid">{[["vehicleType", "Vehicle Type"], ["configuration", "Configuration Model"], ["classification", "Movement Classification"], ["quantity", "Quantity"], ["weight", "Weight (Ton)"]].map(([key, label]) => <label key={key}><span>{label}</span><input disabled={editRequirementsLocked} value={r[key] ?? ""} onChange={e => changeEditArray("vehicleRequirements", i, null, key, e.target.value)} /></label>)}{!isIntercartingEdit && ["length", "height", "width"].map(key => <label key={key}><span>{key}</span><input disabled={editRequirementsLocked} value={r.dimensions?.[key] ?? ""} onChange={e => changeEditArray("vehicleRequirements", i, "dimensions", key, e.target.value)} /></label>)}</div></div>)}
         <label className="kam-inline-edit-remarks"><span>Remarks</span><textarea value={editForm.remark ?? ""} onChange={e => setEditForm(prev => ({ ...prev, remark: e.target.value }))} /></label>
       </>}
-      {stage === 1 && <div className="kam-inline-edit-grid">{[["quotedRate", "Quoted Rate"], ["finalRate", "Final Rate"], ["commercialTerms", "Commercial Terms"], ["deliveryCommitments", "Delivery Commitments"], ["clientConfirmationNotes", "Client Confirmation Notes"]].map(([key, label]) => <label key={key}><span>{label}</span><textarea rows={2} value={editForm.orderFinalization?.[key] ?? ""} onChange={e => changeEditNested("orderFinalization", key, e.target.value)} /></label>)}</div>}
       {stage === 5 && <>{editForm.allocatedVehicles?.length ? editForm.allocatedVehicles.map((v, i) => <div className="kam-inline-edit-requirement" key={v.allocationId || i}><h4>{v.vehicleNumber || `Vehicle ${i + 1}`}</h4><div className="kam-inline-edit-grid">{[["driver", "name", "Driver Name"], ["driver", "contactNumber", "Driver Contact"], ["escort", "name", "Escort Name"], ["escort", "contactNumber", "Escort Contact"], ["escort", "vehicleNumber", "Escort Vehicle"], ["supervisor", "name", "Supervisor Name"], ["supervisor", "contactNumber", "Supervisor Contact"]].map(([group, key, label]) => <label key={group + key}><span>{label}</span><input value={v[group]?.[key] ?? ""} onChange={e => changeEditArray("allocatedVehicles", i, group, key, e.target.value)} /></label>)}</div></div>) : <p>No allocated vehicles yet.</p>}</>}
       {[2, 3, 4, 6].includes(stage) && <p>Use the existing stage controls below to update this stage. Approval, vendor confirmation, order placement, and completion status are handled by their dedicated workflows.</p>}
     </section>
   );
+  const originalVehicleEdit = (index, key, value, nested = false) => {
+    const editable = editOpen && !editRequirementsLocked;
+    if (!editable) return value;
+    const row = editForm.vehicleRequirements?.[index];
+    return <input className="kam-original-edit-input kam-original-vehicle-input" value={nested ? (row?.dimensions?.[key] ?? "") : (row?.[key] ?? "")} onChange={e => changeEditArray("vehicleRequirements", index, nested ? "dimensions" : null, key, e.target.value)} />;
+  };
   const changeEditNested = (section, key, value) => setEditForm(prev => ({ ...prev, [section]: { ...prev[section], [key]: value } }));
   const changeEditArray = (section, index, group, key, value) => setEditForm(prev => ({
     ...prev, [section]: prev[section].map((row, i) => i !== index ? row : group ? { ...row, [group]: { ...row[group], [key]: value } } : { ...row, [key]: value })
@@ -659,9 +672,11 @@ const Lifecyclemodal = ({
 
   // One footer action saves all modified sections, regardless of the selected stage.
   // Each section retains its existing API contract; only one user click is required.
-  const saveAllLifecycleEdits = async () => {
+  const saveAllLifecycleEdits = async (confirmedName) => {
     if (editSaving || poSaving || isCompletedTrip(workingOrder || order)) return;
     const trip = workingOrder || order;
+    const updatedBy = String(confirmedName || "").trim();
+    if (!updatedBy) { setEditError("Updated By name is required."); return; }
     const correctionsChanged = JSON.stringify(editForm) !== editBaselineRef.current;
     const poChanged = JSON.stringify(poForm) !== poBaselineRef.current || Boolean(poFile);
     if (!correctionsChanged && !poChanged) {
@@ -684,7 +699,7 @@ const Lifecyclemodal = ({
     try {
       if (correctionsChanged) {
         const corrections = {
-          ...editForm,
+          ...editForm, updatedBy,
           ...(isIntercartingEdit ? { origin: undefined, destination: undefined } : {}),
           siteLocation: undefined, period: undefined, dieselScope: undefined,
           vehicleRequirements: editRequirementsLocked ? undefined :
@@ -708,6 +723,7 @@ const Lifecyclemodal = ({
         formData.append("poValidityPeriod", poForm.poValidityPeriod);
         formData.append("billingGstin", poForm.billingGstin.trim().toUpperCase());
         formData.append("status", "Completed");
+        formData.append("updatedBy", updatedBy);
         formData.append("documentName", poForm.documentName.trim() || poFile?.name || "PO Document");
         formData.append("uploadedBy", poForm.uploadedBy.trim() || sessionStorage.getItem("kamUsername") || "Key Account");
         if (poFile) formData.append("document", poFile);
@@ -724,6 +740,8 @@ const Lifecyclemodal = ({
       setLocalOrder(latest);
       if (typeof onOrderUpdated === "function") onOrderUpdated(latest);
       setEditOpen(false);
+      setConfirmSaveOpen(false);
+      setUpdatedByName("");
       showToast("All changes saved successfully.");
     } catch (error) {
       if (correctionsSaved) {
@@ -801,7 +819,6 @@ const Lifecyclemodal = ({
 
   // Do not fall back to the stale table-row order while the latest
   // MongoDB order is loading. This prevents the PO page flashing first.
-
 
   const lifecycle = useMemo(
     () => buildLifecycle(workingOrder || {}),
@@ -2411,7 +2428,6 @@ const Lifecyclemodal = ({
         ================================================= */}
 
         <div className="kam-workflow-content">
-          {editOpen && !isCompletedTrip(order) && [0, 1, 5].includes(activeStepIndex) && inlineEditor(activeStepIndex)}
           {editOpen && editError && <p className="kam-inline-edit-error" role="alert">{editError}</p>}
 
           {/* =================================================
@@ -2455,7 +2471,7 @@ const Lifecyclemodal = ({
                       </h2>
 
                       <span className="kam-order-readonly-badge">
-                        READ ONLY
+                        {editOpen ? "EDITING" : "READ ONLY"}
                       </span>
 
                     </div>
@@ -2468,6 +2484,7 @@ const Lifecyclemodal = ({
 
                   <ReadOnlyField
                     label="Customer"
+                    editing={editOpen} fieldKey="customer" inputValue={editForm.customer} onEdit={(key, value) => setEditForm(prev => ({ ...prev, [key]: value }))}
                     value={
                       order.customer
                     }
@@ -2475,6 +2492,7 @@ const Lifecyclemodal = ({
 
                   <ReadOnlyField
                     label="Contact Person"
+                    editing={editOpen} fieldKey="contactPerson" inputValue={editForm.contactPerson} onEdit={(key, value) => setEditForm(prev => ({ ...prev, [key]: value }))}
                     value={
                       order.contactPerson
                     }
@@ -2482,6 +2500,7 @@ const Lifecyclemodal = ({
 
                   <ReadOnlyField
                     label="Contact Number"
+                    editing={editOpen} fieldKey="contactNumber" inputValue={editForm.contactNumber} onEdit={(key, value) => setEditForm(prev => ({ ...prev, [key]: value }))}
                     value={
                       order.contactNumber
                     }
@@ -2489,6 +2508,7 @@ const Lifecyclemodal = ({
 
                   <ReadOnlyField
                     label="Email"
+                    editing={editOpen} fieldKey="email" inputValue={editForm.email} onEdit={(key, value) => setEditForm(prev => ({ ...prev, [key]: value }))}
                     value={
                       order.email
                     }
@@ -2496,6 +2516,7 @@ const Lifecyclemodal = ({
 
                   <ReadOnlyField
                     label="Assigned KAM"
+                    editing={editOpen} fieldKey="assignedKam" inputValue={editForm.assignedKam} onEdit={(key, value) => setEditForm(prev => ({ ...prev, [key]: value }))}
                     value={
                       order.assignedKam
                     }
@@ -2503,6 +2524,7 @@ const Lifecyclemodal = ({
 
                   <ReadOnlyField
                     label="Material Type"
+                    editing={editOpen} fieldKey="materialType" inputValue={editForm.materialType} onEdit={(key, value) => setEditForm(prev => ({ ...prev, [key]: value }))}
                     value={
                       order.materialType
                     }
@@ -2510,6 +2532,7 @@ const Lifecyclemodal = ({
 
                   <ReadOnlyField
                     label="Total Vehicles"
+                    editing={editOpen} fieldKey="totalVehicles" inputValue={editForm.totalVehicles} onEdit={(key, value) => setEditForm(prev => ({ ...prev, [key]: value }))}
                     value={
                       order.totalVehicles
                     }
@@ -2527,6 +2550,7 @@ const Lifecyclemodal = ({
 
                   <ReadOnlyField
                     label="Origin"
+                    editing={editOpen} fieldKey="origin" inputValue={editForm.origin} onEdit={(key, value) => setEditForm(prev => ({ ...prev, [key]: value }))}
                     value={
                       order.origin
                     }
@@ -2534,6 +2558,7 @@ const Lifecyclemodal = ({
 
                   <ReadOnlyField
                     label="Destination"
+                    editing={editOpen} fieldKey="destination" inputValue={editForm.destination} onEdit={(key, value) => setEditForm(prev => ({ ...prev, [key]: value }))}
                     value={
                       order.destination
                     }
@@ -2541,6 +2566,7 @@ const Lifecyclemodal = ({
 
                   <ReadOnlyField
                     label="Distance"
+                    editing={editOpen} fieldKey="distance" inputValue={editForm.distance} onEdit={(key, value) => setEditForm(prev => ({ ...prev, [key]: value }))}
                     value={
                       order.distance
                     }
@@ -2558,6 +2584,7 @@ const Lifecyclemodal = ({
 
                   <ReadOnlyField
                     label="Enquiry Date"
+                    editing={editOpen} fieldKey="enquiryDate" inputValue={editForm.enquiryDate} onEdit={(key, value) => setEditForm(prev => ({ ...prev, [key]: value }))}
                     value={formatDate(
                       order.enquiryDate
                     )}
@@ -2565,6 +2592,7 @@ const Lifecyclemodal = ({
 
                   <ReadOnlyField
                     label="Placement Date"
+                    editing={editOpen} fieldKey="placementDate" inputValue={editForm.placementDate} onEdit={(key, value) => setEditForm(prev => ({ ...prev, [key]: value }))}
                     value={formatDate(
                       order.placementDate
                     )}
@@ -2599,7 +2627,7 @@ const Lifecyclemodal = ({
 
                 </div>
 
-                {order.remark && (
+                {(order.remark || editOpen) && (
                   <div className="kam-professional-remark">
 
                     <div
@@ -2638,7 +2666,7 @@ const Lifecyclemodal = ({
                       </strong>
 
                       <p>
-                        {order.remark}
+                        {editOpen ? <textarea className="kam-original-edit-textarea" value={editForm.remark ?? ""} onChange={e => setEditForm(prev => ({...prev, remark: e.target.value}))} /> : order.remark}
                       </p>
                     </div>
 
@@ -2731,18 +2759,16 @@ const Lifecyclemodal = ({
 
                               <td>
                                 <strong>
-                                  {requirement.vehicleType ||
-                                    "—"}
+                                  {originalVehicleEdit(index, "vehicleType", requirement.vehicleType || "—")}
                                 </strong>
                               </td>
 
                               <td>
-                                {requirement.configuration ||
-                                  "—"}
+                                {originalVehicleEdit(index, "configuration", requirement.configuration || "—")}
                               </td>
 
                               <td>
-                                {requirement.classification ? (
+                                {editOpen && !editRequirementsLocked ? originalVehicleEdit(index, "classification", requirement.classification || "—") : requirement.classification ? (
                                   <span className="kam-client-classification">
                                     {
                                       requirement.classification
@@ -2754,23 +2780,15 @@ const Lifecyclemodal = ({
                               </td>
 
                               <td>
-                                {formatNumber(
-                                  requirement.quantity,
-                                  " NOS"
-                                )}
+                                {originalVehicleEdit(index, "quantity", formatNumber(requirement.quantity, " NOS"))}
                               </td>
 
                               <td>
-                                {formatNumber(
-                                  requirement.weight,
-                                  " TON"
-                                )}
+                                {originalVehicleEdit(index, "weight", formatNumber(requirement.weight, " TON"))}
                               </td>
 
                               <td>
-                                {formatDimensions(
-                                  requirement.dimensions
-                                )}
+                                {editOpen && !editRequirementsLocked ? <div className="kam-original-dimensions">{["length", "height", "width"].map(key => <label key={key}>{key[0].toUpperCase()}{originalVehicleEdit(index, key, "", true)}</label>)}</div> : formatDimensions(requirement.dimensions)}
                               </td>
 
                             </tr>
@@ -2876,13 +2894,13 @@ const Lifecyclemodal = ({
                       type="number"
                       name="quotedRate"
                       value={
-                        finalizationForm.quotedRate
+                        (editOpen ? editForm.orderFinalization?.quotedRate : finalizationForm.quotedRate)
                       }
                       onChange={
-                        handleFinalizationChange
+                        editOpen ? (event) => changeEditNested("orderFinalization", event.target.name, event.target.value) : handleFinalizationChange
                       }
                       placeholder="Enter quoted rate"
-                      disabled={finalizationLocked}
+                      disabled={editOpen ? false : finalizationLocked}
                     />
                   </div>
 
@@ -2897,13 +2915,13 @@ const Lifecyclemodal = ({
                       type="number"
                       name="finalRate"
                       value={
-                        finalizationForm.finalRate
+                        (editOpen ? editForm.orderFinalization?.finalRate : finalizationForm.finalRate)
                       }
                       onChange={
-                        handleFinalizationChange
+                        editOpen ? (event) => changeEditNested("orderFinalization", event.target.name, event.target.value) : handleFinalizationChange
                       }
                       placeholder="Enter final rate"
-                      disabled={finalizationLocked}
+                      disabled={editOpen ? false : finalizationLocked}
                     />
                   </div>
 
@@ -2917,14 +2935,14 @@ const Lifecyclemodal = ({
                     <textarea
                       name="commercialTerms"
                       value={
-                        finalizationForm.commercialTerms
+                        (editOpen ? editForm.orderFinalization?.commercialTerms : finalizationForm.commercialTerms)
                       }
                       onChange={
-                        handleFinalizationChange
+                        editOpen ? (event) => changeEditNested("orderFinalization", event.target.name, event.target.value) : handleFinalizationChange
                       }
                       placeholder="Enter commercial terms and payment SLAs"
                       rows={3}
-                      disabled={finalizationLocked}
+                      disabled={editOpen ? false : finalizationLocked}
                     />
                   </div>
 
@@ -2938,14 +2956,14 @@ const Lifecyclemodal = ({
                     <textarea
                       name="deliveryCommitments"
                       value={
-                        finalizationForm.deliveryCommitments
+                        (editOpen ? editForm.orderFinalization?.deliveryCommitments : finalizationForm.deliveryCommitments)
                       }
                       onChange={
-                        handleFinalizationChange
+                        editOpen ? (event) => changeEditNested("orderFinalization", event.target.name, event.target.value) : handleFinalizationChange
                       }
                       placeholder="Enter delivery commitments and transit SLAs"
                       rows={3}
-                      disabled={finalizationLocked}
+                      disabled={editOpen ? false : finalizationLocked}
                     />
                   </div>
 
@@ -2959,14 +2977,14 @@ const Lifecyclemodal = ({
                     <textarea
                       name="clientConfirmationNotes"
                       value={
-                        finalizationForm.clientConfirmationNotes
+                        (editOpen ? editForm.orderFinalization?.clientConfirmationNotes : finalizationForm.clientConfirmationNotes)
                       }
                       onChange={
-                        handleFinalizationChange
+                        editOpen ? (event) => changeEditNested("orderFinalization", event.target.name, event.target.value) : handleFinalizationChange
                       }
                       placeholder="Enter client confirmation notes"
                       rows={3}
-                      disabled={finalizationLocked}
+                      disabled={editOpen ? false : finalizationLocked}
                     />
                   </div>
 
@@ -4454,6 +4472,28 @@ const Lifecyclemodal = ({
               </div>
             )}
 
+          {/* Show only changes belonging to the currently selected lifecycle page. */}
+          {(() => {
+            const historyByStage = [
+              ["enquiry", "requirement", "trip detail", "order detail"],
+              ["finalization", "commercial", "approval"],
+              ["po document", "purchase order", "po details"],
+              ["vendor", "quotation", "transport"],
+              ["order placed", "placement"],
+              ["tracking", "allocation", "vehicle detail", "driver", "escort", "supervisor"],
+              ["trip complete", "completion", "unloading"]
+            ];
+            const stageHistory = safeArray(order?.lifecycleChangeHistory).filter(item => {
+              const section = String(item?.section || "").trim().toLowerCase();
+              return (historyByStage[activeStepIndex] || []).some(term => section.includes(term));
+            });
+            return (
+          <section className="kam-change-history">
+            <div className="kam-change-history-header"><h3>Change History</h3><span>{stageHistory.length} changes</span></div>
+            {stageHistory.length ? <div className="kam-history-table-wrap"><table className="kam-history-table"><thead><tr><th>Date & Time</th><th>Section</th><th>Field</th><th>Previous Value</th><th>New Value</th><th>Updated By</th></tr></thead><tbody>{[...stageHistory].reverse().map((item, index) => <tr key={`${item.updatedAt}-${index}`}><td>{formatDateTime(item.updatedAt)}</td><td>{item.section}</td><td>{item.field}</td><td title={item.oldValue}>{item.oldValue || "—"}</td><td title={item.newValue}>{item.newValue || "—"}</td><td>{item.updatedBy}</td></tr>)}</tbody></table></div> : <p className="kam-history-empty">No changes recorded yet.</p>}
+          </section>
+            );
+          })()}
         </div>
 
         {/* =================================================
@@ -4471,7 +4511,7 @@ const Lifecyclemodal = ({
 
           <div className="kam-footer-action-buttons">
             {isCompletedTrip(order) && <><span className="kam-completed-readonly-label">✓ Trip Completed · Read Only</span><button type="button" className="kam-footer-close-btn" onClick={onClose}>Close</button></>}
-            {!isCompletedTrip(order) && editOpen && <><button type="button" className="kam-footer-close-btn" disabled={editSaving} onClick={() => { setEditOpen(false); setEditError(""); }}>Cancel</button><button type="button" className="kam-request-approval-btn" disabled={editSaving || poSaving} onClick={saveAllLifecycleEdits}>{editSaving || poSaving ? "Saving..." : "Save Changes"}</button></>}
+            {!isCompletedTrip(order) && editOpen && <><button type="button" className="kam-footer-close-btn" disabled={editSaving} onClick={() => { setEditOpen(false); setEditError(""); }}>Cancel</button><button type="button" className="kam-request-approval-btn" disabled={editSaving || poSaving} onClick={() => { setEditError(""); setConfirmSaveOpen(true); }}>{editSaving || poSaving ? "Saving..." : "Save Changes"}</button></>}
             {!isCompletedTrip(order) && !editOpen && <>
 
               {/* ENQUIRY */}
@@ -4778,6 +4818,8 @@ const Lifecyclemodal = ({
           </button>
         </div>
       )}
+
+      {confirmSaveOpen && <div className="kam-save-confirm-overlay"><div className="kam-save-confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="kam-confirm-save-title"><h3 id="kam-confirm-save-title">Confirm Changes</h3><p>Enter your name to save changes and record them in Change History.</p><label>Updated By (Name) *<input autoFocus maxLength={100} value={updatedByName} onChange={e => setUpdatedByName(e.target.value)} placeholder="Enter your full name" /></label>{editError && <p role="alert" className="kam-inline-edit-error">{editError}</p>}<div className="kam-save-confirm-actions"><button type="button" disabled={editSaving} onClick={() => { setConfirmSaveOpen(false); setEditError(""); }}>Cancel</button><button type="button" disabled={editSaving || !updatedByName.trim()} onClick={() => saveAllLifecycleEdits(updatedByName)}>{editSaving ? "Saving..." : "Confirm & Save"}</button></div></div></div>}
 
     </div>
   );

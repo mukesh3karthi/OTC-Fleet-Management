@@ -1,1806 +1,9140 @@
 /* Theme: Charcoal + Indigo + Lavender */
+
 /* =========================================================
+
    TRACKING PAGE
+
    FINAL SCROLLING BEHAVIOR
-========================================================= */
+
+\========================================================= */
+
 /* =========================================================
+
    RESET
-========================================================= */
+
+\========================================================= */
+
 .tracking-page,
+
 .tracking-page * {
+
   box-sizing: border-box;
+
 }
 
+
+
 /* =========================================================
+
    PAGE
-========================================================= */
+
+\========================================================= */
+
 .tracking-page {
+
   width: 100%;
+
   min-width: 0;
+
   min-height:
+
     calc(100vh - 80px);
+
   padding:
+
     0px 10px 24px;
+
   color: #30364f;
+
   background:
+
     #f4f3f8;
+
   font-family:
+
     Inter,
+
     "Segoe UI",
+
     Roboto,
+
     Arial,
+
     sans-serif;
+
 }
 
+
+
 /* =========================================================
+
    PAGE HEADER
-========================================================= */
+
+\========================================================= */
+
 .tracking-header {
+
   width: 100%;
+
   margin-bottom: 14px;
+
   display: flex;
+
   align-items: flex-end;
+
   justify-content: space-between;
+
   gap: 20px;
+
 }
+
+
 
 .tracking-header-content {
+
   min-width: 0;
+
 }
+
+
 
 .tracking-eyebrow {
+
   display: block;
+
   margin-bottom: 5px;
+
   color: #5548c8;
+
   font-size: 9px;
+
   font-weight: 700;
+
   line-height: 1;
+
   letter-spacing:
+
     1.1px;
+
   text-transform:
+
     uppercase;
+
 }
+
+
 
 .tracking-header-content h1 {
+
   margin: 0;
+
   color: #252b45;
+
   font-size: 27px;
+
   font-weight: 700;
+
   line-height: 1.2;
+
   letter-spacing:
+
     -0.4px;
+
 }
+
+
 
 .tracking-header-content p {
+
   max-width: 620px;
+
   margin:
+
     5px 0 0;
+
   color: #76859b;
+
   font-size: 10.5px;
+
   font-weight: 400;
+
   line-height: 1.45;
+
 }
 
+
+
 /* =========================================================
+
    TOOLBAR
+
    STATUS  /  SEARCH  /  DATE
+
    Status chips pinned left.
+
    Search + Date grouped together on the right.
-========================================================= */
+
+\========================================================= */
+
 .tracking-toolbar {
+
   position: relative;
+
   width: 100%;
+
   min-height: 56px;
+
   margin-bottom: 12px;
+
   padding:
+
     8px 9px;
+
   display: flex;
+
   align-items: center;
+
   gap: 9px;
+
   border:
+
     1px solid #dddfea;
+
   border-radius: 11px;
+
   background:
+
     #ffffff;
+
   box-shadow:
+
     0 4px 14px rgba(17, 40, 83, 0.05);
+
 }
 
+
+
 /* =========================================================
+
    STATUS FILTER
+
    Darker charcoal / lavender track
-========================================================= */
+
+\========================================================= */
+
 .tracking-status-filter {
+
   min-width: 0;
+
   margin-right:
+
     auto;
+
   display: flex;
+
   align-items: center;
+
   gap: 4px;
+
   padding: 3px;
+
   border:
+
     1px solid #cfcbe4;
+
   border-radius: 9px;
+
   background:
+
     #e7e5f2;
+
 }
+
+
 
 .tracking-status-filter button {
+
   min-height: 31px;
+
   padding:
+
     0 9px;
+
   display: inline-flex;
+
   align-items: center;
+
   justify-content: center;
+
   gap: 5px;
+
   border:
+
     1px solid transparent;
+
   border-radius: 7px;
+
   color:
+
     #4d5a70;
+
   background:
+
     transparent;
+
   font: inherit;
+
   font-size: 8.5px;
+
   font-weight: 600;
+
   white-space: nowrap;
+
   cursor: pointer;
+
   transition:
+
     color 150ms ease,
+
     border-color 150ms ease,
+
     background 150ms ease,
+
     box-shadow 150ms ease;
+
 }
+
+
 
 .tracking-status-filter button:hover {
+
   color:
+
     #4337ac;
+
   background:
+
     #dcd9ef;
+
 }
+
+
 
 .tracking-status-filter button.active {
+
   color:
+
     #4337ac;
+
   border-color:
+
     #c3bdea;
+
   background:
+
     #ffffff;
+
   box-shadow:
+
     0 2px 6px rgba(36, 87, 178, 0.12);
+
 }
+
+
 
 .tracking-status-filter button svg {
+
   width: 13px;
+
   height: 13px;
+
   flex:
+
     0 0 13px;
+
 }
 
+
+
 /* =========================================================
+
    STATUS COLORS
-========================================================= */
+
+\========================================================= */
+
 .tracking-status-filter button:nth-child(2) svg {
+
   color:
+
     #15945a;
+
 }
+
+
 
 .tracking-status-filter button:nth-child(3) svg {
+
   color:
+
     #d99820;
+
 }
+
+
 
 .tracking-status-filter button:nth-child(4) svg {
+
   color:
+
     #d44b53;
+
 }
+
+
 
 .tracking-status-filter button:nth-child(5) svg {
+
   color:
+
     #5548c8;
+
 }
 
+
+
 /* =========================================================
+
    SEARCH
+
    Narrower, sits beside the date filter
-========================================================= */
+
+\========================================================= */
+
 .tracking-search {
+
   width: 100%;
+
   max-width: 232px;
+
   height: 39px;
+
   margin-left:
+
     auto;
+
   padding:
+
     0 11px;
+
   flex:
+
     0 1 232px;
+
   display: flex;
+
   align-items: center;
+
   gap: 8px;
+
   border:
+
     1px solid #dedbe9;
+
   border-radius: 9px;
+
   background:
+
     #f7f6fb;
+
   transition:
+
     border-color 150ms ease,
+
     background 150ms ease,
+
     box-shadow 150ms ease;
+
 }
+
+
 
 .tracking-search:hover {
+
   border-color:
+
     #c9c5dc;
+
 }
+
+
 
 .tracking-search:focus-within {
+
   border-color:
+
     #8074dd;
+
   background:
+
     #ffffff;
+
   box-shadow:
+
     0 0 0 3px rgba(36, 87, 178, 0.07);
+
 }
+
+
 
 .tracking-search>svg {
+
   width: 17px;
+
   height: 17px;
+
   flex:
+
     0 0 17px;
+
   color:
+
     #778aa5;
+
 }
+
+
 
 .tracking-search:focus-within>svg {
+
   color:
+
     #5548c8;
+
 }
+
+
 
 .tracking-search input {
+
   width: 100%;
+
   min-width: 0;
+
   height: 37px;
+
   padding: 0;
+
   border: 0;
+
   outline: 0;
+
   color:
+
     #3f4660;
+
   background:
+
     transparent;
+
   font: inherit;
+
   font-size: 10.5px;
+
   font-weight: 500;
+
 }
+
+
 
 .tracking-search input::placeholder {
+
   color:
+
     #9c9fb0;
+
   font-weight: 400;
+
 }
+
+
 
 .tracking-search input[type="search"]::-webkit-search-cancel-button {
+
   display: none;
+
 }
 
+
+
 /* =========================================================
+
    SEARCH CLEAR
-========================================================= */
+
+\========================================================= */
+
 .tracking-search-clear {
+
   width: 28px;
+
   height: 28px;
+
   flex:
+
     0 0 28px;
+
   padding: 0;
+
   display: grid;
+
   place-items: center;
+
   border: 0;
+
   border-radius: 7px;
+
   color:
+
     #7e8fa6;
+
   background:
+
     transparent;
+
   cursor: pointer;
+
   transition:
+
     color 150ms ease,
+
     background 150ms ease;
+
 }
+
+
 
 .tracking-search-clear:hover {
+
   color:
+
     #c3424c;
+
   background:
+
     #fff0f1;
+
 }
 
+
+
 /* =========================================================
+
    DATE FILTER
-========================================================= */
+
+\========================================================= */
+
 .tracking-date {
+
   height: 39px;
+
   margin-left:
+
     0;
+
   padding:
+
     0 10px;
+
   flex:
+
     0 0 auto;
+
   display: flex;
+
   align-items: center;
+
   gap: 7px;
+
   border:
+
     1px solid #dedbe9;
+
   border-radius: 9px;
+
   background:
+
     #f7f6fb;
+
   cursor: pointer;
+
   transition:
+
     border-color 150ms ease,
+
     background 150ms ease,
+
     box-shadow 150ms ease;
+
 }
+
+
 
 .tracking-date:hover {
+
   border-color:
+
     #c9c5dc;
+
 }
+
+
 
 .tracking-date:focus-within {
+
   border-color:
+
     #8074dd;
+
   background:
+
     #ffffff;
+
   box-shadow:
+
     0 0 0 3px rgba(36, 87, 178, 0.07);
+
 }
+
+
 
 .tracking-date>svg {
+
   width: 16px;
+
   height: 16px;
+
   flex:
+
     0 0 16px;
+
   color:
+
     #7d8297;
+
 }
+
+
 
 .tracking-date input {
+
   width: 112px;
+
   height: 37px;
+
   padding: 0;
+
   border: 0;
+
   outline: 0;
+
   color:
+
     #506784;
+
   background:
+
     transparent;
+
   font: inherit;
+
   font-size: 9.5px;
+
   font-weight: 600;
+
   cursor: pointer;
+
 }
+
+
 
 .tracking-date-clear {
+
   width: 26px;
+
   height: 26px;
+
   flex:
+
     0 0 26px;
+
   padding: 0;
+
   display: grid;
+
   place-items: center;
+
   border: 0;
+
   border-radius: 7px;
+
   color:
+
     #7e8fa6;
+
   background:
+
     transparent;
+
   cursor: pointer;
+
   transition:
+
     color 150ms ease,
+
     background 150ms ease;
+
 }
+
+
 
 .tracking-date-clear:hover {
+
   color:
+
     #c3424c;
+
   background:
+
     #fff0f1;
+
 }
 
+
+
 /* =========================================================
+
    MAIN 3 COLUMN LAYOUT
+
    Normal page scroll first.
+
    When this section reaches below navbar,
+
    it stays there.
+
    Navbar height = 80px.
-========================================================= */
+
+\========================================================= */
+
 .tracking-layout {
+
   position:
+
     sticky;
+
   top:
+
     80px;
+
   z-index:
+
     20;
+
   width: 100%;
+
   min-width: 0;
+
   /*
+
     Leave a small bottom gap.
+
   */
+
   height:
+
     calc(100vh - 92px);
+
   min-height:
+
     0;
+
   display:
+
     grid;
+
   grid-template-columns:
+
     27% 73%;
+
   align-items:
+
     stretch;
+
   gap:
+
     10px;
+
   overflow:
+
     hidden;
+
 }
 
+
+
 /* =========================================================
+
    ALL COLUMN WRAPPERS
-========================================================= */
+
+\========================================================= */
+
 .tracking-layout>* {
+
   width:
+
     100%;
+
   min-width:
+
     0;
+
   height:
+
     100%;
+
   min-height:
+
     0;
+
 }
 
+
+
 /* =========================================================
+
    LEFT - TRIP PANEL
-========================================================= */
+
+\========================================================= */
+
 .tracking-trip-panel {
+
   width:
+
     100%;
+
   height:
+
     100% !important;
+
   min-height:
+
     0;
+
   display:
+
     flex;
+
   flex-direction:
+
     column;
+
   overflow:
+
     hidden !important;
+
   border:
+
     1px solid #dddfea;
+
   border-radius:
+
     14px;
+
   background:
+
     #ffffff;
+
   box-shadow:
+
     0 5px 16px rgba(17, 40, 83, 0.045);
+
 }
 
+
+
 /* =========================================================
+
    TRIP LIST HEADER
+
    STAYS INSIDE LEFT PANEL
-========================================================= */
+
+\========================================================= */
+
 .tracking-trip-panel .tracking-column-heading {
+
   position:
+
     relative;
+
   top:
+
     auto;
+
   z-index:
+
     10;
+
   flex:
+
     0 0 auto;
+
   background:
+
     #ffffff;
+
 }
 
+
+
 /* =========================================================
+
    TRIP LIST INTERNAL SCROLL
-========================================================= */
+
+\========================================================= */
+
 .tracking-trip-panel .tracking-trip-list {
+
   flex:
+
     1 1 auto;
+
   min-height:
+
     0;
+
   max-height:
+
     none !important;
+
   overflow-y:
+
     auto;
+
   overflow-x:
+
     hidden;
+
   /*
+
     IMPORTANT:
+
     Allows wheel/touchpad scroll
+
     to go back to page once
+
     internal list reaches top/bottom.
+
   */
+
   overscroll-behavior-y:
+
     auto;
+
   scrollbar-width:
+
     thin;
+
   scrollbar-color:
+
     #c9c7d6 transparent;
+
 }
 
+
+
 /* =========================================================
+
    CENTER COLUMN INTERNAL SCROLL
-========================================================= */
+
+\========================================================= */
+
 .tracking-layout>:nth-child(2) {
+
   width:
+
     100%;
+
   height:
+
     100%;
+
   min-height:
+
     0;
+
   overflow-y:
+
     auto;
+
   overflow-x:
+
     hidden;
+
   overscroll-behavior-y:
+
     auto;
+
   scrollbar-width:
+
     thin;
+
   scrollbar-color:
+
     #c9c7d6 transparent;
+
 }
 
+
+
 /* =========================================================
+
    RIGHT MAP COLUMN INTERNAL SCROLL
-========================================================= */
+
+\========================================================= */
+
 .tracking-layout>:nth-child(3) {
+
   width:
+
     100%;
+
   height:
+
     100%;
+
   min-height:
+
     0;
+
   overflow-y:
+
     auto;
+
   overflow-x:
+
     hidden;
+
   overscroll-behavior-y:
+
     auto;
+
   scrollbar-width:
+
     thin;
+
   scrollbar-color:
+
     #c9c7d6 transparent;
+
 }
 
+
+
 /* =========================================================
+
    TRIP LIST SCROLLBAR
-========================================================= */
+
+\========================================================= */
+
 .tracking-trip-list::-webkit-scrollbar {
+
   width:
+
     5px;
+
 }
+
+
 
 .tracking-trip-list::-webkit-scrollbar-track {
+
   background:
+
     transparent;
+
 }
+
+
 
 .tracking-trip-list::-webkit-scrollbar-thumb {
+
   border-radius:
+
     999px;
+
   background:
+
     #c9c7d6;
+
 }
+
+
 
 .tracking-trip-list::-webkit-scrollbar-thumb:hover {
+
   background:
+
     #aaa7bd;
+
 }
 
+
+
 /* =========================================================
+
    CENTER SCROLLBAR
-========================================================= */
+
+\========================================================= */
+
 .tracking-layout>:nth-child(2)::-webkit-scrollbar {
+
   width:
+
     5px;
+
 }
+
+
 
 .tracking-layout>:nth-child(2)::-webkit-scrollbar-track {
+
   background:
+
     transparent;
+
 }
+
+
 
 .tracking-layout>:nth-child(2)::-webkit-scrollbar-thumb {
+
   border-radius:
+
     999px;
+
   background:
+
     #c9c7d6;
+
 }
+
+
 
 .tracking-layout>:nth-child(2)::-webkit-scrollbar-thumb:hover {
+
   background:
+
     #aaa7bd;
+
 }
 
+
+
 /* =========================================================
+
    MAP SCROLLBAR
-========================================================= */
+
+\========================================================= */
+
 .tracking-layout>:nth-child(3)::-webkit-scrollbar {
+
   width:
+
     5px;
+
 }
+
+
 
 .tracking-layout>:nth-child(3)::-webkit-scrollbar-track {
+
   background:
+
     transparent;
+
 }
+
+
 
 .tracking-layout>:nth-child(3)::-webkit-scrollbar-thumb {
+
   border-radius:
+
     999px;
+
   background:
+
     #c9c7d6;
+
 }
+
+
 
 .tracking-layout>:nth-child(3)::-webkit-scrollbar-thumb:hover {
+
   background:
+
     #aaa7bd;
+
 }
 
+
+
 /* =========================================================
+
    MAP HEADER
-========================================================= */
+
+\========================================================= */
+
 .tracking-map-header {
+
   position:
+
     sticky;
+
   top:
+
     0;
+
   z-index:
+
     30;
+
   background:
+
     #ffffff;
+
 }
 
+
+
 /* =========================================================
+
    OPTIONAL VEHICLE COLUMN HEADER
-========================================================= */
+
+\========================================================= */
+
 .vehicle-column-header,
+
 .tracking-vehicle-header {
+
   position:
+
     sticky;
+
   top:
+
     0;
+
   z-index:
+
     30;
+
   background:
+
     #ffffff;
+
 }
 
+
+
 /* =========================================================
+
    PREVENT HORIZONTAL PAGE SCROLL
-========================================================= */
+
+\========================================================= */
+
 html,
+
 body {
+
   overflow-x:
+
     hidden;
+
 }
 
+
+
 /* =========================================================
+
    LARGE DESKTOP
-========================================================= */
+
+\========================================================= */
+
 @media (min-width: 1500px) {
+
   .tracking-layout {
+
     grid-template-columns:
+
       27% 73%;
+
   }
+
 }
 
+
+
 /* =========================================================
+
    MEDIUM DESKTOP
-========================================================= */
+
+\========================================================= */
+
 @media (min-width: 1251px) and (max-width: 1499px) {
+
   .tracking-layout {
+
     grid-template-columns:
+
       27% 73%;
+
   }
+
 }
 
+
+
 /* =========================================================
+
    LAPTOP
-========================================================= */
+
+\========================================================= */
+
 @media (max-width: 1250px) {
+
   .tracking-toolbar {
+
     flex-wrap:
+
       wrap;
+
   }
+
+
 
   .tracking-status-filter {
+
     margin-right:
+
       0;
+
   }
+
+
 
   .tracking-search {
+
     flex:
+
       1 1 300px;
+
     max-width:
+
       none;
+
     margin-left:
+
       0;
+
   }
 
+
+
   .tracking-date {
+
     margin-left:
+
       0;
+
   }
+
+
 
   /*
+
     Disable desktop sticky behavior
+
     on smaller screens.
+
   */
+
   .tracking-layout {
+
     position:
+
       relative;
+
     top:
+
       auto;
+
     height:
+
       auto;
+
     min-height:
+
       0;
+
     grid-template-columns:
+
       27% 73%;
+
     overflow:
+
       visible;
+
   }
+
+
 
   .tracking-layout>* {
+
     height:
+
       auto;
+
     max-height:
+
       620px;
+
   }
+
+
 
   .tracking-layout> :nth-child(3) {
+
     grid-column:
+
       1 / -1;
+
     max-height:
+
       none;
+
   }
+
 }
 
+
+
 /* =========================================================
+
    TABLET
-========================================================= */
+
+\========================================================= */
+
 @media (max-width: 850px) {
+
   .tracking-page {
+
     padding:
+
       16px 13px 26px;
+
   }
 
+
+
   .tracking-header {
+
     align-items:
+
       flex-start;
+
   }
+
+
 
   .tracking-header-content h1 {
+
     font-size:
+
       24px;
+
   }
+
+
 
   .tracking-search {
+
     width:
+
       100%;
+
     flex-basis:
+
       100%;
+
     margin-left:
+
       0;
+
   }
+
+
 
   .tracking-status-filter {
+
     flex:
+
       1;
+
     margin-right:
+
       0;
+
     overflow-x:
+
       auto;
+
     scrollbar-width:
+
       none;
+
   }
+
+
 
   .tracking-status-filter::-webkit-scrollbar {
+
     display:
+
       none;
+
   }
+
+
 
   .tracking-layout {
+
     grid-template-columns:
+
       1fr;
+
   }
+
+
 
   .tracking-layout>* {
+
     max-height:
+
       520px;
+
   }
+
+
 
   .tracking-layout> :nth-child(3) {
+
     grid-column:
+
       auto;
+
     max-height:
+
       none;
+
   }
+
 }
 
+
+
 /* =========================================================
+
    MOBILE
-========================================================= */
+
+\========================================================= */
+
 @media (max-width: 650px) {
+
   .tracking-page {
+
     padding:
+
       13px 9px 22px;
+
   }
 
+
+
   .tracking-header {
+
     margin-bottom:
+
       12px;
+
     align-items:
+
       flex-start;
+
     gap:
+
       10px;
+
   }
+
+
 
   .tracking-eyebrow {
+
     font-size:
+
       8px;
+
   }
 
+
+
   .tracking-header-content h1 {
+
     font-size:
+
       21px;
+
   }
+
+
 
   .tracking-header-content p {
+
     font-size:
+
       9px;
+
     line-height:
+
       1.4;
+
   }
+
+
 
   .tracking-toolbar {
+
     padding:
+
       7px;
+
     gap:
+
       7px;
+
     border-radius:
+
       10px;
+
   }
+
+
 
   .tracking-search {
+
     height:
+
       38px;
+
   }
 
+
+
   .tracking-status-filter {
+
     width:
+
       100%;
+
     flex:
+
       1 1 100%;
+
   }
+
+
 
   .tracking-status-filter button {
+
     flex:
+
       0 0 auto;
+
     padding:
+
       0 8px;
+
   }
+
+
 
   .tracking-date {
+
     width:
+
       100%;
+
     margin-left:
+
       0;
+
   }
+
+
 
   .tracking-date input {
+
     width:
+
       100%;
+
   }
+
+
 
   .tracking-layout {
+
     position:
+
       relative;
+
     top:
+
       auto;
+
     height:
+
       auto;
+
     min-height:
+
       0;
+
     gap:
+
       10px;
+
     overflow:
+
       visible;
+
   }
+
 }
 
+
+
 /* =========================================================
+
    SMALL MOBILE
-========================================================= */
+
+\========================================================= */
+
 @media (max-width: 430px) {
+
   .tracking-page {
+
     padding:
+
       12px 8px 22px;
+
   }
+
+
 
   .tracking-header-content h1 {
+
     font-size:
+
       19px;
+
   }
+
+
 
   .tracking-status-filter {
+
     justify-content:
+
       flex-start;
+
   }
+
 }
 
+
+
 /* =========================================================
+
    CHARCOAL + INDIGO + LAVENDER THEME OVERRIDES
+
    Visual-only: no layout/functionality changes
-========================================================= */
+
+\========================================================= */
+
 :where(.tracking-page, .vehicle-column-panel, .journey-column) {
+
   --theme-ink: #252b45;
+
   --theme-muted: #858ba1;
+
   --theme-indigo: #5548c8;
+
   --theme-indigo-2: #7064da;
+
   --theme-lavender: #f0efff;
+
   --theme-lavender-2: #e9e7fa;
+
   --theme-border: #dddfea;
+
   --theme-surface: #ffffff;
+
   --theme-page: #f4f3f8;
+
 }
+
+
 
 .tracking-data-entry-button,
+
 .vehicle-toggle-btn:hover,
+
 .vehicle-toggle-btn.open,
+
 .route-vehicle-icon {
+
   background: linear-gradient(135deg, #5548c8, #7064da);
+
   border-color: #5548c8;
+
   color: #ffffff;
+
 }
+
+
 
 .tracking-data-entry-button:hover {
+
   background: linear-gradient(135deg, #4b40b5, #6256ce);
+
 }
+
+
 
 .tracking-status-filter button.active,
-.vehicle-mini-row\.active {
+
+.vehicle-mini-row\\.active {
+
   border-color: #c3bdea;
+
   background: #ffffff;
+
   color: #4337ac;
+
 }
 
-.vehicle-mini-row\.active {
+
+
+.vehicle-mini-row\\.active {
+
   box-shadow: inset 2px 0 0 #5548c8;
+
 }
+
+
 
 .journey-column,
+
 .vehicle-column-panel {
+
   border-color: #dddfea;
+
   color: #252b45;
+
   background: #ffffff;
+
   box-shadow: 0 5px 18px rgba(35, 38, 60, 0.06);
+
 }
+
+
 
 .journey-route-wrapper {
+
   border-color: #dedbea;
+
   background:
+
     radial-gradient(circle at 50% 48%, rgba(112, 100, 218, 0.07), transparent 60%),
+
     linear-gradient(180deg, #fdfcff 0%, #f7f6fb 100%);
+
 }
+
+
 
 .journey-route-wrapper::before {
+
   opacity: 0.22;
+
   background-image: radial-gradient(circle, rgba(85, 72, 200, 0.10) 1px, transparent 1px);
+
 }
+
+
 
 .journey-path-progress {
+
   stroke: #6658d3;
+
   filter: drop-shadow(0 2px 3px rgba(102, 88, 211, 0.18));
+
 }
+
+
 
 .journey-stop.completed .journey-stop-outer {
+
   stroke: #6658d3;
+
 }
+
+
 
 .journey-stop.completed .journey-stop-inner {
+
   fill: #6658d3;
+
 }
+
+
 
 .journey-stop-name {
+
   fill: #252b45;
+
 }
+
+
 
 .journey-current-card-title>span {
+
   color: #5548c8;
+
   background: #f0efff;
+
 }
+
+
 
 .journey-current-card-title strong {
+
   color: #252b45;
+
 }
 
+
+
 /* =========================================================
+
    MOBILE TRACKING FIX
-========================================================= */
+
+\========================================================= */
+
 @media (max-width: 768px) {
+
   .tracking-page {
+
     width: 100%;
+
     min-width: 0;
+
     min-height: 100vh;
+
     padding: 0 8px 20px;
+
     overflow-x: hidden;
+
     overflow-y: visible;
+
   }
+
+
 
   /* HEADER */
+
   .tracking-header {
+
     width: 100%;
+
     flex-direction: column;
+
     align-items: flex-start;
+
     gap: 8px;
+
     margin-bottom: 10px;
+
   }
+
+
 
   .tracking-header-content {
+
     width: 100%;
+
     min-width: 0;
+
   }
+
+
 
   .tracking-header-content h1 {
+
     font-size: 21px;
+
   }
+
+
 
   .tracking-header-content p {
+
     width: 100%;
+
     max-width: none;
+
     font-size: 10px;
+
   }
 
+
+
   /* ===============================
+
      TOOLBAR
+
   =============================== */
+
   .tracking-toolbar {
+
     width: 100%;
+
     flex-direction: column;
+
     align-items: stretch;
+
     gap: 8px;
+
     padding: 8px;
+
     height: auto;
+
     min-height: auto;
+
     overflow: visible;
+
   }
+
+
 
   .tracking-search {
+
     width: 100%;
+
     max-width: none;
+
     margin-left: 0;
+
   }
+
+
 
   .tracking-status-filter {
+
     width: 100%;
+
     margin-right: 0;
+
     overflow-x: auto;
+
     overflow-y: hidden;
+
     justify-content: flex-start;
+
     -webkit-overflow-scrolling: touch;
+
   }
+
+
 
   .tracking-status-filter button {
+
     flex: 0 0 auto;
+
   }
 
+
+
   /* ===============================
+
      MAIN TRACKING COLUMNS
+
   =============================== */
+
   .tracking-content,
+
   .tracking-columns,
+
   .tracking-main-grid,
+
   .tracking-workspace,
+
   .tracking-body {
+
     width: 100% !important;
+
     display: flex !important;
+
     flex-direction: column !important;
+
     grid-template-columns: 1fr !important;
+
     height: auto !important;
+
     min-height: 0 !important;
+
     overflow: visible !important;
+
     gap: 12px;
+
   }
+
+
 
   /* TRIP COLUMN */
+
   .tracking-trip-panel {
+
     width: 100% !important;
+
     height: auto !important;
+
     min-height: 250px !important;
+
     max-height: 400px;
+
     flex: none !important;
+
     overflow: hidden;
+
   }
+
+
 
   .tracking-trip-list {
+
     width: 100%;
+
     min-height: 180px;
+
     max-height: 320px;
+
     overflow-y: auto;
+
     overflow-x: hidden;
+
     -webkit-overflow-scrolling: touch;
+
   }
+
+
 
   /* VEHICLE DETAILS COLUMN */
+
   .vehicle-column-panel {
+
     width: 100% !important;
+
     height: auto !important;
+
     min-height: auto !important;
+
     overflow: visible !important;
+
     flex: none !important;
+
   }
+
+
 
   /* ROUTE / MAP COLUMN */
+
   .journey-column {
+
     width: 100% !important;
+
     height: auto !important;
+
     min-height: 550px !important;
+
     overflow: visible !important;
+
     flex: none !important;
+
   }
+
+
 
   .journey-route-wrapper {
+
     width: calc(100% - 16px);
+
     height: 500px !important;
+
     min-height: 500px !important;
+
     flex: none !important;
+
     overflow: hidden;
+
   }
+
 }
 
+
+
 /* =========================================================
+
    API ERROR
-========================================================= */
+
+\========================================================= */
+
 .tracking-api-error {
+
   width: 100%;
+
   margin-bottom: 12px;
+
   padding: 10px 14px;
+
   border: 1px solid #fecaca;
+
   border-radius: 8px;
+
   color: #b91c1c;
+
   background: #fef2f2;
+
   font-size: 12px;
+
   font-weight: 600;
+
   line-height: 1.45;
+
 }
 
+
+
 /* =========================================================
+
    TABLET / MOBILE TRACKING FIX
-========================================================= */
+
+\========================================================= */
+
 @media (max-width: 850px) {
 
-  /* =====================================
-     PAGE
-  ===================================== */
-  .tracking-page {
-    width: 100%;
-    min-width: 0;
-    min-height:
-      calc(100vh - 70px);
-    padding:
-      12px 10px 24px;
-    overflow-x: hidden;
-    overflow-y: visible;
-  }
+
 
   /* =====================================
-     HEADER
+
+     PAGE
+
   ===================================== */
-  .tracking-header {
+
+  .tracking-page {
+
     width: 100%;
-    margin-bottom: 10px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
+
+    min-width: 0;
+
+    min-height:
+
+      calc(100vh - 70px);
+
+    padding:
+
+      12px 10px 24px;
+
+    overflow-x: hidden;
+
+    overflow-y: visible;
+
   }
+
+
+
+  /* =====================================
+
+     HEADER
+
+  ===================================== */
+
+  .tracking-header {
+
+    width: 100%;
+
+    margin-bottom: 10px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: flex-start;
+
+    gap: 8px;
+
+  }
+
+
 
   .tracking-header-content {
+
     width: 100%;
+
     min-width: 0;
+
   }
+
+
 
   .tracking-header-content h1 {
+
     font-size: 22px;
+
   }
+
+
 
   .tracking-header-content p {
+
     width: 100%;
+
     max-width: none;
+
     font-size: 10px;
+
   }
 
+
+
   /* =====================================
+
      TOOLBAR
+
   ===================================== */
+
   .tracking-toolbar {
+
     position: relative;
+
     width: 100%;
+
     min-height: auto;
+
     margin-bottom: 10px;
+
     padding: 8px;
+
     display: flex;
+
     flex-direction: column;
+
     align-items: stretch;
+
     gap: 8px;
+
     overflow: visible;
+
   }
+
+
 
   /* SEARCH */
+
   .tracking-search {
+
     width: 100%;
+
     max-width: none;
+
     flex: none;
+
     margin-left: 0;
+
   }
 
+
+
   /* =====================================
+
      STATUS
+
   ===================================== */
+
   .tracking-status-filter {
+
     width: 100%;
+
     max-width: 100%;
+
     flex: none;
+
     margin-right: 0;
+
     display: flex;
+
     justify-content: flex-start;
+
     overflow-x: auto;
+
     overflow-y: hidden;
+
     scrollbar-width: none;
+
     -webkit-overflow-scrolling:
+
       touch;
+
   }
+
+
 
   .tracking-status-filter::-webkit-scrollbar {
+
     display: none;
+
   }
+
+
 
   .tracking-status-filter button {
+
     flex: 0 0 auto;
+
     min-width: fit-content;
+
   }
 
+
+
   /* =====================================
+
      DATE
+
   ===================================== */
+
   .tracking-date {
+
     width: 100%;
+
     margin-left: 0;
+
     flex: none;
+
   }
+
+
 
   .tracking-date input {
+
     width: 100%;
+
     min-width: 0;
+
   }
 
+
+
   /* =====================================
+
      MAIN LAYOUT
+
   ===================================== */
+
   .tracking-layout {
+
     position: relative !important;
+
     top: auto !important;
+
     width: 100% !important;
+
     min-width: 0 !important;
+
     height: auto !important;
+
     min-height: 0 !important;
+
     display: flex !important;
+
     flex-direction: column !important;
+
     grid-template-columns:
+
       none !important;
+
     align-items: stretch;
+
     gap: 12px;
+
     overflow: visible !important;
+
   }
 
+
+
   /* =====================================
+
      ALL 3 COLUMNS
+
   ===================================== */
+
   .tracking-layout>* {
+
     width: 100% !important;
+
     min-width: 0 !important;
+
     height: auto !important;
+
     max-height: none !important;
+
     min-height: 0 !important;
+
     overflow: visible;
+
   }
 
+
+
   /* =====================================
+
      TRIP PANEL
+
   ===================================== */
+
   .tracking-layout .tracking-trip-panel {
+
     width: 100% !important;
+
     height: auto !important;
+
     min-height: 260px !important;
+
     max-height: 400px !important;
+
     flex: none;
+
     overflow: hidden !important;
+
     border-radius: 12px;
+
   }
+
+
 
   .tracking-trip-panel .tracking-column-heading {
+
     min-height: 62px;
+
     flex:
+
       0 0 auto;
+
   }
+
+
 
   .tracking-trip-panel .tracking-trip-list {
+
     width: 100%;
+
     min-height: 190px;
+
     max-height: 330px !important;
+
     flex: none;
+
     overflow-y: auto !important;
+
     overflow-x: hidden;
+
     -webkit-overflow-scrolling:
+
       touch;
+
   }
 
+
+
   /* =====================================
+
      VEHICLE COLUMN
+
   ===================================== */
+
   .tracking-layout> :nth-child(2) {
+
     width: 100% !important;
+
     height: auto !important;
+
     min-height: 0 !important;
+
     max-height: none !important;
+
     overflow: visible !important;
+
   }
+
+
 
   .vehicle-column-panel {
+
     width: 100% !important;
+
     min-width: 0 !important;
+
     height: auto !important;
+
     min-height: 0 !important;
+
     max-height: none !important;
+
     overflow: visible !important;
+
   }
+
+
 
   /* =====================================
+
      VEHICLE STATUS STRIP
+
   ===================================== */
+
   .vehicle-status-strip {
+
     width:
+
       calc(100% - 16px);
+
     min-height: auto;
+
     align-items: stretch;
+
     gap: 7px;
+
   }
 
+
+
   .status-strip-left {
+
     min-width: 0;
+
     grid-template-columns:
+
       repeat(2,
+
         minmax(0,
+
           1fr));
+
     row-gap: 5px;
+
   }
+
+
 
   .status-item {
+
     justify-content:
+
       flex-start;
+
     padding: 0 5px;
+
   }
+
+
 
   .status-item:nth-child(2) {
+
     border-right: 0;
+
   }
 
+
+
   /* =====================================
+
      VEHICLE LIST
+
   ===================================== */
+
   .vehicle-mini-list {
+
     max-height: 250px;
+
   }
 
+
+
   /* =====================================
+
      MAP COLUMN
+
   ===================================== */
+
   .tracking-layout> :nth-child(3) {
+
     width: 100% !important;
+
     height: auto !important;
+
     min-height: 560px !important;
+
     max-height: none !important;
+
     grid-column: auto !important;
+
     overflow: visible !important;
+
   }
+
+
 
   .journey-column {
+
     width: 100% !important;
+
     min-width: 0 !important;
+
     height: auto !important;
+
     min-height: 560px !important;
+
     max-height: none !important;
+
     overflow: visible !important;
+
   }
 
+
+
   /* =====================================
+
      MAP ROUTE
+
   ===================================== */
+
   .journey-route-wrapper {
+
     width:
+
       calc(100% - 16px) !important;
+
     height: 500px !important;
+
     min-height: 500px !important;
+
     max-height: none !important;
+
     flex: none !important;
+
     overflow: hidden !important;
+
   }
+
 }
 
+
+
 /* =========================================================
+
    MOBILE
-========================================================= */
+
+\========================================================= */
+
 @media (max-width: 650px) {
+
   .tracking-page {
+
     padding:
+
       10px 8px 22px;
+
   }
 
+
+
   /* =====================================
+
      TOOLBAR
+
   ===================================== */
+
   .tracking-toolbar {
+
     padding: 7px;
+
     gap: 7px;
+
     border-radius: 10px;
+
   }
+
+
 
   .tracking-search {
+
     height: 40px;
+
   }
+
+
 
   .tracking-search input {
+
     font-size: 11px;
+
   }
 
+
+
   /* =====================================
+
      STATUS FILTER
+
   ===================================== */
+
   .tracking-status-filter {
+
     padding: 3px;
+
     gap: 3px;
+
   }
+
+
 
   .tracking-status-filter button {
+
     min-height: 32px;
+
     padding:
+
       0 8px;
+
     font-size: 8.5px;
+
   }
 
+
+
   /* =====================================
+
      DATE
+
   ===================================== */
+
   .tracking-date {
+
     min-height: 40px;
+
   }
 
+
+
   /* =====================================
+
      TRIP LIST
+
   ===================================== */
+
   .tracking-layout .tracking-trip-panel {
+
     min-height:
+
       250px !important;
+
     max-height:
+
       380px !important;
+
   }
+
+
 
   .tracking-trip-panel .tracking-trip-list {
+
     min-height: 180px;
+
     max-height:
+
       305px !important;
+
   }
 
+
+
   /* =====================================
+
      TRIP CARD
+
   ===================================== */
+
   .tracking-trip-card {
+
     min-height: 68px;
+
     padding:
+
       10px;
+
   }
+
+
 
   .trip-customer-name {
+
     max-width: 55%;
+
     font-size: 11.5px;
+
   }
+
+
 
   .trip-material-name {
+
     font-size: 9.5px;
+
   }
 
+
+
   /* =====================================
+
      STATUS
+
   ===================================== */
+
   .status-strip-left {
+
     grid-template-columns:
+
       repeat(2,
+
         minmax(0,
+
           1fr));
+
   }
 
+
+
   /* =====================================
+
      MAP
+
   ===================================== */
+
   .tracking-layout> :nth-child(3),
+
   .journey-column {
+
     min-height:
+
       520px !important;
+
   }
+
+
 
   .journey-route-wrapper {
+
     height:
+
       460px !important;
+
     min-height:
+
       460px !important;
+
   }
+
 }
+
+
 
 /* =========================================================
+
    SMALL MOBILE
-========================================================= */
+
+\========================================================= */
+
 @media (max-width: 430px) {
+
   .tracking-page {
+
     padding:
+
       9px 7px 20px;
+
   }
+
+
 
   .tracking-toolbar {
+
     padding: 6px;
+
   }
 
+
+
   /* =====================================
+
      STATUS BUTTON SCROLL
+
   ===================================== */
+
   .tracking-status-filter {
+
     justify-content:
+
       flex-start;
+
   }
+
+
 
   .tracking-status-filter button {
+
     padding:
+
       0 7px;
+
   }
 
+
+
   /* =====================================
+
      TRIP PANEL
+
   ===================================== */
+
   .tracking-layout .tracking-trip-panel {
+
     min-height:
+
       235px !important;
+
     max-height:
+
       350px !important;
+
   }
+
+
 
   .tracking-trip-panel .tracking-trip-list {
+
     min-height:
+
       165px;
+
     max-height:
+
       280px !important;
+
   }
 
+
+
   /* =====================================
+
      STATUS GRID
+
   ===================================== */
+
   .status-strip-left {
+
     grid-template-columns:
+
       repeat(2,
+
         minmax(0,
+
           1fr));
+
   }
 
+
+
   /* =====================================
+
      MAP
+
   ===================================== */
+
   .tracking-layout> :nth-child(3),
+
   .journey-column {
+
     min-height:
+
       490px !important;
+
   }
+
+
 
   .journey-route-wrapper {
+
     height:
+
       430px !important;
+
     min-height:
+
       430px !important;
+
   }
+
 }
 
+
+
 /* PROFESSIONAL TRACKING EMPTY STATE */
+
 .tracking-no-results {
+
   width: 100%;
+
   min-height: calc(100vh - 230px);
+
   display: flex;
+
   align-items: center;
+
   justify-content: center;
+
   padding: 40px 20px 90px;
+
   text-align: center
 }
 
+
+
 .tracking-no-results-content {
+
   width: 100%;
+
   max-width: 430px;
+
   display: flex;
+
   flex-direction: column;
+
   align-items: center
 }
 
+
+
 .tracking-no-results-icon {
+
   width: 54px;
+
   height: 54px;
+
   margin-bottom: 17px;
+
   display: flex;
+
   align-items: center;
+
   justify-content: center;
+
   flex: 0 0 54px;
+
   color: #526b82;
+
   border: 1px solid #dfe6ec;
+
   border-radius: 15px;
+
   background: #fff;
+
   box-shadow: 0 5px 16px rgba(26, 48, 72, .06)
 }
 
+
+
 .tracking-no-results-icon svg {
+
   width: 24px;
+
   height: 24px
 }
 
+
+
 .tracking-no-results-icon.warning {
+
   color: #b7791f;
+
   border-color: #f2dfba;
+
   background: #fffaf0
 }
 
+
+
 .tracking-no-results-icon.error {
+
   color: #c2414d;
+
   border-color: #f0d1d5;
+
   background: #fff7f7
 }
 
+
+
 .tracking-no-results-title {
+
   margin: 0;
+
   color: #1d3348;
+
   font-size: 17px;
+
   font-weight: 700;
+
   line-height: 1.3;
+
   letter-spacing: -.2px
 }
 
+
+
 .tracking-no-results-description {
+
   max-width: 390px;
+
   margin: 7px 0 0;
+
   color: #6f8091;
+
   font-size: 12px;
+
   font-weight: 500;
+
   line-height: 1.55
 }
 
+
+
 .tracking-no-results-hint {
+
   display: block;
+
   max-width: 360px;
+
   margin-top: 4px;
+
   color: #9aa7b3;
+
   font-size: 10.5px;
+
   font-weight: 500;
+
   line-height: 1.5
 }
 
+
+
 .tracking-no-results-action {
+
   min-height: 34px;
+
   margin-top: 18px;
+
   padding: 0 13px;
+
   display: inline-flex;
+
   align-items: center;
+
   justify-content: center;
+
   gap: 6px;
+
   border: 1px solid #d9e1e8;
+
   border-radius: 8px;
+
   outline: none;
+
   color: #40566b;
+
   background: #fff;
+
   font: inherit;
+
   font-size: 10.5px;
+
   font-weight: 600;
+
   cursor: pointer;
+
   box-shadow: 0 2px 7px rgba(25, 46, 66, .04);
+
   transition: .15s ease
 }
 
+
+
 .tracking-no-results-action:hover {
+
   color: #1b5962;
+
   border-color: #bcd7da;
+
   background: #f7fbfb;
+
   box-shadow: 0 3px 10px rgba(25, 73, 79, .07)
 }
 
+
+
 .tracking-no-results-action:active {
+
   transform: translateY(1px)
 }
 
+
+
 .tracking-no-results-action:focus-visible {
+
   border-color: #2a8f94;
+
   box-shadow: 0 0 0 3px rgba(42, 143, 148, .12)
 }
 
+
+
 .tracking-loading-state {
+
   width: 100%;
+
   min-height: calc(100vh - 230px);
+
   display: flex;
+
   align-items: center;
+
   justify-content: center;
+
   color: #718196;
+
   font-size: 12px;
+
   font-weight: 600
 }
 
+
+
 @media(max-width:850px) {
+
   .tracking-no-results {
+
     min-height: 420px;
+
     padding: 35px 18px
   }
 
+
+
   .tracking-no-results-icon {
+
     width: 52px;
+
     height: 52px;
+
     flex-basis: 52px;
+
     margin-bottom: 15px
   }
 
+
+
   .tracking-no-results-title {
+
     font-size: 16px
   }
 
+
+
   .tracking-no-results-description {
+
     font-size: 11.5px
+  }
+
+}
+
+
+
+@media(max-width:650px) {
+
+  .tracking-no-results {
+
+    min-height: 350px;
+
+    padding: 30px 16px
+  }
+
+
+
+  .tracking-no-results-content {
+
+    max-width: 340px
+  }
+
+
+
+  .tracking-no-results-icon {
+
+    width: 48px;
+
+    height: 48px;
+
+    flex-basis: 48px;
+
+    margin-bottom: 14px;
+
+    border-radius: 13px
+  }
+
+
+
+  .tracking-no-results-icon svg {
+
+    width: 22px;
+
+    height: 22px
+  }
+
+
+
+  .tracking-no-results-title {
+
+    font-size: 15px
+  }
+
+
+
+  .tracking-no-results-description {
+
+    max-width: 320px;
+
+    margin-top: 6px;
+
+    font-size: 11px
+  }
+
+
+
+  .tracking-no-results-hint {
+
+    font-size: 10px
+  }
+
+
+
+  .tracking-no-results-action {
+
+    margin-top: 15px
+  }
+
+}
+
+/* =========================================================
+
+   ACTIVE TRIPS
+
+\========================================================= */
+
+.trip-list-column,
+
+.trip-list-column * {
+
+  box-sizing: border-box;
+
+}
+
+
+
+.trip-list-column {
+
+  width: 100%;
+
+  height: 100%;
+
+  min-width: 0;
+
+  min-height: 0;
+
+  display: flex;
+
+  flex-direction: column;
+
+  overflow: hidden;
+
+  border: 1px solid #dce6ec;
+
+  border-radius: 12px;
+
+  background: #ffffff;
+
+  box-shadow:
+
+    0 3px 12px rgba(24, 52, 72, 0.045);
+
+  font-family:
+
+    Inter,
+
+    "Segoe UI",
+
+    Roboto,
+
+    Arial,
+
+    sans-serif;
+
+}
+
+
+
+/* =========================================================
+
+   COMPACT HEADER
+
+\========================================================= */
+
+.trip-list-header {
+
+  height: 48px;
+
+  min-height: 48px;
+
+  padding: 6px 10px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 8px;
+
+  flex: 0 0 48px;
+
+  border-bottom: 1px solid #e3ebf0;
+
+  background: #ffffff;
+
+}
+
+
+
+.trip-list-header-content {
+
+  min-width: 0;
+
+  display: flex;
+
+  flex-direction: column;
+
+  justify-content: center;
+
+}
+
+
+
+.trip-list-header h3 {
+
+  margin: 0;
+
+  color: #173a56;
+
+  font-size: 16px;
+
+  font-weight: 800;
+
+  line-height: 1;
+
+  letter-spacing: -0.25px;
+
+}
+
+
+
+.trip-list-header-content>span {
+
+  display: block;
+
+  margin-top: 3px;
+
+  color: #7d909e;
+
+  font-size: 8px;
+
+  font-weight: 600;
+
+  line-height: 1;
+
+}
+
+
+
+/* =========================================================
+
+   HEADER TOTAL
+
+\========================================================= */
+
+.trip-list-total {
+
+  min-width: 42px;
+
+  height: 30px;
+
+  padding: 0 8px;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 5px;
+
+  flex: 0 0 auto;
+
+  border: 1px solid #c5e4df;
+
+  border-radius: 8px;
+
+  color: #14867d;
+
+  background: #edf8f6;
+
+}
+
+
+
+.trip-list-total svg {
+
+  width: 12px;
+
+  height: 12px;
+
+}
+
+
+
+.trip-list-total strong {
+
+  font-size: 10px;
+
+  font-weight: 800;
+
+}
+
+
+
+/* =========================================================
+
+   SCROLL AREA
+
+\========================================================= */
+
+.trip-list-scroll {
+
+  flex: 1;
+
+  min-height: 0;
+
+  padding: 5px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 4px;
+
+  overflow-y: auto;
+
+  overflow-x: hidden;
+
+  background: #f7f9fb;
+
+  scrollbar-width: thin;
+
+  scrollbar-color: #cbd5dc transparent;
+
+}
+
+
+
+.trip-list-scroll::-webkit-scrollbar {
+
+  width: 4px;
+
+}
+
+
+
+.trip-list-scroll::-webkit-scrollbar-track {
+
+  background: transparent;
+
+}
+
+
+
+.trip-list-scroll::-webkit-scrollbar-thumb {
+
+  border-radius: 20px;
+
+  background: #cbd5dc;
+
+}
+
+
+
+/* =========================================================
+
+   TRIP CARD
+
+\========================================================= */
+
+.trip-list-item {
+
+  position: relative;
+
+  width: 100%;
+
+  min-width: 0;
+
+  min-height: 94px;
+
+  margin: 0;
+
+  padding: 6px 8px 4px;
+
+  display: block;
+
+  flex: 0 0 auto;
+
+  overflow: hidden;
+
+  border: 1px solid #dbe5eb;
+
+  border-radius: 10px;
+
+  outline: none;
+
+  color: #173a56;
+
+  background: #ffffff;
+
+  text-align: left;
+
+  font: inherit;
+
+  cursor: pointer;
+
+  box-shadow:
+
+    0 1px 4px rgba(20, 45, 65, 0.035);
+
+  transition:
+
+    border-color 150ms ease,
+
+    background 150ms ease,
+
+    box-shadow 150ms ease;
+
+}
+
+
+
+.trip-list-item:hover {
+
+  border-color: #a7d3cf;
+
+  background: #ffffff;
+
+  box-shadow:
+
+    0 3px 9px rgba(19, 116, 108, 0.07);
+
+}
+
+
+
+.trip-list-item.active {
+
+  border-color: #1a958b;
+
+  background:
+
+    linear-gradient(90deg,
+
+      #f2fbf9 0%,
+
+      #ffffff 72%);
+
+  box-shadow:
+
+    inset 4px 0 0 #1a958b,
+
+    0 2px 7px rgba(18, 120, 112, 0.07);
+
+}
+
+
+
+.trip-list-item:focus-visible {
+
+  border-color: #188e86;
+
+  box-shadow:
+
+    0 0 0 2px rgba(24, 142, 134, 0.12);
+
+}
+
+
+
+/* =========================================================
+
+   TOP ROW
+
+\========================================================= */
+
+.trip-card-top {
+
+  width: 100%;
+
+  min-width: 0;
+
+  height: 30px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 7px;
+
+}
+
+
+
+/* =========================================================
+
+   CUSTOMER + MATERIAL
+
+\========================================================= */
+
+.trip-card-main-info {
+
+  min-width: 0;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 6px;
+
+  flex: 1;
+
+  overflow: hidden;
+
+}
+
+
+
+/* =========================================================
+
+   CUSTOMER
+
+\========================================================= */
+
+.trip-list-customer {
+
+  min-width: 0;
+
+  max-width: 48%;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 5px;
+
+  overflow: hidden;
+
+  color: #173a56;
+
+  white-space: nowrap;
+
+}
+
+
+
+.trip-customer-icon {
+
+  width: 22px;
+
+  height: 22px;
+
+  flex: 0 0 22px;
+
+  display: grid;
+
+  place-items: center;
+
+  border-radius: 6px;
+
+  color: #315f7d;
+
+  background: #edf4f8;
+
+}
+
+
+
+.trip-customer-icon svg {
+
+  width: 11px;
+
+  height: 11px;
+
+}
+
+
+
+.trip-list-customer strong {
+
+  min-width: 0;
+
+  overflow: hidden;
+
+  color: #173a56;
+
+  font-size: 11px;
+
+  font-weight: 800;
+
+  line-height: 1;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+
+}
+
+
+
+/* =========================================================
+
+   CUSTOMER / MATERIAL SEPARATOR
+
+\========================================================= */
+
+.trip-info-separator {
+
+  width: 1px;
+
+  height: 17px;
+
+  flex: 0 0 1px;
+
+  background: #d6e0e6;
+
+}
+
+
+
+/* =========================================================
+
+   MATERIAL
+
+\========================================================= */
+
+.trip-list-material {
+
+  min-width: 0;
+
+  max-width: 46%;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 4px;
+
+  overflow: hidden;
+
+  color: #60798a;
+
+  white-space: nowrap;
+
+}
+
+
+
+.trip-list-material svg {
+
+  width: 11px;
+
+  height: 11px;
+
+  flex: 0 0 11px;
+
+  color: #c18a32;
+
+}
+
+
+
+.trip-list-material span {
+
+  min-width: 0;
+
+  overflow: hidden;
+
+  color: #60798a;
+
+  font-size: 9.5px;
+
+  font-weight: 700;
+
+  line-height: 1;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+
+}
+
+
+
+/* =========================================================
+
+   ORDER ID
+
+\========================================================= */
+
+.trip-list-trip-id {
+
+  min-width: 0;
+
+  height: 28px;
+
+  padding: 0 7px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 4px;
+
+  flex: 0 0 auto;
+
+  border: 1px solid #cbe6e2;
+
+  border-radius: 8px;
+
+  color: #176f69;
+
+  background: #f0faf8;
+
+}
+
+
+
+.trip-list-truck-icon {
+
+  width: 17px;
+
+  height: 17px;
+
+  flex: 0 0 17px;
+
+  display: grid;
+
+  place-items: center;
+
+  color: #16877f;
+
+}
+
+
+
+.trip-list-truck-icon svg {
+
+  width: 11px;
+
+  height: 11px;
+
+}
+
+
+
+.trip-list-trip-id strong {
+
+  min-width: 0;
+
+  overflow: hidden;
+
+  color: #173a56;
+
+  font-size: 10.5px;
+
+  font-weight: 800;
+
+  line-height: 1;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+
+}
+
+
+
+/* =========================================================
+
+   ROUTE
+
+\========================================================= */
+
+.trip-list-route {
+
+  width: 100%;
+
+  min-width: 0;
+
+  height: 19px;
+
+  margin-top: 3px;
+
+  padding-left: 2px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 4px;
+
+  overflow: hidden;
+
+  color: #718794;
+
+  font-size: 8.5px;
+
+  font-weight: 650;
+
+  line-height: 1;
+
+  white-space: nowrap;
+
+}
+
+
+
+.trip-list-route>svg:first-child {
+
+  width: 10px;
+
+  height: 10px;
+
+  flex: 0 0 10px;
+
+  color: #dc527c;
+
+}
+
+
+
+.trip-list-route span {
+
+  min-width: 0;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+
+}
+
+
+
+.trip-list-route span:first-of-type {
+
+  max-width: 43%;
+
+}
+
+
+
+.trip-list-route span:last-child {
+
+  max-width: 43%;
+
+}
+
+
+
+.trip-list-route svg:not(:first-child) {
+
+  width: 8px;
+
+  height: 8px;
+
+  flex: 0 0 8px;
+
+  color: #a2b0b9;
+
+}
+
+
+
+/* =========================================================
+
+   VEHICLE STATUS SUMMARY
+
+\========================================================= */
+
+.trip-list-vehicle-summary {
+
+  width: 100%;
+
+  min-width: 0;
+
+  height: 27px;
+
+  margin-top: 4px;
+
+  padding: 2px 0 0;
+
+  display: grid;
+
+  /*
+
+    Total | Moving | Idle | Breakdown | Reached
+
+  */
+
+  grid-template-columns:
+
+    0.90fr 1.15fr 0.85fr 1.45fr 1.15fr;
+
+  align-items: center;
+
+  border-top: 1px solid #e2e9ed;
+
+  background: transparent;
+
+  overflow: visible;
+
+}
+
+
+
+/* =========================================================
+
+   STATUS ITEMS
+
+\========================================================= */
+
+.trip-vehicle-total,
+
+.trip-vehicle-stat {
+
+  position: relative;
+
+  width: 100%;
+
+  min-width: 0;
+
+  height: 22px;
+
+  padding: 0 2px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 3px;
+
+  border: 0;
+
+  border-radius: 0;
+
+  background: transparent;
+
+  font-size: 7px;
+
+  font-weight: 700;
+
+  line-height: 1;
+
+  white-space: nowrap;
+
+  overflow: visible;
+
+}
+
+
+
+/* =========================================================
+
+   STATUS SEPARATOR
+
+\========================================================= */
+
+.trip-vehicle-stat::before {
+
+  content: "";
+
+  position: absolute;
+
+  left: 0;
+
+  top: 4px;
+
+  bottom: 4px;
+
+  width: 1px;
+
+  background: #d8e2e7;
+
+}
+
+
+
+/* =========================================================
+
+   TOTAL
+
+\========================================================= */
+
+.trip-vehicle-total {
+
+  color: #177a72;
+
+  font-weight: 750;
+
+}
+
+
+
+.trip-vehicle-total svg {
+
+  width: 9px;
+
+  height: 9px;
+
+  flex: 0 0 9px;
+
+  color: #16877f;
+
+}
+
+
+
+/* =========================================================
+
+   STATUS NUMBER
+
+\========================================================= */
+
+.trip-vehicle-total strong,
+
+.trip-vehicle-stat strong {
+
+  min-width: auto;
+
+  height: auto;
+
+  margin: 0;
+
+  padding: 0;
+
+  display: inline;
+
+  flex: 0 0 auto;
+
+  border: 0;
+
+  border-radius: 0;
+
+  background: transparent;
+
+  color: inherit;
+
+  font-size: 7.3px;
+
+  font-weight: 800;
+
+  line-height: 1;
+
+  white-space: nowrap;
+
+}
+
+
+
+/* =========================================================
+
+   STATUS DOT
+
+\========================================================= */
+
+.trip-vehicle-dot {
+
+  width: 4px;
+
+  height: 4px;
+
+  flex: 0 0 4px;
+
+  border-radius: 50%;
+
+  background: currentColor;
+
+}
+
+
+
+/* =========================================================
+
+   TOTAL COLOR
+
+\========================================================= */
+
+.trip-vehicle-total,
+
+.trip-vehicle-total strong {
+
+  color: #177a72;
+
+}
+
+
+
+/* =========================================================
+
+   MOVING
+
+\========================================================= */
+
+.trip-vehicle-stat.moving,
+
+.trip-vehicle-stat.moving strong {
+
+  color: #16845d;
+
+}
+
+
+
+/* =========================================================
+
+   IDLE
+
+\========================================================= */
+
+.trip-vehicle-stat.idle,
+
+.trip-vehicle-stat.idle strong {
+
+  color: #a96b0d;
+
+}
+
+
+
+/* =========================================================
+
+   BREAKDOWN
+
+\========================================================= */
+
+.trip-vehicle-stat.breakdown,
+
+.trip-vehicle-stat.breakdown strong {
+
+  color: #c64250;
+
+}
+
+
+
+/* =========================================================
+
+   REACHED
+
+\========================================================= */
+
+.trip-vehicle-stat.reached,
+
+.trip-vehicle-stat.reached strong {
+
+  color: #286fa2;
+
+}
+
+
+
+/* =========================================================
+
+   EMPTY STATE
+
+\========================================================= */
+
+.trip-list-empty {
+
+  min-height: 120px;
+
+  padding: 14px 10px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  justify-content: center;
+
+  color: #81929e;
+
+  text-align: center;
+
+}
+
+
+
+.trip-list-empty>svg {
+
+  width: 27px;
+
+  height: 27px;
+
+  margin-bottom: 6px;
+
+  padding: 6px;
+
+  border-radius: 7px;
+
+  color: #168e86;
+
+  background: #eaf7f5;
+
+}
+
+
+
+.trip-list-empty strong {
+
+  color: #29485c;
+
+  font-size: 11px;
+
+  font-weight: 750;
+
+}
+
+
+
+.trip-list-empty span {
+
+  margin-top: 4px;
+
+  color: #8999a5;
+
+  font-size: 8px;
+
+}
+
+
+
+/* =========================================================
+
+   LAPTOP
+
+\========================================================= */
+
+@media (max-width: 1050px) {
+
+  .trip-list-header {
+
+    height: 46px;
+
+    min-height: 46px;
+
+    flex-basis: 46px;
+
+    padding: 5px 9px;
+
+  }
+
+
+
+  .trip-list-header h3 {
+
+    font-size: 15px;
+
+  }
+
+
+
+  .trip-list-header-content>span {
+
+    font-size: 7.5px;
+
+  }
+
+
+
+  .trip-list-total {
+
+    min-width: 40px;
+
+    height: 28px;
+
+    padding: 0 7px;
+
+  }
+
+
+
+  .trip-list-scroll {
+
+    padding: 4px;
+
+    gap: 4px;
+
+  }
+
+
+
+  .trip-list-item {
+
+    min-height: 91px;
+
+    padding: 5px 7px 3px;
+
+  }
+
+
+
+  .trip-card-top {
+
+    height: 29px;
+
+    gap: 6px;
+
+  }
+
+
+
+  .trip-card-main-info {
+
+    gap: 5px;
+
+  }
+
+
+
+  .trip-customer-icon {
+
+    width: 21px;
+
+    height: 21px;
+
+    flex-basis: 21px;
+
+  }
+
+
+
+  .trip-list-customer strong {
+
+    font-size: 10.5px;
+
+  }
+
+
+
+  .trip-list-material span {
+
+    font-size: 9px;
+
+  }
+
+
+
+  .trip-list-trip-id {
+
+    height: 27px;
+
+    padding: 0 6px;
+
+  }
+
+
+
+  .trip-list-trip-id strong {
+
+    font-size: 10px;
+
+  }
+
+
+
+  .trip-list-route {
+
+    height: 18px;
+
+    margin-top: 2px;
+
+    font-size: 8px;
+
+  }
+
+
+
+  .trip-list-vehicle-summary {
+
+    height: 26px;
+
+    margin-top: 3px;
+
+    grid-template-columns:
+
+      0.90fr 1.15fr 0.85fr 1.45fr 1.15fr;
+
+  }
+
+
+
+  .trip-vehicle-total,
+
+  .trip-vehicle-stat {
+
+    height: 21px;
+
+    padding: 0 2px;
+
+    gap: 2px;
+
+    font-size: 6.7px;
+
+  }
+
+
+
+  .trip-vehicle-total strong,
+
+  .trip-vehicle-stat strong {
+
+    font-size: 7px;
+
+  }
+
+}
+
+
+
+/* =========================================================
+
+   TABLET
+
+\========================================================= */
+
+@media (max-width: 760px) {
+
+  .trip-list-column {
+
+    max-height: 520px;
+
+  }
+
+
+
+  .trip-list-scroll {
+
+    display: grid;
+
+    grid-template-columns:
+
+      repeat(2,
+
+        minmax(0, 1fr));
+
+    align-content: start;
+
+  }
+
+}
+
+
+
+/* =========================================================
+
+   SMALL TABLET
+
+\========================================================= */
+
+@media (max-width: 620px) {
+
+  .trip-list-scroll {
+
+    grid-template-columns: 1fr;
+
+  }
+
+
+
+  .trip-card-top {
+
+    gap: 5px;
+
+  }
+
+
+
+  .trip-card-main-info {
+
+    gap: 4px;
+
+  }
+
+
+
+  .trip-list-customer {
+
+    max-width: 48%;
+
+  }
+
+
+
+  .trip-list-material {
+
+    max-width: 44%;
+
+  }
+
+}
+
+
+
+/* =========================================================
+
+   MOBILE
+
+\========================================================= */
+
+@media (max-width: 420px) {
+
+  .trip-list-header {
+
+    height: 44px;
+
+    min-height: 44px;
+
+    flex-basis: 44px;
+
+    padding: 5px 8px;
+
+  }
+
+
+
+  .trip-list-header h3 {
+
+    font-size: 14px;
+
+  }
+
+
+
+  .trip-list-header-content>span {
+
+    margin-top: 2px;
+
+    font-size: 7px;
+
+  }
+
+
+
+  .trip-list-total {
+
+    min-width: 38px;
+
+    height: 27px;
+
+    padding: 0 6px;
+
+  }
+
+
+
+  .trip-list-total svg {
+
+    width: 10px;
+
+    height: 10px;
+
+  }
+
+
+
+  .trip-list-total strong {
+
+    font-size: 9px;
+
+  }
+
+
+
+  .trip-list-item {
+
+    min-height: 89px;
+
+    padding: 5px 6px 3px;
+
+  }
+
+
+
+  .trip-card-top {
+
+    height: 28px;
+
+  }
+
+
+
+  .trip-customer-icon {
+
+    width: 20px;
+
+    height: 20px;
+
+    flex-basis: 20px;
+
+  }
+
+
+
+  .trip-customer-icon svg {
+
+    width: 10px;
+
+    height: 10px;
+
+  }
+
+
+
+  .trip-list-customer strong {
+
+    font-size: 10px;
+
+  }
+
+
+
+  .trip-info-separator {
+
+    height: 15px;
+
+  }
+
+
+
+  .trip-list-material svg {
+
+    width: 10px;
+
+    height: 10px;
+
+    flex-basis: 10px;
+
+  }
+
+
+
+  .trip-list-material span {
+
+    font-size: 8.5px;
+
+  }
+
+
+
+  .trip-list-trip-id {
+
+    height: 26px;
+
+    padding: 0 5px;
+
+  }
+
+
+
+  .trip-list-truck-icon {
+
+    width: 15px;
+
+    height: 15px;
+
+    flex-basis: 15px;
+
+  }
+
+
+
+  .trip-list-trip-id strong {
+
+    font-size: 9.5px;
+
+  }
+
+
+
+  .trip-list-route {
+
+    height: 17px;
+
+    margin-top: 2px;
+
+    font-size: 7.8px;
+
+  }
+
+
+
+  .trip-list-vehicle-summary {
+
+    height: 25px;
+
+    margin-top: 2px;
+
+    grid-template-columns:
+
+      0.90fr 1.15fr 0.85fr 1.45fr 1.15fr;
+
+  }
+
+
+
+  .trip-vehicle-total,
+
+  .trip-vehicle-stat {
+
+    height: 20px;
+
+    padding: 0 1px;
+
+    gap: 2px;
+
+    font-size: 6.2px;
+
+  }
+
+
+
+  .trip-vehicle-total strong,
+
+  .trip-vehicle-stat strong {
+
+    font-size: 6.5px;
+
+  }
+
+
+
+  .trip-vehicle-total svg {
+
+    width: 8px;
+
+    height: 8px;
+
+    flex-basis: 8px;
+
+  }
+
+
+
+  .trip-vehicle-dot {
+
+    width: 3px;
+
+    height: 3px;
+
+    flex-basis: 3px;
+
+  }
+
+}
+
+.vehicle-column-panel,
+.vehicle-column-panel * {
+  box-sizing: border-box;
+}
+
+.vehicle-column-panel {
+  --navy: #0b2b3f;
+  --slate: #173f59;
+  --blue: #2f6f9f;
+  --blue-soft: #edf5fa;
+  --teal: #18a99f;
+  --teal-dark: #10877f;
+  --teal-soft: #eaf8f6;
+  --green: #16845d;
+  --green-soft: #edf8f2;
+  --amber: #c47a0a;
+  --amber-soft: #fff7e9;
+  --red: #d14b5a;
+  --red-soft: #fff1f2;
+  --surface: #fff;
+  --soft: #f7fafb;
+  --border: #d8e4e9;
+  --border-soft: #e7eef1;
+  --text: #173a52;
+  --muted: #718797;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  color: var(--text);
+  background: var(--layout-bg);
+  font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+  scrollbar-width: thin;
+  scrollbar-color: #c7d3da transparent;
+  --sample-navy: #0d2940;
+  --sample-text: #17364d;
+  --sample-muted: #6f8493;
+  --sample-border: #d9e5ea;
+  --sample-green: #1caf7a;
+  --sample-green-dark: #11855f;
+  --sample-green-soft: #edf9f4;
+  --sample-blue: #2e79b8;
+  --sample-blue-soft: #eef6fc;
+  --sample-card: #ffffff;
+  --sample-bg: #f6f9fa;
+  --page-bg: #dce6ee;
+  --section-bg: #e8eff4;
+  --card-bg: #ffffff;
+  --card-border: #ccd9e2;
+  --heading: #173a52;
+  --secondary: #587184;
+  --accent: #168f88;
+  --accent-soft: #eaf7f5;
+  --layout-bg: #dce6ee;
+  --layout-section: #e8eff4;
+  --layout-card: #ffffff;
+  --layout-header: #f7fafc;
+  --layout-border: #ccd9e2;
+  --layout-title: #173a52;
+  --layout-label: #587184;
+  --layout-accent: #168f88;
+  --layout-accent-soft: #eaf7f5;
+}
+
+.vehicle-column-panel::-webkit-scrollbar {
+  width: 5px;
+}
+
+.vehicle-column-panel::-webkit-scrollbar-thumb {
+  border-radius: 20px;
+  background: #c7d3da;
+}
+
+.vehicle-selector-row {
+  position: sticky;
+  width: 100%;
+  min-height: 48px;
+  padding: 6px 10px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  border-bottom: 1px solid var(--card-border);
+  background: #f5f8fb;
+  top: 0;
+  z-index: 40;
+  border-bottom-color: #d8e4e9;
+  box-shadow: 0 2px 8px rgba(18, 52, 70, .035);
+  backdrop-filter: blur(8px);
+}
+
+.vehicle-visible-tabs {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex: 1;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  grid-template-columns: repeat(5, minmax(118px, 1fr));
+  padding: 1px 1px 2px;
+}
+
+.vehicle-visible-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.vehicle-number-card {
+  min-width: 125px;
+  min-height: 34px;
+  padding: 4px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 5px;
+  flex: 0 0 auto;
+  border: 1px solid #dce7eb;
+  border-radius: 11px;
+  color: var(--sample-text);
+  background: #fff;
+  font: inherit;
+  cursor: pointer;
+  transition: border-color .15s ease, background .15s ease, box-shadow .15s ease, transform .15s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 3px 10px rgba(15, 45, 65, .045);
+  height: 34px;
+}
+
+.vehicle-number-card:hover {
+  border-color: #9bd7c3;
+  background: #fbfefd;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(17, 76, 85, .08);
+}
+
+.vehicle-number-card.active {
+  border-color: #8bd7bd;
+  color: var(--sample-text);
+  background: linear-gradient(135deg, #f0fbf6 0%, #ffffff 78%);
+  box-shadow: 0 5px 15px rgba(20, 145, 103, .10);
+}
+
+.vehicle-number-card>span:first-child {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 9px;
+  font-weight: 850;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: inherit;
+  letter-spacing: .1px;
+}
+
+.vehicle-mini-status {
+  min-height: 18px;
+  padding: 0 5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  flex: 0 0 auto;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 6.5px;
+  font-weight: 800;
+  white-space: nowrap;
+  justify-content: center;
+  line-height: 1;
+}
+
+.vehicle-mini-status svg {
+  width: 8px;
+  height: 8px;
+}
+
+.vehicle-mini-status.moving {
+  color: #137c59;
+  border-color: #bde5d1;
+  background: #eaf8f1;
+}
+
+.vehicle-mini-status.idle {
+  color: #a9680b;
+  border-color: #efd5a5;
+  background: #fff6e6;
+}
+
+.vehicle-mini-status.breakdown {
+  color: #bf4551;
+  border-color: #efc7cb;
+  background: #fff0f1;
+}
+
+.vehicle-mini-status.reached {
+  color: #176f53;
+  border-color: #bdebd9;
+  background: #e9f9f1;
+}
+
+.vehicle-number-card.active .vehicle-mini-status {
+  background: #fff;
+  box-shadow: none;
+}
+
+.vehicle-more-dropdown {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.vehicle-more-button {
+  min-width: 78px;
+  height: 48px;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border: 1px solid #d9e4e9;
+  border-radius: 10px;
+  color: #536d7e;
+  background: #f8fafb;
+  font-size: 8px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: .15s ease;
+}
+
+.vehicle-more-button:hover,
+.vehicle-more-button.active {
+  color: #10877f;
+  border-color: #9fd2cd;
+  background: #eef9f7;
+}
+
+.vehicle-more-menu {
+  position: absolute;
+  top: calc(100% + 7px);
+  right: 0;
+  z-index: 100;
+  width: 250px;
+  max-height: 280px;
+  padding: 5px;
+  overflow-y: auto;
+  border: 1px solid #d8e4e9;
+  border-radius: 11px;
+  background: #fff;
+  box-shadow: 0 14px 34px rgba(11, 43, 63, .16);
+}
+
+.vehicle-more-option {
+  width: 100%;
+  min-height: 42px;
+  padding: 7px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border: 0;
+  border-radius: 7px;
+  color: #173a52;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+  border-bottom: 1px solid #edf2f4;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.vehicle-more-option:hover,
+.vehicle-more-option.active {
+  background: #eef9f7;
+}
+
+.trip-distance-summary {
+  width: calc(100% - 16px);
+  margin: 0 10px 7px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 9px;
+  margin-bottom: 10px;
+}
+
+.distance-summary-item {
+  position: relative;
+  min-width: 0;
+  min-height: 46px;
+  padding: 5px 10px;
+  overflow: hidden;
+  border: 1px solid var(--sample-border);
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: none;
+  height: 46px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  text-align: left;
+}
+
+.distance-summary-item:before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+}
+
+.distance-summary-item.total:before {
+  background: var(--blue);
+}
+
+.distance-summary-item.covered:before {
+  background: var(--teal);
+}
+
+.distance-summary-item.balance:before {
+  background: #db8a18;
+}
+
+.distance-summary-item span {
+  display: block;
+  color: #7c909e;
+  font-size: 7px;
+  font-weight: 600;
+  width: 100%;
+  margin: 0;
+  line-height: 1;
+  text-align: left;
+}
+
+.distance-summary-item strong {
+  display: block;
+  margin-top: 3px;
+  overflow: hidden;
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+  margin: 3px 0 0;
+  line-height: 1;
+  text-align: left;
+}
+
+.movement-card-section {
+  width: calc(100% - 16px);
+  margin: 0 8px 7px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: none;
+}
+
+.movement-heading-content {
+  min-width: 0;
+  flex: 1;
+}
+
+.movement-title-line {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  position: relative;
+}
+
+.movement-title-line>strong {
+  color: var(--text);
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.movement-heading-subtitle {
+  display: block;
+  margin-top: 1px;
+  color: var(--muted);
+  font-size: 6.5px;
+  font-weight: 600;
+}
+
+.movement-vehicle-badge {
+  min-height: auto;
+  max-width: 160px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 0;
+  border-radius: 0;
+  color: #444;
+  background: transparent;
+  font-size: 8px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  position: absolute;
+  right: 0;
+  margin-left: auto;
+}
+
+.movement-card-grid {
+  width: 100%;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0;
+  background: #fff;
+}
+
+.movement-info-card {
+  min-width: 0;
+  min-height: 35px;
+  padding: 0 12px;
+  display: grid;
+  flex-direction: column;
+  justify-content: center;
+  border: 0;
+  border-radius: 0;
+  background: #fff;
+  box-shadow: none;
+  grid-template-columns: 110px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid #edf2f4;
+}
+
+.movement-info-card span {
+  display: block;
+  overflow: hidden;
+  color: #718797;
+  font-size: 8px;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin: 0;
+}
+
+.movement-info-card strong {
+  display: block;
+  margin-top: 3px;
+  overflow: hidden;
+  color: #173a52;
+  font-size: 9.5px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin: 0;
+}
+
+.trip-detail-row {
+  width: 100%;
+  min-width: 0;
+  min-height: 34px;
+  padding: 0 12px;
+  display: grid;
+  grid-template-columns: 150px 8px minmax(0, 1fr);
+  align-items: center;
+  gap: 5px;
+  border-bottom: 1px solid #edf2f4;
+  background: #fff;
+}
+
+.trip-detail-row:last-child {
+  border-bottom: 0;
+}
+
+.trip-detail-row:hover {
+  background: #fbfdfd;
+}
+
+.trip-detail-label {
+  overflow: hidden;
+  color: #6f8594;
+  font-size: 8px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.trip-detail-colon {
+  color: #9cabb5;
+  font-size: 8px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.trip-detail-value {
+  overflow: hidden;
+  color: var(--text);
+  font-size: 9.5px;
+  font-weight: 750;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.operation-details-section {
+  width: calc(100% - 24px);
+  margin: 0 12px 12px;
+  border: 0;
+  overflow: visible;
+}
+
+.operation-main-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+}
+
+.simple-operation-card {
+  overflow: hidden;
+  border: 1px solid var(--sample-border);
+  border-radius: 11px;
+  background: #fff;
+  box-shadow: 0 4px 13px rgba(16, 47, 66, .04);
+}
+
+.simple-operation-card.loading-card {
+  border-top: 3px solid var(--blue);
+}
+
+.simple-operation-card.unloading-card {
+  border-top: 3px solid var(--green);
+}
+
+.simple-operation-title {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  flex: 1;
+}
+
+.simple-operation-title>div>strong {
+  display: block;
+  color: #0d2940;
+  font-size: 12px;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: .1px;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.simple-operation-title>div>span {
+  display: none;
+  margin-top: 1px;
+  color: var(--muted);
+  font-size: 8px;
+}
+
+.simple-operation-status {
+  min-height: 22px;
+  padding: 0 9px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  font-size: 8px;
+  font-weight: 750;
+  position: static;
+  right: 10px;
+  background: #e8f8f0;
+  justify-content: center;
+  color: #087b57;
+}
+
+.simple-operation-status.loading {
+  color: #286b9e;
+  background: var(--blue-soft);
+}
+
+.simple-operation-status.unloading {
+  color: var(--green);
+  background: var(--green-soft);
+}
+
+.simple-operation-details {
+  padding: 10px 14px 12px;
+}
+
+.simple-detail-row {
+  min-height: 34px;
+  padding: 0 4px;
+  display: grid;
+  grid-template-columns: 175px 14px minmax(0, 1fr);
+  align-items: center;
+  border-bottom: 0;
+  gap: 0;
+  border: 0;
+  border-top: 0;
+  background: #fff;
+  width: 100%;
+  column-gap: 4px;
+}
+
+.simple-detail-label {
+  overflow: hidden;
+  color: #587086;
+  font-size: 10px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.3;
+  min-width: 0;
+}
+
+.simple-detail-colon {
+  color: #526c80;
+  font-size: 10px;
+  text-align: center;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.simple-detail-value {
+  overflow: hidden;
+  color: #052f4b;
+  font-size: 10px;
+  font-weight: 750;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.3;
+  min-width: 0;
+}
+
+.simple-detail-value.halting {
+  color: #102f45;
+}
+
+.simple-remarks-box {
+  margin-top: 4px;
+  padding: 2px 10px;
+  border: 0;
+  border-radius: 0;
+  background: #fff;
+  margin: 0;
+  border-top: 1px solid #e5e8ea;
+  min-height: 28px;
+  display: grid;
+  grid-template-columns: minmax(120px, 39%) 14px minmax(0, 1fr);
+  align-items: center;
+  gap: 0;
+}
+
+.simple-remarks-heading {
+  display: contents;
+  align-items: center;
+  gap: 5px;
+  color: #6a7f8e;
+  grid-template-columns: 145px 14px;
+}
+
+.simple-remarks-heading span {
+  font-size: 9px;
+  font-weight: 600;
+  color: #567184;
+}
+
+.simple-remarks-value {
+  margin-top: 3px;
+  color: #102f45;
+  font-size: 10px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.lr-person-section {
+  min-width: 0;
+  padding: 0;
+  border-right: 1px solid #b9c4ca;
+  box-shadow: 0 4px 14px rgba(18, 54, 73, .04);
+  overflow: hidden;
+  border: 0;
+  border-radius: 0;
+  background: var(--layout-card);
+  width: 100%;
+  margin: 0;
+  min-height: 0;
+  height: auto;
+  align-self: start;
+}
+
+.lr-person-section:last-child {
+  border-right: 1px solid #d7e4e9;
+}
+
+.lr-person-content {
+  margin-top: 3px;
+  display: block;
+  flex-direction: column;
+  gap: 1px;
+  margin: 0;
+  padding: 12px 20px 14px;
+}
+
+.lr-person-row {
+  min-height: 36px;
+  display: grid;
+  grid-template-columns: 155px 14px minmax(0, 1fr);
+  align-items: center;
+  border-bottom: 0;
+  padding: 2px 10px;
+  border: 0;
+  border-top: 0;
+  background: #fff;
+  width: 100%;
+  column-gap: 4px;
+}
+
+.lr-person-row>span:first-child {
+  overflow: hidden;
+  color: #567184;
+  font-size: 8.5px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.15;
+}
+
+.lr-person-colon {
+  color: #526c80;
+  font-size: 10px;
+  text-align: center;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.lr-person-row strong {
+  overflow: hidden;
+  color: #052f4b;
+  font-size: 10px;
+  font-weight: 750;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.15;
+}
+
+.vehicle-column-empty {
+  min-height: 220px;
+  padding: 25px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  text-align: center;
+}
+
+.vehicle-column-empty-icon {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 10px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  color: var(--teal-dark);
+  background: var(--teal-soft);
+}
+
+.vehicle-column-empty strong {
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.vehicle-column-empty p {
+  max-width: 300px;
+  margin: 5px 0 0;
+  color: var(--muted);
+  font-size: 8.5px;
+  line-height: 1.5;
+}
+
+@media(max-width:1100px) {
+  .trip-route-card {
+    grid-template-columns: minmax(0, 1fr) 95px minmax(0, 1fr);
+  }
+
+  .movement-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .trip-detail-row {
+    grid-template-columns: 130px 8px minmax(0, 1fr);
+  }
+}
+
+@media(max-width:850px) {
+  .vehicle-status-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .status-item {
+    justify-content: flex-start;
+  }
+
+  .status-item:not(:last-child) {
+    border-right: 0;
+    border-bottom: 1px solid var(--border-soft);
+  }
+
+  .operation-main-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .lr-pod-card {
+    grid-template-columns: 1fr;
+  }
+
+  .lr-person-section {
+    border-right: 0;
+    border-bottom: 1px solid var(--border-soft);
+  }
+
+  .lr-person-section:last-child {
+    border-bottom: 0;
   }
 }
 
 @media(max-width:650px) {
-  .tracking-no-results {
-    min-height: 350px;
-    padding: 30px 16px
+  .vehicle-selector-row {
+    padding: 6px;
   }
 
-  .tracking-no-results-content {
-    max-width: 340px
+  .vehicle-number-card {
+    min-width: 125px;
   }
 
-  .tracking-no-results-icon {
-    width: 48px;
-    height: 48px;
-    flex-basis: 48px;
-    margin-bottom: 14px;
-    border-radius: 13px
+  .vehicle-status-strip,
+  .trip-route-card,
+  .trip-distance-summary,
+  .movement-card-section,
+  .trip-detail-group,
+  .operation-details-section,
+  .lr-pod-card {
+    width: calc(100% - 12px);
+    margin-left: 6px;
+    margin-right: 6px;
   }
 
-  .tracking-no-results-icon svg {
-    width: 22px;
-    height: 22px
+  .trip-route-card {
+    grid-template-columns: 1fr;
+    gap: 7px;
   }
 
-  .tracking-no-results-title {
-    font-size: 15px
+  .trip-route-point.destination {
+    text-align: left;
   }
 
-  .tracking-no-results-description {
-    max-width: 320px;
-    margin-top: 6px;
-    font-size: 11px
+  .trip-distance-summary {
+    grid-template-columns: 1fr;
   }
 
-  .tracking-no-results-hint {
-    font-size: 10px
+  .movement-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .tracking-no-results-action {
-    margin-top: 15px
+  .movement-title-line {
+    align-items: flex-start;
+    flex-direction: column;
   }
+
+  .trip-detail-row {
+    grid-template-columns: 100px 8px minmax(0, 1fr);
+  }
+}
+
+@media(max-width:420px) {
+  .movement-card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .simple-detail-row,
+  .lr-person-row {
+    grid-template-columns: 90px 8px minmax(0, 1fr);
+  }
+}
+
+.vehicle-transport-summary {
+  width: calc(100% - 16px);
+  margin: 0 8px 7px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: none;
+}
+
+.vehicle-transport-heading {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  align-items: center;
+}
+
+.vehicle-transport-heading strong {
+  color: #173a52;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.vehicle-transport-heading span {
+  margin-top: 1px;
+  color: #7b8f9c;
+  font-size: 6.5px;
+  font-weight: 600;
+}
+
+.vehicle-transport-grid {
+  width: 100%;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 0;
+}
+
+.vehicle-transport-item {
+  position: relative;
+  min-width: 0;
+  min-height: 40px;
+  padding: 2px 11px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.vehicle-transport-item:first-child {
+  padding-left: 4px;
+}
+
+.vehicle-transport-item:not(:first-child)::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 5px;
+  bottom: 5px;
+  width: 1px;
+  background: #e0e8ec;
+  display: none;
+}
+
+.vehicle-transport-item>span {
+  margin-bottom: 4px;
+  overflow: hidden;
+  color: #718797;
+  font-size: 8px;
+  font-weight: 650;
+  line-height: 1;
+  letter-spacing: 0;
+  text-transform: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin: 0;
+}
+
+.vehicle-transport-item>strong {
+  min-width: 0;
+  overflow: hidden;
+  color: #173a52;
+  font-size: 9.5px;
+  font-weight: 800;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin: 0;
+}
+
+.vehicle-transport-item.vehicle-number>strong,
+.vehicle-transport-item.transporter>strong {
+  color: #111;
+}
+
+@media (max-width: 1050px) {
+  .vehicle-transport-grid {
+    grid-template-columns: 1.3fr 0.9fr 0.8fr 1fr 1.1fr;
+    padding-left: 9px;
+    padding-right: 9px;
+  }
+
+  .vehicle-transport-item {
+    padding-left: 9px;
+    padding-right: 9px;
+  }
+
+  .vehicle-transport-item>strong {
+    font-size: 9.5px;
+  }
+}
+
+@media (max-width: 760px) {
+  .vehicle-transport-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 6px;
+  }
+
+  .vehicle-transport-item {
+    padding: 9px;
+    border-bottom: 1px solid #edf2f4;
+  }
+
+  .vehicle-transport-item:first-child {
+    padding-left: 9px;
+  }
+
+  .vehicle-transport-item:not(:first-child)::before {
+    display: none;
+  }
+
+  .vehicle-transport-item:nth-child(odd) {
+    border-right: 1px solid #edf2f4;
+  }
+}
+
+@media (max-width: 520px) {
+  .vehicle-transport-summary {
+    width: calc(100% - 12px);
+    margin-left: 6px;
+    margin-right: 6px;
+  }
+
+  .vehicle-transport-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .vehicle-transport-item,
+  .vehicle-transport-item:nth-child(odd) {
+    border-right: 0;
+  }
+}
+
+.distance-summary-item::before {
+  height: 2px;
+}
+
+.vehicle-status-strip,
+.trip-route-card,
+.distance-summary-item,
+.movement-card-section,
+.movement-info-card,
+.vehicle-transport-summary,
+.simple-operation-card,
+.lr-pod-card {
+  border-color: #dce5e9;
+}
+
+@media (min-width: 1101px) {
+  .vehicle-status-strip {
+    margin-top: 7px;
+    margin-bottom: 7px;
+  }
+
+  .trip-route-card,
+  .trip-distance-summary,
+  .movement-card-section,
+  .vehicle-transport-summary,
+  .operation-details-section {
+    margin-bottom: 7px;
+  }
+}
+
+@media (max-width: 850px) {
+  .movement-card-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .vehicle-transport-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 650px) {
+
+  .vehicle-status-strip,
+  .trip-route-card,
+  .trip-distance-summary,
+  .movement-card-section,
+  .vehicle-transport-summary,
+  .operation-details-section,
+  .lr-pod-card {
+    width: calc(100% - 12px);
+    margin-left: 6px;
+    margin-right: 6px;
+  }
+
+  .trip-route-card {
+    grid-template-columns: 1fr;
+  }
+
+  .trip-distance-summary {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 650px) {
+  .trip-route-stepper-card {
+    width: calc(100% - 12px);
+    margin-left: 6px;
+    margin-right: 6px;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  .trip-route-step {
+    min-width: 82px;
+  }
+
+  .trip-route-step-line {
+    min-width: 20px;
+    flex-basis: 32px;
+  }
+}
+
+.trip-route-stepper-card,
+.trip-distance-summary,
+.movement-card-section,
+.vehicle-transport-summary,
+.operation-details-section,
+.lr-pod-card,
+.vehicle-document-section {
+  transition: border-color .16s ease, box-shadow .16s ease, transform .16s ease;
+}
+
+.movement-card-section:hover,
+.vehicle-transport-summary:hover,
+.simple-operation-card:hover,
+.lr-pod-card:hover,
+.vehicle-document-section:hover {
+  border-color: #bfd8d6;
+  box-shadow: 0 5px 16px rgba(11, 63, 80, .055);
+}
+
+.vehicle-document-details .simple-detail-row {
+  min-height: 30px;
+  grid-template-columns: 90px 8px minmax(0, 1fr);
+}
+
+.vehicle-document-details .simple-detail-value {
+  color: #17384c;
+}
+
+.movement-info-card:hover,
+.vehicle-transport-item:hover,
+.simple-detail-row:hover,
+.lr-person-row:hover {
+  background: #f1f8f8;
+}
+
+@media (max-width: 850px) {
+  .vehicle-document-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 650px) {
+  .vehicle-document-section {
+    width: calc(100% - 12px);
+    margin-left: 6px;
+    margin-right: 6px;
+  }
+}
+
+@media (max-width: 850px) {
+  .vehicle-document-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 650px) {
+  .vehicle-document-section {
+    width: calc(100% - 12px);
+    margin-left: 6px;
+    margin-right: 6px;
+  }
+
+  .vehicle-document-main-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .vehicle-document-selected-vehicle {
+    align-self: flex-start;
+  }
+
+  .vehicle-document-row {
+    grid-template-columns: 100px 8px minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 420px) {
+  .vehicle-document-row {
+    grid-template-columns: 88px 7px minmax(0, 1fr);
+  }
+}
+
+.movement-info-card:nth-child(odd) {
+  border-right: 1px solid #e4ecef;
+}
+
+.vehicle-transport-item,
+.vehicle-transport-item:first-child {
+  min-height: 35px;
+  padding: 0 12px;
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  border-bottom: 1px solid #edf2f4;
+  background: #fff;
+}
+
+.vehicle-transport-item:nth-child(odd) {
+  border-right: 1px solid #e4ecef;
+}
+
+.vehicle-transport-item:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+  border-right: 0;
+}
+
+.simple-operation-card,
+.simple-operation-card.loading-card,
+.simple-operation-card.unloading-card {
+  overflow: hidden;
+  border: 0;
+  border-radius: 0;
+  background: #fff;
+  box-shadow: none;
+}
+
+.simple-operation-card:first-child {
+  border-right: 1px solid #d7e4e9;
+}
+
+.simple-detail-row:last-of-type {
+  border-bottom: 0;
+}
+
+@media(max-width:850px) {
+
+  .movement-card-grid,
+  .vehicle-transport-grid,
+  .operation-main-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .movement-info-card:nth-child(odd),
+  .vehicle-transport-item:nth-child(odd),
+  .simple-operation-card:first-child {
+    border-right: 0;
+  }
+}
+
+@media(max-width:520px) {
+
+  .movement-info-card,
+  .vehicle-transport-item,
+  .vehicle-transport-item:first-child {
+    grid-template-columns: 95px minmax(0, 1fr);
+  }
+
+  .simple-detail-row {
+    grid-template-columns: 90px 7px minmax(0, 1fr);
+  }
+}
+
+.movement-card-section,
+.vehicle-transport-summary,
+.operation-details-section,
+.trip-documents-section,
+.lr-pod-card {
+  width: calc(100% - 16px);
+  margin: 0 8px 7px;
+  border: 1px solid #b9c4ca;
+  border-radius: 0;
+  background: #fff;
+  box-shadow: none;
+  overflow: hidden;
+}
+
+.movement-heading-subtitle,
+.vehicle-transport-heading>span {
+  display: none;
+}
+
+.movement-heading-content,
+.vehicle-transport-heading {
+  width: 100%;
+  display: block;
+  text-align: center;
+}
+
+.movement-title-line>strong,
+.vehicle-transport-heading>strong {
+  color: #222;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .2px;
+  text-transform: uppercase;
+}
+
+.movement-card-grid,
+.vehicle-transport-grid {
+  width: 100%;
+  padding: 0;
+  display: block;
+  background: #fff;
+}
+
+.movement-info-card,
+.vehicle-transport-item,
+.vehicle-transport-item:first-child {
+  width: 100%;
+  min-height: 27px;
+  padding: 0 10px;
+  display: grid;
+  grid-template-columns: 180px 14px minmax(0, 1fr);
+  align-items: center;
+  gap: 0;
+  border: 0;
+  border-bottom: 1px solid #e5e8ea;
+  border-radius: 0;
+  background: #fff;
+  box-shadow: none;
+}
+
+.movement-info-card:last-child,
+.vehicle-transport-item:last-child {
+  border-bottom: 0;
+}
+
+.movement-info-card:hover,
+.vehicle-transport-item:hover {
+  background: #fff;
+}
+
+.movement-info-card>span:first-child,
+.vehicle-transport-item>span:first-child {
+  margin: 0;
+  overflow: hidden;
+  color: #333;
+  font-size: 8px;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: 0;
+  text-transform: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.movement-info-colon,
+.vehicle-transport-colon {
+  display: block;
+  color: #555;
+  font-size: 8px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.movement-info-card>strong,
+.vehicle-transport-item>strong {
+  margin: 0;
+  overflow: hidden;
+  color: #111;
+  font-size: 8.5px;
+  font-weight: 650;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.simple-operation-card.loading-card,
+.simple-operation-card.unloading-card {
+  border-top: 1px solid var(--sample-border);
+}
+
+.simple-remarks-heading svg {
+  display: none;
+}
+
+.simple-remarks-heading span::after {
+  content: "";
+}
+
+.lr-person-row:last-child {
+  border-bottom: 0;
+  border: 0;
+}
+
+@media(max-width:850px) {
+
+  .operation-main-grid,
+  .lr-pod-card {
+    grid-template-columns: 1fr;
+  }
+
+  .simple-operation-card:first-child,
+  .lr-person-section {
+    border-right: 0;
+    border-bottom: 1px solid #b9c4ca;
+  }
+
+  .lr-person-section:last-child {
+    border-bottom: 0;
+  }
+}
+
+@media(max-width:650px) {
+
+  .movement-card-section,
+  .vehicle-transport-summary,
+  .operation-details-section,
+  .trip-documents-section,
+  .lr-pod-card {
+    width: calc(100% - 12px);
+    margin-left: 6px;
+    margin-right: 6px;
+  }
+
+  .movement-info-card,
+  .vehicle-transport-item,
+  .vehicle-transport-item:first-child {
+    grid-template-columns: 120px 12px minmax(0, 1fr);
+  }
+
+  .simple-detail-row {
+    grid-template-columns: 110px 12px minmax(0, 1fr);
+  }
+
+  .simple-remarks-heading {
+    grid-template-columns: 110px 12px;
+  }
+
+  .simple-remarks-value {
+    margin-left: 122px;
+  }
+
+  .lr-person-row {
+    grid-template-columns: 100px 12px minmax(0, 1fr);
+  }
+}
+
+.movement-vehicle-row {
+  width: calc(100% - 24px);
+  margin: 0 12px 10px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  align-items: stretch;
+}
+
+.movement-vehicle-row .movement-card-section,
+.movement-vehicle-row .vehicle-transport-summary {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  border: 1px solid var(--sample-border);
+  border-radius: 11px;
+  background: #fff;
+  box-shadow: 0 4px 13px rgba(16, 47, 66, .045);
+  overflow: hidden;
+}
+
+.movement-vehicle-row .movement-heading-subtitle,
+.movement-vehicle-row .vehicle-transport-heading>span {
+  display: none;
+}
+
+.movement-vehicle-row .movement-heading-content,
+.movement-vehicle-row .vehicle-transport-heading {
+  width: 100%;
+  min-width: 0;
+}
+
+.movement-vehicle-row .movement-title-line {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.movement-vehicle-row .movement-title-line>strong,
+.movement-vehicle-row .vehicle-transport-heading>strong {
+  color: #202020;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.movement-vehicle-row .movement-vehicle-badge {
+  position: static;
+  right: 0;
+  min-height: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  color: #476376;
+  background: transparent;
+  font-size: 8px;
+  font-weight: 800;
+}
+
+.movement-vehicle-row .movement-card-grid,
+.movement-vehicle-row .vehicle-transport-grid {
+  display: block;
+  width: 100%;
+  padding: 0;
+  background: #fff;
+  position: relative;
+}
+
+.movement-vehicle-row .movement-info-card,
+.movement-vehicle-row .vehicle-transport-item,
+.movement-vehicle-row .vehicle-transport-item:first-child {
+  width: 100%;
+  min-height: 28px;
+  padding: 2px 10px;
+  display: grid;
+  grid-template-columns: minmax(130px, 42%) 14px minmax(0, 1fr);
+  align-items: center;
+  gap: 0;
+  border: 0;
+  border-bottom: 0;
+  border-right: 0;
+  border-radius: 0;
+  background: #fff;
+  box-shadow: none;
+  position: relative;
+  border-top: 0;
+  border-left: 0;
+}
+
+.movement-vehicle-row .movement-info-card:last-child,
+.movement-vehicle-row .vehicle-transport-item:last-child {
+  border-bottom: 0;
+}
+
+.movement-vehicle-row .movement-info-card>span:first-child,
+.movement-vehicle-row .vehicle-transport-item>span:first-child {
+  margin: 0;
+  color: #5f7484;
+  font-size: 9px;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.movement-vehicle-row .movement-info-colon,
+.movement-vehicle-row .vehicle-transport-colon {
+  display: block;
+  color: #80919d;
+  font-size: 9px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.movement-vehicle-row .movement-info-card>strong,
+.movement-vehicle-row .vehicle-transport-item>strong {
+  margin: 0;
+  overflow: hidden;
+  color: #132f44;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media(max-width:900px) {
+  .movement-vehicle-row {
+    grid-template-columns: 1fr;
+  }
+
+  .movement-vehicle-row .movement-info-card,
+  .movement-vehicle-row .vehicle-transport-item,
+  .movement-vehicle-row .vehicle-transport-item:first-child {
+    grid-template-columns: 160px 12px minmax(0, 1fr);
+  }
+}
+
+@media(max-width:650px) {
+  .movement-vehicle-row {
+    width: calc(100% - 12px);
+    margin-left: 6px;
+    margin-right: 6px;
+  }
+
+  .movement-vehicle-row .movement-info-card,
+  .movement-vehicle-row .vehicle-transport-item,
+  .movement-vehicle-row .vehicle-transport-item:first-child {
+    grid-template-columns: 120px 10px minmax(0, 1fr);
+  }
+}
+
+@media(max-width:700px) {
+  .vehicle-document-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .vehicle-document-card {
+    border-right: 0;
+    border-bottom: 1px solid #aebbc3;
+  }
+
+  .vehicle-document-card:last-child {
+    border-bottom: 0;
+  }
+
+  .vehicle-document-row {
+    grid-template-columns: 115px 10px minmax(0, 1fr);
+  }
+}
+
+.vehicle-number-card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 7px;
+  bottom: 7px;
+  width: 3px;
+  border-radius: 0 4px 4px 0;
+  background: #cbd8de;
+}
+
+.vehicle-number-card.active::before {
+  background: var(--sample-green);
+}
+
+.vehicle-mini-status.breakdown,
+.vehicle-mini-status.stopped {
+  color: #bf4551;
+  border-color: #efc7cb;
+  background: #fff0f1;
+}
+
+.vehicle-mini-status.pending {
+  color: #a66b08;
+  border-color: #efd7a4;
+  background: #fff8e9;
+}
+
+.vehicle-more-option:last-child {
+  border-bottom: 0;
+}
+
+@media (max-width:1100px) {
+  .vehicle-visible-tabs {
+    grid-template-columns: repeat(5, minmax(125px, 1fr));
+  }
+}
+
+.vehicle-number-card.active .vehicle-mini-status.reached {
+  color: #0f805a;
+  background: #dff7eb;
+}
+
+.trip-route-stepper-card,
+.trip-distance-summary {
+  width: calc(100% - 24px);
+  margin-left: 12px;
+  margin-right: 12px;
+}
+
+.movement-vehicle-row .movement-heading-content {
+  display: block;
+  text-align: left;
+}
+
+.movement-vehicle-row .movement-title-line>strong {
+  color: var(--sample-navy);
+  font-size: 11px;
+  font-weight: 850;
+  letter-spacing: .15px;
+  text-transform: uppercase;
+}
+
+.movement-vehicle-row .movement-heading-subtitle {
+  display: none;
+}
+
+.movement-vehicle-row .vehicle-transport-heading {
+  width: auto;
+  text-align: left;
+}
+
+.movement-vehicle-row .vehicle-transport-heading>strong {
+  color: var(--sample-navy);
+  font-size: 11px;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.movement-vehicle-row .vehicle-transport-heading>span {
+  display: none;
+}
+
+.movement-vehicle-row .movement-card-grid {
+  padding-left: 0;
+}
+
+.movement-vehicle-row .movement-card-grid::before {
+  content: none;
+  display: none;
+}
+
+.movement-vehicle-row .movement-info-card::before {
+  content: none;
+  display: none;
+}
+
+.movement-vehicle-row .vehicle-transport-item {
+  padding-left: 18px;
+}
+
+.movement-vehicle-row .vehicle-transport-item::before {
+  content: "";
+  position: absolute;
+  left: 8px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #9eb0bb;
+}
+
+.movement-vehicle-row .vehicle-transport-item.vehicle-number>strong {
+  color: #0e4e70;
+}
+
+.movement-vehicle-row .vehicle-transport-item.transporter>strong {
+  color: #17364d;
+}
+
+.simple-operation-status.loading,
+.simple-operation-status.unloading {
+  color: #0e8059;
+  background: #e6f8ef;
+}
+
+@media(max-width:1000px) {
+  .vehicle-number-card {
+    min-width: 175px;
+  }
+
+  .movement-vehicle-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media(max-width:850px) {
+  .operation-main-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media(max-width:650px) {
+  .vehicle-selector-row {
+    padding: 8px;
+  }
+
+  .vehicle-number-card {
+    min-width: 165px;
+  }
+
+  .movement-vehicle-row,
+  .operation-details-section,
+  .trip-route-stepper-card,
+  .trip-distance-summary {
+    width: calc(100% - 16px);
+    margin-left: 8px;
+    margin-right: 8px;
+  }
+
+  .movement-vehicle-row .movement-info-card,
+  .movement-vehicle-row .vehicle-transport-item,
+  .movement-vehicle-row .vehicle-transport-item:first-child {
+    grid-template-columns: 115px 12px minmax(0, 1fr);
+  }
+
+  .simple-detail-row {
+    grid-template-columns: 105px 12px minmax(0, 1fr);
+  }
+}
+
+.movement-vehicle-row .movement-card-section,
+.movement-vehicle-row .vehicle-transport-summary,
+.simple-operation-card,
+.vehicle-document-section,
+.lr-pod-card {
+  border: 1px solid #d7e4e9;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 4px 14px rgba(18, 54, 73, .04);
+}
+
+.simple-remarks-box::before {
+  content: none;
+}
+
+.simple-remarks-heading::after {
+  content: ":";
+  color: #6f8796;
+  font-size: 9px;
+  font-weight: 700;
+  text-align: center;
+}
+
+@media(max-width:900px) {
+
+  .operation-main-grid,
+  .vehicle-document-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .lr-pod-card {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media(max-width:650px) {
+
+  .operation-details-section,
+  .vehicle-document-section,
+  .lr-pod-card {
+    width: calc(100% - 16px);
+    margin-left: 8px;
+    margin-right: 8px;
+  }
+
+  .simple-detail-row,
+  .simple-remarks-box {
+    grid-template-columns: 105px 12px minmax(0, 1fr);
+  }
+
+  .vehicle-document-row {
+    grid-template-columns: 110px 12px minmax(0, 1fr);
+  }
+
+  .lr-person-row {
+    grid-template-columns: 100px 12px minmax(0, 1fr);
+  }
+}
+
+@media(max-width:900px) {
+  .tracking-input-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .pod-input-summary {
+    grid-column: auto;
+  }
+}
+
+@media(max-width:650px) {
+  .tracking-input-summary {
+    width: calc(100% - 16px);
+    margin-left: 8px;
+    margin-right: 8px;
+  }
+
+  .tracking-input-values.three-columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+.document-operation-section {
+  margin-bottom: 9px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.document-operation-section .operation-main-grid {
+  margin-bottom: 8px;
+}
+
+.document-operation-card {
+  border-top: 3px solid var(--teal);
+}
+
+.simple-operation-status.document {
+  color: var(--green);
+  background: var(--green-soft);
+}
+
+.simple-operation-status.document.pending {
+  color: var(--amber);
+  background: var(--amber-soft);
+}
+
+.pod-operation-card .simple-operation-details {
+  padding: 8px 14px;
+}
+
+
+
+
+
+@media(max-width:600px) {}
+
+.operation-details-section.document-operation-section {
+  margin: 0 0 9px;
+  padding: 0;
+  background: transparent;
+}
+
+.operation-details-section.document-operation-section>.operation-main-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0 0 8px;
+  padding: 0;
+}
+
+.operation-details-section.document-operation-section .simple-operation-card.document-operation-card {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: #fff;
+  box-shadow: 0 2px 7px rgba(17, 50, 70, .035);
+}
+
+.operation-details-section.document-operation-section .simple-operation-title {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.operation-details-section.document-operation-section .simple-operation-title strong {
+  color: var(--text);
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.operation-details-section.document-operation-section .simple-operation-status.document {
+  min-height: 20px;
+  padding: 0 7px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  border-radius: 6px;
+  color: var(--green);
+  background: var(--green-soft);
+  font-size: 6.5px;
+  font-weight: 750;
+}
+
+.operation-details-section.document-operation-section .simple-operation-status.document.pending {
+  color: var(--amber);
+  background: var(--amber-soft);
+}
+
+.operation-details-section.document-operation-section .simple-operation-details {
+  padding: 4px 8px;
+}
+
+.operation-details-section.document-operation-section .simple-operation-details>.simple-detail-row {
+  min-height: 28px;
+  padding: 2px 10px;
+  display: grid;
+  grid-template-columns: 105px 8px minmax(0, 1fr);
+  align-items: center;
+  gap: 0;
+  border-bottom: 0;
+  background: #fff;
+  border: 0;
+  border-top: 0;
+}
+
+.operation-details-section.document-operation-section .simple-operation-details>.simple-detail-row:last-child {
+  border-bottom: 0;
+  border: 0;
+}
+
+.operation-details-section.document-operation-section .simple-detail-label {
+  color: var(--muted);
+  font-size: 7.5px;
+  font-weight: 600;
+}
+
+.operation-details-section.document-operation-section .simple-detail-colon {
+  color: #9cabb5;
+  font-size: 8px;
+}
+
+.operation-details-section.document-operation-section .simple-detail-value {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text);
+  font-size: 8px;
+  font-weight: 750;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.operation-details-section.document-operation-section>.simple-operation-card.pod-operation-card {
+  width: 100%;
+  min-height: 0;
+  margin: 0;
+}
+
+.operation-details-section.document-operation-section .pod-operation-card>.simple-operation-details {
+  padding: 4px 8px;
+}
+
+
+
+
+
+
+
+@media(max-width:760px) {
+  .operation-details-section.document-operation-section>.operation-main-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media(max-width:520px) {}
+
+.simple-detail-row:last-child {
+  border: 0;
+}
+
+.movement-vehicle-row .movement-info-card::before,
+.movement-vehicle-row .movement-info-card::after,
+.movement-vehicle-row .vehicle-transport-item::before,
+.movement-vehicle-row .vehicle-transport-item::after {
+  display: none;
+  content: none;
+}
+
+@media(max-width:520px) {
+
+  .simple-detail-row,
+  .operation-details-section.document-operation-section .simple-operation-details>.simple-detail-row,
+  .vehicle-document-row,
+  .lr-person-row {
+    min-height: 27px;
+    padding: 2px 8px;
+  }
+}
+
+.simple-operation-title>div {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
+
+.simple-detail-label,
+.simple-detail-colon,
+.simple-detail-value,
+.trip-detail-label,
+.trip-detail-colon,
+.trip-detail-value,
+.movement-info-label,
+.movement-info-value {
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.trip-distance-summary,
+.movement-card-section,
+.vehicle-transport-summary,
+.operation-details-section,
+.lr-pod-card,
+.vehicle-document-section {
+  position: relative;
+}
+
+.operation-details-section,
+.vehicle-document-section {
+  padding: 8px;
+  background: var(--layout-section);
+  border: 1px solid #d2dee6;
+  border-radius: 12px;
+}
+
+.simple-operation-card,
+.vehicle-document-card,
+.lr-pod-card,
+.vehicle-transport-summary,
+.movement-card-section,
+.trip-route-stepper-card,
+.distance-summary-item {
+  background: var(--card-bg);
+  border-color: var(--card-border);
+}
+
+.simple-detail-row,
+.lr-person-row {
+  align-items: center;
+}
+
+.simple-detail-label,
+.simple-detail-value,
+.lr-person-row>span:first-child,
+.lr-person-row strong {
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+.simple-detail-label,
+.lr-person-row>span:first-child {
+  color: var(--secondary);
+  font-weight: 650;
+}
+
+.simple-detail-value,
+.lr-person-row strong {
+  color: var(--heading);
+  font-weight: 750;
+}
+
+@media(max-width:850px) {
+
+  .operation-details-section,
+  .vehicle-document-section {
+    padding: 6px;
+  }
+}
+
+.operation-main-grid,
+.vehicle-document-grid {
+  gap: 8px;
+}
+
+.simple-operation-card,
+.lr-pod-card,
+.vehicle-document-card {
+  background: var(--layout-card);
+  border: 1px solid var(--layout-border);
+  border-radius: 10px;
+  box-shadow: none;
+  overflow: hidden;
+}
+
+.lr-person-section+.lr-person-section {
+  border-top: 1px solid var(--layout-border);
+}
+
+.simple-operation-title,
+.vehicle-document-card-head>div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.simple-operation-title>div>strong,
+.vehicle-document-card-head strong {
+  margin: 0;
+  color: var(--layout-title);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: .01em;
+}
+
+.simple-operation-details,
+.lr-person-content,
+.vehicle-document-details {
+  padding: 10px 14px;
+  background: var(--layout-card);
+}
+
+.simple-detail-row,
+.lr-person-row,
+.vehicle-document-details .simple-detail-row {
+  min-height: 32px;
+  margin: 0;
+  padding: 5px 0;
+  display: grid;
+  grid-template-columns: 140px 10px minmax(0, 1fr);
+  column-gap: 6px;
+  align-items: center;
+  background: transparent;
+  border: 0;
+}
+
+.simple-detail-label,
+.lr-person-row>span:first-child,
+.vehicle-document-details .simple-detail-label {
+  color: var(--layout-label);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.3;
+  white-space: normal;
+}
+
+.simple-detail-colon,
+.lr-person-colon,
+.vehicle-document-details .simple-detail-colon {
+  color: var(--layout-label);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.3;
+  text-align: center;
+}
+
+.simple-detail-value,
+.lr-person-row strong,
+.vehicle-document-details .simple-detail-value {
+  min-width: 0;
+  color: var(--layout-title);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.simple-operation-status,
+.vehicle-document-status {
+  margin-left: auto;
+  min-height: 24px;
+  padding: 0 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 7px;
+  font-size: 8px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+@media(max-width:900px) {
+
+  .simple-detail-row,
+  .lr-person-row,
+  .vehicle-document-details .simple-detail-row {
+    grid-template-columns: 115px 8px minmax(0, 1fr);
+  }
+}
+
+@media(max-width:650px) {
+
+  .operation-details-section,
+  .vehicle-document-section {
+    padding: 6px;
+  }
+
+  .vehicle-document-card-head {
+    min-height: 50px;
+    padding: 7px 9px;
+  }
+
+  .simple-operation-details,
+  .lr-person-content,
+  .vehicle-document-details {
+    padding: 8px 10px;
+  }
+
+  .simple-detail-row,
+  .lr-person-row,
+  .vehicle-document-details .simple-detail-row {
+    grid-template-columns: 105px 8px minmax(0, 1fr);
+  }
+}
+
+.vehicle-column-panel .operation-details-section,
+.vehicle-column-panel .document-operation-section,
+.vehicle-column-panel .lr-pod-card {
+  width: calc(100% - 20px);
+  margin: 0 10px 9px;
+}
+
+.vehicle-column-panel .operation-main-grid,
+.vehicle-column-panel .document-operation-section .operation-main-grid,
+.vehicle-column-panel .lr-pod-card {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  align-items: stretch;
+}
+
+.vehicle-column-panel .simple-operation-card,
+.vehicle-column-panel .person-operation-card {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid #ccd9e2;
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: none;
+  width: 100%;
+  padding: 0;
+}
+
+.vehicle-column-panel .document-operation-section {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.vehicle-column-panel .document-operation-section .pod-operation-card {
+  width: 100%;
+  margin: 8px 0 0;
+}
+
+.vehicle-column-panel .simple-operation-title {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 40px;
+}
+
+.vehicle-column-panel .simple-operation-title>div {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  height: 40px;
+}
+
+.vehicle-column-panel .simple-operation-title>div>strong {
+  margin: 0;
+  color: #173a52;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.2;
+  text-transform: uppercase;
+  white-space: nowrap;
+  padding: 0;
+}
+
+.vehicle-column-panel .simple-operation-status {
+  min-height: 24px;
+  margin-left: auto;
+  padding: 0 9px;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 7px;
+  font-size: 8px;
+  font-weight: 800;
+  line-height: 1;
+  min-width: 0;
+  margin: 0 0 0 auto;
+}
+
+.vehicle-column-panel .simple-operation-details,
+.vehicle-column-panel .lr-person-content {
+  width: 100%;
+  margin: 0;
+  padding: 10px 14px;
+  display: block;
+  background: #ffffff;
+  box-sizing: border-box;
+}
+
+.vehicle-column-panel .simple-detail-row,
+.vehicle-column-panel .lr-person-row {
+  width: 100%;
+  min-height: 34px;
+  margin: 0;
+  padding: 6px 0;
+  display: grid;
+  grid-template-columns: 140px 10px minmax(0, 1fr);
+  column-gap: 6px;
+  align-items: center;
+  border: 0;
+  background: transparent;
+  box-sizing: border-box;
+}
+
+.vehicle-column-panel .simple-detail-label,
+.vehicle-column-panel .lr-person-row>.simple-detail-label,
+.vehicle-column-panel .simple-detail-colon,
+.vehicle-column-panel .lr-person-colon,
+.vehicle-column-panel .simple-detail-value,
+.vehicle-column-panel .lr-person-row>.simple-detail-value {
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.3;
+  margin: 0;
+  padding: 0;
+}
+
+.vehicle-column-panel .simple-detail-label,
+.vehicle-column-panel .lr-person-row>.simple-detail-label {
+  color: #587184;
+}
+
+.vehicle-column-panel .simple-detail-colon,
+.vehicle-column-panel .lr-person-colon {
+  color: #587184;
+  text-align: center;
+}
+
+.vehicle-column-panel .simple-detail-value,
+.vehicle-column-panel .lr-person-row>.simple-detail-value {
+  min-width: 0;
+  color: #173a52;
+  overflow-wrap: anywhere;
+}
+
+.vehicle-column-panel .lr-person-section {
+  min-width: 0;
+  padding: 0;
+  border-right: 1px solid #ccd9e2;
+  margin: 0;
+  border: 1px solid #ccd9e2;
+  border-radius: 10px;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.vehicle-column-panel .lr-person-section:last-child {
+  border-right: 1px solid #ccd9e2;
+}
+
+.vehicle-column-panel .simple-remarks-box {
+  margin: 0;
+  padding: 0 14px 10px;
+  border: 0;
+  background: #ffffff;
+  border-radius: 0;
+}
+
+.vehicle-column-panel .simple-remarks-heading {
+  min-height: 34px;
+  display: grid;
+  grid-template-columns: 140px 10px minmax(0, 1fr);
+  column-gap: 6px;
+  align-items: center;
+  margin: 0;
+}
+
+.vehicle-column-panel .simple-remarks-heading svg {
+  display: none;
+}
+
+.vehicle-column-panel .simple-remarks-heading span {
+  color: #587184;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.vehicle-column-panel .simple-remarks-heading span::after {
+  content: " :";
+}
+
+.vehicle-column-panel .simple-remarks-value {
+  margin: -34px 0 0 156px;
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  color: #173a52;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+@media (max-width: 900px) {
+
+  .vehicle-column-panel .operation-main-grid,
+  .vehicle-column-panel .document-operation-section .operation-main-grid,
+  .vehicle-column-panel .lr-pod-card {
+    grid-template-columns: 1fr;
+  }
+
+  .vehicle-column-panel .simple-detail-row,
+  .vehicle-column-panel .lr-person-row {
+    grid-template-columns: 120px 10px minmax(0, 1fr);
+  }
+
+
+}
+
+.vehicle-column-panel .operation-details-section {
+  width: calc(100% - 20px);
+  margin: 0 10px 10px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  overflow: visible;
+}
+
+.vehicle-column-panel .operation-details-section .operation-main-grid {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.vehicle-column-panel .lr-pod-card {
+  width: calc(100% - 20px);
+  margin: 0 10px 10px;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+@media (max-width: 900px) {
+
+  .vehicle-column-panel .operation-details-section .operation-main-grid,
+  .vehicle-column-panel .lr-pod-card {
+    grid-template-columns: 1fr;
+  }
+
+  .vehicle-column-panel .simple-detail-row,
+  .vehicle-column-panel .lr-person-row {
+    grid-template-columns: 120px 10px minmax(0, 1fr);
+  }
+
+  .vehicle-column-panel .simple-remarks-heading {
+    grid-template-columns: 120px 10px minmax(0, 1fr);
+  }
+
+  .vehicle-column-panel .simple-remarks-value {
+    margin-left: 136px;
+  }
+}
+
+.person-grid>.lr-person-section {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid #ccd9e2;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+.person-grid .simple-operation-title {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.person-grid .simple-operation-title>div {
+  min-width: 0;
+}
+
+.person-grid .simple-operation-title>div>strong {
+  margin: 0;
+  color: #173a52;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.2;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.person-grid .lr-person-content {
+  width: 100%;
+  min-height: 130px;
+  margin: 0;
+  padding: 12px 16px;
+  background: #ffffff;
+}
+
+.person-grid .lr-person-row {
+  width: 100%;
+  min-height: 36px;
+  margin: 0;
+  padding: 6px 0;
+  display: grid;
+  grid-template-columns: 125px 10px minmax(0, 1fr);
+  column-gap: 6px;
+  align-items: center;
+  border: 0;
+}
+
+.person-grid .simple-detail-label,
+.person-grid .simple-detail-colon,
+.person-grid .simple-detail-value {
+  margin: 0;
+  padding: 0;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.person-grid .simple-detail-label,
+.person-grid .simple-detail-colon {
+  color: #587184;
+}
+
+.person-grid .simple-detail-colon {
+  text-align: center;
+}
+
+.person-grid .simple-detail-value {
+  min-width: 0;
+  color: #173a52;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.movement-heading-row,
+.vehicle-transport-header,
+.simple-operation-header,
+.lr-person-heading {
+  width: 100%;
+  height: 46px;
+  min-height: 46px;
+  margin: 0;
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-sizing: border-box;
+  background: #eef5f8;
+  border: 0;
+  border-bottom: 1px solid #ccdbe3;
+  border-radius: 0;
+  box-shadow: none;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+.movement-heading-row,
+.vehicle-transport-header,
+.lr-person-heading {
+  justify-content: flex-start;
+}
+
+.simple-operation-header {
+  justify-content: flex-start;
+}
+
+.section-heading-icon,
+.vehicle-transport-icon,
+.simple-operation-icon {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  min-height: 32px;
+  flex: 0 0 32px;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  color: #148f85;
+  background: #e6f5f3;
+  border: 1px solid #b9ddd8;
+  border-radius: 8px;
+  box-shadow: none;
+  flex-basis: 32px;
+  place-items: center;
+  align-self: center;
+}
+
+.section-heading-icon svg,
+.vehicle-transport-icon svg,
+.simple-operation-icon svg {
+  width: 16px;
+  height: 16px;
+  min-width: 17px;
+  min-height: 17px;
+  display: block;
+  margin: 0;
+}
+
+.movement-title-line>strong,
+.vehicle-transport-heading>strong,
+.simple-operation-title>div>strong,
+.lr-person-heading strong {
+  margin: 0;
+  color: #082f49;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 16px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+
+.movement-heading-subtitle,
+.vehicle-transport-heading>span,
+.simple-operation-title>div>span {
+  display: none;
+}
+
+.person-grid {
+  width: calc(100% - 24px);
+  margin: 16px 12px 12px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+.pod-operation-card {
+  width: 100%;
+  margin-top: 16px;
+  margin: 0;
+}
+
+.operation-main-grid,
+.document-operation-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.simple-operation-card,
+.movement-card-section,
+.vehicle-transport-summary,
+.lr-person-section {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid #d4e0e7;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(15, 50, 70, .03);
+}
+
+.loading-card,
+.unloading-card {
+  min-height: 0;
+}
+
+.loading-card .simple-operation-details,
+.unloading-card .simple-operation-details {
+  padding-top: 10px;
+  padding-bottom: 12px;
+}
+
+.document-operation-card .simple-operation-details {
+  padding: 9px 14px 11px;
+}
+
+.document-operation-card .simple-detail-row {
+  grid-template-columns: 130px 14px minmax(0, 1fr);
+}
+
+.pod-operation-card .simple-operation-header {
+  height: 46px;
+  min-height: 46px;
+}
+
+.pod-operation-card .simple-detail-row {
+  min-height: 32px;
+  grid-template-columns: 130px 14px minmax(0, 1fr);
+}
+
+.pod-operation-card .document-file-row {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 130px 14px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px;
+}
+
+.lr-person-row .simple-detail-label {
+  color: #587086;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.lr-person-row .simple-detail-value {
+  color: #052f4b;
+  font-size: 10px;
+  font-weight: 750;
+}
+
+@media (max-width: 900px) {
+
+  .operation-main-grid,
+  .document-operation-grid,
+  .person-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .simple-detail-row,
+  .document-operation-card .simple-detail-row,
+  .pod-operation-card .simple-detail-row {
+    grid-template-columns: 125px 12px minmax(0, 1fr);
+  }
+
+  .lr-person-row {
+    grid-template-columns: 125px 12px minmax(0, 1fr);
+  }
+}
+
+.simple-operation-status,
+.movement-vehicle-badge {
+  margin-left: auto;
+  flex: 0 0 auto;
+}
+
+.lr-person-heading {
+  justify-content: flex-start;
+}
+
+.lr-person-heading .section-heading-icon,
+.lr-person-heading .simple-operation-icon {
+  margin: 0;
+}
+
+@media (max-width: 900px) {
+
+  .operation-main-grid,
+  .document-operation-grid,
+  .person-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .simple-detail-row,
+  .document-operation-card .simple-detail-row,
+  .pod-operation-card .simple-detail-row,
+  .lr-person-row {
+    grid-template-columns: 125px 12px minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .person-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .lr-person-row {
+    grid-template-columns: 125px 12px minmax(0, 1fr);
+  }
+}
+
+.vehicle-column-panel {
+  --vc-border: #cbdce5;
+  --vc-header: #edf5f8;
+  --vc-title: #0b3550;
+  --vc-label: #587184;
+  --vc-value: #082f49
+}
+
+.operation-details-section {
+  width: calc(100% - 24px);
+  margin: 0 12px 12px
+}
+
+.operation-main-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px
+}
+
+.simple-operation-card {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--vc-border);
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: none
+}
+
+.movement-heading-row,
+.vehicle-transport-header,
+.simple-operation-header,
+.lr-person-heading {
+  width: 100%;
+  height: 46px;
+  min-height: 46px;
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-sizing: border-box;
+  background: var(--vc-header);
+  border-bottom: 1px solid var(--vc-border)
+}
+
+.simple-operation-header {
+  justify-content: flex-start
+}
+
+.simple-operation-title {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px
+}
+
+.simple-operation-title>div {
+  min-width: 0;
+  display: flex;
+  align-items: center
+}
+
+.section-heading-icon,
+.vehicle-transport-icon,
+.simple-operation-icon {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  min-height: 32px;
+  flex: 0 0 32px;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  align-self: center;
+  box-sizing: border-box;
+  color: #168f88;
+  background: #e7f6f3;
+  border: 1px solid #b9ddd8;
+  border-radius: 8px
+}
+
+.section-heading-icon svg,
+.vehicle-transport-icon svg,
+.simple-operation-icon svg {
+  width: 16px;
+  height: 16px;
+  display: block;
+  margin: 0
+}
+
+.movement-title-line>strong,
+.vehicle-transport-heading>strong,
+.simple-operation-title>div>strong,
+.lr-person-heading strong {
+  margin: 0;
+  padding: 0;
+  color: var(--vc-title);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 16px;
+  text-transform: uppercase;
+  white-space: nowrap
+}
+
+.simple-operation-status,
+.movement-vehicle-badge {
+  margin-left: auto;
+  flex: 0 0 auto
+}
+
+.simple-operation-details {
+  padding: 10px 14px 12px
+}
+
+.simple-detail-row {
+  width: 100%;
+  min-height: 34px;
+  padding: 0 4px;
+  display: grid;
+  grid-template-columns: 150px 14px minmax(0, 1fr);
+  align-items: center;
+  column-gap: 4px;
+  border: 0;
+  background: #fff
+}
+
+.simple-detail-label {
+  min-width: 0;
+  color: var(--vc-label);
+  font-size: 9px;
+  font-weight: 600;
+  line-height: 1.3
+}
+
+.simple-detail-colon {
+  color: #526c80;
+  font-size: 9px;
+  font-weight: 700;
+  text-align: center
+}
+
+.simple-detail-value {
+  min-width: 0;
+  color: var(--vc-value);
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1.3
+}
+
+.document-operation-section {
+  width: calc(100% - 24px);
+  margin: 0 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px
+}
+
+.document-operation-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px
+}
+
+.document-operation-card .simple-detail-row {
+  grid-template-columns: 130px 14px minmax(0, 1fr)
+}
+
+.pod-operation-card {
+  width: 100%;
+  margin: 0
+}
+
+.person-grid {
+  width: calc(100% - 24px);
+  margin: 16px 12px 12px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  align-items: start
+}
+
+.lr-person-section {
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  height: auto;
+  margin: 0;
+  padding: 0;
+  align-self: start;
+  overflow: hidden
+}
+
+.lr-person-content {
+  margin: 0;
+  padding: 12px 16px 14px
+}
+
+.lr-person-row {
+  width: 100%;
+  min-height: 34px;
+  padding: 0 4px;
+  display: grid;
+  grid-template-columns: 140px 14px minmax(0, 1fr);
+  align-items: center;
+  column-gap: 4px
+}
+
+@media(max-width:900px) {
+
+  .operation-main-grid,
+  .document-operation-grid,
+  .person-grid {
+    grid-template-columns: 1fr
+  }
+
+  .simple-detail-row,
+  .document-operation-card .simple-detail-row,
+  .lr-person-row {
+    grid-template-columns: 125px 12px minmax(0, 1fr)
+  }
+}
+
+/* ===== EXACT HEADER ICON ALIGNMENT ===== */
+.movement-heading-row,
+.vehicle-transport-header,
+.simple-operation-header,
+.lr-person-heading {
+  width: 100%;
+  height: 46px;
+  min-height: 46px;
+  margin: 0;
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-sizing: border-box;
+  background: #eef5f8;
+  border: 0;
+  border-bottom: 1px solid #ccdbe3;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.section-heading-icon,
+.vehicle-transport-icon,
+.simple-operation-icon {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  min-height: 32px;
+  flex: 0 0 32px;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  box-sizing: border-box;
+  color: #148f85;
+  background: #e6f5f3;
+  border: 1px solid #b9ddd8;
+  border-radius: 8px;
+  line-height: 0;
+}
+
+.section-heading-icon>svg,
+.vehicle-transport-icon>svg,
+.simple-operation-icon>svg {
+  width: 16px;
+  height: 16px;
+  min-width: 16px;
+  min-height: 16px;
+  margin: 0;
+  padding: 0;
+  display: block;
+  position: static;
+  transform: none;
+  vertical-align: middle;
+}
+
+.movement-heading-content,
+.vehicle-transport-heading,
+.simple-operation-title {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.simple-operation-title {
+  gap: 10px;
+}
+
+.simple-operation-title>div,
+.movement-title-line {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
+
+.movement-title-line>strong,
+.vehicle-transport-heading>strong,
+.simple-operation-title>div>strong,
+.lr-person-heading strong {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  min-height: 16px;
+  color: #082f49;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 16px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.simple-operation-status,
+.movement-vehicle-badge {
+  margin-left: auto;
+  flex: 0 0 auto;
+}
+
+.document-operation-section {
+  gap: 16px;
+}
+
+.pod-operation-card {
+  margin: 0;
+}
+
+.person-grid {
+  margin-top: 16px;
+  align-items: start;
+}
+
+/* =========================================================
+   FINAL CLEAN PROFESSIONAL VEHICLE COLUMN DESIGN
+   ========================================================= */
+/* ---------- Consistent section headers ---------- */
+.movement-heading-row,
+.vehicle-transport-header,
+.simple-operation-header,
+.lr-person-heading,
+.common-detail-header {
+  width: 100%;
+  height: 42px;
+  min-height: 42px;
+  margin: 0;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-sizing: border-box;
+  background: #f3f7f9;
+  border-bottom: 1px solid #d8e4e9;
+}
+
+.section-heading-icon,
+.vehicle-transport-icon,
+.simple-operation-icon {
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+  min-height: 30px;
+  flex: 0 0 30px;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  overflow: hidden;
+  color: #118c83;
+  background: #e7f6f4;
+  border: 1px solid #b9dfda;
+  border-radius: 8px;
+  line-height: 0;
+}
+
+.section-heading-icon>svg,
+.vehicle-transport-icon>svg,
+.simple-operation-icon>svg {
+  width: 15px;
+  height: 15px;
+  min-width: 15px;
+  min-height: 15px;
+  margin: 0;
+  padding: 0;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: block;
+  transform: translate(-50%, -50%);
+  transform-origin: center;
+}
+
+.movement-heading-content,
+.vehicle-transport-heading,
+.simple-operation-title {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.simple-operation-title {
+  gap: 10px;
+}
+
+.movement-title-line,
+.simple-operation-title>div {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
+
+.movement-title-line>strong,
+.vehicle-transport-heading>strong,
+.simple-operation-title>div>strong,
+.lr-person-heading strong {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  color: #0b3048;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 16px;
+  letter-spacing: .12px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.movement-heading-subtitle,
+.vehicle-transport-heading>span,
+.simple-operation-title>div>span {
+  display: none;
+}
+
+.simple-operation-status,
+.movement-vehicle-badge {
+  margin-left: auto;
+  flex: 0 0 auto;
+}
+
+/* ---------- Main cards ---------- */
+.movement-card-section,
+.vehicle-transport-summary,
+.simple-operation-card,
+.lr-person-section,
+.vehicle-document-card {
+  border: 1px solid #d6e2e7;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 3px 12px rgba(15, 47, 66, .045);
+}
+
+.movement-card-section,
+.vehicle-transport-summary {
+  overflow: hidden;
+}
+
+.operation-details-section {
+  padding: 0;
+  background: transparent;
+  border: 0;
+}
+
+.operation-main-grid {
+  gap: 12px;
+}
+
+.simple-operation-card {
+  overflow: hidden;
+}
+
+.simple-operation-card.loading-card {
+  border-top: 2px solid #2f6f9f;
+}
+
+.simple-operation-card.unloading-card {
+  border-top: 2px solid #16845d;
+}
+
+/* ---------- Unified label : value rows ---------- */
+.simple-operation-details,
+.lr-person-content {
+  padding: 10px 14px 12px;
+  background: #fff;
+}
+
+.simple-detail-row,
+.lr-person-row {
+  width: 100%;
+  min-height: 34px;
+  margin: 0;
+  padding: 3px 4px;
+  display: grid;
+  grid-template-columns: 160px 14px minmax(0, 1fr);
+  align-items: center;
+  column-gap: 5px;
+  border: 0;
+  background: #fff;
+}
+
+.simple-detail-label,
+.lr-person-row>.simple-detail-label,
+.lr-person-row>span:first-child {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  color: #4b667a;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.simple-detail-colon,
+.lr-person-colon {
+  margin: 0;
+  padding: 0;
+  color: #395b70;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+}
+
+.simple-detail-value,
+.lr-person-row>.simple-detail-value,
+.lr-person-row>strong {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  color: #062f4b;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 16px;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.simple-detail-value.halting {
+  color: #062f4b;
+}
+
+/* ---------- Remarks alignment ---------- */
+.simple-remarks-box {
+  width: 100%;
+  min-height: 34px;
+  margin: 0;
+  padding: 3px 18px;
+  display: grid;
+  grid-template-columns: 160px 14px minmax(0, 1fr);
+  align-items: center;
+  column-gap: 5px;
+  border: 0;
+  border-top: 1px solid #edf2f4;
+  border-radius: 0;
+  background: #fff;
+}
+
+.simple-remarks-heading {
+  display: contents;
+}
+
+.simple-remarks-heading span {
+  margin: 0;
+  padding: 0;
+  color: #4b667a;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 16px;
+}
+
+.simple-remarks-heading::after {
+  content: ":";
+  margin: 0;
+  padding: 0;
+  color: #395b70;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+}
+
+.simple-remarks-value {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  color: #062f4b;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 16px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---------- Loading / unloading status ---------- */
+.simple-operation-status {
+  min-height: 22px;
+  padding: 0 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  font-size: 8px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.simple-operation-status.loading {
+  color: #276b9d;
+  background: #eaf3fa;
+}
+
+.simple-operation-status.unloading,
+.simple-operation-status.completed,
+.simple-operation-status.active,
+.simple-operation-status.uploaded {
+  color: #0e8059;
+  background: #e7f7ef;
+}
+
+/* ---------- Document section ---------- */
+.document-operation-section {
+  width: calc(100% - 24px);
+  margin: 0 12px 12px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  border: 0;
+  background: transparent;
+}
+
+.document-operation-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.document-operation-card,
+.pod-operation-card {
+  width: 100%;
+  margin: 0;
+}
+
+.document-operation-card .simple-detail-row,
+.pod-operation-card .simple-detail-row {
+  grid-template-columns: 160px 14px minmax(0, 1fr);
+}
+
+/* ---------- Driver / escort / supervisor ---------- */
+.person-grid {
+  width: calc(100% - 24px);
+  margin: 14px 12px 12px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  align-items: start;
+}
+
+.lr-person-section {
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  height: auto;
+  margin: 0;
+  padding: 0;
+  align-self: start;
+  overflow: hidden;
+}
+
+.lr-person-content {
+  margin: 0;
+}
+
+.lr-person-row {
+  grid-template-columns: 145px 14px minmax(0, 1fr);
+}
+
+/* ---------- Movement / vehicle transport rows ---------- */
+.movement-info-card,
+.vehicle-transport-item,
+.vehicle-transport-item:first-child {
+  min-height: 36px;
+  padding: 0 12px;
+  display: grid;
+  grid-template-columns: 125px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  border: 0;
+  border-bottom: 1px solid #edf2f4;
+  background: #fff;
+}
+
+.movement-info-card span,
+.vehicle-transport-item>span {
+  margin: 0;
+  overflow: hidden;
+  color: #4b667a;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 15px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.movement-info-card strong,
+.vehicle-transport-item>strong {
+  margin: 0;
+  overflow: hidden;
+  color: #062f4b;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 15px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.movement-info-card:nth-child(odd),
+.vehicle-transport-item:nth-child(odd) {
+  border-right: 1px solid #edf2f4;
+}
+
+/* ---------- KM summary ---------- */
+.trip-distance-summary {
+  gap: 10px;
+}
+
+.distance-summary-item {
+  min-height: 48px;
+  height: 48px;
+  padding: 7px 12px;
+  border: 1px solid #d8e4e9;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(15, 47, 66, .035);
+}
+
+.distance-summary-item span {
+  color: #6f8493;
+  font-size: 8px;
+  font-weight: 700;
+}
+
+.distance-summary-item strong {
+  margin-top: 4px;
+  color: #0b3048;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+/* ---------- Vehicle selector ---------- */
+.vehicle-selector-row {
+  min-height: 48px;
+  padding: 7px 10px;
+  background: rgba(247, 250, 252, .96);
+  border-bottom: 1px solid #d8e4e9;
+  box-shadow: 0 2px 8px rgba(15, 47, 66, .04);
+}
+
+.vehicle-number-card {
+  height: 36px;
+  min-height: 36px;
+  padding: 4px 9px;
+  border: 1px solid #d8e4e9;
+  border-radius: 9px;
+  background: #fff;
+  box-shadow: none;
+}
+
+.vehicle-number-card.active {
+  border-color: #86cfc1;
+  background: #eef9f6;
+  box-shadow: 0 3px 10px rgba(17, 125, 109, .08);
+}
+
+/* ---------- Subtle interaction ---------- */
+.movement-card-section,
+.vehicle-transport-summary,
+.simple-operation-card,
+.lr-person-section,
+.vehicle-document-card,
+.distance-summary-item {
+  transition: border-color .16s ease, box-shadow .16s ease, transform .16s ease;
+}
+
+.movement-card-section:hover,
+.vehicle-transport-summary:hover,
+.simple-operation-card:hover,
+.lr-person-section:hover,
+.vehicle-document-card:hover,
+.distance-summary-item:hover {
+  border-color: #bfd8d6;
+  box-shadow: 0 5px 16px rgba(11, 63, 80, .055);
+}
+
+.simple-detail-row:hover,
+.lr-person-row:hover,
+.movement-info-card:hover,
+.vehicle-transport-item:hover {
+  background: #f7fbfb;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1000px) {
+  .person-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 850px) {
+
+  .operation-main-grid,
+  .document-operation-grid,
+  .vehicle-document-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .person-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 650px) {
+
+  .movement-heading-row,
+  .vehicle-transport-header,
+  .simple-operation-header,
+  .lr-person-heading,
+  .common-detail-header {
+    height: 40px;
+    min-height: 40px;
+    padding: 0 10px;
+  }
+
+  .section-heading-icon,
+  .vehicle-transport-icon,
+  .simple-operation-icon {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    min-height: 28px;
+    flex-basis: 28px;
+  }
+
+  .section-heading-icon>svg,
+  .vehicle-transport-icon>svg,
+  .simple-operation-icon>svg {
+    width: 14px;
+    height: 14px;
+    min-width: 14px;
+    min-height: 14px;
+  }
+
+  .simple-detail-row,
+  .document-operation-card .simple-detail-row,
+  .pod-operation-card .simple-detail-row {
+    grid-template-columns: 112px 12px minmax(0, 1fr);
+  }
+
+  .simple-remarks-box {
+    grid-template-columns: 112px 12px minmax(0, 1fr);
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .lr-person-row {
+    grid-template-columns: 112px 12px minmax(0, 1fr);
+  }
+
+  .document-operation-section,
+  .person-grid {
+    width: calc(100% - 16px);
+    margin-left: 8px;
+    margin-right: 8px;
+  }
+
+  .movement-info-card,
+  .vehicle-transport-item,
+  .vehicle-transport-item:first-child {
+    grid-template-columns: 110px minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 420px) {
+
+  .simple-detail-row,
+  .document-operation-card .simple-detail-row,
+  .pod-operation-card .simple-detail-row,
+  .lr-person-row {
+    grid-template-columns: 94px 10px minmax(0, 1fr);
+  }
+
+  .simple-remarks-box {
+    grid-template-columns: 94px 10px minmax(0, 1fr);
+  }
+
+  .simple-detail-label,
+  .simple-detail-colon,
+  .simple-detail-value,
+  .lr-person-row>span:first-child,
+  .lr-person-row>strong {
+    font-size: 10px;
+  }
+}
+
+/* E-Way Bill expiry countdown heading */
+.vehicle-column-panel .simple-operation-status.document.expiring-soon {
+  color: #a76500;
+  background: #fff4dc;
+  border-color: #f2d39b
+}
+
+.vehicle-column-panel .simple-operation-status.document.expired {
+  color: #bc3545;
+  background: #fff0f1;
+  border-color: #f0c3c9
+}
+
+.vehicle-column-panel .simple-operation-status.document.active {
+  color: #087b57;
+  background: #e8f8f0;
+  border-color: #bfe6d4
+}
+
+/* LR, E-Way Bill and POD: three columns without changing card styling */
+.vehicle-column-panel .operation-details-section.document-operation-section>.operation-main-grid.document-three-column-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  align-items: stretch;
+  width: 100%;
+}
+
+.vehicle-column-panel .document-three-column-grid>.document-operation-card {
+  min-width: 0;
+  width: 100%;
+  margin: 0;
+}
+
+.vehicle-column-panel .document-three-column-grid .simple-detail-row {
+  grid-template-columns: minmax(65px, 38%) 10px minmax(0, 1fr);
+}
+
+
+@media (max-width: 650px) {
+  .vehicle-column-panel .operation-details-section.document-operation-section>.operation-main-grid.document-three-column-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* POD document: one definitive layout, no overlapping rows */
+.vehicle-column-panel .document-three-column-grid .pod-operation-card .simple-operation-details {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px;
+  min-width: 0;
+}
+
+.vehicle-column-panel .pod-file-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  width: 100%;
+  min-width: 0;
+}
+
+.vehicle-column-panel .pod-file-label {
+  color: #587086;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.vehicle-column-panel .pod-file-name {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  color: #052f4b;
+  font-size: 10px;
+  font-weight: 750;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.vehicle-column-panel .pod-file-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 7px;
+  width: 100%;
+  min-width: 0;
+  padding-top: 10px;
+  border-top: 1px solid #e7eef1;
+}
+
+.vehicle-column-panel .pod-file-buttons button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid #b9ded9;
+  border-radius: 6px;
+  color: #10877f;
+  background: #eaf8f6;
+  font-family: inherit;
+  font-size: 9px;
+  font-weight: 750;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.vehicle-column-panel .pod-file-buttons button:hover {
+  border-color: #8ccfc6;
+  background: #e2f5f2;
 }

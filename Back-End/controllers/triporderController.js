@@ -1410,6 +1410,8 @@ const savePoDocument = async (req, res) => {
     }
 
     const trip = result.trip;
+    const updatedBy = cleanString(req.body?.updatedBy) || cleanString(req.body?.uploadedBy) || "Key Account";
+    const beforePo = trip.poDocument?.toObject?.() || { ...trip.poDocument };
     const poNumber = cleanString(req.body.poNumber);
     const validityRaw = cleanString(req.body.poValidityPeriod);
     const billingGstin = cleanUpperString(req.body.billingGstin);
@@ -1500,6 +1502,8 @@ const savePoDocument = async (req, res) => {
         : "Vendor Finalization";
     }
 
+    const poChanges = ["poNumber", "poValidityPeriod", "billingGstin", "documentName", "fileName"].map(field => [field, beforePo[field], trip.poDocument[field]]);
+    recordLifecycleChanges(trip, beforePo, "PO Document", poChanges, updatedBy);
     await trip.save();
 
     const savedTrip = await TripOrder.findById(trip._id).lean();
@@ -5234,11 +5238,39 @@ const deleteTrip = async (
   }
 };
 
+const lifecycleValue = (value) => {
+  if (value === null || value === undefined) return "";
+  if (value instanceof Date) return value.toISOString();
+  if (typeof value === "object") return JSON.stringify(value);
+  return String(value);
+};
+const recordLifecycleChanges = (trip, previous, section, fields, updatedBy) => {
+  const stamp = new Date();
+  const records = [];
+  for (const [field, before, after] of fields) {
+    const oldValue = lifecycleValue(before);
+    const newValue = lifecycleValue(after);
+    if (oldValue !== newValue) records.push({ section, field, oldValue, newValue, updatedBy, updatedAt: stamp });
+  }
+  if (records.length) trip.lifecycleChangeHistory.push(...records);
+  return records.length;
+};
+const requireLifecycleName = (req, res) => {
+  const updatedBy = cleanString(req.body?.updatedBy);
+  if (!updatedBy || updatedBy.length > 100) {
+    sendError(res, 400, "Updated By name is required (maximum 100 characters).");
+    return null;
+  }
+  return updatedBy;
+};
 const correctLifecycleDetails = async (req, res) => {
   try {
     const result = await getTripDocument(req.params.id);
     if (result.error) return sendError(res, result.status, result.error);
     const trip = result.trip;
+    const updatedBy = requireLifecycleName(req, res);
+    if (!updatedBy) return;
+    const before = trip.toObject();
     const body = req.body || {};
     const allowed = ["customer", "contactPerson", "contactNumber", "email", "assignedKam", "origin", "destination", "materialType", "remark", "siteLocation", "period", "dieselScope"];
     for (const key of allowed) {
@@ -5247,6 +5279,16 @@ const correctLifecycleDetails = async (req, res) => {
       }
     }
     if (!cleanString(trip.customer)) return sendError(res, 400, "Customer is required.");
+    if (body.enquiryDate !== undefined) {
+      const date = toDateOrNull(body.enquiryDate);
+      if (body.enquiryDate && !date) return sendError(res, 400, "Invalid enquiry date.");
+      trip.enquiryDate = date;
+    }
+    if (body.totalVehicles !== undefined) {
+      const count = Number(body.totalVehicles);
+      if (!Number.isInteger(count) || count < 0) return sendError(res, 400, "Invalid total vehicles.");
+      trip.totalVehicles = count;
+    }
     if (body.placementDate !== undefined) {
       const date = toDateOrNull(body.placementDate);
       if (body.placementDate && !date) return sendError(res, 400, "Invalid placement date.");
@@ -5313,6 +5355,29 @@ const correctLifecycleDetails = async (req, res) => {
     }
     // Deliberately never mutate tripId, approval states, stage, document buffers,
     // tracking history, or vehicle numbers through this correction endpoint.
+    const changedFields = [];
+    const directFields = ["customer", "contactPerson", "contactNumber", "email", "assignedKam", "origin", "destination", "materialType", "remark", "siteLocation", "period", "dieselScope", "enquiryDate", "placementDate", "distance", "totalVehicles"];
+    for (const field of directFields) {
+      if (body[field] !== undefined) changedFields.push([field, before[field], trip[field]]);
+    }
+    if (body.orderFinalization) {
+      for (const field of ["quotedRate", "finalRate", "commercialTerms", "deliveryCommitments", "clientConfirmationNotes"]) {
+        if (body.orderFinalization[field] !== undefined) changedFields.push([`orderFinalization.${field}`, before.orderFinalization?.[field], trip.orderFinalization?.[field]]);
+      }
+    }
+    for (const [collection, fields] of [["vehicleRequirements", ["vehicleType", "configuration", "classification", "quantity", "weight", "dimensions"]], ["allocatedVehicles", ["driver", "escort", "supervisor"]]]) {
+      if (!Array.isArray(body[collection])) continue;
+      const key = collection === "vehicleRequirements" ? "requirementId" : "allocationId";
+      for (const entry of body[collection]) {
+        const previous = (before[collection] || []).find(item => item[key] === entry[key]);
+        const current = (trip[collection] || []).find(item => item[key] === entry[key]);
+        if (!previous || !current) continue;
+        for (const field of fields) {
+          if (entry[field] !== undefined) changedFields.push([`${collection}.${entry[key]}.${field}`, previous[field], current[field]]);
+        }
+      }
+    }
+    recordLifecycleChanges(trip, before, "Order Lifecycle", changedFields, updatedBy);
     await trip.save();
     const updated = await TripOrder.findById(trip._id).lean();
     return sendSuccess(res, 200, "Order corrections saved successfully.", updated);
