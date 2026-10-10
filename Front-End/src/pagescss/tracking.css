@@ -9138,3 +9138,336 @@ body {
   border-color: #8ccfc6;
   background: #e2f5f2;
 }
+
+
+
+.tracking-route-stepper {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+  min-width: 0;
+  padding: 8px 12px;
+  background: #050505;
+  color: #fff;
+}
+
+.tracking-step {
+  flex: 0 1 78px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.tracking-step-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #87919a;
+  color: #d5dce1;
+  background: #252525;
+  font-size: 17px;
+}
+
+.tracking-step.completed .tracking-step-icon {
+  background: #70c9c1;
+  border-color: #70c9c1;
+  color: white;
+}
+
+.tracking-step.current .tracking-step-icon {
+  width: 42px;
+  height: 42px;
+  margin-top: -4px;
+  background: #079b90;
+  border: 2px solid #087f77;
+  color: white;
+}
+
+.tracking-step-name {
+  margin-top: 7px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.tracking-step-label {
+  margin-top: 4px;
+  font-size: 9px;
+  color: #e1e5e9;
+  white-space: nowrap;
+}
+
+.tracking-step.current .tracking-step-label {
+  color: #00c9ba;
+}
+
+.tracking-step-line {
+  flex: 1 1 20px;
+  min-width: 8px;
+  height: 3px;
+  margin: 16px 5px 0;
+  background: #e1e5e9;
+}
+
+.tracking-step-line.completed-line {
+  background: #19b8aa;
+}
+
+.tracking-step.current + .tracking-step-line {
+  margin-top: 16px;
+}
+
+@media (max-width: 480px) {
+  .tracking-route-stepper {
+    padding: 8px 4px;
+  }
+
+  .tracking-step {
+    flex-basis: 62px;
+  }
+
+  .tracking-step-name {
+    font-size: 10px;
+  }
+
+  .tracking-step-label {
+    font-size: 8px;
+  }
+
+  .tracking-step-line {
+    margin-right: 2px;
+    margin-left: 2px;
+  }
+}
+
+/* =========================================================
+   ROUTE STEPPER — screenshot-matched teal style
+   Appended overrides intentionally take precedence over legacy styles.
+========================================================= */
+.tracking-route-stepper {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+  min-width: 0;
+  min-height: 72px;
+  padding: 9px 16px 10px;
+  border: 1px solid #dce7ec;
+  border-radius: 11px;
+  background: #fff;
+  color: #29445a;
+  overflow: hidden;
+}
+
+.tracking-route-stepper .tracking-step {
+  flex: 0 1 92px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+
+.tracking-route-stepper .tracking-step-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  flex: 0 0 26px;
+  border: 1px solid #69c8c0;
+  border-radius: 50%;
+  background: #70c9c1;
+  color: #fff;
+  font-size: 13px;
+}
+
+.tracking-route-stepper .tracking-step.completed .tracking-step-icon {
+  background: #70c9c1;
+  border-color: #70c9c1;
+  color: #fff;
+}
+
+.tracking-route-stepper .tracking-step.current .tracking-step-icon {
+  width: 34px;
+  height: 34px;
+  flex-basis: 34px;
+  margin-top: -4px;
+  border: 2px solid #b7e6e1;
+  background: #0b998f;
+  color: #fff;
+  box-shadow: 0 0 0 3px #e8f7f5;
+}
+
+.tracking-route-stepper .tracking-step-name {
+  display: block;
+  max-width: 100%;
+  margin-top: 5px;
+  color: #24445b;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.tracking-route-stepper .tracking-step-label {
+  display: block;
+  margin-top: 2px;
+  color: #168e88;
+  font-size: 6.5px;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: .15px;
+  white-space: nowrap;
+}
+
+.tracking-route-stepper .tracking-step-line {
+  flex: 1 1 20px;
+  min-width: 8px;
+  height: 2px;
+  margin: 12px 5px 0;
+  background: #19b8aa;
+  border-radius: 2px;
+}
+
+.tracking-route-stepper .tracking-step-line.completed-line {
+  background: #19b8aa;
+}
+
+.tracking-route-stepper .tracking-route-empty {
+  width: 100%;
+  padding: 14px 4px;
+  color: #718393;
+  font-size: 11px;
+  text-align: center;
+}
+
+@media (max-width: 480px) {
+  .tracking-route-stepper {
+    padding: 8px 5px 9px;
+  }
+  .tracking-route-stepper .tracking-step {
+    flex-basis: 62px;
+  }
+  .tracking-route-stepper .tracking-step-name {
+    font-size: 8px;
+  }
+  .tracking-route-stepper .tracking-step-label {
+    font-size: 6px;
+  }
+  .tracking-route-stepper .tracking-step-line {
+    min-width: 5px;
+    margin-right: 2px;
+    margin-left: 2px;
+  }
+}
+
+/* =========================================================
+   SPACING + ROUTE STEPPER ALIGNMENT FIX
+   Keep the route, distance cards, and vehicle panel evenly inset.
+========================================================= */
+.tracking-route-stepper {
+  width: calc(100% - 24px);
+  margin: 8px 12px;
+  padding: 9px 8px 10px;
+  align-items: flex-start;
+  justify-content: stretch;
+  gap: 0;
+  background: #ffffff;
+  color: #24445b;
+  overflow: hidden;
+}
+
+.tracking-route-stepper .tracking-step {
+  flex: 0 0 52px;
+  width: 52px;
+  min-width: 0;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.tracking-route-stepper .tracking-step-icon,
+.tracking-route-stepper .tracking-step.current .tracking-step-icon {
+  width: 26px;
+  height: 26px;
+  flex: 0 0 26px;
+  margin: 0;
+  box-shadow: none;
+}
+
+.tracking-route-stepper .tracking-step-line {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 2px;
+  margin: 12px 5px 0;
+  align-self: flex-start;
+}
+
+.tracking-route-stepper .tracking-step-name {
+  width: 100%;
+  margin-top: 5px;
+  font-size: 9px;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+  text-align: center;
+}
+
+.tracking-route-stepper .tracking-step-label {
+  margin-top: 2px;
+  font-size: 6.5px;
+  text-align: center;
+}
+
+.trip-distance-summary {
+  width: calc(100% - 24px);
+  margin: 8px 12px 10px;
+}
+
+.vehicle-column-panel {
+  width: calc(100% - 24px);
+  margin: 8px 12px 12px;
+}
+
+@media (max-width: 650px) {
+  .tracking-route-stepper {
+    width: calc(100% - 20px);
+    margin: 8px 10px;
+    padding: 8px 5px 9px;
+  }
+
+  .tracking-route-stepper .tracking-step {
+    flex: 0 0 42px;
+    width: 42px;
+  }
+
+  .tracking-route-stepper .tracking-step-line {
+    margin-right: 3px;
+    margin-left: 3px;
+  }
+
+  .tracking-route-stepper .tracking-step-name {
+    font-size: 8px;
+  }
+
+  .tracking-route-stepper .tracking-step-label {
+    font-size: 6px;
+  }
+
+  .trip-distance-summary {
+    width: calc(100% - 20px);
+    margin: 8px 10px 10px;
+    gap: 6px;
+  }
+
+  .vehicle-column-panel {
+    width: calc(100% - 20px);
+    margin: 8px 10px 12px;
+  }
+}

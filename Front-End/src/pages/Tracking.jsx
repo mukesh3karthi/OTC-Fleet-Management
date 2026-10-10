@@ -2512,6 +2512,52 @@ const VehicleColumn = ({
 
       </div>
 
+
+      <div className="tracking-route-stepper" aria-label="Trip route progress">
+        {routeLocations.map((location, index, stops) => {
+          const isOrigin = index === 0;
+          const isDestination = index === stops.length - 1;
+          const isCurrent = currentRouteIndex >= 0 && index === currentRouteIndex;
+          const isCompleted = currentRouteIndex >= 0
+            ? index < currentRouteIndex
+            : false;
+          const stepStatus = isCurrent ? "current" : isCompleted ? "completed" : "pending";
+          const stepLabel = isOrigin ? "ORIGIN" : isDestination ? "DESTINATION" : "";
+
+          return (
+            <React.Fragment key={`${normalizeRouteLocation(location)}-${index}`}>
+              <div
+                className={`tracking-step ${stepStatus}${isOrigin ? " origin" : ""}${isDestination ? " destination" : ""}`}
+                aria-current={isCurrent ? "step" : undefined}
+                title={location}
+              >
+                <div className="tracking-step-icon">
+                  {isCurrent ? (
+                    <Truck size={15} aria-hidden="true" />
+                  ) : isCompleted ? (
+                    <MapPin size={15} aria-hidden="true" />
+                  ) : (
+                    <MapPin size={15} aria-hidden="true" />
+                  )}
+                </div>
+                <span className="tracking-step-name">{location}</span>
+                {stepLabel && <span className="tracking-step-label">{stepLabel}</span>}
+              </div>
+
+              {index < stops.length - 1 && (
+                <div
+                  className={`tracking-step-line ${currentRouteIndex >= 0 && index < currentRouteIndex ? "completed-line" : ""}`}
+                  aria-hidden="true"
+                />
+              )}
+            </React.Fragment>
+          );
+        })}
+        {routeLocations.length === 0 && (
+          <div className="tracking-route-empty">Route locations are not available.</div>
+        )}
+      </div>
+
       {!activeVehicle ? (
 
         <div className="vehicle-column-empty">
