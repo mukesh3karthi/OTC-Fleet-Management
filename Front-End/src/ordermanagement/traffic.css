@@ -3392,3 +3392,32 @@
     margin-left: auto
   }
 }
+
+.traffic-toast-message {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  overflow-wrap: anywhere;
+  line-height: 1.5;
+}
+
+.traffic-toast {
+  height: auto !important;
+  overflow: visible !important;
+}
+.traffic-toast-content {
+  flex: 1;
+  min-width: 0;
+  height: auto !important;
+  overflow: visible !important;
+}
+.traffic-toast-content > span {
+  display: block !important;
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  overflow-wrap: anywhere;
+  max-height: none !important;
+  -webkit-line-clamp: unset !important;
+  line-height: 1.5;
+}

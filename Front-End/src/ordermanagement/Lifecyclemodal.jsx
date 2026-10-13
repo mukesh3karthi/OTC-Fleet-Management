@@ -12,6 +12,15 @@ const TRIP_API_URL =
 /* =========================================================
    HELPERS
 ========================================================= */
+const lifecycleApiFetch = (url, options = {}) => {
+  const token = sessionStorage.getItem("kamToken");
+  if (!token?.trim()) {
+    return Promise.reject(new Error("Please sign in with your Key Account credentials again."));
+  }
+  const headers = new Headers(options.headers);
+  headers.set("Authorization", `Bearer ${token}`);
+  return fetch(url, { ...options, headers });
+};
 const safeArray = (value) =>
   Array.isArray(value) ? value : [];
 const formatDate = (value) => {
@@ -556,7 +565,7 @@ const Lifecyclemodal = ({
     if (!editForm.customer?.trim()) { setEditError("Customer is required."); return; }
     setEditSaving(true); setEditError("");
     try {
-      const response = await fetch(`${TRIP_API_URL}/${(workingOrder || order)._id}/lifecycle-corrections`, {
+      const response = await lifecycleApiFetch(`${TRIP_API_URL}/${(workingOrder || order)._id}/lifecycle-corrections`, {
         method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...editForm, ...(isIntercartingEdit ? { origin: undefined, destination: undefined } : {}), siteLocation: undefined, period: undefined, dieselScope: undefined, vehicleRequirements: editRequirementsLocked ? undefined : editForm.vehicleRequirements.map(r => isIntercartingEdit ? { ...r, dimensions: undefined } : r) })
       });
       const payload = await response.json().catch(() => ({}));
@@ -605,7 +614,7 @@ const Lifecyclemodal = ({
           vehicleRequirements: editRequirementsLocked ? undefined :
             editForm.vehicleRequirements.map(r => isIntercartingEdit ? { ...r, dimensions: undefined } : r),
         };
-        const response = await fetch(`${TRIP_API_URL}/${trip._id}/lifecycle-corrections`, {
+        const response = await lifecycleApiFetch(`${TRIP_API_URL}/${trip._id}/lifecycle-corrections`, {
           method: "PUT", headers: { "Content-Type": "application/json" },
           body: JSON.stringify(corrections),
         });
@@ -627,7 +636,7 @@ const Lifecyclemodal = ({
         formData.append("documentName", poForm.documentName.trim() || poFile?.name || "PO Document");
         formData.append("uploadedBy", poForm.uploadedBy.trim() || sessionStorage.getItem("kamUsername") || "Key Account");
         if (poFile) formData.append("document", poFile);
-        const response = await fetch(`${TRIP_API_URL}/${trip._id}/po-document`, {
+        const response = await lifecycleApiFetch(`${TRIP_API_URL}/${trip._id}/po-document`, {
           method: "PUT", body: formData,
         });
         const payload = await response.json().catch(() => ({}));
@@ -667,7 +676,7 @@ const Lifecyclemodal = ({
         return;
       }
       try {
-        const response = await fetch(
+        const response = await lifecycleApiFetch(
           `${TRIP_API_URL}/${order._id}`,
           {
             method: "GET",
@@ -1033,7 +1042,7 @@ const Lifecyclemodal = ({
       if (poFile) {
         formData.append("document", poFile);
       }
-      const response = await fetch(
+      const response = await lifecycleApiFetch(
         `${TRIP_API_URL}/${order._id}/po-document`,
         {
           method: "PUT",
@@ -1227,7 +1236,7 @@ const Lifecyclemodal = ({
         },
       };
       // Prefer a dedicated order-placement endpoint when available.
-      let response = await fetch(
+      let response = await lifecycleApiFetch(
         `${TRIP_API_URL}/${order._id}/order-placed`,
         {
           method: "PUT",
@@ -1239,7 +1248,7 @@ const Lifecyclemodal = ({
       );
       // Backward-compatible fallback for projects using the generic updateTrip route.
       if (response.status === 404) {
-        response = await fetch(
+        response = await lifecycleApiFetch(
           `${TRIP_API_URL}/${order._id}`,
           {
             method: "PUT",
@@ -1309,7 +1318,7 @@ const Lifecyclemodal = ({
     setFinalizationMessage("");
     setFinalizationError("");
     try {
-      const response = await fetch(
+      const response = await lifecycleApiFetch(
         `${TRIP_API_URL}/${order._id}/order-finalization`,
         {
           method: "PUT",

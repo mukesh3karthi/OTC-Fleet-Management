@@ -1586,6 +1586,7 @@ const Approvalmanagement = () => {
           ? `${order.tripId} transport replacement approved.`
           : `${order.tripId} transport replacement rejected.`;
       setSuccessMessage(successText);
+      setSelectedTransportReplacement(null);
       showToast(
         successText,
         status === "Approved"
