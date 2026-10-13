@@ -2,13 +2,11 @@ import React, {
   useEffect,
   useState,
 } from "react";
-
 import {
   NavLink,
   useLocation,
   useNavigate,
 } from "react-router-dom";
-
 import {
   FaBoxOpen,
   FaCar,
@@ -23,57 +21,44 @@ import {
   FaUsers,
   FaWarehouse,
 } from "react-icons/fa";
-
 import Intercarttinglogin
   from "../Loginpage/Intercartinglogin";
-
 import Ownvehiclelogin
   from "../Loginpage/Ownvehiclelogin";
-
 import Trackinglogin
   from "../Loginpage/Trackinglogin";
-
 import AssetsLogin
   from "../Loginpage/Assetslogin";
-
 import "../css/sidebar.css";
-
 const MOBILE_BREAKPOINT = 560;
-
 const Sidebar = ({
   collapsed,
   setCollapsed,
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
-
   const [
     showIntercartingLogin,
     setShowIntercartingLogin,
   ] = useState(false);
-
   const [
     showOwnVehicleLogin,
     setShowOwnVehicleLogin,
   ] = useState(false);
-
   const [
     showTrackingLogin,
     setShowTrackingLogin,
   ] = useState(false);
-
   const [
     showAssetsLogin,
     setShowAssetsLogin,
   ] = useState(false);
-
   const isMobile = () => {
     return (
       window.innerWidth <=
       MOBILE_BREAKPOINT
     );
   };
-
   const closeMobileSidebar = () => {
     if (
       isMobile() &&
@@ -83,16 +68,13 @@ const Sidebar = ({
       setCollapsed(true);
     }
   };
-
   useEffect(() => {
     const state =
       location.state || {};
-
     if (
       state.openAssetsLogin
     ) {
       setShowAssetsLogin(true);
-
       navigate(
         location.pathname,
         {
@@ -100,17 +82,14 @@ const Sidebar = ({
           state: {},
         }
       );
-
       return;
     }
-
     if (
       state.openOwnVehicleLogin
     ) {
       setShowOwnVehicleLogin(
         true
       );
-
       navigate(
         location.pathname,
         {
@@ -118,17 +97,14 @@ const Sidebar = ({
           state: {},
         }
       );
-
       return;
     }
-
     if (
       state.openIntercartingLogin
     ) {
       setShowIntercartingLogin(
         true
       );
-
       navigate(
         location.pathname,
         {
@@ -136,17 +112,14 @@ const Sidebar = ({
           state: {},
         }
       );
-
       return;
     }
-
     if (
       state.openTrackingLogin
     ) {
       setShowTrackingLogin(
         true
       );
-
       navigate(
         location.pathname,
         {
@@ -160,7 +133,6 @@ const Sidebar = ({
     location.state,
     navigate,
   ]);
-
   useEffect(() => {
     if (
       location.pathname ===
@@ -169,12 +141,10 @@ const Sidebar = ({
       sessionStorage.removeItem(
         "ownVehicleLoggedIn"
       );
-
       sessionStorage.removeItem(
         "ownVehicleUsername"
       );
     }
-
     if (
       location.pathname ===
       "/tracking"
@@ -182,12 +152,10 @@ const Sidebar = ({
       sessionStorage.removeItem(
         "trackingLoggedIn"
       );
-
       sessionStorage.removeItem(
         "trackingUsername"
       );
     }
-
     if (
       location.pathname ===
       "/intercartingdash"
@@ -195,12 +163,10 @@ const Sidebar = ({
       sessionStorage.removeItem(
         "intercartingLoggedIn"
       );
-
       sessionStorage.removeItem(
         "intercartingUsername"
       );
     }
-
     if (
       location.pathname ===
       "/trip-dashboard"
@@ -208,15 +174,12 @@ const Sidebar = ({
       sessionStorage.removeItem(
         "kamLoggedIn"
       );
-
       sessionStorage.removeItem(
         "kamUsername"
       );
-
       sessionStorage.removeItem(
         "trafficLoggedIn"
       );
-
       sessionStorage.removeItem(
         "trafficUsername"
       );
@@ -224,7 +187,6 @@ const Sidebar = ({
   }, [
     location.pathname,
   ]);
-
   const operationsMenu = [
     {
       title: "Dashboard",
@@ -233,7 +195,6 @@ const Sidebar = ({
       path:
         "/dashboard",
     },
-
     {
       title:
         "Intercarting",
@@ -243,7 +204,6 @@ const Sidebar = ({
         "/intercartingdash",
       dataEntry: true,
     },
-
     {
       title:
         "Own Vehicle",
@@ -253,7 +213,6 @@ const Sidebar = ({
         "/ownvehicledetaildash",
       dataEntry: true,
     },
-
     {
       title:
         "Vehicle Documents",
@@ -262,16 +221,12 @@ const Sidebar = ({
       path:
         "/vehicle-documents",
     },
-
-    
-
     {
       title: "Order Management",
       icon:
         <FaFileAlt />,
       path:
         "/trip-dashboard",
-
       subLinks: [
         {
           key: "kam",
@@ -280,7 +235,6 @@ const Sidebar = ({
           path:
             "/trip-dashboard/key-account",
         },
-
         {
           key: "traffic",
           title:
@@ -288,7 +242,6 @@ const Sidebar = ({
           path:
             "/trip-dashboard/traffic-management",
         },
-
         {
           key: "approval",
           title:
@@ -299,7 +252,6 @@ const Sidebar = ({
       ],
     },
   ];
-
   const liveMenu = [
     {
       title:
@@ -309,14 +261,12 @@ const Sidebar = ({
       path:
         "/tracking",
       dataEntry: true,
-
       relatedPaths: [
         "/tracking",
         "/tracking-input",
         "/trip-details",
       ],
     },
-
     // {
     //   title:
     //     "Inbound & Outbound",
@@ -325,7 +275,6 @@ const Sidebar = ({
     //   path:
     //     "/inbound-outbound",
     // },
-
     {
       title: "Assets",
       icon:
@@ -334,7 +283,6 @@ const Sidebar = ({
         "/assets",
       secureLogin: true,
     },
-
     {
       title:
         "Warehouse",
@@ -343,7 +291,6 @@ const Sidebar = ({
       path:
         "/warehouse",
     },
-
     {
       title:
         "Vehicle Maintenance",
@@ -352,7 +299,6 @@ const Sidebar = ({
       path:
         "/vehicle-maintenance",
     },
-
     {
       title:
         "Driver Management",
@@ -362,7 +308,6 @@ const Sidebar = ({
         "/driver-management",
     },
   ];
-
   const normalizePath = (
     path
   ) => {
@@ -375,12 +320,10 @@ const Sidebar = ({
           /\/+$/,
           ""
         );
-
     return (
       normalizedPath || "/"
     );
   };
-
   const isItemActive = (
     item
   ) => {
@@ -388,7 +331,6 @@ const Sidebar = ({
       normalizePath(
         location.pathname
       );
-
     if (
       Array.isArray(
         item.relatedPaths
@@ -401,7 +343,6 @@ const Sidebar = ({
               normalizePath(
                 path
               );
-
             return (
               currentPath ===
               relatedPath ||
@@ -413,12 +354,10 @@ const Sidebar = ({
         )
       );
     }
-
     const itemPath =
       normalizePath(
         item.path
       );
-
     if (
       itemPath ===
       "/dashboard"
@@ -428,7 +367,6 @@ const Sidebar = ({
         "/dashboard"
       );
     }
-
     return (
       currentPath ===
       itemPath ||
@@ -437,27 +375,21 @@ const Sidebar = ({
       )
     );
   };
-
   const handleAssetsClick = (
     event
   ) => {
     event.preventDefault();
-
     sessionStorage.removeItem(
       "assetsLoggedIn"
     );
-
     sessionStorage.removeItem(
       "assetsUsername"
     );
-
     setShowAssetsLogin(
       true
     );
-
     closeMobileSidebar();
   };
-
   const handleDataEntry = (
     section
   ) => {
@@ -468,18 +400,14 @@ const Sidebar = ({
       sessionStorage.removeItem(
         "intercartingLoggedIn"
       );
-
       sessionStorage.removeItem(
         "intercartingUsername"
       );
-
       setShowIntercartingLogin(
         true
       );
-
       return;
     }
-
     if (
       section ===
       "Own Vehicle"
@@ -487,18 +415,14 @@ const Sidebar = ({
       sessionStorage.removeItem(
         "ownVehicleLoggedIn"
       );
-
       sessionStorage.removeItem(
         "ownVehicleUsername"
       );
-
       setShowOwnVehicleLogin(
         true
       );
-
       return;
     }
-
     if (
       section ===
       "Tracking"
@@ -506,43 +430,34 @@ const Sidebar = ({
       sessionStorage.removeItem(
         "trackingLoggedIn"
       );
-
       sessionStorage.removeItem(
         "trackingUsername"
       );
-
       setShowTrackingLogin(
         true
       );
     }
   };
-
   const handleTripsSubLinkClick = (
     event,
     subLink
   ) => {
     event.preventDefault();
-
     if (
       subLink.key === "kam"
     ) {
       sessionStorage.removeItem(
         "trafficLoggedIn"
       );
-
       sessionStorage.removeItem(
         "trafficUsername"
       );
-
       navigate(
         subLink.path
       );
-
       closeMobileSidebar();
-
       return;
     }
-
     if (
       subLink.key ===
       "traffic"
@@ -550,20 +465,15 @@ const Sidebar = ({
       sessionStorage.removeItem(
         "kamLoggedIn"
       );
-
       sessionStorage.removeItem(
         "kamUsername"
       );
-
       navigate(
         subLink.path
       );
-
       closeMobileSidebar();
-
       return;
     }
-
     if (
       subLink.key ===
       "approval"
@@ -571,163 +481,129 @@ const Sidebar = ({
       navigate(
         subLink.path
       );
-
       closeMobileSidebar();
-
       return;
     }
-
     navigate(
       subLink.path
     );
-
     closeMobileSidebar();
   };
-
   const handleIntercartingLoginSuccess =
     () => {
       setShowIntercartingLogin(
         false
       );
-
       navigate(
         "/intercartingdash/intercarting",
         {
           replace: true,
         }
       );
-
       closeMobileSidebar();
     };
-
   const handleOwnVehicleLoginSuccess =
     () => {
       setShowOwnVehicleLogin(
         false
       );
-
       navigate(
         "/ownvehicledetaildash/ownvehicledetails",
         {
           replace: true,
         }
       );
-
       closeMobileSidebar();
     };
-
   const handleTrackingLoginSuccess =
     () => {
       setShowTrackingLogin(
         false
       );
-
       navigate(
         "/trip-details",
         {
           replace: true,
         }
       );
-
       closeMobileSidebar();
     };
-
   const handleAssetsLoginSuccess =
     () => {
       setShowAssetsLogin(
         false
       );
-
       navigate(
         "/assets",
         {
           replace: true,
         }
       );
-
       closeMobileSidebar();
     };
-
   const handleLogout = () => {
+    sessionStorage.removeItem("mainSessionToken");
+    sessionStorage.removeItem("mainLastActivity");
     localStorage.removeItem(
       "token"
     );
-
     localStorage.removeItem(
       "username"
     );
-
     sessionStorage.removeItem(
       "intercartingLoggedIn"
     );
-
     sessionStorage.removeItem(
       "intercartingUsername"
     );
-
     sessionStorage.removeItem(
       "ownVehicleLoggedIn"
     );
-
     sessionStorage.removeItem(
       "ownVehicleUsername"
     );
-
     sessionStorage.removeItem(
       "trackingLoggedIn"
     );
-
     sessionStorage.removeItem(
       "trackingUsername"
     );
-
     sessionStorage.removeItem(
       "assetsLoggedIn"
     );
-
     sessionStorage.removeItem(
       "assetsUsername"
     );
-
     sessionStorage.removeItem(
       "kamLoggedIn"
     );
-
     sessionStorage.removeItem(
       "kamUsername"
     );
-
     sessionStorage.removeItem(
       "trafficLoggedIn"
     );
-
     sessionStorage.removeItem(
       "trafficUsername"
     );
-
     setShowIntercartingLogin(
       false
     );
-
     setShowOwnVehicleLogin(
       false
     );
-
     setShowTrackingLogin(
       false
     );
-
     setShowAssetsLogin(
       false
     );
-
     if (
       typeof setCollapsed ===
       "function"
     ) {
       setCollapsed(true);
     }
-
     navigate(
       "/",
       {
@@ -735,12 +611,10 @@ const Sidebar = ({
       }
     );
   };
-
   const handleMenuClick =
     () => {
       closeMobileSidebar();
     };
-
   const renderMenuItems = (
     items
   ) => {
@@ -750,17 +624,14 @@ const Sidebar = ({
           isItemActive(
             item
           );
-
         const showDataEntry =
           item.dataEntry &&
           active &&
           !collapsed;
-
         const showSubLinks =
           Array.isArray(item.subLinks) &&
           item.subLinks.length > 0 &&
           !collapsed;
-
         return (
           <div
             key={
@@ -804,14 +675,12 @@ const Sidebar = ({
               >
                 {item.icon}
               </span>
-
               <span
                 className="sidebar-text"
               >
                 {item.title}
               </span>
             </NavLink>
-
             {showDataEntry && (
               <div
                 className="sidebar-submenu"
@@ -829,14 +698,12 @@ const Sidebar = ({
                     className="sidebar-submenu-connector"
                     aria-hidden="true"
                   />
-
                   <span
                     className="sidebar-submenu-icon"
                     aria-hidden="true"
                   >
                     <FaDatabase />
                   </span>
-
                   <span
                     className="sidebar-submenu-text"
                   >
@@ -845,7 +712,6 @@ const Sidebar = ({
                 </button>
               </div>
             )}
-
             {showSubLinks && (
               <div
                 className="sidebar-submenu"
@@ -880,14 +746,12 @@ const Sidebar = ({
                         className="sidebar-submenu-connector"
                         aria-hidden="true"
                       />
-
                       <span
                         className="sidebar-submenu-icon"
                         aria-hidden="true"
                       >
                         <FaDatabase />
                       </span>
-
                       <span
                         className="sidebar-submenu-text"
                       >
@@ -905,7 +769,6 @@ const Sidebar = ({
       }
     );
   };
-
   return (
     <>
       {!collapsed && (
@@ -917,7 +780,6 @@ const Sidebar = ({
           aria-hidden="true"
         />
       )}
-
       <aside
         className={
           `sidebar ${collapsed
@@ -939,7 +801,6 @@ const Sidebar = ({
                 Operations
               </div>
             )}
-
             <div
               className="sidebar-section-menu"
             >
@@ -948,7 +809,6 @@ const Sidebar = ({
               )}
             </div>
           </div>
-
           <div
             className="sidebar-section"
           >
@@ -959,7 +819,6 @@ const Sidebar = ({
                 Live
               </div>
             )}
-
             <div
               className="sidebar-section-menu"
             >
@@ -969,7 +828,6 @@ const Sidebar = ({
             </div>
           </div>
         </nav>
-
         <div
           className="sidebar-footer"
         >
@@ -991,7 +849,6 @@ const Sidebar = ({
             >
               <FaSignOutAlt />
             </span>
-
             <span
               className="logout-text"
             >
@@ -1000,7 +857,6 @@ const Sidebar = ({
           </button>
         </div>
       </aside>
-
       <Intercarttinglogin
         open={
           showIntercartingLogin
@@ -1014,7 +870,6 @@ const Sidebar = ({
           handleIntercartingLoginSuccess
         }
       />
-
       <Ownvehiclelogin
         open={
           showOwnVehicleLogin
@@ -1028,7 +883,6 @@ const Sidebar = ({
           handleOwnVehicleLoginSuccess
         }
       />
-
       <Trackinglogin
         open={
           showTrackingLogin
@@ -1042,7 +896,6 @@ const Sidebar = ({
           handleTrackingLoginSuccess
         }
       />
-
       <AssetsLogin
         open={
           showAssetsLogin
@@ -1059,5 +912,4 @@ const Sidebar = ({
     </>
   );
 };
-
 export default Sidebar;
