@@ -444,11 +444,6 @@
   white-space: nowrap;
 }
 
-.approval-table-wrap {
-  width: 100%;
-  overflow-x: auto;
-}
-
 .approval-table {
   width: 100%;
   min-width: 930px;
@@ -578,16 +573,12 @@
 }
 
 .approval-order-info-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 9px;
   margin-bottom: 12px;
 }
 
 .approval-order-info-grid>div {
-  min-width: 0;
   padding: 9px 10px;
-  border: 1px solid #e0e8eb;
   border-radius: 8px;
   background: #fff;
 }
@@ -1004,10 +995,7 @@
    MD ORDER APPROVAL TABLE - REFERENCE IMAGE STYLE
 ========================================================= */
 .approval-table.approval-md-table {
-  width: 100%;
   min-width: 1280px;
-  table-layout: fixed;
-  border-collapse: collapse;
 }
 
 .approval-md-table th:nth-child(1),
@@ -1047,23 +1035,15 @@
 }
 
 .approval-md-table thead th {
-  height: 38px;
   padding: 0 10px;
   background: #f4f6f7;
   border-bottom: 1px solid #d5dfe3;
-  color: #536c78;
   font-size: 8px;
-  font-weight: 850;
   letter-spacing: 0.04em;
-  text-transform: uppercase;
-  vertical-align: middle;
 }
 
 .approval-md-main-row td {
   height: 54px;
-  background: #fff;
-  border-bottom: 1px solid #dfe7ea;
-  vertical-align: middle;
 }
 
 #approval-management-root .approval-md-main-row td {
@@ -1110,29 +1090,20 @@
   font-family: "Courier New", monospace;
   font-size: 12px;
   font-weight: 800;
-  white-space: nowrap;
 }
 
 .approval-md-client {
   display: block;
   color: #17384b;
   font-size: 12px;
-  font-weight: 800;
   white-space: nowrap;
 }
 
 .approval-md-movement {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   padding: 4px 10px;
-  border-radius: 999px;
   background: #eaf1f8;
   color: #2364a3;
   font-size: 9px;
-  font-weight: 850;
-  white-space: nowrap;
-  text-transform: uppercase;
 }
 
 .approval-md-rate {
@@ -1140,7 +1111,6 @@
   font-family: "Courier New", monospace;
   font-size: 14px;
   font-weight: 800;
-  white-space: nowrap;
 }
 
 .approval-md-terms {
@@ -1176,7 +1146,6 @@
   border-radius: 999px;
   background: #fff7e7;
   color: #946200;
-  font-size: 8.5px;
   font-weight: 850;
   white-space: nowrap;
 }
@@ -1226,9 +1195,6 @@
 }
 
 .approval-md-actions {
-  display: flex;
-  align-items: center;
-  gap: 7px;
   white-space: nowrap;
 }
 
@@ -1267,10 +1233,6 @@
   cursor: not-allowed;
 }
 
-.approval-md-table .approval-expand-row>td {
-  height: auto;
-}
-
 #approval-management-root .approval-md-table .approval-expand-row>td {
   padding: 0;
   background: #f3f7f8;
@@ -1282,7 +1244,6 @@
 
 .approval-md-expand-section {
   margin-bottom: 10px;
-  overflow: hidden;
   border: 1px solid #dce5e8;
   border-radius: 9px;
   background: #fff;
@@ -1291,19 +1252,14 @@
 .approval-md-section-head {
   min-height: 48px;
   padding: 8px 12px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   gap: 12px;
   border-bottom: 1px solid #e3eaed;
   background: #fafcfc;
 }
 
 .approval-md-section-head h4 {
-  margin: 0;
   color: #17394b;
   font-size: 11px;
-  font-weight: 850;
 }
 
 .approval-md-section-head p {
@@ -1428,29 +1384,22 @@
    This replaces the old vehicle card/column appearance.
 ========================================================= */
 .approval-vehicle-readonly-list {
-  width: 100%;
   border: 1px solid #dfe8eb;
   border-radius: 8px;
-  background: #ffffff;
-  overflow: hidden;
 }
 
 .approval-vehicle-readonly-header,
 .approval-vehicle-readonly-row {
-  display: grid;
   grid-template-columns: 42px minmax(150px, 1.2fr) minmax(150px, 1.1fr) minmax(155px, 1.15fr) 90px 100px minmax(180px, 1.3fr);
   align-items: stretch;
 }
 
 .approval-vehicle-readonly-header {
   min-height: 32px;
-  background: #f3f7f8;
   border-bottom: 1px solid #dfe8eb;
 }
 
 .approval-vehicle-readonly-header>div {
-  display: flex;
-  align-items: center;
   padding: 7px 10px;
   border-right: 1px solid #e3eaed;
   color: #54717d;
@@ -1458,7 +1407,6 @@
   font-weight: 800;
   line-height: 1.15;
   letter-spacing: 0.35px;
-  text-transform: uppercase;
 }
 
 .approval-vehicle-readonly-header>div:first-child {
@@ -1486,21 +1434,13 @@
 }
 
 .approval-vehicle-row-number {
-  display: flex;
-  align-items: center;
-  justify-content: center;
   border-right: 1px solid #e7edef;
   background: #f8fafb;
   color: #294e5a;
   font-size: 9px;
-  font-weight: 900;
 }
 
 .approval-vehicle-readonly-field {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
   gap: 3px;
   padding: 8px 10px;
   border-right: 1px solid #e7edef;
@@ -1519,17 +1459,13 @@
   min-width: 0;
   color: #183d49;
   font-size: 9px;
-  font-weight: 800;
   line-height: 1.3;
   white-space: normal;
-  overflow-wrap: anywhere;
 }
 
 .approval-vehicle-readonly-field>small,
 .approval-vehicle-readonly-field strong small {
-  color: #78909a;
   font-size: 6.8px;
-  font-weight: 700;
   line-height: 1.2;
 }
 
@@ -1880,21 +1816,16 @@
    ORDER APPROVAL - FINAL CLEAN LAYOUT
 ========================================================= */
 .approval-table-wrap {
-  width: 100%;
   overflow-x: hidden;
 }
 
 .approval-table.approval-md-table {
-  width: 100%;
   min-width: 0;
-  table-layout: fixed;
-  border-collapse: collapse;
 }
 
 /* 10-column viewport layout */
 .approval-md-table th:nth-child(1),
 .approval-md-table td:nth-child(1) {
-  width: 8%;
   min-width: 105px;
 }
 
@@ -1946,7 +1877,6 @@
 .approval-md-table thead th {
   height: 38px;
   padding: 8px 7px;
-  font-size: 8.5px;
   line-height: 1.15;
   white-space: normal;
   overflow-wrap: anywhere;
@@ -1954,7 +1884,6 @@
 
 /* Main order row */
 .approval-md-main-row {
-  cursor: pointer;
   transition: background 0.16s ease;
 }
 
@@ -1999,20 +1928,15 @@
 .approval-md-movement {
   max-width: 100%;
   padding: 4px 8px;
-  font-size: 8.5px;
   line-height: 1.15;
-  white-space: nowrap;
   text-align: center;
 }
 
 .approval-md-route {
   display: flex;
-  align-items: center;
   gap: 6px;
   min-width: 0;
-  font-size: 9.5px;
   line-height: 1.2;
-  white-space: nowrap;
   word-break: normal;
   overflow-wrap: normal;
 }
@@ -2493,7 +2417,6 @@
 }
 
 #approval-management-root .approval-quotation-expand-row>td {
-  padding: 0;
   border-bottom: 1px solid #cadde0;
   background: #f7fafb;
 }
@@ -2566,7 +2489,6 @@
 }
 
 .approval-qv-card {
-  overflow: hidden;
   border: 1px solid #d5e2e5;
   border-left: 4px solid var(--ap-primary);
   border-radius: 11px;
@@ -2581,55 +2503,37 @@
 .approval-qv-header {
   min-height: 64px;
   padding: 9px 12px;
-  display: grid;
   grid-template-columns: 38px minmax(0, 1fr) auto;
-  align-items: center;
   gap: 11px;
-  border-bottom: 1px solid #dfe8eb;
   background: linear-gradient(90deg, #f3f9f8 0%, #fff 68%);
 }
 
 .approval-qv-number {
   width: 34px;
   height: 34px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   border-radius: 9px;
   background: #dff2ef;
-  color: var(--ap-primary);
-  font-size: 11px;
-  font-weight: 900;
 }
 
 .approval-qv-title>span {
-  display: block;
   margin-bottom: 2px;
   color: #80939c;
-  font-size: 8px;
-  font-weight: 850;
   letter-spacing: 0.055em;
 }
 
 .approval-qv-title h4 {
-  margin: 0;
   color: var(--ap-navy);
   font-size: 12px;
-  font-weight: 850;
 }
 
 .approval-qv-tags {
   margin-top: 5px;
-  display: flex;
-  flex-wrap: wrap;
   gap: 5px;
 }
 
 .approval-qv-tags span {
   min-height: 20px;
   padding: 0 7px;
-  display: inline-flex;
-  align-items: center;
   border: 1px solid #dbe6e8;
   border-radius: 5px;
   background: #fff;
@@ -2638,16 +2542,8 @@
   font-weight: 750;
 }
 
-.approval-qv-table-wrap {
-  width: 100%;
-  overflow-x: auto;
-}
-
 .approval-qv-table {
-  width: 100%;
   min-width: 800px;
-  border-collapse: collapse;
-  table-layout: fixed;
 }
 
 .approval-qv-table th {
@@ -2658,8 +2554,6 @@
   color: #718792;
   text-align: left;
   font-size: 8px;
-  font-weight: 850;
-  text-transform: uppercase;
   letter-spacing: 0.035em;
 }
 
@@ -2692,7 +2586,6 @@
 .approval-qv-table th:nth-child(6),
 .approval-qv-table td:nth-child(6) {
   width: 12%;
-  text-align: center;
 }
 
 .approval-qv-table td {
@@ -2700,7 +2593,6 @@
   padding: 7px 10px;
   border-bottom: 1px solid #e5ecee;
   background: #fff;
-  vertical-align: middle;
   transition: background 0.15s ease;
 }
 
@@ -2728,9 +2620,7 @@
   position: relative;
   width: 20px;
   height: 20px;
-  margin: 0 auto;
   display: block;
-  cursor: pointer;
 }
 
 .approval-qv-radio input {
@@ -2754,32 +2644,23 @@
 }
 
 .approval-qv-radio input:disabled+span {
-  cursor: not-allowed;
   opacity: 0.7;
 }
 
 .approval-qv-transporter strong {
-  display: block;
   color: #244957;
   font-size: 11px;
-  font-weight: 850;
 }
 
 .approval-qv-transporter small {
-  display: block;
   margin-top: 2px;
-  overflow: hidden;
   color: #91a0a7;
   font-size: 7px;
   font-weight: 650;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .approval-qv-amount {
   color: #163f4f;
-  font-size: 11px;
-  font-weight: 900;
 }
 
 .approval-qv-allocator,
@@ -3240,10 +3121,8 @@
   height: min(760px, calc(100vh - 48px));
   display: flex;
   flex-direction: column;
-  overflow: hidden;
   transform: translate(-50%, -50%);
   border: 1px solid #cfdee2;
-  border-radius: 18px;
   background: #f6f9fa;
   box-shadow: 0 24px 70px rgba(16, 47, 67, 0.24),
     0 0 0 100vmax rgba(8, 30, 40, 0.42);
@@ -3369,12 +3248,10 @@
 }
 
 .approval-quotation-modal-close {
-  position: absolute;
   top: 18px;
   right: 18px;
   width: 31px;
   height: 31px;
-  padding: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -3385,8 +3262,6 @@
   font: inherit;
   font-size: 18px;
   font-weight: 600;
-  line-height: 1;
-  cursor: pointer;
   transition: 0.18s ease;
 }
 
@@ -3397,10 +3272,6 @@
 }
 
 .approval-quotation-modal-body {
-  flex: 1 1 auto;
-  min-height: 0;
-  padding: 14px 16px 18px;
-  overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-width: thin;
   scrollbar-color: #b8cbcf transparent;
@@ -3642,9 +3513,7 @@
 #approval-management-root .approval-qv-requirement-head {
   min-height: 62px;
   padding: 9px 14px 9px 16px;
-  display: grid;
   grid-template-columns: 34px minmax(0, 1fr) auto;
-  align-items: center;
   column-gap: 10px;
   border-bottom: 1px solid #e1e8eb;
   background: #fff;
@@ -3711,9 +3580,7 @@
   min-width: 72px;
   height: 26px;
   padding: 0 10px;
-  border-radius: 999px;
   font-size: 7.5px;
-  font-weight: 850;
 }
 
 /* Table: compact, readable, no oversized empty rows */
@@ -4054,7 +3921,6 @@
 
 .approval-quotation-head-item span {
   margin-bottom: 5px;
-  color: #aee0da;
   font-size: 7.5px;
   font-weight: 900;
   line-height: 1;
@@ -4063,7 +3929,6 @@
 
 .approval-quotation-head-item strong {
   min-width: 0;
-  color: #ffffff;
   font-size: 10.5px;
   font-weight: 850;
   line-height: 1.2;
@@ -4088,7 +3953,6 @@
   border: 1px solid rgba(255, 255, 255, .25);
   border-radius: 10px;
   background: rgba(255, 255, 255, .07);
-  color: #eafffc;
   font-size: 22px;
   font-weight: 400;
   line-height: 1;
@@ -4098,7 +3962,6 @@
 .approval-quotation-modal-close:hover {
   border-color: rgba(255, 255, 255, .42);
   background: rgba(255, 255, 255, .14);
-  color: #ffffff;
 }
 
 /* The old second information row is intentionally removed. */
@@ -4630,9 +4493,6 @@
    Keeps the existing Approval Management design unchanged.
 ========================================================= */
 .approval-qv-quantity {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   min-width: 52px;
   min-height: 25px;
   padding: 0 8px;
@@ -4642,7 +4502,6 @@
   color: var(--ap-primary);
   font-size: 9px;
   font-weight: 850;
-  white-space: nowrap;
 }
 
 /* =========================================================
@@ -5044,7 +4903,6 @@
   margin: 0;
   color: var(--ap-navy);
   font-size: 11.5px;
-  font-weight: 850;
 }
 
 .approval-order-details-grid {
@@ -5070,7 +4928,6 @@
   margin-bottom: 3px;
   color: #81959e;
   font-size: 7.5px;
-  font-weight: 850;
   letter-spacing: 0.035em;
   text-transform: uppercase;
 }
@@ -5081,7 +4938,6 @@
   display: block;
   color: #244b5a;
   font-size: 10px;
-  font-weight: 800;
   overflow-wrap: anywhere;
 }
 
@@ -5122,11 +4978,8 @@
 .approval-order-details-footer {
   min-height: 58px;
   padding: 10px 16px;
-  display: flex;
-  align-items: center;
   justify-content: flex-end;
   border-top: 1px solid #dce6ea;
-  background: #fff;
 }
 
 .approval-order-details-done {
@@ -5227,7 +5080,6 @@
 .approval-md-table th:nth-child(5),
 .approval-md-table td:nth-child(5) {
   width: 11%;
-  text-align: center;
 }
 
 .approval-md-table th:nth-child(6),
@@ -5243,17 +5095,14 @@
 .approval-md-table th:nth-child(8),
 .approval-md-table td:nth-child(8) {
   width: 8%;
-  text-align: center;
 }
 
 .approval-md-table th:nth-child(9),
 .approval-md-table td:nth-child(9) {
   width: 6%;
-  text-align: center;
 }
 
 .approval-md-table thead th {
-  height: 46px;
   padding: 8px 10px;
   background: #f4f7f8;
   border-bottom: 1px solid #d6e1e5;
@@ -5263,7 +5112,6 @@
   line-height: 1.2;
   letter-spacing: 0.035em;
   text-transform: uppercase;
-  vertical-align: middle;
 }
 
 .approval-md-main-row td {
@@ -5273,7 +5121,6 @@
   color: #234657;
   font-size: 10px;
   line-height: 1.35;
-  vertical-align: middle;
 }
 
 .approval-md-main-row {
@@ -6153,7 +6000,6 @@
   font-size: 8px;
   font-weight: 900;
   letter-spacing: .08em;
-  text-transform: uppercase;
 }
 
 .approval-replacement-detail-head h3 {
@@ -6171,8 +6017,6 @@
 }
 
 .approval-replacement-detail-head-right {
-  display: flex;
-  align-items: center;
   gap: 10px;
 }
 
@@ -6187,7 +6031,6 @@
   color: #607985;
   font-size: 20px;
   line-height: 1;
-  cursor: pointer;
 }
 
 .approval-replacement-detail-head-right>button:hover:not(:disabled) {
@@ -6775,7 +6618,6 @@
 
 #approval-management-root .approval-order-details-head h3 {
   font-size: 26px;
-  line-height: 1.1;
 }
 
 .approval-order-details-head p {
@@ -6934,13 +6776,10 @@
 .approval-qv-header {
   min-height: 100px;
   padding: 15px 18px;
-  display: grid;
   grid-template-columns: 48px minmax(0, 1fr) auto;
   grid-template-areas: "number title status"
     "number title status";
   column-gap: 15px;
-  align-items: center;
-  border-bottom: 1px solid #dfe8eb;
   background: linear-gradient(90deg, #f7fbfa 0%, #ffffff 48%, #ffffff 100%);
 }
 
@@ -6950,16 +6789,10 @@
   height: 42px;
   min-width: 42px;
   display: inline-flex;
-  align-items: center;
-  justify-content: center;
   align-self: start;
   border: 1px solid #d0ebe7;
-  border-radius: 10px;
   background: #e8f7f5;
   color: #008a80;
-  font-size: 11px;
-  font-weight: 900;
-  line-height: 1;
 }
 
 .approval-qv-title {
@@ -7025,22 +6858,11 @@
   min-height: 31px;
   height: 31px;
   padding: 0 14px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  justify-self: end;
   align-self: start;
-  border-radius: 999px;
-  font-size: 8.5px;
-  font-weight: 850;
-  line-height: 1;
-  white-space: nowrap;
 }
 
 .approval-qv-header>.approval-status.approved {
   border: 1px solid #acdcca;
-  background: #eef9f5;
-  color: #08765a;
 }
 
 .approval-qv-header>.approval-status.pending {
@@ -7051,8 +6873,6 @@
 
 .approval-qv-header>.approval-status.rejected {
   border: 1px solid #edc1bd;
-  background: #fff3f2;
-  color: #b84039;
 }
 
 /* Quotation Table */
@@ -8278,7 +8098,6 @@
 }
 
 .approval-replacement-popup-vehicle {
-  overflow: hidden;
   border: 1px solid #d4e2e7;
   border-radius: 10px;
   background: #fff;
@@ -8411,14 +8230,10 @@
 
 #approval-management-root .approval-replacement-popup-vehicle-head small {
   color: #67818d;
-  font-size: 9px;
-  font-weight: 800;
 }
 
 #approval-management-root .approval-replacement-popup-vehicle-head strong {
   color: #082f43;
-  font-size: 12px;
-  font-weight: 850;
 }
 
 /* Approved vehicle */
@@ -8471,7 +8286,6 @@
 }
 
 #approval-management-root .approval-replacement-popup-vehicle-head strong {
-  color: #07374a;
   font-size: 12px;
   font-weight: 850;
 }
@@ -8924,7 +8738,6 @@
 }
 
 .approval-amount-table td {
-  padding: 13px 14px;
   border-top: 1px solid #e5edef;
   color: #234657;
   white-space: nowrap
@@ -8951,7 +8764,7 @@
 }
 
 /* AMOUNT CHANGES — unread notification and audit-history polish */
-.approval-tabs > button .approval-amount-unread-badge {
+.approval-tabs>button .approval-amount-unread-badge {
   min-width: 19px;
   height: 19px;
   margin-left: 7px;
@@ -8979,7 +8792,7 @@
   background: linear-gradient(90deg, #eff8f6 0%, #f9fbfb 58%, #fff 100%);
 }
 
-.approval-amount-header > strong {
+.approval-amount-header>strong {
   display: inline-flex;
   align-items: center;
   min-height: 28px;
@@ -9024,8 +8837,15 @@
 }
 
 @keyframes approvalUnreadAppear {
-  from { transform: scale(0.82); opacity: 0.5; }
-  to { transform: scale(1); opacity: 1; }
+  from {
+    transform: scale(0.82);
+    opacity: 0.5;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 @media (max-width: 760px) {
@@ -9034,12 +8854,10 @@
     flex-direction: column;
   }
 
-  .approval-amount-header > strong {
+  .approval-amount-header>strong {
     align-self: flex-start;
   }
 }
-
-
 
 /* Per-order amount-change identification: unread rows stay highlighted until individually viewed. */
 .approval-amount-table tbody tr.approval-amount-row-unread td {
@@ -9114,4 +8932,216 @@
   justify-content: center;
   border-radius: 50%;
   background: #e3f6ed;
+}
+
+/* Shared navy and teal popup theme */
+#approval-management-root .approval-action-modal,
+#approval-management-root .approval-qaction-modal,
+#approval-management-root .approval-order-details-modal,
+#approval-management-root .approval-replacement-detail-modal,
+#approval-management-root .approval-quotation-expand-panel {
+  background-color: #fff;
+  border-color: #c9e1e6;
+  color: #173c4e;
+  --otc-modal-navy: #0b3b4d;
+  --otc-modal-navy-2: #0d5360;
+  --otc-modal-teal: #099b90;
+  --otc-modal-teal-dark: #087f77;
+}
+
+#approval-management-root .approval-action-modal-overlay,
+#approval-management-root .approval-qaction-overlay,
+#approval-management-root .approval-order-details-overlay,
+#approval-management-root .approval-replacement-detail-overlay {
+  background: rgba(7, 31, 51, .58);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
+
+#approval-management-root .approval-qaction-head,
+#approval-management-root .approval-order-details-head,
+#approval-management-root .approval-replacement-detail-head,
+#approval-management-root .approval-quotation-modal-head {
+  background: linear-gradient(110deg, #0b3b4d 0%, #0d5360 55%, #09857c 100%);
+  border-bottom-color: rgba(255, 255, 255, .12);
+}
+
+#approval-management-root .approval-qaction-head h3,
+#approval-management-root .approval-order-details-head h3,
+#approval-management-root .approval-replacement-detail-head h3,
+#approval-management-root .approval-quotation-modal-head h3 {
+  color: #fff !important;
+}
+
+#approval-management-root .approval-qaction-head p,
+#approval-management-root .approval-order-details-head p,
+#approval-management-root .approval-replacement-detail-head p,
+#approval-management-root .approval-quotation-modal-head p {
+  color: #d0e8eb !important;
+}
+
+#approval-management-root .approval-order-details-eyebrow,
+#approval-management-root .approval-quotation-modal-title>span,
+#approval-management-root .approval-quotation-modal-title-single>span,
+#approval-management-root .approval-qaction-heading span,
+#approval-management-root .approval-replacement-detail-head>div:first-child>span,
+#approval-management-root .approval-quotation-head-item span {
+  color: #9de5df !important;
+}
+
+#approval-management-root .approval-qaction-close,
+#approval-management-root .approval-order-details-close,
+#approval-management-root .approval-quotation-modal-close,
+#approval-management-root .approval-replacement-detail-head-right>button {
+  background: rgba(255, 255, 255, .08);
+  border-color: rgba(255, 255, 255, .22);
+  color: #fff;
+}
+
+#approval-management-root .approval-qaction-close:hover:not(:disabled),
+#approval-management-root .approval-order-details-close:hover:not(:disabled),
+#approval-management-root .approval-quotation-modal-close:hover:not(:disabled),
+#approval-management-root .approval-replacement-detail-head-right>button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, .18);
+  color: #fff;
+}
+
+#approval-management-root .approval-qaction-summary,
+#approval-management-root .approval-replacement-popup-summary>div,
+#approval-management-root .approval-order-details-grid>div,
+#approval-management-root .approval-order-details-sla-grid>div {
+  background: #edf8f6;
+  border-color: #c5e4df;
+}
+
+#approval-management-root .approval-order-details-body,
+#approval-management-root .approval-replacement-detail-body,
+#approval-management-root .approval-quotation-modal-body {
+  background: #f4f9fa;
+}
+
+#approval-management-root .approval-action-modal input,
+#approval-management-root .approval-action-modal textarea,
+#approval-management-root .approval-action-modal select,
+#approval-management-root .approval-qaction-modal input,
+#approval-management-root .approval-qaction-modal textarea,
+#approval-management-root .approval-qaction-modal select,
+#approval-management-root .approval-order-details-modal input,
+#approval-management-root .approval-order-details-modal textarea,
+#approval-management-root .approval-order-details-modal select,
+#approval-management-root .approval-replacement-detail-modal input,
+#approval-management-root .approval-replacement-detail-modal textarea,
+#approval-management-root .approval-replacement-detail-modal select,
+#approval-management-root .approval-quotation-expand-panel input,
+#approval-management-root .approval-quotation-expand-panel textarea,
+#approval-management-root .approval-quotation-expand-panel select {
+  background-color: #fff;
+  border-color: #c9dfe6;
+  color: #173c4e;
+}
+
+#approval-management-root .approval-action-modal input:focus,
+#approval-management-root .approval-action-modal textarea:focus,
+#approval-management-root .approval-action-modal select:focus,
+#approval-management-root .approval-qaction-modal input:focus,
+#approval-management-root .approval-qaction-modal textarea:focus,
+#approval-management-root .approval-qaction-modal select:focus,
+#approval-management-root .approval-order-details-modal input:focus,
+#approval-management-root .approval-order-details-modal textarea:focus,
+#approval-management-root .approval-order-details-modal select:focus,
+#approval-management-root .approval-replacement-detail-modal input:focus,
+#approval-management-root .approval-replacement-detail-modal textarea:focus,
+#approval-management-root .approval-replacement-detail-modal select:focus,
+#approval-management-root .approval-quotation-expand-panel input:focus,
+#approval-management-root .approval-quotation-expand-panel textarea:focus,
+#approval-management-root .approval-quotation-expand-panel select:focus {
+  border-color: #099b90;
+  outline-color: #099b90;
+  box-shadow: 0 0 0 3px rgba(9, 155, 144, .12);
+}
+
+#approval-management-root .approval-qaction-footer,
+#approval-management-root .approval-order-details-footer {
+  background: linear-gradient(110deg, #f3f8f9, #e6f4f1);
+  border-top-color: #c9e1e6;
+}
+
+#approval-management-root .approval-action-modal-cancel,
+#approval-management-root .approval-qaction-cancel,
+#approval-management-root .approval-order-details-done {
+  background: #fff;
+  border-color: #c9dfe6;
+  color: #0b3b4d;
+}
+
+#approval-management-root .approval-action-modal-cancel:hover:not(:disabled),
+#approval-management-root .approval-qaction-cancel:hover:not(:disabled),
+#approval-management-root .approval-order-details-done:hover:not(:disabled) {
+  background: #edf7f5;
+  border-color: #a9d7d1;
+  color: #0b3b4d;
+  filter: none;
+}
+
+#approval-management-root .approval-action-modal-confirm,
+#approval-management-root .approval-qaction-confirm,
+#approval-management-root .approval-order-details-approve,
+#approval-management-root .approval-order-details-reject,
+#approval-management-root .approval-replacement-approve,
+#approval-management-root .approval-replacement-reject {
+  background: #099b90;
+  border-color: #099b90;
+  color: #fff;
+}
+
+#approval-management-root .approval-action-modal-confirm:hover:not(:disabled),
+#approval-management-root .approval-qaction-confirm:hover:not(:disabled),
+#approval-management-root .approval-order-details-approve:hover:not(:disabled),
+#approval-management-root .approval-order-details-reject:hover:not(:disabled),
+#approval-management-root .approval-replacement-approve:hover:not(:disabled),
+#approval-management-root .approval-replacement-reject:hover:not(:disabled) {
+  background: #087f77;
+  border-color: #087f77;
+  color: #fff;
+  filter: none;
+}
+
+#approval-management-root .approval-action-modal::before,
+#approval-management-root .approval-action-modal.is-approve::before,
+#approval-management-root .approval-action-modal.is-reject::before {
+  background: linear-gradient(110deg, #0b3b4d, #09857c);
+}
+
+#approval-management-root .approval-action-modal.is-approve .approval-action-modal-icon,
+#approval-management-root .approval-action-modal.is-reject .approval-action-modal-icon {
+  background: #e8f7f4;
+  border-color: #bfe5e0;
+  color: #087f77;
+}
+
+#approval-management-root .approval-qaction-modal.is-approve,
+#approval-management-root .approval-qaction-modal.is-reject {
+  border-top-color: #099b90;
+}
+
+#approval-management-root .approval-qaction-modal.is-approve .approval-qaction-icon,
+#approval-management-root .approval-qaction-modal.is-reject .approval-qaction-icon {
+  background: rgba(255, 255, 255, .1);
+  color: #fff;
+}
+
+#approval-management-root .approval-action-modal button:focus-visible,
+#approval-management-root .approval-qaction-modal button:focus-visible,
+#approval-management-root .approval-order-details-modal button:focus-visible,
+#approval-management-root .approval-replacement-detail-modal button:focus-visible,
+#approval-management-root .approval-quotation-expand-panel button:focus-visible {
+  outline: 2px solid #099b90;
+  outline-offset: 3px;
+}
+
+#approval-management-root .approval-qaction-close:focus-visible,
+#approval-management-root .approval-order-details-close:focus-visible,
+#approval-management-root .approval-quotation-modal-close:focus-visible,
+#approval-management-root .approval-replacement-detail-head-right>button:focus-visible {
+  outline-color: #a5eee4;
 }

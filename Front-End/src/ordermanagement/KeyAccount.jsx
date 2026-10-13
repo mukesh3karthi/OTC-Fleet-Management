@@ -2737,7 +2737,7 @@ const KeyAccount = () => {
               operational workspace.
             </p>
           </div>
-          <div className="kam-heading-actions">
+          <div className="kam-heading-actions kam-unified-toolbar">
             {loggedInName && (
               <div className="kam-user-profile">
                 <span className="kam-user-avatar" aria-hidden="true">{profileInitials}</span>

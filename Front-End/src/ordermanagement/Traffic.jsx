@@ -180,12 +180,6 @@ const getPendingTransportReplacementForRequirement = (
       String(item?.status || "").trim().toLowerCase() ===
       "pending"
   );
-const hasPendingTransportReplacement = (order) =>
-  getTransportReplacementRequests(order).some(
-    (item) =>
-      String(item?.status || "").trim().toLowerCase() ===
-      "pending"
-  );
 const getPendingTransportReplacement = (
   order,
   confirmationId
@@ -219,15 +213,6 @@ const getAllocatedVehicles = (order) =>
   Array.isArray(order?.allocatedVehicles)
     ? order.allocatedVehicles
     : [];
-const getAllocatedVehiclesForRequirement = (
-  order,
-  requirementId
-) =>
-  getAllocatedVehicles(order).filter(
-    (vehicle) =>
-      String(vehicle?.requirementId || "") ===
-      String(requirementId || "")
-  );
 const createTrafficVehicleForm = () => ({
   vehicleNumber: "",
   driverName: "",
@@ -1493,7 +1478,7 @@ const Traffic = () => {
               {
                 method: "POST",
                 headers: {
-            ...getAdminAuthHeaders(),
+                  ...getAdminAuthHeaders(),
                   "Content-Type":
                     "application/json",
                 },

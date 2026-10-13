@@ -1151,17 +1151,14 @@
    QUOTATION TABLE
 ========================================================= */
 .traffic-quotation-table-wrap {
-  width: 100%;
   overflow-x: auto;
   background: #ffffff;
 }
 
 .traffic-quotation-table {
-  width: 100%;
   min-width: 1120px;
   border-collapse: separate;
   border-spacing: 0;
-  table-layout: fixed;
 }
 
 .traffic-quotation-table th {
@@ -1184,10 +1181,6 @@
 
 .traffic-quotation-table th:nth-child(2) {
   width: 24%;
-}
-
-.traffic-quotation-table th:nth-child(3) {
-  width: 18%;
 }
 
 .traffic-quotation-table th:nth-child(4) {
@@ -1845,12 +1838,10 @@
   min-height: 50px;
   padding: 8px 30px 8px 8px;
   display: flex;
-  align-items: center;
   gap: 8px;
   border: 1px solid #dce5e9;
   border-left-width: 3px;
   border-radius: 8px;
-  background: #ffffff;
   box-shadow: 0 8px 22px rgba(15, 40, 55, 0.14);
   animation: trafficToastIn 0.2s ease-out;
 }
@@ -1859,15 +1850,11 @@
   width: 28px;
   height: 28px;
   flex: 0 0 28px;
-  display: grid;
-  place-items: center;
   border-radius: 7px;
   font-size: 12px;
-  font-weight: 900;
 }
 
 .traffic-toast-content {
-  min-width: 0;
   display: grid;
   gap: 1px;
 }
@@ -1875,8 +1862,6 @@
 .traffic-toast-content strong {
   color: #17384b;
   font-size: 9.5px;
-  font-weight: 850;
-  line-height: 1.2;
 }
 
 .traffic-toast-content>span {
@@ -1892,21 +1877,13 @@
 }
 
 .traffic-toast-close {
-  position: absolute;
   top: 5px;
   right: 5px;
   width: 19px;
   height: 19px;
-  padding: 0;
-  display: grid;
-  place-items: center;
-  border: 0;
   border-radius: 5px;
-  background: transparent;
   color: #98a7af;
   font-size: 13px;
-  line-height: 1;
-  cursor: pointer;
 }
 
 .traffic-toast-close:hover {
@@ -2001,7 +1978,6 @@
 }
 
 .traffic-toast-content {
-  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 3px;
@@ -3405,13 +3381,15 @@
   height: auto !important;
   overflow: visible !important;
 }
+
 .traffic-toast-content {
   flex: 1;
   min-width: 0;
   height: auto !important;
   overflow: visible !important;
 }
-.traffic-toast-content > span {
+
+.traffic-toast-content>span {
   display: block !important;
   white-space: normal !important;
   overflow: visible !important;
@@ -3420,4 +3398,180 @@
   max-height: none !important;
   -webkit-line-clamp: unset !important;
   line-height: 1.5;
+}
+
+/* =========================================================
+   TRANSPORT REPLACEMENT POPUP — COMMON NAVY / TEAL THEME
+========================================================= */
+
+.traffic-transport-replacement-overlay {
+  background: rgba(7, 31, 51, 0.58);
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
+}
+
+.traffic-transport-replacement-modal {
+  border-color: #c9e1e6;
+  background: #ffffff;
+  color: #0b3b4d;
+  box-shadow: 0 24px 80px rgba(7, 31, 51, 0.28);
+}
+
+/* Header */
+
+.traffic-transport-replacement-head {
+  border-bottom-color: rgba(255, 255, 255, 0.12);
+  background: linear-gradient(110deg,
+      #0b3b4d 0%,
+      #0d5360 55%,
+      #09857c 100%);
+}
+
+.traffic-transport-replacement-head span {
+  color: #9de5df;
+}
+
+.traffic-transport-replacement-head h3 {
+  color: #ffffff;
+}
+
+.traffic-transport-replacement-head p {
+  color: #d0e8eb;
+}
+
+/* Close button */
+
+.traffic-transport-replacement-head button {
+  border-color: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.traffic-transport-replacement-head button:hover {
+  border-color: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+}
+
+/* Current transport summary */
+
+.traffic-transport-replacement-current {
+  border-color: #c5e4df;
+  background: #edf8f6;
+}
+
+.traffic-transport-replacement-current span {
+  color: #617f90;
+}
+
+.traffic-transport-replacement-current strong {
+  color: #0b3b4d;
+}
+
+/* Form */
+
+.traffic-transport-replacement-body {
+  background: #ffffff;
+}
+
+.traffic-transport-replacement-body label>span {
+  color: #31596b;
+}
+
+.traffic-transport-replacement-body input,
+.traffic-transport-replacement-body textarea {
+  border-color: #c9dfe6;
+  background: #ffffff;
+  color: #173c4e;
+
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.traffic-transport-replacement-body input::placeholder,
+.traffic-transport-replacement-body textarea::placeholder {
+  color: #829ba8;
+  opacity: 1;
+}
+
+.traffic-transport-replacement-body input:focus,
+.traffic-transport-replacement-body textarea:focus {
+  border-color: #099b90;
+  box-shadow: 0 0 0 3px rgba(9, 155, 144, 0.12);
+}
+
+/* Footer */
+
+.traffic-transport-replacement-footer {
+  border-top-color: #c9e1e6;
+  background: linear-gradient(110deg,
+      #f3f8f9 0%,
+      #e6f4f1 100%);
+}
+
+/* Cancel */
+
+.traffic-transport-replacement-cancel {
+  border-color: #c9dfe6;
+  background: #ffffff;
+  color: #0b3b4d;
+
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.traffic-transport-replacement-cancel:hover:not(:disabled) {
+  border-color: #a9d7d1;
+  background: #edf7f5;
+  color: #0b3b4d;
+}
+
+/* Request approval */
+
+.traffic-transport-replacement-submit {
+  border-color: #099b90;
+  background: #099b90;
+  color: #ffffff;
+  box-shadow: 0 5px 12px rgba(9, 155, 144, 0.16);
+
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.traffic-transport-replacement-submit:hover:not(:disabled),
+.traffic-transport-replacement-submit:active:not(:disabled) {
+  border-color: #087f77;
+  background: #087f77;
+  color: #ffffff;
+}
+
+.traffic-transport-replacement-submit svg {
+  color: inherit;
+}
+
+/* Keyboard focus */
+
+.traffic-transport-replacement-modal button:focus-visible {
+  outline: 2px solid #099b90;
+  outline-offset: 3px;
+}
+
+.traffic-transport-replacement-head button:focus-visible {
+  outline-color: #a5eee4;
+}
+
+/* Saving state */
+
+.traffic-transport-replacement-modal button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
 }

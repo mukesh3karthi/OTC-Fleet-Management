@@ -745,102 +745,8 @@ const DashContent = () => {
           </div>
         </div>
       </section>
-      {/* =========================================================
-       OUR CLIENTS - IMAGE SLIDER
-       ========================================================= */}
-      <section className="dashboard-section otc-clients-section client-logo-section">
-        <div className="client-logo-header">
-          <div>
-            <span className="client-logo-kicker">OUR CLIENTS</span>
-            <h2>Trusted By Leading <span>Companies</span></h2>
-            <p>Powering progress with reliable transportation, project logistics and fleet operations.</p>
-          </div>
-          <div className="client-logo-header-right">
-            <div className="client-logo-total">
-              <div className="client-logo-total-icon"><FaUsers /></div>
-              <div><strong>{clients.length}</strong><span>Key Clients</span></div>
-            </div>
-            <div className="client-logo-buttons">
-              <button type="button" onClick={() => scrollClientSlider(-1)} aria-label="Previous client"><FaChevronLeft /></button>
-              <button type="button" onClick={() => scrollClientSlider(1)} aria-label="Next client"><FaChevronRight /></button>
-            </div>
-          </div>
-        </div>
-        <div className="client-logo-window" ref={clientSliderRef}>
-          <div className="client-logo-track">
-            {[...clients, ...clients].map((client, index) => (
-              <article className={`client-logo-slide client-logo-${client.tone}`} key={`${client.name}-${index}`}>
-                <div className="client-logo-image">
-                  <img src={client.logo} alt={`${client.name} logo`} />
-                </div>
-                <div className="client-logo-text">
-                  <strong>{client.short}</strong>
-                  <span>Valued Client</span>
-                </div>
-                <div className="client-logo-arrow"><FaChevronRight /></div>
-              </article>
-            ))}
-          </div>
-        </div>
-        <div className="client-logo-pagination">
-          {clients.map((client, index) => (
-            <button
-              type="button"
-              key={client.name}
-              className={clientSlide === index ? "active" : ""}
-              onClick={() => goToClientSlide(index)}
-              aria-label={`Show ${client.name}`}
-            />
-          ))}
-        </div>
-      </section>
-      {/* WIND ENERGY PROJECT LOGISTICS */}
-      <section className="dashboard-section wind-project-section">
-        <div className="wind-project-visual">
-          <img
-            src={windProjectTransport}
-            alt="Wind turbine blade transportation"
-          />
-          <div className="wind-project-image-overlay"></div>
-          <div className="wind-project-image-badge">
-            <FaShippingFast />
-            <div>
-              <strong>Specialized Project Logistics</strong>
-              <span>Planning • Transport • Tracking</span>
-            </div>
-          </div>
-        </div>
-        <div className="wind-project-content">
-          <span className="section-label">WIND ENERGY LOGISTICS</span>
-          <h2>End-to-End Wind Project Logistics</h2>
-          <p>
-            OTC Groups delivers safe, reliable and efficient transportation for wind turbine blades and heavy project components with coordinated route planning, specialized vehicles and end-to-end movement visibility.
-          </p>
-          <div className="wind-capability-grid">
-            <div className="wind-capability-card">
-              <div className="wind-capability-icon"><FaRoute /></div>
-              <div><strong>Route Planning</strong><span>Movement planning for long and oversized cargo.</span></div>
-            </div>
-            <div className="wind-capability-card">
-              <div className="wind-capability-icon"><FaTruck /></div>
-              <div><strong>Specialized Transport</strong><span>Vehicle coordination for blades and project cargo.</span></div>
-            </div>
-            <div className="wind-capability-card">
-              <div className="wind-capability-icon"><FaMapMarkerAlt /></div>
-              <div><strong>Movement Visibility</strong><span>Operational tracking from loading point to destination.</span></div>
-            </div>
-            <div className="wind-capability-card">
-              <div className="wind-capability-icon"><FaCheckCircle /></div>
-              <div><strong>Execution Control</strong><span>Structured coordination across every movement stage.</span></div>
-            </div>
-          </div>
-          <div className="wind-project-footer">
-            <div><strong>End-to-End</strong><span>Project Coordination</span></div>
-            <div><strong>24/7</strong><span>Operational Support</span></div>
-            <div><strong>Live</strong><span>Movement Visibility</span></div>
-          </div>
-        </div>
-      </section>
+      
+     
       {/* ACHIEVEMENTS */}
       <section className="dashboard-section">
         <div className="section-heading">
@@ -863,46 +769,7 @@ const DashContent = () => {
           ))}
         </div>
       </section>
-      <section className="dashboard-section simple-order-operations">
-        <div className="simple-operations-header">
-          <span className="simple-operations-kicker">ORDER OPERATIONS</span>
-          <h2>End-to-End <span>Order Management</span></h2>
-          <p>Manage enquiries, approvals, quotations, vehicle allocation, documentation and trip execution in one streamlined workflow.</p>
-        </div>
-        <div className="simple-operations-flow">
-          <div className="simple-operation-item">
-            <div className="simple-operation-main">
-              <div className="simple-operation-icon"><FaFileAlt /></div>
-              <div className="simple-operation-title"><span>01</span><h3>Order &amp; Enquiry</h3></div>
-            </div>
-            <p>Capture customer requirements and initiate the operational order.</p>
-          </div>
-          <div className="simple-operation-connector"><span></span><div><FaChevronRight /></div><span></span></div>
-          <div className="simple-operation-item">
-            <div className="simple-operation-main">
-              <div className="simple-operation-icon"><FaCheckCircle /></div>
-              <div className="simple-operation-title"><span>02</span><h3>Quotation &amp; Approval</h3></div>
-            </div>
-            <p>Manage traffic quotations, commercial review and approvals.</p>
-          </div>
-          <div className="simple-operation-connector"><span></span><div><FaChevronRight /></div><span></span></div>
-          <div className="simple-operation-item">
-            <div className="simple-operation-main">
-              <div className="simple-operation-icon"><FaShippingFast /></div>
-              <div className="simple-operation-title"><span>03</span><h3>Vehicle &amp; Movement</h3></div>
-            </div>
-            <p>Allocate vehicles and maintain visibility of trip movement.</p>
-          </div>
-          <div className="simple-operation-connector"><span></span><div><FaChevronRight /></div><span></span></div>
-          <div className="simple-operation-item">
-            <div className="simple-operation-main">
-              <div className="simple-operation-icon"><FaFileAlt /></div>
-              <div className="simple-operation-title"><span>04</span><h3>PO, LR &amp; POD</h3></div>
-            </div>
-            <p>Keep operational documents organized through order completion.</p>
-          </div>
-        </div>
-      </section>
+      
       <section className="dashboard-section otc-network-section professional-network-section">
         <div className="professional-network-head">
           <div>

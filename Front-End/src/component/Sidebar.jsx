@@ -1,5 +1,6 @@
 import React, {
   useEffect,
+  useRef,
   useState,
 } from "react";
 import {
@@ -15,6 +16,7 @@ import {
   FaFileAlt,
   FaMapMarkerAlt,
   FaSignOutAlt,
+  FaTimes,
   FaTachometerAlt,
   FaTools,
   FaTruck,
@@ -30,11 +32,69 @@ import Trackinglogin
 import AssetsLogin
   from "../Loginpage/Assetslogin";
 import "../css/sidebar.css";
+import { createPortal } from "react-dom";
+function LogoutConfirm({ open, onCancel, onConfirm }) {
+  const dialogRef = useRef(null);
+  const cancelRef = useRef(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const dialog = dialogRef.current;
+    const previousFocus = document.activeElement;
+    const previousOverflow = document.body.style.overflow;
+    dialog.showModal();
+    cancelRef.current?.focus();
+    document.body.style.overflow = "hidden";
+    return () => {
+      dialog.close();
+      document.body.style.overflow = previousOverflow;
+      if (previousFocus?.isConnected) previousFocus.focus();
+    };
+  }, [open]);
+
+  if (!open) return null;
+  return createPortal(
+    <dialog
+      ref={dialogRef}
+      className="logout-confirm"
+      aria-labelledby="logout-confirm-title"
+      aria-describedby="logout-confirm-description"
+      onCancel={(event) => { event.preventDefault(); onCancel(); }}
+      onClick={(event) => {
+        if (event.target !== event.currentTarget) return;
+        const bounds = event.currentTarget.getBoundingClientRect();
+        if (event.clientX < bounds.left || event.clientX > bounds.right ||
+            event.clientY < bounds.top || event.clientY > bounds.bottom) onCancel();
+      }}
+    >
+      <div className="logout-confirm-header">
+        <span>SESSION</span>
+        <button type="button" className="logout-confirm-close" aria-label="Close confirmation" onClick={onCancel}>
+          <FaTimes aria-hidden="true" />
+        </button>
+      </div>
+      <div className="logout-confirm-content">
+        <div className="logout-confirm-icon"><FaSignOutAlt aria-hidden="true" /></div>
+        <h2 id="logout-confirm-title">Sign out of your account?</h2>
+        <p id="logout-confirm-description">You will need to sign in again to access your dashboard.</p>
+        <div className="logout-confirm-actions">
+          <button ref={cancelRef} type="button" className="logout-confirm-cancel" onClick={onCancel}>Cancel</button>
+          <button type="button" className="logout-confirm-submit" onClick={onConfirm}>
+            <FaSignOutAlt aria-hidden="true" /> Sign Out
+          </button>
+        </div>
+      </div>
+    </dialog>,
+    document.body
+  );
+}
+
 const MOBILE_BREAKPOINT = 560;
 const Sidebar = ({
   collapsed,
   setCollapsed,
 }) => {
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const [
@@ -542,6 +602,7 @@ const Sidebar = ({
       closeMobileSidebar();
     };
   const handleLogout = () => {
+    setShowLogoutConfirm(false);
     sessionStorage.removeItem("mainSessionToken");
     sessionStorage.removeItem("mainLastActivity");
     localStorage.removeItem(
@@ -834,9 +895,7 @@ const Sidebar = ({
           <button
             type="button"
             className="logout-button"
-            onClick={
-              handleLogout
-            }
+            onClick={() => setShowLogoutConfirm(true)}
             title={
               collapsed
                 ? "Sign Out"
@@ -857,6 +916,11 @@ const Sidebar = ({
           </button>
         </div>
       </aside>
+      <LogoutConfirm
+        open={showLogoutConfirm}
+        onCancel={() => setShowLogoutConfirm(false)}
+        onConfirm={handleLogout}
+      />
       <Intercarttinglogin
         open={
           showIntercartingLogin

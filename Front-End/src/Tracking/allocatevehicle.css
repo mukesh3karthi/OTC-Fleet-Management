@@ -6606,3 +6606,191 @@
     order: 3
   }
 }
+
+/* COMMON POPUP COLORS — NAVY / TEAL / SOFT WHITE */
+.tracking-allocation-modal,
+.tracking-vehicle-modal,
+.tracking-movement-modal,
+.tracking-replacement-modal {
+  background-color: #ffffff !important;
+  border-color: #c9e1e6 !important;
+  color: #173c4e;
+}
+
+.tracking-allocation-modal-overlay,
+.tracking-vehicle-modal-overlay,
+.tracking-movement-modal-overlay,
+.tracking-replacement-modal-overlay {
+  background: rgba(7, 31, 51, .58) !important;
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
+}
+
+.tracking-allocation-modal-head,
+.tracking-vehicle-modal-head,
+.tracking-movement-modal-head,
+.tracking-replacement-modal-head {
+  background: linear-gradient(110deg, #0b3b4d 0%, #0d5360 55%, #09857c 100%) !important;
+  border-bottom-color: rgba(255, 255, 255, .12) !important;
+}
+
+.tracking-allocation-modal-head h3,
+.tracking-vehicle-modal-head h3,
+.tracking-movement-modal-head h3,
+.tracking-replacement-modal-head h3 {
+  color: #ffffff !important;
+}
+
+.tracking-allocation-modal-head p,
+.tracking-vehicle-modal-head p,
+.tracking-movement-modal-head p,
+.tracking-replacement-modal-head p {
+  color: #d0e8eb !important;
+}
+
+.tracking-allocation-modal-kicker,
+.tracking-vehicle-modal-kicker,
+.tracking-movement-modal-kicker,
+.tracking-replacement-modal-head>div>span {
+  color: #9de5df !important;
+}
+
+.tracking-allocation-modal-head .tracking-vehicle-number-icon,
+.tracking-vehicle-modal-head .tracking-vehicle-number-icon,
+.tracking-movement-modal-head .tracking-vehicle-number-icon,
+.tracking-replacement-modal-head .tracking-vehicle-number-icon {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, .1) !important;
+  border-color: rgba(255, 255, 255, .22) !important;
+}
+
+.tracking-allocation-modal .tracking-vehicle-modal-close,
+.tracking-vehicle-modal .tracking-vehicle-modal-close,
+.tracking-movement-modal-close,
+.tracking-replacement-modal-head>button {
+  background: rgba(255, 255, 255, .08) !important;
+  border-color: rgba(255, 255, 255, .22) !important;
+  color: #ffffff !important;
+}
+
+.tracking-allocation-modal .tracking-vehicle-modal-close:hover:not(:disabled),
+.tracking-vehicle-modal .tracking-vehicle-modal-close:hover:not(:disabled),
+.tracking-movement-modal-close:hover:not(:disabled),
+.tracking-replacement-modal-head>button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, .18) !important;
+  color: #ffffff !important;
+}
+
+.tracking-allocation-modal-body,
+.tracking-vehicle-modal-body,
+.tracking-movement-modal-body,
+.tracking-replacement-modal-body {
+  background-color: #f4f9fa !important;
+}
+
+.tracking-allocation-modal input,
+.tracking-allocation-modal textarea,
+.tracking-allocation-modal select,
+.tracking-vehicle-modal input,
+.tracking-vehicle-modal textarea,
+.tracking-vehicle-modal select,
+.tracking-movement-modal input,
+.tracking-movement-modal textarea,
+.tracking-movement-modal select,
+.tracking-replacement-modal input,
+.tracking-replacement-modal textarea,
+.tracking-replacement-modal select {
+  background-color: #ffffff !important;
+  border-color: #c9dfe6 !important;
+  color: #173c4e !important;
+}
+
+.tracking-allocation-modal .tracking-form-control,
+.tracking-vehicle-modal .tracking-form-control,
+.tracking-movement-modal .tracking-form-control,
+.tracking-replacement-modal .tracking-form-control {
+  background-color: #ffffff !important;
+  border-color: #c9dfe6 !important;
+}
+
+.tracking-allocation-modal .tracking-form-control:focus-within,
+.tracking-vehicle-modal .tracking-form-control:focus-within,
+.tracking-movement-modal .tracking-form-control:focus-within,
+.tracking-replacement-modal .tracking-form-control:focus-within,
+.tracking-allocation-modal input:focus,
+.tracking-allocation-modal textarea:focus,
+.tracking-allocation-modal select:focus,
+.tracking-vehicle-modal input:focus,
+.tracking-vehicle-modal textarea:focus,
+.tracking-vehicle-modal select:focus,
+.tracking-movement-modal input:focus,
+.tracking-movement-modal textarea:focus,
+.tracking-movement-modal select:focus,
+.tracking-replacement-modal input:focus,
+.tracking-replacement-modal textarea:focus,
+.tracking-replacement-modal select:focus {
+  border-color: #099b90 !important;
+  box-shadow: 0 0 0 3px rgba(9, 155, 144, .12) !important;
+}
+
+.tracking-allocation-modal .tracking-form-footer,
+.tracking-vehicle-modal .tracking-form-footer,
+.tracking-movement-modal .tracking-form-footer,
+.tracking-replacement-modal .tracking-form-footer,
+.tracking-replacement-modal-footer {
+  background: linear-gradient(110deg, #f3f8f9, #e6f4f1) !important;
+  border-top-color: #c9e1e6 !important;
+}
+
+.tracking-allocation-modal .tracking-form-cancel,
+.tracking-vehicle-modal .tracking-form-cancel,
+.tracking-movement-modal .tracking-form-cancel,
+.tracking-replacement-modal .tracking-form-cancel {
+  background: #ffffff !important;
+  border-color: #c9dfe6 !important;
+  color: #0b3b4d !important;
+}
+
+.tracking-allocation-modal .tracking-form-cancel:hover:not(:disabled),
+.tracking-vehicle-modal .tracking-form-cancel:hover:not(:disabled),
+.tracking-movement-modal .tracking-form-cancel:hover:not(:disabled),
+.tracking-replacement-modal .tracking-form-cancel:hover:not(:disabled) {
+  background: #edf7f5 !important;
+  border-color: #a9d7d1 !important;
+  color: #0b3b4d !important;
+}
+
+.tracking-allocation-modal .tracking-form-save,
+.tracking-vehicle-modal .tracking-form-save,
+.tracking-movement-modal .tracking-form-save,
+.tracking-replacement-modal .tracking-form-save,
+.tracking-vehicle-modal .tracking-replace-vehicle-button {
+  background: #099b90 !important;
+  border-color: #099b90 !important;
+  color: #ffffff !important;
+}
+
+.tracking-allocation-modal .tracking-form-save:hover:not(:disabled),
+.tracking-vehicle-modal .tracking-form-save:hover:not(:disabled),
+.tracking-movement-modal .tracking-form-save:hover:not(:disabled),
+.tracking-replacement-modal .tracking-form-save:hover:not(:disabled),
+.tracking-vehicle-modal .tracking-replace-vehicle-button:hover:not(:disabled) {
+  background: #087f77 !important;
+  border-color: #087f77 !important;
+  color: #ffffff !important;
+}
+
+.tracking-allocation-modal button:focus-visible,
+.tracking-vehicle-modal button:focus-visible,
+.tracking-movement-modal button:focus-visible,
+.tracking-replacement-modal button:focus-visible {
+  outline: 2px solid #099b90;
+  outline-offset: 3px;
+}
+
+.tracking-allocation-modal .tracking-vehicle-modal-close:focus-visible,
+.tracking-vehicle-modal .tracking-vehicle-modal-close:focus-visible,
+.tracking-movement-modal-close:focus-visible,
+.tracking-replacement-modal-head>button:focus-visible {
+  outline-color: #a5eee4;
+}
