@@ -1,104 +1,40 @@
-import React, {
-  useState,
-} from "react";
-
-import {
-  Navigate,
-  Outlet,
-} from "react-router-dom";
-
-import KamManagementLogin
-  from "../Loginpage/Keyaccountlogin";
-
-const KeyaccountProtectedRoute = ({
-  children,
-}) => {
-  const [
-    isLoggedIn,
-    setIsLoggedIn,
-  ] = useState(() => {
-    return (
-      sessionStorage.getItem(
-        "kamLoggedIn"
-      ) === "true"
-    );
-  });
-
-  const [
-    loginClosed,
-    setLoginClosed,
-  ] = useState(false);
-
-  /* =========================================
-     LOGIN SUCCESS
-  ========================================= */
-
-  const handleLoginSuccess = () => {
-    /*
-      Extra safety:
-      KAM login means Traffic session
-      should not remain active.
-    */
-
-    sessionStorage.removeItem(
-      "trafficLoggedIn"
-    );
-
-    sessionStorage.removeItem(
-      "trafficUsername"
-    );
-
+import React, { useCallback, useState } from "react";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
+import KeyaccountLogin from "../Loginpage/Keyaccountlogin";
+const KeyaccountLoginGate = ({ children }) => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [loginClosed, setLoginClosed] = useState(false);
+  const handleLoginSuccess = useCallback(() => {
+    sessionStorage.removeItem("trafficLoggedIn");
+    sessionStorage.removeItem("trafficUsername");
     setIsLoggedIn(true);
     setLoginClosed(false);
-  };
-
-  /* =========================================
-     CLOSE LOGIN
-  ========================================= */
-
-  const handleCloseLogin = () => {
+  }, []);
+  const handleCloseLogin = useCallback(() => {
     setLoginClosed(true);
-  };
-
-  /* =========================================
-     ALREADY LOGGED IN
-  ========================================= */
-
-  if (isLoggedIn) {
-    return (
-      children ||
-      <Outlet />
-    );
-  }
-
-  /* =========================================
-     LOGIN CLOSED
-  ========================================= */
-
-  if (loginClosed) {
-    return (
-      <Navigate
-        to="/trip-dashboard"
-        replace
-      />
-    );
-  }
-
-  /* =========================================
-     ASK KAM LOGIN
-  ========================================= */
-
+  }, []);
+  if (isLoggedIn) return children ?? <Outlet />;
+  if (loginClosed) return <Navigate to="/trip-dashboard" replace />;
   return (
-    <KamManagementLogin
+    <KeyaccountLogin
       open={true}
-      onClose={
-        handleCloseLogin
-      }
-      onLoginSuccess={
-        handleLoginSuccess
-      }
+      onClose={handleCloseLogin}
+      onLoginSuccess={handleLoginSuccess}
     />
   );
 };
-
+const KeyaccountProtectedRoute = ({ children }) => {
+  const location = useLocation();
+  const entryKey = JSON.stringify([
+    location.key,
+    location.pathname,
+    location.search,
+    location.hash,
+  ]);
+  return (
+    <KeyaccountLoginGate key={entryKey}>
+      {children}
+    </KeyaccountLoginGate>
+  );
+};
 export default KeyaccountProtectedRoute;

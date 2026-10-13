@@ -1,3 +1,12 @@
+const trackingApiFetch = (url, options = {}) => {
+  const token = localStorage.getItem("token");
+  if (!token?.trim()) {
+    return Promise.reject(new Error("Please sign in with your main administrator account."));
+  }
+  const headers = new Headers(options.headers);
+  headers.set("Authorization", `Bearer ${token}`);
+  return fetch(url, { ...options, headers });
+};
 import React, {
   useCallback,
   useEffect,
@@ -557,7 +566,7 @@ const AllocateVehicle = () => {
         setError("");
 
         const response =
-          await fetch(
+          await trackingApiFetch(
             API_URL
           );
 
@@ -999,7 +1008,7 @@ const AllocateVehicle = () => {
         setSuccess("");
 
         const response =
-          await fetch(
+          await trackingApiFetch(
             `${API_URL}/${getMongoId(
               selectedOrder
             )}/allocated-vehicles`,
@@ -1121,7 +1130,7 @@ const AllocateVehicle = () => {
       setError("");
       setSuccess("");
 
-      const response = await fetch(
+      const response = await trackingApiFetch(
         `${API_URL}/${getMongoId(
           selectedOrder
         )}/allocated-vehicles/${replacementForm.allocationId}/tracking-replacement`,
@@ -1430,7 +1439,7 @@ const AllocateVehicle = () => {
         setSuccess("");
 
         const response =
-          await fetch(
+          await trackingApiFetch(
             `${API_URL}/${getMongoId(
               selectedOrder
             )}/allocated-vehicles/${allocation.allocationId}`,
@@ -1663,7 +1672,7 @@ const AllocateVehicle = () => {
         setSuccess("");
 
         const response =
-          await fetch(
+          await trackingApiFetch(
             `${API_URL}/${getMongoId(
               selectedOrder
             )}/allocated-vehicles/${allocation.allocationId}/tracking`,
@@ -1780,7 +1789,7 @@ const AllocateVehicle = () => {
       setError("");
       setSuccess("");
 
-      const response = await fetch(
+      const response = await trackingApiFetch(
         `${API_URL}/${orderId}/route-locations`,
         {
           method: "PUT",

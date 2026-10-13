@@ -109,8 +109,8 @@ textarea {
 
   padding: 10px;
 
-  background: var(--page-bg);
-
+  /* background: var(--page-bg); */
+  background: #ffffff;
   transition:
     margin-left 0.3s ease,
     width 0.3s ease;

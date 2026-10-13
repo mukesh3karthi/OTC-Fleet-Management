@@ -1,3 +1,4 @@
+const { allocateTripId } = require("../utils/allocateTripId");
 const mongoose = require("mongoose");
 const TripOrder = require("../models/Triporder");
 const cleanString = (value) =>
@@ -379,6 +380,7 @@ const createTrip = async (
   try {
     const data =
       buildTripData(req.body);
+    data.tripId = await allocateTripId();
     if (!data.tripId) {
       return sendError(
         res,
@@ -420,6 +422,7 @@ const createTrip = async (
     const trip =
       await TripOrder.create({
         ...data,
+        createdBy: req.user._id,
         status: "Draft",
         stage: "Order Finalization",
         orderApproval: {
@@ -488,6 +491,7 @@ const createCraneTrip = async (
     }
     const data =
       buildTripData(body);
+    data.tripId = await allocateTripId();
     if (!data.tripId) {
       return sendError(
         res,
@@ -559,6 +563,7 @@ const createCraneTrip = async (
     const trip =
       await TripOrder.create({
         ...data,
+        createdBy: req.user._id,
         movementType: "Crane",
         vehicleRequirements: [
           craneRequirement,
@@ -721,7 +726,8 @@ const getAllTrips = async (
 ) => {
   try {
     const trips =
-      await TripOrder.find()
+      await TripOrder.find(req.tripAccessFilter || {})
+        .populate("createdBy", "name username")
         .sort({
           createdAt: -1,
         })

@@ -1,3 +1,12 @@
+const trackingApiFetch = (url, options = {}) => {
+  const token = localStorage.getItem("token");
+  if (!token?.trim()) {
+    return Promise.reject(new Error("Please sign in with your main administrator account."));
+  }
+  const headers = new Headers(options.headers);
+  headers.set("Authorization", `Bearer ${token}`);
+  return fetch(url, { ...options, headers });
+};
 import React, {
   useCallback,
   useEffect,
@@ -364,6 +373,67 @@ const movementDayFromLoading = (pointInDate, movementDate) => {
 /* =========================================
    COMPONENT
 ========================================= */
+const openTripDocument = async ({ baseUrl, tripId, allocationId, type, download = false, fileName = '' }) => {
+  const idText = value => typeof value === 'object' && value !== null ? String(value.$oid ?? '') : String(value ?? '');
+  let preview = null;
+  try {
+    const mongoId = idText(tripId).trim();
+    const vehicleId = idText(allocationId).trim();
+    if (!mongoId || !vehicleId || mongoId === '[object Object]') {
+      throw new Error('Trip ID or allocation ID is missing. Reload the trip and try again.');
+    }
+    if (!['lr', 'ewayBill', 'pod'].includes(type)) throw new Error('Invalid document type.');
+    if (!download) {
+      preview = window.open('about:blank', '_blank');
+      if (!preview) throw new Error('Allow pop-ups for this site to view the document.');
+      preview.opener = null;
+      preview.document.title = 'Loading document';
+      preview.document.body.textContent = 'Loading document…';
+    }
+    const disposition = download ? 'attachment' : 'inline';
+    const url = `${baseUrl.replace(/\/+$/, '')}/${encodeURIComponent(mongoId)}/allocated-vehicles/${encodeURIComponent(vehicleId)}/${type}/file?disposition=${disposition}`;
+    const response = await trackingApiFetch(url);
+    const contentType = response.headers.get('content-type') || '';
+    if (!response.ok) {
+      let message = '';
+      if (contentType.includes('json')) {
+        const error = await response.json().catch(() => ({}));
+        message = error.message || error.error || '';
+      }
+      throw new Error(message || `Document request failed (${response.status}). Check the backend file route and uploaded file.`);
+    }
+    if (contentType.includes('json') || contentType.includes('text/html')) {
+      throw new Error('The server returned a page or JSON instead of a document. Check the backend file endpoint.');
+    }
+    const blob = await response.blob();
+    if (!blob.size) throw new Error('The document file is empty.');
+    const objectUrl = URL.createObjectURL(blob);
+    if (download) {
+      const dispositionHeader = response.headers.get('content-disposition') || '';
+      const match = dispositionHeader.match(/filename="([^"]+)"/i);
+      const link = document.createElement('a');
+      link.href = objectUrl;
+      link.download = (match?.[1] || fileName || `${type}-document`).split(/[\\/]/).pop();
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60000);
+    } else {
+      preview.location.replace(objectUrl);
+      const timer = window.setInterval(() => {
+        if (preview.closed) {
+          window.clearInterval(timer);
+          URL.revokeObjectURL(objectUrl);
+        }
+      }, 2000);
+    }
+  } catch (error) {
+    if (preview && !preview.closed) preview.close();
+    console.error('Document request failed:', error);
+    window.alert(error?.message || 'Unable to open the document.');
+  }
+};
+
 const Tripdetails = () => {
   const navigate =
     useNavigate();
@@ -427,7 +497,7 @@ const Tripdetails = () => {
           }
           setError("");
           const response =
-            await fetch(
+            await trackingApiFetch(
               API_URL,
               {
                 method:
@@ -734,7 +804,7 @@ const Tripdetails = () => {
       formData.append("document", file);
       formData.append("documentName", file.name);
     }
-    const response = await fetch(
+    const response = await trackingApiFetch(
       `${API_URL}/${mongoId}/allocated-vehicles/${allocationId}/${type}`,
       {
         method: "PUT",
@@ -761,25 +831,13 @@ const Tripdetails = () => {
       }
     );
   };
-  const viewMovementDocument = (
-    vehicle,
-    type
-  ) => {
-    const mongoId =
-      movementTrip?._id?.$oid ||
-      movementTrip?._id;
-    if (
-      !mongoId ||
-      !vehicle?.allocationId
-    ) {
-      return;
-    }
-    window.open(
-      `${API_URL}/${mongoId}/allocated-vehicles/${vehicle.allocationId}/${type}/file?disposition=inline`,
-      "_blank",
-      "noopener,noreferrer"
-    );
-  };
+  const viewMovementDocument = (vehicle, type) => openTripDocument({
+    baseUrl: API_URL,
+    tripId: movementTrip?._id,
+    allocationId: vehicle?.allocationId,
+    type,
+    fileName: vehicle?.[type]?.originalName || vehicle?.[type]?.fileName,
+  });
   const saveMovement = async () => {
     if (!movementTrip || !movementForm || !movementVehicleId) return;
     const vehicle = safeArray(movementTrip.allocatedVehicles).find(
@@ -1085,7 +1143,7 @@ const Tripdetails = () => {
           ).trim(),
         },
       };
-      const allocationResponse = await fetch(
+      const allocationResponse = await trackingApiFetch(
         `${API_URL}/${mongoId}/allocated-vehicles/${vehicle.allocationId}`,
         {
           method: "PUT",
@@ -1113,7 +1171,7 @@ const Tripdetails = () => {
         operations/documents without Current Location / KM / Updated By.
       */
       if (shouldSaveTracking) {
-        const response = await fetch(
+        const response = await trackingApiFetch(
           `${API_URL}/${mongoId}/allocated-vehicles/${vehicle.allocationId}/tracking`,
           {
             method: "POST",

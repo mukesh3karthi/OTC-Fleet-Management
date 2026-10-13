@@ -1,3 +1,8 @@
+const getAdminAuthHeaders = () => {
+  const token = sessionStorage.getItem("trafficToken") || localStorage.getItem("token");
+  if (!token) throw new Error("Please sign in with your administrator account.");
+  return { Authorization: `Bearer ${token}` };
+};
 import React, {
   useEffect,
   useMemo,
@@ -637,6 +642,7 @@ const Traffic = () => {
         {
           method: "POST",
           headers: {
+            ...getAdminAuthHeaders(),
             "Content-Type": "application/json",
             Accept: "application/json",
           },
@@ -786,7 +792,7 @@ const Traffic = () => {
         setError("");
         const response =
           await fetch(
-            TRIP_API_URL
+            TRIP_API_URL, { headers: getAdminAuthHeaders() }
           );
         const result =
           await response
@@ -934,6 +940,7 @@ const Traffic = () => {
         {
           method: "POST",
           headers: {
+            ...getAdminAuthHeaders(),
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
@@ -1033,6 +1040,7 @@ const Traffic = () => {
         {
           method: "PUT",
           headers: {
+            ...getAdminAuthHeaders(),
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
@@ -1485,6 +1493,7 @@ const Traffic = () => {
               {
                 method: "POST",
                 headers: {
+            ...getAdminAuthHeaders(),
                   "Content-Type":
                     "application/json",
                 },
@@ -1512,7 +1521,7 @@ const Traffic = () => {
          */
         const refreshResponse =
           await fetch(
-            `${TRIP_API_URL}/${selectedOrder._id}`
+            `${TRIP_API_URL}/${selectedOrder._id}`, { headers: getAdminAuthHeaders() }
           );
         const refreshResult =
           await refreshResponse
@@ -1609,9 +1618,6 @@ const Traffic = () => {
       ===================================================== */}
       <header className="traffic-page-header">
         <div>
-          <span className="traffic-eyebrow">
-            TRAFFIC MANAGEMENT
-          </span>
           <h1>
             Transport Quotations
           </h1>

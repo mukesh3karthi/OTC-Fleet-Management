@@ -1,3 +1,15 @@
+const getOrderCreatorName = (trip) => {
+  const creator = trip?.createdBy;
+  if (creator && typeof creator === "object") {
+    return String(creator.name || creator.username || "").trim() || "—";
+  }
+  return "—";
+};
+const getAdminAuthHeaders = () => {
+  const token = localStorage.getItem("token");
+  if (!token) throw new Error("Please sign in with your administrator account.");
+  return { Authorization: `Bearer ${token}` };
+};
 import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import {
@@ -18,7 +30,7 @@ import "../pagescss/ordermanagement.css";
    API CONFIGURATION
 ========================================================= */
 const API_BASE_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:5000";
+  import.meta.env.VITE_API_URL || "http\://localhost:5000";
 const TRIP_API = `${API_BASE_URL}/api/triporders`;
 /* =========================================================
    HELPERS
@@ -279,7 +291,7 @@ const OrderManagement = () => {
     try {
       setLoading(true);
       setError("");
-      const response = await axios.get(TRIP_API);
+      const response = await axios.get(TRIP_API, { headers: getAdminAuthHeaders() });
       let result = [];
       if (Array.isArray(response.data)) {
         result = response.data;
@@ -985,7 +997,7 @@ const OrderManagement = () => {
                       className="performance-bar enquiry"
                       style={{
                         height: `${(item.enquiries /
-                            maxChartValue) *
+                          maxChartValue) *
                           150
                           }px`,
                       }}
@@ -998,7 +1010,7 @@ const OrderManagement = () => {
                       className="performance-bar order"
                       style={{
                         height: `${(item.orders /
-                            maxChartValue) *
+                          maxChartValue) *
                           150
                           }px`,
                       }}
@@ -1204,9 +1216,9 @@ const OrderManagement = () => {
                 <th>CUSTOMER</th>
                 <th>MOVEMENT</th>
                 <th>ROUTE</th>
-                <th>VEHICLE</th>
                 <th>STAGE</th>
                 <th>STATUS</th>
+                <th>CREATED BY</th>
               </tr>
             </thead>
             <tbody>
@@ -1214,7 +1226,7 @@ const OrderManagement = () => {
                 0 ? (
                 <tr>
                   <td
-                    colSpan="7"
+                    colSpan="8"
                     className="dashboard-empty"
                   >
                     {error
@@ -1303,15 +1315,7 @@ const OrderManagement = () => {
                             </span>
                           </div>
                         </td>
-                        <td>
-                          <div className="vehicle-cell">
-                            <FaTruck />
-                            <span>
-                              {vehicle ||
-                                "-"}
-                            </span>
-                          </div>
-                        </td>
+
                         <td>
                           <span className="dashboard-stage">
                             {stage || "-"}
@@ -1324,6 +1328,11 @@ const OrderManagement = () => {
                             <i />
                             {status ||
                               "-"}
+                          </span>
+                        </td>
+                        <td>
+                          <span style={{ fontSize: "13px", fontWeight: 600, color: "#123447" }}>
+                            {getOrderCreatorName(trip)}
                           </span>
                         </td>
                       </tr>

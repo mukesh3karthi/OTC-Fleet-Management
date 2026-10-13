@@ -1,104 +1,40 @@
-import React, {
-  useState,
-} from "react";
-
-import {
-  Navigate,
-  Outlet,
-} from "react-router-dom";
-
-import Trafficlogin
-  from "../Loginpage/Trafficlogin";
-
-const TrafficProtectedRoute = ({
-  children,
-}) => {
-  const [
-    isLoggedIn,
-    setIsLoggedIn,
-  ] = useState(() => {
-    return (
-      sessionStorage.getItem(
-        "trafficLoggedIn"
-      ) === "true"
-    );
-  });
-
-  const [
-    loginClosed,
-    setLoginClosed,
-  ] = useState(false);
-
-  /* =========================================
-     TRAFFIC LOGIN SUCCESS
-  ========================================= */
-
-  const handleLoginSuccess = () => {
-    /*
-      Extra safety:
-      Traffic login means KAM
-      should no longer be logged in.
-    */
-
-    sessionStorage.removeItem(
-      "kamLoggedIn"
-    );
-
-    sessionStorage.removeItem(
-      "kamUsername"
-    );
-
+import React, { useCallback, useState } from "react";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
+import Trafficlogin from "../Loginpage/Trafficlogin";
+const TrafficLoginGate = ({ children }) => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [loginClosed, setLoginClosed] = useState(false);
+  const handleLoginSuccess = useCallback(() => {
+    sessionStorage.removeItem("kamLoggedIn");
+    sessionStorage.removeItem("kamUsername");
     setIsLoggedIn(true);
     setLoginClosed(false);
-  };
-
-  /* =========================================
-     CLOSE LOGIN
-  ========================================= */
-
-  const handleCloseLogin = () => {
+  }, []);
+  const handleCloseLogin = useCallback(() => {
     setLoginClosed(true);
-  };
-
-  /* =========================================
-     ALREADY LOGGED IN
-  ========================================= */
-
-  if (isLoggedIn) {
-    return (
-      children ||
-      <Outlet />
-    );
-  }
-
-  /* =========================================
-     LOGIN CLOSED
-  ========================================= */
-
-  if (loginClosed) {
-    return (
-      <Navigate
-        to="/trip-dashboard"
-        replace
-      />
-    );
-  }
-
-  /* =========================================
-     ASK TRAFFIC LOGIN
-  ========================================= */
-
+  }, []);
+  if (isLoggedIn) return children ?? <Outlet />;
+  if (loginClosed) return <Navigate to="/trip-dashboard" replace />;
   return (
     <Trafficlogin
       open={true}
-      onClose={
-        handleCloseLogin
-      }
-      onLoginSuccess={
-        handleLoginSuccess
-      }
+      onClose={handleCloseLogin}
+      onLoginSuccess={handleLoginSuccess}
     />
   );
 };
-
+const TrafficProtectedRoute = ({ children }) => {
+  const location = useLocation();
+  const entryKey = JSON.stringify([
+    location.key,
+    location.pathname,
+    location.search,
+    location.hash,
+  ]);
+  return (
+    <TrafficLoginGate key={entryKey}>
+      {children}
+    </TrafficLoginGate>
+  );
+};
 export default TrafficProtectedRoute;

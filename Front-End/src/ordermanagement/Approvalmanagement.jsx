@@ -1,3 +1,8 @@
+const getAdminAuthHeaders = () => {
+  const token = sessionStorage.getItem("approvalToken") || localStorage.getItem("token");
+  if (!token) throw new Error("Please sign in with your administrator account.");
+  return { Authorization: `Bearer ${token}` };
+};
 import React, {
   useCallback,
   useEffect,
@@ -614,6 +619,7 @@ const Approvalmanagement = () => {
               {
                 method: "GET",
                 headers: {
+            ...getAdminAuthHeaders(),
                   Accept:
                     "application/json",
                 },
@@ -826,6 +832,8 @@ const Approvalmanagement = () => {
       const pendingOrders =
         orders.filter(
           (order) =>
+            Boolean(order?.orderApproval?.requestedAt) &&
+            safeArray(order.vehicleRequirements).length > 0 &&
             getOrderApprovalStatus(
               order
             ) ===
@@ -950,6 +958,7 @@ const Approvalmanagement = () => {
             {
               method: "PUT",
               headers: {
+            ...getAdminAuthHeaders(),
                 "Content-Type":
                   "application/json",
                 Accept:
@@ -1276,6 +1285,7 @@ const Approvalmanagement = () => {
             {
               method: "PUT",
               headers: {
+            ...getAdminAuthHeaders(),
                 "Content-Type": "application/json",
                 Accept: "application/json",
               },
@@ -1538,6 +1548,7 @@ const Approvalmanagement = () => {
         {
           method: "PUT",
           headers: {
+            ...getAdminAuthHeaders(),
             "Content-Type": "application/json",
             Accept: "application/json",
           },
@@ -1609,7 +1620,6 @@ const Approvalmanagement = () => {
       return [];
     }
   });
-
   // Keep the full history separate from the search-filtered list so the badge
   // always shows the total unread changes, not just the current search results.
   const allAmountChanges = useMemo(
@@ -1632,7 +1642,6 @@ const Approvalmanagement = () => {
       .sort((a, b) => new Date(b.changedAt || 0) - new Date(a.changedAt || 0)),
     [orders]
   );
-
   const amountChanges = useMemo(() => {
     const query = searchTerm.trim().toLowerCase();
     if (!query) return allAmountChanges;
@@ -1641,11 +1650,9 @@ const Approvalmanagement = () => {
         .some((value) => String(value || "").toLowerCase().includes(query))
     );
   }, [allAmountChanges, searchTerm]);
-
   const unreadAmountChangesCount = allAmountChanges.filter(
     (entry) => !readAmountChangeKeys.includes(entry.rowKey)
   ).length;
-
   // Mark one specific amount-change record as viewed. Opening the tab does not
   // clear the alert, so the approver can still identify every changed order.
   const markAmountChangeRead = useCallback((rowKey) => {
@@ -1662,12 +1669,10 @@ const Approvalmanagement = () => {
       return updatedKeys;
     });
   }, []);
-
   const openAmountChanges = () => {
     // Do not mark all records read here. Each row has its own Viewed action.
     setActiveView("amount");
   };
-
   const renderAmountChanges = () => (
     <section className="approval-amount-history">
       <div className="approval-amount-header">

@@ -689,40 +689,38 @@ const getResponseData = (
 /* =========================================================
   API REQUEST
 ========================================================= */
-const apiRequest = async (
-  url,
-  options = {}
-) => {
-  const response =
-    await fetch(
-      url,
-      {
-        ...options,
-        headers: {
-          "Content-Type":
-            "application/json",
-          ...(options.headers ||
-            {}),
-        },
-      }
-    );
-  let data = null;
-  try {
-    data =
-      await response.json();
-  } catch {
-    data = null;
+const kamFetch = async (url, options = {}) => {
+  const token = sessionStorage.getItem("kamToken");
+  if (!token) {
+    throw new Error("Please login to Key Account again.");
   }
+  const headers = new Headers(options.headers || {});
+  headers.set("Authorization", `Bearer ${token}`);
+  // The browser sets the multipart boundary for file uploads.
+  if (options.body instanceof FormData) {
+    headers.delete("Content-Type");
+  }
+  const response = await fetch(url, { ...options, headers });
+  if (response.status === 401) {
+    ["kamToken", "kamUser", "kamUserId", "kamUsername", "kamLoggedIn"]
+      .forEach((key) => sessionStorage.removeItem(key));
+    throw new Error("Your Key Account session expired. Please login again.");
+  }
+  return response;
+};
+const apiRequest = async (url, options = {}) => {
+  const headers = new Headers(options.headers || {});
+  if (!(options.body instanceof FormData) && !headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
+  }
+  const response = await kamFetch(url, { ...options, headers });
+  const data = await response.json().catch(() => null);
   if (!response.ok) {
     throw new Error(
-      data?.message ||
-      data?.error ||
-      `Request failed with status ${response.status}`
+      data?.message || data?.error || `Request failed with status ${response.status}`
     );
   }
-  return getResponseData(
-    data
-  );
+  return getResponseData(data);
 };
 /* =========================================================
   PROFESSIONAL PDF EXPORT
@@ -1461,6 +1459,16 @@ const downloadOrderPdf = (order = {}) => {
   MAIN COMPONENT
 ========================================================= */
 const KeyAccount = () => {
+  const [loggedInName] = useState(() => {
+    try {
+      const user = JSON.parse(sessionStorage.getItem("kamUser") || "{}") || {};
+      return String(user.name || user.username || sessionStorage.getItem("kamUsername") || "").trim();
+    } catch {
+      return sessionStorage.getItem("kamUsername") || "";
+    }
+  });
+  const profileInitials = loggedInName.split(/\s+/).filter(Boolean).slice(0, 2)
+    .map((part) => part[0]).join("").toUpperCase() || "KA";
   const [
     orders,
     setOrders,
@@ -2479,7 +2487,7 @@ const KeyAccount = () => {
             tripUpload
           );
           const response =
-            await fetch(
+            await kamFetch(
               `${TRIP_API_URL}/crane`,
               {
                 method: "POST",
@@ -2677,10 +2685,10 @@ const KeyAccount = () => {
       {toast && (
         <div
           className={`kam-toast ${/success|created|updated|deleted|sent for approval/i.test(toast)
-              ? "kam-toast-success"
-              : /required|missing|complete|valid|exists/i.test(toast)
-                ? "kam-toast-warning"
-                : "kam-toast-error"
+            ? "kam-toast-success"
+            : /required|missing|complete|valid|exists/i.test(toast)
+              ? "kam-toast-warning"
+              : "kam-toast-error"
             }`}
           role="status"
           aria-live="polite"
@@ -2729,18 +2737,29 @@ const KeyAccount = () => {
               operational workspace.
             </p>
           </div>
-          <button
-            type="button"
-            className="new-trip-button"
-            onClick={
-              handleOpenTripModal
-            }
-          >
-            <span className="new-trip-plus">
-              +
-            </span>
-            New Trip
-          </button>
+          <div className="kam-heading-actions">
+            {loggedInName && (
+              <div className="kam-user-profile">
+                <span className="kam-user-avatar" aria-hidden="true">{profileInitials}</span>
+                <div className="kam-user-info">
+                  <strong>{loggedInName}</strong>
+                  <span>Key Account</span>
+                </div>
+              </div>
+            )}
+            <button
+              type="button"
+              className="new-trip-button"
+              onClick={
+                handleOpenTripModal
+              }
+            >
+              <span className="new-trip-plus">
+                +
+              </span>
+              New Trip
+            </button>
+          </div>
         </section>
         {/* =================================================
               STATS
@@ -3066,9 +3085,9 @@ const KeyAccount = () => {
                               <button
                                 type="button"
                                 className={`kam-three-dot-btn ${openActionMenu ===
-                                    menuId
-                                    ? "active"
-                                    : ""
+                                  menuId
+                                  ? "active"
+                                  : ""
                                   }`}
                                 aria-label={`Actions for ${order.tripId}`}
                                 aria-expanded={
@@ -3125,8 +3144,8 @@ const KeyAccount = () => {
                                 menuId && (
                                   <div
                                     className={`kam-action-dropdown kam-action-dropdown-fixed ${actionMenuPosition?.openUp
-                                        ? "kam-action-dropdown-up"
-                                        : ""
+                                      ? "kam-action-dropdown-up"
+                                      : ""
                                       }`}
                                     style={{
                                       top: actionMenuPosition?.top ?? 0,

@@ -1,7 +1,3 @@
-/* =========================================================
-   OTC GROUPS
-   ORDER MANAGEMENT CONTROL TOWER
-========================================================= */
 .control-dashboard,
 .control-dashboard * {
   box-sizing: border-box;
@@ -10,23 +6,24 @@
 .control-dashboard {
   width: 100%;
   min-height: 100vh;
-  padding: 22px 24px 30px;
-  background:
-    linear-gradient(180deg,
+  padding: 10px 20px 30px !important;
+  background: linear-gradient(180deg,
+
       #f4f8f9 0%,
+
       #f7fafb 100%);
   color: #12384a;
-  font-family:
-    Inter,
+  font-family: Inter,
+
     "Segoe UI",
+
     Roboto,
+
     Arial,
+
     sans-serif;
 }
 
-/* =========================================================
-   PAGE HEADER
-========================================================= */
 .control-header {
   min-height: 65px;
   margin-bottom: 12px;
@@ -37,13 +34,14 @@
   gap: 20px;
   overflow: hidden;
   border-radius: 15px;
-  background:
-    linear-gradient(110deg,
+  background: linear-gradient(110deg,
+
       #082f43 0%,
+
       #0a4554 58%,
+
       #0c817c 100%);
-  box-shadow:
-    0 10px 28px rgba(7, 49, 67, 0.13);
+  box-shadow: 0 10px 28px rgba(7, 49, 67, 0.13);
 }
 
 .control-header-left {
@@ -60,12 +58,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border:
-    1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 12px;
   color: #ffffff;
-  background:
-    rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.08);
   font-size: 20px;
 }
 
@@ -95,8 +91,7 @@
 
 .control-header p {
   margin: 5px 0 0;
-  color:
-    rgba(255, 255, 255, 0.68);
+  color: rgba(255, 255, 255, 0.68);
   font-size: 11px;
   font-weight: 500;
 }
@@ -114,12 +109,10 @@
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  border:
-    1px solid rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 8px;
   color: #ffffff;
-  background:
-    rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.07);
   font-size: 10px;
   font-weight: 700;
 }
@@ -129,8 +122,7 @@
   height: 7px;
   border-radius: 50%;
   background: #56e2c3;
-  box-shadow:
-    0 0 0 4px rgba(86, 226, 195, 0.12);
+  box-shadow: 0 0 0 4px rgba(86, 226, 195, 0.12);
 }
 
 .dashboard-period {
@@ -145,19 +137,12 @@
   font-weight: 850;
 }
 
-/* =========================================================
-   KPI GRID
-========================================================= */
-/* =========================================================
-   KPI GRID
-========================================================= */
-/* KPI SUMMARY — same dimensions as Approval Management */
 .control-kpi-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
   margin-bottom: 14px;
-  width: 100%
+  width: 100%;
 }
 
 .control-kpi-card {
@@ -174,13 +159,13 @@
   border-radius: 13px;
   background: linear-gradient(180deg, #fff 0%, #fff 68%, #fbfdfd 100%);
   box-shadow: 0 3px 12px rgba(15, 47, 67, .045);
-  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
 }
 
 .control-kpi-card:hover {
   transform: translateY(-1px);
   border-color: #c9dcdf;
-  box-shadow: 0 6px 16px rgba(15, 47, 67, .07)
+  box-shadow: 0 6px 16px rgba(15, 47, 67, .07);
 }
 
 .control-kpi-icon {
@@ -192,18 +177,18 @@
   place-items: center;
   border: 1px solid currentColor;
   border-radius: 10px;
-  background: rgba(255, 255, 255, .72)
+  background: rgba(255, 255, 255, .72);
 }
 
 .control-kpi-icon svg {
   width: 19px;
-  height: 19px
+  height: 19px;
 }
 
 .control-kpi-content {
   position: relative;
   z-index: 2;
-  min-width: 0
+  min-width: 0;
 }
 
 .control-kpi-content span {
@@ -214,7 +199,7 @@
   line-height: 1.2;
   letter-spacing: .035em;
   text-transform: uppercase;
-  white-space: nowrap
+  white-space: nowrap;
 }
 
 .control-kpi-content small {
@@ -226,7 +211,7 @@
   line-height: 1.25;
   white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis
+  text-overflow: ellipsis;
 }
 
 .control-kpi-card>.control-kpi-number {
@@ -237,7 +222,7 @@
   font-size: 27px;
   font-weight: 850;
   line-height: 1;
-  text-align: right
+  text-align: right;
 }
 
 .control-kpi-wave {
@@ -248,53 +233,53 @@
   bottom: -1px;
   height: 25px;
   pointer-events: none;
-  opacity: .68
+  opacity: .68;
 }
 
 .control-kpi-wave svg {
   display: block;
   width: 100%;
-  height: 100%
+  height: 100%;
 }
 
 .control-kpi-total .control-kpi-icon,
 .control-kpi-total .control-kpi-wave {
-  color: #e8a323
+  color: #e8a323;
 }
 
 .control-kpi-total .control-kpi-icon {
   background: #fff8e9;
-  border-color: #f1d59b
+  border-color: #f1d59b;
 }
 
 .control-kpi-transit .control-kpi-icon,
 .control-kpi-transit .control-kpi-wave {
-  color: #28a66f
+  color: #28a66f;
 }
 
 .control-kpi-transit .control-kpi-icon {
   background: #eefaf4;
-  border-color: #bfe7d2
+  border-color: #bfe7d2;
 }
 
 .control-kpi-pending .control-kpi-icon,
 .control-kpi-pending .control-kpi-wave {
-  color: #3a91d6
+  color: #3a91d6;
 }
 
 .control-kpi-pending .control-kpi-icon {
   background: #eff7fd;
-  border-color: #bedcf3
+  border-color: #bedcf3;
 }
 
 .control-kpi-completed .control-kpi-icon,
 .control-kpi-completed .control-kpi-wave {
-  color: #149d98
+  color: #149d98;
 }
 
 .control-kpi-completed .control-kpi-icon {
   background: #edf9f8;
-  border-color: #b9e3e0
+  border-color: #b9e3e0;
 }
 
 .control-card,
@@ -303,8 +288,7 @@
   border: 1px solid #d9e6e9;
   border-radius: 14px;
   background: #ffffff;
-  box-shadow:
-    0 5px 18px rgba(15, 58, 72, 0.04);
+  box-shadow: 0 5px 18px rgba(15, 58, 72, 0.04);
 }
 
 .control-card {
@@ -349,20 +333,13 @@
   font-size: 13px;
 }
 
-/* =========================================================
-   MAIN GRID
-========================================================= */
 .control-main-grid {
   display: grid;
-  grid-template-columns:
-    minmax(0, 1.3fr) minmax(330px, 0.7fr);
+  grid-template-columns: minmax(0, 1.3fr) minmax(330px, 0.7fr);
   gap: 14px;
   margin-bottom: 14px;
 }
 
-/* =========================================================
-   PIPELINE
-========================================================= */
 .pipeline-card {
   min-height: 300px;
 }
@@ -374,8 +351,7 @@
 .pipeline-row {
   min-height: 34px;
   display: grid;
-  grid-template-columns:
-    165px minmax(100px, 1fr) 35px;
+  grid-template-columns: 165px minmax(100px, 1fr) 35px;
   align-items: center;
   gap: 12px;
   border-bottom: 1px solid #edf2f3;
@@ -424,9 +400,10 @@
   height: 100%;
   display: block;
   border-radius: inherit;
-  background:
-    linear-gradient(90deg,
+  background: linear-gradient(90deg,
+
       #0b5260,
+
       #0b9b91);
 }
 
@@ -437,9 +414,6 @@
   text-align: right;
 }
 
-/* =========================================================
-   LIVE MOVEMENT
-========================================================= */
 .movement-card {
   min-height: 300px;
 }
@@ -467,8 +441,7 @@
 .movement-overview {
   min-height: 215px;
   display: grid;
-  grid-template-columns:
-    145px minmax(0, 1fr);
+  grid-template-columns: 145px minmax(0, 1fr);
   align-items: center;
   gap: 18px;
 }
@@ -486,8 +459,8 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background:
-    conic-gradient(#0b9188 0deg 270deg,
+  background: conic-gradient(#0b9188 0deg 270deg,
+
       #dfe9ea 270deg 360deg);
 }
 
@@ -575,20 +548,13 @@
   background: #28a66a;
 }
 
-/* =========================================================
-   ANALYTICS GRID
-========================================================= */
 .control-analytics-grid {
   display: grid;
-  grid-template-columns:
-    minmax(0, 1.25fr) minmax(350px, 0.75fr);
+  grid-template-columns: minmax(0, 1.25fr) minmax(350px, 0.75fr);
   gap: 14px;
   margin-bottom: 14px;
 }
 
-/* =========================================================
-   MONTHLY PERFORMANCE
-========================================================= */
 .performance-card,
 .health-card {
   min-height: 280px;
@@ -651,8 +617,7 @@
   z-index: 2;
   height: 100%;
   display: grid;
-  grid-template-columns:
-    repeat(6, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   align-items: end;
 }
 
@@ -675,21 +640,22 @@
   position: relative;
   width: 15px;
   min-height: 4px;
-  border-radius:
-    5px 5px 2px 2px;
+  border-radius: 5px 5px 2px 2px;
 }
 
 .performance-bar.enquiry {
-  background:
-    linear-gradient(180deg,
+  background: linear-gradient(180deg,
+
       #4c7e96,
+
       #315b72);
 }
 
 .performance-bar.order {
-  background:
-    linear-gradient(180deg,
+  background: linear-gradient(180deg,
+
       #14aaa0,
+
       #0b8e86);
 }
 
@@ -710,9 +676,6 @@
   font-weight: 750;
 }
 
-/* =========================================================
-   HEALTH
-========================================================= */
 .health-header-icon {
   color: #0b9b83;
   font-size: 22px;
@@ -721,8 +684,7 @@
 .health-content {
   min-height: 205px;
   display: grid;
-  grid-template-columns:
-    155px minmax(0, 1fr);
+  grid-template-columns: 155px minmax(0, 1fr);
   align-items: center;
   gap: 17px;
 }
@@ -740,8 +702,8 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background:
-    conic-gradient(#0a978d 0deg 341.28deg,
+  background: conic-gradient(#0a978d 0deg 341.28deg,
+
       #e0e9ea 341.28deg 360deg);
 }
 
@@ -772,8 +734,7 @@
 
 .health-metrics {
   display: grid;
-  grid-template-columns:
-    repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 9px;
 }
 
@@ -812,9 +773,6 @@
   color: #d65149;
 }
 
-/* =========================================================
-   ACTIVE ORDERS
-========================================================= */
 .active-orders-card {
   overflow: hidden;
 }
@@ -849,9 +807,6 @@
   background: #0aa298;
 }
 
-/* =========================================================
-   TOOLBAR
-========================================================= */
 .active-orders-toolbar {
   min-height: 57px;
   padding: 8px 18px;
@@ -913,21 +868,15 @@
 .dashboard-search:focus-within,
 .dashboard-filter:focus {
   border-color: #42a9a3;
-  box-shadow:
-    0 0 0 3px rgba(11, 151, 142, 0.08);
+  box-shadow: 0 0 0 3px rgba(11, 151, 142, 0.08);
 }
 
-/* =========================================================
-   TABLE
-========================================================= */
 .active-orders-table-wrap {
   width: 100%;
-  overflow: hidden;
+  overflow-x: auto;
 }
 
 .active-orders-table {
-  width: 100%;
-  table-layout: fixed;
   border-collapse: collapse;
   background: #ffffff;
 }
@@ -941,7 +890,6 @@
   padding: 0 10px;
   border-bottom: 1px solid #dbe6e8;
   color: #718792;
-  font-size: 8.5px;
   font-weight: 850;
   letter-spacing: 0.35px;
   text-align: left;
@@ -954,14 +902,12 @@
   padding: 8px 10px;
   border-bottom: 1px solid #e7edef;
   color: #345768;
-  font-size: 9.5px;
   vertical-align: middle;
   overflow: hidden;
 }
 
 .active-orders-table tbody tr {
-  transition:
-    background 0.15s ease;
+  transition: background 0.15s ease;
 }
 
 .active-orders-table tbody tr:hover {
@@ -972,13 +918,12 @@
   border-bottom: 0;
 }
 
-/* ORDER */
 .active-orders-table th:nth-child(1) {
-  width: 9%;
+  width: 8%;
 }
 
 .active-orders-table th:nth-child(2) {
-  width: 17%;
+  width: 15%;
 }
 
 .active-orders-table th:nth-child(3) {
@@ -986,24 +931,21 @@
 }
 
 .active-orders-table th:nth-child(4) {
-  width: 25%;
+  width: 20%;
 }
 
 .active-orders-table th:nth-child(5) {
-  width: 13%;
+  width: 12%;
 }
 
 .active-orders-table th:nth-child(6) {
-  width: 17%;
+  width: 14%;
 }
 
 .active-orders-table th:nth-child(7) {
   width: 10%;
 }
 
-/* =========================================================
-   ORDER ID
-========================================================= */
 .dashboard-order-id {
   min-height: 27px;
   padding: 0 8px;
@@ -1018,9 +960,6 @@
   white-space: nowrap;
 }
 
-/* =========================================================
-   CUSTOMER
-========================================================= */
 .customer-cell {
   min-width: 0;
 }
@@ -1045,9 +984,6 @@
   white-space: nowrap;
 }
 
-/* =========================================================
-   MOVEMENT
-========================================================= */
 .movement-badge {
   min-height: 25px;
   padding: 0 8px;
@@ -1074,9 +1010,6 @@
   background: #eef3f6;
 }
 
-/* =========================================================
-   ROUTE
-========================================================= */
 .dashboard-route {
   min-width: 0;
   display: flex;
@@ -1099,9 +1032,6 @@
   font-size: 8px;
 }
 
-/* =========================================================
-   VEHICLE
-========================================================= */
 .vehicle-cell {
   min-width: 0;
   display: flex;
@@ -1124,9 +1054,6 @@
   text-overflow: ellipsis;
 }
 
-/* =========================================================
-   STAGE
-========================================================= */
 .dashboard-stage {
   display: inline-block;
   max-width: 100%;
@@ -1142,9 +1069,6 @@
   white-space: nowrap;
 }
 
-/* =========================================================
-   STATUS
-========================================================= */
 .dashboard-status {
   min-height: 25px;
   padding: 0 7px;
@@ -1183,9 +1107,6 @@
   background: #edf3f5;
 }
 
-/* =========================================================
-   EMPTY
-========================================================= */
 .dashboard-empty {
   height: 110px !important;
   color: #81959f !important;
@@ -1193,9 +1114,6 @@
   font-size: 11px !important;
 }
 
-/* =========================================================
-   SCROLLBAR
-========================================================= */
 .control-dashboard ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -1210,19 +1128,12 @@
   background: #bccdd1;
 }
 
-/* =========================================================
-   LARGE DESKTOP
-========================================================= */
 @media (min-width: 1500px) {
   .control-dashboard {
-    padding:
-      24px 28px 32px;
+    padding: 24px 28px 32px;
   }
 }
 
-/* =========================================================
-   LAPTOP
-========================================================= */
 @media (max-width: 1200px) {
 
   .control-main-grid,
@@ -1238,17 +1149,13 @@
   }
 }
 
-/* =========================================================
-   TABLET
-========================================================= */
 @media (max-width: 900px) {
   .control-dashboard {
     padding: 15px;
   }
 
   .control-kpi-grid {
-    grid-template-columns:
-      repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .control-header {
@@ -1268,11 +1175,6 @@
     max-width: none;
   }
 
-  /*
-   * On smaller devices table scrolling
-   * is allowed because squeezing seven
-   * columns would make them unreadable.
-   */
   .active-orders-table-wrap {
     overflow-x: auto;
   }
@@ -1283,9 +1185,6 @@
   }
 }
 
-/* =========================================================
-   MOBILE
-========================================================= */
 @media (max-width: 650px) {
   .control-dashboard {
     padding: 10px;
@@ -1317,8 +1216,7 @@
   }
 
   .pipeline-row {
-    grid-template-columns:
-      135px minmax(80px, 1fr) 28px;
+    grid-template-columns: 135px minmax(80px, 1fr) 28px;
     gap: 8px;
   }
 
@@ -1361,9 +1259,6 @@
   }
 }
 
-/* =========================================================
-   VERY SMALL MOBILE
-========================================================= */
 @media (max-width: 420px) {
   .control-header-left {
     align-items: flex-start;
@@ -1384,8 +1279,7 @@
   }
 
   .pipeline-row {
-    grid-template-columns:
-      125px minmax(60px, 1fr) 25px;
+    grid-template-columns: 125px minmax(60px, 1fr) 25px;
   }
 
   .pipeline-name {
@@ -1395,12 +1289,103 @@
 
 @media(max-width:1100px) {
   .control-dashboard .control-kpi-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr))
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media(max-width:560px) {
   .control-dashboard .control-kpi-grid {
-    grid-template-columns: 1fr
+    grid-template-columns: 1fr;
+  }
+}
+
+.active-orders-table th:nth-child(8) {
+  width: 12%;
+}
+
+.active-orders-table td:nth-child(8) {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.active-orders-table th {
+  font-size: 10px;
+}
+
+.active-orders-table td,
+.active-orders-table .dashboard-order-id,
+.active-orders-table .customer-cell strong,
+.active-orders-table .vehicle-cell span,
+.active-orders-table .dashboard-route span {
+  font-size: 12px;
+}
+
+.active-orders-table .customer-cell>span,
+.active-orders-table .movement-badge,
+.active-orders-table .dashboard-stage,
+.active-orders-table .dashboard-status {
+  font-size: 10px;
+}
+
+.active-orders-table td:nth-child(8)>span {
+  font-size: 12px !important;
+}
+
+.active-orders-table {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.active-orders-table th:nth-child(n),
+.active-orders-table td:nth-child(n) {
+  width: 12.5%;
+  box-sizing: border-box;
+  padding-left: 14px;
+  padding-right: 14px;
+}
+
+.active-orders-table .dashboard-route {
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.control-dashboard .control-kpi-card,
+.control-dashboard .control-card,
+.control-dashboard .active-orders-card {
+  animation: orderCardOpen 0.5s ease-out both;
+}
+.control-dashboard .control-kpi-card:nth-child(1) {
+  animation-delay: 0.08s;
+}
+.control-dashboard .control-kpi-card:nth-child(2) {
+  animation-delay: 0.16s;
+}
+.control-dashboard .control-kpi-card:nth-child(3) {
+  animation-delay: 0.24s;
+}
+.control-dashboard .control-kpi-card:nth-child(4) {
+  animation-delay: 0.32s;
+}
+.control-dashboard .control-card {
+  animation-delay: 0.38s;
+}
+.control-dashboard .active-orders-card {
+  animation-delay: 0.46s;
+}
+@keyframes orderCardOpen {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .control-dashboard .control-kpi-card,
+  .control-dashboard .control-card,
+  .control-dashboard .active-orders-card {
+    animation: none;
   }
 }
