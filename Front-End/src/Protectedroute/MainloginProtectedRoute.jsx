@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
-const IDLE_TIMEOUT = 10 * 60 * 1000;
+const IDLE_TIMEOUT = 10 * 60 * 10000;
 const SESSION_TOKEN_KEY = "mainSessionToken";
 const LAST_ACTIVITY_KEY = "mainLastActivity";
 export const markMainLoginSuccessful = (token) => {

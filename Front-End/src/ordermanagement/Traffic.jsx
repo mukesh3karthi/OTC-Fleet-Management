@@ -38,6 +38,9 @@ const TRIP_API_URL =
 /* =========================================================
    HELPERS
 ========================================================= */
+const isCompanyTransporter = (value) =>
+  String(value ?? "").trim().toLowerCase() === "otc";
+
 const extractTripList = (payload) => {
   if (Array.isArray(payload)) {
     return payload;
@@ -609,7 +612,9 @@ const Traffic = () => {
       return;
     }
     if (
-      transportReplacementForm.proposedAmount === "" ||
+      (!isCompanyTransporter(transportReplacementForm.proposedTransporter) &&
+        String(transportReplacementForm.proposedAmount ?? "").trim() === "") ||
+      !Number.isFinite(Number(transportReplacementForm.proposedAmount)) ||
       Number(transportReplacementForm.proposedAmount) < 0
     ) {
       showToast("Valid proposed amount is required.", "warning");
@@ -1424,7 +1429,7 @@ const Traffic = () => {
           }
           if (
             !Number.isFinite(amount) ||
-            amount <= 0
+            (isCompanyTransporter(transporter) ? amount < 0 : amount <= 0)
           ) {
             const text =
               `Enter a valid quotation amount for ${transporter}.`;
@@ -2046,7 +2051,7 @@ const Traffic = () => {
               </div>
               <div>
                 <span>
-                  Route
+                  Route / Site
                 </span>
                 <strong>
                   {getRouteText(
@@ -2508,7 +2513,7 @@ const Traffic = () => {
                                                     event.target.value
                                                   )
                                                 }
-                                                placeholder="Enter amount"
+                                                placeholder={isCompanyTransporter(quotation.transporter) ? "Optional for OTC" : "Enter amount"}
                                                 disabled={
                                                   saving
                                                 }
@@ -2827,7 +2832,7 @@ const Traffic = () => {
                 />
               </label>
               <label>
-                <span>Proposed Amount *</span>
+                <span>Proposed Amount {isCompanyTransporter(transportReplacementForm.proposedTransporter) ? "(Optional)" : "*"}</span>
                 <input
                   type="number"
                   min="0"
@@ -2840,7 +2845,7 @@ const Traffic = () => {
                       event.target.value
                     )
                   }
-                  placeholder="Enter amount"
+                  placeholder={isCompanyTransporter(transportReplacementForm.proposedTransporter) ? "Optional for OTC" : "Enter amount"}
                   disabled={saving}
                 />
               </label>

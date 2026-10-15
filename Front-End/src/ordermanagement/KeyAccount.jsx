@@ -2921,7 +2921,7 @@ const KeyAccount = () => {
                     MOVEMENT
                   </th>
                   <th>
-                    ROUTE
+                    ROUTE / SITE
                   </th>
                   <th>
                     STAGE
@@ -2942,6 +2942,8 @@ const KeyAccount = () => {
                   0 ? (
                   filteredOrders.map(
                     (order, index) => {
+                      const isIntercarting =
+                        getEditableMovementType(order) === "Intercarting";
                       const firstRequirement =
                         order
                           .vehicleRequirements
@@ -2990,10 +2992,11 @@ const KeyAccount = () => {
                           </td>
                           {/* MATERIAL */}
                           <td>
-                            <div className="cargo-name">
-                              {order.materialType ||
-                                "—"}
-                            </div>
+                            {!isIntercarting && (
+                              <div className="cargo-name">
+                                {order.materialType || "—"}
+                              </div>
+                            )}
                             {firstRequirement
                               .weight !==
                               "" &&
@@ -3024,19 +3027,17 @@ const KeyAccount = () => {
                               {order.movementType || "—"}
                             </div>
                           </td>
-                          {/* ROUTE */}
+                          {/* ROUTE / INTERCARTING SITE */}
                           <td>
-                            <span>
-                              {order.origin ||
-                                "—"}
-                            </span>
-                            <span className="route-arrow">
-                              →
-                            </span>
-                            <span>
-                              {order.destination ||
-                                "—"}
-                            </span>
+                            {isIntercarting ? (
+                              <span>{order.siteLocation || "—"}</span>
+                            ) : (
+                              <>
+                                <span>{order.origin || "—"}</span>
+                                <span className="route-arrow">→</span>
+                                <span>{order.destination || "—"}</span>
+                              </>
+                            )}
                           </td>
                           {/* STAGE */}
                           <td>

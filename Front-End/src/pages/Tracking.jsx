@@ -1,3286 +1,847 @@
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  ArrowUpRight,
+  CalendarDays,
+  CheckCircle2,
+  FileClock,
+  FileWarning,
+  MapPin,
+  Navigation,
+  RefreshCw,
+  Route,
+  Search,
+  Truck,
+  X,
+} from "lucide-react";
 import "../pagescss/tracking.css";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { AlertTriangle, CalendarDays, CheckCircle2, ChevronDown, ChevronRight, ChevronUp, CircleAlert, CirclePause, Clock3, ExternalLink, FileText, MapPin, MessageSquareText, Navigation, Package, PackageCheck, Route, Search, Truck, UserRound, X } from "lucide-react";
-/* =========================================================
-   SAFE HELPERS
-\========================================================= */
-const TripList_safeArray = (value) =>
-  Array.isArray(value) ? value : [];
-const TripList_safeText = (value, fallback = "") => {
-  if (value === null || value === undefined) {
-    return fallback;
-  }
-  return String(value);
-};
-/* =========================================================
-   LATEST TRACKING
-\========================================================= */
-const TripList_getLatestTracking = (vehicle) => {
-  const tracking = TripList_safeArray(vehicle?.dailyTracking);
-  if (!tracking.length) {
-    return null;
-  }
-  return tracking[tracking.length - 1];
-};
-/* =========================================================
-   VEHICLE STATUS
-\========================================================= */
-const TripList_getVehicleStatus = (vehicle) => {
-  const latest = TripList_getLatestTracking(vehicle);
-  const status = TripList_safeText(
-    latest?.status || vehicle?.status,
-    "Idle"
-  ).trim().toLowerCase();
-  if (status === "moving") return "Moving";
-  if (status === "breakdown") return "Breakdown";
-  if (status === "stopped") return "Idle";
-  if (status !== "reached") return "Idle";
-  const unloadingCompleted =
-    TripList_safeText(
-      vehicle?.unloading?.status,
-      vehicle?.unloadingStatus || ""
-    ).trim().toLowerCase() === "completed";
-  const lrCompleted = Boolean(
-    vehicle?.lr?.number ||
-    vehicle?.lr?.date ||
-    vehicle?.pod?.fileName
-  );
-  const ewayStatus = TripList_safeText(
-    vehicle?.ewayBill?.status,
-    ""
-  ).trim().toLowerCase();
-  const ewayCompleted = Boolean(
-    (vehicle?.ewayBill?.number || vehicle?.ewayBill?.fileName) &&
-    ewayStatus !== "pending" &&
-    ewayStatus !== "expired"
-  );
-  return unloadingCompleted && lrCompleted && ewayCompleted
-    ? "Reached"
-    : "Pending";
-};
-/* =========================================================
-   VEHICLE STATUS COUNTS
-\========================================================= */
-const TripList_getVehicleStatusCounts = (trip) => {
-  const vehicles = TripList_safeArray(
-    trip?.allocatedVehicles
-  );
-  const counts = {
-    total: vehicles.length,
-    Moving: 0,
-    Idle: 0,
-    Breakdown: 0,
-    Reached: 0,
-  };
-  vehicles.forEach((vehicle) => {
-    const status = TripList_getVehicleStatus(vehicle);
-    if (
-      Object.prototype.hasOwnProperty.call(
-        counts,
-        status
-      )
-    ) {
-      counts[status] += 1;
-    }
-  });
-  return counts;
-};
-/* =========================================================
-   TRIP KEY
-\========================================================= */
-const TripList_getTripKey = (trip, index) =>
-  TripList_safeText(trip?._id) ||
-  TripList_safeText(trip?.id) ||
-  TripList_safeText(trip?.tripId) ||
-  `trip-${index}`;
-/* =========================================================
-   SELECTED TRIP
-\========================================================= */
-const TripList_isSameTrip = (
-  trip,
-  selectedTrip
-) => {
-  if (!trip || !selectedTrip) {
-    return false;
-  }
-  if (trip._id && selectedTrip._id) {
-    return (
-      String(trip._id) ===
-      String(selectedTrip._id)
-    );
-  }
-  if (trip.id && selectedTrip.id) {
-    return (
-      String(trip.id) ===
-      String(selectedTrip.id)
-    );
-  }
-  return (
-    TripList_safeText(trip.tripId) ===
-    TripList_safeText(selectedTrip.tripId)
-  );
-};
-/* =========================================================
-   MATERIAL
-\========================================================= */
-const TripList_getMaterial = (trip) => {
-  return (
-    TripList_safeText(trip?.material) ||
-    TripList_safeText(trip?.materialType) ||
-    TripList_safeText(trip?.materialName) ||
-    "-"
-  );
-};
-/* =========================================================
-   COMPONENT
-\========================================================= */
-const TripListColumn = ({
-  trips = [],
-  selectedTrip = null,
-  onSelectTrip,
-}) => {
-  const tripList = TripList_safeArray(trips);
-  return (
-    <aside className="trip-list-column">
-      {/* HEADER */}
-      <div className="trip-list-header">
-        <div className="trip-summary-icon">
-          <Truck size={22} />
-        </div>
-        <div className="trip-list-header-content">
-          <h3>Active Trips</h3>
-          <span>
-            {tripList.length} {tripList.length === 1 ? "active trip" : "active trips"}
-          </span>
-        </div>
-        <div className="trip-list-total">
-          <Truck size={18} />
-          <strong>{tripList.length}</strong>
-        </div>
-      </div>
-      {/* TRIP LIST */}
-      <div className="trip-list-scroll">
-        {tripList.length === 0 ? (
-          <div className="trip-list-empty">
-            <Truck size={22} />
-            <strong>
-              No active trips
-            </strong>
-            <span>
-              Active trips will appear here.
-            </span>
-          </div>
-        ) : (
-          tripList.map((trip, index) => {
-            const active =
-              TripList_isSameTrip(
-                trip,
-                selectedTrip
-              );
-            const vehicleStatusCounts =
-              TripList_getVehicleStatusCounts(trip);
-            const origin =
-              TripList_safeText(
-                trip?.origin,
-                "-"
-              ) || "-";
-            const destination =
-              TripList_safeText(
-                trip?.destination,
-                "-"
-              ) || "-";
-            const material =
-              TripList_getMaterial(trip);
-            const customer =
-              TripList_safeText(
-                trip?.customer,
-                "Customer"
-              );
-            return (
-              <button
-                type="button"
-                key={TripList_getTripKey(
-                  trip,
-                  index
-                )}
-                className={`trip-list-item ${active ? "active" : ""
-                  }`}
-                onClick={() =>
-                  onSelectTrip?.(trip)
-                }
-              >
-                {/* =============================================
-                    TOP ROW
-                    CUSTOMER + MATERIAL LEFT
-                    ORDER ID RIGHT
-                ============================================= */}
-                <div className="trip-card-top">
-                  <div className="trip-card-main-info">
-                    {/* CUSTOMER */}
-                    <div
-                      className="trip-list-customer"
-                      title={customer}
-                    >
-                      <span className="trip-customer-icon">
-                        <UserRound size={12} />
-                      </span>
-                      <strong>
-                        {customer}
-                      </strong>
-                    </div>
-                    {/* SEPARATOR */}
-                    <span
-                      className="trip-info-separator"
-                      aria-hidden="true"
-                    />
-                    {/* MATERIAL */}
-                    <div
-                      className="trip-list-material"
-                      title={material}
-                    >
-                      <Package size={12} />
-                      <span>
-                        {material}
-                      </span>
-                    </div>
-                  </div>
-                  {/* ORDER ID */}
-                  <div className="trip-list-trip-id">
-                    <span className="trip-list-truck-icon">
-                      <Truck size={13} />
-                    </span>
-                    <strong>
-                      {TripList_safeText(
-                        trip?.tripId,
-                        `Trip ${index + 1}`
-                      )}
-                    </strong>
-                  </div>
-                </div>
-                {/* =============================================
-                    ROUTE
-                ============================================= */}
-                <div
-                  className="trip-list-route"
-                  title={`${origin} → ${destination}`}
-                >
-                  <MapPin size={12} />
-                  <span>
-                    {origin}
-                  </span>
-                  <ChevronRight size={11} />
-                  <span>
-                    {destination}
-                  </span>
-                </div>
-                {/* =============================================
-                    VEHICLE STATUS SUMMARY
-                ============================================= */}
-                <div className="trip-list-vehicle-summary">
-                  {/* TOTAL */}
-                  <div className="trip-vehicle-total">
-                    <Truck size={11} />
-                    <span>
-                      Total
-                    </span>
-                    <strong>
-                      {vehicleStatusCounts.total}
-                    </strong>
-                  </div>
-                  {/* MOVING */}
-                  <div className="trip-vehicle-stat moving">
-                    <span className="trip-vehicle-dot" />
-                    <span>
-                      Moving
-                    </span>
-                    <strong>
-                      {vehicleStatusCounts.Moving}
-                    </strong>
-                  </div>
-                  {/* IDLE */}
-                  <div className="trip-vehicle-stat idle">
-                    <span className="trip-vehicle-dot" />
-                    <span>
-                      Idle
-                    </span>
-                    <strong>
-                      {vehicleStatusCounts.Idle}
-                    </strong>
-                  </div>
-                  {/* BREAKDOWN */}
-                  <div className="trip-vehicle-stat breakdown">
-                    <span className="trip-vehicle-dot" />
-                    <span>
-                      Breakdown
-                    </span>
-                    <strong>
-                      {vehicleStatusCounts.Breakdown}
-                    </strong>
-                  </div>
-                  {/* PENDING */}
-                  <div className="trip-vehicle-stat pending">
-                    <span className="trip-vehicle-dot" />
-                    <span>Pending</span>
-                    <strong>{vehicleStatusCounts.Pending}</strong>
-                  </div>
-                  {/* REACHED */}
-                  <div className="trip-vehicle-stat reached">
-                    <span className="trip-vehicle-dot" />
-                    <span>
-                      Reached
-                    </span>
-                    <strong>
-                      {vehicleStatusCounts.Reached}
-                    </strong>
-                  </div>
-                </div>
-              </button>
-            );
-          })
-        )}
-      </div>
-    </aside>
-  );
-};
-const Vehicle_API_BASE_URL = (
+
+const API_BASE = (
   import.meta.env.VITE_API_URL ||
+  import.meta.env.VITE_API_BASE_URL ||
   "http://localhost:5000"
 ).replace(/\/+$/, "");
-const Vehicle_TRIP_API_URL = `${Vehicle_API_BASE_URL}/api/triporders`;
-const Vehicle_safeArray = (value) =>
-  Array.isArray(value) ? value : [];
-const Vehicle_safeText = (value, fallback = "-") => {
-  if (
-    value === null ||
-    value === undefined ||
-    value === ""
-  ) {
-    return fallback;
-  }
-  if (typeof value === "object") {
-    if (value.$oid) {
-      return String(value.$oid);
-    }
-    if (value.$date) {
-      return String(value.$date);
-    }
-    return fallback;
-  }
-  return String(value);
-};
-const Vehicle_getSafeDateValue = (value) => {
-  if (
-    value === null ||
-    value === undefined ||
-    value === ""
-  ) {
-    return null;
-  }
-  if (
-    typeof value === "object" &&
-    !Array.isArray(value)
-  ) {
-    if (value.$date !== undefined) {
-      return Vehicle_getSafeDateValue(value.$date);
-    }
-    if (value.$numberLong !== undefined) {
-      const timestamp = Number(value.$numberLong);
-      return Number.isFinite(timestamp)
-        ? timestamp
-        : null;
-    }
-    return null;
-  }
-  return value;
-};
-const Vehicle_formatDate = (value) => {
-  const safeValue = Vehicle_getSafeDateValue(value);
-  if (!safeValue) {
-    return "-";
-  }
-  const date = new Date(safeValue);
-  if (Number.isNaN(date.getTime())) {
-    return "-";
-  }
-  return date.toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-};
-const Vehicle_formatLastUpdated = (value) => {
-  const safeValue = Vehicle_getSafeDateValue(value);
-  if (!safeValue) {
-    return "-";
-  }
-  const date = new Date(safeValue);
-  if (Number.isNaN(date.getTime())) {
-    return "-";
-  }
-  return date.toLocaleString("en-IN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-};
-const Vehicle_formatKm = (value) => {
-  if (
-    value === null ||
-    value === undefined ||
-    value === ""
-  ) {
-    return "-";
-  }
-  const numericValue = Number(value);
-  if (!Number.isFinite(numericValue)) {
-    return "-";
-  }
-  return `${numericValue.toLocaleString(
-    "en-IN"
-  )} km`;
-};
-const Vehicle_formatDays = (value) => {
-  if (
-    value === null ||
-    value === undefined ||
-    value === ""
-  ) {
-    return "-";
-  }
-  const numericValue = Number(value);
-  if (!Number.isFinite(numericValue)) {
-    return "-";
-  }
-  return `${numericValue} ${numericValue === 1 ? "Day" : "Days"
-    }`;
-};
-const Vehicle_getVehicleId = (vehicle) => {
-  if (!vehicle) {
+const API_URL = `${API_BASE}/api/triporders`;
+const STATUSES = ["Moving", "Idle", "Breakdown", "Pending", "Reached"];
+const list = (value) => (Array.isArray(value) ? value : []);
+const text = (value) => (value == null ? "" : String(value?.$oid ?? value));
+const keyOf = (trip) => text(trip?._id) || text(trip?.tripId) || text(trip?.id);
+const dateFormatter = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "Asia/Kolkata",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+const dateKey = (value) => {
+  if (value == null || value === "") return "";
+  if (typeof value === "object" && !(value instanceof Date)) {
+    if (value.$date !== undefined) return dateKey(value.$date);
+    if (value.$numberLong !== undefined)
+      return dateKey(Number(value.$numberLong));
     return "";
   }
-  return (
-    Vehicle_safeText(vehicle.allocationId, "") ||
-    Vehicle_safeText(vehicle._id, "") ||
-    Vehicle_safeText(vehicle.vehicleNumber, "")
-  );
+  if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    const parsed = new Date(`${value}T00:00:00Z`);
+    return !Number.isNaN(parsed.getTime()) &&
+      parsed.toISOString().slice(0, 10) === value
+      ? value
+      : "";
+  }
+  const date = value instanceof Date ? value : new Date(value);
+  if (!Number.isFinite(date.getTime())) return "";
+  const parts = dateFormatter.formatToParts(date);
+  const part = (type) => parts.find((item) => item.type === type)?.value || "";
+  return `${part("year")}-${part("month")}-${part("day")}`;
 };
-const Vehicle_getLatestTracking = (vehicle) => {
-  const dailyTracking = Vehicle_safeArray(
-    vehicle?.dailyTracking
-  );
-  if (!dailyTracking.length) {
-    return null;
-  }
-  return dailyTracking[
-    dailyTracking.length - 1
-  ];
-};
-const Vehicle_getVehicleStatus = (vehicle) => {
-  const latestTracking = Vehicle_getLatestTracking(vehicle);
-  const rawStatus = Vehicle_safeText(latestTracking?.status, "Idle");
-  if (rawStatus.trim().toLowerCase() !== "reached") {
-    return rawStatus;
-  }
-  const unloadingCompleted =
-    String(vehicle?.unloading?.status || "").trim().toLowerCase() === "completed";
-  const lrCompleted = Boolean(
-    vehicle?.lr?.number ||
-    vehicle?.lr?.date ||
-    vehicle?.pod?.fileName
-  );
-  const ewayStatus = String(vehicle?.ewayBill?.status || "").trim().toLowerCase();
-  const ewayCompleted = Boolean(
-    (vehicle?.ewayBill?.number || vehicle?.ewayBill?.fileName) &&
-    ewayStatus !== "pending"
-  );
-  return unloadingCompleted && lrCompleted && ewayCompleted
-    ? "Reached"
-    : "Pending";
-};
-const Vehicle_getRequirement = (trip, vehicle) => {
-  if (!trip || !vehicle) {
-    return null;
-  }
-  return (
-    Vehicle_safeArray(
-      trip.vehicleRequirements
-    ).find(
-      (requirement) =>
-        Vehicle_safeText(
-          requirement.requirementId,
-          ""
-        ) ===
-        Vehicle_safeText(
-          vehicle.requirementId,
-          ""
-        )
-    ) || null
-  );
-};
-const Vehicle_getConfirmation = (trip, vehicle) => {
-  if (!trip || !vehicle) {
-    return null;
-  }
-  const confirmations = Vehicle_safeArray(
-    trip.vehicleConfirmations
-  );
-  if (vehicle.confirmationId) {
-    const confirmation =
-      confirmations.find(
-        (item) =>
-          Vehicle_safeText(
-            item.confirmationId,
-            ""
-          ) ===
-          Vehicle_safeText(
-            vehicle.confirmationId,
-            ""
-          )
-      );
-    if (confirmation) {
-      return confirmation;
-    }
-  }
-  return (
-    confirmations.find(
-      (item) =>
-        Vehicle_safeText(
-          item.requirementId,
-          ""
-        ) ===
-        Vehicle_safeText(
-          vehicle.requirementId,
-          ""
-        ) &&
-        item.status === "Approved"
-    ) || null
-  );
-};
-const Vehicle_getQuotation = (trip, vehicle) => {
-  if (!trip || !vehicle) {
-    return null;
-  }
-  const quotations = Vehicle_safeArray(
-    trip.trafficQuotations
-  );
-  if (vehicle.quotationId) {
-    const quotation = quotations.find(
-      (item) =>
-        Vehicle_safeText(
-          item.quotationId,
-          ""
-        ) ===
-        Vehicle_safeText(
-          vehicle.quotationId,
-          ""
-        )
-    );
-    if (quotation) {
-      return quotation;
-    }
-  }
-  const confirmation =
-    Vehicle_getConfirmation(trip, vehicle);
-  if (!confirmation?.quotationId) {
-    return null;
-  }
-  return (
-    quotations.find(
-      (item) =>
-        Vehicle_safeText(
-          item.quotationId,
-          ""
-        ) ===
-        Vehicle_safeText(
-          confirmation.quotationId,
-          ""
-        )
-    ) || null
-  );
-};
-const Vehicle_DetailRow = ({
-  label,
-  value,
-  halting = false,
-}) => (
-  <div className="simple-detail-row">
-    <span className="simple-detail-label">
-      {label}
-    </span>
-    <span className="simple-detail-colon">
-      :
-    </span>
-    <strong
-      className={`simple-detail-value ${halting ? "halting" : ""} ${String(label ?? "").trim().toLowerCase() === "status" ? `tracking-status-text ${String(value ?? "").trim().toLowerCase().replace(/[\s_]+/g, "-")}` : ""}`}
-    >
-      {Vehicle_safeText(value)}
-    </strong>
-  </div>
-);
-const Vehicle_PersonSection = ({
-  className = "",
-  icon,
-  title,
-  rows = [],
-}) => (
-  <div className={`simple-operation-card person-operation-card lr-person-section ${className}`}>
-    <div className="simple-operation-header lr-person-heading common-detail-header">
-      <div className="simple-operation-title">
-        <span className="simple-operation-icon person">
-          {icon}
-        </span>
-        <div>
-          <strong>{title}</strong>
-        </div>
-      </div>
-    </div>
-    <div className="simple-operation-details lr-person-content">
-      {rows.map(([label, value]) => (
-        <div className="simple-detail-row lr-person-row" key={label}>
-          <span className="simple-detail-label">{label}</span>
-          <span className="simple-detail-colon lr-person-colon">:</span>
-          <strong className="simple-detail-value">{Vehicle_safeText(value)}</strong>
-        </div>
-      ))}
-    </div>
-  </div>
-);
-const VehicleColumn = ({
-  trip,
-  selectedVehicle,
-  onSelectVehicle,
-  getStatusClass,
-}) => {
-  const [
-    showExtraVehicles,
-    setShowExtraVehicles,
-  ] = useState(false);
-  if (!trip) {
-    return (
-      <section className="vehicle-column-panel">
-        <div className="vehicle-column-empty">
-          <div className="vehicle-column-empty-icon">
-            <Truck size={24} />
-          </div>
-          <strong>
-            No Trip Selected
-          </strong>
-          <p>
-            Select a trip to view vehicle
-            information.
-          </p>
-        </div>
-      </section>
-    );
-  }
-  const vehicles = Vehicle_safeArray(
-    trip.allocatedVehicles
-  );
-  const selectedVehicleId =
-    typeof selectedVehicle === "object"
-      ? Vehicle_getVehicleId(selectedVehicle)
-      : Vehicle_safeText(
-        selectedVehicle,
-        ""
-      );
-  const activeVehicle =
-    vehicles.find(
-      (vehicle) =>
-        Vehicle_getVehicleId(vehicle) ===
-        selectedVehicleId
-    ) ||
-    (typeof selectedVehicle === "object"
-      ? selectedVehicle
-      : null) ||
-    vehicles[0] ||
-    null;
-  const VISIBLE_VEHICLE_COUNT = 5;
-  const visibleVehicles =
-    vehicles.slice(
-      0,
-      VISIBLE_VEHICLE_COUNT
-    );
-  const extraVehicles =
-    vehicles.slice(
-      VISIBLE_VEHICLE_COUNT
-    );
-  const selectedExtraVehicle =
-    extraVehicles.find(
-      (vehicle) =>
-        Vehicle_getVehicleId(vehicle) ===
-        selectedVehicleId
-    ) || null;
-  const handleVehicleSelect = (
-    vehicle
-  ) => {
-    const vehicleId =
-      Vehicle_getVehicleId(vehicle);
-    if (!vehicleId) {
-      return;
-    }
-    onSelectVehicle?.(vehicleId);
-    setShowExtraVehicles(false);
-  };
-  const getVehicleStatusIcon = (
-    status
-  ) => {
-    if (status === "Moving") {
-      return (
-        <Navigation size={10} />
-      );
-    }
-    if (
-      status === "Breakdown" ||
-      status === "Stopped"
-    ) {
-      return (
-        <AlertTriangle size={10} />
-      );
-    }
-    if (status === "Reached") {
-      return (
-        <CheckCircle2
-          size={10}
-        />
-      );
-    }
-    return (
-      <CirclePause size={10} />
-    );
-  };
-  const getVehicleStatusClass = (
-    status
-  ) => {
-    if (status === "Stopped") {
-      return "breakdown";
-    }
-    if (
-      typeof getStatusClass ===
-      "function"
-    ) {
-      return getStatusClass(status);
-    }
-    return Vehicle_safeText(
-      status,
-      "Idle"
+const dateNumber = (key) => (key ? Date.parse(`${key}T00:00:00Z`) : NaN);
+const shortDate = (key) =>
+  key
+    ? new Date(`${key}T00:00:00Z`).toLocaleDateString("en-IN", {
+        day: "numeric",
+        month: "short",
+        timeZone: "UTC",
+      })
+    : "—";
+const normalizeSearch = (value) =>
+  text(value).normalize("NFKC").trim().toLowerCase().replace(/\s+/g, " ");
+const latestTracking = (vehicle) =>
+  list(vehicle?.dailyTracking)
+    .slice()
+    .sort(
+      (a, b) =>
+        (dateNumber(dateKey(a.date || a.updatedAt)) || 0) -
+        (dateNumber(dateKey(b.date || b.updatedAt)) || 0),
     )
-      .toLowerCase()
-      .replaceAll(" ", "-");
-  };
-  const latestTracking =
-    Vehicle_getLatestTracking(activeVehicle);
-  const requirement =
-    Vehicle_getRequirement(
-      trip,
-      activeVehicle
-    );
-  const quotation =
-    Vehicle_getQuotation(
-      trip,
-      activeVehicle
-    );
-  const vehicleStatus =
-    Vehicle_getVehicleStatus(
-      activeVehicle
-    );
-  const vehicleNumber =
-    Vehicle_safeText(
-      activeVehicle?.vehicleNumber
-    );
-  const totalKm = Number(trip.distance) || 0;
-  const trackingHistory = Vehicle_safeArray(activeVehicle?.dailyTracking);
-  const kmCovered = trackingHistory.reduce((total, tracking) => {
-    const dailyRunningKm = Number(tracking?.runningKm);
-    if (!Number.isFinite(dailyRunningKm) || dailyRunningKm < 0) {
-      return total;
-    }
-    return total + dailyRunningKm;
-  }, 0);
-  const balanceKm = Math.max(totalKm - kmCovered, 0);
-  const currentPosition =
-    Vehicle_safeText(
-      latestTracking?.currentLocation
-    );
-  const normalizeRouteLocation = (value) =>
-    Vehicle_safeText(value, "")
+    .at(-1);
+const hasDocument = (doc) =>
+  Boolean(
+    doc?.fileName ||
+    doc?.originalName ||
+    doc?.filePath ||
+    doc?.fileUrl ||
+    doc?.mimeType,
+  );
+const isDelivered = (vehicle) =>
+  text(latestTracking(vehicle)?.status || vehicle?.status)
+    .trim()
+    .toLowerCase() === "reached" ||
+  text(vehicle?.unloading?.status).trim().toLowerCase() === "completed";
+const podPending = (vehicle) =>
+  isDelivered(vehicle) && !hasDocument(vehicle?.pod);
+const ewayExpiring = (vehicle, today) => {
+  const doc = vehicle?.ewayBill;
+  if (!doc?.number && !hasDocument(doc)) return false;
+  const expiry = dateKey(doc?.validUpto);
+  const days = (dateNumber(expiry) - dateNumber(today)) / 86400000;
+  return Number.isFinite(days) && days >= 0 && days <= 2;
+};
+// Retain the previous tracking page's document-aware arrival status.
+const vehicleStatus = (vehicle, today) => {
+  const status = text(
+    latestTracking(vehicle)?.status || vehicle?.status || "Idle",
+  )
+    .trim()
+    .toLowerCase();
+  if (status === "moving") return "Moving";
+  if (status === "breakdown") return "Breakdown";
+  if (status !== "reached") return "Idle";
+  const unloaded =
+    text(vehicle?.unloading?.status || vehicle?.unloadingStatus)
       .trim()
-      .toLowerCase()
-      .replace(/\s+/g, " ");
-  const getRouteLocationText = (value) => {
-    if (typeof value === "string" || typeof value === "number") {
-      return Vehicle_safeText(value, "").trim();
-    }
-    if (value && typeof value === "object") {
-      return Vehicle_safeText(
-        value.location ||
-        value.name ||
-        value.city ||
-        value.place ||
-        value.label,
-        ""
-      ).trim();
-    }
-    return "";
-  };
-  const rawRouteLocations = (() => {
-    if (Array.isArray(trip?.routeLocations)) {
-      return trip.routeLocations;
-    }
-    if (Array.isArray(trip?.route)) {
-      return trip.route;
-    }
-    if (Array.isArray(trip?.routes)) {
-      return trip.routes;
-    }
-    if (typeof trip?.route === "string") {
-      return trip.route
-        .split(/\s*(?:→|->|>|,|\\|)\s*/)
-        .filter(Boolean);
-    }
-    return [];
-  })();
-  const enteredRouteLocations = rawRouteLocations
-    .map(getRouteLocationText)
-    .filter(Boolean);
-  const originLocation = Vehicle_safeText(trip?.origin, "").trim();
-  const destinationLocation = Vehicle_safeText(trip?.destination, "").trim();
-  const routeLocations = [...enteredRouteLocations];
-  if (
-    originLocation &&
-    !routeLocations.some(
-      (location) =>
-        normalizeRouteLocation(location) ===
-        normalizeRouteLocation(originLocation)
-    )
-  ) {
-    routeLocations.unshift(originLocation);
-  }
-  if (
-    destinationLocation &&
-    !routeLocations.some(
-      (location) =>
-        normalizeRouteLocation(location) ===
-        normalizeRouteLocation(destinationLocation)
-    )
-  ) {
-    routeLocations.push(destinationLocation);
-  }
-  const currentRouteIndex =
-    currentPosition && currentPosition !== "-"
-      ? routeLocations.findIndex(
-        (location) =>
-          normalizeRouteLocation(location) ===
-          normalizeRouteLocation(currentPosition)
-      )
-      : -1;
-  const yesterdayPosition =
-    Vehicle_safeText(
-      latestTracking
-        ?.yesterdayLocation
-    );
-  const yesterdayKm =
-    latestTracking?.yesterdayKm ??
-    null;
-  const todayKm =
-    latestTracking?.todayKm ??
-    null;
-  const runningKm =
-    latestTracking?.runningKm ??
-    null;
-  const currentDay =
-    latestTracking?.day ??
-    null;
-  const lastUpdated =
-    Vehicle_formatLastUpdated(
-      latestTracking?.updatedAt
-    );
-  const vehicleType =
-    Vehicle_safeText(
-      requirement?.vehicleType
-    );
-  const configuration =
-    Vehicle_safeText(
-      requirement?.configuration
-    );
-  const classification =
-    Vehicle_safeText(
-      requirement?.classification
-    );
-  const transporter =
-    Vehicle_safeText(
-      quotation?.transporter
-    );
-  const loading =
-    activeVehicle?.loading || {};
-  const loadingStatus =
-    Vehicle_safeText(
-      loading.status,
-      "Pending"
-    );
-  const loadingPointInDate =
-    Vehicle_formatDate(
-      loading.pointInDate
-    );
-  const loadingDate =
-    Vehicle_formatDate(
-      loading.loadingDate
-    );
-  const loadingPointOutDate =
-    Vehicle_formatDate(
-      loading.pointOutDate
-    );
-  const loadingHaltingDays =
-    loading.haltingDays ??
-    null;
-  const loadingRemarks =
-    Vehicle_safeText(
-      loading.remarks
-    );
-  const unloading =
-    activeVehicle?.unloading || {};
-  const unloadingStatus =
-    Vehicle_safeText(
-      unloading.status,
-      "Pending"
-    );
-  const unloadingPointInDate =
-    Vehicle_formatDate(
-      unloading.pointInDate
-    );
-  const unloadingDate =
-    Vehicle_formatDate(
-      unloading.unloadingDate
-    );
-  const unloadingPointOutDate =
-    Vehicle_formatDate(
-      unloading.pointOutDate
-    );
-  const unloadingHaltingDays =
-    unloading.haltingDays ??
-    null;
-  const unloadingRemarks =
-    Vehicle_safeText(
-      unloading.remarks
-    );
-  const driver =
-    activeVehicle?.driver || {};
-  const driverName =
-    Vehicle_safeText(driver.name);
-  const driverNumber =
-    Vehicle_safeText(
-      driver.contactNumber
-    );
-  const escort =
-    activeVehicle?.escort || {};
-  const escortVehicleNumber =
-    Vehicle_safeText(
-      escort.vehicleNumber
-    );
-  const escortName =
-    Vehicle_safeText(escort.name);
-  const escortContactNumber =
-    Vehicle_safeText(
-      escort.contactNumber
-    );
-  const supervisor =
-    activeVehicle?.supervisor || {};
-  const supervisorName =
-    Vehicle_safeText(
-      supervisor.name
-    );
-  const supervisorContact =
-    Vehicle_safeText(
-      supervisor.contactNumber
-    );
-  const lr = activeVehicle?.lr || {};
-  const pod = activeVehicle?.pod || {};
-  const ewayBill = activeVehicle?.ewayBill || {};
-  const lrNumber = Vehicle_safeText(lr.number);
-  const lrDate = Vehicle_formatDate(lr.date);
-  const lrRemarks = Vehicle_safeText(lr.remarks);
-  const lrStatus =
-    lr.number || lr.date || pod.fileName
-      ? "Completed"
-      : "Pending";
-  const podStatus = pod?.fileName
-    ? "Uploaded"
-    : "Pending";
-  const ewayBillNumber = Vehicle_safeText(ewayBill.number);
-  const ewayBillValidUpto = Vehicle_formatDate(ewayBill.validUpto);
-  const ewayBillStatus = Vehicle_safeText(ewayBill.status, "Pending");
-  const getEwayDaysLeft = (value) => {
-    const raw = Vehicle_getSafeDateValue(value);
-    if (!raw) return null;
-    const date = typeof raw === "string" && /^\d{4}-\d{2}-\d{2}/.test(raw)
-      ? new Date(`${raw.slice(0, 10)}T00:00:00`)
-      : new Date(raw);
-    if (Number.isNaN(date.getTime())) return null;
-    const today = new Date();
-    const todayUTC = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
-    const expiryUTC = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate());
-    return Math.round((expiryUTC - todayUTC) / 86400000);
-  };
-  const ewayDaysLeft = getEwayDaysLeft(ewayBill.validUpto);
-  const ewayHeadingStatus = ewayDaysLeft === null
-    ? ewayBillStatus
-    : ewayDaysLeft < 0
-      ? "Expired"
-      : ewayDaysLeft === 0
-        ? "Expires Today"
-        : ewayDaysLeft <= 7
-          ? `${ewayDaysLeft} ${ewayDaysLeft === 1 ? "Day" : "Days"} Left`
-          : "Active";
-  const getDocumentStatusClass = (status) =>
-    Vehicle_safeText(status, "Pending")
-      .toLowerCase()
-      .replaceAll(" ", "-");
-  const ewayHeadingClass = ewayDaysLeft === null
-    ? getDocumentStatusClass(ewayBillStatus)
-    : ewayDaysLeft < 0 ? "expired" : ewayDaysLeft <= 7 ? "expiring-soon" : "active";
-  const viewVehicleDocument = (type) => openTripDocument({
-    baseUrl: Vehicle_TRIP_API_URL,
-    tripId: trip?._id,
-    allocationId: activeVehicle?.allocationId,
-    type,
-    fileName: activeVehicle?.[type]?.originalName || activeVehicle?.[type]?.fileName,
-  });
-  const downloadVehicleDocument = (type) => openTripDocument({
-    baseUrl: Vehicle_TRIP_API_URL,
-    tripId: trip?._id,
-    allocationId: activeVehicle?.allocationId,
-    type,
-    download: true,
-    fileName: activeVehicle?.[type]?.originalName || activeVehicle?.[type]?.fileName,
-  });
-  const customerName =
-    Vehicle_safeText(trip.customer);
-  const customerContact =
-    Vehicle_safeText(
-      trip.contactPerson
-    );
-  const customerPhone =
-    Vehicle_safeText(
-      trip.contactNumber
-    );
+      .toLowerCase() === "completed";
+  const lrReady = Boolean(
+    vehicle?.lr?.number || vehicle?.lr?.date || hasDocument(vehicle?.pod),
+  );
+  const bill = vehicle?.ewayBill || {};
+  const billStatus = text(bill.status).trim().toLowerCase();
+  const billReady =
+    Boolean(bill.number || hasDocument(bill)) &&
+    !["pending", "expired"].includes(billStatus) &&
+    (!dateKey(bill.validUpto) || dateKey(bill.validUpto) >= today);
+  return unloaded && lrReady && billReady ? "Reached" : "Pending";
+};
+const tripStatus = (trip, today) => {
+  const statuses = list(trip?.allocatedVehicles).map((vehicle) =>
+    vehicleStatus(vehicle, today),
+  );
+  if (!statuses.length) return "Pending";
+  if (statuses.every((status) => status === "Reached")) return "Reached";
   return (
-    <section className="vehicle-column-panel">
-      <div className="vehicle-selector-row">
-        {vehicles.length > 0 ? (
-          <>
-            <div className="vehicle-visible-tabs">
-              {visibleVehicles.map(
-                (vehicle, index) => {
-                  const vehicleId =
-                    Vehicle_getVehicleId(
-                      vehicle
-                    );
-                  const active =
-                    selectedVehicleId
-                      ? selectedVehicleId ===
-                      vehicleId
-                      : index === 0;
-                  const status =
-                    Vehicle_getVehicleStatus(
-                      vehicle
-                    );
-                  return (
-                    <button
-                      type="button"
-                      key={
-                        vehicleId ||
-                        index
-                      }
-                      className={`vehicle-number-card ${active
-                        ? "active"
-                        : ""
-                        }`}
-                      onClick={() =>
-                        handleVehicleSelect(
-                          vehicle
-                        )
-                      }
-                      title={Vehicle_safeText(
-                        vehicle.vehicleNumber,
-                        `Vehicle ${index + 1
-                        }`
-                      )}
-                    >
-                      <span>
-                        {Vehicle_safeText(
-                          vehicle.vehicleNumber,
-                          `Vehicle ${index + 1
-                          }`
-                        )}
-                      </span>
-                      <span
-                        className={`vehicle-mini-status ${getVehicleStatusClass(
-                          status
-                        )}`}
-                      >
-                        {getVehicleStatusIcon(
-                          status
-                        )}
-                        {status}
-                      </span>
-                    </button>
-                  );
-                }
-              )}
-            </div>
-            {extraVehicles.length >
-              0 && (
-                <div className="vehicle-more-dropdown">
-                  <button
-                    type="button"
-                    className={`vehicle-more-button ${selectedExtraVehicle
-                      ? "active"
-                      : ""
-                      }`}
-                    onClick={() =>
-                      setShowExtraVehicles(
-                        (current) =>
-                          !current
-                      )
-                    }
-                    aria-expanded={
-                      showExtraVehicles
-                    }
-                    aria-haspopup="listbox"
-                  >
-                    <span className="vehicle-more-button-text">
-                      {selectedExtraVehicle
-                        ? Vehicle_safeText(
-                          selectedExtraVehicle.vehicleNumber,
-                          "More Vehicles"
-                        )
-                        : `More (${extraVehicles.length})`}
-                    </span>
-                    {showExtraVehicles ? (
-                      <ChevronUp
-                        size={15}
-                      />
-                    ) : (
-                      <ChevronDown
-                        size={15}
-                      />
-                    )}
-                  </button>
-                  {showExtraVehicles && (
-                    <div
-                      className="vehicle-more-menu"
-                      role="listbox"
-                    >
-                      {extraVehicles.map(
-                        (
-                          vehicle,
-                          index
-                        ) => {
-                          const vehicleId =
-                            Vehicle_getVehicleId(
-                              vehicle
-                            );
-                          const active =
-                            selectedVehicleId ===
-                            vehicleId;
-                          const status =
-                            Vehicle_getVehicleStatus(
-                              vehicle
-                            );
-                          return (
-                            <button
-                              type="button"
-                              role="option"
-                              aria-selected={
-                                active
-                              }
-                              key={
-                                vehicleId ||
-                                `extra-${index}`
-                              }
-                              className={`vehicle-more-option ${active
-                                ? "active"
-                                : ""
-                                }`}
-                              onClick={() =>
-                                handleVehicleSelect(
-                                  vehicle
-                                )
-                              }
-                            >
-                              <span>
-                                {Vehicle_safeText(
-                                  vehicle.vehicleNumber,
-                                  `Vehicle ${VISIBLE_VEHICLE_COUNT +
-                                  index +
-                                  1
-                                  }`
-                                )}
-                              </span>
-                              <span
-                                className={`vehicle-mini-status ${getVehicleStatusClass(
-                                  status
-                                )}`}
-                              >
-                                {getVehicleStatusIcon(
-                                  status
-                                )}
-                                {status}
-                              </span>
-                            </button>
-                          );
-                        }
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
-          </>
-        ) : (
-          <div className="vehicle-mini-empty">
-            No allocated vehicles found.
-          </div>
-        )}
-      </div>
-      <div className="tracking-route-stepper" aria-label="Trip route progress"
-        style={{ "--route-stops": Math.max(routeLocations.length, 1) }}>
-        {routeLocations.map((location, index, stops) => {
-          const isOrigin = index === 0;
-          const isDestination = index === stops.length - 1;
-          const isCurrent = currentRouteIndex >= 0 && index === currentRouteIndex;
-          const isCompleted = currentRouteIndex >= 0
-            ? index < currentRouteIndex
-            : false;
-          const stepStatus = isCurrent ? "current" : isCompleted ? "completed" : "pending";
-          const stepLabel = isOrigin ? "ORIGIN" : isDestination ? "DESTINATION" : "";
-          return (
-            <React.Fragment key={`${normalizeRouteLocation(location)}-${index}`}>
-              <div
-                className={`tracking-step ${stepStatus}${isOrigin ? " origin" : ""}${isDestination ? " destination" : ""}`}
-                aria-current={isCurrent ? "step" : undefined}
-                title={location}
-                aria-label={`${location}${stepLabel ? `, ${stepLabel.toLowerCase()}` : ""}${isCurrent ? ", current position" : ""}`}
-              >
-                <div className="tracking-step-icon">
-                  {isCurrent ? (
-                    <Truck size={15} aria-hidden="true" />
-                  ) : isCompleted ? (
-                    <MapPin size={15} aria-hidden="true" />
-                  ) : (
-                    <MapPin size={15} aria-hidden="true" />
-                  )}
-                </div>
-                <span className="tracking-step-name">{location}</span>
-                {stepLabel && <span className="tracking-step-label">{stepLabel}</span>}
-                {index < stops.length - 1 && (
-                  <div
-                    className={`tracking-step-line ${currentRouteIndex >= 0 && index < currentRouteIndex ? "completed-line" : ""}`}
-                    aria-hidden="true"
-                  />
-                )}
-              </div>
-            </React.Fragment>
-          );
-        })}
-        {routeLocations.length === 0 && (
-          <div className="tracking-route-empty">Route locations are not available.</div>
-        )}
-      </div>
-      {!activeVehicle ? (
-        <div className="vehicle-column-empty">
-          <div className="vehicle-column-empty-icon">
-            <Truck size={24} />
-          </div>
-          <strong>
-            No Vehicle Allocated
-          </strong>
-          <p>
-            Actual vehicles will appear here
-            after allocation in Tracking Input.
-          </p>
+    ["Breakdown", "Moving", "Pending", "Idle"].find((status) =>
+      statuses.includes(status),
+    ) || "Idle"
+  );
+};
+const isOperational = (trip) =>
+  list(trip?.allocatedVehicles).length > 0 ||
+  text(trip?.orderPlaced?.status).trim().toLowerCase() === "completed" ||
+  ["tracking", "trip complete", "trip completed", "completed"].includes(
+    text(trip?.stage).trim().toLowerCase(),
+  );
+const matchesSearch = (trip, query) => {
+  const words = normalizeSearch(query).split(" ").filter(Boolean);
+  if (!words.length) return true;
+  const vehicles = list(trip.allocatedVehicles);
+  const fields = [
+    trip.tripId,
+    trip.customer,
+    trip.contactPerson,
+    trip.contactNumber,
+    trip.materialType,
+    trip.origin,
+    trip.destination,
+    trip.siteLocation,
+    ...vehicles.flatMap((vehicle) => [
+      vehicle.vehicleNumber,
+      vehicle.vehicleNo,
+      vehicle.vehicleType,
+      vehicle.transporter,
+      vehicle.driver?.name,
+      vehicle.driver?.contactNumber,
+      latestTracking(vehicle)?.currentLocation,
+    ]),
+  ].map(normalizeSearch);
+  const joined = fields.join(" ");
+  const compact = normalizeSearch(query).replace(/[\s-]+/g, "");
+  return (
+    fields.some((field) => field.replace(/[\s-]+/g, "").includes(compact)) ||
+    words.every((word) => joined.includes(word))
+  );
+};
+const matchesDate = (trip, selectedDate) =>
+  !selectedDate ||
+  [trip.placementDate, trip.enquiryDate, trip.createdAt, trip.tripDate].some(
+    (value) => dateKey(value) === selectedDate,
+  ) ||
+  list(trip.allocatedVehicles).some((vehicle) =>
+    list(vehicle.dailyTracking).some(
+      (entry) => dateKey(entry.date || entry.updatedAt) === selectedDate,
+    ),
+  );
+const extractTrips = (payload) => {
+  for (const value of [
+    payload,
+    payload?.data,
+    payload?.trips,
+    payload?.orders,
+    payload?.data?.trips,
+    payload?.data?.orders,
+  ])
+    if (Array.isArray(value)) return value;
+  throw new Error("The server returned an unexpected trip list.");
+};
+const buildActivity = (trips, endDate) => {
+  const end = dateNumber(endDate);
+  const days = Array.from({ length: 7 }, (_, index) => ({
+    date: new Date(end - (6 - index) * 86400000).toISOString().slice(0, 10),
+    count: 0,
+  }));
+  trips.forEach((trip) => {
+    const key = dateKey(
+      trip.createdAt || trip.enquiryDate || trip.placementDate,
+    );
+    const entry = days.find((day) => day.date === key);
+    if (entry) entry.count += 1;
+  });
+  return days;
+};
+
+const StatusBadge = ({ status }) => (
+  <span className={`td-status td-status-${status.toLowerCase()}`}>
+    {status}
+  </span>
+);
+
+const TripActivity = ({ data }) => {
+  const container = useRef(null);
+  const [width, setWidth] = useState(300);
+  const [hoverIndex, setHoverIndex] = useState(null);
+  useEffect(() => {
+    const element = container.current;
+    if (!element) return undefined;
+    const measure = () => setWidth(Math.max(180, element.clientWidth));
+    measure();
+    if (typeof ResizeObserver === "undefined") {
+      window.addEventListener("resize", measure);
+      return () => window.removeEventListener("resize", measure);
+    }
+    const observer = new ResizeObserver(measure);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+  const max = Math.max(
+    3,
+    Math.ceil(Math.max(...data.map((day) => day.count), 0) / 3) * 3,
+  );
+  const left = 28,
+    right = width - 15,
+    top = 17,
+    bottom = 142;
+  const points = data.map((day, index) => ({
+    ...day,
+    x: left + (index * (right - left)) / 6,
+    y: bottom - (day.count / max) * (bottom - top),
+  }));
+  const line = points
+    .map((point, index) => `${index ? "L" : "M"}${point.x},${point.y}`)
+    .join(" ");
+  const selected = points[hoverIndex ?? 6];
+  return (
+    <section className="td-panel td-activity">
+      <header className="td-panel-heading">
+        <div>
+          <h2>Trip activity</h2>
+          <p>New trips · Last 7 days</p>
         </div>
-      ) : (
-        <>
-          <div className="trip-distance-summary">
-            <div className="distance-summary-item total">
-              <span>
-                Total KM
-              </span>
-              <strong>
-                {Vehicle_formatKm(
-                  totalKm
-                )}
-              </strong>
-            </div>
-            <div className="distance-summary-item covered">
-              <span>
-                KM Covered
-              </span>
-              <strong>
-                {Vehicle_formatKm(
-                  kmCovered
-                )}
-              </strong>
-            </div>
-            <div className="distance-summary-item balance">
-              <span>
-                Balance
-              </span>
-              <strong>
-                {Vehicle_formatKm(
-                  balanceKm
-                )}
-              </strong>
-            </div>
-          </div>
-          <div className="movement-vehicle-row">
-            <div className="movement-card-section">
-              <div className="movement-heading-row common-detail-header">
-                <span className="section-heading-icon blue">
-                  <Navigation
-                    size={12}
-                  />
-                </span>
-                <div className="movement-heading-content">
-                  <div className="movement-title-line">
-                    <strong>
-                      Movement Status
-                    </strong>
-                    <span className="movement-vehicle-badge">
-                      {vehicleNumber}
-                    </span>
-                  </div>
-                  <span className="movement-heading-subtitle">
-                    Latest daily movement
-                  </span>
-                </div>
-              </div>
-              <div className="movement-card-grid">
-                <div className="movement-info-card">
-                  <span>
-                    Current Position
-                  </span>
-                  <span className="movement-info-colon">:</span>
-                  <strong>
-                    {currentPosition}
-                  </strong>
-                </div>
-                <div className="movement-info-card">
-                  <span>
-                    Yesterday Position
-                  </span>
-                  <span className="movement-info-colon">:</span>
-                  <strong>
-                    {yesterdayPosition}
-                  </strong>
-                </div>
-                <div className="movement-info-card">
-                  <span>
-                    Yesterday KM
-                  </span>
-                  <span className="movement-info-colon">:</span>
-                  <strong>
-                    {Vehicle_formatKm(
-                      yesterdayKm
-                    )}
-                  </strong>
-                </div>
-                <div className="movement-info-card">
-                  <span>
-                    Today KM
-                  </span>
-                  <span className="movement-info-colon">:</span>
-                  <strong>
-                    {Vehicle_formatKm(
-                      todayKm
-                    )}
-                  </strong>
-                </div>
-                <div className="movement-info-card">
-                  <span>
-                    Running KM
-                  </span>
-                  <span className="movement-info-colon">:</span>
-                  <strong>
-                    {Vehicle_formatKm(
-                      runningKm
-                    )}
-                  </strong>
-                </div>
-                <div className="movement-info-card">
-                  <span>
-                    Current Day
-                  </span>
-                  <span className="movement-info-colon">:</span>
-                  <strong>
-                    {currentDay ===
-                      null ||
-                      currentDay ===
-                      undefined
-                      ? "-"
-                      : `Day ${currentDay}`}
-                  </strong>
-                </div>
-                <div className="movement-info-card">
-                  <span>
-                    Status
-                  </span>
-                  <span className="movement-info-colon">:</span>
-                  <strong className={`tracking-status-text ${String(vehicleStatus ?? "").trim().toLowerCase().replace(/[\s_]+/g, "-")}`}>
-                    {vehicleStatus}
-                  </strong>
-                </div>
-              </div>
-            </div>
-            <div className="vehicle-transport-summary">
-              <div className="vehicle-transport-header common-detail-header">
-                <span className="vehicle-transport-icon">
-                  <Truck size={14} />
-                </span>
-                <div className="vehicle-transport-heading">
-                  <strong>Vehicle &amp; Transport Details</strong>
-                  <span>Vehicle specification and assigned transporter</span>
-                </div>
-              </div>
-              <div className="vehicle-transport-grid">
-                <div className="vehicle-transport-item">
-                  <span>Vehicle Type</span>
-                  <span className="vehicle-transport-colon">:</span>
-                  <strong>{vehicleType || "-"}</strong>
-                </div>
-                <div className="vehicle-transport-item">
-                  <span>Configuration</span>
-                  <span className="vehicle-transport-colon">:</span>
-                  <strong>{configuration || "-"}</strong>
-                </div>
-                <div className="vehicle-transport-item">
-                  <span>Classification</span>
-                  <span className="vehicle-transport-colon">:</span>
-                  <strong>{classification || "-"}</strong>
-                </div>
-                <div className="vehicle-transport-item vehicle-number">
-                  <span>Vehicle Number</span>
-                  <span className="vehicle-transport-colon">:</span>
-                  <strong>{vehicleNumber || "-"}</strong>
-                </div>
-                <div className="vehicle-transport-item transporter">
-                  <span>Transporter</span>
-                  <span className="vehicle-transport-colon">:</span>
-                  <strong>{transporter || "-"}</strong>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="operation-details-section">
-            <div className="operation-main-grid">
-              <div className="simple-operation-card loading-card">
-                <div className="simple-operation-header common-detail-header">
-                  <div className="simple-operation-title">
-                    <span className="simple-operation-icon loading">
-                      <Truck
-                        size={13}
-                      />
-                    </span>
-                    <div>
-                      <strong>
-                        Loading Point
-                      </strong>
-                      <span>
-                        Dispatch information
-                      </span>
-                    </div>
-                  </div>
-                  <span className={`simple-operation-status ${String(loadingStatus ?? "").trim().toLowerCase().replace(/[\s_]+/g, "-")}`}>
-                    {loadingStatus}
-                  </span>
-                </div>
-                <div className="simple-operation-details">
-                  <Vehicle_DetailRow
-                    label="LP In Date"
-                    value={
-                      loadingPointInDate
-                    }
-                  />
-                  <Vehicle_DetailRow
-                    label="Loading Date"
-                    value={
-                      loadingDate
-                    }
-                  />
-                  <Vehicle_DetailRow
-                    label="LP Out Date"
-                    value={
-                      loadingPointOutDate
-                    }
-                  />
-                  <Vehicle_DetailRow
-                    label="Halting Days"
-                    value={Vehicle_formatDays(
-                      loadingHaltingDays
-                    )}
-                    halting
-                  />
-                  <div className="simple-remarks-box">
-                    <div className="simple-remarks-heading">
-                      <MessageSquareText
-                        size={10}
-                      />
-                      <span>
-                        Remarks
-                      </span>
-                    </div>
-                    <div className="simple-remarks-value">
-                      {loadingRemarks}
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="simple-operation-card unloading-card">
-                <div className="simple-operation-header common-detail-header">
-                  <div className="simple-operation-title">
-                    <span className="simple-operation-icon unloading">
-                      <PackageCheck
-                        size={13}
-                      />
-                    </span>
-                    <div>
-                      <strong>
-                        Unloading Point
-                      </strong>
-                      <span>
-                        Delivery information
-                      </span>
-                    </div>
-                  </div>
-                  <span className={`simple-operation-status ${String(unloadingStatus ?? "").trim().toLowerCase().replace(/[\s_]+/g, "-")}`}>
-                    {unloadingStatus}
-                  </span>
-                </div>
-                <div className="simple-operation-details">
-                  <Vehicle_DetailRow
-                    label="UP In Date"
-                    value={
-                      unloadingPointInDate
-                    }
-                  />
-                  <Vehicle_DetailRow
-                    label="Unloading Date"
-                    value={
-                      unloadingDate
-                    }
-                  />
-                  <Vehicle_DetailRow
-                    label="UP Out Date"
-                    value={
-                      unloadingPointOutDate
-                    }
-                  />
-                  <Vehicle_DetailRow
-                    label="Halting Days"
-                    value={Vehicle_formatDays(
-                      unloadingHaltingDays
-                    )}
-                    halting
-                  />
-                  <div className="simple-remarks-box">
-                    <div className="simple-remarks-heading">
-                      <MessageSquareText
-                        size={10}
-                      />
-                      <span>
-                        Remarks
-                      </span>
-                    </div>
-                    <div className="simple-remarks-value">
-                      {unloadingRemarks}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="operation-details-section document-operation-section">
-            <div className="operation-main-grid document-three-column-grid">
-              <div className="simple-operation-card document-operation-card">
-                <div className="simple-operation-header common-detail-header">
-                  <div className="simple-operation-title">
-                    <span className="simple-operation-icon document">
-                      <FileText size={13} />
-                    </span>
-                    <div>
-                      <strong>LR Details</strong>
-                    </div>
-                  </div>
-                  <span className={`simple-operation-status document ${getDocumentStatusClass(lrStatus)}`}>
-                    {lrStatus}
-                  </span>
-                </div>
-                <div className="simple-operation-details">
-                  <Vehicle_DetailRow label="LR Number" value={lrNumber} />
-                  <Vehicle_DetailRow label="LR Date" value={lrDate} />
-                  <Vehicle_DetailRow label="Remarks" value={lrRemarks} />
-                </div>
-              </div>
-              <div className="simple-operation-card document-operation-card">
-                <div className="simple-operation-header common-detail-header">
-                  <div className="simple-operation-title">
-                    <span className="simple-operation-icon document">
-                      <FileText size={13} />
-                    </span>
-                    <div>
-                      <strong>E-Way Bill Details</strong>
-                    </div>
-                  </div>
-                  <span className={`simple-operation-status document ${ewayHeadingClass}`}>
-                    {ewayHeadingStatus}
-                  </span>
-                </div>
-                <div className="simple-operation-details">
-                  <Vehicle_DetailRow label="E-Way Bill No" value={ewayBillNumber} />
-                  <Vehicle_DetailRow label="Valid Upto" value={ewayBillValidUpto} />
-                  <Vehicle_DetailRow label="Status" value={ewayBillStatus} />
-                </div>
-              </div>
-              <div className="simple-operation-card document-operation-card pod-operation-card">
-                <div className="simple-operation-header common-detail-header">
-                  <div className="simple-operation-title">
-                    <span className="simple-operation-icon document">
-                      <FileText size={13} />
-                    </span>
-                    <div>
-                      <strong>POD Document</strong>
-                    </div>
-                  </div>
-                  <span className={`simple-operation-status document ${getDocumentStatusClass(podStatus)}`}>
-                    {podStatus}
-                  </span>
-                </div>
-                <div className="simple-operation-details">
-                  <div className="pod-file-info">
-                    <span className="pod-file-label">POD File</span>
-                    <span className="pod-file-name" title={Vehicle_safeText(pod?.fileName)}>{Vehicle_safeText(pod?.fileName)}</span>
-                  </div>
-                  {pod?.fileName && (
-                    <div className="pod-file-buttons">
-                      <button type="button" onClick={() => viewVehicleDocument("pod")} title="View POD">
-                        <ExternalLink size={12} />
-                        <span>View</span>
-                      </button>
-                      <button type="button" onClick={() => downloadVehicleDocument("pod")} title="Download POD">
-                        <FileText size={12} />
-                        <span>Download</span>
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="person-grid">
-            <Vehicle_PersonSection
-              className="driver-section"
-              icon={
-                <Truck
-                  size={11}
+        <span className="td-chart-total">
+          {data.reduce((sum, day) => sum + day.count, 0)} trips
+        </span>
+      </header>
+      <div className="td-chart-container" ref={container}>
+        <svg
+          className="td-chart-svg"
+          viewBox={`0 0 ${width} 174`}
+          role="img"
+          aria-label={`Daily new trip counts: ${data.map((day) => `${shortDate(day.date)}: ${day.count}`).join(", ")}`}
+        >
+          {[0, 1, 2, 3].map((index) => {
+            const y = bottom - (index / 3) * (bottom - top);
+            return (
+              <g key={index}>
+                <line
+                  x1={left}
+                  x2={right}
+                  y1={y}
+                  y2={y}
+                  className="td-chart-grid"
                 />
-              }
-              title="Driver Details"
-              rows={[
-                [
-                  "Driver Name",
-                  driverName,
-                ],
-                [
-                  "Driver Number",
-                  driverNumber,
-                ],
-              ]}
-            />
-            <Vehicle_PersonSection
-              className="escort-section"
-              icon={
-                <Navigation
-                  size={11}
-                />
-              }
-              title="Escort Details"
-              rows={[
-                [
-                  "Vehicle Number",
-                  escortVehicleNumber,
-                ],
-                [
-                  "Name",
-                  escortName,
-                ],
-                [
-                  "Contact Number",
-                  escortContactNumber,
-                ],
-              ]}
-            />
-            <Vehicle_PersonSection
-              className="supervisor-section"
-              icon={
-                <CheckCircle2
-                  size={11}
-                />
-              }
-              title="Supervisor Details"
-              rows={[
-                [
-                  "Name",
-                  supervisorName,
-                ],
-                [
-                  "Contact",
-                  supervisorContact,
-                ],
-              ]}
-            />
-          </div>
-        </>
-      )}
+                <text x={left - 9} y={y + 4} textAnchor="end">
+                  {(index * max) / 3}
+                </text>
+              </g>
+            );
+          })}
+          <path
+            d={`${line} L${right},${bottom} L${left},${bottom} Z`}
+            className="td-chart-area"
+          />
+          <path d={line} className="td-chart-line" />
+          {points.map((point, index) => (
+            <g key={point.date}>
+              <circle
+                cx={point.x}
+                cy={point.y}
+                r={hoverIndex === index ? 4 : 3}
+                className="td-chart-point"
+              />
+              <circle
+                cx={point.x}
+                cy={point.y}
+                r="12"
+                fill="transparent"
+                tabIndex="0"
+                role="img"
+                aria-label={`${shortDate(point.date)}: ${point.count} trips`}
+                onMouseEnter={() => setHoverIndex(index)}
+                onMouseLeave={() => setHoverIndex(null)}
+                onFocus={() => setHoverIndex(index)}
+                onBlur={() => setHoverIndex(null)}
+              >
+                <title>
+                  {shortDate(point.date)}: {point.count} trips
+                </title>
+              </circle>
+              {[0, 3, 6].includes(index) && (
+                <text
+                  x={point.x}
+                  y="166"
+                  textAnchor={
+                    index === 0 ? "start" : index === 6 ? "end" : "middle"
+                  }
+                >
+                  {shortDate(point.date)}
+                </text>
+              )}
+            </g>
+          ))}
+        </svg>
+      </div>
+      <div className="td-chart-caption">
+        {shortDate(selected.date)}
+        <strong>
+          {selected.count} {selected.count === 1 ? "trip" : "trips"}
+        </strong>
+      </div>
     </section>
   );
 };
-const Vehicle_TripDetailRow = ({
-  label,
-  value,
-}) => (
-  <div className="trip-detail-row">
-    <span className="trip-detail-label">
-      {label}
-    </span>
-    <span className="trip-detail-colon">
-      :
-    </span>
-    <strong className="trip-detail-value">
-      {Vehicle_safeText(value)}
-    </strong>
-  </div>
-);
-/* =========================================
-   API
-========================================= */
-const API_BASE_URL = (
-  import.meta.env.VITE_API_URL ||
-  "http://localhost:5000"
-).replace(/\/+$/, "");
-const API_URL =
-  `${API_BASE_URL}/api/triporders`;
-/* =========================================
-   STATUS FILTERS
-========================================= */
-const statusOptions = [
-  "All",
-  "Moving",
-  "Idle",
-  "Breakdown",
-  "Pending",
-  "Reached",
-];
-/* =========================================
-   HELPERS
-========================================= */
-const safeArray = (value) =>
-  Array.isArray(value) ? value : [];
-const safeText = (
-  value,
-  fallback = ""
-) => {
-  if (
-    value === null ||
-    value === undefined
-  ) {
-    return fallback;
-  }
-  return String(value);
-};
-const normalizeNumber = (
-  value,
-  fallback = 0
-) => {
-  if (
-    value === null ||
-    value === undefined ||
-    value === ""
-  ) {
-    return fallback;
-  }
-  const number = Number(value);
-  return Number.isFinite(number)
-    ? number
-    : fallback;
-};
-const normalizeNullableNumber = (
-  value
-) => {
-  if (
-    value === null ||
-    value === undefined ||
-    value === ""
-  ) {
-    return null;
-  }
-  const number = Number(value);
-  return Number.isFinite(number)
-    ? number
-    : null;
-};
-const normalizeDate = (value) => {
-  if (!value) {
-    return null;
-  }
-  const date = new Date(Vehicle_getSafeDateValue(value));
-  if (
-    Number.isNaN(
-      date.getTime()
-    )
-  ) {
-    return null;
-  }
-  return date.toISOString();
-};
-const getResponseArray = (
-  payload
-) => {
-  if (Array.isArray(payload)) {
-    return payload;
-  }
-  if (
-    Array.isArray(
-      payload?.data
-    )
-  ) {
-    return payload.data;
-  }
-  if (
-    Array.isArray(
-      payload?.trips
-    )
-  ) {
-    return payload.trips;
-  }
-  if (
-    Array.isArray(
-      payload?.orders
-    )
-  ) {
-    return payload.orders;
-  }
-  return [];
-};
-/* =========================================
-   LATEST TRACKING
-========================================= */
-const getLatestTracking = (
-  allocation
-) => {
-  const history =
-    safeArray(
-      allocation?.dailyTracking
-    );
-  if (!history.length) {
-    return null;
-  }
-  return history[
-    history.length - 1
-  ];
-};
-/* =========================================
-   FINAL VEHICLE DISPLAY STATUS
-========================================= */
-const getFinalVehicleStatus = (vehicle) => {
-  const latest = getLatestTracking(vehicle);
-  const rawStatus = safeText(
-    latest?.status || vehicle?.status,
-    "Idle"
-  ).trim().toLowerCase();
-  if (rawStatus === "moving") return "Moving";
-  if (rawStatus === "breakdown") return "Breakdown";
-  if (rawStatus === "idle" || rawStatus === "stopped") return "Idle";
-  if (rawStatus !== "reached") return "Idle";
-  const unloadingCompleted =
-    safeText(
-      vehicle?.unloading?.status,
-      vehicle?.unloadingStatus || ""
-    ).trim().toLowerCase() === "completed";
-  const lrCompleted = Boolean(
-    vehicle?.lr?.number ||
-    vehicle?.lr?.date ||
-    vehicle?.pod?.fileName
-  );
-  const ewayStatus = safeText(
-    vehicle?.ewayBill?.status,
-    ""
-  ).trim().toLowerCase();
-  const ewayCompleted = Boolean(
-    (vehicle?.ewayBill?.number || vehicle?.ewayBill?.fileName) &&
-    ewayStatus !== "pending" &&
-    ewayStatus !== "expired"
-  );
-  return unloadingCompleted && lrCompleted && ewayCompleted
-    ? "Reached"
-    : "Pending";
-};
-/* =========================================
-   FINAL TRIP DISPLAY STATUS
-   One trip always has one overall status.
-========================================= */
-const getFinalTripStatus = (trip) => {
-  const vehicles = safeArray(
-    trip?.allocatedVehicles
-  );
-  if (!vehicles.length) {
-    return "Pending";
-  }
-  const statuses = vehicles.map(
-    (vehicle) =>
-      getFinalVehicleStatus(vehicle)
-  );
-  if (
-    statuses.every(
-      (status) => status === "Reached"
-    )
-  ) {
-    return "Reached";
-  }
-  if (
-    statuses.some(
-      (status) => status === "Breakdown"
-    )
-  ) {
-    return "Breakdown";
-  }
-  if (
-    statuses.some(
-      (status) => status === "Moving"
-    )
-  ) {
-    return "Moving";
-  }
-  if (
-    statuses.some(
-      (status) => status === "Pending"
-    )
-  ) {
-    return "Pending";
-  }
-  return "Idle";
-};
-/* =========================================
-   RESOLVE REQUIREMENT
-========================================= */
-const getRequirement = (
-  trip,
-  requirementId
-) =>
-  safeArray(
-    trip?.vehicleRequirements
-  ).find(
-    (requirement) =>
-      requirement.requirementId ===
-      requirementId
-  ) || null;
-/* =========================================
-   RESOLVE CONFIRMATION
-========================================= */
-const getConfirmation = (
-  trip,
-  allocation
-) => {
-  const confirmations =
-    safeArray(
-      trip?.vehicleConfirmations
-    );
-  if (
-    allocation?.confirmationId
-  ) {
-    const direct =
-      confirmations.find(
-        (confirmation) =>
-          confirmation.confirmationId ===
-          allocation.confirmationId
-      );
-    if (direct) {
-      return direct;
-    }
-  }
-  return (
-    confirmations.find(
-      (confirmation) =>
-        confirmation.requirementId ===
-        allocation?.requirementId &&
-        confirmation.status ===
-        "Approved"
-    ) || null
-  );
-};
-/* =========================================
-   RESOLVE QUOTATION
-========================================= */
-const getQuotation = (
-  trip,
-  allocation
-) => {
-  const confirmation =
-    getConfirmation(
-      trip,
-      allocation
-    );
-  const quotationId =
-    allocation?.quotationId ||
-    confirmation?.quotationId;
-  if (!quotationId) {
-    return null;
-  }
-  return (
-    safeArray(
-      trip?.trafficQuotations
-    ).find(
-      (quotation) =>
-        quotation.quotationId ===
-        quotationId
-    ) || null
-  );
-};
-/* =========================================
-   NORMALIZE ALLOCATION
-========================================= */
-const normalizeAllocation = (
-  allocation = {},
-  trip = {},
-  index = 0
-) => {
-  const latest =
-    getLatestTracking(
-      allocation
-    );
-  const requirement =
-    getRequirement(
-      trip,
-      allocation.requirementId
-    );
-  const quotation =
-    getQuotation(
-      trip,
-      allocation
-    );
-  const allocationId =
-    safeText(
-      allocation.allocationId
-    ) ||
-    safeText(
-      allocation._id
-    ) ||
-    `allocation-${index}`;
-  return {
-    ...allocation,
-    id: allocationId,
-    allocationId,
-    requirementId:
-      safeText(
-        allocation.requirementId
-      ),
-    confirmationId:
-      safeText(
-        allocation.confirmationId
-      ),
-    quotationId:
-      safeText(
-        allocation.quotationId
-      ),
-    vehicleNumber:
-      safeText(
-        allocation.vehicleNumber
-      ),
-    /* Requirement information */
-    vehicleType:
-      safeText(
-        requirement?.vehicleType
-      ),
-    configuration:
-      safeText(
-        requirement?.configuration
-      ),
-    classification:
-      safeText(
-        requirement?.classification
-      ),
-    /* Transporter
-       Resolved only for child UI convenience.
-       Amount is intentionally NOT exposed here.
-    */
-    transporter:
-      safeText(
-        quotation?.transporter
-      ),
-    /* Driver */
-    driver:
-      allocation.driver || {
-        name: "",
-        contactNumber: "",
-      },
-    driverName:
-      safeText(
-        allocation?.driver?.name
-      ),
-    driverNumber:
-      safeText(
-        allocation
-          ?.driver
-          ?.contactNumber
-      ),
-    /* Escort */
-    escort:
-      allocation.escort || {
-        vehicleNumber: "",
-        name: "",
-        contactNumber: "",
-      },
-    escortVehicleNumber:
-      safeText(
-        allocation
-          ?.escort
-          ?.vehicleNumber
-      ),
-    escortName:
-      safeText(
-        allocation
-          ?.escort
-          ?.name
-      ),
-    escortContactNumber:
-      safeText(
-        allocation
-          ?.escort
-          ?.contactNumber
-      ),
-    /* Supervisor */
-    supervisor:
-      allocation.supervisor || {
-        name: "",
-        contactNumber: "",
-      },
-    supervisorName:
-      safeText(
-        allocation
-          ?.supervisor
-          ?.name
-      ),
-    supervisorContact:
-      safeText(
-        allocation
-          ?.supervisor
-          ?.contactNumber
-      ),
-    /* Loading */
-    loading:
-      allocation.loading || {},
-    loadingStatus:
-      safeText(
-        allocation
-          ?.loading
-          ?.status,
-        "Pending"
-      ) || "Pending",
-    loadingPointInDate:
-      normalizeDate(
-        allocation
-          ?.loading
-          ?.pointInDate
-      ),
-    loadingDate:
-      normalizeDate(
-        allocation
-          ?.loading
-          ?.loadingDate
-      ),
-    loadingPointOutDate:
-      normalizeDate(
-        allocation
-          ?.loading
-          ?.pointOutDate
-      ),
-    loadingHaltingDays:
-      normalizeNumber(
-        allocation
-          ?.loading
-          ?.haltingDays
-      ),
-    loadingRemarks:
-      safeText(
-        allocation
-          ?.loading
-          ?.remarks
-      ),
-    /* Unloading */
-    unloading:
-      allocation.unloading || {},
-    unloadingStatus:
-      safeText(
-        allocation
-          ?.unloading
-          ?.status,
-        "Pending"
-      ) || "Pending",
-    unloadingPointInDate:
-      normalizeDate(
-        allocation
-          ?.unloading
-          ?.pointInDate
-      ),
-    unloadingDate:
-      normalizeDate(
-        allocation
-          ?.unloading
-          ?.unloadingDate
-      ),
-    unloadingPointOutDate:
-      normalizeDate(
-        allocation
-          ?.unloading
-          ?.pointOutDate
-      ),
-    unloadingHaltingDays:
-      normalizeNumber(
-        allocation
-          ?.unloading
-          ?.haltingDays
-      ),
-    unloadingRemarks:
-      safeText(
-        allocation
-          ?.unloading
-          ?.remarks
-      ),
-    /* Latest movement derived from dailyTracking */
-    dailyTracking:
-      safeArray(
-        allocation.dailyTracking
-      ),
-    latestTracking:
-      latest,
-    status:
-      safeText(
-        latest?.status,
-        "Idle"
-      ) || "Idle",
-    currentLocation:
-      safeText(
-        latest?.currentLocation
-      ),
-    currentPosition:
-      safeText(
-        latest?.currentLocation
-      ),
-    yesterdayLocation:
-      safeText(
-        latest?.yesterdayLocation
-      ),
-    yesterdayPosition:
-      safeText(
-        latest?.yesterdayLocation
-      ),
-    yesterdayKm:
-      normalizeNumber(
-        latest?.yesterdayKm
-      ),
-    todayKm:
-      normalizeNumber(
-        latest?.todayKm
-      ),
-    runningKm:
-      normalizeNumber(
-        latest?.runningKm
-      ),
-    currentDay:
-      normalizeNullableNumber(
-        latest?.day
-      ),
-    latitude:
-      normalizeNullableNumber(
-        latest?.latitude
-      ),
-    longitude:
-      normalizeNullableNumber(
-        latest?.longitude
-      ),
-    speed:
-      normalizeNumber(
-        latest?.speed
-      ),
-    remarks:
-      safeText(
-        latest?.remarks
-      ),
-    updatedBy:
-      safeText(
-        latest?.updatedBy
-      ),
-    lastUpdated:
-      normalizeDate(
-        latest?.updatedAt ||
-        latest?.date
-      ),
-  };
-};
-/* =========================================
-   NORMALIZE TRIP
-========================================= */
-const getTrackingAuthHeaders = () => {
-  const token = localStorage.getItem("token");
-  if (!token?.trim()) {
-    throw new Error("Please sign in with your main administrator account.");
-  }
-  return {
-    Accept: "application/json",
-    Authorization: `Bearer ${token}`,
-  };
-};
-const openTripDocument = async ({ baseUrl, tripId, allocationId, type, download = false, fileName = '' }) => {
-  const idText = value => typeof value === 'object' && value !== null ? String(value.$oid ?? '') : String(value ?? '');
-  let preview = null;
-  try {
-    const mongoId = idText(tripId).trim();
-    const vehicleId = idText(allocationId).trim();
-    if (!mongoId || !vehicleId || mongoId === '[object Object]') {
-      throw new Error('Trip ID or allocation ID is missing. Reload the trip and try again.');
-    }
-    if (!['lr', 'ewayBill', 'pod'].includes(type)) throw new Error('Invalid document type.');
-    if (!download) {
-      preview = window.open('about:blank', '_blank');
-      if (!preview) throw new Error('Allow pop-ups for this site to view the document.');
-      preview.opener = null;
-      preview.document.title = 'Loading document';
-      preview.document.body.textContent = 'Loading document…';
-    }
-    const disposition = download ? 'attachment' : 'inline';
-    const url = `${baseUrl.replace(/\/+$/, '')}/${encodeURIComponent(mongoId)}/allocated-vehicles/${encodeURIComponent(vehicleId)}/${type}/file?disposition=${disposition}`;
-    const response = await fetch(url, { headers: getTrackingAuthHeaders() });
-    const contentType = response.headers.get('content-type') || '';
-    if (!response.ok) {
-      let message = '';
-      if (contentType.includes('json')) {
-        const error = await response.json().catch(() => ({}));
-        message = error.message || error.error || '';
-      }
-      throw new Error(message || `Document request failed (${response.status}). Check the backend file route and uploaded file.`);
-    }
-    if (contentType.includes('json') || contentType.includes('text/html')) {
-      throw new Error('The server returned a page or JSON instead of a document. Check the backend file endpoint.');
-    }
-    const blob = await response.blob();
-    if (!blob.size) throw new Error('The document file is empty.');
-    const objectUrl = URL.createObjectURL(blob);
-    if (download) {
-      const dispositionHeader = response.headers.get('content-disposition') || '';
-      const match = dispositionHeader.match(/filename="([^"]+)"/i);
-      const link = document.createElement('a');
-      link.href = objectUrl;
-      link.download = (match?.[1] || fileName || `${type}-document`).split(/[\\/]/).pop();
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60000);
-    } else {
-      preview.location.replace(objectUrl);
-      const timer = window.setInterval(() => {
-        if (preview.closed) {
-          window.clearInterval(timer);
-          URL.revokeObjectURL(objectUrl);
-        }
-      }, 2000);
-    }
-  } catch (error) {
-    if (preview && !preview.closed) preview.close();
-    console.error('Document request failed:', error);
-    window.alert(error?.message || 'Unable to open the document.');
-  }
-};
 
-const normalizeTrip = (
-  trip = {},
-  index = 0
-) => {
-  const id =
-    safeText(trip._id?.$oid || trip._id) ||
-    safeText(trip.tripId) ||
-    `trip-${index}`;
-  const allocations =
-    safeArray(
-      trip.allocatedVehicles
-    ).map(
-      (
-        allocation,
-        allocationIndex
-      ) =>
-        normalizeAllocation(
-          allocation,
-          trip,
-          allocationIndex
-        )
-    );
-  const placementDate =
-    normalizeDate(
-      trip.placementDate
-    );
-  const enquiryDate =
-    normalizeDate(
-      trip.enquiryDate
-    );
-  const createdAt =
-    normalizeDate(
-      trip.createdAt
-    );
-  const updatedAt =
-    normalizeDate(
-      trip.updatedAt
-    );
-  /*
-   * Date used by the existing Tracking date filter.
-   * Placement Date is the canonical operational date.
-   * If not available, Enquiry/Created date is fallback.
-   */
-  const filterDateSource =
-    placementDate ||
-    enquiryDate ||
-    createdAt;
-  const tripDate =
-    filterDateSource
-      ? filterDateSource.slice(
-        0,
-        10
-      )
-      : "";
-  return {
-    ...trip,
-    id,
-    _id:
-      safeText(
-        trip._id?.$oid || trip._id
-      ),
-    tripId:
-      safeText(
-        trip.tripId
-      ),
-    movementType:
-      safeText(
-        trip.movementType
-      ),
-    customer:
-      safeText(
-        trip.customer
-      ),
-    contactPerson:
-      safeText(
-        trip.contactPerson
-      ),
-    contactNumber:
-      safeText(
-        trip.contactNumber
-      ),
-    email:
-      safeText(
-        trip.email
-      ),
-    assignedKam:
-      safeText(
-        trip.assignedKam
-      ),
-    materialType:
-      safeText(
-        trip.materialType
-      ),
-    origin:
-      safeText(
-        trip.origin
-      ),
-    destination:
-      safeText(
-        trip.destination
-      ),
-    distance:
-      normalizeNumber(
-        trip.distance
-      ),
-    routeLocations:
-      safeArray(
-        trip.routeLocations
-      )
-        .map(
-          (location) =>
-            safeText(
-              location
-            ).trim()
-        )
-        .filter(Boolean),
-    remark:
-      safeText(
-        trip.remark
-      ),
-    siteLocation:
-      safeText(
-        trip.siteLocation
-      ),
-    period:
-      safeText(
-        trip.period
-      ),
-    dieselScope:
-      safeText(
-        trip.dieselScope
-      ),
-    status:
-      safeText(
-        trip.status,
-        "Pending"
-      ),
-    stage:
-      safeText(
-        trip.stage
-      ),
-    orderApproval:
-      trip.orderApproval || {},
-    vehicleRequirements:
-      safeArray(
-        trip.vehicleRequirements
-      ),
-    trafficQuotations:
-      safeArray(
-        trip.trafficQuotations
-      ),
-    vehicleConfirmations:
-      safeArray(
-        trip.vehicleConfirmations
-      ),
-    allocatedVehicles:
-      allocations,
-    placementDate,
-    enquiryDate,
-    createdAt,
-    updatedAt,
-    tripDate,
-  };
-};
-/* =========================================
-   TRACKING COMPONENT
-========================================= */
-const Tracking_normalizeSearch = (value) => String(value ?? '').normalize('NFKC').trim().toLowerCase().replace(/\s+/g, ' ');
-const Tracking_compactSearch = (value) => Tracking_normalizeSearch(value).replace(/[\s-]+/g, '');
-const Tracking_dateFormatter = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' });
-const Tracking_dateKey = (value) => {
-  if (value === null || value === undefined || value === '') return '';
-  if (typeof value === 'object' && !(value instanceof Date)) {
-    if ('$date' in value) return Tracking_dateKey(value.$date);
-    if ('$numberLong' in value) return Tracking_dateKey(Number(value.$numberLong));
-    return '';
-  }
-  const raw = typeof value === 'string' ? value.trim() : value;
-  if (typeof raw === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(raw)) {
-    const parsed = new Date(`${raw}T00:00:00Z`);
-    return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === raw ? raw : '';
-  }
-  const date = raw instanceof Date ? raw : new Date(raw);
-  if (Number.isNaN(date.getTime())) return '';
-  const parts = Tracking_dateFormatter.formatToParts(date);
-  const part = (type) => parts.find(p => p.type === type)?.value ?? '';
-  return `${part('year')}-${part('month')}-${part('day')}`;
-};
-const Tracking_matchesSearch = (trip, searchTerm) => {
-  const query = Tracking_normalizeSearch(searchTerm);
-  if (!query) return true;
-  const vehicles = Array.isArray(trip?.allocatedVehicles) ? trip.allocatedVehicles : [];
-  const fields = [trip?.tripId, trip?.customer, trip?.contactPerson, trip?.contactNumber, trip?.email, trip?.assignedKam, trip?.materialType, trip?.origin, trip?.destination, trip?.siteLocation,
-  ...vehicles.flatMap(v => [v?.vehicleNumber, v?.vehicleNo, v?.vehicleType, v?.transporter, v?.driverName, v?.driverNumber, v?.escortName, v?.supervisorName, v?.currentLocation])];
-  const normalized = fields.map(Tracking_normalizeSearch);
-  const compact = Tracking_compactSearch(query);
-  return normalized.some(f => compact && Tracking_compactSearch(f).includes(compact)) || query.split(/\s+/).every(word => normalized.join(' ').includes(word));
-};
-const Tracking_matchesDate = (trip, selectedDate) => {
-  if (!selectedDate) return true;
-  const operational = [trip?.placementDate, trip?.enquiryDate, trip?.createdAt, trip?.tripDate].map(Tracking_dateKey).find(Boolean);
-  if (operational === selectedDate) return true;
-  const vehicles = Array.isArray(trip?.allocatedVehicles) ? trip.allocatedVehicles : [];
-  return vehicles.some(v => (Array.isArray(v?.dailyTracking) ? v.dailyTracking : []).some(r => (Tracking_dateKey(r?.date) || Tracking_dateKey(r?.updatedAt)) === selectedDate));
+const TripStatusChart = ({ counts, selectedStatus, onSelect }) => {
+  const total = STATUSES.reduce((sum, status) => sum + counts[status], 0);
+  const circumference = 2 * Math.PI * 49;
+  let consumed = 0;
+  return (
+    <section className="td-panel">
+      <header className="td-panel-heading">
+        <div>
+          <h2>Trip status</h2>
+          <p>Click a status to filter</p>
+        </div>
+        <span className="td-chart-total">{total} trips</span>
+      </header>
+      <div className="td-distribution">
+        <svg
+          viewBox="0 0 134 134"
+          className="td-donut"
+          role="img"
+          aria-label={`Trip status: ${STATUSES.map((status) => `${status}: ${counts[status]}`).join(", ")}`}
+        >
+          <circle cx="67" cy="67" r="49" className="td-donut-track" />
+          {STATUSES.map((status) => {
+            const length = total ? (counts[status] / total) * circumference : 0;
+            const offset = consumed;
+            consumed += length;
+            return length > 0 ? (
+              <circle
+                key={status}
+                cx="67"
+                cy="67"
+                r="49"
+                className={`td-donut-segment td-color-${status.toLowerCase()}`}
+                strokeDasharray={`${length} ${circumference - length}`}
+                strokeDashoffset={-offset}
+                transform="rotate(-90 67 67)"
+              />
+            ) : null;
+          })}
+          <text x="67" y="65" className="td-donut-value" textAnchor="middle">
+            {total}
+          </text>
+          <text x="67" y="85" className="td-donut-label" textAnchor="middle">
+            Trips
+          </text>
+        </svg>
+        <div className="td-legend">
+          {STATUSES.map((status) => (
+            <button
+              type="button"
+              key={status}
+              onClick={() =>
+                onSelect(selectedStatus === status ? "All" : status)
+              }
+              aria-pressed={selectedStatus === status}
+            >
+              <span
+                className={`td-legend-dot td-color-${status.toLowerCase()}`}
+              />
+              <span>{status}</span>
+              <strong>{counts[status]}</strong>
+            </button>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
 };
 
 const Tracking = () => {
-  /* =====================================
-     STATE
-  ===================================== */
-  const [
-    trips,
-    setTrips,
-  ] = useState([]);
-  const [
-    loading,
-    setLoading,
-  ] = useState(true);
-  const [
-    apiError,
-    setApiError,
-  ] = useState("");
-  const [
-    searchTerm,
-    setSearchTerm,
-  ] = useState("");
-  const [
-    movementFilter,
-    setMovementFilter,
-  ] = useState("All");
-  const [
-    selectedDate,
-    setSelectedDate,
-  ] = useState("");
-  const [
-    selectedTripId,
-    setSelectedTripId,
-  ] = useState(null);
-  const [
-    selectedVehicleId,
-    setSelectedVehicleId,
-  ] = useState(null);
-  /* =====================================
-     FETCH TRIPS
-  ===================================== */
-  const fetchTrips =
-    useCallback(async () => {
-      try {
-        setLoading(true);
-        setApiError("");
-        const response =
-          await fetch(
-            API_URL,
-            {
-              method: "GET",
-              headers: getTrackingAuthHeaders(),
-            }
-          );
-        const result =
-          await response
-            .json()
-            .catch(
-              () => ({})
-            );
-        if (!response.ok) {
-          throw new Error(
-            result?.message ||
-            `Unable to load trips (${response.status})`
-          );
-        }
-        const databaseTrips =
-          getResponseArray(
-            result
-          );
-        /*
-         * Tracking Page should contain
-         * operational trips only.
-         *
-         * A trip becomes operational after
-         * at least one actual vehicle has
-         * been allocated in Tracking Input.
-         */
-        const normalizedTrips =
-          databaseTrips
-            .filter((trip) => {
-              const stage =
-                safeText(
-                  trip?.stage
-                )
-                  .trim()
-                  .toLowerCase();
-              const orderPlacedStatus =
-                safeText(
-                  trip?.orderPlaced?.status
-                )
-                  .trim()
-                  .toLowerCase();
-              return (
-                orderPlacedStatus === "completed" ||
-                stage === "tracking" ||
-                stage === "trip complete" ||
-                stage === "trip completed" ||
-                stage === "completed"
-              );
-            })
-            .map(
-              (
-                trip,
-                index
-              ) =>
-                normalizeTrip(
-                  trip,
-                  index
-                )
-            );
-        setTrips(
-          normalizedTrips
+  const navigate = useNavigate();
+  const [trips, setTrips] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState("");
+  const [search, setSearch] = useState("");
+  const [selectedDate, setSelectedDate] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
+  const [today, setToday] = useState(() => dateKey(new Date()));
+  const [lastUpdated, setLastUpdated] = useState(null);
+  const activeRequest = useRef(null);
+  const mounted = useRef(false);
+  const fetchTrips = useCallback(async () => {
+    activeRequest.current?.abort();
+    const controller = new AbortController();
+    activeRequest.current = controller;
+    setRefreshing(true);
+    setError("");
+    try {
+      const token = localStorage.getItem("token");
+      if (!token?.trim())
+        throw new Error("Please sign in with your main administrator account.");
+      const response = await fetch(API_URL, {
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        signal: controller.signal,
+      });
+      const payload = await response.json().catch(() => {
+        throw new Error("The server did not return JSON. Check your API URL.");
+      });
+      if (!response.ok)
+        throw new Error(
+          payload?.message || `Unable to load trips (${response.status}).`,
         );
-        setSelectedTripId(
-          (previousId) => {
-            if (
-              normalizedTrips.length ===
-              0
-            ) {
-              return null;
-            }
-            const exists =
-              normalizedTrips.some(
-                (trip) =>
-                  trip.id ===
-                  previousId
-              );
-            if (exists) {
-              return previousId;
-            }
-            return normalizedTrips[0]
-              .id;
-          }
-        );
-      } catch (error) {
-        console.error(
-          "Fetch Trips Error:",
-          error
-        );
-        setTrips([]);
-        setSelectedTripId(
-          null
-        );
-        setSelectedVehicleId(
-          null
-        );
-        setApiError(
-          error?.message ||
-          "Unable to load trips."
-        );
-      } finally {
-        setLoading(false);
+      const loaded = extractTrips(payload).filter(
+        (trip) => trip && typeof trip === "object" && isOperational(trip),
+      );
+      if (!controller.signal.aborted && mounted.current) {
+        setTrips(loaded);
+        setLastUpdated(new Date());
       }
-    }, []);
-  /* =====================================
-     INITIAL LOAD
-  ===================================== */
+    } catch (err) {
+      if (!controller.signal.aborted && mounted.current)
+        setError(err.message || "Unable to load trips.");
+    } finally {
+      if (!controller.signal.aborted && mounted.current) {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    }
+  }, []);
   useEffect(() => {
+    mounted.current = true;
     fetchTrips();
-  }, [fetchTrips]);
-  /* =====================================
-     REFRESH WHEN WINDOW GETS FOCUS
-  ===================================== */
-  useEffect(() => {
-    const handleFocus =
-      () => {
-        fetchTrips();
-      };
-    window.addEventListener(
-      "focus",
-      handleFocus
-    );
+    const timer = window.setInterval(() => {
+      setToday(dateKey(new Date()));
+      if (document.visibilityState === "visible") fetchTrips();
+    }, 60000);
+    const onFocus = () => {
+      setToday(dateKey(new Date()));
+      fetchTrips();
+    };
+    window.addEventListener("focus", onFocus);
     return () => {
-      window.removeEventListener(
-        "focus",
-        handleFocus
-      );
+      mounted.current = false;
+      activeRequest.current?.abort();
+      window.clearInterval(timer);
+      window.removeEventListener("focus", onFocus);
     };
   }, [fetchTrips]);
-  /* =====================================
-     STATUS COUNTS
-  ===================================== */
-  const searchAndDateTrips = useMemo(() => trips.filter(trip =>
-    Tracking_matchesSearch(trip, searchTerm) && Tracking_matchesDate(trip, selectedDate)
-  ), [trips, searchTerm, selectedDate]);
 
-  const statusCounts = useMemo(() => {
-    const counts = { All: searchAndDateTrips.length, Moving: 0, Idle: 0, Breakdown: 0, Pending: 0, Reached: 0 };
-    searchAndDateTrips.forEach(trip => {
-      const status = getFinalTripStatus(trip);
-      if (status !== 'All' && Object.prototype.hasOwnProperty.call(counts, status)) counts[status] += 1;
-    });
-    return counts;
-  }, [searchAndDateTrips]);
-
-  const filteredTrips = useMemo(() => movementFilter === 'All'
-    ? searchAndDateTrips
-    : searchAndDateTrips.filter(trip => getFinalTripStatus(trip) === movementFilter),
-    [searchAndDateTrips, movementFilter]);
-
-  /* =====================================
-     SELECTED TRIP
-  ===================================== */
-  const selectedTrip =
-    useMemo(
-      () =>
-        filteredTrips.find(
-          (trip) =>
-            trip.id ===
-            selectedTripId
-        ) ||
-        filteredTrips[0] ||
-        null,
-      [
-        filteredTrips,
-        selectedTripId,
-      ]
-    );
-  /* =====================================
-     KEEP SELECTED TRIP VALID
-  ===================================== */
-  useEffect(() => {
-    if (
-      filteredTrips.length ===
-      0
-    ) {
-      setSelectedTripId(
-        null
-      );
-      return;
-    }
-    const exists =
-      filteredTrips.some(
+  const scopedTrips = useMemo(
+    () =>
+      trips.filter(
         (trip) =>
-          trip.id ===
-          selectedTripId
-      );
-    if (!exists) {
-      setSelectedTripId(
-        filteredTrips[0].id
-      );
-    }
-  }, [
-    filteredTrips,
-    selectedTripId,
-  ]);
-  /* =====================================
-     KEEP SELECTED VEHICLE VALID
-  ===================================== */
-  useEffect(() => {
-    const vehicles =
-      safeArray(
-        selectedTrip
-          ?.allocatedVehicles
-      );
-    if (
-      !selectedTrip ||
-      vehicles.length === 0
-    ) {
-      setSelectedVehicleId(
-        null
-      );
-      return;
-    }
-    const vehicleExists =
-      vehicles.some(
-        (vehicle) =>
-          vehicle.allocationId ===
-          selectedVehicleId ||
-          vehicle.id ===
-          selectedVehicleId
-      );
-    if (!vehicleExists) {
-      setSelectedVehicleId(
-        vehicles[0]
-          .allocationId ||
-        vehicles[0].id
-      );
-    }
-  }, [
-    selectedTrip,
-    selectedVehicleId,
-  ]);
-  /* =====================================
-     SELECTED VEHICLE
-  ===================================== */
-  const selectedVehicle =
-    useMemo(() => {
-      const vehicles =
-        safeArray(
-          selectedTrip
-            ?.allocatedVehicles
-        );
-      return (
-        vehicles.find(
-          (vehicle) =>
-            vehicle.allocationId ===
-            selectedVehicleId ||
-            vehicle.id ===
-            selectedVehicleId
-        ) ||
-        vehicles[0] ||
-        null
-      );
-    }, [
-      selectedTrip,
-      selectedVehicleId,
-    ]);
-  /* =====================================
-     STATUS CLASS
-  ===================================== */
-  const getStatusClass = (
-    status
-  ) =>
-    safeText(
-      status,
-      "Idle"
-    )
-      .toLowerCase()
-      .replaceAll(
-        " ",
-        "-"
-      );
-  /* =====================================
-     STATUS ICON
-  ===================================== */
-  const getStatusIcon = (
-    status
-  ) => {
-    if (
-      status === "Moving"
-    ) {
-      return (
-        <Navigation
-          size={13}
-        />
-      );
-    }
-    if (
-      status === "Reached"
-    ) {
-      return (
-        <CheckCircle2
-          size={13}
-        />
-      );
-    }
-    if (
-      status === "Idle"
-    ) {
-      return (
-        <Clock3
-          size={13}
-        />
-      );
-    }
-    if (
-      status ===
-      "Breakdown"
-    ) {
-      return (
-        <CircleAlert
-          size={13}
-        />
-      );
-    }
-    return (
-      <CirclePause
-        size={13}
-      />
-    );
+          matchesSearch(trip, search) && matchesDate(trip, selectedDate),
+      ),
+    [trips, search, selectedDate],
+  );
+  const counts = useMemo(() => {
+    const result = Object.fromEntries(STATUSES.map((status) => [status, 0]));
+    scopedTrips.forEach((trip) => {
+      result[tripStatus(trip, today)] += 1;
+    });
+    return result;
+  }, [scopedTrips, today]);
+  const vehicles = useMemo(
+    () => scopedTrips.flatMap((trip) => list(trip.allocatedVehicles)),
+    [scopedTrips],
+  );
+  const podCount = vehicles.filter(podPending).length;
+  const ewayCount = vehicles.filter((vehicle) =>
+    ewayExpiring(vehicle, today),
+  ).length;
+  const filteredTrips = useMemo(
+    () =>
+      scopedTrips
+        .filter((trip) => {
+          if (
+            statusFilter !== "All" &&
+            tripStatus(trip, today) !== statusFilter
+          )
+            return false;
+          return true;
+        })
+        .slice()
+        .sort(
+          (a, b) =>
+            (dateNumber(dateKey(b.createdAt || b.enquiryDate)) || 0) -
+              (dateNumber(dateKey(a.createdAt || a.enquiryDate)) || 0) ||
+            text(b.tripId).localeCompare(text(a.tripId), undefined, {
+              numeric: true,
+            }),
+        ),
+    [scopedTrips, statusFilter, today],
+  );
+  const activity = useMemo(
+    () => buildActivity(scopedTrips, selectedDate || today),
+    [scopedTrips, selectedDate, today],
+  );
+  const selectStatus = (status) => {
+    setStatusFilter(status);
   };
-  /* =====================================
-     SELECT TRIP
-  ===================================== */
-  const handleTripSelect = (
-    trip
-  ) => {
-    if (!trip) {
-      return;
-    }
-    setSelectedTripId(
-      trip.id
-    );
-    const vehicles =
-      safeArray(
-        trip.allocatedVehicles
-      );
-    if (vehicles.length) {
-      setSelectedVehicleId(
-        vehicles[0]
-          .allocationId ||
-        vehicles[0].id
-      );
-    } else {
-      setSelectedVehicleId(
-        null
-      );
-    }
+  const clearFilters = () => {
+    setSearch("");
+    setSelectedDate("");
+    setStatusFilter("All");
   };
-  /* =====================================
-     SELECT VEHICLE
-  ===================================== */
-  const handleVehicleSelect = (
-    vehicleOrId
-  ) => {
-    if (!vehicleOrId) {
-      return;
-    }
-    if (
-      typeof vehicleOrId ===
-      "string"
-    ) {
-      setSelectedVehicleId(
-        vehicleOrId
-      );
-      return;
-    }
-    setSelectedVehicleId(
-      vehicleOrId.allocationId ||
-      vehicleOrId.id ||
-      null
-    );
+  const cards = [
+    {
+      id: "all",
+      label: "Total Trips",
+      value: scopedTrips.length,
+      description: "All trips",
+      icon: Route,
+    },
+    {
+      id: "moving",
+      label: "Moving",
+      value: counts.Moving,
+      description: "On the road",
+      icon: Navigation,
+    },
+    {
+      id: "pod",
+      label: "POD Pending",
+      value: podCount,
+      description: "Awaiting POD",
+      icon: FileClock,
+    },
+    {
+      id: "eway",
+      label: "E-Way Bill",
+      value: ewayCount,
+      description: "Expires in 2 days",
+      icon: FileWarning,
+    },
+    {
+      id: "reached",
+      label: "Reached",
+      value: counts.Reached,
+      description: "At destination",
+      icon: CheckCircle2,
+    },
+  ];
+  const hasFilter = search || selectedDate || statusFilter !== "All";
+  const openTrip = (trip) => {
+    const id = keyOf(trip);
+    if (!id) return;
+    navigate(`/vehicle-details/${encodeURIComponent(id)}`, {
+      state: { mongoId: id, tripId: trip.tripId },
+    });
   };
-  /* =====================================
-     CLEAR FILTERS
-  ===================================== */
-  const clearAllFilters =
-    () => {
-      setSearchTerm("");
-      setMovementFilter(
-        "All"
-      );
-      setSelectedDate("");
-    };
-  /* =====================================
-     RENDER
-  ===================================== */
+
   return (
-    <main className="tracking-page">
-      {/* HEADER */}
-      <header className="tracking-header">
-        <div className="tracking-header-content" />
+    <main className="tracking-dashboard">
+      <header className="td-page-heading">
+        <div>
+          <h1>Tracking overview</h1>
+        </div>
+        <div className="td-heading-actions">
+          <span className="td-today">
+            <CalendarDays size={14} />
+            {shortDate(today)} {today.slice(0, 4)}
+          </span>
+          <button
+            type="button"
+            className="td-refresh"
+            onClick={() => fetchTrips()}
+            disabled={refreshing}
+            aria-label="Refresh trips"
+          >
+            <RefreshCw size={14} className={refreshing ? "td-spin" : ""} />
+            <span>Refresh</span>
+          </button>
+        </div>
       </header>
-      {/* API ERROR */}
-      {apiError && (
-        <div className="tracking-api-error">
-          {apiError}
+      {error && (
+        <div role="alert" className="td-alert">
+          {error}
+          <button
+            type="button"
+            onClick={() => fetchTrips()}
+            disabled={refreshing}
+          >
+            Retry
+          </button>
         </div>
       )}
-      {/* TOOLBAR */}
-      <section className="tracking-toolbar">
-        {/* STATUS FILTER */}
-        <div className="tracking-status-filter">
-          {statusOptions.map(
-            (status) => {
-              const active =
-                movementFilter ===
-                status;
-              return (
+      <section className="td-metrics" aria-label="Tracking summary">
+        {cards.map(({ id, label, value, description, icon: Icon }) => (
+          <div
+            className={`td-metric td-metric-${id}`}
+            key={id}
+            title={`${description}: ${value}`}
+          >
+            <span className="td-metric-top">
+              <span>{label}</span>
+              <span className="td-metric-icon">
+                <Icon size={17} />
+              </span>
+            </span>
+            <strong>{loading ? "—" : value.toLocaleString("en-IN")}</strong>
+            <small>{description}</small>
+          </div>
+        ))}
+      </section>
+      <div className="td-dashboard-row">
+        <section
+          className="td-panel td-trip-panel"
+          aria-labelledby="td-trip-heading"
+        >
+          <div className="td-trip-toolbar">
+            <header className="td-list-heading">
+              <div>
+                <h2 id="td-trip-heading">
+                  <Truck size={17} />
+                  Trip list <span>{filteredTrips.length}</span>
+                </h2>
+                <p>{hasFilter ? "Filtered trips" : "All operational trips"}</p>
+              </div>
+              <label className="td-search">
+                <Search size={14} />
+                <input
+                  type="search"
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                  placeholder="Search trip, customer, vehicle…"
+                  aria-label="Search trip, customer or vehicle"
+                />
+              </label>
+            </header>
+            <div className="td-list-filters">
+              <label>
+                <CalendarDays size={13} />
+                <input
+                  type="date"
+                  value={selectedDate}
+                  onChange={(event) => setSelectedDate(event.target.value)}
+                  aria-label="Filter trips by date"
+                />
+              </label>
+              <label>
+                <span className="td-sr-only">Trip status</span>
+                <select
+                  value={statusFilter}
+                  onChange={(event) => selectStatus(event.target.value)}
+                >
+                  <option value="All">All statuses</option>
+                  {STATUSES.map((status) => (
+                    <option key={status}>{status}</option>
+                  ))}
+                </select>
+              </label>
+              {hasFilter && (
                 <button
                   type="button"
-                  key={status}
-                  className={
-                    active
-                      ? "active"
-                      : ""
-                  }
-                  onClick={() =>
-                    setMovementFilter(
-                      status
-                    )
-                  }
+                  className="td-clear"
+                  onClick={clearFilters}
                 >
-                  {status !==
-                    "All" &&
-                    getStatusIcon(
-                      status
-                    )}
-                  <span>
-                    {status}
-                  </span>
-                  <small className="tracking-status-count">
-                    {
-                      statusCounts[
-                      status
-                      ]
-                    }
-                  </small>
+                  <X size={12} />
+                  Clear
                 </button>
-              );
-            }
-          )}
-        </div>
-        {/* SEARCH */}
-        <div className="tracking-search">
-          <Search
-            size={18}
-          />
-          <input
-            type="search"
-            placeholder="Search trip, customer or vehicle..."
-            value={
-              searchTerm
-            }
-            onChange={(
-              event
-            ) =>
-              setSearchTerm(
-                event.target
-                  .value
-              )
-            }
-          />
-          {searchTerm && (
-            <button
-              type="button"
-              className="tracking-search-clear"
-              onClick={() =>
-                setSearchTerm(
-                  ""
-                )
-              }
-              aria-label="Clear search"
-            >
-              <X
-                size={15}
-              />
-            </button>
-          )}
-        </div>
-        {/* DATE FILTER */}
-        <label className="tracking-date">
-          <CalendarDays
-            size={17}
-          />
-          <input
-            type="date"
-            value={
-              selectedDate
-            }
-            onChange={(
-              event
-            ) =>
-              setSelectedDate(
-                event.target
-                  .value
-              )
-            }
-          />
-          {selectedDate && (
-            <button
-              type="button"
-              className="tracking-date-clear"
-              onClick={(
-                event
-              ) => {
-                event.preventDefault();
-                event.stopPropagation();
-                setSelectedDate(
-                  ""
-                );
-              }}
-              aria-label="Clear selected date"
-            >
-              <X
-                size={14}
-              />
-            </button>
-          )}
-        </label>
-      </section>
-      {/* CONTENT */}
-      {loading ? (
-        <div className="tracking-loading-state">
-          Loading trips...
-        </div>
-      ) : filteredTrips.length === 0 ? (
-        <div className="tracking-no-results">
-          <div className="tracking-no-results-content">
-            <div
-              className={`tracking-no-results-icon ${apiError
-                ? "error"
-                : movementFilter === "Breakdown"
-                  ? "warning"
-                  : ""
-                }`}
-            >
-              {apiError || movementFilter === "Breakdown" ? (
-                <CircleAlert size={24} strokeWidth={1.8} />
-              ) : (
-                <Search size={24} strokeWidth={1.8} />
               )}
             </div>
-            <h3 className="tracking-no-results-title">
-              {apiError
-                ? "Unable to Load Trips"
-                : selectedDate
-                  ? "No Trips Found On This Date"
-                  : movementFilter !== "All"
-                    ? `No ${movementFilter} Trips Found`
-                    : searchTerm
-                      ? "No Matching Trips Found"
-                      : "No Trips Found"}
-            </h3>
-            <p className="tracking-no-results-description">
-              {apiError
-                ? "Unable to load tracking data from the server."
-                : selectedDate
-                  ? `No trip records are available for ${selectedDate}.`
-                  : movementFilter === "Breakdown"
-                    ? "There are currently no trips containing a vehicle with Breakdown status."
-                    : trips.length === 0
-                      ? "There are no allocated vehicles available for tracking yet."
-                      : searchTerm
-                        ? "No trips match your current search."
-                        : "No trips match the selected filter."}
-            </p>
-            {!apiError &&
-              trips.length === 0 &&
-              !searchTerm &&
-              !selectedDate &&
-              movementFilter === "All" && (
-                <span className="tracking-no-results-hint">
-                  Trips will appear here once a vehicle is allocated.
-                </span>
-              )}
-            {(searchTerm || selectedDate || movementFilter !== "All") && (
-              <button
-                type="button"
-                className="tracking-no-results-action"
-                onClick={clearAllFilters}
-              >
-                <X size={14} strokeWidth={2} />
-                <span>Clear Filters</span>
-              </button>
+          </div>
+          <div className="td-trip-list" aria-busy={loading}>
+            <table className="td-table">
+              <thead>
+                <tr>
+                  <th scope="col">Trip</th>
+                  <th scope="col">Customer</th>
+                  <th scope="col">Route</th>
+                  <th scope="col">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {!loading &&
+                  filteredTrips.map((trip, index) => {
+                    const id = keyOf(trip),
+                      status = tripStatus(trip, today),
+                      allocated = list(trip.allocatedVehicles);
+                    const pending = allocated.filter(podPending).length,
+                      expiring = allocated.filter((vehicle) =>
+                        ewayExpiring(vehicle, today),
+                      ).length;
+                    return (
+                      <tr
+                        key={id || `missing-${index}`}
+                        className={id ? "td-clickable-trip" : undefined}
+                        onClick={(event) => {
+                          if (
+                            event.defaultPrevented ||
+                            event.target.closest(
+                              "a, button, input, select, textarea",
+                            ) ||
+                            window.getSelection()?.toString()
+                          )
+                            return;
+                          if (id) openTrip(trip);
+                        }}
+                      >
+                        <td>
+                          {id ? (
+                            <Link
+                              to={`/vehicle-details/${encodeURIComponent(id)}`}
+                              state={{ mongoId: id, tripId: trip.tripId }}
+                              className="td-trip-link"
+                              aria-label={`Open vehicle details for ${text(trip.tripId) || id}`}
+                            >
+                              {text(trip.tripId) || id}
+                              <ArrowUpRight size={12} />
+                            </Link>
+                          ) : (
+                            <strong>Missing trip ID</strong>
+                          )}
+                          <small>
+                            {allocated.length}{" "}
+                            {allocated.length === 1 ? "vehicle" : "vehicles"}
+                          </small>
+                        </td>
+                        <td>
+                          <strong className="td-customer">
+                            {text(trip.customer) || "—"}
+                          </strong>
+                          <small>
+                            {text(trip.materialType || trip.materialName) ||
+                              "—"}
+                          </small>
+                        </td>
+                        <td>
+                          <span className="td-route-text">
+                            <MapPin size={12} />
+                            <span>
+                              {text(trip.origin) || "—"}
+                              <span className="td-route-arrow"> → </span>
+                              {text(trip.destination) || "—"}
+                            </span>
+                          </span>
+                          {(pending > 0 || expiring > 0) && (
+                            <small className="td-document-note">
+                              {[
+                                pending > 0 ? `POD pending ${pending}` : "",
+                                expiring > 0
+                                  ? `E-Way expiring ${expiring}`
+                                  : "",
+                              ]
+                                .filter(Boolean)
+                                .join(" · ")}
+                            </small>
+                          )}
+                        </td>
+                        <td>
+                          <StatusBadge status={status} />
+                        </td>
+                      </tr>
+                    );
+                  })}
+              </tbody>
+            </table>
+            {loading && (
+              <div className="td-empty" role="status">
+                <RefreshCw size={20} className="td-spin" />
+                <strong>Loading trips…</strong>
+              </div>
+            )}
+            {!loading && !filteredTrips.length && (
+              <div className="td-empty">
+                <Truck size={27} />
+                <strong>
+                  {error
+                    ? "Trips could not be loaded"
+                    : hasFilter
+                      ? "No matching trips"
+                      : "No operational trips yet"}
+                </strong>
+                <p>
+                  {hasFilter
+                    ? "Try another search or clear the filters."
+                    : "Allocated trips and orders placed for tracking will appear here."}
+                </p>
+                {hasFilter && (
+                  <button type="button" onClick={clearFilters}>
+                    Clear filters
+                  </button>
+                )}
+              </div>
             )}
           </div>
-        </div>
-      ) : (
-        <section className="tracking-layout tracking-layout-no-map">
-          {/* TRIP LIST */}
-          <TripListColumn
-            trips={
-              filteredTrips
-            }
-            selectedTrip={
-              selectedTrip
-            }
-            onSelectTrip={
-              handleTripSelect
-            }
-          />
-          {/* VEHICLE DETAILS */}
-          <VehicleColumn
-            trip={
-              selectedTrip
-            }
-            selectedVehicle={
-              selectedVehicle
-            }
-            onSelectVehicle={
-              handleVehicleSelect
-            }
-            getStatusClass={
-              getStatusClass
-            }
-            getStatusIcon={
-              getStatusIcon
-            }
-          />
-          {/* MAP */}
+          <footer className="td-list-footer">
+            <span>Showing all {filteredTrips.length} trips</span>
+            <span>
+              {lastUpdated
+                ? `Updated ${lastUpdated.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Kolkata" })}`
+                : "Waiting for data"}
+            </span>
+          </footer>
         </section>
-      )}
+        <aside className="td-graphs" aria-label="Trip graphs">
+          <TripActivity data={activity} />
+          <TripStatusChart
+            counts={counts}
+            selectedStatus={statusFilter}
+            onSelect={selectStatus}
+          />
+        </aside>
+      </div>
     </main>
   );
 };
+
 export default Tracking;

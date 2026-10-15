@@ -5,6 +5,18 @@ const cleanString = (value) =>
   value === null || value === undefined
     ? ""
     : String(value).trim();
+const trackingDateUtc = (value) => {
+  if (!value) return null;
+  const date = new Date(value);
+  if (!Number.isFinite(date.getTime())) return null;
+  return Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+};
+const trackingDaysBetween = (start, end, inclusive = false) => {
+  const first = trackingDateUtc(start);
+  const last = trackingDateUtc(end);
+  if (first === null || last === null || last < first) return 0;
+  return Math.floor((last - first) / 86400000) + (inclusive ? 1 : 0);
+};
 const cleanUpperString = (value) =>
   cleanString(value).toUpperCase();
 const toNumber = (value, defaultValue = 0) => {
@@ -3447,6 +3459,17 @@ const updateAllocatedVehicle = async (
           );
       }
     }
+    for (const operation of [vehicle.loading, vehicle.unloading]) {
+      if (!operation) continue;
+      const start = trackingDateUtc(operation.pointInDate);
+      const end = trackingDateUtc(operation.pointOutDate);
+      if (start !== null && end !== null && end < start) {
+        return sendError(res, 400, "Point Out Date cannot be before Point In Date.");
+      }
+      operation.haltingDays = trackingDaysBetween(
+        operation.pointInDate, operation.pointOutDate || new Date()
+      );
+    }
     /* =====================================================
        CHECK COMPLETE TRIP
     ===================================================== */
@@ -3498,7 +3521,8 @@ const updateAllocatedVehicle = async (
               ?.unloading
               ?.status
           ).toLowerCase() ===
-          "completed"
+          "completed" &&
+          trackingDateUtc(allocatedVehicle?.unloading?.pointOutDate) !== null
       );
     const allVehiclesCompleted =
       allRequiredVehiclesAllocated &&
@@ -4066,17 +4090,19 @@ const addDailyTracking = async (
       cleanString(
         req.body.currentLocation
       );
-    const day =
-      req.body.day !==
-        undefined
-        ? Math.max(
-          0,
-          toNumber(
-            req.body.day,
-            0
-          )
-        )
-        : history.length + 1;
+    const trackingDate = toDateOrNull(req.body.date);
+    if (!trackingDate) return sendError(res, 400, "A valid movement date is required.");
+    const endDate = trackingDateUtc(vehicle.unloading?.pointOutDate);
+    const entryDate = trackingDateUtc(trackingDate);
+    const startDate = trackingDateUtc(vehicle.loading?.pointInDate);
+    if (endDate !== null && entryDate > endDate) {
+      return sendError(res, 400, "Movement date cannot be after Unloading Point Out Date.");
+    }
+    if (startDate !== null && entryDate < startDate) {
+      return sendError(res, 400, "Movement date cannot be before Loading Point In Date.");
+    }
+    const day = startDate === null ? history.length + 1 :
+      trackingDaysBetween(vehicle.loading.pointInDate, trackingDate, true);
     const tracking = {
       trackingId:
         makeId("TRACK"),
@@ -4125,10 +4151,10 @@ const addDailyTracking = async (
     vehicle.dailyTracking.push(
       tracking
     );
-    trip.status =
-      "Active";
-    trip.stage =
-      "Tracking";
+    if (cleanString(trip.stage).toLowerCase() !== "trip complete") {
+      trip.status = "Active";
+      trip.stage = "Tracking";
+    }
     await trip.save();
     return sendSuccess(
       res,

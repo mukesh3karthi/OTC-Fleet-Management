@@ -370,6 +370,49 @@ const movementDayFromLoading = (pointInDate, movementDate) => {
   if (start === null || current === null || current < start) return 1;
   return Math.floor((current - start) / 86400000) + 1;
 };
+// Build display rows without creating movement records for missing dates.
+const buildEveryDayHistory = (entries, pointInDate, pointOutDate, today = getLocalYmd()) => {
+  const dateKey = (value) => {
+    const key = String(value || "").slice(0, 10);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(key)) return "";
+    const time = Date.parse(`${key}T00:00:00Z`);
+    return Number.isFinite(time) && new Date(time).toISOString().slice(0, 10) === key ? key : "";
+  };
+  const saved = safeArray(entries);
+  const start = dateKey(pointInDate);
+  const end = dateKey(pointOutDate || today);
+  if (!start || !end || end < start) {
+    return saved.slice().sort((a, b) => String(b.date || "").localeCompare(String(a.date || "")));
+  }
+  const grouped = new Map();
+  for (const entry of saved) {
+    const key = dateKey(entry.date);
+    if (!grouped.has(key)) grouped.set(key, []);
+    grouped.get(key).push(entry);
+  }
+  const first = Date.parse(`${start}T00:00:00Z`);
+  const last = Date.parse(`${end}T00:00:00Z`);
+  const rows = [];
+  for (let time = last; time >= first; time -= 86400000) {
+    const key = new Date(time).toISOString().slice(0, 10);
+    const day = Math.floor((time - first) / 86400000) + 1;
+    const updates = grouped.get(key);
+    if (updates?.length) {
+      rows.push(...updates.slice().reverse().map((entry) => ({ ...entry, day, isMissingDay: false })));
+    } else {
+      rows.push({ date: key, day, isMissingDay: true });
+    }
+  }
+  // Retain legacy entries outside the selected date range.
+  rows.push(...saved.filter((entry) => {
+    const key = dateKey(entry.date);
+    return !key || key < start || key > end;
+  }));
+  return rows;
+};
+// Trip duration includes both Loading Point In and Unloading Point Out.
+const tripDaysThroughPointOut = (pointInDate, pointOutDate, movementDate) =>
+  movementDayFromLoading(pointInDate, pointOutDate || movementDate || getLocalYmd());
 /* =========================================
    COMPONENT
 ========================================= */
@@ -757,6 +800,7 @@ const Tripdetails = () => {
           next.unloadingPointOutDate
         );
       }
+      next.day = movementDayFromLoading(next.loadingPointInDate, next.date);
       return next;
     });
   };
@@ -903,6 +947,11 @@ const Tripdetails = () => {
       Loading / unloading validations must always run because these
       details are saved even when no new daily tracking row is created.
     */
+    if (shouldSaveTracking && movementForm.unloadingPointOutDate &&
+        selectedDate > movementForm.unloadingPointOutDate) {
+      setMovementError("Movement date cannot be after Unloading Point Out Date.");
+      return;
+    }
     const loadingDateError = validateDateOrder(
       "Loading",
       [
@@ -1835,7 +1884,14 @@ const Tripdetails = () => {
                       String(movementForm.unloadingStatus || vehicle?.unloading?.status || "")
                         .trim()
                         .toLowerCase() === "completed";
-                    const history = safeArray(vehicle.dailyTracking).slice().reverse();
+                    const history = buildEveryDayHistory(
+                      vehicle.dailyTracking,
+                      movementForm.loadingPointInDate,
+                      movementForm.unloadingPointOutDate,
+                      ewayToday
+                    );
+                    const historyDayCount = new Set(history.map((item) => String(item.date || "").slice(0, 10))).size;
+                    const savedUpdateCount = safeArray(vehicle.dailyTracking).length;
                     return (
                       <>
                         <section className="trip-movement-summary">
@@ -1848,11 +1904,11 @@ const Tripdetails = () => {
                         <section className="trip-movement-form-card">
                           <div className="trip-movement-section-title">
                             <div><small>DAILY TRACKING</small><h3>Add Movement Details</h3></div>
-                            <span>Day {movementDayFromLoading(movementForm.loadingPointInDate, movementForm.date)}</span>
+                            <span>Day {tripDaysThroughPointOut(movementForm.loadingPointInDate, movementForm.unloadingPointOutDate, movementForm.date)}</span>
                           </div>
                           <div className="trip-movement-form-grid">
                             <label><span>Date</span><input type="date" value={movementForm.date} onChange={(e) => updateMovementField("date", e.target.value)} /></label>
-                            <label><span>Day</span><input type="number" min="1" value={movementDayFromLoading(movementForm.loadingPointInDate, movementForm.date)} readOnly /></label>
+                            <label><span>Day</span><input type="number" min="1" value={tripDaysThroughPointOut(movementForm.loadingPointInDate, movementForm.unloadingPointOutDate, movementForm.date)} readOnly /></label>
                             <label>
                               <span>{movementForm.day === 1 ? "Starting Odometer KM *" : "Yesterday KM"}</span>
                               <input
@@ -2059,13 +2115,26 @@ const Tripdetails = () => {
                           </div>
                         </section>
                         <section className="trip-movement-history">
-                          <div className="trip-movement-section-title"><div><small>HISTORY</small><h3>Movement History</h3></div><span>{history.length} Updates</span></div>
+                          <div className="trip-movement-section-title"><div><small>HISTORY</small><h3>Movement History</h3></div><span>{historyDayCount} Days · {savedUpdateCount} Updates</span></div>
                           {history.length ? (
                             <div className="trip-movement-history-table">
                               <div className="trip-movement-history-head"><span>Date</span><span>Day</span><span>Location</span><span>KM</span><span>Status</span><span>Remarks</span></div>
                               {history.map((item, index) => (
                                 <div className="trip-movement-history-row" key={`${item.date || "movement"}-${index}`}>
-                                  <span>{formatDate(item.date)}</span><span>Day {item.day ?? "-"}</span><span>{safeText(item.currentLocation)}</span><span>{item.runningKm ?? 0} KM</span><span><b className={`trip-history-status ${getStatusClass(item.status)}`}>{safeText(item.status, "Idle")}</b></span><span>{safeText(item.remarks)}</span>
+                                  <span>{formatDate(item.date)}</span>
+                                  <span>Day {item.day ?? "-"}</span>
+                                  <span>{item.isMissingDay ? "—" : safeText(item.currentLocation)}</span>
+                                  <span>{item.isMissingDay ? "—" : `${item.runningKm ?? 0} KM`}</span>
+                                  <span>
+                                    {item.isMissingDay ? (
+                                      <span>No update</span>
+                                    ) : (
+                                      <b className={`trip-history-status ${getStatusClass(item.status)}`}>
+                                        {safeText(item.status, "Idle")}
+                                      </b>
+                                    )}
+                                  </span>
+                                  <span>{item.isMissingDay ? "No update recorded" : safeText(item.remarks)}</span>
                                 </div>
                               ))}
                             </div>

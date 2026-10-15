@@ -3,7 +3,9 @@ const express = require("express");
 const multer = require("multer");
 
 const router = express.Router();
+
 const tripAccess = require("../middleware/tripAccess");
+
 router.use(tripAccess);
 
 const {
@@ -91,6 +93,15 @@ const TripOrderForLock = require("../models/Triporder");
 router.use(async (req, res, next) => {
 
   if (!["POST", "PUT", "PATCH", "DELETE"].includes(req.method)) return next();
+  // Keep authenticated tracking operations and documents editable for finalization.
+  const allocationPath = /^\/[^/]+\/allocated-vehicles\/[^/]+(?:\/(lr|pod|ewayBill|tracking))?\/?$/;
+  const operation = req.path.match(allocationPath);
+  if (operation && (
+    (req.method === "PUT" && !operation[1]) ||
+    (req.method === "PUT" && ["lr", "pod", "ewayBill"].includes(operation[1])) ||
+    (req.method === "POST" && operation[1] === "tracking")
+  )) return next();
+
 
   // Creation endpoints have no existing trip to lock.
 
@@ -132,7 +143,7 @@ router.use(async (req, res, next) => {
 
    PO DOCUMENT UPLOAD
 
-\========================================================= */
+========================================================= */
 
 const allowedPoMimeTypes = new Set([
 
@@ -218,7 +229,7 @@ const uploadPoDocument = (req, res, next) => {
 
    CRANE VEHICLE REQUIREMENT DOCUMENT UPLOAD
 
-\========================================================= */
+========================================================= */
 
 const allowedCraneMimeTypes = new Set([
 
@@ -310,7 +321,7 @@ const uploadCraneDocument = (req, res, next) => {
 
    MOVEMENT DOCUMENT UPLOAD
 
-\========================================================= */
+========================================================= */
 
 const allowedMovementMimeTypes = new Set([
 
@@ -396,7 +407,7 @@ const uploadMovementDocument = (req, res, next) => {
 
    CRANE MOVEMENT CREATE
 
-\========================================================= */
+========================================================= */
 
 router.post(
 
@@ -412,7 +423,7 @@ router.post(
 
    CREATE / GET ORDERS
 
-\========================================================= */
+========================================================= */
 
 router.post("/", createTrip);
 
@@ -430,7 +441,7 @@ router.get(
 
    ORDER FINALIZATION
 
-\========================================================= */
+========================================================= */
 
 router.put(
 
@@ -444,7 +455,7 @@ router.put(
 
    FIRST APPROVAL
 
-\========================================================= */
+========================================================= */
 
 router.put(
 
@@ -458,7 +469,7 @@ router.put(
 
    TRAFFIC QUOTATION
 
-\========================================================= */
+========================================================= */
 
 router.post(
 
@@ -472,7 +483,7 @@ router.post(
 
    SECOND APPROVAL
 
-\========================================================= */
+========================================================= */
 
 router.put(
 
@@ -486,7 +497,7 @@ router.put(
 
    TRANSPORT REPLACEMENT APPROVAL
 
-\========================================================= */
+========================================================= */
 
 router.post(
 
@@ -510,7 +521,7 @@ router.put(
 
    Used after quotation approval and before Tracking.
 
-\========================================================= */
+========================================================= */
 
 router.post(
 
@@ -526,7 +537,7 @@ router.post(
 
    Allowed only before order moves to Tracking.
 
-\========================================================= */
+========================================================= */
 
 router.put(
 
@@ -540,7 +551,7 @@ router.put(
 
    CRANE REQUIREMENT DOCUMENT
 
-\========================================================= */
+========================================================= */
 
 router.get(
 
@@ -554,7 +565,7 @@ router.get(
 
    PO DOCUMENT
 
-\========================================================= */
+========================================================= */
 
 router.put(
 
@@ -578,7 +589,7 @@ router.get(
 
    ORDER PLACED
 
-\========================================================= */
+========================================================= */
 
 router.put(
 
@@ -592,7 +603,7 @@ router.put(
 
    TRACKING INPUT - VEHICLE ALLOCATION
 
-\========================================================= */
+========================================================= */
 
 router.post(
 
@@ -608,7 +619,7 @@ router.post(
 
    Allowed after order moves to Tracking.
 
-\========================================================= */
+========================================================= */
 
 router.put(
 
@@ -624,7 +635,7 @@ router.put(
 
    Vehicle number itself cannot be changed here.
 
-\========================================================= */
+========================================================= */
 
 router.put(
 
@@ -638,7 +649,7 @@ router.put(
 
    TRACKING INPUT - LR DETAILS
 
-\========================================================= */
+========================================================= */
 
 router.put(
 
@@ -662,7 +673,7 @@ router.get(
 
    TRACKING INPUT - POD DOCUMENT
 
-\========================================================= */
+========================================================= */
 
 router.put(
 
@@ -686,7 +697,7 @@ router.get(
 
    TRACKING INPUT - E-WAY BILL
 
-\========================================================= */
+========================================================= */
 
 router.put(
 
@@ -710,7 +721,7 @@ router.get(
 
    TRACKING INPUT - DAILY MOVEMENT
 
-\========================================================= */
+========================================================= */
 
 router.post(
 
@@ -724,7 +735,7 @@ router.post(
 
    TRACKING INPUT - ROUTE LOCATIONS
 
-\========================================================= */
+========================================================= */
 
 router.put(
 
@@ -740,7 +751,7 @@ router.put(
 
    Keep below all specific routes.
 
-\========================================================= */
+========================================================= */
 
 router.get(
 

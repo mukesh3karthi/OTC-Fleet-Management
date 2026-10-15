@@ -1,2919 +1,1191 @@
 /* =========================================================
 
-
-
    INTERCARTING.CSS
-
-
 
    PROFESSIONAL FULL VIEWPORT DASHBOARD
 
-
-
 ========================================================= */
 
-
-
 .fleet-page,
-
-
-
 .fleet-page * {
-
-
-
   box-sizing: border-box;
-
-
-
 }
 
-
-
 .fleet-page {
-
-
-
   width: 100%;
-
-
 
   height: calc(100vh - 90px);
 
-
-
   min-height: calc(100vh - 90px);
 
-
-
   margin: 0;
-
-
 
   padding: 12px 22px 14px;
 
-
-
   display: grid;
 
-
-
-  grid-template-rows:
-
-
-
-    auto auto minmax(260px, 1fr) auto;
-
-
+  grid-template-rows: auto auto minmax(260px, 1fr) auto;
 
   gap: 12px;
 
-
-
   overflow: hidden;
-
-
 
   background: #f4f8f9;
 
-
-
   color: #123b4d;
 
-
-
   font-family: inherit;
-
-
-
 }
 
-
-
 /* =========================================================
-
-
 
    PAGE HEADER
 
-
-
 ========================================================= */
 
-
-
 .fleet-header {
-
-
-
   width: 100%;
 
-
-
   min-width: 0;
-
-
 
   margin: 0;
 
-
-
   padding: 0;
-
-
-
 }
-
-
 
 .fleet-title-line {
-
-
-
   display: none;
-
-
-
 }
-
-
 
 .fleet-heading-content {
-
-
-
   min-width: 0;
 
-
-
   margin: 0;
 
-
-
   padding: 0;
-
-
-
 }
 
-
-
 .fleet-heading-content h1 {
-
-
-
   margin: 0;
-
-
 
   padding: 0;
 
-
-
   color: #083b4d;
-
-
 
   font-size: 24px;
 
-
-
   font-weight: 700;
-
-
 
   line-height: 1.2;
 
-
-
   letter-spacing: -0.35px;
-
-
-
 }
 
-
-
 .fleet-heading-content p {
-
-
-
   margin: 4px 0 0;
-
-
 
   padding: 0;
 
-
-
   color: #718b98;
-
-
 
   font-size: 11.5px;
 
-
-
   font-weight: 400;
 
-
-
   line-height: 1.4;
-
-
-
 }
 
-
-
 /* =========================================================
-
-
 
    FEATURE CARDS GRID
 
-
-
 ========================================================= */
-
-
 
 .fleet-card-grid {
-
-
-
   width: 100%;
-
-
 
   min-width: 0;
 
-
-
   margin: 0;
 
-
-
   padding: 0;
-
-
 
   display: grid;
-
-
-
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-
-
-
-  gap: 12px;
-
-
-
-}
-
-
-
-/* =========================================================
-
-
-
-   FEATURE CARD
-
-
-
-========================================================= */
-
-
-
-.fleet-feature-card {
-
-
-
-  width: 100%;
-
-
-
-  min-width: 0;
-
-
-
-  min-height: 145px;
-
-
-
-  margin: 0;
-
-
-
-  padding: 13px 15px;
-
-
-
-  display: grid;
-
-
-
-  grid-template-columns: 44px minmax(0, 1fr);
-
-
-
-  grid-template-rows: auto auto auto;
-
-
-
-  column-gap: 12px;
-
-
-
-  row-gap: 0;
-
-
-
-  align-items: center;
-
-
-
-  overflow: hidden;
-
-
-
-  border: 1px solid #c9dde2;
-
-
-
-  border-radius: 11px;
-
-
-
-  background: #ffffff;
-
-
-
-  box-shadow: 0 3px 10px rgba(17, 50, 70, 0.04);
-
-
-
-  cursor: pointer;
-
-
-
-  transition:
-
-
-
-    border-color 0.18s ease,
-
-
-
-    box-shadow 0.18s ease,
-
-
-
-    transform 0.18s ease;
-
-
-
-}
-
-
-
-.fleet-feature-card:hover {
-
-
-
-  transform: translateY(-1px);
-
-
-
-  border-color: #8fc9c4;
-
-
-
-  box-shadow: 0 6px 16px rgba(17, 50, 70, 0.07);
-
-
-
-}
-
-
-
-.fleet-feature-card:focus {
-
-
-
-  outline: none;
-
-
-
-}
-
-
-
-.fleet-feature-card:focus-visible {
-
-
-
-  outline: 2px solid rgba(7, 155, 145, 0.18);
-
-
-
-  outline-offset: 2px;
-
-
-
-}
-
-
-
-/* =========================================================
-
-
-
-   FEATURE ICON
-
-
-
-========================================================= */
-
-
-
-.fleet-icon-box {
-
-
-
-  grid-column: 1;
-
-
-
-  grid-row: 1 / 4;
-
-
-
-  width: 44px;
-
-
-
-  height: 44px;
-
-
-
-  margin: 0;
-
-
-
-  padding: 0;
-
-
-
-  display: flex;
-
-
-
-  align-items: center;
-
-
-
-  justify-content: center;
-
-
-
-  align-self: center;
-
-
-
-  flex-shrink: 0;
-
-
-
-  border-radius: 10px;
-
-
-
-  color: #079b91;
-
-
-
-  background: #e9f7f5;
-
-
-
-}
-
-
-
-.fleet-icon-box svg {
-
-
-
-  width: 21px;
-
-
-
-  height: 21px;
-
-
-
-  stroke-width: 2;
-
-
-
-}
-
-
-
-/* =========================================================
-
-
-
-   FEATURE TITLE
-
-
-
-========================================================= */
-
-
-
-.fleet-feature-card h2 {
-
-
-
-  grid-column: 2;
-
-
-
-  grid-row: 1;
-
-
-
-  min-width: 0;
-
-
-
-  margin: 0;
-
-
-
-  padding: 0;
-
-
-
-  color: #083b4d;
-
-
-
-  font-size: 14px;
-
-
-
-  font-weight: 700;
-
-
-
-  line-height: 1.3;
-
-
-
-}
-
-
-
-/* =========================================================
-
-
-
-   FEATURE DESCRIPTION
-
-
-
-========================================================= */
-
-
-
-.fleet-feature-card p {
-
-
-
-  grid-column: 2;
-
-
-
-  grid-row: 2;
-
-
-
-  min-width: 0;
-
-
-
-  margin: 3px 0;
-
-
-
-  padding: 0;
-
-
-
-  color: #718b98;
-
-
-
-  font-size: 10px;
-
-
-
-  font-weight: 400;
-
-
-
-  line-height: 1.4;
-
-
-
-}
-
-
-
-/* =========================================================
-
-
-
-   FEATURE LINK
-
-
-
-========================================================= */
-
-
-
-.fleet-card-link {
-
-
-
-  grid-column: 2;
-
-
-
-  grid-row: 3;
-
-
-
-  width: fit-content;
-
-
-
-  min-width: 0;
-
-
-
-  height: auto;
-
-
-
-  margin: 2px 0 0;
-
-
-
-  padding: 0;
-
-
-
-  display: inline-flex;
-
-
-
-  align-items: center;
-
-
-
-  justify-content: flex-start;
-
-
-
-  gap: 5px;
-
-
-
-  border: 0;
-
-
-
-  border-radius: 0;
-
-
-
-  outline: none;
-
-
-
-  color: #079b91;
-
-
-
-  background: transparent;
-
-
-
-  font: inherit;
-
-
-
-  font-size: 10px;
-
-
-
-  font-weight: 700;
-
-
-
-  line-height: 1.2;
-
-
-
-  cursor: pointer;
-
-
-
-  transition:
-
-
-
-    color 0.18s ease,
-
-
-
-    gap 0.18s ease;
-
-
-
-}
-
-
-
-.fleet-card-link:hover {
-
-
-
-  gap: 7px;
-
-
-
-  color: #08766e;
-
-
-
-}
-
-
-
-.fleet-card-link:focus-visible {
-
-
-
-  outline: 2px solid rgba(7, 155, 145, 0.18);
-
-
-
-  outline-offset: 2px;
-
-
-
-}
-
-
-
-.fleet-card-link svg {
-
-
-
-  width: 13px;
-
-
-
-  height: 13px;
-
-
-
-  flex: 0 0 13px;
-
-
-
-}
-
-
-
-/* =========================================================
-
-
-
-   CHART CARD
-
-
-
-========================================================= */
-
-
-
-.fleet-chart-card {
-
-
-
-  width: 100%;
-
-
-
-  min-width: 0;
-
-
-
-  min-height: 0;
-
-
-
-  margin: 0;
-
-
-
-  padding: 0;
-
-
-
-  display: grid;
-
-
-
-  grid-template-rows:
-
-
-
-    auto minmax(0, 1fr) auto;
-
-
-
-  overflow: hidden;
-
-
-
-  border: 1px solid #c9dde2;
-
-
-
-  border-radius: 11px;
-
-
-
-  background: #ffffff;
-
-
-
-  box-shadow: 0 3px 10px rgba(17, 50, 70, 0.04);
-
-
-
-}
-
-
-
-/* =========================================================
-
-
-
-   CHART HEADER
-
-
-
-========================================================= */
-
-
-
-.fleet-chart-top {
-
-
-
-  width: 100%;
-
-
-
-  min-width: 0;
-
-
-
-  min-height: 54px;
-
-
-
-  margin: 0;
-
-
-
-  padding: 8px 15px;
-
-
-
-  display: flex;
-
-
-
-  align-items: center;
-
-
-
-  justify-content: space-between;
-
-
-
-  gap: 12px;
-
-
-
-  border-bottom: 1px solid #dce8eb;
-
-
-
-}
-
-
-
-.fleet-chart-top>div:first-child {
-
-
-
-  min-width: 0;
-
-
-
-}
-
-
-
-.fleet-chart-top h2 {
-
-
-
-  margin: 0;
-
-
-
-  padding: 0;
-
-
-
-  color: #083b4d;
-
-
-
-  font-size: 16px;
-
-
-
-  font-weight: 700;
-
-
-
-  line-height: 1.25;
-
-
-
-}
-
-
-
-.fleet-chart-top p {
-
-
-
-  margin: 3px 0 0;
-
-
-
-  padding: 0;
-
-
-
-  color: #718b98;
-
-
-
-  font-size: 8px;
-
-
-
-  font-weight: 650;
-
-
-
-  line-height: 1.3;
-
-
-
-  letter-spacing: 0.35px;
-
-
-
-}
-
-
-
-/* =========================================================
-
-
-
-   WEEK / MONTH TOGGLE
-
-
-
-========================================================= */
-
-
-
-.fleet-range-toggle {
-
-
-
-  flex: 0 0 auto;
-
-
-
-  margin: 0;
-
-
-
-  padding: 4px;
-
-
-
-  display: flex;
-
-
-
-  align-items: center;
-
-
-
-  gap: 3px;
-
-
-
-  border-radius: 8px;
-
-
-
-  background: #eff3f7;
-
-
-
-}
-
-
-
-.fleet-range-button {
-
-
-
-  min-width: 65px;
-
-
-
-  height: 31px;
-
-
-
-  margin: 0;
-
-
-
-  padding: 0 13px;
-
-
-
-  border: 0;
-
-
-
-  border-radius: 6px;
-
-
-
-  outline: none;
-
-
-
-  color: #617e8b;
-
-
-
-  background: transparent;
-
-
-
-  font: inherit;
-
-
-
-  font-size: 9px;
-
-
-
-  font-weight: 600;
-
-
-
-  line-height: 1;
-
-
-
-  cursor: pointer;
-
-
-
-  transition:
-
-
-
-    color 0.18s ease,
-
-
-
-    background-color 0.18s ease,
-
-
-
-    box-shadow 0.18s ease;
-
-
-
-}
-
-
-
-.fleet-range-button:hover {
-
-
-
-  color: #079b91;
-
-
-
-}
-
-
-
-.fleet-range-button.active {
-
-
-
-  color: #ffffff;
-
-
-
-  background: #079b91;
-
-
-
-  box-shadow: 0 2px 7px rgba(7, 155, 145, 0.20);
-
-
-
-}
-
-
-
-.fleet-range-button:focus-visible {
-
-
-
-  outline: 2px solid rgba(7, 155, 145, 0.18);
-
-
-
-  outline-offset: 1px;
-
-
-
-}
-
-
-
-/* =========================================================
-
-
-
-   CHART BODY
-
-
-
-========================================================= */
-
-
-
-.fleet-chart-container {
-
-
-
-  width: 100%;
-
-
-
-  height: 100%;
-
-
-
-  min-height: 150px;
-
-
-
-  margin: 0;
-
-
-
-  padding: 10px 15px 0 4px;
-
-
-
-  overflow: hidden;
-
-
-
-}
-
-
-
-.fleet-chart-container .recharts-wrapper {
-
-
-
-  font-family: inherit;
-
-
-
-}
-
-
-
-.fleet-chart-container .recharts-surface {
-
-
-
-  overflow: visible;
-
-
-
-}
-
-
-
-.fleet-chart-container .recharts-cartesian-axis-tick-value {
-
-
-
-  font-size: 10px;
-
-
-
-}
-
-
-
-.fleet-chart-container .recharts-cartesian-grid line {
-
-
-
-  stroke: #dce8eb;
-
-
-
-}
-
-
-
-.fleet-chart-container .recharts-tooltip-wrapper {
-
-
-
-  outline: none;
-
-
-
-}
-
-
-
-.fleet-chart-container .recharts-default-tooltip {
-
-
-
-  padding: 7px 9px !important;
-
-
-
-  border: 1px solid #c9dde2 !important;
-
-
-
-  border-radius: 7px !important;
-
-
-
-  background: #ffffff !important;
-
-
-
-  font-size: 9px !important;
-
-
-
-  box-shadow: 0 5px 14px rgba(15, 23, 42, 0.08) !important;
-
-
-
-}
-
-
-
-/* =========================================================
-
-
-
-   CHART FOOTER
-
-
-
-========================================================= */
-
-
-
-.fleet-chart-footer {
-
-
-
-  width: 100%;
-
-
-
-  min-width: 0;
-
-
-
-  min-height: 36px;
-
-
-
-  margin: 0;
-
-
-
-  padding: 7px 15px;
-
-
-
-  display: flex;
-
-
-
-  align-items: center;
-
-
-
-  justify-content: flex-start;
-
-
-
-  gap: 20px;
-
-
-
-  border-top: 1px solid #dce8eb;
-
-
-
-}
-
-
-
-.fleet-legend {
-
-
-
-  display: inline-flex;
-
-
-
-  align-items: center;
-
-
-
-  gap: 6px;
-
-
-
-  color: #617e8b;
-
-
-
-  font-size: 9.5px;
-
-
-
-  font-weight: 500;
-
-
-
-  line-height: 1.2;
-
-
-
-}
-
-
-
-.fleet-legend-dot {
-
-
-
-  width: 7px;
-
-
-
-  height: 7px;
-
-
-
-  flex: 0 0 7px;
-
-
-
-  border-radius: 50%;
-
-
-
-}
-
-
-
-.fleet-legend-active {
-
-
-
-  background: #079b91;
-
-
-
-}
-
-
-
-.fleet-legend-idle {
-
-
-
-  background: #b9ddd9;
-
-
-
-}
-
-
-
-/* =========================================================
-
-
-
-   STAT GRID
-
-
-
-========================================================= */
-
-
-
-.fleet-stats-grid {
-
-
-
-  width: 100%;
-
-
-
-  min-width: 0;
-
-
-
-  margin: 0;
-
-
-
-  padding: 0;
-
-
-
-  display: grid;
-
-
 
   grid-template-columns: repeat(4, minmax(0, 1fr));
 
-
-
   gap: 12px;
-
-
-
 }
-
-
 
 /* =========================================================
 
-
-
-   STAT CARD
-
-
+   FEATURE CARD
 
 ========================================================= */
 
-
-
-.fleet-stat-card {
-
-
-
+.fleet-feature-card {
   width: 100%;
-
-
 
   min-width: 0;
 
-
-
-  min-height: 70px;
-
-
+  min-height: 145px;
 
   margin: 0;
 
+  padding: 13px 15px;
 
+  display: grid;
 
-  padding: 10px 13px;
+  grid-template-columns: 44px minmax(0, 1fr);
 
+  grid-template-rows: auto auto auto;
 
+  column-gap: 12px;
 
-  display: flex;
+  row-gap: 0;
 
+  align-items: center;
 
-
-  flex-direction: column;
-
-
-
-  justify-content: center;
-
-
+  overflow: hidden;
 
   border: 1px solid #c9dde2;
 
-
-
-  border-radius: 9px;
-
-
+  border-radius: 11px;
 
   background: #ffffff;
 
+  box-shadow: 0 3px 10px rgba(17, 50, 70, 0.04);
 
-
-  box-shadow: 0 3px 10px rgba(17, 50, 70, 0.035);
-
-
+  cursor: pointer;
 
   transition:
-
-
-
     border-color 0.18s ease,
-
-
-
     box-shadow 0.18s ease,
-
-
-
     transform 0.18s ease;
-
-
-
 }
 
-
-
-.fleet-stat-card:hover {
-
-
-
+.fleet-feature-card:hover {
   transform: translateY(-1px);
 
+  border-color: #8fc9c4;
 
-
-  border-color: #b8d6d7;
-
-
-
-  box-shadow: 0 5px 13px rgba(17, 50, 70, 0.055);
-
-
-
+  box-shadow: 0 6px 16px rgba(17, 50, 70, 0.07);
 }
 
-
-
-.fleet-stat-card>p {
-
-
-
-  margin: 0 0 4px;
-
-
-
-  padding: 0;
-
-
-
-  color: #617e8b;
-
-
-
-  font-size: 8px;
-
-
-
-  font-weight: 700;
-
-
-
-  line-height: 1.2;
-
-
-
-  letter-spacing: 0.35px;
-
-
-
+.fleet-feature-card:focus {
+  outline: none;
 }
 
+.fleet-feature-card:focus-visible {
+  outline: 2px solid rgba(7, 155, 145, 0.18);
 
+  outline-offset: 2px;
+}
 
-.fleet-stat-card h2 {
+/* =========================================================
 
+   FEATURE ICON
 
+========================================================= */
+
+.fleet-icon-box {
+  grid-column: 1;
+
+  grid-row: 1 / 4;
+
+  width: 44px;
+
+  height: 44px;
 
   margin: 0;
 
-
-
   padding: 0;
-
-
 
   display: flex;
 
+  align-items: center;
 
+  justify-content: center;
 
-  align-items: baseline;
+  align-self: center;
 
+  flex-shrink: 0;
 
+  border-radius: 10px;
 
-  flex-wrap: wrap;
+  color: #079b91;
 
+  background: #e9f7f5;
+}
 
+.fleet-icon-box svg {
+  width: 21px;
 
-  gap: 5px;
+  height: 21px;
 
+  stroke-width: 2;
+}
 
+/* =========================================================
+
+   FEATURE TITLE
+
+========================================================= */
+
+.fleet-feature-card h2 {
+  grid-column: 2;
+
+  grid-row: 1;
+
+  min-width: 0;
+
+  margin: 0;
+
+  padding: 0;
 
   color: #083b4d;
 
-
-
-  font-size: 22px;
-
-
+  font-size: 14px;
 
   font-weight: 700;
 
-
-
-  line-height: 1.1;
-
-
-
+  line-height: 1.3;
 }
 
+/* =========================================================
 
+   FEATURE DESCRIPTION
 
-.fleet-stat-card h2 span {
+========================================================= */
 
+.fleet-feature-card p {
+  grid-column: 2;
 
+  grid-row: 2;
+
+  min-width: 0;
+
+  margin: 3px 0;
+
+  padding: 0;
 
   color: #718b98;
 
+  font-size: 10px;
 
+  font-weight: 400;
+
+  line-height: 1.4;
+}
+
+/* =========================================================
+
+   FEATURE LINK
+
+========================================================= */
+
+.fleet-card-link {
+  grid-column: 2;
+
+  grid-row: 3;
+
+  width: fit-content;
+
+  min-width: 0;
+
+  height: auto;
+
+  margin: 2px 0 0;
+
+  padding: 0;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: flex-start;
+
+  gap: 5px;
+
+  border: 0;
+
+  border-radius: 0;
+
+  outline: none;
+
+  color: #079b91;
+
+  background: transparent;
+
+  font: inherit;
+
+  font-size: 10px;
+
+  font-weight: 700;
+
+  line-height: 1.2;
+
+  cursor: pointer;
+
+  transition:
+    color 0.18s ease,
+    gap 0.18s ease;
+}
+
+.fleet-card-link:hover {
+  gap: 7px;
+
+  color: #08766e;
+}
+
+.fleet-card-link:focus-visible {
+  outline: 2px solid rgba(7, 155, 145, 0.18);
+
+  outline-offset: 2px;
+}
+
+.fleet-card-link svg {
+  width: 13px;
+
+  height: 13px;
+
+  flex: 0 0 13px;
+}
+
+/* =========================================================
+
+   CHART CARD
+
+========================================================= */
+
+.fleet-chart-card {
+  width: 100%;
+
+  min-width: 0;
+
+  min-height: 0;
+
+  margin: 0;
+
+  padding: 0;
+
+  display: grid;
+
+  grid-template-rows: auto minmax(0, 1fr) auto;
+
+  overflow: hidden;
+
+  border: 1px solid #c9dde2;
+
+  border-radius: 11px;
+
+  background: #ffffff;
+
+  box-shadow: 0 3px 10px rgba(17, 50, 70, 0.04);
+}
+
+/* =========================================================
+
+   CHART HEADER
+
+========================================================= */
+
+.fleet-chart-top {
+  width: 100%;
+
+  min-width: 0;
+
+  min-height: 54px;
+
+  margin: 0;
+
+  padding: 8px 15px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 12px;
+
+  border-bottom: 1px solid #dce8eb;
+}
+
+.fleet-chart-top > div:first-child {
+  min-width: 0;
+}
+
+.fleet-chart-top h2 {
+  margin: 0;
+
+  padding: 0;
+
+  color: #083b4d;
+
+  font-size: 16px;
+
+  font-weight: 700;
+
+  line-height: 1.25;
+}
+
+.fleet-chart-top p {
+  margin: 3px 0 0;
+
+  padding: 0;
+
+  color: #718b98;
+
+  font-size: 8px;
+
+  font-weight: 650;
+
+  line-height: 1.3;
+
+  letter-spacing: 0.35px;
+}
+
+/* =========================================================
+
+   WEEK / MONTH TOGGLE
+
+========================================================= */
+
+.fleet-range-toggle {
+  flex: 0 0 auto;
+
+  margin: 0;
+
+  padding: 4px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 3px;
+
+  border-radius: 8px;
+
+  background: #eff3f7;
+}
+
+.fleet-range-button {
+  min-width: 65px;
+
+  height: 31px;
+
+  margin: 0;
+
+  padding: 0 13px;
+
+  border: 0;
+
+  border-radius: 6px;
+
+  outline: none;
+
+  color: #617e8b;
+
+  background: transparent;
+
+  font: inherit;
 
   font-size: 9px;
 
-
-
-  font-weight: 500;
-
-
+  font-weight: 600;
 
   line-height: 1;
 
+  cursor: pointer;
 
-
+  transition:
+    color 0.18s ease,
+    background-color 0.18s ease,
+    box-shadow 0.18s ease;
 }
 
-
-
-.fleet-stat-card h2.fleet-stat-danger {
-
-
-
-  color: #d92d20;
-
-
-
+.fleet-range-button:hover {
+  color: #079b91;
 }
 
+.fleet-range-button.active {
+  color: #ffffff;
 
+  background: #079b91;
+
+  box-shadow: 0 2px 7px rgba(7, 155, 145, 0.2);
+}
+
+.fleet-range-button:focus-visible {
+  outline: 2px solid rgba(7, 155, 145, 0.18);
+
+  outline-offset: 1px;
+}
 
 /* =========================================================
 
+   CHART BODY
 
+========================================================= */
+
+.fleet-chart-container {
+  width: 100%;
+
+  height: 100%;
+
+  min-height: 150px;
+
+  margin: 0;
+
+  padding: 10px 15px 0 4px;
+
+  overflow: hidden;
+}
+
+.fleet-chart-container .recharts-wrapper {
+  font-family: inherit;
+}
+
+.fleet-chart-container .recharts-surface {
+  overflow: visible;
+}
+
+.fleet-chart-container .recharts-cartesian-axis-tick-value {
+  font-size: 10px;
+}
+
+.fleet-chart-container .recharts-cartesian-grid line {
+  stroke: #dce8eb;
+}
+
+.fleet-chart-container .recharts-tooltip-wrapper {
+  outline: none;
+}
+
+.fleet-chart-container .recharts-default-tooltip {
+  padding: 7px 9px !important;
+
+  border: 1px solid #c9dde2 !important;
+
+  border-radius: 7px !important;
+
+  background: #ffffff !important;
+
+  font-size: 9px !important;
+
+  box-shadow: 0 5px 14px rgba(15, 23, 42, 0.08) !important;
+}
+
+/* =========================================================
+
+   CHART FOOTER
+
+========================================================= */
+
+.fleet-chart-footer {
+  width: 100%;
+
+  min-width: 0;
+
+  min-height: 36px;
+
+  margin: 0;
+
+  padding: 7px 15px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: flex-start;
+
+  gap: 20px;
+
+  border-top: 1px solid #dce8eb;
+}
+
+.fleet-legend {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 6px;
+
+  color: #617e8b;
+
+  font-size: 9.5px;
+
+  font-weight: 500;
+
+  line-height: 1.2;
+}
+
+.fleet-legend-dot {
+  width: 7px;
+
+  height: 7px;
+
+  flex: 0 0 7px;
+
+  border-radius: 50%;
+}
+
+.fleet-legend-active {
+  background: #079b91;
+}
+
+.fleet-legend-idle {
+  background: #b9ddd9;
+}
+
+/* =========================================================
+
+   STAT GRID
+
+========================================================= */
+
+.fleet-stats-grid {
+  width: 100%;
+
+  min-width: 0;
+
+  margin: 0;
+
+  padding: 0;
+
+  display: grid;
+
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+
+  gap: 12px;
+}
+
+/* =========================================================
+
+   STAT CARD
+
+========================================================= */
+
+.fleet-stat-card {
+  width: 100%;
+
+  min-width: 0;
+
+  min-height: 70px;
+
+  margin: 0;
+
+  padding: 10px 13px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  justify-content: center;
+
+  border: 1px solid #c9dde2;
+
+  border-radius: 9px;
+
+  background: #ffffff;
+
+  box-shadow: 0 3px 10px rgba(17, 50, 70, 0.035);
+
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    transform 0.18s ease;
+}
+
+.fleet-stat-card:hover {
+  transform: translateY(-1px);
+
+  border-color: #b8d6d7;
+
+  box-shadow: 0 5px 13px rgba(17, 50, 70, 0.055);
+}
+
+.fleet-stat-card > p {
+  margin: 0 0 4px;
+
+  padding: 0;
+
+  color: #617e8b;
+
+  font-size: 8px;
+
+  font-weight: 700;
+
+  line-height: 1.2;
+
+  letter-spacing: 0.35px;
+}
+
+.fleet-stat-card h2 {
+  margin: 0;
+
+  padding: 0;
+
+  display: flex;
+
+  align-items: baseline;
+
+  flex-wrap: wrap;
+
+  gap: 5px;
+
+  color: #083b4d;
+
+  font-size: 22px;
+
+  font-weight: 700;
+
+  line-height: 1.1;
+}
+
+.fleet-stat-card h2 span {
+  color: #718b98;
+
+  font-size: 9px;
+
+  font-weight: 500;
+
+  line-height: 1;
+}
+
+.fleet-stat-card h2.fleet-stat-danger {
+  color: #d92d20;
+}
+
+/* =========================================================
 
    LARGE DESKTOP
 
-
-
 ========================================================= */
 
-
-
 @media (min-width: 1601px) {
-
-
-
   .fleet-page {
-
-
-
     padding: 14px 26px 16px;
 
-
-
     gap: 13px;
-
-
-
   }
-
-
 
   .fleet-heading-content h1 {
-
-
-
     font-size: 25px;
-
-
-
   }
-
-
 
   .fleet-heading-content p {
-
-
-
     font-size: 12px;
-
-
-
   }
-
-
 
   .fleet-feature-card {
-
-
-
     min-height: 150px;
 
-
-
     padding: 14px 16px;
-
-
-
   }
-
-
 
   .fleet-chart-container {
-
-
-
     min-height: 155px;
-
-
-
   }
-
-
 
   .fleet-stat-card {
-
-
-
     min-height: 74px;
-
-
-
   }
-
-
-
 }
 
-
-
 /* =========================================================
-
-
 
    NORMAL LAPTOP / 1366 - 1536
 
-
-
 ========================================================= */
 
-
-
 @media (max-width: 1500px) {
-
-
-
   .fleet-page {
-
-
-
     padding: 10px 18px 12px;
 
-
-
     gap: 10px;
-
-
-
   }
-
-
 
   .fleet-heading-content h1 {
-
-
-
     font-size: 22px;
-
-
-
   }
-
-
 
   .fleet-heading-content p {
-
-
-
     margin-top: 3px;
 
-
-
     font-size: 10.5px;
-
-
-
   }
 
-
-
   .fleet-feature-card {
-
-
-
     min-height: 135px;
-
-
 
     padding: 11px 13px;
 
-
-
     grid-template-columns: 40px minmax(0, 1fr);
 
-
-
     column-gap: 10px;
-
-
-
   }
-
-
 
   .fleet-icon-box {
-
-
-
     width: 40px;
 
-
-
     height: 40px;
-
-
-
   }
-
-
 
   .fleet-icon-box svg {
-
-
-
     width: 19px;
 
-
-
     height: 19px;
-
-
-
   }
-
-
 
   .fleet-feature-card h2 {
-
-
-
     font-size: 13px;
-
-
-
   }
-
-
 
   .fleet-feature-card p {
-
-
-
     font-size: 9px;
-
-
-
   }
-
-
 
   .fleet-card-link {
-
-
-
     font-size: 9px;
-
-
-
   }
-
-
 
   .fleet-card-link svg {
-
-
-
     width: 12px;
 
-
-
     height: 12px;
-
-
-
   }
-
-
 
   .fleet-chart-top {
-
-
-
     min-height: 48px;
 
-
-
     padding: 7px 13px;
-
-
-
   }
-
-
 
   .fleet-chart-top h2 {
-
-
-
     font-size: 14px;
-
-
-
   }
-
-
 
   .fleet-chart-top p {
-
-
-
     font-size: 7.5px;
-
-
-
   }
 
-
-
   .fleet-range-button {
-
-
-
     min-width: 60px;
-
-
 
     height: 29px;
 
-
-
     font-size: 8.5px;
-
-
-
   }
-
-
 
   .fleet-chart-container {
-
-
-
     min-height: 135px;
-
-
-
   }
-
-
 
   .fleet-chart-footer {
-
-
-
     min-height: 33px;
 
-
-
     padding: 6px 13px;
-
-
-
   }
-
-
 
   .fleet-legend {
-
-
-
     font-size: 9px;
-
-
-
   }
-
-
 
   .fleet-stat-card {
-
-
-
     min-height: 62px;
 
-
-
     padding: 8px 11px;
-
-
-
   }
 
-
-
-  .fleet-stat-card>p {
-
-
-
+  .fleet-stat-card > p {
     font-size: 7.5px;
-
-
-
   }
-
-
 
   .fleet-stat-card h2 {
-
-
-
     font-size: 19px;
-
-
-
   }
-
-
 
   .fleet-stat-card h2 span {
-
-
-
     font-size: 8px;
-
-
-
   }
-
-
-
 }
 
-
-
 /* =========================================================
-
-
 
    SHORT LAPTOP VIEW
 
-
-
 ========================================================= */
 
-
-
 @media (max-height: 760px) and (min-width: 993px) {
-
-
-
   .fleet-page {
-
-
-
     height: calc(100vh - 80px);
 
-
-
     min-height: calc(100vh - 80px);
-
-
 
     padding-top: 8px;
 
-
-
     padding-bottom: 8px;
 
-
-
     gap: 8px;
-
-
-
   }
-
-
 
   .fleet-heading-content h1 {
-
-
-
     font-size: 20px;
-
-
-
   }
-
-
 
   .fleet-heading-content p {
-
-
-
     margin-top: 2px;
 
-
-
     font-size: 9.5px;
-
-
-
   }
 
-
-
   .fleet-feature-card {
-
-
-
     min-height: 120px;
-
-
 
     padding-top: 9px;
 
-
-
     padding-bottom: 9px;
-
-
-
   }
-
-
 
   .fleet-icon-box {
-
-
-
     width: 37px;
 
-
-
     height: 37px;
-
-
-
   }
-
-
 
   .fleet-icon-box svg {
-
-
-
     width: 18px;
 
-
-
     height: 18px;
-
-
-
   }
-
-
 
   .fleet-chart-top {
-
-
-
     min-height: 44px;
-
-
-
   }
-
-
 
   .fleet-chart-container {
-
-
-
     min-height: 115px;
-
-
-
   }
 
-
-
   .fleet-chart-footer {
-
-
-
     min-height: 31px;
-
-
 
     padding-top: 5px;
 
-
-
     padding-bottom: 5px;
-
-
-
   }
 
-
-
   .fleet-stat-card {
-
-
-
     min-height: 56px;
-
-
 
     padding-top: 7px;
 
-
-
     padding-bottom: 7px;
-
-
-
   }
-
-
 
   .fleet-stat-card h2 {
-
-
-
     font-size: 18px;
-
-
-
   }
-
-
-
 }
 
-
-
 /* =========================================================
-
-
 
    MEDIUM SCREEN
 
-
-
 ========================================================= */
 
-
-
 @media (max-width: 1200px) {
-
-
-
   .fleet-page {
-
-
-
     padding-right: 15px;
 
-
-
     padding-left: 15px;
-
-
-
   }
-
-
 
   .fleet-card-grid,
-
-
-
   .fleet-stats-grid {
-
-
-
     gap: 9px;
-
-
-
   }
-
-
 
   .fleet-feature-card {
-
-
-
     padding-right: 11px;
 
-
-
     padding-left: 11px;
-
-
-
   }
-
-
-
 }
 
-
-
 /* =========================================================
-
-
 
    TABLET
 
-
-
 ========================================================= */
 
-
-
 @media (max-width: 992px) {
-
-
-
   .fleet-page {
-
-
-
     height: auto;
-
-
 
     min-height: calc(100vh - 80px);
 
-
-
     padding: 15px;
-
-
 
     display: block;
 
-
-
     overflow: visible;
-
-
-
   }
-
-
 
   .fleet-header {
-
-
-
     margin-bottom: 12px;
-
-
-
   }
-
-
 
   .fleet-card-grid {
-
-
-
     margin-bottom: 12px;
 
-
-
     grid-template-columns: repeat(2, minmax(0, 1fr));
-
-
-
   }
-
-
 
   .fleet-chart-card {
-
-
-
     margin-bottom: 12px;
-
-
-
   }
-
-
 
   .fleet-chart-container {
-
-
-
     height: 230px;
 
-
-
     min-height: 230px;
-
-
-
   }
-
-
 
   .fleet-stats-grid {
-
-
-
     grid-template-columns: repeat(2, minmax(0, 1fr));
-
-
-
   }
-
-
-
 }
 
-
-
 /* =========================================================
-
-
 
    MOBILE / SMALL TABLET
 
-
-
 ========================================================= */
 
-
-
 @media (max-width: 700px) {
-
-
-
   .fleet-page {
-
-
-
     padding: 13px 12px;
-
-
-
   }
-
-
 
   .fleet-heading-content h1 {
-
-
-
     font-size: 20px;
-
-
-
   }
-
-
 
   .fleet-heading-content p {
-
-
-
     font-size: 10px;
-
-
-
   }
-
-
 
   .fleet-card-grid {
-
-
-
     grid-template-columns: 1fr;
-
-
-
   }
-
-
 
   .fleet-feature-card {
-
-
-
     min-height: 96px;
-
-
-
   }
 
-
-
   .fleet-chart-top {
-
-
-
     align-items: flex-start;
-
-
 
     flex-direction: column;
 
-
-
     gap: 7px;
-
-
-
   }
-
-
 
   .fleet-range-toggle {
-
-
-
     width: 100%;
-
-
-
   }
-
-
 
   .fleet-range-button {
-
-
-
     flex: 1;
-
-
-
   }
-
-
 
   .fleet-chart-container {
-
-
-
     height: 210px;
 
-
-
     min-height: 210px;
-
-
-
   }
-
-
 
   .fleet-chart-footer {
-
-
-
     flex-wrap: wrap;
-
-
-
   }
-
-
 
   .fleet-stats-grid {
-
-
-
     grid-template-columns: repeat(2, minmax(0, 1fr));
-
-
-
   }
-
-
-
 }
 
-
-
 /* =========================================================
-
-
 
    SMALL MOBILE
 
-
-
 ========================================================= */
 
-
-
 @media (max-width: 480px) {
-
-
-
   .fleet-page {
-
-
-
     padding: 11px 10px;
-
-
-
   }
-
-
 
   .fleet-heading-content h1 {
-
-
-
     font-size: 18px;
-
-
-
   }
-
-
 
   .fleet-feature-card {
-
-
-
     grid-template-columns: 38px minmax(0, 1fr);
 
-
-
     column-gap: 9px;
-
-
-
   }
-
-
 
   .fleet-icon-box {
-
-
-
     width: 38px;
 
-
-
     height: 38px;
-
-
-
   }
-
-
 
   .fleet-feature-card h2 {
-
-
-
     font-size: 12px;
-
-
-
   }
-
-
 
   .fleet-feature-card p {
-
-
-
     font-size: 8.5px;
-
-
-
   }
-
-
 
   .fleet-chart-container {
-
-
-
     height: 190px;
 
-
-
     min-height: 190px;
-
-
-
   }
-
-
 
   .fleet-stats-grid {
-
-
-
     grid-template-columns: 1fr;
-
-
-
   }
-
-
-
 }
-
-
 
 /* =========================================================
 
-
-
    REDUCED MOTION
-
-
 
 ========================================================= */
 
-
-
 @media (prefers-reduced-motion: reduce) {
-
-
-
   .fleet-feature-card,
-
-
-
   .fleet-card-link,
-
-
-
   .fleet-range-button,
-
-
-
   .fleet-stat-card {
-
-
-
     transition: none;
-
-
-
   }
-
-
 
   .fleet-feature-card:hover,
-
-
-
   .fleet-stat-card:hover {
-
-
-
     transform: none;
-
-
-
   }
-
-
-
 }
-
-
 
 /* OTC navy + teal theme */
 
 .fleet-header {
-
   padding: 12px 15px;
 
   border: 1px solid rgba(255, 255, 255, 0.16);
@@ -2923,75 +1195,53 @@
   background: linear-gradient(110deg, #083b4d 0%, #0b5e68 58%, #079b91 100%);
 
   box-shadow: 0 4px 12px rgba(8, 59, 77, 0.08);
-
 }
 
 .fleet-heading-content h1 {
-
   color: #ffffff;
 
   font-size: 20px;
-
 }
 
 .fleet-heading-content p {
-
   color: #d8eeee;
-
 }
 
 .fleet-icon-box {
-
   color: #079b91;
 
   background: #e9f7f5;
-
 }
 
 .fleet-card-link {
-
   color: #079b91;
-
 }
 
 .fleet-card-link:hover {
-
   color: #067c75;
-
 }
 
 .fleet-range-button:hover {
-
   color: #079b91;
-
 }
 
 .fleet-range-button.active {
-
   color: #ffffff;
 
   background: #079b91;
 
-  box-shadow: 0 2px 7px rgba(7, 155, 145, 0.20);
-
+  box-shadow: 0 2px 7px rgba(7, 155, 145, 0.2);
 }
 
 .fleet-legend-active {
-
   background: #079b91;
-
 }
 
 .fleet-legend-idle {
-
   background: #b9ddd9;
-
 }
 
 .fleet-feature-card:hover,
-
 .fleet-stat-card:hover {
-
   border-color: #8fc9c4;
-
 }

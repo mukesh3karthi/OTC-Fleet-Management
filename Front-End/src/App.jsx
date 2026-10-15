@@ -1,6 +1,8 @@
 import { Navigate, Route, Routes } from "react-router-dom";
+
 import Login from "./Loginpage/Login";
 import Dashboard from "./component/Dashboard";
+
 import ProtectedRoute from "./Protectedroute/MainloginProtectedRoute";
 import Intercartingprotected from "./Protectedroute/IntercartingProtectedRoute";
 import Ownvehicleprotected from "./Protectedroute/OwnvehicleProtectedRoute";
@@ -9,6 +11,7 @@ import AssetsProtectedRoute from "./Protectedroute/AssetsProtectedRoute";
 import KeyaccountProtectedRoute from "./Protectedroute/KeyaccountProtectedRoute";
 import TrafficProtectedRoute from "./Protectedroute/TrafficProtectedRoute";
 import ApprovalProtectedRoute from "./Protectedroute/ApprovalProtectedRoute";
+
 import DashContent from "./pages/DashContent";
 import Intercartingdash from "./pages/Intercartingdash";
 import InAndOutBound from "./pages/InAndOutBound";
@@ -20,20 +23,28 @@ import Assets from "./pages/Assets";
 import Vehiclemaintenance from "./pages/Vehiclemaintenance";
 import Ownvehicledash from "./pages/Ownvehicledash";
 import TripDashboard from "./pages/OrderManagement";
+
 import KeyAccount from "./ordermanagement/KeyAccount";
 import TrafficManagement from "./ordermanagement/Traffic";
 import Approvalmanagement from "./ordermanagement/Approvalmanagement";
+
 import Trackinginput from "./Tracking/AllocateVehicle";
 import Tripdetails from "./Tracking/Tripdetails";
+import VehicleDetails from "./Tracking/VehicleDetails";
+
 import Ownvehicledetails from "./Ownvehicledetails/Ownvehicledetails";
+
 import Intercarting from "./intercarting/Intercarting";
+import Intercartingorder from "./intercarting/Intercartingorder";
 import Vehicledetails from "./intercarting/Vehicledetails";
 import Dailylog from "./intercarting/Dailylog";
 import Monthlylog from "./intercarting/Monthlylog";
+
 function App() {
   return (
     <Routes>
       <Route path="/" element={<Login />} />
+
       <Route
         path="/dashboard"
         element={
@@ -44,6 +55,7 @@ function App() {
       >
         <Route index element={<DashContent />} />
       </Route>
+
       <Route
         path="/assets"
         element={
@@ -61,6 +73,7 @@ function App() {
           }
         />
       </Route>
+
       <Route
         path="/tracking"
         element={
@@ -71,6 +84,18 @@ function App() {
       >
         <Route index element={<Tracking />} />
       </Route>
+
+      <Route
+        path="/vehicle-details/:id"
+        element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<VehicleDetails />} />
+      </Route>
+
       <Route
         path="/trip-details"
         element={
@@ -88,6 +113,7 @@ function App() {
           }
         />
       </Route>
+
       <Route
         path="/tracking-input"
         element={
@@ -105,6 +131,7 @@ function App() {
           }
         />
       </Route>
+
       <Route
         path="/inbound-outbound"
         element={
@@ -115,6 +142,7 @@ function App() {
       >
         <Route index element={<InAndOutBound />} />
       </Route>
+
       <Route
         path="/vehicle-maintenance"
         element={
@@ -125,6 +153,7 @@ function App() {
       >
         <Route index element={<Vehiclemaintenance />} />
       </Route>
+
       <Route
         path="/warehouse"
         element={
@@ -135,6 +164,7 @@ function App() {
       >
         <Route index element={<Warehouse />} />
       </Route>
+
       <Route
         path="/driver-management"
         element={
@@ -145,6 +175,7 @@ function App() {
       >
         <Route index element={<DriverManagement />} />
       </Route>
+
       <Route
         path="/vehicle-documents"
         element={
@@ -155,6 +186,7 @@ function App() {
       >
         <Route index element={<VehicleDocuments />} />
       </Route>
+
       <Route
         path="/ownvehicledetaildash"
         element={
@@ -164,6 +196,7 @@ function App() {
         }
       >
         <Route index element={<Ownvehicledash />} />
+
         <Route
           path="ownvehicledetails"
           element={
@@ -173,6 +206,7 @@ function App() {
           }
         />
       </Route>
+
       <Route
         path="/intercartingdash"
         element={
@@ -182,6 +216,7 @@ function App() {
         }
       >
         <Route index element={<Intercartingdash />} />
+
         <Route
           path="intercarting"
           element={
@@ -190,6 +225,7 @@ function App() {
             </Intercartingprotected>
           }
         />
+
         <Route
           path="intercarting/vehicle-details"
           element={
@@ -198,6 +234,7 @@ function App() {
             </Intercartingprotected>
           }
         />
+
         <Route
           path="intercarting/daily-logs"
           element={
@@ -206,6 +243,7 @@ function App() {
             </Intercartingprotected>
           }
         />
+
         <Route
           path="intercarting/monthly-logs"
           element={
@@ -214,7 +252,17 @@ function App() {
             </Intercartingprotected>
           }
         />
+
+        <Route
+          path="intercarting/intercarting-orders"
+          element={
+            <Intercartingprotected>
+              <Intercartingorder />
+            </Intercartingprotected>
+          }
+        />
       </Route>
+
       <Route
         path="/trip-dashboard"
         element={
@@ -224,6 +272,7 @@ function App() {
         }
       >
         <Route index element={<TripDashboard />} />
+
         <Route
           path="key-account"
           element={
@@ -232,6 +281,7 @@ function App() {
             </KeyaccountProtectedRoute>
           }
         />
+
         <Route
           path="traffic-management"
           element={
@@ -240,6 +290,7 @@ function App() {
             </TrafficProtectedRoute>
           }
         />
+
         <Route
           path="approval-management"
           element={
@@ -249,11 +300,10 @@ function App() {
           }
         />
       </Route>
-      <Route
-        path="*"
-        element={<Navigate to="/dashboard" replace />}
-      />
+
+      <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   );
 }
+
 export default App;

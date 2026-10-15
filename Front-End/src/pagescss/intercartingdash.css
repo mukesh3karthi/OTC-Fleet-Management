@@ -1,7 +1,7 @@
 /* Font sizes increased slightly: +1px for labels/text and +2px for large values. */
 /* =========================================================
    INTERCARTING DASHBOARD
-\========================================================= */
+\\========================================================= */
 .intercarting-dashboard,
 .intercarting-dashboard * {
   box-sizing: border-box;
@@ -9,7 +9,7 @@
 
 /* =========================================================
    PAGE
-\========================================================= */
+\\========================================================= */
 .intercarting-dashboard {
   width: 100%;
   min-width: 0;
@@ -27,7 +27,7 @@
 
 /* =========================================================
    ERROR
-\========================================================= */
+\\========================================================= */
 .intercarting-dashboard-error {
   margin: 0 0 12px;
   padding: 9px 12px;
@@ -41,7 +41,7 @@
 
 /* =========================================================
    STAT GRID
-\========================================================= */
+\\========================================================= */
 .intercarting-dashboard-stats {
   width: 100%;
   display: grid;
@@ -54,7 +54,7 @@
 
 /* =========================================================
    STAT CARD - DIAGONAL RIGHT ACCENT
-========================================================= */
+\========================================================= */
 .intercarting-stat-card {
   --card-accent: #0f9488;
   --card-soft: rgba(15, 148, 136, 0.10);
@@ -134,7 +134,7 @@
 
 /* =========================================================
    STAT ICON - RIGHT GLASS BOX
-========================================================= */
+\========================================================= */
 .intercarting-stat-icon {
   position: absolute;
   top: 15px;
@@ -161,7 +161,7 @@
 
 /* =========================================================
    STAT TEXT
-========================================================= */
+\========================================================= */
 .intercarting-stat-card>div:last-child {
   position: relative;
   z-index: 1;
@@ -207,7 +207,7 @@
 
 /* =========================================================
    VEHICLES BY SITE CARD
-\========================================================= */
+\\========================================================= */
 .intercarting-site-chart-card {
   width: 100%;
   margin: 0 0 12px;
@@ -221,7 +221,7 @@
 
 /* =========================================================
    SITE CHART HEADER
-\========================================================= */
+\\========================================================= */
 .intercarting-site-chart-header {
   display: flex;
   align-items: flex-start;
@@ -256,7 +256,7 @@
 
 /* =========================================================
    SITE TOTAL BADGE
-\========================================================= */
+\\========================================================= */
 .site-total-badge {
   min-width: 66px;
   padding: 5px 8px;
@@ -284,7 +284,7 @@
 
 /* =========================================================
    SITE CHART
-\========================================================= */
+\\========================================================= */
 .intercarting-site-chart-body {
   width: 100%;
   height: 180px;
@@ -292,7 +292,7 @@
 
 /* =========================================================
    CHART STATE
-\========================================================= */
+\\========================================================= */
 .intercarting-chart-state {
   width: 100%;
   height: 100%;
@@ -304,7 +304,7 @@
 
 /* =========================================================
    DONUT GRID
-\========================================================= */
+\\========================================================= */
 .fleet-secondary-charts {
   width: 100%;
   display: grid;
@@ -317,7 +317,7 @@
 
 /* =========================================================
    DONUT CARD
-\========================================================= */
+\\========================================================= */
 .fleet-modern-chart-card {
   min-width: 0;
   padding: 13px 16px;
@@ -344,7 +344,7 @@
 
 /* =========================================================
    DONUT HEADER
-\========================================================= */
+\\========================================================= */
 .fleet-modern-chart-header {
   min-height: 42px;
   display: flex;
@@ -379,7 +379,7 @@
 
 /* =========================================================
    HEADER VALUE
-\========================================================= */
+\\========================================================= */
 .fleet-chart-header-total {
   min-width: 52px;
   padding: 4px 7px;
@@ -407,7 +407,7 @@
 
 /* =========================================================
    DONUT CONTENT
-\========================================================= */
+\\========================================================= */
 .fleet-modern-chart-content {
   min-height: 170px;
   display: grid;
@@ -421,7 +421,7 @@
 
 /* =========================================================
    DONUT GRAPH
-\========================================================= */
+\\========================================================= */
 .fleet-modern-donut {
   position: relative;
   width: 100%;
@@ -430,7 +430,7 @@
 
 /* =========================================================
    DONUT CENTER
-\========================================================= */
+\\========================================================= */
 .fleet-modern-donut-center {
   position: absolute;
   top: 50%;
@@ -467,7 +467,7 @@
 
 /* =========================================================
    LEGEND
-\========================================================= */
+\\========================================================= */
 .fleet-modern-legend {
   min-width: 0;
   display: flex;
@@ -495,7 +495,7 @@
 
 /* =========================================================
    LEGEND ROW
-\========================================================= */
+\\========================================================= */
 .fleet-modern-legend-row {
   width: 100%;
   min-height: 28px;
@@ -521,14 +521,14 @@
   transform: translateX(1px);
 }
 
-.fleet-modern-legend-row\.selected {
+.fleet-modern-legend-row\\.selected {
   border-color: #cce7e3;
   background: #eff9f7;
 }
 
 /* =========================================================
    LEGEND LEFT
-\========================================================= */
+\\========================================================= */
 .fleet-legend-left {
   min-width: 0;
   display: flex;
@@ -554,7 +554,7 @@
 
 /* =========================================================
    LEGEND RIGHT
-\========================================================= */
+\\========================================================= */
 .fleet-legend-right {
   flex-shrink: 0;
   display: flex;
@@ -577,7 +577,7 @@
 
 /* =========================================================
    VEHICLE PANEL
-\========================================================= */
+\\========================================================= */
 .intercarting-vehicle-panel {
   width: 100%;
   min-width: 0;
@@ -592,7 +592,7 @@
 
 /* =========================================================
    VEHICLE PANEL HEADER
-\========================================================= */
+\\========================================================= */
 .intercarting-vehicle-panel-header {
   min-height: 54px;
   padding: 9px 13px;
@@ -623,7 +623,7 @@
 
 /* =========================================================
    VEHICLE PANEL ACTIONS
-\========================================================= */
+\\========================================================= */
 .intercarting-vehicle-panel-actions {
   display: flex;
   align-items: center;
@@ -633,7 +633,7 @@
 
 /* =========================================================
    SEARCH
-\========================================================= */
+\\========================================================= */
 .intercarting-dashboard-search {
   width: 260px;
   height: 34px;
@@ -681,7 +681,7 @@
 
 /* =========================================================
    VEHICLE COUNT
-\========================================================= */
+\\========================================================= */
 .intercarting-vehicle-count {
   height: 34px;
   padding: 0 9px;
@@ -703,7 +703,7 @@
 
 /* =========================================================
    TABLE WRAPPER
-\========================================================= */
+\\========================================================= */
 .intercarting-table-wrapper {
   width: 100%;
   overflow-x: auto;
@@ -728,7 +728,7 @@
 
 /* =========================================================
    TABLE
-\========================================================= */
+\\========================================================= */
 .intercarting-vehicle-table {
   width: 100%;
   min-width: 1000px;
@@ -747,7 +747,7 @@
 
 /* =========================================================
    TABLE HEADER
-\========================================================= */
+\\========================================================= */
 .intercarting-vehicle-table thead th {
   background: #f5f7f9;
   color: #667788;
@@ -760,7 +760,7 @@
 
 /* =========================================================
    TABLE BODY
-\========================================================= */
+\\========================================================= */
 .intercarting-vehicle-table tbody td {
   color: #334b5f;
   font-size: 10.5px;
@@ -773,7 +773,7 @@
 
 /* =========================================================
    STATUS
-\========================================================= */
+\\========================================================= */
 .intercarting-status {
   min-height: 22px;
   padding: 3px 8px;
@@ -797,7 +797,7 @@
 
 /* =========================================================
    EMPTY / LOADING
-\========================================================= */
+\\========================================================= */
 .intercarting-table-message {
   padding:
     28px 15px !important;
@@ -810,7 +810,7 @@
 
 /* =========================================================
    PAGINATION
-\========================================================= */
+\\========================================================= */
 .intercarting-pagination {
   min-height: 46px;
   padding: 7px 11px;
@@ -834,7 +834,7 @@
 
 /* =========================================================
    PAGINATION CONTROLS
-\========================================================= */
+\\========================================================= */
 .intercarting-pagination-controls {
   display: flex;
   align-items: center;
@@ -876,7 +876,7 @@
 
 /* =========================================================
    RESPONSIVE
-\========================================================= */
+\\========================================================= */
 @media (max-width: 1200px) {
   .intercarting-dashboard-stats {
     grid-template-columns:
@@ -892,7 +892,7 @@
 
 /* =========================================================
    900
-\========================================================= */
+\\========================================================= */
 @media (max-width: 900px) {
   .fleet-secondary-charts {
     grid-template-columns:
@@ -919,7 +919,7 @@
 
 /* =========================================================
    TABLET
-\========================================================= */
+\\========================================================= */
 @media (max-width: 768px) {
   .intercarting-dashboard {
     padding:
@@ -947,7 +947,7 @@
 
 /* =========================================================
    MOBILE
-\========================================================= */
+\\========================================================= */
 @media (max-width: 480px) {
   .intercarting-dashboard {
     padding:
@@ -1018,7 +1018,7 @@
 
 /* ================================
    PAGE TRANSITION
-\================================ */
+\\================================ */
 .intercarting-dashboard {
   animation: pageFadeIn 0.45s ease-out;
 }
@@ -1037,7 +1037,7 @@
 
 /* ================================
    STAT CARD ANIMATION
-\================================ */
+\\================================ */
 .intercarting-stat-card {
   transition:
     transform 0.25s ease,
@@ -1080,7 +1080,7 @@
 
 /* ================================
    CHART / CONTENT SECTIONS
-\================================ */
+\\================================ */
 .intercarting-dashboard section {
   animation: sectionFade 0.55s ease both;
 }
@@ -1099,7 +1099,7 @@
 
 /* ================================
    TABLE ROW TRANSITION
-\================================ */
+\\================================ */
 .intercarting-dashboard table tbody tr {
   transition:
     background-color 0.2s ease,
@@ -1112,7 +1112,7 @@
 
 /* ================================
    TABLE ROW LOAD ANIMATION
-\================================ */
+\\================================ */
 .intercarting-dashboard table tbody tr {
   animation: rowAppear 0.35s ease both;
 }
@@ -1151,7 +1151,7 @@
 
 /* ================================
    STATUS BADGE
-\================================ */
+\\================================ */
 .intercarting-status {
   transition:
     transform 0.2s ease,
@@ -1164,7 +1164,7 @@
 
 /* ================================
    PAGINATION BUTTON
-\================================ */
+\\================================ */
 .intercarting-pagination-controls button {
   transition:
     transform 0.2s ease,
@@ -1182,7 +1182,7 @@
 
 /* ================================
    ERROR MESSAGE
-\================================ */
+\\================================ */
 .intercarting-dashboard-error {
   animation: errorSlide 0.35s ease-out;
 }
@@ -1201,7 +1201,7 @@
 
 /* ================================
    REDUCED MOTION
-\================================ */
+\\================================ */
 @media (prefers-reduced-motion: reduce) {
 
   .intercarting-dashboard,
@@ -1274,4 +1274,292 @@
     right: 31px;
     width: 36px;
   }
+}
+
+/* Vehicle table alignment matching the Vehicle Records reference */
+.intercarting-dashboard .intercarting-vehicle-panel {
+  border: 1px solid #d8e4ec;
+  border-radius: 14px;
+  background: #ffffff;
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(11, 52, 71, .04);
+}
+
+.intercarting-dashboard .intercarting-vehicle-panel-header {
+  padding: 14px 16px;
+  border-bottom: 1px solid #dfe8ef;
+  background: #ffffff;
+  align-items: center;
+}
+
+.intercarting-dashboard .intercarting-vehicle-panel-header h2 {
+  margin: 0;
+  color: #12334b;
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.intercarting-dashboard .intercarting-vehicle-panel-header p {
+  margin: 4px 0 0;
+  color: #8093a7;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.intercarting-dashboard .intercarting-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.intercarting-dashboard .intercarting-vehicle-table {
+  width: 100%;
+  min-width: 1100px;
+  table-layout: fixed;
+  border-collapse: collapse;
+  font-family: var(--app-font, Inter, 'Segoe UI', Roboto, Arial, sans-serif);
+  font-variant-numeric: tabular-nums;
+}
+
+.intercarting-dashboard .intercarting-vehicle-table th,
+.intercarting-dashboard .intercarting-vehicle-table td {
+  padding: 11px 14px;
+  border-bottom: 1px solid #e2eaf1;
+  text-align: left;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.intercarting-dashboard .intercarting-vehicle-table thead th {
+  height: 38px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  background: #f5f7f9;
+  color: #6a7e93;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+}
+
+.intercarting-dashboard .intercarting-vehicle-table tbody td {
+  height: 41px;
+  color: #405c76;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.intercarting-dashboard .intercarting-vehicle-table tbody tr {
+  background: #ffffff;
+}
+
+.intercarting-dashboard .intercarting-vehicle-table tbody tr:hover {
+  background: #f3f9f9;
+}
+
+.intercarting-dashboard .intercarting-vehicle-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.intercarting-dashboard .intercarting-vehicle-table th:first-child,
+.intercarting-dashboard .intercarting-vehicle-table td:first-child:not([colspan]) {
+  width: 5%;
+  padding-left: 10px;
+  padding-right: 10px;
+  text-align: center;
+}
+
+.intercarting-dashboard .intercarting-vehicle-table th:nth-child(2) {
+  width: 11%;
+}
+
+.intercarting-dashboard .intercarting-vehicle-table th:nth-child(3) {
+  width: 13%;
+}
+
+.intercarting-dashboard .intercarting-vehicle-table th:nth-child(4) {
+  width: 12%;
+}
+
+.intercarting-dashboard .intercarting-vehicle-table th:nth-child(5) {
+  width: 16%;
+}
+
+.intercarting-dashboard .intercarting-vehicle-table th:nth-child(6) {
+  width: 10%;
+}
+
+.intercarting-dashboard .intercarting-vehicle-table th:nth-child(7) {
+  width: 12%;
+}
+
+.intercarting-dashboard .intercarting-vehicle-table th:nth-child(8) {
+  width: 12%;
+}
+
+.intercarting-dashboard .intercarting-vehicle-table th:nth-child(9) {
+  width: 9%;
+}
+
+.intercarting-dashboard .intercarting-vehicle-table tbody td:nth-child(2) {
+  color: #009e94;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.intercarting-dashboard .intercarting-vehicle-table tbody td:nth-child(7),
+.intercarting-dashboard .intercarting-vehicle-table tbody td:nth-child(8),
+.intercarting-dashboard .intercarting-vehicle-table tbody td:nth-child(9) {
+  white-space: nowrap;
+}
+
+.intercarting-dashboard .intercarting-vehicle-table td.intercarting-table-message {
+  padding: 24px 14px;
+  text-align: center;
+}
+
+.intercarting-dashboard .intercarting-pagination {
+  min-height: 58px;
+  padding: 11px 14px;
+  border-top: 1px solid #dfe8ef;
+  background: #ffffff;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.intercarting-dashboard .intercarting-pagination p {
+  color: #788ca3;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.intercarting-dashboard .intercarting-pagination-controls {
+  gap: 6px;
+}
+
+.intercarting-dashboard .intercarting-pagination-controls button {
+  min-width: 34px;
+  height: 34px;
+  padding: 0 8px;
+  border: 1px solid #d3e0e9;
+  border-radius: 7px;
+  background: #ffffff;
+  color: #506a82;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.intercarting-dashboard .intercarting-pagination-controls button.active {
+  border-color: #099b90;
+  background: #099b90;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.intercarting-dashboard .intercarting-pagination-controls button:hover:not(:disabled):not(.active) {
+  border-color: #099b90;
+  background: #edf8f6;
+  color: #087f77;
+}
+
+.intercarting-dashboard .intercarting-pagination-controls button:disabled {
+  opacity: .4;
+  cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+  .intercarting-dashboard .intercarting-pagination {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .intercarting-dashboard .intercarting-pagination-controls {
+    flex-wrap: wrap;
+  }
+}
+
+/* Compact table heading */
+.intercarting-dashboard .intercarting-vehicle-panel-header {
+  padding: 10px 14px;
+}
+
+.intercarting-dashboard .intercarting-vehicle-panel-header h2 {
+  font-size: 18px;
+  line-height: 1.25;
+}
+
+.intercarting-dashboard .intercarting-vehicle-panel-header p {
+  margin-top: 3px;
+  font-size: 11px;
+}
+
+/* Reduce cell padding */
+.intercarting-dashboard .intercarting-vehicle-table th,
+.intercarting-dashboard .intercarting-vehicle-table td {
+  padding: 7px 12px;
+}
+
+/* Compact column headers */
+.intercarting-dashboard .intercarting-vehicle-table thead th {
+  height: 32px;
+  padding-top: 7px;
+  padding-bottom: 7px;
+  font-size: 10px;
+  line-height: 1.3;
+}
+
+/* Compact data rows */
+.intercarting-dashboard .intercarting-vehicle-table tbody td {
+  height: 34px;
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+/* Smaller status badges */
+.intercarting-dashboard .intercarting-status {
+  min-height: 20px;
+  padding: 3px 7px;
+  font-size: 10px;
+  line-height: 1.2;
+}
+
+/* Compact search and vehicle count */
+.intercarting-dashboard .intercarting-dashboard-search,
+.intercarting-dashboard .intercarting-vehicle-count {
+  height: 30px;
+  min-height: 30px;
+}
+
+.intercarting-dashboard .intercarting-dashboard-search input {
+  font-size: 11px;
+}
+
+.intercarting-dashboard .intercarting-vehicle-count {
+  font-size: 10px;
+}
+
+/* Compact pagination */
+.intercarting-dashboard .intercarting-pagination {
+  min-height: 46px;
+  padding: 8px 12px;
+}
+
+.intercarting-dashboard .intercarting-pagination p {
+  font-size: 11px;
+}
+
+.intercarting-dashboard .intercarting-pagination-controls {
+  gap: 5px;
+}
+
+.intercarting-dashboard .intercarting-pagination-controls button {
+  min-width: 29px;
+  height: 29px;
+  padding: 0 6px;
+  font-size: 11px;
 }

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import "./tripcreatemodal.css";
 
 /* =========================================================
@@ -27,15 +27,9 @@ const CONFIGURATION_OPTIONS = [
   "16 Axle",
 ];
 
-const CLASSIFICATION_OPTIONS = [
-  "ODC",
-  "Non-ODC",
-];
+const CLASSIFICATION_OPTIONS = ["ODC", "Non-ODC"];
 
-const DIESEL_SCOPE_OPTIONS = [
-  "Client Scope",
-  "OTC Scope",
-];
+const DIESEL_SCOPE_OPTIONS = ["Client Scope", "OTC Scope"];
 
 /* =========================================================
    COMMON INPUT
@@ -52,22 +46,17 @@ const TripField = ({
   min,
   step,
   disabled = false,
+  readOnly = false,
 }) => (
   <div className="trip-field-group">
-
     <label>
       {label}
 
-      {required && (
-        <span className="trip-required">
-          *
-        </span>
-      )}
+      {required && <span className="trip-required">*</span>}
     </label>
 
     {unit ? (
       <div className="trip-input-unit">
-
         <input
           type={type}
           min={min}
@@ -76,12 +65,10 @@ const TripField = ({
           value={value ?? ""}
           onChange={onChange}
           disabled={disabled}
+          readOnly={readOnly}
         />
 
-        <span>
-          {unit}
-        </span>
-
+        <span>{unit}</span>
       </div>
     ) : (
       <input
@@ -92,9 +79,9 @@ const TripField = ({
         value={value ?? ""}
         onChange={onChange}
         disabled={disabled}
+        readOnly={readOnly}
       />
     )}
-
   </div>
 );
 
@@ -128,99 +115,56 @@ const VehicleRequirementRow = ({
   totalRequirements,
   rowType = "wtg",
 }) => {
-  const isWtg =
-    rowType === "wtg";
+  const isWtg = rowType === "wtg";
 
-  const rowClass =
-    isWtg
-      ? `wtg-vehicle-row ${index > 0
-        ? "wtg-vehicle-row-compact"
-        : ""
-      }`
-      : `intercarting-vehicle-row ${index > 0
-        ? "intercarting-vehicle-row-compact"
-        : ""
+  const rowClass = isWtg
+    ? `wtg-vehicle-row ${index > 0 ? "wtg-vehicle-row-compact" : ""}`
+    : `intercarting-vehicle-row ${
+        index > 0 ? "intercarting-vehicle-row-compact" : ""
       }`;
 
-  const indexClass =
-    isWtg
-      ? "wtg-vehicle-index"
-      : "intercarting-vehicle-index";
+  const indexClass = isWtg ? "wtg-vehicle-index" : "intercarting-vehicle-index";
 
-  const prefix =
-    isWtg
-      ? "wtg"
-      : "intercarting";
+  const prefix = isWtg ? "wtg" : "intercarting";
 
   return (
     <div
       className={rowClass}
-      key={
-        requirement.requirementId ||
-        `${prefix}-requirement-${index}`
-      }
+      key={requirement.requirementId || `${prefix}-requirement-${index}`}
     >
-
-      <div className={indexClass}>
-        {index + 1}
-      </div>
+      <div className={indexClass}>{index + 1}</div>
 
       {/* ===================================================
           VEHICLE TYPE
       =================================================== */}
 
       <div
-        className={`trip-field-group ${isWtg
-            ? "wtg-field-vehicle-type"
-            : "intercarting-field-vehicle-type"
-          }`}
+        className={`trip-field-group ${
+          isWtg ? "wtg-field-vehicle-type" : "intercarting-field-vehicle-type"
+        }`}
       >
-
-        <label
-          htmlFor={`${prefix}-vehicle-type-${index}`}
-        >
+        <label htmlFor={`${prefix}-vehicle-type-${index}`}>
           Vehicle Type
-
-          <span className="trip-required">
-            *
-          </span>
+          <span className="trip-required">*</span>
         </label>
 
         <div className="wtg-suggest-input">
-
           <input
             id={`${prefix}-vehicle-type-${index}`}
             type="text"
             list={`${prefix}-vehicle-types-${index}`}
-            value={
-              requirement.vehicleType ||
-              ""
-            }
+            value={requirement.vehicleType || ""}
             placeholder="Enter vehicle type"
             autoComplete="off"
-            onChange={
-              handleWtgVehicleFieldChange(
-                index,
-                "vehicleType"
-              )
-            }
+            onChange={handleWtgVehicleFieldChange(index, "vehicleType")}
           />
-
         </div>
 
-        <datalist
-          id={`${prefix}-vehicle-types-${index}`}
-        >
-          {vehicleTypes.map(
-            (vehicleType) => (
-              <option
-                key={vehicleType}
-                value={vehicleType}
-              />
-            )
-          )}
+        <datalist id={`${prefix}-vehicle-types-${index}`}>
+          {vehicleTypes.map((vehicleType) => (
+            <option key={vehicleType} value={vehicleType} />
+          ))}
         </datalist>
-
       </div>
 
       {/* ===================================================
@@ -228,57 +172,32 @@ const VehicleRequirementRow = ({
       =================================================== */}
 
       <div
-        className={`trip-field-group ${isWtg
-            ? "wtg-field-configuration"
-            : "intercarting-field-configuration"
-          }`}
+        className={`trip-field-group ${
+          isWtg ? "wtg-field-configuration" : "intercarting-field-configuration"
+        }`}
       >
-
-        <label
-          htmlFor={`${prefix}-configuration-${index}`}
-        >
+        <label htmlFor={`${prefix}-configuration-${index}`}>
           Configuration Model
-
-          <span className="trip-required">
-            *
-          </span>
+          <span className="trip-required">*</span>
         </label>
 
         <div className="wtg-suggest-input">
-
           <input
             id={`${prefix}-configuration-${index}`}
             type="text"
             list={`${prefix}-configurations-${index}`}
-            value={
-              requirement.configuration ||
-              ""
-            }
+            value={requirement.configuration || ""}
             placeholder="Enter configuration"
             autoComplete="off"
-            onChange={
-              handleWtgVehicleFieldChange(
-                index,
-                "configuration"
-              )
-            }
+            onChange={handleWtgVehicleFieldChange(index, "configuration")}
           />
-
         </div>
 
-        <datalist
-          id={`${prefix}-configurations-${index}`}
-        >
-          {CONFIGURATION_OPTIONS.map(
-            (configuration) => (
-              <option
-                key={configuration}
-                value={configuration}
-              />
-            )
-          )}
+        <datalist id={`${prefix}-configurations-${index}`}>
+          {CONFIGURATION_OPTIONS.map((configuration) => (
+            <option key={configuration} value={configuration} />
+          ))}
         </datalist>
-
       </div>
 
       {/* ===================================================
@@ -286,59 +205,34 @@ const VehicleRequirementRow = ({
       =================================================== */}
 
       <div
-        className={`trip-field-group ${isWtg
+        className={`trip-field-group ${
+          isWtg
             ? "wtg-field-classification"
             : "intercarting-field-classification"
-          }`}
+        }`}
       >
-
-        <label
-          htmlFor={`${prefix}-classification-${index}`}
-        >
+        <label htmlFor={`${prefix}-classification-${index}`}>
           Movement Classification
-
-          <span className="trip-required">
-            *
-          </span>
+          <span className="trip-required">*</span>
         </label>
 
         <div className="trip-select-wrap">
-
           <select
             id={`${prefix}-classification-${index}`}
-            value={
-              requirement.classification ||
-              ""
-            }
-            onChange={
-              handleWtgVehicleFieldChange(
-                index,
-                "classification"
-              )
-            }
+            value={requirement.classification || ""}
+            onChange={handleWtgVehicleFieldChange(index, "classification")}
           >
-            <option value="">
-              Select type
-            </option>
+            <option value="">Select type</option>
 
-            {CLASSIFICATION_OPTIONS.map(
-              (classification) => (
-                <option
-                  key={classification}
-                  value={classification}
-                >
-                  {classification}
-                </option>
-              )
-            )}
+            {CLASSIFICATION_OPTIONS.map((classification) => (
+              <option key={classification} value={classification}>
+                {classification}
+              </option>
+            ))}
           </select>
 
-          <span className="trip-select-arrow">
-            ⌄
-          </span>
-
+          <span className="trip-select-arrow">⌄</span>
         </div>
-
       </div>
 
       {/* ===================================================
@@ -346,48 +240,28 @@ const VehicleRequirementRow = ({
       =================================================== */}
 
       <div
-        className={`trip-field-group ${isWtg
-            ? "wtg-field-quantity"
-            : "intercarting-field-quantity"
-          }`}
+        className={`trip-field-group ${
+          isWtg ? "wtg-field-quantity" : "intercarting-field-quantity"
+        }`}
       >
-
-        <label
-          htmlFor={`${prefix}-quantity-${index}`}
-        >
+        <label htmlFor={`${prefix}-quantity-${index}`}>
           Quantity
-
-          <span className="trip-required">
-            *
-          </span>
+          <span className="trip-required">*</span>
         </label>
 
         <div className="wtg-quantity-control">
-
           <input
             id={`${prefix}-quantity-${index}`}
             type="number"
             min="1"
             step="1"
-            value={
-              requirement.quantity ??
-              "1"
-            }
+            value={requirement.quantity ?? "1"}
             placeholder="1"
-            onChange={
-              handleWtgVehicleFieldChange(
-                index,
-                "quantity"
-              )
-            }
+            onChange={handleWtgVehicleFieldChange(index, "quantity")}
           />
 
-          <span>
-            NOS
-          </span>
-
+          <span>NOS</span>
         </div>
-
       </div>
 
       {/* ===================================================
@@ -395,48 +269,28 @@ const VehicleRequirementRow = ({
       =================================================== */}
 
       <div
-        className={`trip-field-group ${isWtg
-            ? "wtg-field-weight"
-            : "intercarting-field-weight"
-          }`}
+        className={`trip-field-group ${
+          isWtg ? "wtg-field-weight" : "intercarting-field-weight"
+        }`}
       >
-
-        <label
-          htmlFor={`${prefix}-weight-${index}`}
-        >
+        <label htmlFor={`${prefix}-weight-${index}`}>
           Weight
-
-          <span className="trip-required">
-            *
-          </span>
+          <span className="trip-required">*</span>
         </label>
 
         <div className="wtg-weight-control">
-
           <input
             id={`${prefix}-weight-${index}`}
             type="number"
             min="0"
             step="0.01"
-            value={
-              requirement.weight ??
-              ""
-            }
+            value={requirement.weight ?? ""}
             placeholder="0.00"
-            onChange={
-              handleWtgVehicleFieldChange(
-                index,
-                "weight"
-              )
-            }
+            onChange={handleWtgVehicleFieldChange(index, "weight")}
           />
 
-          <span>
-            TON
-          </span>
-
+          <span>TON</span>
         </div>
-
       </div>
 
       {/* ===================================================
@@ -444,107 +298,55 @@ const VehicleRequirementRow = ({
       =================================================== */}
 
       <div
-        className={`trip-field-group wtg-dimensions-group ${isWtg
-            ? "wtg-field-dimensions"
-            : "intercarting-field-dimensions"
-          }`}
+        className={`trip-field-group wtg-dimensions-group ${
+          isWtg ? "wtg-field-dimensions" : "intercarting-field-dimensions"
+        }`}
       >
-
-        <label>
-          Dimensions (L × H × W)
-        </label>
+        <label>Dimensions (L × H × W)</label>
 
         <div className="wtg-dimensions-control">
-
           <div className="wtg-dimension-part">
-
             <input
               type="number"
               min="0"
               step="0.01"
-              value={
-                requirement
-                  ?.dimensions
-                  ?.length ??
-                ""
-              }
+              value={requirement?.dimensions?.length ?? ""}
               placeholder="L"
-              aria-label={`Requirement ${index + 1
-                } length`}
-              onChange={
-                handleWtgVehicleFieldChange(
-                  index,
-                  "length"
-                )
-              }
+              aria-label={`Requirement ${index + 1} length`}
+              onChange={handleWtgVehicleFieldChange(index, "length")}
             />
-
           </div>
 
-          <span className="wtg-dimension-separator">
-            ×
-          </span>
+          <span className="wtg-dimension-separator">×</span>
 
           <div className="wtg-dimension-part">
-
             <input
               type="number"
               min="0"
               step="0.01"
-              value={
-                requirement
-                  ?.dimensions
-                  ?.height ??
-                ""
-              }
+              value={requirement?.dimensions?.height ?? ""}
               placeholder="H"
-              aria-label={`Requirement ${index + 1
-                } height`}
-              onChange={
-                handleWtgVehicleFieldChange(
-                  index,
-                  "height"
-                )
-              }
+              aria-label={`Requirement ${index + 1} height`}
+              onChange={handleWtgVehicleFieldChange(index, "height")}
             />
-
           </div>
 
-          <span className="wtg-dimension-separator">
-            ×
-          </span>
+          <span className="wtg-dimension-separator">×</span>
 
           <div className="wtg-dimension-part">
-
             <input
               type="number"
               min="0"
               step="0.01"
-              value={
-                requirement
-                  ?.dimensions
-                  ?.width ??
-                ""
-              }
+              value={requirement?.dimensions?.width ?? ""}
               placeholder="W"
-              aria-label={`Requirement ${index + 1
-                } width`}
-              onChange={
-                handleWtgVehicleFieldChange(
-                  index,
-                  "width"
-                )
-              }
+              aria-label={`Requirement ${index + 1} width`}
+              onChange={handleWtgVehicleFieldChange(index, "width")}
             />
-
           </div>
 
-          <span className="wtg-dimensions-unit">
-            FT
-          </span>
-
+          <span className="wtg-dimensions-unit">FT</span>
         </div>
-
       </div>
 
       {/* ===================================================
@@ -555,19 +357,13 @@ const VehicleRequirementRow = ({
         <button
           type="button"
           className="wtg-remove-vehicle-btn"
-          onClick={() =>
-            handleRemoveWtgVehicle(
-              index
-            )
-          }
-          aria-label={`Remove vehicle requirement ${index + 1
-            }`}
+          onClick={() => handleRemoveWtgVehicle(index)}
+          aria-label={`Remove vehicle requirement ${index + 1}`}
           title="Remove vehicle"
         >
           ×
         </button>
       )}
-
     </div>
   );
 };
@@ -575,6 +371,37 @@ const VehicleRequirementRow = ({
 /* =========================================================
    TRIP CREATE MODAL
 ========================================================= */
+
+const getLoggedInKamUsername = () => {
+  try {
+    if (
+      !sessionStorage.getItem("kamToken")?.trim() ||
+      sessionStorage.getItem("kamLoggedIn") !== "true"
+    )
+      return "";
+    return String(sessionStorage.getItem("kamUsername") || "").trim();
+  } catch {
+    return "";
+  }
+};
+
+const formatKamName = (value) =>
+  String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(
+      /(^|[\s._-])(\p{L})/gu,
+      (_, separator, letter) => separator + letter.toUpperCase(),
+    );
+
+const getTotalVehicles = (requirements) =>
+  (Array.isArray(requirements) ? requirements : []).reduce((total, item) => {
+    const quantity = Number(item?.quantity ?? 0);
+    return (
+      total +
+      (Number.isFinite(quantity) && quantity > 0 ? Math.floor(quantity) : 0)
+    );
+  }, 0);
 
 const Tripcreatemodal = ({
   showTripModal,
@@ -593,69 +420,100 @@ const Tripcreatemodal = ({
   isEditing = false,
   isSaving = false,
 }) => {
+  const loggedInKamUsername = getLoggedInKamUsername();
+  const loggedInKamName = formatKamName(loggedInKamUsername);
+  const totalVehicles = getTotalVehicles(tripForm.vehicleRequirements);
+  const assignedKamValue = isEditing
+    ? formatKamName(tripForm.assignedKam)
+    : loggedInKamName;
+
+  // Keep the parent's form in sync so its existing save handler receives the KAM.
+  // Hooks must run before the conditional return when the modal is closed.
+  useEffect(() => {
+    if (
+      showTripModal &&
+      !isEditing &&
+      loggedInKamUsername &&
+      tripForm.assignedKam !== loggedInKamName
+    ) {
+      handleTripFieldChange("assignedKam")({
+        target: { name: "assignedKam", value: loggedInKamName },
+      });
+    }
+  }, [
+    showTripModal,
+    isEditing,
+    loggedInKamUsername,
+    loggedInKamName,
+    tripForm.assignedKam,
+    handleTripFieldChange,
+  ]);
+
+  useEffect(() => {
+    if (
+      showTripModal &&
+      String(tripForm.totalVehicles ?? "") !== String(totalVehicles)
+    ) {
+      handleTripFieldChange("totalVehicles")({
+        target: { name: "totalVehicles", value: String(totalVehicles) },
+      });
+    }
+  }, [
+    showTripModal,
+    totalVehicles,
+    tripForm.totalVehicles,
+    handleTripFieldChange,
+  ]);
+
+  const totalVehiclesReady =
+    String(tripForm.totalVehicles ?? "") === String(totalVehicles);
+
+  const assignedKamReady =
+    isEditing ||
+    Boolean(loggedInKamUsername && tripForm.assignedKam === loggedInKamName);
+
   if (!showTripModal) {
     return null;
   }
 
-  const requirements =
-    Array.isArray(
-      tripForm.vehicleRequirements
-    )
-      ? tripForm.vehicleRequirements
-      : [];
+  const requirements = Array.isArray(tripForm.vehicleRequirements)
+    ? tripForm.vehicleRequirements
+    : [];
 
-  const isWTG =
-    tripForm.movementType ===
-    "WTG Movement";
+  const isWTG = tripForm.movementType === "WTG Movement";
 
-  const isIntercartingOrOther =
-    [
-      "Intercarting",
-      "Other",
-    ].includes(
-      tripForm.movementType
-    );
+  const isIntercarting = tripForm.movementType === "Intercarting";
 
-  const isCrane =
-    tripForm.movementType ===
-    "Crane";
+  const isIntercartingOrOther = ["Intercarting", "Other"].includes(
+    tripForm.movementType,
+  );
+
+  const isCrane = tripForm.movementType === "Crane";
 
   return (
     <div
       className="trip-modal-overlay"
-      onMouseDown={
-        handleTripOverlayClick
-      }
+      onMouseDown={handleTripOverlayClick}
       role="presentation"
     >
-
       <div
         className="trip-modal-card"
         role="dialog"
         aria-modal="true"
         aria-labelledby="new-trip-title"
       >
-
         {/* =================================================
             HEADER
         ================================================= */}
 
         <div className="trip-modal-header">
-
           <div className="trip-modal-header-left">
-
-            <span className="trip-modal-subtitle">
-              KEY ACCOUNT MANAGEMENT
-            </span>
+            <span className="trip-modal-subtitle">KEY ACCOUNT MANAGEMENT</span>
 
             <div className="trip-modal-title-row">
-
               <div className="trip-modal-title-copy">
-
                 <h2 id="new-trip-title">
-                  {isEditing
-                    ? "Edit Trip"
-                    : "New Trip Creation"}
+                  {isEditing ? "Edit Trip" : "New Trip Creation"}
                 </h2>
 
                 <p>
@@ -663,85 +521,49 @@ const Tripcreatemodal = ({
                     ? "Update customer, contact, route, material and vehicle requirement details."
                     : "Enter customer, contact, route, material and vehicle requirement details."}
                 </p>
-
               </div>
 
               {/* MOVEMENT TYPE */}
 
               <div className="trip-header-movement">
-
                 <label htmlFor="trip-movement-type">
                   Movement Type
-
-                  <span className="trip-required">
-                    *
-                  </span>
+                  <span className="trip-required">*</span>
                 </label>
 
                 <div className="trip-header-select-wrap">
-
                   <select
                     id="trip-movement-type"
-                    value={
-                      tripForm.movementType ||
-                      ""
-                    }
-                    onChange={
-                      handleMovementTypeChange
-                    }
-                    disabled={
-                      isEditing
-                    }
+                    value={tripForm.movementType || ""}
+                    onChange={handleMovementTypeChange}
+                    disabled={isEditing}
                   >
+                    <option value="">Select Movement...</option>
 
-                    <option value="">
-                      Select Movement...
-                    </option>
+                    <option value="WTG Movement">WTG Movement</option>
 
-                    <option value="WTG Movement">
-                      WTG Movement
-                    </option>
+                    <option value="Intercarting">Intercarting</option>
 
-                    <option value="Intercarting">
-                      Intercarting
-                    </option>
+                    <option value="Crane">Crane</option>
 
-                    <option value="Crane">
-                      Crane
-                    </option>
-
-                    <option value="Other">
-                      Other
-                    </option>
-
+                    <option value="Other">Other</option>
                   </select>
 
-                  <span className="trip-header-select-arrow">
-                    ⌄
-                  </span>
-
+                  <span className="trip-header-select-arrow">⌄</span>
                 </div>
-
               </div>
-
             </div>
-
           </div>
 
           <button
             type="button"
             className="trip-modal-close"
-            onClick={
-              handleCloseTripModal
-            }
-            disabled={
-              isSaving
-            }
+            onClick={handleCloseTripModal}
+            disabled={isSaving}
             aria-label="Close"
           >
             ×
           </button>
-
         </div>
 
         {/* =================================================
@@ -749,33 +571,21 @@ const Tripcreatemodal = ({
         ================================================= */}
 
         <div className="trip-modal-body">
-
           {/* ===============================================
               EMPTY STATE
           =============================================== */}
 
           {!tripForm.movementType && (
-
             <div className="trip-empty-state">
+              <div className="trip-empty-state-icon">↗</div>
 
-              <div className="trip-empty-state-icon">
-                ↗
-              </div>
-
-              <strong>
-                Select a movement type
-              </strong>
+              <strong>Select a movement type</strong>
 
               <p>
-                WTG, Intercarting,
-                Crane and Other
-                movements use
-                different operational
-                details.
+                WTG, Intercarting, Crane and Other movements use different
+                operational details.
               </p>
-
             </div>
-
           )}
 
           {/* ===============================================
@@ -784,184 +594,114 @@ const Tripcreatemodal = ({
 
           {isWTG && (
             <>
-
               {/* WTG TRIP INFORMATION */}
 
               <section className="trip-form-section">
-
                 <div className="trip-section-heading">
-
                   <div>
                     <div>
-
-                      <strong>
-                        WTG Trip Information
-                      </strong>
+                      <strong>WTG Trip Information</strong>
 
                       <small>
-                        Customer, enquiry,
-                        placement and route
-                        details.
+                        Customer, enquiry, placement and route details.
                       </small>
-
                     </div>
                   </div>
 
                   <div className="trip-heading-trip-id">
+                    <small>TRIP ID</small>
 
-                    <small>
-                      TRIP ID
-                    </small>
-
-                    <strong>
-                      {tripForm.tripId}
-                    </strong>
-
+                    <strong>{tripForm.tripId}</strong>
                   </div>
-
                 </div>
 
                 <div className="trip-form-grid">
-
                   <TripField
                     label="Customer"
                     required
-                    value={
-                      tripForm.customer
-                    }
+                    value={tripForm.customer}
                     placeholder="Enter customer name"
-                    onChange={
-                      handleTripFieldChange(
-                        "customer"
-                      )
-                    }
+                    onChange={handleTripFieldChange("customer")}
                   />
 
                   <TripField
                     label="Contact Person"
                     required
-                    value={
-                      tripForm.contactPerson
-                    }
+                    value={tripForm.contactPerson}
                     placeholder="Enter contact person name"
-                    onChange={
-                      handleTripFieldChange(
-                        "contactPerson"
-                      )
-                    }
+                    onChange={handleTripFieldChange("contactPerson")}
                   />
 
                   <TripField
                     label="Contact Number"
                     required
                     type="tel"
-                    value={
-                      tripForm.contactNumber
-                    }
+                    value={tripForm.contactNumber}
                     placeholder="Enter contact number"
-                    onChange={
-                      handleTripFieldChange(
-                        "contactNumber"
-                      )
-                    }
+                    onChange={handleTripFieldChange("contactNumber")}
                   />
 
                   <TripField
                     label="Email"
                     required
                     type="email"
-                    value={
-                      tripForm.email
-                    }
+                    value={tripForm.email}
                     placeholder="Enter contact email"
-                    onChange={
-                      handleTripFieldChange(
-                        "email"
-                      )
-                    }
+                    onChange={handleTripFieldChange("email")}
                   />
 
                   <TripField
                     label="Material Type"
                     required
-                    value={
-                      tripForm.materialType
-                    }
+                    value={tripForm.materialType}
                     placeholder="e.g. WTG Blade / Tower Section"
-                    onChange={
-                      handleTripFieldChange(
-                        "materialType"
-                      )
-                    }
+                    onChange={handleTripFieldChange("materialType")}
                   />
 
                   <TripField
                     label="Enquiry Date"
                     required
                     type="date"
-                    value={
-                      tripForm.enquiryDate
-                    }
-                    onChange={
-                      handleTripFieldChange(
-                        "enquiryDate"
-                      )
-                    }
+                    value={tripForm.enquiryDate}
+                    onChange={handleTripFieldChange("enquiryDate")}
                   />
 
                   <TripField
                     label="Placement Date"
                     type="date"
-                    value={
-                      tripForm.placementDate
-                    }
-                    onChange={
-                      handleTripFieldChange(
-                        "placementDate"
-                      )
-                    }
+                    value={tripForm.placementDate}
+                    onChange={handleTripFieldChange("placementDate")}
                   />
 
                   <TripField
                     label="Assigned KAM"
                     required
-                    value={
-                      tripForm.assignedKam
-                    }
-                    placeholder="Enter KAM name"
-                    onChange={
-                      handleTripFieldChange(
-                        "assignedKam"
-                      )
-                    }
+                    value={assignedKamValue}
+                    placeholder="Login required"
+                    readOnly
+                  />
+
+                  <TripField
+                    label="Total Vehicles"
+                    value={totalVehicles}
+                    unit="NOS"
+                    readOnly
                   />
 
                   <TripField
                     label="Origin"
                     required
-                    value={
-                      tripForm.origin
-                    }
+                    value={tripForm.origin}
                     placeholder="Enter origin"
-                    onChange={
-                      handleTripFieldChange(
-                        "origin"
-                      )
-                    }
+                    onChange={handleTripFieldChange("origin")}
                   />
 
                   <TripField
                     label="Destination"
                     required
-                    value={
-                      tripForm.destination
-                    }
+                    value={tripForm.destination}
                     placeholder="Enter destination"
-                    onChange={
-                      handleTripFieldChange(
-                        "destination"
-                      )
-                    }
+                    onChange={handleTripFieldChange("destination")}
                   />
 
                   <TripField
@@ -969,32 +709,12 @@ const Tripcreatemodal = ({
                     type="number"
                     min="0"
                     step="0.01"
-                    value={
-                      tripForm.distance
-                    }
+                    value={tripForm.distance}
                     placeholder="Enter route distance"
                     unit="KM"
-                    onChange={
-                      handleTripFieldChange(
-                        "distance"
-                      )
-                    }
+                    onChange={handleTripFieldChange("distance")}
                   />
-
-                  <TripField
-                    label="Total Vehicles"
-                    required
-                    type="number"
-                    min="1"
-                    step="1"
-                    value={tripForm.totalVehicles}
-                    placeholder="Enter total vehicles"
-                    unit="NOS"
-                    onChange={handleTripFieldChange("totalVehicles")}
-                  />
-
                 </div>
-
               </section>
 
               {/* ===========================================
@@ -1002,119 +722,62 @@ const Tripcreatemodal = ({
               =========================================== */}
 
               <section className="trip-form-section">
-
                 <div className="trip-section-heading">
-
                   <div>
                     <div>
-
-                      <strong>
-                        WTG Vehicle &amp; Dimensions
-                      </strong>
+                      <strong>WTG Vehicle &amp; Dimensions</strong>
 
                       <small>
-                        Add each vehicle
-                        requirement with type,
-                        configuration,
-                        classification,
-                        quantity, weight and
-                        dimensions.
+                        Add each vehicle requirement with type, configuration,
+                        classification, quantity, weight and dimensions.
                       </small>
-
                     </div>
                   </div>
 
                   <button
                     type="button"
                     className="trip-add-vehicle-btn"
-                    onClick={
-                      handleAddWtgVehicle
-                    }
+                    onClick={handleAddWtgVehicle}
                     title="Add another vehicle requirement"
                   >
-
-                    <span
-                      className="trip-add-vehicle-icon"
-                      aria-hidden="true"
-                    >
+                    <span className="trip-add-vehicle-icon" aria-hidden="true">
                       +
                     </span>
 
-                    <span className="trip-add-vehicle-text">
-                      Add Vehicle
-                    </span>
+                    <span className="trip-add-vehicle-text">Add Vehicle</span>
 
                     <span className="trip-add-vehicle-count">
                       {requirements.length}
                     </span>
-
                   </button>
-
                 </div>
 
                 <div className="wtg-vehicle-rows">
-
-                  {requirements.map(
-                    (
-                      requirement,
-                      index
-                    ) => (
-
-                      <VehicleRequirementRow
-                        key={
-                          requirement.requirementId ||
-                          `wtg-${index}`
-                        }
-                        requirement={
-                          requirement
-                        }
-                        index={
-                          index
-                        }
-                        vehicleTypes={
-                          WTG_VEHICLE_TYPES
-                        }
-                        handleWtgVehicleFieldChange={
-                          handleWtgVehicleFieldChange
-                        }
-                        handleRemoveWtgVehicle={
-                          handleRemoveWtgVehicle
-                        }
-                        totalRequirements={
-                          requirements.length
-                        }
-                        rowType="wtg"
-                      />
-
-                    )
-                  )}
-
+                  {requirements.map((requirement, index) => (
+                    <VehicleRequirementRow
+                      key={requirement.requirementId || `wtg-${index}`}
+                      requirement={requirement}
+                      index={index}
+                      vehicleTypes={WTG_VEHICLE_TYPES}
+                      handleWtgVehicleFieldChange={handleWtgVehicleFieldChange}
+                      handleRemoveWtgVehicle={handleRemoveWtgVehicle}
+                      totalRequirements={requirements.length}
+                      rowType="wtg"
+                    />
+                  ))}
                 </div>
 
                 <div className="trip-field-group trip-field-full wtg-remark-field">
-
-                  <label>
-                    Remarks
-                  </label>
+                  <label>Remarks</label>
 
                   <textarea
                     rows={2}
-                    value={
-                      tripForm.remark ||
-                      ""
-                    }
+                    value={tripForm.remark || ""}
                     placeholder="Enter placement, route, loading or handling remarks..."
-                    onChange={
-                      handleTripFieldChange(
-                        "remark"
-                      )
-                    }
+                    onChange={handleTripFieldChange("remark")}
                   />
-
                 </div>
-
               </section>
-
             </>
           )}
 
@@ -1124,281 +787,178 @@ const Tripcreatemodal = ({
 
           {isIntercartingOrOther && (
             <>
-
               {/* BASIC DETAILS */}
 
               <section className="trip-form-section">
-
                 <div className="trip-section-heading">
-
                   <div>
                     <div>
-
                       <strong>
-                        {tripForm.movementType ===
-                          "Intercarting"
+                        {tripForm.movementType === "Intercarting"
                           ? "Intercarting Details"
                           : "Other Movement Details"}
                       </strong>
 
                       <small>
-                        Customer, site,
-                        placement and
-                        commercial scope
+                        Customer, site, placement and commercial scope
                         information.
                       </small>
-
                     </div>
                   </div>
 
                   <div className="trip-heading-trip-id">
+                    <small>TRIP ID</small>
 
-                    <small>
-                      TRIP ID
-                    </small>
-
-                    <strong>
-                      {tripForm.tripId}
-                    </strong>
-
+                    <strong>{tripForm.tripId}</strong>
                   </div>
-
                 </div>
 
                 <div className="trip-form-grid">
-
                   <TripField
                     label="Customer"
                     required
-                    value={
-                      tripForm.customer
-                    }
+                    value={tripForm.customer}
                     placeholder="Enter customer name"
-                    onChange={
-                      handleTripFieldChange(
-                        "customer"
-                      )
-                    }
+                    onChange={handleTripFieldChange("customer")}
                   />
 
                   <TripField
                     label="Contact Person"
                     required
-                    value={
-                      tripForm.contactPerson
-                    }
+                    value={tripForm.contactPerson}
                     placeholder="Enter contact person name"
-                    onChange={
-                      handleTripFieldChange(
-                        "contactPerson"
-                      )
-                    }
+                    onChange={handleTripFieldChange("contactPerson")}
                   />
 
                   <TripField
                     label="Contact Number"
                     required
                     type="tel"
-                    value={
-                      tripForm.contactNumber
-                    }
+                    value={tripForm.contactNumber}
                     placeholder="Enter contact number"
-                    onChange={
-                      handleTripFieldChange(
-                        "contactNumber"
-                      )
-                    }
+                    onChange={handleTripFieldChange("contactNumber")}
                   />
 
                   <TripField
                     label="Email"
                     required
                     type="email"
-                    value={
-                      tripForm.email
-                    }
+                    value={tripForm.email}
                     placeholder="Enter email address"
-                    onChange={
-                      handleTripFieldChange(
-                        "email"
-                      )
-                    }
+                    onChange={handleTripFieldChange("email")}
                   />
 
-                  <TripField
-                    label="Material Type"
-                    required
-                    value={
-                      tripForm.materialType
-                    }
-                    placeholder="Enter material type"
-                    onChange={
-                      handleTripFieldChange(
-                        "materialType"
-                      )
-                    }
-                  />
+                  {!isIntercarting && (
+                    <TripField
+                      label="Material Type"
+                      required
+                      value={tripForm.materialType}
+                      placeholder="Enter material type"
+                      onChange={handleTripFieldChange("materialType")}
+                    />
+                  )}
 
                   <TripField
                     label="Site Location"
-                    value={
-                      tripForm.siteLocation
-                    }
+                    value={tripForm.siteLocation}
                     placeholder="Enter site location"
-                    onChange={
-                      handleTripFieldChange(
-                        "siteLocation"
-                      )
-                    }
+                    onChange={handleTripFieldChange("siteLocation")}
                   />
 
                   <TripField
                     label="Period"
-                    value={
-                      tripForm.period
-                    }
+                    value={tripForm.period}
                     placeholder="Enter period"
-                    onChange={
-                      handleTripFieldChange(
-                        "period"
-                      )
-                    }
+                    onChange={handleTripFieldChange("period")}
                   />
 
                   {/* DIESEL SCOPE */}
 
                   <div className="trip-field-group">
-
                     <label htmlFor="intercarting-diesel-scope">
                       Diesel Scope
                     </label>
 
                     <div className="trip-select-wrap">
-
                       <select
                         id="intercarting-diesel-scope"
-                        value={
-                          tripForm.dieselScope ||
-                          ""
-                        }
-                        onChange={
-                          handleTripFieldChange(
-                            "dieselScope"
-                          )
-                        }
+                        value={tripForm.dieselScope || ""}
+                        onChange={handleTripFieldChange("dieselScope")}
                       >
+                        <option value="">Select scope</option>
 
-                        <option value="">
-                          Select scope
-                        </option>
-
-                        {DIESEL_SCOPE_OPTIONS.map(
-                          (scope) => (
-                            <option
-                              key={scope}
-                              value={scope}
-                            >
-                              {scope}
-                            </option>
-                          )
-                        )}
-
+                        {DIESEL_SCOPE_OPTIONS.map((scope) => (
+                          <option key={scope} value={scope}>
+                            {scope}
+                          </option>
+                        ))}
                       </select>
 
-                      <span className="trip-select-arrow">
-                        ⌄
-                      </span>
-
+                      <span className="trip-select-arrow">⌄</span>
                     </div>
-
                   </div>
 
                   <TripField
                     label="Enquiry Date"
                     required
                     type="date"
-                    value={
-                      tripForm.enquiryDate
-                    }
-                    onChange={
-                      handleTripFieldChange(
-                        "enquiryDate"
-                      )
-                    }
+                    value={tripForm.enquiryDate}
+                    onChange={handleTripFieldChange("enquiryDate")}
                   />
 
                   <TripField
                     label="Placement Date"
                     type="date"
-                    value={
-                      tripForm.placementDate
-                    }
-                    onChange={
-                      handleTripFieldChange(
-                        "placementDate"
-                      )
-                    }
+                    value={tripForm.placementDate}
+                    onChange={handleTripFieldChange("placementDate")}
                   />
 
                   <TripField
                     label="Assigned KAM"
                     required
-                    value={
-                      tripForm.assignedKam
-                    }
-                    placeholder="Enter KAM name"
-                    onChange={
-                      handleTripFieldChange(
-                        "assignedKam"
-                      )
-                    }
+                    value={assignedKamValue}
+                    placeholder="Login required"
+                    readOnly
                   />
 
                   <TripField
-                    label="Origin"
-                    value={
-                      tripForm.origin
-                    }
-                    placeholder="Enter origin"
-                    onChange={
-                      handleTripFieldChange(
-                        "origin"
-                      )
-                    }
+                    label="Total Vehicles"
+                    value={totalVehicles}
+                    unit="NOS"
+                    readOnly
                   />
 
-                  <TripField
-                    label="Destination"
-                    value={
-                      tripForm.destination
-                    }
-                    placeholder="Enter destination"
-                    onChange={
-                      handleTripFieldChange(
-                        "destination"
-                      )
-                    }
-                  />
+                  {!isIntercarting && (
+                    <TripField
+                      label="Origin"
+                      value={tripForm.origin}
+                      placeholder="Enter origin"
+                      onChange={handleTripFieldChange("origin")}
+                    />
+                  )}
 
-                  <TripField
-                    label="Distance"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={
-                      tripForm.distance
-                    }
-                    placeholder="Enter route distance"
-                    unit="KM"
-                    onChange={
-                      handleTripFieldChange(
-                        "distance"
-                      )
-                    }
-                  />
+                  {!isIntercarting && (
+                    <TripField
+                      label="Destination"
+                      value={tripForm.destination}
+                      placeholder="Enter destination"
+                      onChange={handleTripFieldChange("destination")}
+                    />
+                  )}
 
+                  {!isIntercarting && (
+                    <TripField
+                      label="Distance"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={tripForm.distance}
+                      placeholder="Enter route distance"
+                      unit="KM"
+                      onChange={handleTripFieldChange("distance")}
+                    />
+                  )}
                 </div>
-
               </section>
 
               {/* ===========================================
@@ -1406,127 +966,71 @@ const Tripcreatemodal = ({
               =========================================== */}
 
               <section className="trip-form-section intercarting-vehicle-section">
-
                 <div className="trip-section-heading">
-
                   <div>
                     <div>
-
                       <strong>
-                        {tripForm.movementType ===
-                          "Intercarting"
+                        {tripForm.movementType === "Intercarting"
                           ? "Intercarting Vehicle Details"
                           : "Other Vehicle Details"}
                       </strong>
 
                       <small>
-                        Add each required
-                        vehicle with type,
-                        configuration,
-                        classification,
-                        quantity and weight.
+                        Add each required vehicle with type, configuration,
+                        classification, quantity and weight.
                       </small>
-
                     </div>
                   </div>
 
                   <button
                     type="button"
                     className="trip-add-vehicle-btn"
-                    onClick={
-                      handleAddWtgVehicle
-                    }
+                    onClick={handleAddWtgVehicle}
                     title="Add another vehicle requirement"
                   >
-
-                    <span
-                      className="trip-add-vehicle-icon"
-                      aria-hidden="true"
-                    >
+                    <span className="trip-add-vehicle-icon" aria-hidden="true">
                       +
                     </span>
 
-                    <span className="trip-add-vehicle-text">
-                      Add Vehicle
-                    </span>
+                    <span className="trip-add-vehicle-text">Add Vehicle</span>
 
                     <span className="trip-add-vehicle-count">
                       {requirements.length}
                     </span>
-
                   </button>
-
                 </div>
 
                 <div className="intercarting-vehicle-rows">
-
-                  {requirements.map(
-                    (
-                      requirement,
-                      index
-                    ) => (
-
-                      <VehicleRequirementRow
-                        key={
-                          requirement.requirementId ||
-                          `intercarting-${index}`
-                        }
-                        requirement={
-                          requirement
-                        }
-                        index={
-                          index
-                        }
-                        vehicleTypes={
-                          primaryVehicleTypes
-                        }
-                        handleWtgVehicleFieldChange={
-                          handleWtgVehicleFieldChange
-                        }
-                        handleRemoveWtgVehicle={
-                          handleRemoveWtgVehicle
-                        }
-                        totalRequirements={
-                          requirements.length
-                        }
-                        rowType="intercarting"
-                      />
-
-                    )
-                  )}
-
+                  {requirements.map((requirement, index) => (
+                    <VehicleRequirementRow
+                      key={requirement.requirementId || `intercarting-${index}`}
+                      requirement={requirement}
+                      index={index}
+                      vehicleTypes={primaryVehicleTypes}
+                      handleWtgVehicleFieldChange={handleWtgVehicleFieldChange}
+                      handleRemoveWtgVehicle={handleRemoveWtgVehicle}
+                      totalRequirements={requirements.length}
+                      rowType="intercarting"
+                    />
+                  ))}
                 </div>
 
                 <div className="trip-field-group trip-field-full intercarting-remark-field">
-
-                  <label htmlFor="intercarting-remark">
-                    Remarks
-                  </label>
+                  <label htmlFor="intercarting-remark">Remarks</label>
 
                   <textarea
                     id="intercarting-remark"
                     rows={2}
-                    value={
-                      tripForm.remark ||
-                      ""
-                    }
+                    value={tripForm.remark || ""}
                     placeholder={
-                      tripForm.movementType ===
-                        "Intercarting"
+                      tripForm.movementType === "Intercarting"
                         ? "Enter intercarting, site, vehicle or operational remarks..."
                         : "Enter movement, vehicle or operational remarks..."
                     }
-                    onChange={
-                      handleTripFieldChange(
-                        "remark"
-                      )
-                    }
+                    onChange={handleTripFieldChange("remark")}
                   />
-
                 </div>
-
               </section>
-
             </>
           )}
 
@@ -1536,182 +1040,113 @@ const Tripcreatemodal = ({
 
           {isCrane && (
             <>
-
               <section className="trip-form-section">
-
                 <div className="trip-section-heading">
-
                   <div>
                     <div>
-
-                      <strong>
-                        Crane Trip Details
-                      </strong>
+                      <strong>Crane Trip Details</strong>
 
                       <small>
-                        Customer, material,
-                        enquiry, placement
-                        and route information.
+                        Customer, material, enquiry, placement and route
+                        information.
                       </small>
-
                     </div>
                   </div>
 
                   <div className="trip-heading-trip-id">
+                    <small>TRIP ID</small>
 
-                    <small>
-                      TRIP ID
-                    </small>
-
-                    <strong>
-                      {tripForm.tripId}
-                    </strong>
-
+                    <strong>{tripForm.tripId}</strong>
                   </div>
-
                 </div>
 
                 <div className="trip-form-grid">
-
                   <TripField
                     label="Customer"
                     required
-                    value={
-                      tripForm.customer
-                    }
+                    value={tripForm.customer}
                     placeholder="Enter customer name"
-                    onChange={
-                      handleTripFieldChange(
-                        "customer"
-                      )
-                    }
+                    onChange={handleTripFieldChange("customer")}
                   />
 
                   <TripField
                     label="Contact Person"
                     required
-                    value={
-                      tripForm.contactPerson
-                    }
+                    value={tripForm.contactPerson}
                     placeholder="Enter contact person name"
-                    onChange={
-                      handleTripFieldChange(
-                        "contactPerson"
-                      )
-                    }
+                    onChange={handleTripFieldChange("contactPerson")}
                   />
 
                   <TripField
                     label="Contact Number"
                     required
                     type="tel"
-                    value={
-                      tripForm.contactNumber
-                    }
+                    value={tripForm.contactNumber}
                     placeholder="Enter contact number"
-                    onChange={
-                      handleTripFieldChange(
-                        "contactNumber"
-                      )
-                    }
+                    onChange={handleTripFieldChange("contactNumber")}
                   />
 
                   <TripField
                     label="Email"
                     required
                     type="email"
-                    value={
-                      tripForm.email
-                    }
+                    value={tripForm.email}
                     placeholder="Enter contact email"
-                    onChange={
-                      handleTripFieldChange(
-                        "email"
-                      )
-                    }
+                    onChange={handleTripFieldChange("email")}
                   />
 
                   <TripField
                     label="Material Type"
                     required
-                    value={
-                      tripForm.materialType
-                    }
+                    value={tripForm.materialType}
                     placeholder="Enter crane / material type"
-                    onChange={
-                      handleTripFieldChange(
-                        "materialType"
-                      )
-                    }
+                    onChange={handleTripFieldChange("materialType")}
                   />
 
                   <TripField
                     label="Enquiry Date"
                     required
                     type="date"
-                    value={
-                      tripForm.enquiryDate
-                    }
-                    onChange={
-                      handleTripFieldChange(
-                        "enquiryDate"
-                      )
-                    }
+                    value={tripForm.enquiryDate}
+                    onChange={handleTripFieldChange("enquiryDate")}
                   />
 
                   <TripField
                     label="Placement Date"
                     type="date"
-                    value={
-                      tripForm.placementDate
-                    }
-                    onChange={
-                      handleTripFieldChange(
-                        "placementDate"
-                      )
-                    }
+                    value={tripForm.placementDate}
+                    onChange={handleTripFieldChange("placementDate")}
                   />
 
                   <TripField
                     label="Assigned KAM"
                     required
-                    value={
-                      tripForm.assignedKam
-                    }
-                    placeholder="Enter KAM name"
-                    onChange={
-                      handleTripFieldChange(
-                        "assignedKam"
-                      )
-                    }
+                    value={assignedKamValue}
+                    placeholder="Login required"
+                    readOnly
+                  />
+
+                  <TripField
+                    label="Total Vehicles"
+                    value={totalVehicles}
+                    unit="NOS"
+                    readOnly
                   />
 
                   <TripField
                     label="Origin"
                     required
-                    value={
-                      tripForm.origin
-                    }
+                    value={tripForm.origin}
                     placeholder="Enter origin"
-                    onChange={
-                      handleTripFieldChange(
-                        "origin"
-                      )
-                    }
+                    onChange={handleTripFieldChange("origin")}
                   />
 
                   <TripField
                     label="Destination"
                     required
-                    value={
-                      tripForm.destination
-                    }
+                    value={tripForm.destination}
                     placeholder="Enter destination"
-                    onChange={
-                      handleTripFieldChange(
-                        "destination"
-                      )
-                    }
+                    onChange={handleTripFieldChange("destination")}
                   />
 
                   <TripField
@@ -1719,20 +1154,12 @@ const Tripcreatemodal = ({
                     type="number"
                     min="0"
                     step="0.01"
-                    value={
-                      tripForm.distance
-                    }
+                    value={tripForm.distance}
                     placeholder="Enter route distance"
                     unit="KM"
-                    onChange={
-                      handleTripFieldChange(
-                        "distance"
-                      )
-                    }
+                    onChange={handleTripFieldChange("distance")}
                   />
-
                 </div>
-
               </section>
 
               {/* ===========================================
@@ -1740,187 +1167,113 @@ const Tripcreatemodal = ({
               =========================================== */}
 
               <section className="trip-form-section">
-
                 <div className="trip-section-heading">
-
                   <div>
                     <div>
-
-                      <strong>
-                        Vehicle Requirements
-                      </strong>
+                      <strong>Vehicle Requirements</strong>
 
                       <small>
-                        Add the required
-                        vehicle types and
-                        quantities for this
+                        Add the required vehicle types and quantities for this
                         crane movement.
                       </small>
-
                     </div>
                   </div>
 
                   <button
                     type="button"
                     className="trip-add-vehicle-btn"
-                    onClick={
-                      handleAddWtgVehicle
-                    }
+                    onClick={handleAddWtgVehicle}
                     title="Add another vehicle requirement"
                   >
-
-                    <span
-                      className="trip-add-vehicle-icon"
-                      aria-hidden="true"
-                    >
+                    <span className="trip-add-vehicle-icon" aria-hidden="true">
                       +
                     </span>
 
-                    <span className="trip-add-vehicle-text">
-                      Add Vehicle
-                    </span>
+                    <span className="trip-add-vehicle-text">Add Vehicle</span>
 
                     <span className="trip-add-vehicle-count">
                       {requirements.length}
                     </span>
-
                   </button>
-
                 </div>
 
                 <div className="intercarting-vehicle-rows">
-
-                  {requirements.map(
-                    (
-                      requirement,
-                      index
-                    ) => (
-
-                      <VehicleRequirementRow
-                        key={
-                          requirement.requirementId ||
-                          `crane-${index}`
-                        }
-                        requirement={
-                          requirement
-                        }
-                        index={
-                          index
-                        }
-                        vehicleTypes={
-                          primaryVehicleTypes
-                        }
-                        handleWtgVehicleFieldChange={
-                          handleWtgVehicleFieldChange
-                        }
-                        handleRemoveWtgVehicle={
-                          handleRemoveWtgVehicle
-                        }
-                        totalRequirements={
-                          requirements.length
-                        }
-                        rowType="intercarting"
-                      />
-
-                    )
-                  )}
-
+                  {requirements.map((requirement, index) => (
+                    <VehicleRequirementRow
+                      key={requirement.requirementId || `crane-${index}`}
+                      requirement={requirement}
+                      index={index}
+                      vehicleTypes={primaryVehicleTypes}
+                      handleWtgVehicleFieldChange={handleWtgVehicleFieldChange}
+                      handleRemoveWtgVehicle={handleRemoveWtgVehicle}
+                      totalRequirements={requirements.length}
+                      rowType="intercarting"
+                    />
+                  ))}
                 </div>
 
                 {/* SUPPORTING DOCUMENT */}
 
                 <div className="trip-form-grid">
-
                   <div className="trip-field-group trip-field-full">
-
-                    <label>
-                      Upload File
-                    </label>
+                    <label>Upload File</label>
 
                     <label className="trip-file-upload">
-
                       <input
                         type="file"
-                        onChange={
-                          handleTripFileChange
-                        }
+                        onChange={handleTripFileChange}
                         accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
                       />
 
-                      <span className="trip-file-icon">
-                        ↑
-                      </span>
+                      <span className="trip-file-icon">↑</span>
 
                       <span className="trip-file-content">
-
                         <strong>
                           {tripUpload
                             ? tripUpload.name
                             : "Choose supporting document"}
                         </strong>
 
-                        <small>
-                          PDF, Word, Excel,
-                          JPG or PNG
-                        </small>
-
+                        <small>PDF, Word, Excel, JPG or PNG</small>
                       </span>
 
-                      <span className="trip-file-action">
-                        Browse
-                      </span>
-
+                      <span className="trip-file-action">Browse</span>
                     </label>
-
                   </div>
-
                 </div>
 
                 <div className="trip-field-group trip-field-full crane-remark-field">
-
-                  <label htmlFor="crane-remark">
-                    Remarks
-                  </label>
+                  <label htmlFor="crane-remark">Remarks</label>
 
                   <textarea
                     id="crane-remark"
                     rows={2}
-                    value={
-                      tripForm.remark ||
-                      ""
-                    }
+                    value={tripForm.remark || ""}
                     placeholder="Enter crane, lifting, route, vehicle or operational remarks..."
-                    onChange={
-                      handleTripFieldChange(
-                        "remark"
-                      )
-                    }
+                    onChange={handleTripFieldChange("remark")}
                   />
-
                 </div>
-
               </section>
-
             </>
           )}
-
         </div>
 
         {/* =================================================
             FOOTER
         ================================================= */}
 
-        <div className="trip-modal-actions">
+        {!isEditing && !loggedInKamUsername && (
+          <p className="trip-login-error" role="alert">
+            Please sign in with your Key Account credentials to create a trip.
+          </p>
+        )}
 
+        <div className="trip-modal-actions">
           <button
             type="button"
             className="trip-btn-outline"
-            onClick={
-              handleCloseTripModal
-            }
-            disabled={
-              isSaving
-            }
+            onClick={handleCloseTripModal}
+            disabled={isSaving}
           >
             Cancel
           </button>
@@ -1928,12 +1281,15 @@ const Tripcreatemodal = ({
           <button
             type="button"
             className="trip-btn-primary"
-            onClick={
-              handleCreateTrip
-            }
+            onClick={(event) => {
+              if (assignedKamReady && totalVehiclesReady)
+                handleCreateTrip(event);
+            }}
             disabled={
               isSaving ||
-              !tripForm.movementType
+              !tripForm.movementType ||
+              !assignedKamReady ||
+              !totalVehiclesReady
             }
           >
             {isSaving
@@ -1944,11 +1300,8 @@ const Tripcreatemodal = ({
                 ? "Save Changes"
                 : "Create Trip"}
           </button>
-
         </div>
-
       </div>
-
     </div>
   );
 };
