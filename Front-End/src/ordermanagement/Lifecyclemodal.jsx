@@ -148,6 +148,12 @@ const isPoDocumentComplete = (order) => {
 /* =========================================================
    LIFECYCLE STATUS
 ========================================================= */
+const isIntercartingMovement = (order) =>
+  String(order?.movementType || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[\s-]+/g, "") === "intercarting";
+
 const buildLifecycle = (order) => {
   const requirements = safeArray(order?.vehicleRequirements);
   const confirmations = safeArray(order?.vehicleConfirmations);
@@ -308,6 +314,12 @@ const getLifecycleCurrentIndex = (order, lifecycle) => {
       .toLowerCase();
   if (getStepStatus("trip-complete") === "completed") {
     return 6;
+  }
+  if (
+    isIntercartingMovement(order) &&
+    getStepStatus("order-placed") === "completed"
+  ) {
+    return 4;
   }
   if (getStepStatus("order-finalization") === "rejected") {
     return 1;
@@ -1447,8 +1459,9 @@ const Lifecyclemodal = ({
       setPlaceOrderMessage("");
       const placedBy = sessionStorage.getItem("kamUsername") || "Key Account";
       const body = {
-        stage: "Tracking",
-        status: "Tracking",
+        ...(isIntercartingMovement(order)
+          ? { stage: "Order Placed" }
+          : { stage: "Tracking", status: "Tracking" }),
         orderPlaced: {
           status: "Completed",
           placedAt: new Date().toISOString(),
@@ -1484,15 +1497,15 @@ const Lifecyclemodal = ({
         payload?.data || payload?.trip || payload?.order || payload;
       // Keep this modal synced with the fresh backend response.
       setLocalOrder(updatedOrder);
-      setPlaceOrderMessage("Order placed successfully and moved to Tracking.");
-      showToast(
-        "Order placed successfully. The trip is now in Tracking.",
-        "success",
-      );
+      const successMessage = isIntercartingMovement(order)
+        ? "Order placed successfully. Available on the Intercarting Orders page."
+        : "Order placed successfully. The trip is now in Tracking.";
+      setPlaceOrderMessage(successMessage);
+      showToast(successMessage, "success");
       if (typeof onOrderUpdated === "function") {
         onOrderUpdated(updatedOrder);
       }
-      setActiveStepIndex(5);
+      setActiveStepIndex(isIntercartingMovement(order) ? 4 : 5);
     } catch (error) {
       const message = error.message || "Unable to place the order.";
       setPlaceOrderError(message);
@@ -1583,6 +1596,7 @@ const Lifecyclemodal = ({
     }
   };
   const handleStepClick = (index) => {
+    if (isIntercartingMovement(order) && index === 5) return;
     // Trip Complete can never be opened from a stale backend stage/status.
     // It is available only when buildLifecycle() has independently validated
     // every prerequisite and every required vehicle unloading.
@@ -2077,6 +2091,8 @@ const Lifecyclemodal = ({
         >
           <div className="kam-top-lifecycle-track">
             {lifecycle.map((step, index) => {
+              if (isIntercartingMovement(order) && step.key === "tracking")
+                return null;
               const statusClass = getStatusClass(step.status);
               const rejected = statusClass === "rejected";
               const optionalPending =
@@ -3286,8 +3302,9 @@ const Lifecyclemodal = ({
                         "Vendor Finalization"}
                     </span>
                     <small>
-                      You can place the order and start tracking. These items
-                      can be completed later.
+                      {isIntercartingMovement(order)
+                        ? "You can place this Intercarting order. These items can be completed later."
+                        : "You can place the order and start tracking. These items can be completed later."}
                     </small>
                   </div>
                 )}
@@ -3298,8 +3315,9 @@ const Lifecyclemodal = ({
                     </span>
                     <h3>Order Important Details</h3>
                     <p>
-                      Verify the commercial and PO details before releasing this
-                      order to the Tracking team.
+                      {isIntercartingMovement(order)
+                        ? "Verify the commercial and PO details before placing this Intercarting order."
+                        : "Verify the commercial and PO details before releasing this order to the Tracking team."}
                     </p>
                   </div>
                   <span className="kam-place-order-ready">
@@ -3445,9 +3463,9 @@ const Lifecyclemodal = ({
                 <div>
                   <strong>Final verification</strong>
                   <p>
-                    After you click Place Order, this order will move to
-                    Tracking. The Tracking team can then allocate actual
-                    vehicles, drivers, and manage daily movement updates.
+                    {isIntercartingMovement(order)
+                      ? "After you click Place Order, this order will be available on the Intercarting Orders page."
+                      : "After you click Place Order, this order will move to Tracking. The Tracking team can then allocate actual vehicles, drivers, and manage daily movement updates."}
                   </p>
                 </div>
               </div>
@@ -3462,7 +3480,7 @@ const Lifecyclemodal = ({
           {/* =================================================
               TRACKING - ALLOCATED + PENDING VEHICLES
           ================================================= */}
-          {activeStepIndex === 5 && (
+          {activeStepIndex === 5 && !isIntercartingMovement(order) && (
             <div className="kam-step-page kam-step-page-allocated-vehicles">
               {/* TRACKING ALLOCATION SUMMARY */}
               <section className="kam-client-vehicle-section">

@@ -1,3 +1,11 @@
+// Intercarting orders are managed in the Intercarting module.
+const isIntercartingOrder = (order) => {
+  const movement = order?.movementType || order?.movement ||
+    order?.movementName || order?.movementCategory ||
+    order?.orderFinalization?.movementType || order?.enquiryDetails?.movementType || "";
+  return String(movement).trim().toLowerCase().replace(/[\s_-]+/g, "") === "intercarting";
+};
+
 const trackingApiFetch = (url, options = {}) => {
   const token = localStorage.getItem("token");
   if (!token?.trim()) {
@@ -578,6 +586,7 @@ const Tripdetails = () => {
           */
           const trackingTrips =
             databaseTrips
+              .filter((trip) => !isIntercartingOrder(trip))
               .map(
                 normalizeTrip
               )

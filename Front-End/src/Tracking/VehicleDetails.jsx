@@ -1,3 +1,21 @@
+// Intercarting orders are managed in the Intercarting module.
+const isIntercartingOrder = (order) => {
+  const movement =
+    order?.movementType ||
+    order?.movement ||
+    order?.movementName ||
+    order?.movementCategory ||
+    order?.orderFinalization?.movementType ||
+    order?.enquiryDetails?.movementType ||
+    "";
+  return (
+    String(movement)
+      .trim()
+      .toLowerCase()
+      .replace(/[\s_-]+/g, "") === "intercarting"
+  );
+};
+
 import React, {
   useCallback,
   useEffect,
@@ -336,6 +354,11 @@ const VehicleDetails = () => {
           !Array.isArray(loaded.allocatedVehicles))
       )
         throw new Error("The API returned invalid trip details.");
+      if (isIntercartingOrder(loaded)) {
+        throw new Error(
+          "This is an Intercarting order. Open it from the Intercarting Orders page.",
+        );
+      }
       if (!controller.signal.aborted && mounted.current) setTrip(loaded);
     } catch (err) {
       if (!controller.signal.aborted && mounted.current) {
@@ -371,6 +394,7 @@ const VehicleDetails = () => {
         .filter(
           (item) =>
             item &&
+            !isIntercartingOrder(item) &&
             (item._id || item.tripId) &&
             (array(item.allocatedVehicles).length ||
               display(item.orderPlaced?.status, "").toLowerCase() ===

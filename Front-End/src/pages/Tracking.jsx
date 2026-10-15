@@ -1,3 +1,21 @@
+// Intercarting orders are managed in the Intercarting module.
+const isIntercartingOrder = (order) => {
+  const movement =
+    order?.movementType ||
+    order?.movement ||
+    order?.movementName ||
+    order?.movementCategory ||
+    order?.orderFinalization?.movementType ||
+    order?.enquiryDetails?.movementType ||
+    "";
+  return (
+    String(movement)
+      .trim()
+      .toLowerCase()
+      .replace(/[\s_-]+/g, "") === "intercarting"
+  );
+};
+
 import React, {
   useCallback,
   useEffect,
@@ -448,7 +466,11 @@ const Tracking = () => {
           payload?.message || `Unable to load trips (${response.status}).`,
         );
       const loaded = extractTrips(payload).filter(
-        (trip) => trip && typeof trip === "object" && isOperational(trip),
+        (trip) =>
+          trip &&
+          typeof trip === "object" &&
+          !isIntercartingOrder(trip) &&
+          isOperational(trip),
       );
       if (!controller.signal.aborted && mounted.current) {
         setTrips(loaded);
