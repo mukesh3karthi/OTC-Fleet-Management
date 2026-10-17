@@ -452,6 +452,7 @@ const Tripcreatemodal = ({
   useEffect(() => {
     if (
       showTripModal &&
+      tripForm.movementType !== "Crane" &&
       String(tripForm.totalVehicles ?? "") !== String(totalVehicles)
     ) {
       handleTripFieldChange("totalVehicles")({
@@ -461,11 +462,13 @@ const Tripcreatemodal = ({
   }, [
     showTripModal,
     totalVehicles,
+    tripForm.movementType,
     tripForm.totalVehicles,
     handleTripFieldChange,
   ]);
 
   const totalVehiclesReady =
+    tripForm.movementType === "Crane" ||
     String(tripForm.totalVehicles ?? "") === String(totalVehicles);
 
   const assignedKamReady =
@@ -1127,10 +1130,14 @@ const Tripcreatemodal = ({
                   />
 
                   <TripField
-                    label="Total Vehicles"
-                    value={totalVehicles}
-                    unit="NOS"
-                    readOnly
+                    label="Weight in Tons"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={tripForm.weight}
+                    placeholder="Enter weight"
+                    unit="TON"
+                    onChange={handleTripFieldChange("weight")}
                   />
 
                   <TripField
@@ -1162,56 +1169,7 @@ const Tripcreatemodal = ({
                 </div>
               </section>
 
-              {/* ===========================================
-                  CRANE VEHICLE REQUIREMENTS
-              =========================================== */}
-
               <section className="trip-form-section">
-                <div className="trip-section-heading">
-                  <div>
-                    <div>
-                      <strong>Vehicle Requirements</strong>
-
-                      <small>
-                        Add the required vehicle types and quantities for this
-                        crane movement.
-                      </small>
-                    </div>
-                  </div>
-
-                  <button
-                    type="button"
-                    className="trip-add-vehicle-btn"
-                    onClick={handleAddWtgVehicle}
-                    title="Add another vehicle requirement"
-                  >
-                    <span className="trip-add-vehicle-icon" aria-hidden="true">
-                      +
-                    </span>
-
-                    <span className="trip-add-vehicle-text">Add Vehicle</span>
-
-                    <span className="trip-add-vehicle-count">
-                      {requirements.length}
-                    </span>
-                  </button>
-                </div>
-
-                <div className="intercarting-vehicle-rows">
-                  {requirements.map((requirement, index) => (
-                    <VehicleRequirementRow
-                      key={requirement.requirementId || `crane-${index}`}
-                      requirement={requirement}
-                      index={index}
-                      vehicleTypes={primaryVehicleTypes}
-                      handleWtgVehicleFieldChange={handleWtgVehicleFieldChange}
-                      handleRemoveWtgVehicle={handleRemoveWtgVehicle}
-                      totalRequirements={requirements.length}
-                      rowType="intercarting"
-                    />
-                  ))}
-                </div>
-
                 {/* SUPPORTING DOCUMENT */}
 
                 <div className="trip-form-grid">

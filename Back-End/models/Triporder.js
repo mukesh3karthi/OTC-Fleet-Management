@@ -9,41 +9,29 @@ const { Schema } = mongoose;
 \========================================================= */
 
 const dimensionsSchema = new Schema(
-
   {
-
     length: {
-
       type: Number,
 
       default: null,
-
     },
 
     height: {
-
       type: Number,
 
       default: null,
-
     },
 
     width: {
-
       type: Number,
 
       default: null,
-
     },
-
   },
 
   {
-
     _id: false,
-
-  }
-
+  },
 );
 
 /* =========================================================
@@ -55,85 +43,65 @@ const dimensionsSchema = new Schema(
 \========================================================= */
 
 const vehicleRequirementSchema = new Schema(
-
   {
-
     requirementId: {
-
       type: String,
 
       required: true,
 
       trim: true,
-
     },
 
     vehicleType: {
-
       type: String,
 
       trim: true,
 
       default: "",
-
     },
 
     configuration: {
-
       type: String,
 
       trim: true,
 
       default: "",
-
     },
 
     classification: {
-
       type: String,
 
       trim: true,
 
       default: "",
-
     },
 
     quantity: {
-
       type: Number,
 
       min: 1,
 
       default: 1,
-
     },
 
     weight: {
-
       type: Number,
 
       min: 0,
 
       default: 0,
-
     },
 
     dimensions: {
-
       type: dimensionsSchema,
 
       default: () => ({}),
-
     },
-
   },
 
   {
-
     _id: false,
-
-  }
-
+  },
 );
 
 /* =========================================================
@@ -157,85 +125,65 @@ const vehicleRequirementSchema = new Schema(
 \========================================================= */
 
 const orderFinalizationSchema = new Schema(
-
   {
-
     quotedRate: {
-
       type: Number,
 
       min: 0,
 
       default: null,
-
     },
 
     finalRate: {
-
       type: Number,
 
       min: 0,
 
       default: null,
-
     },
 
     commercialTerms: {
-
       type: String,
 
       trim: true,
 
       default: "",
-
     },
 
     deliveryCommitments: {
-
       type: String,
 
       trim: true,
 
       default: "",
-
     },
 
     clientConfirmationNotes: {
-
       type: String,
 
       trim: true,
 
       default: "",
-
     },
 
     updatedBy: {
-
       type: String,
 
       trim: true,
 
       default: "",
-
     },
 
     updatedAt: {
-
       type: Date,
 
       default: null,
-
     },
-
   },
 
   {
-
     _id: false,
-
-  }
-
+  },
 );
 
 /* =========================================================
@@ -245,15 +193,12 @@ const orderFinalizationSchema = new Schema(
 \========================================================= */
 
 const poDocumentSchema = new Schema(
-
   {
-
     poNumber: { type: String, trim: true, default: "" },
 
     poValidityPeriod: { type: Date, default: null },
 
     billingGstin: {
-
       type: String,
 
       trim: true,
@@ -261,17 +206,14 @@ const poDocumentSchema = new Schema(
       uppercase: true,
 
       default: "",
-
     },
 
     status: {
-
       type: String,
 
       enum: ["Pending", "Completed"],
 
       default: "Pending",
-
     },
 
     documentName: { type: String, trim: true, default: "" },
@@ -287,11 +229,9 @@ const poDocumentSchema = new Schema(
     uploadedBy: { type: String, trim: true, default: "" },
 
     uploadedAt: { type: Date, default: null },
-
   },
 
-  { _id: false }
-
+  { _id: false },
 );
 
 /* =========================================================
@@ -305,9 +245,7 @@ const poDocumentSchema = new Schema(
 \========================================================= */
 
 const craneDocumentSchema = new Schema(
-
   {
-
     documentName: { type: String, trim: true, default: "" },
 
     fileName: { type: String, trim: true, default: "" },
@@ -321,11 +259,9 @@ const craneDocumentSchema = new Schema(
     uploadedBy: { type: String, trim: true, default: "" },
 
     uploadedAt: { type: Date, default: null },
-
   },
 
-  { _id: false }
-
+  { _id: false },
 );
 
 /* =========================================================
@@ -347,25 +283,13 @@ const craneDocumentSchema = new Schema(
 \========================================================= */
 
 const orderApprovalSchema = new Schema(
-
   {
-
     status: {
-
       type: String,
 
-      enum: [
-
-        "Pending",
-
-        "Approved",
-
-        "Rejected",
-
-      ],
+      enum: ["Pending", "Approved", "Rejected"],
 
       default: "Pending",
-
     },
 
     /*
@@ -377,59 +301,45 @@ const orderApprovalSchema = new Schema(
     */
 
     requestedAt: {
-
       type: Date,
 
       default: null,
-
     },
 
     approvedBy: {
-
       type: String,
 
       trim: true,
 
       default: "",
-
     },
 
     approvedAt: {
-
       type: Date,
 
       default: null,
-
     },
 
     remarks: {
-
       type: String,
 
       trim: true,
 
       default: "",
-
     },
 
     rejectionReason: {
-
       type: String,
 
       trim: true,
 
       default: "",
-
     },
-
   },
 
   {
-
     _id: false,
-
-  }
-
+  },
 );
 
 /* =========================================================
@@ -441,107 +351,95 @@ const orderApprovalSchema = new Schema(
 \========================================================= */
 
 const trafficQuotationSchema = new Schema(
-
   {
-
     quotationId: {
-
       type: String,
 
       required: true,
 
       trim: true,
-
     },
 
     requirementId: {
-
       type: String,
 
       required: true,
 
       trim: true,
-
     },
 
     transporter: {
-
       type: String,
 
       required: true,
 
       trim: true,
-
     },
 
     quantity: {
-
-      type: Number,
-
+      type: Schema.Types.Mixed,
       required: true,
-
-      min: 1,
-
       default: 1,
-
+      validate: {
+        validator: function (value) {
+          if (value === "Multiple") {
+            return (
+              String(this.ownerDocument()?.movementType || "")
+                .trim()
+                .toLowerCase() === "crane"
+            );
+          }
+          return (
+            typeof value === "number" && Number.isInteger(value) && value >= 1
+          );
+        },
+        message:
+          'Quantity must be a positive integer; Crane quotations may use "Multiple".',
+      },
     },
 
     allocatedBy: {
-
       type: String,
 
       trim: true,
 
       default: "",
-
     },
 
     amount: {
-
       type: Number,
 
       required: true,
 
       min: 0,
-
     },
 
     quotedBy: {
-
       type: String,
 
       trim: true,
 
       default: "",
-
     },
 
     quotedAt: {
-
       type: Date,
 
       default: Date.now,
-
     },
 
     remarks: {
-
       type: String,
 
       trim: true,
 
       default: "",
-
     },
-
   },
 
   {
-
     _id: false,
-
-  }
-
+  },
 );
 
 /* =========================================================
@@ -579,295 +477,233 @@ const trafficQuotationSchema = new Schema(
 \========================================================= */
 
 const transportReplacementRequestSchema = new Schema(
-
   {
-
+    currentQuantity: { type: Number, default: null },
+    remainingQuantity: { type: Number, default: null },
+    selectedAllocationIds: { type: [String], default: [] },
+    selectedVehicleNumbers: { type: [String], default: [] },
     requestId: {
-
       type: String,
 
       required: true,
 
       trim: true,
-
     },
 
     requirementId: {
-
       type: String,
 
       required: true,
 
       trim: true,
-
     },
 
     currentConfirmationId: {
-
       type: String,
 
       required: true,
 
       trim: true,
-
     },
 
     currentQuotationId: {
-
       type: String,
 
       required: true,
 
       trim: true,
-
     },
 
     currentTransporter: {
-
       type: String,
 
       trim: true,
 
       default: "",
-
     },
 
     currentAmount: {
-
       type: Number,
 
       min: 0,
 
       default: 0,
-
     },
 
     proposedTransporter: {
-
       type: String,
 
       required: true,
 
       trim: true,
-
     },
 
     proposedAmount: {
-
       type: Number,
 
       required: true,
 
       min: 0,
-
     },
 
     quantity: {
-
       type: Number,
 
       min: 1,
 
       default: 1,
-
     },
 
     reason: {
-
       type: String,
 
       required: true,
 
       trim: true,
-
     },
 
     remarks: {
-
       type: String,
 
       trim: true,
 
       default: "",
-
     },
 
     requestedBy: {
-
       type: String,
 
       trim: true,
 
       default: "",
-
     },
 
     requestedAt: {
-
       type: Date,
 
       default: Date.now,
-
     },
 
     status: {
-
       type: String,
 
       enum: ["Pending", "Approved", "Rejected"],
 
       default: "Pending",
-
     },
 
     reviewedBy: {
-
       type: String,
 
       trim: true,
 
       default: "",
-
     },
 
     reviewedAt: {
-
       type: Date,
 
       default: null,
-
     },
 
     reviewRemarks: {
-
       type: String,
 
       trim: true,
 
       default: "",
-
     },
 
     replacementQuotationId: {
-
       type: String,
 
       trim: true,
 
       default: "",
-
     },
 
     replacementConfirmationId: {
-
       type: String,
 
       trim: true,
 
       default: "",
-
     },
-
   },
 
   {
-
     _id: false,
-
-  }
-
+  },
 );
 
 const vehicleConfirmationSchema = new Schema(
-
   {
-
     confirmationId: {
-
       type: String,
 
       required: true,
 
       trim: true,
-
     },
 
     requirementId: {
-
       type: String,
 
       required: true,
 
       trim: true,
-
     },
 
     quotationId: {
-
       type: String,
 
       required: true,
 
       trim: true,
-
     },
 
     status: {
-
       type: String,
 
       enum: ["Pending", "Approved", "Rejected", "Replaced"],
 
       default: "Pending",
-
     },
 
     confirmedBy: {
-
       type: String,
 
       trim: true,
 
       default: "",
-
     },
 
     confirmedAt: {
-
       type: Date,
 
       default: null,
-
     },
 
     remarks: {
-
       type: String,
 
       trim: true,
 
       default: "",
-
     },
 
     rejectionReason: {
-
       type: String,
 
       trim: true,
 
       default: "",
-
     },
-
   },
 
   {
-
     _id: false,
-
-  }
-
+  },
 );
 
 /* =========================================================
@@ -877,37 +713,27 @@ const vehicleConfirmationSchema = new Schema(
 \========================================================= */
 
 const driverSchema = new Schema(
-
   {
-
     name: {
-
       type: String,
 
       trim: true,
 
       default: "",
-
     },
 
     contactNumber: {
-
       type: String,
 
       trim: true,
 
       default: "",
-
     },
-
   },
 
   {
-
     _id: false,
-
-  }
-
+  },
 );
 
 /* =========================================================
@@ -917,11 +743,8 @@ const driverSchema = new Schema(
 \========================================================= */
 
 const escortSchema = new Schema(
-
   {
-
     vehicleNumber: {
-
       type: String,
 
       trim: true,
@@ -929,37 +752,28 @@ const escortSchema = new Schema(
       uppercase: true,
 
       default: "",
-
     },
 
     name: {
-
       type: String,
 
       trim: true,
 
       default: "",
-
     },
 
     contactNumber: {
-
       type: String,
 
       trim: true,
 
       default: "",
-
     },
-
   },
 
   {
-
     _id: false,
-
-  }
-
+  },
 );
 
 /* =========================================================
@@ -969,37 +783,27 @@ const escortSchema = new Schema(
 \========================================================= */
 
 const supervisorSchema = new Schema(
-
   {
-
     name: {
-
       type: String,
 
       trim: true,
 
       default: "",
-
     },
 
     contactNumber: {
-
       type: String,
 
       trim: true,
 
       default: "",
-
     },
-
   },
 
   {
-
     _id: false,
-
-  }
-
+  },
 );
 
 /* =========================================================
@@ -1009,71 +813,53 @@ const supervisorSchema = new Schema(
 \========================================================= */
 
 const loadingSchema = new Schema(
-
   {
-
     status: {
-
       type: String,
 
       trim: true,
 
       default: "Pending",
-
     },
 
     pointInDate: {
-
       type: Date,
 
       default: null,
-
     },
 
     loadingDate: {
-
       type: Date,
 
       default: null,
-
     },
 
     pointOutDate: {
-
       type: Date,
 
       default: null,
-
     },
 
     haltingDays: {
-
       type: Number,
 
       min: 0,
 
       default: 0,
-
     },
 
     remarks: {
-
       type: String,
 
       trim: true,
 
       default: "",
-
     },
-
   },
 
   {
-
     _id: false,
-
-  }
-
+  },
 );
 
 /* =========================================================
@@ -1083,71 +869,53 @@ const loadingSchema = new Schema(
 \========================================================= */
 
 const unloadingSchema = new Schema(
-
   {
-
     status: {
-
       type: String,
 
       trim: true,
 
       default: "Pending",
-
     },
 
     pointInDate: {
-
       type: Date,
 
       default: null,
-
     },
 
     unloadingDate: {
-
       type: Date,
 
       default: null,
-
     },
 
     pointOutDate: {
-
       type: Date,
 
       default: null,
-
     },
 
     haltingDays: {
-
       type: Number,
 
       min: 0,
 
       default: 0,
-
     },
 
     remarks: {
-
       type: String,
 
       trim: true,
 
       default: "",
-
     },
-
   },
 
   {
-
     _id: false,
-
-  }
-
+  },
 );
 
 /* =========================================================
@@ -1159,123 +927,95 @@ const unloadingSchema = new Schema(
 \========================================================= */
 
 const movementDocumentSchema = new Schema(
-
   {
-
     number: {
-
       type: String,
 
       trim: true,
 
       default: "",
-
     },
 
     date: {
-
       type: Date,
 
       default: null,
-
     },
 
     validUpto: {
-
       type: Date,
 
       default: null,
-
     },
 
     remarks: {
-
       type: String,
 
       trim: true,
 
       default: "",
-
     },
 
     status: {
-
       type: String,
 
       trim: true,
 
       default: "Pending",
-
     },
 
     documentName: {
-
       type: String,
 
       trim: true,
 
       default: "",
-
     },
 
     fileName: {
-
       type: String,
 
       trim: true,
 
       default: "",
-
     },
 
     mimeType: {
-
       type: String,
 
       trim: true,
 
       default: "",
-
     },
 
     fileSize: {
-
       type: Number,
 
       min: 0,
 
       default: 0,
-
     },
 
     fileData: { type: Buffer, select: false, default: null },
 
     uploadedBy: {
-
       type: String,
 
       trim: true,
 
       default: "",
-
     },
 
     uploadedAt: {
-
       type: Date,
 
       default: null,
-
     },
-
   },
 
   {
-
     _id: false,
-
-  }
-
+  },
 );
 
 /* =========================================================
@@ -1285,159 +1025,123 @@ const movementDocumentSchema = new Schema(
 \========================================================= */
 
 const dailyTrackingSchema = new Schema(
-
   {
-
     trackingId: {
-
       type: String,
 
       required: true,
 
       trim: true,
-
     },
 
     date: {
-
       type: Date,
 
       default: Date.now,
-
     },
 
     day: {
-
       type: Number,
 
       min: 0,
 
       default: 0,
-
     },
 
     yesterdayKm: {
-
       type: Number,
 
       min: 0,
 
       default: 0,
-
     },
 
     todayKm: {
-
       type: Number,
 
       min: 0,
 
       default: 0,
-
     },
 
     runningKm: {
-
       type: Number,
 
       min: 0,
 
       default: 0,
-
     },
 
     yesterdayLocation: {
-
       type: String,
 
       trim: true,
 
       default: "",
-
     },
 
     currentLocation: {
-
       type: String,
 
       trim: true,
 
       default: "",
-
     },
 
     latitude: {
-
       type: Number,
 
       default: null,
-
     },
 
     longitude: {
-
       type: Number,
 
       default: null,
-
     },
 
     speed: {
-
       type: Number,
 
       min: 0,
 
       default: 0,
-
     },
 
     status: {
-
       type: String,
 
       trim: true,
 
       default: "Idle",
-
     },
 
     remarks: {
-
       type: String,
 
       trim: true,
 
       default: "",
-
     },
 
     updatedBy: {
-
       type: String,
 
       trim: true,
 
       default: "",
-
     },
 
     updatedAt: {
-
       type: Date,
 
       default: Date.now,
-
     },
-
   },
 
   {
-
     _id: false,
-
-  }
-
+  },
 );
 
 /* =========================================================
@@ -1477,31 +1181,24 @@ const dailyTrackingSchema = new Schema(
 \========================================================= */
 
 const vehicleReplacementSchema = new Schema(
-
   {
-
     replacementId: {
-
       type: String,
 
       required: true,
 
       trim: true,
-
     },
 
     replacementSource: {
-
       type: String,
 
       enum: ["Traffic", "Tracking"],
 
       required: true,
-
     },
 
     oldVehicleNumber: {
-
       type: String,
 
       required: true,
@@ -1509,11 +1206,9 @@ const vehicleReplacementSchema = new Schema(
       trim: true,
 
       uppercase: true,
-
     },
 
     newVehicleNumber: {
-
       type: String,
 
       required: true,
@@ -1521,119 +1216,117 @@ const vehicleReplacementSchema = new Schema(
       trim: true,
 
       uppercase: true,
-
     },
 
     oldDriver: {
-
       type: driverSchema,
 
       default: () => ({}),
-
     },
 
     newDriver: {
-
       type: driverSchema,
 
       default: () => ({}),
-
     },
 
     reason: {
-
       type: String,
 
       trim: true,
 
       default: "",
-
     },
 
     remarks: {
-
       type: String,
 
       trim: true,
 
       default: "",
-
     },
 
     replacedBy: {
-
       type: String,
 
       trim: true,
 
       default: "",
-
     },
 
     replacedAt: {
-
       type: Date,
 
       default: Date.now,
-
     },
-
   },
 
   {
-
     _id: false,
-
-  }
-
+  },
 );
 
+const craneJourneySchema = new Schema({
+  journeyId: { type: String, required: true },
+  date: { type: String, required: true },
+  origin: { type: String, required: true, trim: true },
+  destination: { type: String, required: true, trim: true },
+  currentLocation: { type: String, trim: true, default: "" },
+  startKm: { type: Number, min: 0, default: null },
+  endKm: { type: Number, min: 0, default: null },
+  status: { type: String, enum: ["Planned", "Loading", "In Transit", "Unloading", "Completed", "Idle", "Moving", "Stopped", "Breakdown", "Reached"], default: "Planned" },
+  loading: { type: Schema.Types.Mixed, default: () => ({}) },
+  unloading: { type: Schema.Types.Mixed, default: () => ({}) },
+  lr: { type: movementDocumentSchema, default: () => ({}) },
+  ewayBill: { type: movementDocumentSchema, default: () => ({}) },
+  pod: { type: movementDocumentSchema, default: () => ({}) },
+  remarks: { type: String, default: "" },
+  updatedBy: { type: String, required: true, trim: true },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
+  revision: { type: Number, default: 1 },
+  history: { type: [Schema.Types.Mixed], default: [] },
+}, { _id: false });
+
 const allocatedVehicleSchema = new Schema(
-
   {
-
+    transportReplacementRequestId: { type: String, default: "" },
+    transportReplacedAt: { type: Date, default: null },
+    transportReplacedBy: { type: String, default: "" },
+    craneTrips: { type: [craneJourneySchema], default: [] },
     allocationId: {
-
       type: String,
 
       required: true,
 
       trim: true,
-
     },
 
     requirementId: {
-
       type: String,
 
       required: true,
 
       trim: true,
-
     },
 
     confirmationId: {
-
       type: String,
 
       required: true,
 
       trim: true,
-
     },
 
     quotationId: {
-
       type: String,
 
       required: true,
 
       trim: true,
-
     },
 
     vehicleNumber: {
-
       type: String,
 
       required: true,
@@ -1641,127 +1334,102 @@ const allocatedVehicleSchema = new Schema(
       trim: true,
 
       uppercase: true,
-
     },
 
-    allocatedSource: {
+    vehicleType: { type: String, trim: true, default: "" },
+    lsp: { type: String, trim: true, default: "" },
+    cargo: { type: String, trim: true, default: "" },
+    weight: { type: Number, min: 0, default: null },
+    dimensions: { type: dimensionsSchema, default: () => ({}) },
 
+    allocatedSource: {
       type: String,
 
       enum: ["Traffic", "Tracking"],
 
       default: "Tracking",
-
     },
 
     vehicleStatus: {
-
       type: String,
 
       enum: ["Active", "Replaced"],
 
       default: "Active",
-
     },
 
     replacementCount: {
-
       type: Number,
 
       min: 0,
 
       default: 0,
-
     },
 
     replacementHistory: {
-
       type: [vehicleReplacementSchema],
 
       default: [],
-
     },
 
     driver: {
-
       type: driverSchema,
 
       default: () => ({}),
-
     },
 
     escort: {
-
       type: escortSchema,
 
       default: () => ({}),
-
     },
 
     supervisor: {
-
       type: supervisorSchema,
 
       default: () => ({}),
-
     },
 
     loading: {
-
       type: loadingSchema,
 
       default: () => ({}),
-
     },
 
     unloading: {
-
       type: unloadingSchema,
 
       default: () => ({}),
-
     },
 
     lr: {
-
       type: movementDocumentSchema,
 
       default: () => ({}),
-
     },
 
     pod: {
-
       type: movementDocumentSchema,
 
       default: () => ({}),
-
     },
 
     ewayBill: {
-
       type: movementDocumentSchema,
 
       default: () => ({}),
-
     },
 
     dailyTracking: {
-
       type: [dailyTrackingSchema],
 
       default: [],
-
     },
-
   },
 
   {
-
     _id: false,
-
-  }
-
+  },
 );
 
 /* =========================================================
@@ -1779,85 +1447,79 @@ const allocatedVehicleSchema = new Schema(
 \========================================================= */
 
 const orderPlacedSchema = new Schema(
-
   {
-
     status: {
-
       type: String,
 
       enum: ["Pending", "Completed"],
 
       default: "Pending",
-
     },
 
     placedBy: {
-
       type: String,
 
       trim: true,
 
       default: "",
-
     },
 
     placedAt: {
-
       type: Date,
 
       default: null,
-
     },
-
   },
 
   {
-
     _id: false,
-
-  }
-
+  },
 );
 
-const lifecycleChangeSchema = new Schema({
+const lifecycleChangeSchema = new Schema(
+  {
+    section: { type: String, required: true },
 
-  section: { type: String, required: true },
+    field: { type: String, required: true },
 
-  field: { type: String, required: true },
+    oldValue: { type: String, default: "" },
 
-  oldValue: { type: String, default: "" },
+    newValue: { type: String, default: "" },
 
-  newValue: { type: String, default: "" },
+    updatedBy: { type: String, required: true, trim: true },
 
-  updatedBy: { type: String, required: true, trim: true },
+    updatedAt: { type: Date, default: Date.now },
+  },
+  { _id: false },
+);
 
-  updatedAt: { type: Date, default: Date.now }
+const amountChangeSchema = new Schema(
+  {
+    field: { type: String, required: true },
 
-}, { _id: false });
+    fieldLabel: { type: String, required: true },
 
-const amountChangeSchema = new Schema({
+    oldAmount: { type: Number, required: true },
 
-  field: { type: String, required: true },
+    newAmount: { type: Number, required: true },
 
-  fieldLabel: { type: String, required: true },
+    changedBy: { type: String, default: "Unknown" },
 
-  oldAmount: { type: Number, required: true },
+    source: { type: String, default: "" },
 
-  newAmount: { type: Number, required: true },
-
-  changedBy: { type: String, default: "Unknown" },
-
-  source: { type: String, default: "" },
-
-  changedAt: { type: Date, default: Date.now }
-
-}, { _id: false });
+    changedAt: { type: Date, default: Date.now },
+  },
+  { _id: false },
+);
 
 const tripOrderSchema = new Schema(
-
   {
-    createdBy: { type: Schema.Types.ObjectId, ref: "KeyAccountUser", index: true, immutable: true },
+    createdBy: {
+      type: Schema.Types.ObjectId,
+      ref: "KeyAccountUser",
+      index: true,
+      immutable: true,
+    },
 
     lifecycleChangeHistory: { type: [lifecycleChangeSchema], default: [] },
 
@@ -1870,7 +1532,6 @@ const tripOrderSchema = new Schema(
     ===================================================== */
 
     tripId: {
-
       type: String,
 
       required: true,
@@ -1882,7 +1543,6 @@ const tripOrderSchema = new Schema(
       trim: true,
 
       uppercase: true,
-
     },
 
     /* =====================================================
@@ -1892,47 +1552,38 @@ const tripOrderSchema = new Schema(
     ===================================================== */
 
     movementType: {
-
       type: String,
 
       trim: true,
 
       default: "",
-
     },
 
     customer: {
-
       type: String,
 
       required: true,
 
       trim: true,
-
     },
 
     contactPerson: {
-
       type: String,
 
       trim: true,
 
       default: "",
-
     },
 
     contactNumber: {
-
       type: String,
 
       trim: true,
 
       default: "",
-
     },
 
     email: {
-
       type: String,
 
       trim: true,
@@ -1940,17 +1591,14 @@ const tripOrderSchema = new Schema(
       lowercase: true,
 
       default: "",
-
     },
 
     assignedKam: {
-
       type: String,
 
       trim: true,
 
       default: "",
-
     },
 
     /* =====================================================
@@ -1960,19 +1608,15 @@ const tripOrderSchema = new Schema(
     ===================================================== */
 
     enquiryDate: {
-
       type: Date,
 
       default: null,
-
     },
 
     placementDate: {
-
       type: Date,
 
       default: null,
-
     },
 
     /* =====================================================
@@ -1982,33 +1626,27 @@ const tripOrderSchema = new Schema(
     ===================================================== */
 
     origin: {
-
       type: String,
 
       trim: true,
 
       default: "",
-
     },
 
     destination: {
-
       type: String,
 
       trim: true,
 
       default: "",
-
     },
 
     distance: {
-
       type: Number,
 
       min: 0,
 
       default: 0,
-
     },
 
     /* =====================================================
@@ -2020,21 +1658,17 @@ const tripOrderSchema = new Schema(
     ===================================================== */
 
     totalVehicles: {
-
       type: Number,
 
       min: 0,
 
       default: 0,
-
     },
 
     routeLocations: {
-
       type: [String],
 
       default: [],
-
     },
 
     /* =====================================================
@@ -2044,23 +1678,19 @@ const tripOrderSchema = new Schema(
     ===================================================== */
 
     materialType: {
-
       type: String,
 
       trim: true,
 
       default: "",
-
     },
 
     remark: {
-
       type: String,
 
       trim: true,
 
       default: "",
-
     },
 
     /* =====================================================
@@ -2070,33 +1700,27 @@ const tripOrderSchema = new Schema(
     ===================================================== */
 
     siteLocation: {
-
       type: String,
 
       trim: true,
 
       default: "",
-
     },
 
     period: {
-
       type: String,
 
       trim: true,
 
       default: "",
-
     },
 
     dieselScope: {
-
       type: String,
 
       trim: true,
 
       default: "",
-
     },
 
     /* =====================================================
@@ -2106,23 +1730,19 @@ const tripOrderSchema = new Schema(
     ===================================================== */
 
     status: {
-
       type: String,
 
       trim: true,
 
       default: "Pending",
-
     },
 
     stage: {
-
       type: String,
 
       trim: true,
 
       default: "Order Approval",
-
     },
 
     /* =====================================================
@@ -2134,11 +1754,9 @@ const tripOrderSchema = new Schema(
     ===================================================== */
 
     vehicleRequirements: {
-
       type: [vehicleRequirementSchema],
 
       default: [],
-
     },
 
     /* =====================================================
@@ -2170,27 +1788,21 @@ const tripOrderSchema = new Schema(
     ===================================================== */
 
     craneDocument: {
-
       type: craneDocumentSchema,
 
       default: () => ({}),
-
     },
 
     orderFinalization: {
-
       type: orderFinalizationSchema,
 
       default: () => ({}),
-
     },
 
     poDocument: {
-
       type: poDocumentSchema,
 
       default: () => ({}),
-
     },
 
     /* =====================================================
@@ -2202,11 +1814,9 @@ const tripOrderSchema = new Schema(
     ===================================================== */
 
     orderPlaced: {
-
       type: orderPlacedSchema,
 
       default: () => ({}),
-
     },
 
     /* =====================================================
@@ -2218,11 +1828,9 @@ const tripOrderSchema = new Schema(
     ===================================================== */
 
     orderApproval: {
-
       type: orderApprovalSchema,
 
       default: () => ({}),
-
     },
 
     /* =====================================================
@@ -2234,11 +1842,9 @@ const tripOrderSchema = new Schema(
     ===================================================== */
 
     trafficQuotations: {
-
       type: [trafficQuotationSchema],
 
       default: [],
-
     },
 
     /* =====================================================
@@ -2250,11 +1856,9 @@ const tripOrderSchema = new Schema(
     ===================================================== */
 
     vehicleConfirmations: {
-
       type: [vehicleConfirmationSchema],
 
       default: [],
-
     },
 
     /* =====================================================
@@ -2272,29 +1876,21 @@ const tripOrderSchema = new Schema(
     ===================================================== */
 
     transportReplacementRequests: {
-
       type: [transportReplacementRequestSchema],
 
       default: [],
-
     },
 
     allocatedVehicles: {
-
       type: [allocatedVehicleSchema],
 
       default: [],
-
     },
-
   },
 
   {
-
     timestamps: true,
-
-  }
-
+  },
 );
 
 /* =========================================================
@@ -2304,75 +1900,51 @@ const tripOrderSchema = new Schema(
 \========================================================= */
 
 tripOrderSchema.index({
-
   customer: 1,
-
 });
 
 tripOrderSchema.index({
-
   status: 1,
-
 });
 
 tripOrderSchema.index({
-
   stage: 1,
-
 });
 
 tripOrderSchema.index({
-
   placementDate: 1,
-
 });
 
 tripOrderSchema.index({
-
   "orderApproval.status": 1,
-
 });
 
 tripOrderSchema.index({
-
   "vehicleRequirements.requirementId": 1,
-
 });
 
 tripOrderSchema.index({
-
   "trafficQuotations.quotationId": 1,
-
 });
 
 tripOrderSchema.index({
-
   "trafficQuotations.requirementId": 1,
-
 });
 
 tripOrderSchema.index({
-
   "vehicleConfirmations.confirmationId": 1,
-
 });
 
 tripOrderSchema.index({
-
   "vehicleConfirmations.requirementId": 1,
-
 });
 
 tripOrderSchema.index({
-
   "allocatedVehicles.allocationId": 1,
-
 });
 
 tripOrderSchema.index({
-
   "allocatedVehicles.vehicleNumber": 1,
-
 });
 
 /* =========================================================
@@ -2382,13 +1954,9 @@ tripOrderSchema.index({
 \========================================================= */
 
 module.exports =
-
   mongoose.models.TripOrder ||
-
   mongoose.model(
-
     "TripOrder",
 
-    tripOrderSchema
-
+    tripOrderSchema,
   );

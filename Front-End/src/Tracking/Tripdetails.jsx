@@ -1,25 +1,33 @@
 // Intercarting orders are managed in the Intercarting module.
 const isIntercartingOrder = (order) => {
-  const movement = order?.movementType || order?.movement ||
-    order?.movementName || order?.movementCategory ||
-    order?.orderFinalization?.movementType || order?.enquiryDetails?.movementType || "";
-  return String(movement).trim().toLowerCase().replace(/[\s_-]+/g, "") === "intercarting";
+  const movement =
+    order?.movementType ||
+    order?.movement ||
+    order?.movementName ||
+    order?.movementCategory ||
+    order?.orderFinalization?.movementType ||
+    order?.enquiryDetails?.movementType ||
+    "";
+  return (
+    String(movement)
+      .trim()
+      .toLowerCase()
+      .replace(/[\s_-]+/g, "") === "intercarting"
+  );
 };
 
 const trackingApiFetch = (url, options = {}) => {
   const token = localStorage.getItem("token");
   if (!token?.trim()) {
-    return Promise.reject(new Error("Please sign in with your main administrator account."));
+    return Promise.reject(
+      new Error("Please sign in with your main administrator account."),
+    );
   }
   const headers = new Headers(options.headers);
   headers.set("Authorization", `Bearer ${token}`);
   return fetch(url, { ...options, headers });
 };
-import React, {
-  useCallback,
-  useEffect,
-  useState,
-} from "react";
+import React, { useCallback, useMemo, useEffect, useState } from "react";
 import {
   ArrowLeft,
   CalendarDays,
@@ -39,10 +47,9 @@ import {
   Upload,
   Eye,
 } from "lucide-react";
-import {
-  useNavigate,
-} from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import "./Tripdetails.css";
+import "./cranevehicles.css";
 /* =========================================
    API
 ========================================= */
@@ -51,29 +58,16 @@ const API_BASE_URL = (
   import.meta.env.VITE_API_BASE_URL ||
   "http://localhost:5000"
 ).replace(/\/+$/, "");
-const API_URL =
-  `${API_BASE_URL}/api/triporders`;
+const API_URL = `${API_BASE_URL}/api/triporders`;
 /* =========================================
    HELPERS
 ========================================= */
-const safeArray = (value) =>
-  Array.isArray(value)
-    ? value
-    : [];
-const safeText = (
-  value,
-  fallback = "-"
-) => {
-  if (
-    value === null ||
-    value === undefined ||
-    value === ""
-  ) {
+const safeArray = (value) => (Array.isArray(value) ? value : []);
+const safeText = (value, fallback = "-") => {
+  if (value === null || value === undefined || value === "") {
     return fallback;
   }
-  if (
-    typeof value === "object"
-  ) {
+  if (typeof value === "object") {
     if (value.$oid) {
       return String(value.$oid);
     }
@@ -88,30 +82,16 @@ const safeText = (
    RESPONSE
 ========================================= */
 const extractTrips = (result) => {
-  if (
-    Array.isArray(result)
-  ) {
+  if (Array.isArray(result)) {
     return result;
   }
-  if (
-    Array.isArray(
-      result?.data
-    )
-  ) {
+  if (Array.isArray(result?.data)) {
     return result.data;
   }
-  if (
-    Array.isArray(
-      result?.trips
-    )
-  ) {
+  if (Array.isArray(result?.trips)) {
     return result.trips;
   }
-  if (
-    Array.isArray(
-      result?.orders
-    )
-  ) {
+  if (Array.isArray(result?.orders)) {
     return result.orders;
   }
   return [];
@@ -119,38 +99,15 @@ const extractTrips = (result) => {
 /* =========================================
    NORMALIZE TRIP
 ========================================= */
-const normalizeTrip = (
-  trip,
-  index
-) => {
-  const allocatedVehicles =
-    safeArray(
-      trip?.allocatedVehicles
-    );
-  const vehicleRequirements =
-    safeArray(
-      trip?.vehicleRequirements
-    );
-  const trafficQuotations =
-    safeArray(
-      trip?.trafficQuotations
-    );
-  const vehicleConfirmations =
-    safeArray(
-      trip?.vehicleConfirmations
-    );
+const normalizeTrip = (trip, index) => {
+  const allocatedVehicles = safeArray(trip?.allocatedVehicles);
+  const vehicleRequirements = safeArray(trip?.vehicleRequirements);
+  const trafficQuotations = safeArray(trip?.trafficQuotations);
+  const vehicleConfirmations = safeArray(trip?.vehicleConfirmations);
   return {
     ...trip,
     id:
-      safeText(
-        trip?._id,
-        ""
-      ) ||
-      safeText(
-        trip?.tripId,
-        ""
-      ) ||
-      `trip-${index}`,
+      safeText(trip?._id, "") || safeText(trip?.tripId, "") || `trip-${index}`,
     allocatedVehicles,
     vehicleRequirements,
     trafficQuotations,
@@ -160,19 +117,12 @@ const normalizeTrip = (
 /* =========================================
    LATEST TRACKING
 ========================================= */
-const getLatestTracking = (
-  vehicle
-) => {
-  const tracking =
-    safeArray(
-      vehicle?.dailyTracking
-    );
+const getLatestTracking = (vehicle) => {
+  const tracking = safeArray(vehicle?.dailyTracking);
   if (!tracking.length) {
     return null;
   }
-  return tracking[
-    tracking.length - 1
-  ];
+  return tracking[tracking.length - 1];
 };
 /* =========================================
    TRIP STATUS
@@ -184,16 +134,18 @@ const getVehicleDisplayStatus = (vehicle) => {
     return rawStatus;
   }
   const unloadingCompleted =
-    String(vehicle?.unloading?.status || "").trim().toLowerCase() === "completed";
+    String(vehicle?.unloading?.status || "")
+      .trim()
+      .toLowerCase() === "completed";
   const lrCompleted = Boolean(
-    vehicle?.lr?.number ||
-    vehicle?.lr?.date ||
-    vehicle?.pod?.fileName
+    vehicle?.lr?.number || vehicle?.lr?.date || vehicle?.pod?.fileName,
   );
-  const ewayStatus = String(vehicle?.ewayBill?.status || "").trim().toLowerCase();
+  const ewayStatus = String(vehicle?.ewayBill?.status || "")
+    .trim()
+    .toLowerCase();
   const ewayCompleted = Boolean(
     (vehicle?.ewayBill?.number || vehicle?.ewayBill?.fileName) &&
-    ewayStatus !== "pending"
+    ewayStatus !== "pending",
   );
   return unloadingCompleted && lrCompleted && ewayCompleted
     ? "Reached"
@@ -204,7 +156,9 @@ const getTripStatus = (trip) => {
   if (!vehicles.length) return "Pending";
   const statuses = vehicles.map(getVehicleDisplayStatus);
   const normalized = statuses.map((status) =>
-    String(status || "").trim().toLowerCase()
+    String(status || "")
+      .trim()
+      .toLowerCase(),
   );
   if (normalized.every((status) => status === "reached")) return "Reached";
   if (normalized.some((status) => status === "breakdown")) return "Breakdown";
@@ -216,43 +170,26 @@ const getTripStatus = (trip) => {
 /* =========================================
    STATUS CLASS
 ========================================= */
-const getStatusClass = (
-  status
-) => {
-  const value =
-    String(
-      status || ""
-    )
-      .trim()
-      .toLowerCase();
-  if (
-    value === "moving"
-  ) {
+const getStatusClass = (status) => {
+  const value = String(status || "")
+    .trim()
+    .toLowerCase();
+  if (value === "moving") {
     return "moving";
   }
-  if (
-    value === "idle"
-  ) {
+  if (value === "idle") {
     return "idle";
   }
-  if (
-    value === "stopped"
-  ) {
+  if (value === "stopped") {
     return "stopped";
   }
-  if (
-    value === "breakdown"
-  ) {
+  if (value === "breakdown") {
     return "breakdown";
   }
-  if (
-    value === "reached"
-  ) {
+  if (value === "reached") {
     return "reached";
   }
-  if (
-    value === "confirmed"
-  ) {
+  if (value === "confirmed") {
     return "confirmed";
   }
   return "pending";
@@ -304,29 +241,19 @@ const getMovementClass = (movement) => {
 /* =========================================
    FORMAT DATE
 ========================================= */
-const formatDate = (
-  value
-) => {
+const formatDate = (value) => {
   if (!value) {
     return "-";
   }
-  const date =
-    new Date(value);
-  if (
-    Number.isNaN(
-      date.getTime()
-    )
-  ) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
     return "-";
   }
-  return date.toLocaleDateString(
-    "en-GB",
-    {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    }
-  );
+  return date.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 };
 const getLocalYmd = (date = new Date()) => {
   const year = date.getFullYear();
@@ -337,7 +264,11 @@ const getLocalYmd = (date = new Date()) => {
 const getEwayBillStatus = (number, validUpto, today = getLocalYmd()) => {
   if (!String(number || "").trim() || !validUpto) return "Pending";
   const date = String(validUpto).slice(0, 10);
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || Number.isNaN(new Date(`${date}T00:00:00`).getTime())) return "Pending";
+  if (
+    !/^\d{4}-\d{2}-\d{2}$/.test(date) ||
+    Number.isNaN(new Date(`${date}T00:00:00`).getTime())
+  )
+    return "Pending";
   const expiry = Date.parse(`${date}T00:00:00`);
   const current = Date.parse(`${today}T00:00:00`);
   const daysRemaining = Math.round((expiry - current) / 86400000);
@@ -351,13 +282,18 @@ const getEwayBillHeading = (number, validUpto, today = getLocalYmd()) => {
   if (status !== "Expiring Soon") return status;
   const [ey, em, ed] = String(validUpto).slice(0, 10).split("-").map(Number);
   const [ty, tm, td] = today.split("-").map(Number);
-  const days = Math.round((Date.UTC(ey, em - 1, ed) - Date.UTC(ty, tm - 1, td)) / 86400000);
+  const days = Math.round(
+    (Date.UTC(ey, em - 1, ed) - Date.UTC(ty, tm - 1, td)) / 86400000,
+  );
   return `${days} ${days === 1 ? "Day" : "Days"} Left`;
 };
 const calculateHaltingDays = (pointInDate, pointOutDate = "") => {
   if (!pointInDate) return 0;
   const parseDate = (value) => {
-    const [year, month, day] = String(value).slice(0, 10).split("-").map(Number);
+    const [year, month, day] = String(value)
+      .slice(0, 10)
+      .split("-")
+      .map(Number);
     if (!year || !month || !day) return null;
     return Date.UTC(year, month - 1, day);
   };
@@ -369,7 +305,10 @@ const calculateHaltingDays = (pointInDate, pointOutDate = "") => {
 const movementDayFromLoading = (pointInDate, movementDate) => {
   if (!pointInDate || !movementDate) return 1;
   const parseDate = (value) => {
-    const [year, month, day] = String(value).slice(0, 10).split("-").map(Number);
+    const [year, month, day] = String(value)
+      .slice(0, 10)
+      .split("-")
+      .map(Number);
     if (!year || !month || !day) return null;
     return Date.UTC(year, month - 1, day);
   };
@@ -379,18 +318,28 @@ const movementDayFromLoading = (pointInDate, movementDate) => {
   return Math.floor((current - start) / 86400000) + 1;
 };
 // Build display rows without creating movement records for missing dates.
-const buildEveryDayHistory = (entries, pointInDate, pointOutDate, today = getLocalYmd()) => {
+const buildEveryDayHistory = (
+  entries,
+  pointInDate,
+  pointOutDate,
+  today = getLocalYmd(),
+) => {
   const dateKey = (value) => {
     const key = String(value || "").slice(0, 10);
     if (!/^\d{4}-\d{2}-\d{2}$/.test(key)) return "";
     const time = Date.parse(`${key}T00:00:00Z`);
-    return Number.isFinite(time) && new Date(time).toISOString().slice(0, 10) === key ? key : "";
+    return Number.isFinite(time) &&
+      new Date(time).toISOString().slice(0, 10) === key
+      ? key
+      : "";
   };
   const saved = safeArray(entries);
   const start = dateKey(pointInDate);
   const end = dateKey(pointOutDate || today);
   if (!start || !end || end < start) {
-    return saved.slice().sort((a, b) => String(b.date || "").localeCompare(String(a.date || "")));
+    return saved
+      .slice()
+      .sort((a, b) => String(b.date || "").localeCompare(String(a.date || "")));
   }
   const grouped = new Map();
   for (const entry of saved) {
@@ -406,65 +355,97 @@ const buildEveryDayHistory = (entries, pointInDate, pointOutDate, today = getLoc
     const day = Math.floor((time - first) / 86400000) + 1;
     const updates = grouped.get(key);
     if (updates?.length) {
-      rows.push(...updates.slice().reverse().map((entry) => ({ ...entry, day, isMissingDay: false })));
+      rows.push(
+        ...updates
+          .slice()
+          .reverse()
+          .map((entry) => ({ ...entry, day, isMissingDay: false })),
+      );
     } else {
       rows.push({ date: key, day, isMissingDay: true });
     }
   }
   // Retain legacy entries outside the selected date range.
-  rows.push(...saved.filter((entry) => {
-    const key = dateKey(entry.date);
-    return !key || key < start || key > end;
-  }));
+  rows.push(
+    ...saved.filter((entry) => {
+      const key = dateKey(entry.date);
+      return !key || key < start || key > end;
+    }),
+  );
   return rows;
 };
 // Trip duration includes both Loading Point In and Unloading Point Out.
 const tripDaysThroughPointOut = (pointInDate, pointOutDate, movementDate) =>
-  movementDayFromLoading(pointInDate, pointOutDate || movementDate || getLocalYmd());
+  movementDayFromLoading(
+    pointInDate,
+    pointOutDate || movementDate || getLocalYmd(),
+  );
 /* =========================================
    COMPONENT
 ========================================= */
-const openTripDocument = async ({ baseUrl, tripId, allocationId, type, download = false, fileName = '' }) => {
-  const idText = value => typeof value === 'object' && value !== null ? String(value.$oid ?? '') : String(value ?? '');
+const openTripDocument = async ({
+  baseUrl,
+  tripId,
+  allocationId,
+  type,
+  download = false,
+  fileName = "",
+}) => {
+  const idText = (value) =>
+    typeof value === "object" && value !== null
+      ? String(value.$oid ?? "")
+      : String(value ?? "");
   let preview = null;
   try {
     const mongoId = idText(tripId).trim();
     const vehicleId = idText(allocationId).trim();
-    if (!mongoId || !vehicleId || mongoId === '[object Object]') {
-      throw new Error('Trip ID or allocation ID is missing. Reload the trip and try again.');
+    if (!mongoId || !vehicleId || mongoId === "[object Object]") {
+      throw new Error(
+        "Trip ID or allocation ID is missing. Reload the trip and try again.",
+      );
     }
-    if (!['lr', 'ewayBill', 'pod'].includes(type)) throw new Error('Invalid document type.');
+    if (!["lr", "ewayBill", "pod"].includes(type))
+      throw new Error("Invalid document type.");
     if (!download) {
-      preview = window.open('about:blank', '_blank');
-      if (!preview) throw new Error('Allow pop-ups for this site to view the document.');
+      preview = window.open("about:blank", "_blank");
+      if (!preview)
+        throw new Error("Allow pop-ups for this site to view the document.");
       preview.opener = null;
-      preview.document.title = 'Loading document';
-      preview.document.body.textContent = 'Loading document…';
+      preview.document.title = "Loading document";
+      preview.document.body.textContent = "Loading document…";
     }
-    const disposition = download ? 'attachment' : 'inline';
-    const url = `${baseUrl.replace(/\/+$/, '')}/${encodeURIComponent(mongoId)}/allocated-vehicles/${encodeURIComponent(vehicleId)}/${type}/file?disposition=${disposition}`;
+    const disposition = download ? "attachment" : "inline";
+    const url = `${baseUrl.replace(/\/+$/, "")}/${encodeURIComponent(mongoId)}/allocated-vehicles/${encodeURIComponent(vehicleId)}/${type}/file?disposition=${disposition}`;
     const response = await trackingApiFetch(url);
-    const contentType = response.headers.get('content-type') || '';
+    const contentType = response.headers.get("content-type") || "";
     if (!response.ok) {
-      let message = '';
-      if (contentType.includes('json')) {
+      let message = "";
+      if (contentType.includes("json")) {
         const error = await response.json().catch(() => ({}));
-        message = error.message || error.error || '';
+        message = error.message || error.error || "";
       }
-      throw new Error(message || `Document request failed (${response.status}). Check the backend file route and uploaded file.`);
+      throw new Error(
+        message ||
+          `Document request failed (${response.status}). Check the backend file route and uploaded file.`,
+      );
     }
-    if (contentType.includes('json') || contentType.includes('text/html')) {
-      throw new Error('The server returned a page or JSON instead of a document. Check the backend file endpoint.');
+    if (contentType.includes("json") || contentType.includes("text/html")) {
+      throw new Error(
+        "The server returned a page or JSON instead of a document. Check the backend file endpoint.",
+      );
     }
     const blob = await response.blob();
-    if (!blob.size) throw new Error('The document file is empty.');
+    if (!blob.size) throw new Error("The document file is empty.");
     const objectUrl = URL.createObjectURL(blob);
     if (download) {
-      const dispositionHeader = response.headers.get('content-disposition') || '';
+      const dispositionHeader =
+        response.headers.get("content-disposition") || "";
       const match = dispositionHeader.match(/filename="([^"]+)"/i);
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = objectUrl;
-      link.download = (match?.[1] || fileName || `${type}-document`).split(/[\\/]/).pop();
+      link.download = (match?.[1] || fileName || `${type}-document`)
+        .split(/[\\/]/)
+        .pop();
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -480,14 +461,22 @@ const openTripDocument = async ({ baseUrl, tripId, allocationId, type, download 
     }
   } catch (error) {
     if (preview && !preview.closed) preview.close();
-    console.error('Document request failed:', error);
-    window.alert(error?.message || 'Unable to open the document.');
+    console.error("Document request failed:", error);
+    window.alert(error?.message || "Unable to open the document.");
   }
 };
 
-const Tripdetails = () => {
-  const navigate =
-    useNavigate();
+const isCraneTrip = (trip) =>
+  ["crane", "cranemovement"].includes(
+    String(trip?.movementType || "")
+      .toLowerCase()
+      .replace(/[\s_-]+/g, ""),
+  );
+const StandardTripdetails = ({ movementOnly = false }) => {
+  const routeParams = useParams();
+  const routeLocation = useLocation();
+
+  const navigate = useNavigate();
   const [ewayToday, setEwayToday] = useState(getLocalYmd());
   useEffect(() => {
     const timer = window.setInterval(() => setEwayToday(getLocalYmd()), 60000);
@@ -496,22 +485,10 @@ const Tripdetails = () => {
   /* =====================================
      STATE
   ===================================== */
-  const [
-    trips,
-    setTrips,
-  ] = useState([]);
-  const [
-    loading,
-    setLoading,
-  ] = useState(true);
-  const [
-    error,
-    setError,
-  ] = useState("");
-  const [
-    refreshing,
-    setRefreshing,
-  ] = useState(false);
+  const [trips, setTrips] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
   const [movementTrip, setMovementTrip] = useState(null);
   const [movementVehicleId, setMovementVehicleId] = useState("");
   const [movementForm, setMovementForm] = useState(null);
@@ -519,6 +496,7 @@ const Tripdetails = () => {
   const [movementError, setMovementError] = useState("");
   const [movementSuccess, setMovementSuccess] = useState("");
   useEffect(() => {
+    if (movementOnly && !movementTrip) return undefined;
     if (!movementSuccess && !movementError) return undefined;
     const timer = window.setTimeout(() => {
       setMovementSuccess("");
@@ -529,54 +507,31 @@ const Tripdetails = () => {
   /* =====================================
      FETCH TRIPS
   ===================================== */
-  const fetchTrips =
-    useCallback(
-      async (
-        manualRefresh = false
-      ) => {
-        try {
-          if (
-            manualRefresh
-          ) {
-            setRefreshing(
-              true
-            );
-          } else {
-            setLoading(
-              true
-            );
-          }
-          setError("");
-          const response =
-            await trackingApiFetch(
-              API_URL,
-              {
-                method:
-                  "GET",
-                headers: {
-                  Accept:
-                    "application/json",
-                },
-              }
-            );
-          let result = {};
-          try {
-            result =
-              await response.json();
-          } catch {
-            result = {};
-          }
-          if (!response.ok) {
-            throw new Error(
-              result?.message ||
-              "Unable to load trips."
-            );
-          }
-          const databaseTrips =
-            extractTrips(
-              result
-            );
-          /*
+  const fetchTrips = useCallback(async (manualRefresh = false) => {
+    try {
+      if (manualRefresh) {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+      }
+      setError("");
+      const response = await trackingApiFetch(API_URL, {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+        },
+      });
+      let result = {};
+      try {
+        result = await response.json();
+      } catch {
+        result = {};
+      }
+      if (!response.ok) {
+        throw new Error(result?.message || "Unable to load trips.");
+      }
+      const databaseTrips = extractTrips(result);
+      /*
             Tracking trip list should
             contain orders that have
             actual allocated vehicles.
@@ -584,28 +539,15 @@ const Tripdetails = () => {
             TripOrder as the single
             source of truth.
           */
-          const trackingTrips =
-            databaseTrips
-              .filter((trip) => !isIntercartingOrder(trip))
-              .map(
-                normalizeTrip
-              )
-              .filter((trip) => {
-                const stage =
-                  safeText(
-                    trip?.stage,
-                    ""
-                  )
-                    .trim()
-                    .toLowerCase();
-                const orderPlacedStatus =
-                  safeText(
-                    trip?.orderPlaced?.status,
-                    ""
-                  )
-                    .trim()
-                    .toLowerCase();
-                /*
+      const trackingTrips = databaseTrips
+        .filter((trip) => !isIntercartingOrder(trip))
+        .map(normalizeTrip)
+        .filter((trip) => {
+          const stage = safeText(trip?.stage, "").trim().toLowerCase();
+          const orderPlacedStatus = safeText(trip?.orderPlaced?.status, "")
+            .trim()
+            .toLowerCase();
+          /*
                   Show the order in Tracking as soon as it has reached
                   the tracking flow, even when actual vehicle allocation
                   is still pending.
@@ -613,83 +555,75 @@ const Tripdetails = () => {
                   A trip with 0 allocated vehicles must remain visible so
                   the Tracking team can use the Allocate action.
                 */
-                const trackingStage =
-                  stage === "tracking" ||
-                  stage === "trip complete" ||
-                  stage === "trip completed" ||
-                  stage === "completed";
-                const orderReleasedToTracking =
-                  orderPlacedStatus === "completed" ||
-                  orderPlacedStatus === "complete" ||
-                  orderPlacedStatus === "placed" ||
-                  orderPlacedStatus === "approved";
-                return trackingStage || orderReleasedToTracking;
-              });
-          setTrips(
-            trackingTrips
-          );
-        } catch (
-        fetchError
-        ) {
-          console.error(
-            "Fetch Trips Error:",
-            fetchError
-          );
-          setError(
-            fetchError?.message ||
-            "Unable to load trips."
-          );
-          setTrips([]);
-        } finally {
-          setLoading(false);
-          setRefreshing(
-            false
-          );
-        }
-      },
-      []
-    );
+          const trackingStage =
+            stage === "tracking" ||
+            stage === "trip complete" ||
+            stage === "trip completed" ||
+            stage === "completed";
+          const orderReleasedToTracking =
+            orderPlacedStatus === "completed" ||
+            orderPlacedStatus === "complete" ||
+            orderPlacedStatus === "placed" ||
+            orderPlacedStatus === "approved";
+          return trackingStage || orderReleasedToTracking;
+        });
+      setTrips(trackingTrips);
+    } catch (fetchError) {
+      console.error("Fetch Trips Error:", fetchError);
+      setError(fetchError?.message || "Unable to load trips.");
+      setTrips([]);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, []);
   /* =====================================
      INITIAL LOAD
   ===================================== */
   useEffect(() => {
-    fetchTrips();
-  }, [fetchTrips]);
+    if (!movementOnly) fetchTrips();
+  }, [fetchTrips, movementOnly]);
   /* =====================================
      TRACKING INPUT
   ===================================== */
-  const handleCreateTrip =
-    () => {
-      /*
+  const handleCreateTrip = () => {
+    /*
         Orders are no longer created
         from Tracking.
         This button now opens Tracking
         Input where approved requirements
         can receive actual vehicles.
       */
-      navigate(
-        "/tracking-input"
-      );
-    };
+    navigate("/tracking-input");
+  };
   /* =====================================
      EDIT / MANAGE TRIP
   ===================================== */
-  const handleEditTrip = (
-    trip
-  ) => {
-    navigate(
-      "/tracking-input",
-      {
-        state: {
-          mode: "edit",
-          tripId:
-            trip.tripId,
-          mongoId:
-            trip._id,
-          trip,
-        },
-      }
-    );
+  const handleEditTrip = (trip) => {
+    navigate("/tracking-input", {
+      state: {
+        mode: "edit",
+        tripId: trip.tripId,
+        mongoId: trip._id,
+        trip,
+      },
+    });
+  };
+  const handleCraneVehicles = (event, trip) => {
+    event.stopPropagation();
+    const id = trip?._id || trip?.tripId;
+    if (!id) {
+      setError("This trip has no ID. Please refresh the list.");
+      return;
+    }
+    navigate(`/crane-vehicles/${encodeURIComponent(id)}`, {
+      state: {
+        trip,
+        mongoId: trip._id,
+        tripId: trip.tripId,
+        returnTo: routeLocation.pathname,
+      },
+    });
   };
   const handleAllocateTrip = (trip) => {
     navigate("/tracking-input", {
@@ -708,8 +642,8 @@ const Tripdetails = () => {
     const date = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
     const previousTodayKm =
       latest?.todayKm !== undefined &&
-        latest?.todayKm !== null &&
-        latest?.todayKm !== ""
+      latest?.todayKm !== null &&
+      latest?.todayKm !== ""
         ? Number(latest.todayKm)
         : null;
     return {
@@ -726,21 +660,33 @@ const Tripdetails = () => {
       remarks: "",
       updatedBy: "",
       loadingStatus: vehicle?.loading?.status || "Pending",
-      loadingPointInDate: vehicle?.loading?.pointInDate ? String(vehicle.loading.pointInDate).slice(0, 10) : "",
-      loadingDate: vehicle?.loading?.loadingDate ? String(vehicle.loading.loadingDate).slice(0, 10) : "",
-      loadingPointOutDate: vehicle?.loading?.pointOutDate ? String(vehicle.loading.pointOutDate).slice(0, 10) : "",
+      loadingPointInDate: vehicle?.loading?.pointInDate
+        ? String(vehicle.loading.pointInDate).slice(0, 10)
+        : "",
+      loadingDate: vehicle?.loading?.loadingDate
+        ? String(vehicle.loading.loadingDate).slice(0, 10)
+        : "",
+      loadingPointOutDate: vehicle?.loading?.pointOutDate
+        ? String(vehicle.loading.pointOutDate).slice(0, 10)
+        : "",
       loadingHaltingDays: calculateHaltingDays(
         vehicle?.loading?.pointInDate,
-        vehicle?.loading?.pointOutDate
+        vehicle?.loading?.pointOutDate,
       ),
       loadingRemarks: vehicle?.loading?.remarks || "",
       unloadingStatus: vehicle?.unloading?.status || "Pending",
-      unloadingPointInDate: vehicle?.unloading?.pointInDate ? String(vehicle.unloading.pointInDate).slice(0, 10) : "",
-      unloadingDate: vehicle?.unloading?.unloadingDate ? String(vehicle.unloading.unloadingDate).slice(0, 10) : "",
-      unloadingPointOutDate: vehicle?.unloading?.pointOutDate ? String(vehicle.unloading.pointOutDate).slice(0, 10) : "",
+      unloadingPointInDate: vehicle?.unloading?.pointInDate
+        ? String(vehicle.unloading.pointInDate).slice(0, 10)
+        : "",
+      unloadingDate: vehicle?.unloading?.unloadingDate
+        ? String(vehicle.unloading.unloadingDate).slice(0, 10)
+        : "",
+      unloadingPointOutDate: vehicle?.unloading?.pointOutDate
+        ? String(vehicle.unloading.pointOutDate).slice(0, 10)
+        : "",
       unloadingHaltingDays: calculateHaltingDays(
         vehicle?.unloading?.pointInDate,
-        vehicle?.unloading?.pointOutDate
+        vehicle?.unloading?.pointOutDate,
       ),
       unloadingRemarks: vehicle?.unloading?.remarks || "",
       lrNumber: vehicle?.lr?.number || "",
@@ -748,8 +694,13 @@ const Tripdetails = () => {
       lrRemarks: vehicle?.lr?.remarks || "",
       podFile: null,
       ewayBillNumber: vehicle?.ewayBill?.number || "",
-      ewayBillValidUpto: vehicle?.ewayBill?.validUpto ? String(vehicle.ewayBill.validUpto).slice(0, 10) : "",
-      ewayBillStatus: getEwayBillStatus(vehicle?.ewayBill?.number, vehicle?.ewayBill?.validUpto),
+      ewayBillValidUpto: vehicle?.ewayBill?.validUpto
+        ? String(vehicle.ewayBill.validUpto).slice(0, 10)
+        : "",
+      ewayBillStatus: getEwayBillStatus(
+        vehicle?.ewayBill?.number,
+        vehicle?.ewayBill?.validUpto,
+      ),
       ewayBillFile: null,
     };
   };
@@ -769,6 +720,12 @@ const Tripdetails = () => {
   };
   const closeMovementPopup = () => {
     if (movementSaving) return;
+    if (movementOnly) {
+      navigate(`/crane-vehicles/${encodeURIComponent(routeParams.id)}`, {
+        state: { returnTo: routeLocation.state?.returnTo },
+      });
+      return;
+    }
     setMovementTrip(null);
     setMovementVehicleId("");
     setMovementForm(null);
@@ -776,6 +733,13 @@ const Tripdetails = () => {
     setMovementSuccess("");
   };
   const selectMovementVehicle = (vehicle) => {
+    if (movementOnly) {
+      navigate(
+        `/crane-vehicles/${encodeURIComponent(routeParams.id)}/movement/${encodeURIComponent(vehicle.allocationId || vehicle._id)}`,
+        { state: { returnTo: routeLocation.state?.returnTo } },
+      );
+      return;
+    }
     setMovementVehicleId(vehicle.allocationId || vehicle._id || "");
     setMovementForm(buildMovementForm(vehicle));
     setMovementError("");
@@ -787,7 +751,10 @@ const Tripdetails = () => {
     setMovementForm((previous) => {
       const next = { ...previous, [name]: value };
       if (name === "ewayBillNumber" || name === "ewayBillValidUpto") {
-        next.ewayBillStatus = getEwayBillStatus(next.ewayBillNumber, next.ewayBillValidUpto);
+        next.ewayBillStatus = getEwayBillStatus(
+          next.ewayBillNumber,
+          next.ewayBillValidUpto,
+        );
       }
       if (
         name === "loadingPointInDate" ||
@@ -796,7 +763,7 @@ const Tripdetails = () => {
       ) {
         next.loadingHaltingDays = calculateHaltingDays(
           next.loadingPointInDate,
-          next.loadingPointOutDate
+          next.loadingPointOutDate,
         );
       }
       if (
@@ -806,7 +773,7 @@ const Tripdetails = () => {
       ) {
         next.unloadingHaltingDays = calculateHaltingDays(
           next.unloadingPointInDate,
-          next.unloadingPointOutDate
+          next.unloadingPointOutDate,
         );
       }
       next.day = movementDayFromLoading(next.loadingPointInDate, next.date);
@@ -834,7 +801,7 @@ const Tripdetails = () => {
       validUpto ||
       String(remarks || "").trim() ||
       file ||
-      hasExistingFile
+      hasExistingFile,
     );
     if (!hasEnteredData) {
       return existingDocument || null;
@@ -862,16 +829,16 @@ const Tripdetails = () => {
       {
         method: "PUT",
         body: formData,
-      }
+      },
     );
     const result = await response.json().catch(() => ({}));
     if (!response.ok) {
       const label = type === "ewayBill" ? "E-Way Bill" : type.toUpperCase();
       throw new Error(result?.message || `Unable to save ${label} document.`);
     }
-    const updatedVehicle = safeArray(
-      result?.data?.allocatedVehicles
-    ).find((item) => item.allocationId === allocationId);
+    const updatedVehicle = safeArray(result?.data?.allocatedVehicles).find(
+      (item) => item.allocationId === allocationId,
+    );
     return (
       updatedVehicle?.[type] || {
         ...existingDocument,
@@ -884,36 +851,27 @@ const Tripdetails = () => {
       }
     );
   };
-  const viewMovementDocument = (vehicle, type) => openTripDocument({
-    baseUrl: API_URL,
-    tripId: movementTrip?._id,
-    allocationId: vehicle?.allocationId,
-    type,
-    fileName: vehicle?.[type]?.originalName || vehicle?.[type]?.fileName,
-  });
+  const viewMovementDocument = (vehicle, type) =>
+    openTripDocument({
+      baseUrl: API_URL,
+      tripId: movementTrip?._id,
+      allocationId: vehicle?.allocationId,
+      type,
+      fileName: vehicle?.[type]?.originalName || vehicle?.[type]?.fileName,
+    });
   const saveMovement = async () => {
     if (!movementTrip || !movementForm || !movementVehicleId) return;
     const vehicle = safeArray(movementTrip.allocatedVehicles).find(
-      (item) => (item.allocationId || item._id) === movementVehicleId
+      (item) => (item.allocationId || item._id) === movementVehicleId,
     );
     if (!vehicle) return;
     const history = safeArray(vehicle.dailyTracking);
     const latest = history.length ? history[history.length - 1] : null;
-    const currentLocation = String(
-      movementForm.currentLocation || ""
-    ).trim();
-    const updatedBy = String(
-      movementForm.updatedBy || ""
-    ).trim();
-    const selectedDate = String(
-      movementForm.date || ""
-    ).trim();
-    const yesterdayKm = Number(
-      movementForm.yesterdayKm
-    );
-    const todayKm = Number(
-      movementForm.todayKm
-    );
+    const currentLocation = String(movementForm.currentLocation || "").trim();
+    const updatedBy = String(movementForm.updatedBy || "").trim();
+    const selectedDate = String(movementForm.date || "").trim();
+    const yesterdayKm = Number(movementForm.yesterdayKm);
+    const todayKm = Number(movementForm.todayKm);
     /*
       IMPORTANT:
       If the last saved movement is already Reached, the user may still
@@ -923,29 +881,29 @@ const Tripdetails = () => {
       If the user starts entering a new movement (location/KM/updated by),
       the normal movement validation and tracking POST still run.
     */
-    const latestRawStatus = String(
-      latest?.status || ""
-    ).trim().toLowerCase();
+    const latestRawStatus = String(latest?.status || "")
+      .trim()
+      .toLowerCase();
     const hasMovementEntryData = Boolean(
       currentLocation ||
       updatedBy ||
-      movementForm.todayKm !== "" &&
-      movementForm.todayKm !== null &&
-      movementForm.todayKm !== undefined ||
-      String(movementForm.remarks || "").trim()
+      (movementForm.todayKm !== "" &&
+        movementForm.todayKm !== null &&
+        movementForm.todayKm !== undefined) ||
+      String(movementForm.remarks || "").trim(),
     );
     const shouldSaveTracking = hasMovementEntryData;
     const loadingCompleted =
-      String(movementForm.loadingStatus || "").trim().toLowerCase() === "completed";
+      String(movementForm.loadingStatus || "")
+        .trim()
+        .toLowerCase() === "completed";
     const unloadingCompleted =
-      String(movementForm.unloadingStatus || "").trim().toLowerCase() === "completed";
+      String(movementForm.unloadingStatus || "")
+        .trim()
+        .toLowerCase() === "completed";
     const validateDateOrder = (label, values) => {
       const dates = values.filter(Boolean);
-      for (
-        let index = 1;
-        index < dates.length;
-        index += 1
-      ) {
+      for (let index = 1; index < dates.length; index += 1) {
         if (dates[index] < dates[index - 1]) {
           return `${label} dates are not in the correct order.`;
         }
@@ -956,31 +914,30 @@ const Tripdetails = () => {
       Loading / unloading validations must always run because these
       details are saved even when no new daily tracking row is created.
     */
-    if (shouldSaveTracking && movementForm.unloadingPointOutDate &&
-        selectedDate > movementForm.unloadingPointOutDate) {
-      setMovementError("Movement date cannot be after Unloading Point Out Date.");
+    if (
+      shouldSaveTracking &&
+      movementForm.unloadingPointOutDate &&
+      selectedDate > movementForm.unloadingPointOutDate
+    ) {
+      setMovementError(
+        "Movement date cannot be after Unloading Point Out Date.",
+      );
       return;
     }
-    const loadingDateError = validateDateOrder(
-      "Loading",
-      [
-        movementForm.loadingPointInDate,
-        movementForm.loadingDate,
-        movementForm.loadingPointOutDate,
-      ]
-    );
+    const loadingDateError = validateDateOrder("Loading", [
+      movementForm.loadingPointInDate,
+      movementForm.loadingDate,
+      movementForm.loadingPointOutDate,
+    ]);
     if (loadingDateError) {
       setMovementError(loadingDateError);
       return;
     }
-    const unloadingDateError = validateDateOrder(
-      "Unloading",
-      [
-        movementForm.unloadingPointInDate,
-        movementForm.unloadingDate,
-        movementForm.unloadingPointOutDate,
-      ]
-    );
+    const unloadingDateError = validateDateOrder("Unloading", [
+      movementForm.unloadingPointInDate,
+      movementForm.unloadingDate,
+      movementForm.unloadingPointOutDate,
+    ]);
     if (unloadingDateError) {
       setMovementError(unloadingDateError);
       return;
@@ -990,7 +947,7 @@ const Tripdetails = () => {
       !movementForm.loadingPointOutDate
     ) {
       setMovementError(
-        "Loading Point Out Date is required when loading is completed."
+        "Loading Point Out Date is required when loading is completed.",
       );
       return;
     }
@@ -999,16 +956,20 @@ const Tripdetails = () => {
       !movementForm.unloadingPointOutDate
     ) {
       setMovementError(
-        "Unloading Point Out Date is required when unloading is completed."
+        "Unloading Point Out Date is required when unloading is completed.",
       );
       return;
     }
     if (shouldSaveTracking && !loadingCompleted) {
-      setMovementError("Complete Loading Details before adding daily movement.");
+      setMovementError(
+        "Complete Loading Details before adding daily movement.",
+      );
       return;
     }
     if (movementForm.podFile && !unloadingCompleted) {
-      setMovementError("POD can be uploaded only after unloading is completed.");
+      setMovementError(
+        "POD can be uploaded only after unloading is completed.",
+      );
       return;
     }
     /*
@@ -1036,169 +997,110 @@ const Tripdetails = () => {
         setMovementError("Today KM is required.");
         return;
       }
-      if (
-        !Number.isFinite(yesterdayKm) ||
-        yesterdayKm < 0
-      ) {
-        setMovementError(
-          "Yesterday KM must be a valid non-negative number."
-        );
+      if (!Number.isFinite(yesterdayKm) || yesterdayKm < 0) {
+        setMovementError("Yesterday KM must be a valid non-negative number.");
         return;
       }
-      if (
-        !Number.isFinite(todayKm) ||
-        todayKm < 0
-      ) {
-        setMovementError(
-          "Today KM must be a valid non-negative number."
-        );
+      if (!Number.isFinite(todayKm) || todayKm < 0) {
+        setMovementError("Today KM must be a valid non-negative number.");
         return;
       }
       if (todayKm < yesterdayKm) {
         setMovementError(
-          `Today KM cannot be less than Yesterday KM (${yesterdayKm} KM).`
+          `Today KM cannot be less than Yesterday KM (${yesterdayKm} KM).`,
         );
         return;
       }
-      const latestDate = latest?.date
-        ? String(latest.date).slice(0, 10)
-        : "";
-      if (
-        latestDate &&
-        selectedDate <= latestDate
-      ) {
+      const latestDate = latest?.date ? String(latest.date).slice(0, 10) : "";
+      if (latestDate && selectedDate <= latestDate) {
         setMovementError(
           `Movement date must be after the previous update (${formatDate(
-            latest.date
-          )}).`
+            latest.date,
+          )}).`,
         );
         return;
       }
       if (
         history.some(
-          (item) =>
-            String(item?.date || "").slice(0, 10) ===
-            selectedDate
+          (item) => String(item?.date || "").slice(0, 10) === selectedDate,
         )
       ) {
-        setMovementError(
-          "A movement update already exists for this date."
-        );
+        setMovementError("A movement update already exists for this date.");
         return;
       }
     }
-    const runningKm = shouldSaveTracking
-      ? todayKm - yesterdayKm
-      : 0;
+    const runningKm = shouldSaveTracking ? todayKm - yesterdayKm : 0;
     const payload = shouldSaveTracking
       ? {
-        date: movementForm.date,
-        day: movementDayFromLoading(
-          movementForm.loadingPointInDate,
-          movementForm.date
-        ),
-        yesterdayKm,
-        todayKm,
-        runningKm,
-        yesterdayLocation: String(
-          movementForm.yesterdayLocation || ""
-        ).trim(),
-        currentLocation,
-        status: movementForm.status || "Idle",
-        remarks: String(
-          movementForm.remarks || ""
-        ).trim(),
-        updatedBy,
-      }
+          date: movementForm.date,
+          day: movementDayFromLoading(
+            movementForm.loadingPointInDate,
+            movementForm.date,
+          ),
+          yesterdayKm,
+          todayKm,
+          runningKm,
+          yesterdayLocation: String(
+            movementForm.yesterdayLocation || "",
+          ).trim(),
+          currentLocation,
+          status: movementForm.status || "Idle",
+          remarks: String(movementForm.remarks || "").trim(),
+          updatedBy,
+        }
       : null;
     try {
       setMovementSaving(true);
       setMovementError("");
       setMovementSuccess("");
-      const mongoId =
-        movementTrip._id?.$oid ||
-        movementTrip._id;
+      const mongoId = movementTrip._id?.$oid || movementTrip._id;
       /*
         ALWAYS save Loading / Unloading.
         This is the important fix for a reached vehicle where the user
         completes unloading and then uploads the remaining documents.
       */
       const allocationPayload = {
-        vehicleNumber: String(
-          vehicle.vehicleNumber || ""
-        )
+        vehicleNumber: String(vehicle.vehicleNumber || "")
           .trim()
           .toUpperCase(),
         driver: {
-          name: String(
-            vehicle?.driver?.name || ""
-          ).trim(),
-          contactNumber: String(
-            vehicle?.driver?.contactNumber || ""
-          ).trim(),
+          name: String(vehicle?.driver?.name || "").trim(),
+          contactNumber: String(vehicle?.driver?.contactNumber || "").trim(),
         },
         escort: {
-          vehicleNumber: String(
-            vehicle?.escort?.vehicleNumber || ""
-          )
+          vehicleNumber: String(vehicle?.escort?.vehicleNumber || "")
             .trim()
             .toUpperCase(),
-          name: String(
-            vehicle?.escort?.name || ""
-          ).trim(),
-          contactNumber: String(
-            vehicle?.escort?.contactNumber || ""
-          ).trim(),
+          name: String(vehicle?.escort?.name || "").trim(),
+          contactNumber: String(vehicle?.escort?.contactNumber || "").trim(),
         },
         supervisor: {
-          name: String(
-            vehicle?.supervisor?.name || ""
-          ).trim(),
+          name: String(vehicle?.supervisor?.name || "").trim(),
           contactNumber: String(
-            vehicle?.supervisor?.contactNumber || ""
+            vehicle?.supervisor?.contactNumber || "",
           ).trim(),
         },
         loading: {
-          status:
-            movementForm.loadingStatus ||
-            "Pending",
-          pointInDate:
-            movementForm.loadingPointInDate ||
-            null,
-          loadingDate:
-            movementForm.loadingDate ||
-            null,
-          pointOutDate:
-            movementForm.loadingPointOutDate ||
-            null,
+          status: movementForm.loadingStatus || "Pending",
+          pointInDate: movementForm.loadingPointInDate || null,
+          loadingDate: movementForm.loadingDate || null,
+          pointOutDate: movementForm.loadingPointOutDate || null,
           haltingDays: calculateHaltingDays(
             movementForm.loadingPointInDate,
-            movementForm.loadingPointOutDate
+            movementForm.loadingPointOutDate,
           ),
-          remarks: String(
-            movementForm.loadingRemarks || ""
-          ).trim(),
+          remarks: String(movementForm.loadingRemarks || "").trim(),
         },
         unloading: {
-          status:
-            movementForm.unloadingStatus ||
-            "Pending",
-          pointInDate:
-            movementForm.unloadingPointInDate ||
-            null,
-          unloadingDate:
-            movementForm.unloadingDate ||
-            null,
-          pointOutDate:
-            movementForm.unloadingPointOutDate ||
-            null,
+          status: movementForm.unloadingStatus || "Pending",
+          pointInDate: movementForm.unloadingPointInDate || null,
+          unloadingDate: movementForm.unloadingDate || null,
+          pointOutDate: movementForm.unloadingPointOutDate || null,
           haltingDays: calculateHaltingDays(
             movementForm.unloadingPointInDate,
-            movementForm.unloadingPointOutDate
+            movementForm.unloadingPointOutDate,
           ),
-          remarks: String(
-            movementForm.unloadingRemarks || ""
-          ).trim(),
+          remarks: String(movementForm.unloadingRemarks || "").trim(),
         },
       };
       const allocationResponse = await trackingApiFetch(
@@ -1208,19 +1110,16 @@ const Tripdetails = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(
-            allocationPayload
-          ),
-        }
+          body: JSON.stringify(allocationPayload),
+        },
       );
-      const allocationResult =
-        await allocationResponse
-          .json()
-          .catch(() => ({}));
+      const allocationResult = await allocationResponse
+        .json()
+        .catch(() => ({}));
       if (!allocationResponse.ok) {
         throw new Error(
           allocationResult?.message ||
-          "Unable to update loading / unloading details."
+            "Unable to update loading / unloading details.",
         );
       }
       /*
@@ -1234,115 +1133,73 @@ const Tripdetails = () => {
           {
             method: "POST",
             headers: {
-              "Content-Type":
-                "application/json",
+              "Content-Type": "application/json",
             },
             body: JSON.stringify(payload),
-          }
+          },
         );
-        const result = await response
-          .json()
-          .catch(() => ({}));
+        const result = await response.json().catch(() => ({}));
         if (!response.ok) {
-          throw new Error(
-            result?.message ||
-            "Unable to save movement."
-          );
+          throw new Error(result?.message || "Unable to save movement.");
         }
       }
       /*
         Documents are independent from daily tracking.
         Keep the existing upload endpoints and validation behavior.
       */
-      const savedLr =
-        await uploadMovementDocument({
-          mongoId,
-          allocationId:
-            vehicle.allocationId,
-          type: "lr",
-          number:
-            movementForm.lrNumber,
-          date:
-            movementForm.lrDate,
-          remarks:
-            movementForm.lrRemarks,
-          file: null,
-          existingDocument:
-            vehicle?.lr,
-          uploadedBy:
-            movementForm.updatedBy ||
-            "Tracking",
-          requireFile: false,
-        });
+      const savedLr = await uploadMovementDocument({
+        mongoId,
+        allocationId: vehicle.allocationId,
+        type: "lr",
+        number: movementForm.lrNumber,
+        date: movementForm.lrDate,
+        remarks: movementForm.lrRemarks,
+        file: null,
+        existingDocument: vehicle?.lr,
+        uploadedBy: movementForm.updatedBy || "Tracking",
+        requireFile: false,
+      });
       const savedPod = unloadingCompleted
         ? await uploadMovementDocument({
-          mongoId,
-          allocationId:
-            vehicle.allocationId,
-          type: "pod",
-          file:
-            movementForm.podFile,
-          existingDocument:
-            vehicle?.pod,
-          uploadedBy:
-            movementForm.updatedBy ||
-            "Tracking",
-          requireFile: true,
-        })
+            mongoId,
+            allocationId: vehicle.allocationId,
+            type: "pod",
+            file: movementForm.podFile,
+            existingDocument: vehicle?.pod,
+            uploadedBy: movementForm.updatedBy || "Tracking",
+            requireFile: true,
+          })
         : vehicle?.pod || null;
-      const savedEwayBill =
-        await uploadMovementDocument({
-          mongoId,
-          allocationId:
-            vehicle.allocationId,
-          type: "ewayBill",
-          number:
-            movementForm.ewayBillNumber,
-          validUpto:
-            movementForm.ewayBillValidUpto,
-          status:
-            getEwayBillStatus(movementForm.ewayBillNumber, movementForm.ewayBillValidUpto),
-          file: null,
-          existingDocument:
-            vehicle?.ewayBill,
-          uploadedBy:
-            movementForm.updatedBy ||
-            "Tracking",
-          requireFile: false,
-        });
+      const savedEwayBill = await uploadMovementDocument({
+        mongoId,
+        allocationId: vehicle.allocationId,
+        type: "ewayBill",
+        number: movementForm.ewayBillNumber,
+        validUpto: movementForm.ewayBillValidUpto,
+        status: getEwayBillStatus(
+          movementForm.ewayBillNumber,
+          movementForm.ewayBillValidUpto,
+        ),
+        file: null,
+        existingDocument: vehicle?.ewayBill,
+        uploadedBy: movementForm.updatedBy || "Tracking",
+        requireFile: false,
+      });
       /*
         Build the selected vehicle locally with the exact values just
         saved so the popup does not jump back to old Pending data.
       */
       const nextVehicle = {
         ...vehicle,
-        loading:
-          allocationPayload.loading,
-        unloading:
-          allocationPayload.unloading,
-        lr:
-          savedLr ||
-          vehicle?.lr ||
-          {},
-        pod:
-          savedPod ||
-          vehicle?.pod ||
-          {},
-        ewayBill:
-          savedEwayBill ||
-          vehicle?.ewayBill ||
-          {},
+        loading: allocationPayload.loading,
+        unloading: allocationPayload.unloading,
+        lr: savedLr || vehicle?.lr || {},
+        pod: savedPod || vehicle?.pod || {},
+        ewayBill: savedEwayBill || vehicle?.ewayBill || {},
         dailyTracking:
           shouldSaveTracking && payload
-            ? [
-              ...safeArray(
-                vehicle.dailyTracking
-              ),
-              payload,
-            ]
-            : safeArray(
-              vehicle.dailyTracking
-            ),
+            ? [...safeArray(vehicle.dailyTracking), payload]
+            : safeArray(vehicle.dailyTracking),
       };
       /*
         Update the popup immediately before/while the main trip list is
@@ -1350,28 +1207,19 @@ const Tripdetails = () => {
       */
       setMovementTrip((previous) => ({
         ...previous,
-        allocatedVehicles:
-          safeArray(
-            previous?.allocatedVehicles
-          ).map((item) =>
-            (item.allocationId ||
-              item._id) ===
-              movementVehicleId
-              ? nextVehicle
-              : item
-          ),
+        allocatedVehicles: safeArray(previous?.allocatedVehicles).map((item) =>
+          (item.allocationId || item._id) === movementVehicleId
+            ? nextVehicle
+            : item,
+        ),
       }));
-      setMovementForm(
-        buildMovementForm(nextVehicle)
-      );
+      setMovementForm(buildMovementForm(nextVehicle));
       setMovementSuccess(
         shouldSaveTracking
-          ? `Movement updated for ${vehicle.vehicleNumber ||
-          "vehicle"
-          }.`
-          : `Loading, unloading and documents updated for ${vehicle.vehicleNumber ||
-          "vehicle"
-          }.`
+          ? `Movement updated for ${vehicle.vehicleNumber || "vehicle"}.`
+          : `Loading, unloading and documents updated for ${
+              vehicle.vehicleNumber || "vehicle"
+            }.`,
       );
       /*
         Refresh the main Tracking page data after the local popup state
@@ -1379,604 +1227,842 @@ const Tripdetails = () => {
       */
       await fetchTrips(true);
     } catch (saveError) {
-      setMovementError(
-        saveError?.message ||
-        "Unable to save movement."
-      );
+      setMovementError(saveError?.message || "Unable to save movement.");
     } finally {
       setMovementSaving(false);
     }
   };
-  const handleBack =
-    () => {
-      navigate(
-        "/tracking"
-      );
-    };
+  const handleBack = () => {
+    navigate("/tracking");
+  };
+  useEffect(() => {
+    if (!movementOnly) return undefined;
+    const controller = new AbortController();
+    const id = routeParams.id;
+    const endpoint = /^[a-f\d]{24}$/i.test(id || "")
+      ? `${API_URL}/${encodeURIComponent(id)}`
+      : `${API_URL}/trip/${encodeURIComponent(id || "")}`;
+    setMovementTrip(null);
+    setMovementError("");
+    (async () => {
+      try {
+        const response = await trackingApiFetch(endpoint, {
+          signal: controller.signal,
+        });
+        const payload = await response.json();
+        if (!response.ok)
+          throw new Error(payload.message || "Unable to load Crane movement.");
+        const trip =
+          payload?.data?.trip ||
+          payload?.data?.order ||
+          payload?.data ||
+          payload?.trip ||
+          payload?.order ||
+          payload;
+        if (!isCraneTrip(trip))
+          throw new Error("This movement page is for Crane orders.");
+        const vehicle = safeArray(trip.allocatedVehicles).find(
+          (item) =>
+            String(item.allocationId || item._id) === routeParams.allocationId,
+        );
+        if (!vehicle) throw new Error("The selected vehicle was not found.");
+        if (controller.signal.aborted) return;
+        setMovementTrip(trip);
+        setMovementVehicleId(vehicle.allocationId || vehicle._id);
+        setMovementForm(buildMovementForm(vehicle));
+      } catch (error) {
+        if (!controller.signal.aborted)
+          setMovementError(error.message || "Unable to load movement.");
+      }
+    })();
+    return () => controller.abort();
+  }, [movementOnly, routeParams.id, routeParams.allocationId]);
   /* =====================================
      RENDER
   ===================================== */
   return (
-    <main className="trip-list-page">
-      {/* =================================
-          TOP ACTION BAR
-      ================================= */}
-      <div className="trip-page-actions">
-        <button
-          type="button"
-          className="trip-back-button"
-          onClick={
-            handleBack
-          }
-        >
-          <ArrowLeft
-            size={16}
-          />
-          <span>
-            Back to Tracking
-          </span>
-        </button>
-      </div>
-      {/* =================================
-          PAGE HEADING
-      ================================= */}
-      <header className="trip-page-header">
-        <div>
-          <span className="trip-page-eyebrow">
-            FLEET OPERATIONS
-          </span>
-          <h1>
-            Trip List
-          </h1>
-          <p>
-            View and manage all
-            vehicle tracking trips.
-          </p>
-        </div>
-        <div className="trip-page-header-actions">
-          <span className="trip-total-badge">
-            <Truck
-              size={14}
-            />
-            {trips.length}
-            {trips.length === 1
-              ? " Trip"
-              : " Trips"}
-          </span>
+    <main
+      className={
+        movementOnly ? "trip-list-page crane-movement-page" : "trip-list-page"
+      }
+    >
+      {movementOnly && !movementTrip && (
+        <div className="crane-page-message">
           <button
             type="button"
-            className="trip-refresh-button"
-            disabled={
-              refreshing
-            }
             onClick={() =>
-              fetchTrips(true)
+              navigate(`/crane-vehicles/${encodeURIComponent(routeParams.id)}`)
             }
-            aria-label="Refresh trips"
           >
-            <RefreshCw
-              size={15}
-              className={
-                refreshing
-                  ? "spin"
-                  : ""
-              }
-            />
+            Back to Vehicles
           </button>
-        </div>
-      </header>
-      {/* =================================
-          ERROR
-      ================================= */}
-      {error && (
-        <div className="trip-page-error">
-          {error}
+          <p role="status">{movementError || "Loading vehicle movement..."}</p>
         </div>
       )}
-      {/* =================================
-          LIST CARD
+      {!movementOnly && (
+        <>
+          {/* =================================
+          TOP ACTION BAR
       ================================= */}
-      <section className="trip-table-card">
-        <div className="trip-table-header">
-          <div>
-            <h2>
-              All Trips
-            </h2>
-            <p>
-              Complete trip and
-              consignment overview.
-            </p>
+          <div className="trip-page-actions">
+            <button
+              type="button"
+              className="trip-back-button"
+              onClick={handleBack}
+            >
+              <ArrowLeft size={16} />
+              <span>Back to Tracking</span>
+            </button>
           </div>
-        </div>
-        {/* =============================
-            DESKTOP COLUMN TITLES
-        ============================= */}
-        <div className="trip-list-column-head">
-          <span>
-            Trip
-          </span>
-          <span>
-            Customer
-          </span>
-          <span>
-            Material
-          </span>
-          <span>
-            Movement
-          </span>
-          <span>
-            Route
-          </span>
-          <span>
-            Vehicles
-          </span>
-          <span>
-            Status
-          </span>
-          <span>
-            Created
-          </span>
-          <span className="trip-action-heading">
-            Action
-          </span>
-        </div>
-        {/* =============================
-            BODY
-        ============================= */}
-        <div className="trip-full-list">
-          {loading ? (
-            <div className="trip-page-loading">
-              <RefreshCw
-                size={20}
-                className="spin"
-              />
-              <span>
-                Loading trips...
-              </span>
+          {/* =================================
+          PAGE HEADING
+      ================================= */}
+          <header className="trip-page-header">
+            <div>
+              <span className="trip-page-eyebrow">FLEET OPERATIONS</span>
+              <h1>Trip List</h1>
+              <p>View and manage all vehicle tracking trips.</p>
             </div>
-          ) : trips.length >
-            0 ? (
-            trips.map(
-              (
-                trip,
-                index
-              ) => {
-                const allocatedVehicleCount =
-                  safeArray(
-                    trip
-                      .allocatedVehicles
-                  ).length;
-                const requirementVehicleCount =
-                  safeArray(
-                    trip?.vehicleRequirements
-                  ).reduce(
-                    (total, requirement) => {
-                      const quantity = Number(
-                        requirement?.quantity ??
-                        requirement?.qty ??
-                        requirement?.requiredQuantity ??
-                        0
-                      );
-                      return (
-                        total +
-                        (Number.isFinite(quantity)
-                          ? quantity
-                          : 0)
-                      );
-                    },
-                    0
-                  );
-                const requiredVehicleCount =
-                  requirementVehicleCount > 0
-                    ? requirementVehicleCount
-                    : Number(
-                      trip?.totalVehicles || 0
-                    );
-                const pendingVehicleCount =
-                  Math.max(
-                    requiredVehicleCount -
-                    allocatedVehicleCount,
-                    0
-                  );
-                const tripStatus =
-                  getTripStatus(
-                    trip
-                  );
-                const statusClass =
-                  getStatusClass(
-                    tripStatus
-                  );
-                const movementType =
-                  getMovementType(
-                    trip
-                  );
-                const movementClass =
-                  getMovementClass(
-                    movementType
-                  );
-                return (
-                  <article
-                    key={
-                      trip.id
-                    }
-                    className="trip-full-row"
-                  >
-                    {/* =====================
-                        TRIP
-                    ===================== */}
-                    <div className="trip-row-main">
-                      <span className="trip-mobile-label">
-                        Trip
-                      </span>
-                      <div className="trip-id-box">
-                        <div className="trip-id-icon">
-                          <Route
-                            size={
-                              16
-                            }
-                          />
-                        </div>
-                        <div>
-                          <strong>
-                            {safeText(
-                              trip.tripId
-                            )}
-                          </strong>
-                          <small>
-                            #
-                            {index +
-                              1}
-                          </small>
-                        </div>
-                      </div>
-                    </div>
-                    {/* =====================
-                        CUSTOMER
-                    ===================== */}
-                    <div className="trip-row-cell">
-                      <span className="trip-mobile-label">
-                        Customer
-                      </span>
-                      <div className="trip-cell-with-icon">
-                        <UserRound
-                          size={14}
-                        />
-                        <strong>
-                          {safeText(
-                            trip.customer
-                          )}
-                        </strong>
-                      </div>
-                    </div>
-                    {/* =====================
-                        MATERIAL
-                    ===================== */}
-                    <div className="trip-row-cell">
-                      <span className="trip-mobile-label">
-                        Material
-                      </span>
-                      <div className="trip-cell-with-icon">
-                        <Package
-                          size={14}
-                        />
-                        <span>
-                          {safeText(
-                            trip
-                              .materialType
-                          )}
-                        </span>
-                      </div>
-                    </div>
-                    {/* =====================
-                        MOVEMENT
-                    ===================== */}
-                    <div className="trip-row-cell trip-movement-type-cell">
-                      <span className="trip-mobile-label">
-                        Movement
-                      </span>
-                      <span
-                        className={`trip-movement-type-badge ${movementClass}`}
-                        title={movementType}
-                      >
-                        <Navigation size={12} />
-                        <span>
-                          {movementType}
-                        </span>
-                      </span>
-                    </div>
-                    {/* =====================
-                        ROUTE
-                    ===================== */}
-                    <div className="trip-row-cell trip-route-cell">
-                      <span className="trip-mobile-label">
-                        Route
-                      </span>
-                      <div className="trip-row-route">
-                        <MapPin
-                          size={14}
-                        />
-                        <span>
-                          {safeText(
-                            trip.origin
-                          )}
-                        </span>
-                        <ChevronRight
-                          size={13}
-                        />
-                        <span>
-                          {safeText(
-                            trip
-                              .destination
-                          )}
-                        </span>
-                      </div>
-                    </div>
-                    {/* =====================
-                        VEHICLES
-                    ===================== */}
-                    <div className="trip-row-cell">
-                      <span className="trip-mobile-label">
-                        Vehicles
-                      </span>
-                      <span className="trip-row-vehicle-count">
-                        <Truck
-                          size={14}
-                        />
-                        {allocatedVehicleCount}
-                        /
-                        {requiredVehicleCount}
-                      </span>
-                      {pendingVehicleCount > 0 && (
-                        <small className="trip-row-vehicle-pending">
-                          {pendingVehicleCount} Pending
-                        </small>
-                      )}
-                    </div>
-                    {/* =====================
-                        STATUS
-                    ===================== */}
-                    <div className="trip-row-cell">
-                      <span className="trip-mobile-label">
-                        Status
-                      </span>
-                      <span
-                        className={`trip-status-badge ${statusClass}`}
-                      >
-                        {tripStatus}
-                      </span>
-                    </div>
-                    {/* =====================
-                        CREATED DATE
-                    ===================== */}
-                    <div className="trip-row-cell">
-                      <span className="trip-mobile-label">
-                        Created
-                      </span>
-                      <div className="trip-date-cell">
-                        <CalendarDays
-                          size={13}
-                        />
-                        <span>
-                          {formatDate(
-                            trip
-                              .createdAt
-                          )}
-                        </span>
-                      </div>
-                    </div>
-                    {/* =====================
-                        MANAGE
-                    ===================== */}
-                    <div className="trip-row-actions">
-                      <span className="trip-mobile-label">
-                        Action
-                      </span>
-                      <div className="trip-action-buttons">
-                        <button
-                          type="button"
-                          className="trip-action-button allocate"
-                          onClick={() => handleAllocateTrip(trip)}
-                          title="Allocate Vehicle"
-                        >
-                          <Truck size={13} />
-                          <span>Allocate</span>
-                        </button>
-                        <button
-                          type="button"
-                          className="trip-action-button movement"
-                          onClick={() => handleMovementTrip(trip)}
-                          title="Update Movement"
-                        >
-                          <Navigation size={13} />
-                          <span>Movement</span>
-                        </button>
-                      </div>
-                    </div>
-                  </article>
-                );
-              }
-            )
-          ) : (
-            <div className="trip-empty-state">
-              <div className="trip-empty-icon">
-                <Truck
-                  size={24}
-                />
-              </div>
-              <strong>
-                No Trips Found
-              </strong>
-              <p>
-                Orders will appear
-                here after they are
-                placed and released
-                to Tracking.
-              </p>
+            <div className="trip-page-header-actions">
+              <span className="trip-total-badge">
+                <Truck size={14} />
+                {trips.length}
+                {trips.length === 1 ? " Trip" : " Trips"}
+              </span>
               <button
                 type="button"
-                onClick={
-                  handleCreateTrip
-                }
+                className="trip-refresh-button"
+                disabled={refreshing}
+                onClick={() => fetchTrips(true)}
+                aria-label="Refresh trips"
               >
-                <Plus
-                  size={15}
-                />
-                Tracking Input
+                <RefreshCw size={15} className={refreshing ? "spin" : ""} />
               </button>
             </div>
-          )}
-        </div>
-      </section>
+          </header>
+          {/* =================================
+          ERROR
+      ================================= */}
+          {error && <div className="trip-page-error">{error}</div>}
+          {/* =================================
+          LIST CARD
+      ================================= */}
+          <section className="trip-table-card">
+            <div className="trip-table-header">
+              <div>
+                <h2>All Trips</h2>
+                <p>Complete trip and consignment overview.</p>
+              </div>
+            </div>
+            {/* =============================
+            DESKTOP COLUMN TITLES
+        ============================= */}
+            <div className="trip-list-column-head">
+              <span>Trip</span>
+              <span>Customer</span>
+              <span>Material</span>
+              <span>Movement</span>
+              <span>Route</span>
+              <span>Vehicles</span>
+              <span>Status</span>
+              <span>Created</span>
+              <span className="trip-action-heading">Action</span>
+            </div>
+            {/* =============================
+            BODY
+        ============================= */}
+            <div className="trip-full-list">
+              {loading ? (
+                <div className="trip-page-loading">
+                  <RefreshCw size={20} className="spin" />
+                  <span>Loading trips...</span>
+                </div>
+              ) : trips.length > 0 ? (
+                trips.map((trip, index) => {
+                  const allocatedVehicleCount = safeArray(
+                    trip.allocatedVehicles,
+                  ).length;
+                  const requirementVehicleCount = safeArray(
+                    trip?.vehicleRequirements,
+                  ).reduce((total, requirement) => {
+                    const quantity = Number(
+                      requirement?.quantity ??
+                        requirement?.qty ??
+                        requirement?.requiredQuantity ??
+                        0,
+                    );
+                    return total + (Number.isFinite(quantity) ? quantity : 0);
+                  }, 0);
+                  const requiredVehicleCount =
+                    requirementVehicleCount > 0
+                      ? requirementVehicleCount
+                      : Number(trip?.totalVehicles || 0);
+                  const pendingVehicleCount = Math.max(
+                    requiredVehicleCount - allocatedVehicleCount,
+                    0,
+                  );
+                  const tripStatus = getTripStatus(trip);
+                  const statusClass = getStatusClass(tripStatus);
+                  const movementType = getMovementType(trip);
+                  const movementClass = getMovementClass(movementType);
+                  return (
+                    <article key={trip.id} className="trip-full-row">
+                      {/* =====================
+                        TRIP
+                    ===================== */}
+                      <div className="trip-row-main">
+                        <span className="trip-mobile-label">Trip</span>
+                        <div className="trip-id-box">
+                          <div className="trip-id-icon">
+                            <Route size={16} />
+                          </div>
+                          <div>
+                            <strong>{safeText(trip.tripId)}</strong>
+                            <small>#{index + 1}</small>
+                          </div>
+                        </div>
+                      </div>
+                      {/* =====================
+                        CUSTOMER
+                    ===================== */}
+                      <div className="trip-row-cell">
+                        <span className="trip-mobile-label">Customer</span>
+                        <div className="trip-cell-with-icon">
+                          <UserRound size={14} />
+                          <strong>{safeText(trip.customer)}</strong>
+                        </div>
+                      </div>
+                      {/* =====================
+                        MATERIAL
+                    ===================== */}
+                      <div className="trip-row-cell">
+                        <span className="trip-mobile-label">Material</span>
+                        <div className="trip-cell-with-icon">
+                          <Package size={14} />
+                          <span>{safeText(trip.materialType)}</span>
+                        </div>
+                      </div>
+                      {/* =====================
+                        MOVEMENT
+                    ===================== */}
+                      <div className="trip-row-cell trip-movement-type-cell">
+                        <span className="trip-mobile-label">Movement</span>
+                        <span
+                          className={`trip-movement-type-badge ${movementClass}`}
+                          title={movementType}
+                        >
+                          <Navigation size={12} />
+                          <span>{movementType}</span>
+                        </span>
+                      </div>
+                      {/* =====================
+                        ROUTE
+                    ===================== */}
+                      <div className="trip-row-cell trip-route-cell">
+                        <span className="trip-mobile-label">Route</span>
+                        <div className="trip-row-route">
+                          <MapPin size={14} />
+                          <span>{safeText(trip.origin)}</span>
+                          <ChevronRight size={13} />
+                          <span>{safeText(trip.destination)}</span>
+                        </div>
+                      </div>
+                      {/* =====================
+                        VEHICLES
+                    ===================== */}
+                      <div className="trip-row-cell">
+                        <span className="trip-mobile-label">Vehicles</span>
+                        {isCraneTrip(trip) ? (
+                          <button
+                            type="button"
+                            className="trip-row-vehicle-count"
+                            style={{ cursor: "pointer", fontFamily: "inherit" }}
+                            onClick={(event) =>
+                              handleCraneVehicles(event, trip)
+                            }
+                            title="Open Crane Vehicles"
+                          >
+                            <Truck size={14} />
+                            {allocatedVehicleCount}{" "}
+                            {allocatedVehicleCount === 1
+                              ? "Vehicle"
+                              : "Vehicles"}
+                          </button>
+                        ) : (
+                          <span className="trip-row-vehicle-count">
+                            <Truck size={14} />
+                            {allocatedVehicleCount}/{requiredVehicleCount}
+                          </span>
+                        )}
+                        {!isCraneTrip(trip) && pendingVehicleCount > 0 && (
+                          <small className="trip-row-vehicle-pending">
+                            {pendingVehicleCount} Pending
+                          </small>
+                        )}
+                      </div>
+                      {/* =====================
+                        STATUS
+                    ===================== */}
+                      <div className="trip-row-cell">
+                        <span className="trip-mobile-label">Status</span>
+                        <span className={`trip-status-badge ${statusClass}`}>
+                          {tripStatus}
+                        </span>
+                      </div>
+                      {/* =====================
+                        CREATED DATE
+                    ===================== */}
+                      <div className="trip-row-cell">
+                        <span className="trip-mobile-label">Created</span>
+                        <div className="trip-date-cell">
+                          <CalendarDays size={13} />
+                          <span>{formatDate(trip.createdAt)}</span>
+                        </div>
+                      </div>
+                      {/* =====================
+                        MANAGE
+                    ===================== */}
+                      <div className="trip-row-actions">
+                        <span className="trip-mobile-label">Action</span>
+                        <div className="trip-action-buttons">
+                          <button
+                            type="button"
+                            className="trip-action-button allocate"
+                            onClick={() => handleAllocateTrip(trip)}
+                            title="Allocate Vehicle"
+                          >
+                            <Truck size={13} />
+                            <span>Allocate</span>
+                          </button>
+                          <button
+                            type="button"
+                            className="trip-action-button movement"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              if (isCraneTrip(trip))
+                                handleCraneVehicles(event, trip);
+                              else handleMovementTrip(trip);
+                            }}
+                            title={
+                              isCraneTrip(trip)
+                                ? "View Crane Vehicles"
+                                : "Update Movement"
+                            }
+                          >
+                            {isCraneTrip(trip) ? (
+                              <Truck size={13} />
+                            ) : (
+                              <Navigation size={13} />
+                            )}
+                            <span>
+                              {isCraneTrip(trip) ? "Vehicles" : "Movement"}
+                            </span>
+                          </button>
+                        </div>
+                      </div>
+                    </article>
+                  );
+                })
+              ) : (
+                <div className="trip-empty-state">
+                  <div className="trip-empty-icon">
+                    <Truck size={24} />
+                  </div>
+                  <strong>No Trips Found</strong>
+                  <p>
+                    Orders will appear here after they are placed and released
+                    to Tracking.
+                  </p>
+                  <button type="button" onClick={handleCreateTrip}>
+                    <Plus size={15} />
+                    Tracking Input
+                  </button>
+                </div>
+              )}
+            </div>
+          </section>
+        </>
+      )}
       {movementTrip && (
         <div
           className="trip-movement-overlay"
-          role="dialog"
-          aria-modal="true"
+          role={movementOnly ? "region" : "dialog"}
+          aria-modal={movementOnly ? undefined : true}
           onMouseDown={(event) => {
-            if (event.target === event.currentTarget) closeMovementPopup();
+            if (!movementOnly && event.target === event.currentTarget)
+              closeMovementPopup();
           }}
         >
           <div className="trip-movement-modal">
             <header className="trip-movement-head">
               <div className="trip-movement-title">
-                <span className="trip-movement-title-icon"><Navigation size={18} /></span>
+                <span className="trip-movement-title-icon">
+                  <Navigation size={18} />
+                </span>
                 <div>
                   <small>VEHICLE MOVEMENT</small>
                   <h2>{safeText(movementTrip.tripId)}</h2>
-                  <p>{safeText(movementTrip.origin)} → {safeText(movementTrip.destination)}</p>
+                  <p>
+                    {safeText(movementTrip.origin)} →{" "}
+                    {safeText(movementTrip.destination)}
+                  </p>
                 </div>
               </div>
-              <button type="button" className="trip-movement-close" onClick={closeMovementPopup} aria-label="Close">
+              <button
+                type="button"
+                className="trip-movement-close"
+                onClick={closeMovementPopup}
+                aria-label="Close"
+              >
                 <X size={18} />
               </button>
             </header>
             <div className="trip-movement-body">
               {safeArray(movementTrip.allocatedVehicles).length === 0 ? (
-                <div className="trip-movement-empty">No allocated vehicles are available for this trip.</div>
+                <div className="trip-movement-empty">
+                  No allocated vehicles are available for this trip.
+                </div>
               ) : (
                 <>
                   <div className="trip-movement-vehicle-tabs">
-                    {safeArray(movementTrip.allocatedVehicles).map((vehicle, index) => {
-                      const id = vehicle.allocationId || vehicle._id || `vehicle-${index}`;
-                      const latest = getLatestTracking(vehicle);
-                      return (
-                        <button
-                          type="button"
-                          key={id}
-                          className={`trip-movement-vehicle-tab ${movementVehicleId === id ? "active" : ""}`}
-                          onClick={() => selectMovementVehicle(vehicle)}
-                        >
-                          <Truck size={14} />
-                          <span>
-                            <strong>{safeText(vehicle.vehicleNumber, `Vehicle ${index + 1}`)}</strong>
-                            {safeArray(vehicle.replacementHistory).length > 0 && (
-                              <em className="trip-vehicle-replaced-badge">
-                                Replaced {vehicle.replacementCount || vehicle.replacementHistory.length}
-                              </em>
-                            )}
-                            <small>{getVehicleDisplayStatus(vehicle)}</small>
-                          </span>
-                        </button>
-                      );
-                    })}
+                    {safeArray(movementTrip.allocatedVehicles).map(
+                      (vehicle, index) => {
+                        const id =
+                          vehicle.allocationId ||
+                          vehicle._id ||
+                          `vehicle-${index}`;
+                        const latest = getLatestTracking(vehicle);
+                        return (
+                          <button
+                            type="button"
+                            key={id}
+                            className={`trip-movement-vehicle-tab ${movementVehicleId === id ? "active" : ""}`}
+                            onClick={() => selectMovementVehicle(vehicle)}
+                          >
+                            <Truck size={14} />
+                            <span>
+                              <strong>
+                                {safeText(
+                                  vehicle.vehicleNumber,
+                                  `Vehicle ${index + 1}`,
+                                )}
+                              </strong>
+                              {safeArray(vehicle.replacementHistory).length >
+                                0 && (
+                                <em className="trip-vehicle-replaced-badge">
+                                  Replaced{" "}
+                                  {vehicle.replacementCount ||
+                                    vehicle.replacementHistory.length}
+                                </em>
+                              )}
+                              <small>{getVehicleDisplayStatus(vehicle)}</small>
+                            </span>
+                          </button>
+                        );
+                      },
+                    )}
                   </div>
                   {(() => {
-                    const vehicle = safeArray(movementTrip.allocatedVehicles).find(
-                      (item) => (item.allocationId || item._id) === movementVehicleId
+                    const vehicle = safeArray(
+                      movementTrip.allocatedVehicles,
+                    ).find(
+                      (item) =>
+                        (item.allocationId || item._id) === movementVehicleId,
                     );
                     if (!vehicle || !movementForm) return null;
                     const latest = getLatestTracking(vehicle);
                     const unloadingEnabled =
-                      String(latest?.status || "").trim().toLowerCase() === "reached" ||
-                      String(movementForm.status || "").trim().toLowerCase() === "reached";
+                      String(latest?.status || "")
+                        .trim()
+                        .toLowerCase() === "reached" ||
+                      String(movementForm.status || "")
+                        .trim()
+                        .toLowerCase() === "reached";
                     const unloadingCompleted =
-                      String(movementForm.unloadingStatus || vehicle?.unloading?.status || "")
+                      String(
+                        movementForm.unloadingStatus ||
+                          vehicle?.unloading?.status ||
+                          "",
+                      )
                         .trim()
                         .toLowerCase() === "completed";
                     const history = buildEveryDayHistory(
                       vehicle.dailyTracking,
                       movementForm.loadingPointInDate,
                       movementForm.unloadingPointOutDate,
-                      ewayToday
+                      ewayToday,
                     );
-                    const historyDayCount = new Set(history.map((item) => String(item.date || "").slice(0, 10))).size;
-                    const savedUpdateCount = safeArray(vehicle.dailyTracking).length;
+                    const historyDayCount = new Set(
+                      history.map((item) =>
+                        String(item.date || "").slice(0, 10),
+                      ),
+                    ).size;
+                    const savedUpdateCount = safeArray(
+                      vehicle.dailyTracking,
+                    ).length;
                     return (
                       <>
                         <section className="trip-movement-summary">
-                          <div><span>Vehicle</span><strong><Truck size={13} />{safeText(vehicle.vehicleNumber)}</strong></div>
-                          <div><span>Current Location</span><strong><MapPin size={13} />{safeText(latest?.currentLocation)}</strong></div>
-                          <div><span>Running KM</span><strong><Route size={13} />{latest?.runningKm ?? 0} KM</strong></div>
-                          <div><span>Status</span><strong>{getVehicleDisplayStatus(vehicle)}</strong></div>
-                          <div><span>Driver</span><strong><UserRound size={13} />{safeText(vehicle?.driver?.name)}</strong></div>
+                          <div>
+                            <span>Vehicle</span>
+                            <strong>
+                              <Truck size={13} />
+                              {safeText(vehicle.vehicleNumber)}
+                            </strong>
+                          </div>
+                          <div>
+                            <span>Current Location</span>
+                            <strong>
+                              <MapPin size={13} />
+                              {safeText(latest?.currentLocation)}
+                            </strong>
+                          </div>
+                          <div>
+                            <span>Running KM</span>
+                            <strong>
+                              <Route size={13} />
+                              {latest?.runningKm ?? 0} KM
+                            </strong>
+                          </div>
+                          <div>
+                            <span>Status</span>
+                            <strong>{getVehicleDisplayStatus(vehicle)}</strong>
+                          </div>
+                          <div>
+                            <span>Driver</span>
+                            <strong>
+                              <UserRound size={13} />
+                              {safeText(vehicle?.driver?.name)}
+                            </strong>
+                          </div>
                         </section>
                         <section className="trip-movement-form-card">
                           <div className="trip-movement-section-title">
-                            <div><small>DAILY TRACKING</small><h3>Add Movement Details</h3></div>
-                            <span>Day {tripDaysThroughPointOut(movementForm.loadingPointInDate, movementForm.unloadingPointOutDate, movementForm.date)}</span>
+                            <div>
+                              <small>DAILY TRACKING</small>
+                              <h3>Add Movement Details</h3>
+                            </div>
+                            <span>
+                              Day{" "}
+                              {tripDaysThroughPointOut(
+                                movementForm.loadingPointInDate,
+                                movementForm.unloadingPointOutDate,
+                                movementForm.date,
+                              )}
+                            </span>
                           </div>
                           <div className="trip-movement-form-grid">
-                            <label><span>Date</span><input type="date" value={movementForm.date} onChange={(e) => updateMovementField("date", e.target.value)} /></label>
-                            <label><span>Day</span><input type="number" min="1" value={tripDaysThroughPointOut(movementForm.loadingPointInDate, movementForm.unloadingPointOutDate, movementForm.date)} readOnly /></label>
                             <label>
-                              <span>{movementForm.day === 1 ? "Starting Odometer KM *" : "Yesterday KM"}</span>
+                              <span>Date</span>
+                              <input
+                                type="date"
+                                value={movementForm.date}
+                                onChange={(e) =>
+                                  updateMovementField("date", e.target.value)
+                                }
+                              />
+                            </label>
+                            <label>
+                              <span>Day</span>
+                              <input
+                                type="number"
+                                min="1"
+                                value={tripDaysThroughPointOut(
+                                  movementForm.loadingPointInDate,
+                                  movementForm.unloadingPointOutDate,
+                                  movementForm.date,
+                                )}
+                                readOnly
+                              />
+                            </label>
+                            <label>
+                              <span>
+                                {movementForm.day === 1
+                                  ? "Starting Odometer KM *"
+                                  : "Yesterday KM"}
+                              </span>
                               <input
                                 type="number"
                                 min="0"
                                 value={movementForm.yesterdayKm}
-                                onChange={(e) => updateMovementField("yesterdayKm", e.target.value)}
+                                onChange={(e) =>
+                                  updateMovementField(
+                                    "yesterdayKm",
+                                    e.target.value,
+                                  )
+                                }
                                 readOnly={movementForm.day > 1}
-                                placeholder={movementForm.day === 1 ? "Enter vehicle odometer KM" : ""}
+                                placeholder={
+                                  movementForm.day === 1
+                                    ? "Enter vehicle odometer KM"
+                                    : ""
+                                }
                               />
                             </label>
-                            <label><span>Today KM *</span><input type="number" min={movementForm.yesterdayKm || 0} value={movementForm.todayKm} onChange={(e) => updateMovementField("todayKm", e.target.value)} placeholder="Enter cumulative KM" /></label>
-                            <label><span>Yesterday Location</span><input value={movementForm.yesterdayLocation} onChange={(e) => updateMovementField("yesterdayLocation", e.target.value)} /></label>
-                            <label><span>Current Location *</span><input value={movementForm.currentLocation} onChange={(e) => updateMovementField("currentLocation", e.target.value)} placeholder="Enter current location" /></label>
-                            <label><span>Status</span><select value={movementForm.status} onChange={(e) => updateMovementField("status", e.target.value)}><option>Idle</option><option>Moving</option><option>Stopped</option><option>Breakdown</option><option>Reached</option></select></label>
-                            <label><span>Updated By *</span><input value={movementForm.updatedBy} onChange={(e) => updateMovementField("updatedBy", e.target.value)} placeholder="Name" /></label>
-                            <label><span>Remarks</span><input value={movementForm.remarks} onChange={(e) => updateMovementField("remarks", e.target.value)} placeholder="Movement remarks" /></label>
+                            <label>
+                              <span>Today KM *</span>
+                              <input
+                                type="number"
+                                min={movementForm.yesterdayKm || 0}
+                                value={movementForm.todayKm}
+                                onChange={(e) =>
+                                  updateMovementField("todayKm", e.target.value)
+                                }
+                                placeholder="Enter cumulative KM"
+                              />
+                            </label>
+                            <label>
+                              <span>Yesterday Location</span>
+                              <input
+                                value={movementForm.yesterdayLocation}
+                                onChange={(e) =>
+                                  updateMovementField(
+                                    "yesterdayLocation",
+                                    e.target.value,
+                                  )
+                                }
+                              />
+                            </label>
+                            <label>
+                              <span>Current Location *</span>
+                              <input
+                                value={movementForm.currentLocation}
+                                onChange={(e) =>
+                                  updateMovementField(
+                                    "currentLocation",
+                                    e.target.value,
+                                  )
+                                }
+                                placeholder="Enter current location"
+                              />
+                            </label>
+                            <label>
+                              <span>Status</span>
+                              <select
+                                value={movementForm.status}
+                                onChange={(e) =>
+                                  updateMovementField("status", e.target.value)
+                                }
+                              >
+                                <option>Idle</option>
+                                <option>Moving</option>
+                                <option>Stopped</option>
+                                <option>Breakdown</option>
+                                <option>Reached</option>
+                              </select>
+                            </label>
+                            <label>
+                              <span>Updated By *</span>
+                              <input
+                                value={movementForm.updatedBy}
+                                onChange={(e) =>
+                                  updateMovementField(
+                                    "updatedBy",
+                                    e.target.value,
+                                  )
+                                }
+                                placeholder="Name"
+                              />
+                            </label>
+                            <label>
+                              <span>Remarks</span>
+                              <input
+                                value={movementForm.remarks}
+                                onChange={(e) =>
+                                  updateMovementField("remarks", e.target.value)
+                                }
+                                placeholder="Movement remarks"
+                              />
+                            </label>
                           </div>
                         </section>
                         <section className="trip-movement-operation-grid">
                           <div className="trip-movement-operation-card">
                             <div className="trip-movement-operation-head">
-                              <div><small>VEHICLE OPERATION</small><h3>Loading Details</h3></div>
+                              <div>
+                                <small>VEHICLE OPERATION</small>
+                                <h3>Loading Details</h3>
+                              </div>
                               <span>{movementForm.loadingStatus}</span>
                             </div>
                             <div className="trip-movement-operation-fields">
-                              <label><span>Status</span>
-                                <select value={movementForm.loadingStatus} onChange={(e) => updateMovementField("loadingStatus", e.target.value)}>
-                                  <option>Pending</option><option>In Progress</option><option>Completed</option>
+                              <label>
+                                <span>Status</span>
+                                <select
+                                  value={movementForm.loadingStatus}
+                                  onChange={(e) =>
+                                    updateMovementField(
+                                      "loadingStatus",
+                                      e.target.value,
+                                    )
+                                  }
+                                >
+                                  <option>Pending</option>
+                                  <option>In Progress</option>
+                                  <option>Completed</option>
                                 </select>
                               </label>
-                              <label><span>Point In Date</span><input type="date" value={movementForm.loadingPointInDate} onChange={(e) => updateMovementField("loadingPointInDate", e.target.value)} /></label>
-                              <label><span>Loading Date</span><input type="date" value={movementForm.loadingDate} onChange={(e) => updateMovementField("loadingDate", e.target.value)} /></label>
-                              <label><span>Point Out Date</span><input type="date" value={movementForm.loadingPointOutDate} onChange={(e) => updateMovementField("loadingPointOutDate", e.target.value)} /></label>
-                              <label><span>Halting Days</span><input type="number" min="0" value={movementForm.loadingHaltingDays} readOnly /></label>
-                              <label className="remarks"><span>Remarks</span><input value={movementForm.loadingRemarks} onChange={(e) => updateMovementField("loadingRemarks", e.target.value)} placeholder="Loading Details remarks" /></label>
+                              <label>
+                                <span>Point In Date</span>
+                                <input
+                                  type="date"
+                                  value={movementForm.loadingPointInDate}
+                                  onChange={(e) =>
+                                    updateMovementField(
+                                      "loadingPointInDate",
+                                      e.target.value,
+                                    )
+                                  }
+                                />
+                              </label>
+                              <label>
+                                <span>Loading Date</span>
+                                <input
+                                  type="date"
+                                  value={movementForm.loadingDate}
+                                  onChange={(e) =>
+                                    updateMovementField(
+                                      "loadingDate",
+                                      e.target.value,
+                                    )
+                                  }
+                                />
+                              </label>
+                              <label>
+                                <span>Point Out Date</span>
+                                <input
+                                  type="date"
+                                  value={movementForm.loadingPointOutDate}
+                                  onChange={(e) =>
+                                    updateMovementField(
+                                      "loadingPointOutDate",
+                                      e.target.value,
+                                    )
+                                  }
+                                />
+                              </label>
+                              <label>
+                                <span>Halting Days</span>
+                                <input
+                                  type="number"
+                                  min="0"
+                                  value={movementForm.loadingHaltingDays}
+                                  readOnly
+                                />
+                              </label>
+                              <label className="remarks">
+                                <span>Remarks</span>
+                                <input
+                                  value={movementForm.loadingRemarks}
+                                  onChange={(e) =>
+                                    updateMovementField(
+                                      "loadingRemarks",
+                                      e.target.value,
+                                    )
+                                  }
+                                  placeholder="Loading Details remarks"
+                                />
+                              </label>
                             </div>
                           </div>
                           <div className="trip-movement-operation-card">
                             <div className="trip-movement-operation-head">
-                              <div><small>VEHICLE OPERATION</small><h3>Unloading Details</h3></div>
+                              <div>
+                                <small>VEHICLE OPERATION</small>
+                                <h3>Unloading Details</h3>
+                              </div>
                               <span>{movementForm.unloadingStatus}</span>
                             </div>
                             {!unloadingEnabled && (
                               <div className="trip-unloading-lock">
-                                Unloading will be available after the vehicle reaches the final destination.
+                                Unloading will be available after the vehicle
+                                reaches the final destination.
                               </div>
                             )}
                             <div className="trip-movement-operation-fields">
-                              <label><span>Status</span>
-                                <select value={movementForm.unloadingStatus} disabled={!unloadingEnabled} onChange={(e) => updateMovementField("unloadingStatus", e.target.value)}>
-                                  <option>Pending</option><option>In Progress</option><option>Completed</option>
+                              <label>
+                                <span>Status</span>
+                                <select
+                                  value={movementForm.unloadingStatus}
+                                  disabled={!unloadingEnabled}
+                                  onChange={(e) =>
+                                    updateMovementField(
+                                      "unloadingStatus",
+                                      e.target.value,
+                                    )
+                                  }
+                                >
+                                  <option>Pending</option>
+                                  <option>In Progress</option>
+                                  <option>Completed</option>
                                 </select>
                               </label>
-                              <label><span>Point In Date</span><input type="date" disabled={!unloadingEnabled} value={movementForm.unloadingPointInDate} onChange={(e) => updateMovementField("unloadingPointInDate", e.target.value)} /></label>
-                              <label><span>Unloading Date</span><input type="date" disabled={!unloadingEnabled} value={movementForm.unloadingDate} onChange={(e) => updateMovementField("unloadingDate", e.target.value)} /></label>
-                              <label><span>Point Out Date</span><input type="date" disabled={!unloadingEnabled} value={movementForm.unloadingPointOutDate} onChange={(e) => updateMovementField("unloadingPointOutDate", e.target.value)} /></label>
-                              <label><span>Halting Days</span><input type="number" min="0" disabled={!unloadingEnabled} value={movementForm.unloadingHaltingDays} readOnly /></label>
-                              <label className="remarks"><span>Remarks</span><input disabled={!unloadingEnabled} value={movementForm.unloadingRemarks} onChange={(e) => updateMovementField("unloadingRemarks", e.target.value)} placeholder="Unloading Details remarks" /></label>
+                              <label>
+                                <span>Point In Date</span>
+                                <input
+                                  type="date"
+                                  disabled={!unloadingEnabled}
+                                  value={movementForm.unloadingPointInDate}
+                                  onChange={(e) =>
+                                    updateMovementField(
+                                      "unloadingPointInDate",
+                                      e.target.value,
+                                    )
+                                  }
+                                />
+                              </label>
+                              <label>
+                                <span>Unloading Date</span>
+                                <input
+                                  type="date"
+                                  disabled={!unloadingEnabled}
+                                  value={movementForm.unloadingDate}
+                                  onChange={(e) =>
+                                    updateMovementField(
+                                      "unloadingDate",
+                                      e.target.value,
+                                    )
+                                  }
+                                />
+                              </label>
+                              <label>
+                                <span>Point Out Date</span>
+                                <input
+                                  type="date"
+                                  disabled={!unloadingEnabled}
+                                  value={movementForm.unloadingPointOutDate}
+                                  onChange={(e) =>
+                                    updateMovementField(
+                                      "unloadingPointOutDate",
+                                      e.target.value,
+                                    )
+                                  }
+                                />
+                              </label>
+                              <label>
+                                <span>Halting Days</span>
+                                <input
+                                  type="number"
+                                  min="0"
+                                  disabled={!unloadingEnabled}
+                                  value={movementForm.unloadingHaltingDays}
+                                  readOnly
+                                />
+                              </label>
+                              <label className="remarks">
+                                <span>Remarks</span>
+                                <input
+                                  disabled={!unloadingEnabled}
+                                  value={movementForm.unloadingRemarks}
+                                  onChange={(e) =>
+                                    updateMovementField(
+                                      "unloadingRemarks",
+                                      e.target.value,
+                                    )
+                                  }
+                                  placeholder="Unloading Details remarks"
+                                />
+                              </label>
                             </div>
                           </div>
                         </section>
@@ -1998,8 +2084,14 @@ const Tripdetails = () => {
                                   <small>LORRY RECEIPT</small>
                                   <h4>LR Details</h4>
                                 </div>
-                                <b className={movementForm.lrNumber ? "uploaded" : ""}>
-                                  {movementForm.lrNumber ? "Entered" : "Pending"}
+                                <b
+                                  className={
+                                    movementForm.lrNumber ? "uploaded" : ""
+                                  }
+                                >
+                                  {movementForm.lrNumber
+                                    ? "Entered"
+                                    : "Pending"}
                                 </b>
                               </div>
                               <div className="trip-movement-document-fields">
@@ -2007,7 +2099,12 @@ const Tripdetails = () => {
                                   <span>LR Number *</span>
                                   <input
                                     value={movementForm.lrNumber}
-                                    onChange={(e) => updateMovementField("lrNumber", e.target.value)}
+                                    onChange={(e) =>
+                                      updateMovementField(
+                                        "lrNumber",
+                                        e.target.value,
+                                      )
+                                    }
                                     placeholder="Enter LR number"
                                   />
                                 </label>
@@ -2016,14 +2113,24 @@ const Tripdetails = () => {
                                   <input
                                     type="date"
                                     value={movementForm.lrDate}
-                                    onChange={(e) => updateMovementField("lrDate", e.target.value)}
+                                    onChange={(e) =>
+                                      updateMovementField(
+                                        "lrDate",
+                                        e.target.value,
+                                      )
+                                    }
                                   />
                                 </label>
                                 <label>
                                   <span>Remarks</span>
                                   <input
                                     value={movementForm.lrRemarks}
-                                    onChange={(e) => updateMovementField("lrRemarks", e.target.value)}
+                                    onChange={(e) =>
+                                      updateMovementField(
+                                        "lrRemarks",
+                                        e.target.value,
+                                      )
+                                    }
                                     placeholder="Enter remarks"
                                   />
                                 </label>
@@ -2038,8 +2145,14 @@ const Tripdetails = () => {
                                   <small>E-WAY BILL</small>
                                   <h4>E-Way Bill Details</h4>
                                 </div>
-                                <b className={`eway-status-${getEwayBillStatus(movementForm.ewayBillNumber, movementForm.ewayBillValidUpto, ewayToday).toLowerCase().replace(/\s+/g, "-")}`} >
-                                  {getEwayBillHeading(movementForm.ewayBillNumber, movementForm.ewayBillValidUpto, ewayToday)}
+                                <b
+                                  className={`eway-status-${getEwayBillStatus(movementForm.ewayBillNumber, movementForm.ewayBillValidUpto, ewayToday).toLowerCase().replace(/\s+/g, "-")}`}
+                                >
+                                  {getEwayBillHeading(
+                                    movementForm.ewayBillNumber,
+                                    movementForm.ewayBillValidUpto,
+                                    ewayToday,
+                                  )}
                                 </b>
                               </div>
                               <div className="trip-movement-document-fields">
@@ -2047,7 +2160,12 @@ const Tripdetails = () => {
                                   <span>E-Way Bill Number</span>
                                   <input
                                     value={movementForm.ewayBillNumber}
-                                    onChange={(e) => updateMovementField("ewayBillNumber", e.target.value)}
+                                    onChange={(e) =>
+                                      updateMovementField(
+                                        "ewayBillNumber",
+                                        e.target.value,
+                                      )
+                                    }
                                     placeholder="Enter E-Way Bill number"
                                   />
                                 </label>
@@ -2056,13 +2174,22 @@ const Tripdetails = () => {
                                   <input
                                     type="date"
                                     value={movementForm.ewayBillValidUpto}
-                                    onChange={(e) => updateMovementField("ewayBillValidUpto", e.target.value)}
+                                    onChange={(e) =>
+                                      updateMovementField(
+                                        "ewayBillValidUpto",
+                                        e.target.value,
+                                      )
+                                    }
                                   />
                                 </label>
                                 <label>
                                   <span>Status</span>
                                   <input
-                                    value={getEwayBillStatus(movementForm.ewayBillNumber, movementForm.ewayBillValidUpto, ewayToday)}
+                                    value={getEwayBillStatus(
+                                      movementForm.ewayBillNumber,
+                                      movementForm.ewayBillValidUpto,
+                                      ewayToday,
+                                    )}
                                     readOnly
                                     aria-label="Automatically calculated E-Way Bill status"
                                   />
@@ -2078,8 +2205,18 @@ const Tripdetails = () => {
                                   <small>PROOF OF DELIVERY</small>
                                   <h4>POD Document</h4>
                                 </div>
-                                <b className={vehicle?.pod?.fileName || movementForm.podFile ? "uploaded" : ""}>
-                                  {vehicle?.pod?.fileName || movementForm.podFile ? "Uploaded" : "Pending"}
+                                <b
+                                  className={
+                                    vehicle?.pod?.fileName ||
+                                    movementForm.podFile
+                                      ? "uploaded"
+                                      : ""
+                                  }
+                                >
+                                  {vehicle?.pod?.fileName ||
+                                  movementForm.podFile
+                                    ? "Uploaded"
+                                    : "Pending"}
                                 </b>
                               </div>
                               <div className="trip-pod-upload-row">
@@ -2089,30 +2226,51 @@ const Tripdetails = () => {
                                   </span>
                                   <div>
                                     <small>POD FILE</small>
-                                    <strong title={movementForm.podFile?.name || vehicle?.pod?.fileName || ""}>
-                                      {movementForm.podFile?.name || vehicle?.pod?.fileName || "No POD file selected"}
+                                    <strong
+                                      title={
+                                        movementForm.podFile?.name ||
+                                        vehicle?.pod?.fileName ||
+                                        ""
+                                      }
+                                    >
+                                      {movementForm.podFile?.name ||
+                                        vehicle?.pod?.fileName ||
+                                        "No POD file selected"}
                                     </strong>
                                   </div>
                                 </div>
                                 <div className="trip-pod-actions">
                                   <label
                                     className={`trip-document-upload-button ${!unloadingCompleted ? "disabled" : ""}`}
-                                    title={!unloadingCompleted ? "Complete unloading before uploading POD" : ""}
+                                    title={
+                                      !unloadingCompleted
+                                        ? "Complete unloading before uploading POD"
+                                        : ""
+                                    }
                                   >
                                     <Upload size={13} />
-                                    {vehicle?.pod?.fileName ? "Replace" : "Choose File"}
+                                    {vehicle?.pod?.fileName
+                                      ? "Replace"
+                                      : "Choose File"}
                                     <input
                                       type="file"
                                       accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
                                       disabled={!unloadingCompleted}
-                                      onChange={(e) => updateMovementField("podFile", e.target.files?.[0] || null)}
+                                      onChange={(e) =>
+                                        updateMovementField(
+                                          "podFile",
+                                          e.target.files?.[0] || null,
+                                        )
+                                      }
                                     />
                                   </label>
                                   {vehicle?.pod?.fileName && (
                                     <button
                                       type="button"
                                       className="trip-document-view-button"
-                                      onClick={() => viewMovementDocument(vehicle, "pod")}
+                                      onClick={() =>
+                                        viewMovementDocument(vehicle, "pod")
+                                      }
                                     >
                                       <Eye size={13} />
                                       View
@@ -2124,30 +2282,67 @@ const Tripdetails = () => {
                           </div>
                         </section>
                         <section className="trip-movement-history">
-                          <div className="trip-movement-section-title"><div><small>HISTORY</small><h3>Movement History</h3></div><span>{historyDayCount} Days · {savedUpdateCount} Updates</span></div>
+                          <div className="trip-movement-section-title">
+                            <div>
+                              <small>HISTORY</small>
+                              <h3>Movement History</h3>
+                            </div>
+                            <span>
+                              {historyDayCount} Days · {savedUpdateCount}{" "}
+                              Updates
+                            </span>
+                          </div>
                           {history.length ? (
                             <div className="trip-movement-history-table">
-                              <div className="trip-movement-history-head"><span>Date</span><span>Day</span><span>Location</span><span>KM</span><span>Status</span><span>Remarks</span></div>
+                              <div className="trip-movement-history-head">
+                                <span>Date</span>
+                                <span>Day</span>
+                                <span>Location</span>
+                                <span>KM</span>
+                                <span>Status</span>
+                                <span>Remarks</span>
+                              </div>
                               {history.map((item, index) => (
-                                <div className="trip-movement-history-row" key={`${item.date || "movement"}-${index}`}>
+                                <div
+                                  className="trip-movement-history-row"
+                                  key={`${item.date || "movement"}-${index}`}
+                                >
                                   <span>{formatDate(item.date)}</span>
                                   <span>Day {item.day ?? "-"}</span>
-                                  <span>{item.isMissingDay ? "—" : safeText(item.currentLocation)}</span>
-                                  <span>{item.isMissingDay ? "—" : `${item.runningKm ?? 0} KM`}</span>
+                                  <span>
+                                    {item.isMissingDay
+                                      ? "—"
+                                      : safeText(item.currentLocation)}
+                                  </span>
+                                  <span>
+                                    {item.isMissingDay
+                                      ? "—"
+                                      : `${item.runningKm ?? 0} KM`}
+                                  </span>
                                   <span>
                                     {item.isMissingDay ? (
                                       <span>No update</span>
                                     ) : (
-                                      <b className={`trip-history-status ${getStatusClass(item.status)}`}>
+                                      <b
+                                        className={`trip-history-status ${getStatusClass(item.status)}`}
+                                      >
                                         {safeText(item.status, "Idle")}
                                       </b>
                                     )}
                                   </span>
-                                  <span>{item.isMissingDay ? "No update recorded" : safeText(item.remarks)}</span>
+                                  <span>
+                                    {item.isMissingDay
+                                      ? "No update recorded"
+                                      : safeText(item.remarks)}
+                                  </span>
                                 </div>
                               ))}
                             </div>
-                          ) : <div className="trip-movement-empty small">No movement history yet.</div>}
+                          ) : (
+                            <div className="trip-movement-empty small">
+                              No movement history yet.
+                            </div>
+                          )}
                         </section>
                         {/* =========================================
                       VEHICLE REPLACEMENT HISTORY
@@ -2155,30 +2350,36 @@ const Tripdetails = () => {
                         <section className="movement-section movement-replacement-history-section">
                           <div className="movement-section-header">
                             <div>
-                              <span className="movement-section-eyebrow">HISTORY</span>
+                              <span className="movement-section-eyebrow">
+                                HISTORY
+                              </span>
                               <h3>Vehicle Replacement History</h3>
                             </div>
                             <span className="movement-history-count">
-                              {safeArray(
-                                safeArray(movementTrip?.allocatedVehicles).find(
-                                  (item) =>
-                                    (item.allocationId || item._id) ===
-                                    movementVehicleId
-                                )?.replacementHistory
-                              ).length}{" "}
+                              {
+                                safeArray(
+                                  safeArray(
+                                    movementTrip?.allocatedVehicles,
+                                  ).find(
+                                    (item) =>
+                                      (item.allocationId || item._id) ===
+                                      movementVehicleId,
+                                  )?.replacementHistory,
+                                ).length
+                              }{" "}
                               Replacements
                             </span>
                           </div>
                           {(() => {
                             const selectedVehicle = safeArray(
-                              movementTrip?.allocatedVehicles
+                              movementTrip?.allocatedVehicles,
                             ).find(
                               (item) =>
                                 (item.allocationId || item._id) ===
-                                movementVehicleId
+                                movementVehicleId,
                             );
                             const replacementHistory = safeArray(
-                              selectedVehicle?.replacementHistory
+                              selectedVehicle?.replacementHistory,
                             )
                               .slice()
                               .reverse();
@@ -2223,7 +2424,8 @@ const Tripdetails = () => {
                                       </strong>
                                       <span>
                                         {safeText(
-                                          item?.replacementSource || item?.source
+                                          item?.replacementSource ||
+                                            item?.source,
                                         )}
                                       </span>
                                       <span>{safeText(item?.reason)}</span>
@@ -2244,24 +2446,49 @@ const Tripdetails = () => {
             </div>
             <footer className="trip-movement-footer">
               <div className="trip-movement-footer-message">
-                {movementError && <span className="error">{movementError}</span>}
+                {movementError && (
+                  <span className="error">{movementError}</span>
+                )}
               </div>
               <div className="trip-movement-footer-actions">
-                <button type="button" className="trip-movement-cancel" onClick={closeMovementPopup}>Close</button>
+                <button
+                  type="button"
+                  className="trip-movement-cancel"
+                  onClick={closeMovementPopup}
+                >
+                  Close
+                </button>
                 {movementForm && (
-                  <button type="button" className="trip-movement-save" onClick={saveMovement} disabled={movementSaving}>
-                    <Save size={15} />{movementSaving ? "Saving..." : "Save Movement"}
+                  <button
+                    type="button"
+                    className="trip-movement-save"
+                    onClick={saveMovement}
+                    disabled={movementSaving}
+                  >
+                    <Save size={15} />
+                    {movementSaving ? "Saving..." : "Save Movement"}
                   </button>
                 )}
               </div>
             </footer>
             {(movementSuccess || movementError) && (
-              <div className={`trip-movement-toast ${movementError ? "error" : "success"}`}>
+              <div
+                className={`trip-movement-toast ${movementError ? "error" : "success"}`}
+              >
                 <div>
-                  <strong>{movementError ? "Unable to save" : "Saved successfully"}</strong>
+                  <strong>
+                    {movementError ? "Unable to save" : "Saved successfully"}
+                  </strong>
                   <span>{movementError || movementSuccess}</span>
                 </div>
-                <button type="button" onClick={() => { setMovementError(""); setMovementSuccess(""); }} aria-label="Close notification">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMovementError("");
+                    setMovementSuccess("");
+                  }}
+                  aria-label="Close notification"
+                >
                   <X size={14} />
                 </button>
               </div>
@@ -2272,4 +2499,955 @@ const Tripdetails = () => {
     </main>
   );
 };
+const cjBASE = (
+  import.meta.env.VITE_API_URL ||
+  import.meta.env.VITE_API_BASE_URL ||
+  "http://localhost:5000"
+).replace(/\/+$/, "");
+const cjlist = (value) => (Array.isArray(value) ? value : []);
+const cjdisplay = (value) =>
+  value == null || value === "" ? "—" : String(value);
+const cjtoday = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+};
+const cjnewId = () =>
+  globalThis.crypto?.randomUUID?.() ||
+  `CJ-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+const cjlocalTime = (value) => {
+  if (!value) return "";
+  const d = new Date(value);
+  if (!Number.isFinite(d.getTime())) return "";
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}T${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+};
+const cjformatTime = (value) =>
+  value
+    ? new Date(value).toLocaleString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    : "—";
+const cjoperation = (raw = {}) => ({
+  status: raw.status || "Pending",
+  pointInAt: cjlocalTime(raw.pointInAt),
+  completedAt: cjlocalTime(raw.completedAt),
+  pointOutAt: cjlocalTime(raw.pointOutAt),
+  remarks: raw.remarks || "",
+});
+const cjformFor = (record, trip, vehicle) => ({
+  journeyId: record?.journeyId || cjnewId(),
+  revision: record?.revision,
+  date: record?.date || cjtoday(),
+  origin: record?.origin || trip?.origin || "",
+  destination: record?.destination || trip?.destination || "",
+  startKm: record?.startKm ?? "",
+  endKm: record?.endKm ?? "",
+  currentLocation: record?.currentLocation || "",
+  status: record?.status || "Idle",
+  lrNumber: record?.lr?.number || "",
+  lrDate: record?.lr?.date ? String(record.lr.date).slice(0, 10) : "",
+  lrRemarks: record?.lr?.remarks || "",
+  ewayBillNumber: record?.ewayBill?.number || "",
+  ewayBillValidUpto: record?.ewayBill?.validUpto
+    ? String(record.ewayBill.validUpto).slice(0, 10)
+    : "",
+  podFile: null,
+  remarks: record?.remarks || "",
+  updatedBy: record?.updatedBy || "",
+  loading: cjoperation(record?.loading),
+  unloading: cjoperation(record?.unloading),
+});
+const cjunwrap = (payload) =>
+  payload?.data?.trip ||
+  payload?.data?.order ||
+  payload?.data ||
+  payload?.trip ||
+  payload?.order ||
+  payload;
+const cjstatuses = [
+  "Idle",
+  "Moving",
+  "Stopped",
+  "Breakdown",
+  "Reached",
+  "Planned",
+  "Loading",
+  "In Transit",
+  "Unloading",
+  "Completed",
+];
+
+const CraneJourneyPopup = () => {
+  const { id, allocationId } = useParams();
+  const navigate = useNavigate();
+  const [trip, setTrip] = useState(null);
+  const [form, setForm] = useState(null);
+  const [selectedId, setSelectedId] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+  const [revision, setRevision] = useState(0);
+  const vehicle = useMemo(
+    () =>
+      cjlist(trip?.allocatedVehicles).find(
+        (v) => String(v.allocationId || v._id) === allocationId,
+      ),
+    [trip, allocationId],
+  );
+  const journeys = useMemo(
+    () =>
+      [...cjlist(vehicle?.craneTrips)].sort(
+        (a, b) =>
+          String(a.date).localeCompare(String(b.date)) ||
+          new Date(a.createdAt) - new Date(b.createdAt),
+      ),
+    [vehicle],
+  );
+  const current = journeys.find((j) => j.journeyId === selectedId);
+  const day = form
+    ? tripDaysThroughPointOut(
+        form.loading.pointInAt,
+        form.unloading.pointOutAt,
+        form.date,
+      )
+    : 1;
+  const history = buildEveryDayHistory(
+    cjlist(current?.history).map((entry) => ({
+      ...entry,
+      runningKm:
+        entry.startKm != null && entry.endKm != null
+          ? entry.endKm - entry.startKm
+          : 0,
+    })),
+    form?.loading?.pointInAt || form?.date || current?.createdAt,
+    form?.unloading?.pointOutAt,
+    cjtoday(),
+  );
+  const previousUpdate = cjlist(current?.history)
+    .filter((entry) => entry.date < (form?.date || ""))
+    .sort(
+      (a, b) =>
+        String(b.date).localeCompare(String(a.date)) ||
+        new Date(b.savedAt) - new Date(a.savedAt),
+    )[0];
+  const unloadingCompleted = form?.unloading?.status === "Completed";
+  const replaced =
+    String(vehicle?.vehicleStatus || "").toLowerCase() === "replaced";
+  const orderCompleted =
+    ["trip complete", "trip completed", "completed"].includes(
+      String(trip?.stage || "").toLowerCase(),
+    ) || String(trip?.status || "").toLowerCase() === "completed";
+  const locked = saving || replaced || orderCompleted;
+  const headers = () => {
+    const token = localStorage.getItem("token");
+    if (!token?.trim())
+      throw new Error("Please sign in with your main administrator account.");
+    return { Authorization: `Bearer ${token}` };
+  };
+  useEffect(() => {
+    const controller = new AbortController();
+    setLoading(true);
+    setError("");
+    setNotice("");
+    setTrip(null);
+    setForm(null);
+    (async () => {
+      try {
+        const path = /^[a-f\d]{24}$/i.test(id || "")
+          ? encodeURIComponent(id)
+          : `trip/${encodeURIComponent(id || "")}`;
+        const response = await fetch(`${cjBASE}/api/triporders/${path}`, {
+          headers: headers(),
+          signal: controller.signal,
+        });
+        const payload = await response.json();
+        if (!response.ok)
+          throw new Error(payload.message || "Unable to load vehicle.");
+        const order = cjunwrap(payload);
+        if (
+          !["crane", "cranemovement"].includes(
+            String(order.movementType || "")
+              .toLowerCase()
+              .replace(/[\s_-]+/g, ""),
+          )
+        )
+          throw new Error("This page is for Crane vehicles only.");
+        const target = cjlist(order.allocatedVehicles).find(
+          (v) => String(v.allocationId || v._id) === allocationId,
+        );
+        if (!target) throw new Error("The selected vehicle was not found.");
+        const latest = [...cjlist(target.craneTrips)].sort(
+          (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt),
+        )[0];
+        if (controller.signal.aborted) return;
+        setTrip(order);
+        setSelectedId(latest?.journeyId || "");
+        setForm(cjformFor(latest, order, target));
+      } catch (err) {
+        if (!controller.signal.aborted)
+          setError(err.message || "Unable to load movement.");
+      } finally {
+        if (!controller.signal.aborted) setLoading(false);
+      }
+    })();
+    return () => controller.abort();
+  }, [id, allocationId, revision]);
+  const setField = (name, value) => {
+    setError("");
+    setNotice("");
+    setForm((previous) => ({ ...previous, [name]: value }));
+  };
+  const setOperation = (section, name, value) => {
+    setError("");
+    setNotice("");
+    setForm((previous) => ({
+      ...previous,
+      [section]: { ...previous[section], [name]: value },
+    }));
+  };
+  const addTrip = () => {
+    setSelectedId("");
+    const next = cjformFor(null, trip, vehicle);
+    next.startKm = journeys[journeys.length - 1]?.endKm ?? "";
+    setForm(next);
+    setError("");
+    setNotice("");
+  };
+  const selectTrip = (record) => {
+    setSelectedId(record.journeyId);
+    setForm(cjformFor(record, trip, vehicle));
+    setError("");
+    setNotice("");
+  };
+  const save = async (event) => {
+    event.preventDefault();
+    if (!form || !vehicle || locked) return;
+    if (
+      !form.origin.trim() ||
+      !form.destination.trim() ||
+      !form.updatedBy.trim() ||
+      !form.currentLocation.trim()
+    ) {
+      setError("From, To, Current Location and Updated By are required.");
+      return;
+    }
+    const parseKm = (value) => (value === "" ? null : Number(value));
+    const startKm = parseKm(form.startKm),
+      endKm = parseKm(form.endKm);
+    if (
+      [startKm, endKm].some(
+        (v) => v != null && (!Number.isFinite(v) || v < 0),
+      ) ||
+      (endKm != null && (startKm == null || endKm < startKm))
+    ) {
+      setError("End KM must be at least Start KM.");
+      return;
+    }
+    if (form.podFile && !unloadingCompleted) {
+      setError("Complete unloading before uploading POD.");
+      return;
+    }
+    if (
+      form.endKm !== "" &&
+      previousUpdate?.endKm != null &&
+      Number(form.endKm) < Number(previousUpdate.endKm)
+    ) {
+      setError("Today KM cannot be less than yesterday KM.");
+      return;
+    }
+    setSaving(true);
+    setError("");
+    setNotice("");
+    try {
+      const convertOperation = (raw) => ({
+        ...raw,
+        ...Object.fromEntries(
+          ["pointInAt", "completedAt", "pointOutAt"].map((key) => [
+            key,
+            raw[key] ? new Date(raw[key]).toISOString() : null,
+          ]),
+        ),
+      });
+      const path = `${cjBASE}/api/triporders/${encodeURIComponent(trip._id)}/allocated-vehicles/${encodeURIComponent(vehicle.allocationId)}/crane-trips${selectedId ? `/${encodeURIComponent(selectedId)}` : ""}`;
+      const response = await fetch(path, {
+        method: selectedId ? "PUT" : "POST",
+        headers: { ...headers(), "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...form,
+          podFile: undefined,
+          lr: {
+            number: form.lrNumber,
+            date: form.lrDate,
+            remarks: form.lrRemarks,
+          },
+          ewayBill: {
+            number: form.ewayBillNumber,
+            validUpto: form.ewayBillValidUpto,
+          },
+          startKm,
+          endKm,
+          loading: convertOperation(form.loading),
+          unloading: convertOperation(form.unloading),
+        }),
+      });
+      const payload = await response.json();
+      if (!response.ok)
+        throw new Error(payload.message || "Unable to save trip.");
+      const order = cjunwrap(payload);
+      const target = cjlist(order.allocatedVehicles).find(
+        (v) => v.allocationId === vehicle.allocationId,
+      );
+      const saved = cjlist(target?.craneTrips).find(
+        (j) => j.journeyId === form.journeyId,
+      );
+      if (!saved)
+        throw new Error(
+          "The server response did not include the saved trip. Refresh to verify it.",
+        );
+      setTrip(order);
+      setSelectedId(saved.journeyId);
+      setForm(cjformFor(saved, order, target));
+      if (form.podFile) {
+        const upload = new FormData();
+        upload.append("document", form.podFile);
+        upload.append("uploadedBy", form.updatedBy);
+        const uploaded = await fetch(
+          `${cjBASE}/api/triporders/${encodeURIComponent(order._id)}/allocated-vehicles/${encodeURIComponent(vehicle.allocationId)}/crane-trips/${encodeURIComponent(saved.journeyId)}/pod`,
+          { method: "PUT", headers: headers(), body: upload },
+        );
+        const uploadedResult = await uploaded.json();
+        if (!uploaded.ok) {
+          setForm((previous) => ({ ...previous, podFile: form.podFile }));
+          throw new Error(
+            `Movement saved, but POD upload failed: ${uploadedResult.message || "Retry upload"}`,
+          );
+        }
+        const withPod = cjunwrap(uploadedResult);
+        const uploadedVehicle = cjlist(withPod.allocatedVehicles).find(
+          (v) => v.allocationId === vehicle.allocationId,
+        );
+        const uploadedTrip = cjlist(uploadedVehicle?.craneTrips).find(
+          (j) => j.journeyId === saved.journeyId,
+        );
+        setTrip(withPod);
+        setForm(cjformFor(uploadedTrip, withPod, uploadedVehicle));
+      }
+      setNotice(
+        "Movement saved for this trip. Use Add Trip for another journey on the same date.",
+      );
+    } catch (err) {
+      setError(err.message || "Unable to save trip.");
+    } finally {
+      setSaving(false);
+    }
+  };
+  const viewPod = async () => {
+    let preview = window.open("", "_blank");
+    try {
+      if (!current?.pod?.fileName) throw new Error("Save a POD file first.");
+      const response = await fetch(
+        `${cjBASE}/api/triporders/${encodeURIComponent(trip._id)}/allocated-vehicles/${encodeURIComponent(vehicle.allocationId)}/crane-trips/${encodeURIComponent(current.journeyId)}/pod/file`,
+        { headers: headers() },
+      );
+      if (!response.ok) throw new Error("Unable to view POD document.");
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      if (preview) preview.location.href = url;
+      else {
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = current.pod.fileName;
+        link.click();
+      }
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    } catch (err) {
+      if (preview) preview.close();
+      setError(err.message);
+    }
+  };
+  const input = (name, label, type = "text") => (
+    <label>
+      <span>{label}</span>
+      <input
+        type={type}
+        value={form[name]}
+        onChange={(e) => setField(name, e.target.value)}
+        min={type === "number" ? "0" : undefined}
+        step={type === "number" ? "0.01" : undefined}
+        required={["date", "origin", "destination", "updatedBy"].includes(name)}
+      />
+    </label>
+  );
+  const back = () => navigate(`/crane-vehicles/${encodeURIComponent(id)}`);
+  return (
+    <main className="trip-list-page">
+      <div className="trip-movement-overlay" role="dialog" aria-modal="true">
+        <form className="trip-movement-modal" onSubmit={save}>
+          <header className="trip-movement-head">
+            <div className="trip-movement-title">
+              <span className="trip-movement-title-icon">
+                <Navigation size={18} />
+              </span>
+              <div>
+                <small>CRANE VEHICLE MOVEMENT</small>
+                <h2>{cjdisplay(trip?.tripId)}</h2>
+                <p>
+                  {cjdisplay(vehicle?.vehicleNumber)} ·{" "}
+                  {cjdisplay(form?.origin)} → {cjdisplay(form?.destination)}
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              className="trip-movement-close"
+              disabled={saving}
+              onClick={back}
+              aria-label="Close"
+            >
+              <X size={18} />
+            </button>
+          </header>
+          <div className="trip-movement-body">
+            {error && (
+              <p role="alert" style={{ color: "#b91c1c" }}>
+                {error}
+              </p>
+            )}
+            {notice && (
+              <p role="status" style={{ color: "#087f79" }}>
+                {notice}
+              </p>
+            )}
+            {loading ? (
+              <div className="trip-movement-empty">
+                Loading selected vehicle...
+              </div>
+            ) : !vehicle || !form ? (
+              <div className="trip-movement-empty">
+                Unable to display this vehicle.{" "}
+                <button type="button" onClick={() => setRevision((v) => v + 1)}>
+                  Retry
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="trip-movement-vehicle-tabs">
+                  {journeys.map((record, index) => (
+                    <button
+                      type="button"
+                      key={record.journeyId}
+                      disabled={saving}
+                      className={`trip-movement-vehicle-tab ${selectedId === record.journeyId ? "active" : ""}`}
+                      onClick={() => selectTrip(record)}
+                    >
+                      <Route size={14} />
+                      <span>
+                        <strong>Trip {index + 1}</strong>
+                        <small>
+                          {record.date} · {record.status}
+                        </small>
+                      </span>
+                    </button>
+                  ))}
+                  {!selectedId && (
+                    <button
+                      type="button"
+                      className="trip-movement-vehicle-tab active"
+                    >
+                      <Route size={14} />
+                      <span>
+                        <strong>Trip {journeys.length + 1}</strong>
+                        <small>New · Not saved</small>
+                      </span>
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    className="trip-movement-vehicle-tab"
+                    disabled={locked}
+                    onClick={addTrip}
+                  >
+                    <Plus size={16} />
+                    <span>
+                      <strong>Add Trip</strong>
+                      <small>Same date allowed</small>
+                    </span>
+                  </button>
+                </div>
+                <section className="trip-movement-summary">
+                  {[
+                    ["Vehicle", vehicle.vehicleNumber],
+                    ["Current Location", form.currentLocation],
+                    [
+                      "Running KM",
+                      form.startKm !== "" && form.endKm !== ""
+                        ? `${Number(form.endKm) - Number(form.startKm)} KM`
+                        : "—",
+                    ],
+                    ["Status", form.status],
+                    ["Driver", vehicle.driver?.name],
+                  ].map(([label, value]) => (
+                    <div key={label}>
+                      <span>{label}</span>
+                      <strong>{cjdisplay(value)}</strong>
+                    </div>
+                  ))}
+                </section>
+                {(replaced || orderCompleted) && (
+                  <p role="status">
+                    This vehicle or order is closed. Saved trips are available
+                    for viewing.
+                  </p>
+                )}
+                <fieldset
+                  disabled={locked}
+                  style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}
+                >
+                  <section className="trip-movement-form-card">
+                    <div className="trip-movement-section-title">
+                      <div>
+                        <small>DAILY TRACKING</small>
+                        <h3>
+                          {selectedId
+                            ? "Movement Details"
+                            : "Add Movement Details"}
+                        </h3>
+                      </div>
+                      <span>Day {day}</span>
+                    </div>
+                    <div className="trip-movement-form-grid">
+                      {input("date", "Date", "date")}
+                      <label>
+                        <span>Day</span>
+                        <input type="number" value={day} readOnly />
+                      </label>
+                      <label>
+                        <span>
+                          {previousUpdate
+                            ? "Yesterday KM"
+                            : "Starting Odometer KM"}
+                        </span>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={previousUpdate?.endKm ?? form.startKm}
+                          readOnly={!!previousUpdate}
+                          onChange={(e) => setField("startKm", e.target.value)}
+                        />
+                      </label>
+                      {input("endKm", "Today KM *", "number")}
+                      <label>
+                        <span>Yesterday Location</span>
+                        <input
+                          value={previousUpdate?.currentLocation || ""}
+                          readOnly
+                        />
+                      </label>
+                      {input("currentLocation", "Current Location *")}
+                      {input("origin", "From *")}
+                      {input("destination", "To *")}
+                      <label>
+                        <span>Status</span>
+                        <select
+                          value={form.status}
+                          onChange={(e) => setField("status", e.target.value)}
+                        >
+                          {cjstatuses.map((status) => (
+                            <option key={status}>{status}</option>
+                          ))}
+                        </select>
+                      </label>
+                      {input("updatedBy", "Updated By *")}
+                      {input("remarks", "Remarks")}
+                    </div>
+                  </section>
+                  <section className="trip-movement-operation-grid">
+                    {["loading", "unloading"].map((section) => (
+                      <div
+                        className="trip-movement-operation-card"
+                        key={section}
+                      >
+                        <div className="trip-movement-operation-head">
+                          <div>
+                            <small>VEHICLE OPERATION</small>
+                            <h3>
+                              {section === "loading" ? "Loading" : "Unloading"}{" "}
+                              Details
+                            </h3>
+                          </div>
+                          <span>{form[section].status}</span>
+                        </div>
+                        <div className="trip-movement-operation-fields">
+                          <label>
+                            <span>Status</span>
+                            <select
+                              value={form[section].status}
+                              onChange={(e) =>
+                                setOperation(section, "status", e.target.value)
+                              }
+                            >
+                              {["Pending", "In Progress", "Completed"].map(
+                                (status) => (
+                                  <option key={status}>{status}</option>
+                                ),
+                              )}
+                            </select>
+                          </label>
+                          {[
+                            ["Point In", "pointInAt"],
+                            [
+                              section === "loading"
+                                ? "Loading Time"
+                                : "Unloading Time",
+                              "completedAt",
+                            ],
+                            ["Point Out", "pointOutAt"],
+                          ].map(([label, name]) => (
+                            <label key={name}>
+                              <span>{label}</span>
+                              <input
+                                type="datetime-local"
+                                value={form[section][name]}
+                                onChange={(e) =>
+                                  setOperation(section, name, e.target.value)
+                                }
+                              />
+                            </label>
+                          ))}
+                          <label>
+                            <span>Halting Days</span>
+                            <input
+                              value={calculateHaltingDays(
+                                form[section].pointInAt,
+                                form[section].pointOutAt,
+                              )}
+                              readOnly
+                            />
+                          </label>
+                          <label>
+                            <span>Remarks</span>
+                            <input
+                              value={form[section].remarks}
+                              onChange={(e) =>
+                                setOperation(section, "remarks", e.target.value)
+                              }
+                            />
+                          </label>
+                        </div>
+                      </div>
+                    ))}
+                  </section>
+                </fieldset>
+                <section className="trip-movement-documents">
+                  <div className="trip-movement-section-title">
+                    <div>
+                      <small>TRIP DOCUMENTS</small>
+                      <h3>LR, E-Way Bill & POD Documents</h3>
+                    </div>
+                    <span>Selected Trip</span>
+                  </div>
+                  <div className="trip-movement-document-grid">
+                    <div className="trip-movement-document-card">
+                      <div className="trip-movement-document-head">
+                        <span className="trip-movement-document-icon">
+                          <FileText size={16} />
+                        </span>
+                        <div>
+                          <small>LORRY RECEIPT</small>
+                          <h4>LR Details</h4>
+                        </div>
+                        <b className={form.lrNumber ? "uploaded" : ""}>
+                          {form.lrNumber ? "Entered" : "Pending"}
+                        </b>
+                      </div>
+                      <div className="trip-movement-document-fields">
+                        <label>
+                          <span>LR Number *</span>
+                          <input
+                            disabled={locked}
+                            value={form.lrNumber}
+                            onChange={(e) =>
+                              setField("lrNumber", e.target.value)
+                            }
+                            placeholder="Enter LR number"
+                          />
+                        </label>
+                        <label>
+                          <span>LR Date</span>
+                          <input
+                            disabled={locked}
+                            type="date"
+                            value={form.lrDate}
+                            onChange={(e) => setField("lrDate", e.target.value)}
+                          />
+                        </label>
+                        <label>
+                          <span>Remarks</span>
+                          <input
+                            disabled={locked}
+                            value={form.lrRemarks}
+                            onChange={(e) =>
+                              setField("lrRemarks", e.target.value)
+                            }
+                            placeholder="Enter remarks"
+                          />
+                        </label>
+                      </div>
+                    </div>
+                    <div className="trip-movement-document-card">
+                      <div className="trip-movement-document-head">
+                        <span className="trip-movement-document-icon">
+                          <FileText size={16} />
+                        </span>
+                        <div>
+                          <small>E-WAY BILL</small>
+                          <h4>E-Way Bill Details</h4>
+                        </div>
+                        <b
+                          className={`eway-status-${getEwayBillStatus(form.ewayBillNumber, form.ewayBillValidUpto, cjtoday()).toLowerCase().replace(/\s+/g, "-")}`}
+                        >
+                          {getEwayBillHeading(
+                            form.ewayBillNumber,
+                            form.ewayBillValidUpto,
+                            cjtoday(),
+                          )}
+                        </b>
+                      </div>
+                      <div className="trip-movement-document-fields">
+                        <label>
+                          <span>E-Way Bill Number</span>
+                          <input
+                            disabled={locked}
+                            value={form.ewayBillNumber}
+                            onChange={(e) =>
+                              setField("ewayBillNumber", e.target.value)
+                            }
+                            placeholder="Enter E-Way Bill number"
+                          />
+                        </label>
+                        <label>
+                          <span>Valid Upto</span>
+                          <input
+                            disabled={locked}
+                            type="date"
+                            value={form.ewayBillValidUpto}
+                            onChange={(e) =>
+                              setField("ewayBillValidUpto", e.target.value)
+                            }
+                          />
+                        </label>
+                        <label>
+                          <span>Status</span>
+                          <input
+                            disabled={locked}
+                            value={getEwayBillStatus(
+                              form.ewayBillNumber,
+                              form.ewayBillValidUpto,
+                              cjtoday(),
+                            )}
+                            readOnly
+                            aria-label="Automatically calculated E-Way Bill status"
+                          />
+                        </label>
+                      </div>
+                    </div>
+                    <div className="trip-movement-document-card trip-pod-full-row">
+                      <div className="trip-movement-document-head">
+                        <span className="trip-movement-document-icon">
+                          <FileText size={16} />
+                        </span>
+                        <div>
+                          <small>PROOF OF DELIVERY</small>
+                          <h4>POD Document</h4>
+                        </div>
+                        <b
+                          className={
+                            current?.pod?.fileName || form.podFile
+                              ? "uploaded"
+                              : ""
+                          }
+                        >
+                          {current?.pod?.fileName || form.podFile
+                            ? "Uploaded"
+                            : "Pending"}
+                        </b>
+                      </div>
+                      <div className="trip-pod-upload-row">
+                        <div className="trip-pod-file-info">
+                          <span className="trip-pod-file-icon">
+                            <FileText size={16} />
+                          </span>
+                          <div>
+                            <small>POD FILE</small>
+                            <strong
+                              title={
+                                form.podFile?.name ||
+                                current?.pod?.fileName ||
+                                ""
+                              }
+                            >
+                              {form.podFile?.name ||
+                                current?.pod?.fileName ||
+                                "No POD file selected"}
+                            </strong>
+                          </div>
+                        </div>
+                        <div className="trip-pod-actions">
+                          <label
+                            className={`trip-document-upload-button ${!unloadingCompleted ? "disabled" : ""}`}
+                            title={
+                              !unloadingCompleted
+                                ? "Complete unloading before uploading POD"
+                                : ""
+                            }
+                          >
+                            <Upload size={13} />
+                            {current?.pod?.fileName ? "Replace" : "Choose File"}
+                            <input
+                              type="file"
+                              accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                              disabled={locked || !unloadingCompleted}
+                              onChange={(e) =>
+                                setField("podFile", e.target.files?.[0] || null)
+                              }
+                            />
+                          </label>
+                          {current?.pod?.fileName && (
+                            <button
+                              type="button"
+                              className="trip-document-view-button"
+                              onClick={() => viewPod()}
+                            >
+                              <Eye size={13} />
+                              View
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+                <section className="trip-movement-history">
+                  <div className="trip-movement-section-title">
+                    <div>
+                      <small>HISTORY</small>
+                      <h3>Movement History</h3>
+                    </div>
+                    <span>
+                      {new Set(history.map((entry) => entry.date)).size} Days ·{" "}
+                      {cjlist(current?.history).length} Updates
+                    </span>
+                  </div>
+                  {history.length ? (
+                    <div className="trip-movement-history-table">
+                      <div className="trip-movement-history-head">
+                        <span>Date</span>
+                        <span>Day</span>
+                        <span>Location</span>
+                        <span>KM</span>
+                        <span>Status</span>
+                        <span>Remarks</span>
+                      </div>
+                      {history.map((item, index) => (
+                        <div
+                          className="trip-movement-history-row"
+                          key={`${item.date || "movement"}-${index}`}
+                        >
+                          <span>{formatDate(item.date)}</span>
+                          <span>Day {item.day ?? "-"}</span>
+                          <span>
+                            {item.isMissingDay
+                              ? "—"
+                              : safeText(item.currentLocation)}
+                          </span>
+                          <span>
+                            {item.isMissingDay
+                              ? "—"
+                              : `${item.runningKm ?? 0} KM`}
+                          </span>
+                          <span>
+                            {item.isMissingDay ? (
+                              <span>No update</span>
+                            ) : (
+                              <b
+                                className={`trip-history-status ${getStatusClass(item.status)}`}
+                              >
+                                {safeText(item.status, "Idle")}
+                              </b>
+                            )}
+                          </span>
+                          <span>
+                            {item.isMissingDay
+                              ? "No update recorded"
+                              : safeText(item.remarks)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="trip-movement-empty small">
+                      No movement history yet.
+                    </div>
+                  )}
+                </section>
+                {cjlist(vehicle.dailyTracking).length > 0 && (
+                  <details
+                    className="trip-movement-form-card"
+                    style={{ padding: 16 }}
+                  >
+                    <summary>
+                      Previous vehicle movement history (
+                      {vehicle.dailyTracking.length} updates)
+                    </summary>
+                    {[...vehicle.dailyTracking]
+                      .reverse()
+                      .map((entry, index) => (
+                        <p key={entry.trackingId || index}>
+                          {cjformatTime(entry.date)} ·{" "}
+                          {cjdisplay(entry.currentLocation)} ·{" "}
+                          {cjdisplay(entry.status)} · {cjdisplay(entry.remarks)}
+                        </p>
+                      ))}
+                  </details>
+                )}
+              </>
+            )}
+          </div>
+          <footer className="trip-movement-footer">
+            <div className="trip-movement-footer-message" />
+            <div className="trip-movement-footer-actions">
+              <button
+                type="button"
+                className="trip-movement-cancel"
+                disabled={saving}
+                onClick={back}
+              >
+                Close
+              </button>
+              <button
+                type="submit"
+                className="trip-movement-save"
+                disabled={locked || loading || !vehicle}
+              >
+                <Save size={15} />
+                {saving ? "Saving..." : "Save Movement"}
+              </button>
+            </div>
+          </footer>
+        </form>
+      </div>
+    </main>
+  );
+};
+const Tripdetails = (props) =>
+  props.movementOnly ? (
+    <CraneJourneyPopup />
+  ) : (
+    <StandardTripdetails {...props} />
+  );
+
 export default Tripdetails;

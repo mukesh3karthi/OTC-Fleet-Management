@@ -9,7 +9,9 @@ const tripAccess = require("../middleware/tripAccess");
 router.use(tripAccess);
 
 const {
-
+  saveCraneJourney,
+  saveCraneJourneyPod,
+  downloadCraneJourneyPod,
   createTrip,
 
   /* CRANE MOVEMENT */
@@ -81,7 +83,6 @@ const {
   updateRouteLocations,
 
   deleteTrip,
-
 } = require("../controllers/triporderController");
 
 /* Lock all updates to completed trips, including direct API requests.
@@ -91,52 +92,62 @@ const {
 const TripOrderForLock = require("../models/Triporder");
 
 router.use(async (req, res, next) => {
-
   if (!["POST", "PUT", "PATCH", "DELETE"].includes(req.method)) return next();
   // Keep authenticated tracking operations and documents editable for finalization.
-  const allocationPath = /^\/[^/]+\/allocated-vehicles\/[^/]+(?:\/(lr|pod|ewayBill|tracking))?\/?$/;
+  const allocationPath =
+    /^\/[^/]+\/allocated-vehicles\/[^/]+(?:\/(lr|pod|ewayBill|tracking))?\/?$/;
   const operation = req.path.match(allocationPath);
-  if (operation && (
-    (req.method === "PUT" && !operation[1]) ||
-    (req.method === "PUT" && ["lr", "pod", "ewayBill"].includes(operation[1])) ||
-    (req.method === "POST" && operation[1] === "tracking")
-  )) return next();
-
+  if (
+    operation &&
+    ((req.method === "PUT" && !operation[1]) ||
+      (req.method === "PUT" &&
+        ["lr", "pod", "ewayBill"].includes(operation[1])) ||
+      (req.method === "POST" && operation[1] === "tracking"))
+  )
+    return next();
 
   // Creation endpoints have no existing trip to lock.
 
   const segments = req.path.split("/").filter(Boolean);
 
-  const id = segments.find(part => /^[a-f0-9]{24}$/i.test(part));
+  const id = segments.find((part) => /^[a-f0-9]{24}$/i.test(part));
 
-  const tripId = !id && segments.find(part => /^\d{4}-\d+$/.test(part));
+  const tripId = !id && segments.find((part) => /^\d{4}-\d+$/.test(part));
 
   if (!id && !tripId) return next();
 
   try {
-
     const trip = id
+      ? await TripOrderForLock.findById(id)
+          .select("stage status allocatedVehicles.unloading.status")
+          .lean()
+      : await TripOrderForLock.findOne({ tripId })
+          .select("stage status allocatedVehicles.unloading.status")
+          .lean();
 
-      ? await TripOrderForLock.findById(id).select("stage status allocatedVehicles.unloading.status").lean()
-
-      : await TripOrderForLock.findOne({ tripId }).select("stage status allocatedVehicles.unloading.status").lean();
-
-    if (trip && (
-
-      String(trip.stage || "").trim().toLowerCase() === "trip complete" ||
-
-      (String(trip.status || "").trim().toLowerCase() === "completed" &&
-
-        Array.isArray(trip.allocatedVehicles) && trip.allocatedVehicles.length > 0 &&
-
-        trip.allocatedVehicles.every(v => String(v?.unloading?.status || "").toLowerCase() === "completed"))
-
-    )) return res.status(409).json({ message: "Trip is completed and cannot be modified." });
+    if (
+      trip &&
+      (String(trip.stage || "")
+        .trim()
+        .toLowerCase() === "trip complete" ||
+        (String(trip.status || "")
+          .trim()
+          .toLowerCase() === "completed" &&
+          Array.isArray(trip.allocatedVehicles) &&
+          trip.allocatedVehicles.length > 0 &&
+          trip.allocatedVehicles.every(
+            (v) =>
+              String(v?.unloading?.status || "").toLowerCase() === "completed",
+          )))
+    )
+      return res
+        .status(409)
+        .json({ message: "Trip is completed and cannot be modified." });
 
     return next();
-
-  } catch (error) { return next(error); }
-
+  } catch (error) {
+    return next(error);
+  }
 });
 
 /* =========================================================
@@ -146,7 +157,6 @@ router.use(async (req, res, next) => {
 ========================================================= */
 
 const allowedPoMimeTypes = new Set([
-
   "application/pdf",
 
   "application/msword",
@@ -156,73 +166,45 @@ const allowedPoMimeTypes = new Set([
   "image/jpeg",
 
   "image/png",
-
 ]);
 
 const poUpload = multer({
-
   storage: multer.memoryStorage(),
 
   limits: {
-
     fileSize: 10 * 1024 * 1024,
 
     files: 1,
-
   },
 
   fileFilter: (req, file, callback) => {
-
     if (!allowedPoMimeTypes.has(file.mimetype)) {
-
       return callback(
-
-        new Error(
-
-          "Only PDF, Word, JPG and PNG files are allowed."
-
-        )
-
+        new Error("Only PDF, Word, JPG and PNG files are allowed."),
       );
-
     }
 
     return callback(null, true);
-
   },
-
 });
 
 const uploadPoDocument = (req, res, next) => {
-
   poUpload.single("document")(req, res, (error) => {
-
     if (!error) {
-
       return next();
-
     }
 
     const message =
-
       error.code === "LIMIT_FILE_SIZE"
-
         ? "PO document must be 10 MB or smaller."
-
-        : error.message ||
-
-        "Unable to upload PO document.";
+        : error.message || "Unable to upload PO document.";
 
     return res.status(400).json({
-
       success: false,
 
       message,
-
     });
-
   });
-
 };
 
 /* =========================================================
@@ -232,7 +214,6 @@ const uploadPoDocument = (req, res, next) => {
 ========================================================= */
 
 const allowedCraneMimeTypes = new Set([
-
   "application/pdf",
 
   "application/msword",
@@ -248,73 +229,48 @@ const allowedCraneMimeTypes = new Set([
   "image/jpeg",
 
   "image/png",
-
 ]);
 
 const craneUpload = multer({
-
   storage: multer.memoryStorage(),
 
   limits: {
-
     fileSize: 15 * 1024 * 1024,
 
     files: 1,
-
   },
 
   fileFilter: (req, file, callback) => {
-
     if (!allowedCraneMimeTypes.has(file.mimetype)) {
-
       return callback(
-
         new Error(
-
-          "Only PDF, Word, Excel, CSV, JPG and PNG files are allowed for Crane movement."
-
-        )
-
+          "Only PDF, Word, Excel, CSV, JPG and PNG files are allowed for Crane movement.",
+        ),
       );
-
     }
 
     return callback(null, true);
-
   },
-
 });
 
 const uploadCraneDocument = (req, res, next) => {
-
   craneUpload.single("document")(req, res, (error) => {
-
     if (!error) {
-
       return next();
-
     }
 
     const message =
-
       error.code === "LIMIT_FILE_SIZE"
-
         ? "Crane vehicle requirement document must be 15 MB or smaller."
-
         : error.message ||
-
-        "Unable to upload Crane vehicle requirement document.";
+          "Unable to upload Crane vehicle requirement document.";
 
     return res.status(400).json({
-
       success: false,
 
       message,
-
     });
-
   });
-
 };
 
 /* =========================================================
@@ -324,7 +280,6 @@ const uploadCraneDocument = (req, res, next) => {
 ========================================================= */
 
 const allowedMovementMimeTypes = new Set([
-
   "application/pdf",
 
   "application/msword",
@@ -334,73 +289,45 @@ const allowedMovementMimeTypes = new Set([
   "image/jpeg",
 
   "image/png",
-
 ]);
 
 const movementUpload = multer({
-
   storage: multer.memoryStorage(),
 
   limits: {
-
     fileSize: 10 * 1024 * 1024,
 
     files: 1,
-
   },
 
   fileFilter: (req, file, callback) => {
-
     if (!allowedMovementMimeTypes.has(file.mimetype)) {
-
       return callback(
-
-        new Error(
-
-          "Only PDF, Word, JPG and PNG files are allowed."
-
-        )
-
+        new Error("Only PDF, Word, JPG and PNG files are allowed."),
       );
-
     }
 
     return callback(null, true);
-
   },
-
 });
 
 const uploadMovementDocument = (req, res, next) => {
-
   movementUpload.single("document")(req, res, (error) => {
-
     if (!error) {
-
       return next();
-
     }
 
     const message =
-
       error.code === "LIMIT_FILE_SIZE"
-
         ? "Movement document must be 10 MB or smaller."
-
-        : error.message ||
-
-        "Unable to upload movement document.";
+        : error.message || "Unable to upload movement document.";
 
     return res.status(400).json({
-
       success: false,
 
       message,
-
     });
-
   });
-
 };
 
 /* =========================================================
@@ -410,13 +337,11 @@ const uploadMovementDocument = (req, res, next) => {
 ========================================================= */
 
 router.post(
-
   "/crane",
 
   uploadCraneDocument,
 
-  createCraneTrip
-
+  createCraneTrip,
 );
 
 /* =========================================================
@@ -430,11 +355,9 @@ router.post("/", createTrip);
 router.get("/", getAllTrips);
 
 router.get(
-
   "/trip/:tripId",
 
-  getTripByTripId
-
+  getTripByTripId,
 );
 
 /* =========================================================
@@ -444,11 +367,9 @@ router.get(
 ========================================================= */
 
 router.put(
-
   "/:id/order-finalization",
 
-  saveOrderFinalization
-
+  saveOrderFinalization,
 );
 
 /* =========================================================
@@ -458,11 +379,9 @@ router.put(
 ========================================================= */
 
 router.put(
-
   "/:id/order-approval",
 
-  approveOrder
-
+  approveOrder,
 );
 
 /* =========================================================
@@ -472,11 +391,9 @@ router.put(
 ========================================================= */
 
 router.post(
-
   "/:id/quotations",
 
-  addTrafficQuotation
-
+  addTrafficQuotation,
 );
 
 /* =========================================================
@@ -486,11 +403,9 @@ router.post(
 ========================================================= */
 
 router.put(
-
   "/:id/confirm-quotation",
 
-  confirmVehicleQuotation
-
+  confirmVehicleQuotation,
 );
 
 /* =========================================================
@@ -500,19 +415,15 @@ router.put(
 ========================================================= */
 
 router.post(
-
   "/:id/transport-replacement-requests",
 
-  requestTransportReplacement
-
+  requestTransportReplacement,
 );
 
 router.put(
-
   "/:id/transport-replacement-requests/:requestId/review",
 
-  reviewTransportReplacement
-
+  reviewTransportReplacement,
 );
 
 /* =========================================================
@@ -524,11 +435,9 @@ router.put(
 ========================================================= */
 
 router.post(
-
   "/:id/traffic-allocated-vehicles",
 
-  allocateTrafficVehicle
-
+  allocateTrafficVehicle,
 );
 
 /* =========================================================
@@ -540,11 +449,9 @@ router.post(
 ========================================================= */
 
 router.put(
-
   "/:id/allocated-vehicles/:allocationId/traffic-replacement",
 
-  replaceTrafficVehicle
-
+  replaceTrafficVehicle,
 );
 
 /* =========================================================
@@ -554,11 +461,9 @@ router.put(
 ========================================================= */
 
 router.get(
-
   "/:id/crane-document/file",
 
-  downloadCraneDocument
-
+  downloadCraneDocument,
 );
 
 /* =========================================================
@@ -568,21 +473,17 @@ router.get(
 ========================================================= */
 
 router.put(
-
   "/:id/po-document",
 
   uploadPoDocument,
 
-  savePoDocument
-
+  savePoDocument,
 );
 
 router.get(
-
   "/:id/po-document/file",
 
-  downloadPoDocument
-
+  downloadPoDocument,
 );
 
 /* =========================================================
@@ -592,11 +493,9 @@ router.get(
 ========================================================= */
 
 router.put(
-
   "/:id/order-placed",
 
-  placeOrder
-
+  placeOrder,
 );
 
 /* =========================================================
@@ -606,11 +505,9 @@ router.put(
 ========================================================= */
 
 router.post(
-
   "/:id/allocated-vehicles",
 
-  allocateVehicle
-
+  allocateVehicle,
 );
 
 /* =========================================================
@@ -622,11 +519,9 @@ router.post(
 ========================================================= */
 
 router.put(
-
   "/:id/allocated-vehicles/:allocationId/tracking-replacement",
 
-  replaceTrackingVehicle
-
+  replaceTrackingVehicle,
 );
 
 /* =========================================================
@@ -638,11 +533,9 @@ router.put(
 ========================================================= */
 
 router.put(
-
   "/:id/allocated-vehicles/:allocationId",
 
-  updateAllocatedVehicle
-
+  updateAllocatedVehicle,
 );
 
 /* =========================================================
@@ -652,21 +545,17 @@ router.put(
 ========================================================= */
 
 router.put(
-
   "/:id/allocated-vehicles/:allocationId/lr",
 
   uploadMovementDocument,
 
-  saveLrDocument
-
+  saveLrDocument,
 );
 
 router.get(
-
   "/:id/allocated-vehicles/:allocationId/lr/file",
 
-  downloadLrDocument
-
+  downloadLrDocument,
 );
 
 /* =========================================================
@@ -676,21 +565,17 @@ router.get(
 ========================================================= */
 
 router.put(
-
   "/:id/allocated-vehicles/:allocationId/pod",
 
   uploadMovementDocument,
 
-  savePodDocument
-
+  savePodDocument,
 );
 
 router.get(
-
   "/:id/allocated-vehicles/:allocationId/pod/file",
 
-  downloadPodDocument
-
+  downloadPodDocument,
 );
 
 /* =========================================================
@@ -700,21 +585,17 @@ router.get(
 ========================================================= */
 
 router.put(
-
   "/:id/allocated-vehicles/:allocationId/ewayBill",
 
   uploadMovementDocument,
 
-  saveEwayBillDocument
-
+  saveEwayBillDocument,
 );
 
 router.get(
-
   "/:id/allocated-vehicles/:allocationId/ewayBill/file",
 
-  downloadEwayBillDocument
-
+  downloadEwayBillDocument,
 );
 
 /* =========================================================
@@ -724,11 +605,9 @@ router.get(
 ========================================================= */
 
 router.post(
-
   "/:id/allocated-vehicles/:allocationId/tracking",
 
-  addDailyTracking
-
+  addDailyTracking,
 );
 
 /* =========================================================
@@ -738,11 +617,9 @@ router.post(
 ========================================================= */
 
 router.put(
-
   "/:id/route-locations",
 
-  updateRouteLocations
-
+  updateRouteLocations,
 );
 
 /* =========================================================
@@ -754,11 +631,9 @@ router.put(
 ========================================================= */
 
 router.get(
-
   "/:id",
 
-  getTripById
-
+  getTripById,
 );
 
 router.put("/:id/lifecycle-corrections", correctLifecycleDetails);
@@ -766,11 +641,14 @@ router.put("/:id/lifecycle-corrections", correctLifecycleDetails);
 router.put("/:id", updateTrip);
 
 router.delete(
-
   "/:id",
 
-  deleteTrip
-
+  deleteTrip,
 );
 
+router.post("/:id/allocated-vehicles/:allocationId/crane-trips", saveCraneJourney);
+router.put("/:id/allocated-vehicles/:allocationId/crane-trips/:journeyId", saveCraneJourney);
+
+router.put("/:id/allocated-vehicles/:allocationId/crane-trips/:journeyId/pod", uploadMovementDocument, saveCraneJourneyPod);
+router.get("/:id/allocated-vehicles/:allocationId/crane-trips/:journeyId/pod/file", downloadCraneJourneyPod);
 module.exports = router;

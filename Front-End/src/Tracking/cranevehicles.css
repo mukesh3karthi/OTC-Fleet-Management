@@ -1,0 +1,233 @@
+.crane-vehicles-page {
+  padding: 24px;
+  background: #f4f7fa;
+  min-height: 100%;
+  color: #173b4b;
+  font-family: inherit;
+}
+.crane-vehicles-header,
+.crane-vehicles-heading,
+.crane-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.crane-vehicles-header {
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+}
+.crane-back,
+.crane-refresh {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid #d0e0e6;
+  border-radius: 9px;
+  background: #fff;
+  color: #205566;
+  padding: 10px 12px;
+  cursor: pointer;
+}
+.crane-eyebrow {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1.3px;
+  color: #078982;
+}
+.crane-vehicles-heading h1 {
+  margin: 4px 0 6px;
+  font-size: 23px;
+  font-weight: 750;
+}
+.crane-vehicles-heading p {
+  margin: 0;
+  font-size: 11px;
+  color: #6a8290;
+}
+.crane-vehicles-heading p span {
+  padding: 0 6px;
+}
+.crane-count {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #087f79;
+}
+.crane-count small {
+  color: #748b97;
+  font-size: 10px;
+  font-weight: 500;
+}
+.crane-vehicles-panel {
+  border: 1px solid #d6e2e8;
+  background: #fff;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 6px 22px #153f5007;
+}
+.crane-table-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 18px 20px;
+}
+.crane-table-toolbar h2 {
+  margin: 0 0 5px;
+  font-size: 15px;
+}
+.crane-table-toolbar p {
+  margin: 0;
+  color: #7b8e9a;
+  font-size: 11px;
+}
+.crane-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid #dbe5eb;
+  border-radius: 8px;
+  color: #7b929e;
+}
+.crane-search input {
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font-family: inherit;
+  font-size: 11px;
+  width: 230px;
+  color: #254a5c;
+}
+.crane-vehicles-table-wrap {
+  overflow-x: auto;
+  background: #0b1721;
+}
+.crane-vehicles-table {
+  width: 100%;
+  border-collapse: collapse;
+  color: #dce8f1;
+  font-size: 12px;
+  text-align: left;
+  white-space: nowrap;
+}
+.crane-vehicles-table th {
+  padding: 15px;
+  background: #08131d;
+  color: #809bb3;
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+  border-bottom: 1px solid #1c2d3a;
+}
+.crane-vehicles-table td {
+  padding: 15px;
+  border-bottom: 1px solid #172735;
+}
+.crane-vehicles-table tr:last-child td {
+  border-bottom: 0;
+}
+.crane-vehicles-table tbody tr:nth-child(even) {
+  background: #0d1b27;
+}
+.crane-vehicles-table tbody tr:hover {
+  background: #132939;
+}
+.crane-vehicle-number {
+  font-family: ui-monospace, monospace;
+  color: #f3f8ff;
+  font-size: 12px;
+  font-weight: 750;
+}
+.crane-mono {
+  font-family: ui-monospace, monospace;
+}
+.crane-movement-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 11px;
+  border: 1px solid #258d89;
+  border-radius: 7px;
+  background: #123b41;
+  color: #9ce1dc;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.crane-movement-btn:hover {
+  background: #165359;
+}
+.crane-vehicle-status {
+  padding: 5px 8px;
+  border-radius: 6px;
+  font-size: 10px;
+}
+.crane-vehicle-status.active {
+  background: #12372f;
+  color: #a0d8be;
+}
+.crane-vehicle-status.replaced {
+  background: #34303b;
+  color: #d4bed6;
+}
+.crane-empty,
+.crane-page-message {
+  padding: 36px !important;
+  text-align: center;
+  font-size: 13px;
+  color: #8da5b6;
+}
+.crane-page-message button {
+  margin: 12px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+.crane-vehicles-page button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.crane-movement-page .trip-movement-overlay {
+  position: static;
+  inset: auto;
+  display: block;
+  padding: 0;
+  background: transparent;
+  backdrop-filter: none;
+}
+.crane-movement-page .trip-movement-modal {
+  width: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  box-shadow: none;
+}
+.crane-movement-page .trip-movement-body {
+  max-height: none;
+  overflow: visible;
+}
+@media (max-width: 700px) {
+  .crane-vehicles-page {
+    padding: 14px;
+  }
+  .crane-vehicles-heading h1 {
+    font-size: 20px;
+  }
+  .crane-header-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .crane-search {
+    width: 100%;
+  }
+  .crane-search input {
+    width: 100%;
+  }
+}

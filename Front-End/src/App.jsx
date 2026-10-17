@@ -1,8 +1,6 @@
 import { Navigate, Route, Routes } from "react-router-dom";
-
 import Login from "./Loginpage/Login";
 import Dashboard from "./component/Dashboard";
-
 import ProtectedRoute from "./Protectedroute/MainloginProtectedRoute";
 import Intercartingprotected from "./Protectedroute/IntercartingProtectedRoute";
 import Ownvehicleprotected from "./Protectedroute/OwnvehicleProtectedRoute";
@@ -11,7 +9,6 @@ import AssetsProtectedRoute from "./Protectedroute/AssetsProtectedRoute";
 import KeyaccountProtectedRoute from "./Protectedroute/KeyaccountProtectedRoute";
 import TrafficProtectedRoute from "./Protectedroute/TrafficProtectedRoute";
 import ApprovalProtectedRoute from "./Protectedroute/ApprovalProtectedRoute";
-
 import DashContent from "./pages/DashContent";
 import Intercartingdash from "./pages/Intercartingdash";
 import InAndOutBound from "./pages/InAndOutBound";
@@ -23,17 +20,14 @@ import Assets from "./pages/Assets";
 import Vehiclemaintenance from "./pages/Vehiclemaintenance";
 import Ownvehicledash from "./pages/Ownvehicledash";
 import TripDashboard from "./pages/OrderManagement";
-
 import KeyAccount from "./ordermanagement/KeyAccount";
 import TrafficManagement from "./ordermanagement/Traffic";
 import Approvalmanagement from "./ordermanagement/Approvalmanagement";
-
 import Trackinginput from "./Tracking/AllocateVehicle";
 import Tripdetails from "./Tracking/Tripdetails";
 import VehicleDetails from "./Tracking/VehicleDetails";
-
+import CraneVehicles from "./Tracking/CraneVehicles";
 import Ownvehicledetails from "./Ownvehicledetails/Ownvehicledetails";
-
 import Intercarting from "./intercarting/Intercarting";
 import Intercartingorder from "./intercarting/Intercartingorder";
 import Vehicledetails from "./intercarting/Vehicledetails";
@@ -109,6 +103,42 @@ function App() {
           element={
             <Trackingprotected>
               <Tripdetails />
+            </Trackingprotected>
+          }
+        />
+      </Route>
+
+      <Route
+        path="/crane-vehicles/:id"
+        element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        }
+      >
+        <Route
+          index
+          element={
+            <Trackingprotected>
+              <CraneVehicles />
+            </Trackingprotected>
+          }
+        />
+      </Route>
+
+      <Route
+        path="/crane-vehicles/:id/movement/:allocationId"
+        element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        }
+      >
+        <Route
+          index
+          element={
+            <Trackingprotected>
+              <Tripdetails movementOnly />
             </Trackingprotected>
           }
         />
@@ -196,7 +226,6 @@ function App() {
         }
       >
         <Route index element={<Ownvehicledash />} />
-
         <Route
           path="ownvehicledetails"
           element={
@@ -216,7 +245,6 @@ function App() {
         }
       >
         <Route index element={<Intercartingdash />} />
-
         <Route
           path="intercarting"
           element={
@@ -225,7 +253,6 @@ function App() {
             </Intercartingprotected>
           }
         />
-
         <Route
           path="intercarting/vehicle-details"
           element={
@@ -234,7 +261,6 @@ function App() {
             </Intercartingprotected>
           }
         />
-
         <Route
           path="intercarting/daily-logs"
           element={
@@ -243,7 +269,6 @@ function App() {
             </Intercartingprotected>
           }
         />
-
         <Route
           path="intercarting/monthly-logs"
           element={
@@ -252,7 +277,6 @@ function App() {
             </Intercartingprotected>
           }
         />
-
         <Route
           path="intercarting/intercarting-orders"
           element={
@@ -272,7 +296,6 @@ function App() {
         }
       >
         <Route index element={<TripDashboard />} />
-
         <Route
           path="key-account"
           element={
@@ -281,7 +304,6 @@ function App() {
             </KeyaccountProtectedRoute>
           }
         />
-
         <Route
           path="traffic-management"
           element={
@@ -290,7 +312,6 @@ function App() {
             </TrafficProtectedRoute>
           }
         />
-
         <Route
           path="approval-management"
           element={
