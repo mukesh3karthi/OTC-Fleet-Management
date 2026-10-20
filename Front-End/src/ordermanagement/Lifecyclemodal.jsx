@@ -22,6 +22,59 @@ const lifecycleApiFetch = (url, options = {}) => {
   return fetch(url, { ...options, headers });
 };
 const safeArray = (value) => (Array.isArray(value) ? value : []);
+const isCurrentTrackingAllocation = (allocation) =>
+  String(allocation?.vehicleStatus || "")
+    .trim()
+    .toLowerCase() !== "replaced";
+
+const buildCurrentTrackingAllocations = (allocations, approvedRows) => {
+  const text = (value) => String(value ?? "").trim();
+  const result = [];
+  const used = new Set();
+  const active = safeArray(allocations).filter(isCurrentTrackingAllocation);
+
+  // Match explicit links first. Legacy records are safe only when exactly
+  // one approved transporter exists for their requirement.
+  approvedRows.forEach((row) => {
+    const requirementId = text(row.requirementId);
+    if (!requirementId) return;
+    const confirmationId = text(row.confirmation?.confirmationId);
+    const quotationId = text(row.quotation?.quotationId);
+    const siblings = approvedRows.filter(
+      (item) => text(item.requirementId) === requirementId,
+    );
+    const candidates = active
+      .filter((allocation) => {
+        if (
+          text(allocation.requirementId || allocation.vehicleRequirementId) !==
+          requirementId
+        )
+          return false;
+        const ownConfirmation = text(allocation.confirmationId);
+        const ownQuotation = text(allocation.quotationId);
+        if (ownConfirmation && ownConfirmation !== confirmationId) return false;
+        if (ownQuotation && ownQuotation !== quotationId) return false;
+        if (!ownConfirmation && !ownQuotation) return siblings.length === 1;
+        return true;
+      })
+      .sort((a, b) => {
+        const linked = (item) =>
+          Boolean(text(item.confirmationId) || text(item.quotationId));
+        return Number(linked(b)) - Number(linked(a));
+      });
+    let accepted = 0;
+    candidates.forEach((allocation) => {
+      if (accepted >= row.approvedQuantity) return;
+      const key = text(allocation.allocationId || allocation._id) || allocation;
+      if (used.has(key)) return;
+      used.add(key);
+      result.push(allocation);
+      accepted += 1;
+    });
+  });
+  return result;
+};
+
 const formatDate = (value) => {
   if (!value) return "—";
   const date = new Date(value);
@@ -158,7 +211,9 @@ const buildLifecycle = (order) => {
   const requirements = safeArray(order?.vehicleRequirements);
   const confirmations = safeArray(order?.vehicleConfirmations);
   const quotations = safeArray(order?.trafficQuotations);
-  const allocations = safeArray(order?.allocatedVehicles);
+  const allocations = safeArray(order?.allocatedVehicles).filter(
+    isCurrentTrackingAllocation,
+  );
   const approvedConfirmations = confirmations.filter(
     (confirmation) =>
       String(confirmation?.status || "")
@@ -1644,7 +1699,9 @@ const Lifecyclemodal = ({
         .trim()
         .toLowerCase() === "approved",
   );
-  const allocations = safeArray(order?.allocatedVehicles);
+  const allocations = safeArray(order?.allocatedVehicles).filter(
+    isCurrentTrackingAllocation,
+  );
   // Traffic quotations used by Vendor Finalization.
   const quotations = safeArray(order?.trafficQuotations);
   // Transport replacement requests used by Vendor Finalization history.
@@ -1938,59 +1995,11 @@ const Lifecyclemodal = ({
     (total, item) => total + item.approvedQuantity,
     0,
   );
-  /*
-   * VALID TRACKING ALLOCATIONS
-   *
-   * Allocation records created by older/newer Tracking screens do not always
-   * contain quotationId or confirmationId. requirementId is the stable link.
-   *
-   * Therefore:
-   * 1. Only requirements having an APPROVED transporter are allowed.
-   * 2. Match allocations primarily by requirementId.
-   * 3. Respect the approved quantity for each requirement.
-   * 4. Do not count the same allocation twice.
-   *
-   * Example:
-   * Hydraulic Axle Trailer approved quantity = 2
-   * Two actual vehicles allocated against that requirement => 2 / 2.
-   */
-  const validTrackingAllocations = [];
-  const usedAllocationKeys = new Set();
-  const getAllocationKey = (allocation, index = 0) =>
-    String(
-      allocation?.allocationId ||
-        allocation?._id ||
-        allocation?.vehicleNumber ||
-        `${allocation?.requirementId || "REQ"}-${index}`,
-    ).trim();
-  approvedTrackingRows.forEach((item) => {
-    const approvedRequirementId = String(item?.requirementId || "").trim();
-    if (!approvedRequirementId) {
-      return;
-    }
-    const matches = allocations.filter((allocation) => {
-      const allocationRequirementId = String(
-        allocation?.requirementId || allocation?.vehicleRequirementId || "",
-      ).trim();
-      return (
-        allocationRequirementId &&
-        allocationRequirementId === approvedRequirementId
-      );
-    });
-    let acceptedForRequirement = 0;
-    matches.forEach((allocation, allocationIndex) => {
-      if (acceptedForRequirement >= item.approvedQuantity) {
-        return;
-      }
-      const allocationKey = getAllocationKey(allocation, allocationIndex);
-      if (usedAllocationKeys.has(allocationKey)) {
-        return;
-      }
-      usedAllocationKeys.add(allocationKey);
-      validTrackingAllocations.push(allocation);
-      acceptedForRequirement += 1;
-    });
-  });
+  // Archived vehicles remain in saved history, never in current allocations.
+  const validTrackingAllocations = buildCurrentTrackingAllocations(
+    allocations,
+    approvedTrackingRows,
+  );
   const totalAllocatedVehicles = validTrackingAllocations.length;
   const pendingVehicleCount = Math.max(
     approvedTrackingVehicleCount - totalAllocatedVehicles,

@@ -1504,11 +1504,12 @@ const Traffic = () => {
             {/* =================================================
                 REQUIREMENTS
             ================================================= */}
-            <div className="tv-navigation" aria-label="Transport views">
+<div className="tv-navigation" aria-label="Transport views">
               <div role="tablist" aria-label="Transport management">{[["current","Current Transport",Truck],["quotes","Quotations",FileText],["history","Change History",RefreshCw]].map(([key,label,Icon])=><button type="button" role="tab" id={`tv-tab-${key}`} aria-controls="tv-content" aria-selected={transportView===key} tabIndex={transportView===key?0:-1} key={key} className={transportView===key?"selected":""} onClick={()=>setTransportView(key)} onKeyDown={event=>{const keys=["current","quotes","history"];let index=keys.indexOf(transportView);if(event.key==="ArrowRight"||event.key==="ArrowLeft"){event.preventDefault();const next=keys[(index+(event.key==="ArrowRight"?1:2))%3];setTransportView(next);document.getElementById(`tv-tab-${next}`)?.focus();}}}><Icon size={15}/>{label}{key==="history" && getTransportReplacementRequests(selectedOrder).some(item=>item.status==="Pending") && <span className="tv-dot" title="Changes awaiting approval"/>}</button>)}</div>
               <span>{transportView==="current"?"Manage approved transporters":transportView==="quotes"?"Add and review quotations":"Track requests and decisions"}</span>
             </div>
             <div className="traffic-modal-body" role="tabpanel" id="tv-content" aria-labelledby={`tv-tab-${transportView}`}>
+
               {isCraneMovement(selectedOrder) && (
                 <section className="traffic-crane-compact">
                   <div className="traffic-crane-compact-main">
@@ -1658,13 +1659,16 @@ const Traffic = () => {
                     {/* =============================================
                           QUOTATION TABLE
                       ============================================= */}
-                    {transportView==="current" && (approvedQuotations.length ? <div className="tv-cards">
-                      {approvedConfirmations.map((approved,index)=>{const quote=approvedQuotations.find(item=>item.quotationId===approved.quotationId);if(!quote)return null;const pending=getPendingTransportReplacement(selectedOrder,approved.confirmationId);return <article className={`tv-card ${pending?"pending":""}`} key={approved.confirmationId}>
-                        <div className="tv-card-top"><span>{Number(quote.quantity)===1?`Vehicle ${index+1}`:`${quote.quantity} vehicles`}</span><span className={`tv-state ${pending?"pending":""}`}>{pending?"Change pending":"Approved"}</span></div>
-                        <div className="tv-card-main"><div><small>TRANSPORTER</small><h4>{quote.transporter||"—"}</h4></div><div><small>APPROVED AMOUNT</small><strong>{formatAmount(quote.amount)}</strong></div></div>
-                        {pending && <div className="tv-request"><div><span>Requested change</span><strong>{pending.proposedTransporter}</strong></div><strong>{formatAmount(pending.proposedAmount)}</strong></div>}
-                        <div className="tv-card-bottom"><span>Allocated by <b>{quote.allocatedBy||quote.quotedBy||"—"}</b></span>{pending?<button type="button" className="tv-view-request" onClick={()=>setTransportView("history")}>View request <ChevronRight size={12}/></button>:<button type="button" className="tv-change" disabled={saving} onClick={()=>openTransportReplacement(requirement,approved,quote)}><RefreshCw size={13}/>Change transporter</button>}</div>
-                      </article>;})}
+                    {transportView==="current" && (approvedQuotations.length ? <div className="traffic-transport-rows">
+                      {approvedConfirmations.map((approved,index)=>{const quote=approvedQuotations.find(item=>item.quotationId===approved.quotationId);if(!quote)return null;const pending=getPendingTransportReplacement(selectedOrder,approved.confirmationId);return <article className={`traffic-transport-row ${pending?"pending":""}`} key={approved.confirmationId}>
+                          <div className="traffic-transport-field"><span>VEHICLES</span><strong>{Number(quote.quantity)===1?`Vehicle ${index+1}`:`${quote.quantity} vehicles`}</strong></div>
+                          <div className="traffic-transport-field"><span>TRANSPORTER</span><strong>{quote.transporter||"—"}</strong></div>
+                          <div className="traffic-transport-field"><span>APPROVED AMOUNT</span><strong className="traffic-transport-price">{formatAmount(quote.amount)}</strong></div>
+                          <div className="traffic-transport-field"><span>ALLOCATED BY</span><strong>{quote.allocatedBy||quote.quotedBy||"—"}</strong></div>
+                          <span className={`tv-state ${pending?"pending":""}`}>{pending?"Change pending":"Approved"}</span>
+                          {pending?<button type="button" className="tv-view-request" onClick={()=>setTransportView("history")}>View request <ChevronRight size={12}/></button>:<button type="button" className="tv-change" disabled={saving} onClick={()=>openTransportReplacement(requirement,approved,quote)}><RefreshCw size={13}/>Change transporter</button>}
+                          {pending && <div className="traffic-transport-pending">Requested change: <strong>{pending.proposedTransporter}</strong><span>{formatAmount(pending.proposedAmount)}</span></div>}
+                        </article>;})}
                     </div>:<div className="tv-empty"><Truck size={23}/><strong>No approved transporters yet</strong><span>Add quotations and send them for approval.</span><button type="button" onClick={()=>setTransportView("quotes")}>Open quotations <ChevronRight size={13}/></button></div>)}
                     {transportView==="quotes" && <section className="tv-quotes">
                     <div className="traffic-quotation-section">

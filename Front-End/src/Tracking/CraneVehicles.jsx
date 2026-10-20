@@ -190,15 +190,12 @@ const CraneVehicles = () => {
                     "Type",
                     "Customer",
                     "LSP",
-                    "From",
-                    "To",
                     "Cargo",
                     "PO No",
                     "LR No",
                     "E-Way",
                     "Weight",
                     "Dimensions (L × H × W)",
-                    "Status",
                     "Action",
                   ].map((heading) => (
                     <th key={heading}>{heading}</th>
@@ -229,10 +226,6 @@ const CraneVehicles = () => {
                           <strong>{text(trip?.customer)}</strong>
                         </td>
                         <td>{text(vehicle.displayLsp)}</td>
-                        <td>{text(vehicle.origin || trip?.origin)}</td>
-                        <td>
-                          {text(vehicle.destination || trip?.destination)}
-                        </td>
                         <td>{text(vehicle.displayCargo)}</td>
                         <td className="crane-mono">
                           {text(vehicle.displayPo)}
@@ -249,13 +242,6 @@ const CraneVehicles = () => {
                             : `${vehicle.weight} TON`}
                         </td>
                         <td>{dimensions(vehicle.dimensions)}</td>
-                        <td>
-                          <span
-                            className={`crane-vehicle-status ${replaced ? "replaced" : "active"}`}
-                          >
-                            {text(vehicle.vehicleStatus || "Active")}
-                          </span>
-                        </td>
                         <td>
                           <button
                             type="button"
@@ -279,7 +265,7 @@ const CraneVehicles = () => {
                   })
                 ) : (
                   <tr>
-                    <td colSpan={14} className="crane-empty">
+                    <td colSpan={11} className="crane-empty">
                       {vehicles.length
                         ? "No vehicles match your search."
                         : "No vehicles have been allocated to this Crane order."}

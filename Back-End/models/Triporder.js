@@ -1182,6 +1182,8 @@ const dailyTrackingSchema = new Schema(
 
 const vehicleReplacementSchema = new Schema(
   {
+    oldAllocationId: { type: String, default: "" },
+    newAllocationId: { type: String, default: "" },
     replacementId: {
       type: String,
 
@@ -1290,6 +1292,15 @@ const craneJourneySchema = new Schema({
 
 const allocatedVehicleSchema = new Schema(
   {
+    allocatedAt: { type: Date, default: null },
+    allocatedBy: { type: String, default: "" },
+    previousAllocationId: { type: String, default: "" },
+    rootAllocationId: { type: String, default: "" },
+    replacedByAllocationId: { type: String, default: "" },
+    originTransportReplacementRequestId: { type: String, default: "" },
+    replacedAt: { type: Date, default: null },
+    replacedBy: { type: String, default: "" },
+    replacementReason: { type: String, default: "" },
     transportReplacementRequestId: { type: String, default: "" },
     transportReplacedAt: { type: Date, default: null },
     transportReplacedBy: { type: String, default: "" },

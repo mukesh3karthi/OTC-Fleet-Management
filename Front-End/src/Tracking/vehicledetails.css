@@ -420,7 +420,7 @@
   left: calc(50% + 19px);
   width: calc(100% - 38px);
   height: 3px;
-  background: #0b979e;
+  background: #dbe5eb;
 }
 .vdt-route li.is-covered:not(:last-child)::after {
   background: #0b979e;
@@ -435,8 +435,8 @@
   width: 23px;
   height: 23px;
   border-radius: 50%;
-  color: #fff;
-  background: #0b979e;
+  color: #8a9eaa;
+  background: #edf2f6;
 }
 .vdt-route li.is-covered .vdt-route-icon {
   color: #fff;
@@ -779,7 +779,6 @@
   border-color: #f0e4cd;
 }
 
-
 .vdt-page .vdt-back:hover,
 .vdt-page .vdt-back:focus-visible {
   background: #164e63;
@@ -789,4 +788,47 @@
 
 .vdt-page .vdt-back:hover svg {
   color: #ffffff;
+}
+/* Current day and saved-location tracking stepper */
+.vdt-route-update {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 2px 0 10px;
+  color: #69838f;
+  font-size: 10px;
+}
+.vdt-route-update strong {
+  display: inline;
+  color: #123447;
+  font-size: 10px;
+}
+.vdt-route li.is-current .vdt-route-icon {
+  background: #078f85;
+  color: #fff;
+  box-shadow: 0 0 0 4px #d6f3ed;
+  animation: vdtLocationPulse 2s ease-in-out infinite;
+}
+.vdt-route li.is-current strong {
+  color: #087f78;
+  font-weight: 750;
+}
+.vdt-route li.is-current small {
+  color: #087f78;
+  font-weight: 700;
+}
+.vdt-route li.is-upcoming strong {
+  color: #8195a1;
+}
+@keyframes vdtLocationPulse {
+  50% {
+    box-shadow: 0 0 0 7px rgba(7, 143, 133, 0.1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .vdt-route li.is-current .vdt-route-icon {
+    animation: none;
+  }
 }

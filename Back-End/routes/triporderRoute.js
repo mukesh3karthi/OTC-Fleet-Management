@@ -10,6 +10,8 @@ router.use(tripAccess);
 
 const {
   saveCraneJourney,
+  saveCraneJourneyDocument,
+  downloadCraneJourneyDocument,
   saveCraneJourneyPod,
   downloadCraneJourneyPod,
   createTrip,
@@ -646,9 +648,31 @@ router.delete(
   deleteTrip,
 );
 
-router.post("/:id/allocated-vehicles/:allocationId/crane-trips", saveCraneJourney);
-router.put("/:id/allocated-vehicles/:allocationId/crane-trips/:journeyId", saveCraneJourney);
+router.post(
+  "/:id/allocated-vehicles/:allocationId/crane-trips",
+  saveCraneJourney,
+);
+router.put(
+  "/:id/allocated-vehicles/:allocationId/crane-trips/:journeyId",
+  saveCraneJourney,
+);
 
-router.put("/:id/allocated-vehicles/:allocationId/crane-trips/:journeyId/pod", uploadMovementDocument, saveCraneJourneyPod);
-router.get("/:id/allocated-vehicles/:allocationId/crane-trips/:journeyId/pod/file", downloadCraneJourneyPod);
+router.put(
+  "/:id/allocated-vehicles/:allocationId/crane-trips/:journeyId/pod",
+  uploadMovementDocument,
+  saveCraneJourneyPod,
+);
+router.get(
+  "/:id/allocated-vehicles/:allocationId/crane-trips/:journeyId/pod/file",
+  downloadCraneJourneyPod,
+);
+router.put(
+  "/:id/allocated-vehicles/:allocationId/crane-trips/:journeyId/:documentType",
+  uploadMovementDocument,
+  saveCraneJourneyDocument,
+);
+router.get(
+  "/:id/allocated-vehicles/:allocationId/crane-trips/:journeyId/:documentType/file",
+  downloadCraneJourneyDocument,
+);
 module.exports = router;

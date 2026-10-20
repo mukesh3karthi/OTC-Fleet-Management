@@ -27,12 +27,7 @@
   gap: 20px;
   overflow: hidden;
   border-radius: 15px;
-  background: linear-gradient(
-    110deg,
-    #082f43 0%,
-    #0a4554 58%,
-    #0c817c 100%
-  );
+  background: linear-gradient(110deg, #082f43 0%, #0a4554 58%, #0c817c 100%);
   box-shadow: 0 10px 28px rgba(7, 49, 67, 0.13);
 }
 
@@ -93,40 +88,6 @@
   display: flex;
   align-items: center;
   gap: 10px;
-}
-
-.live-indicator {
-  height: 34px;
-  padding: 0 12px;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 8px;
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.07);
-  font-size: 10px;
-  font-weight: 700;
-}
-
-.live-indicator span {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #56e2c3;
-  box-shadow: 0 0 0 4px rgba(86, 226, 195, 0.12);
-}
-
-.dashboard-period {
-  height: 34px;
-  padding: 0 13px;
-  display: inline-flex;
-  align-items: center;
-  border-radius: 8px;
-  color: #087a75;
-  background: #e9faf7;
-  font-size: 10px;
-  font-weight: 850;
 }
 
 .control-kpi-grid {
@@ -1322,10 +1283,6 @@
     flex-basis: 42px;
   }
 
-  .live-indicator {
-    flex: 1;
-  }
-
   .health-metrics {
     grid-template-columns: 1fr;
   }
@@ -1439,5 +1396,74 @@
   .control-dashboard .control-card,
   .control-dashboard .active-orders-card {
     animation: none;
+  }
+}
+
+/* Compact KAM filter */
+.control-dashboard .kam-compact-filter {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 205px;
+  height: 36px;
+  padding: 0 11px;
+  gap: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  background: #f2fbf9;
+}
+.control-dashboard .kam-compact-filter__icon {
+  flex-shrink: 0;
+  color: #087f76;
+  font-size: 13px;
+}
+.control-dashboard .kam-compact-filter select {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  margin: 0;
+  padding: 0 18px 0 0;
+  appearance: none;
+  -webkit-appearance: none;
+  border: 0;
+  outline: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #123447;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+/* Remove the inner line */
+.control-dashboard .kam-compact-filter select:focus,
+.control-dashboard .kam-compact-filter select:focus-visible,
+.control-dashboard .kam-compact-filter select:active {
+  outline: none;
+  border: 0;
+  box-shadow: none;
+}
+
+/* Show focus around the whole filter */
+.control-dashboard .kam-compact-filter:focus-within {
+  border-color: #82cfc4;
+  box-shadow: 0 0 0 2px rgba(130, 207, 196, 0.2);
+}
+.control-dashboard .kam-compact-filter option {
+  background: #ffffff;
+  color: #123447;
+}
+.control-dashboard .kam-compact-filter__arrow {
+  position: absolute;
+  right: 11px;
+  color: #087f76;
+  font-size: 9px;
+  pointer-events: none;
+}
+@media (max-width: 650px) {
+  .control-dashboard .kam-compact-filter {
+    width: 100%;
   }
 }

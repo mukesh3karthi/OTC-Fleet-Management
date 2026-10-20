@@ -99,6 +99,15 @@ const extractTrips = (result) => {
 /* =========================================
    NORMALIZE TRIP
 ========================================= */
+// Keep archived allocations in trip data for History; filter current views only.
+const getCurrentVehicles = (trip) =>
+  safeArray(trip?.allocatedVehicles).filter(
+    (vehicle) =>
+      String(vehicle?.vehicleStatus || "")
+        .trim()
+        .toLowerCase() !== "replaced",
+  );
+
 const normalizeTrip = (trip, index) => {
   const allocatedVehicles = safeArray(trip?.allocatedVehicles);
   const vehicleRequirements = safeArray(trip?.vehicleRequirements);
@@ -152,7 +161,7 @@ const getVehicleDisplayStatus = (vehicle) => {
     : "Pending";
 };
 const getTripStatus = (trip) => {
-  const vehicles = safeArray(trip?.allocatedVehicles);
+  const vehicles = getCurrentVehicles(trip);
   if (!vehicles.length) return "Pending";
   const statuses = vehicles.map(getVehicleDisplayStatus);
   const normalized = statuses.map((status) =>
@@ -689,6 +698,7 @@ const StandardTripdetails = ({ movementOnly = false }) => {
         vehicle?.unloading?.pointOutDate,
       ),
       unloadingRemarks: vehicle?.unloading?.remarks || "",
+      lrFile: null,
       lrNumber: vehicle?.lr?.number || "",
       lrDate: vehicle?.lr?.date ? String(vehicle.lr.date).slice(0, 10) : "",
       lrRemarks: vehicle?.lr?.remarks || "",
@@ -705,7 +715,7 @@ const StandardTripdetails = ({ movementOnly = false }) => {
     };
   };
   const handleMovementTrip = (trip) => {
-    const vehicles = safeArray(trip?.allocatedVehicles);
+    const vehicles = getCurrentVehicles(trip);
     setMovementTrip(trip);
     setMovementError("");
     setMovementSuccess("");
@@ -859,12 +869,74 @@ const StandardTripdetails = ({ movementOnly = false }) => {
       type,
       fileName: vehicle?.[type]?.originalName || vehicle?.[type]?.fileName,
     });
-  const saveMovement = async () => {
-    if (!movementTrip || !movementForm || !movementVehicleId) return;
-    const vehicle = safeArray(movementTrip.allocatedVehicles).find(
+  const removeMovementFile = async (type, selectedOnly = false) => {
+    if (!movementTrip || !movementVehicleId || movementSaving) return;
+    const field = { lr: "lrFile", ewayBill: "ewayBillFile", pod: "podFile" }[
+      type
+    ];
+    if (!field) return;
+    if (selectedOnly) {
+      setMovementForm((previous) => ({ ...previous, [field]: null }));
+      setMovementError("");
+      return;
+    }
+    const vehicle = getCurrentVehicles(movementTrip).find(
       (item) => (item.allocationId || item._id) === movementVehicleId,
     );
     if (!vehicle) return;
+    try {
+      setMovementSaving(true);
+      setMovementError("");
+      setMovementSuccess("");
+      const mongoId = movementTrip._id?.$oid || movementTrip._id;
+      const response = await trackingApiFetch(
+        `${API_URL}/${mongoId}/allocated-vehicles/${vehicle.allocationId}/${type}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ removeFile: true }),
+        },
+      );
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok)
+        throw new Error(result?.message || "Unable to remove file.");
+      const updatedVehicle = safeArray(result?.data?.allocatedVehicles).find(
+        (item) => item.allocationId === vehicle.allocationId,
+      );
+      if (!updatedVehicle)
+        throw new Error(
+          "File removal response is incomplete. Refresh the trip.",
+        );
+      setMovementTrip((previous) => ({
+        ...previous,
+        allocatedVehicles: safeArray(previous?.allocatedVehicles).map((item) =>
+          (item.allocationId || item._id) === movementVehicleId
+            ? { ...item, [type]: updatedVehicle[type] || {} }
+            : item,
+        ),
+      }));
+      setMovementForm((previous) => ({ ...previous, [field]: null }));
+      setMovementSuccess("Uploaded file removed. Document details kept.");
+      await fetchTrips(true);
+    } catch (error) {
+      setMovementError(error?.message || "Unable to remove file.");
+    } finally {
+      setMovementSaving(false);
+    }
+  };
+
+  const saveMovement = async () => {
+    if (!movementTrip || !movementForm || !movementVehicleId) return;
+    const vehicle = getCurrentVehicles(movementTrip).find(
+      (item) => (item.allocationId || item._id) === movementVehicleId,
+    );
+    if (!vehicle) return;
+    if (String(vehicle.vehicleStatus || "").toLowerCase() === "replaced") {
+      setMovementError(
+        "This vehicle was replaced. Its saved records are read-only.",
+      );
+      return;
+    }
     const history = safeArray(vehicle.dailyTracking);
     const latest = history.length ? history[history.length - 1] : null;
     const currentLocation = String(movementForm.currentLocation || "").trim();
@@ -892,11 +964,12 @@ const StandardTripdetails = ({ movementOnly = false }) => {
         movementForm.todayKm !== undefined) ||
       String(movementForm.remarks || "").trim(),
     );
-    const shouldSaveTracking = hasMovementEntryData;
     const loadingCompleted =
       String(movementForm.loadingStatus || "")
         .trim()
         .toLowerCase() === "completed";
+    // One save action: allow operations/documents before loading is complete.
+    const shouldSaveTracking = loadingCompleted && hasMovementEntryData;
     const unloadingCompleted =
       String(movementForm.unloadingStatus || "")
         .trim()
@@ -957,12 +1030,6 @@ const StandardTripdetails = ({ movementOnly = false }) => {
     ) {
       setMovementError(
         "Unloading Point Out Date is required when unloading is completed.",
-      );
-      return;
-    }
-    if (shouldSaveTracking && !loadingCompleted) {
-      setMovementError(
-        "Complete Loading Details before adding daily movement.",
       );
       return;
     }
@@ -1154,7 +1221,7 @@ const StandardTripdetails = ({ movementOnly = false }) => {
         number: movementForm.lrNumber,
         date: movementForm.lrDate,
         remarks: movementForm.lrRemarks,
-        file: null,
+        file: movementForm.lrFile,
         existingDocument: vehicle?.lr,
         uploadedBy: movementForm.updatedBy || "Tracking",
         requireFile: false,
@@ -1180,7 +1247,7 @@ const StandardTripdetails = ({ movementOnly = false }) => {
           movementForm.ewayBillNumber,
           movementForm.ewayBillValidUpto,
         ),
-        file: null,
+        file: movementForm.ewayBillFile,
         existingDocument: vehicle?.ewayBill,
         uploadedBy: movementForm.updatedBy || "Tracking",
         requireFile: false,
@@ -1217,9 +1284,9 @@ const StandardTripdetails = ({ movementOnly = false }) => {
       setMovementSuccess(
         shouldSaveTracking
           ? `Movement updated for ${vehicle.vehicleNumber || "vehicle"}.`
-          : `Loading, unloading and documents updated for ${
-              vehicle.vehicleNumber || "vehicle"
-            }.`,
+          : loadingCompleted
+            ? `Loading, unloading and documents updated for ${vehicle.vehicleNumber || "vehicle"}.`
+            : "Loading details and documents saved. Daily movement will be recorded after loading is completed.",
       );
       /*
         Refresh the main Tracking page data after the local popup state
@@ -1261,7 +1328,7 @@ const StandardTripdetails = ({ movementOnly = false }) => {
           payload;
         if (!isCraneTrip(trip))
           throw new Error("This movement page is for Crane orders.");
-        const vehicle = safeArray(trip.allocatedVehicles).find(
+        const vehicle = getCurrentVehicles(trip).find(
           (item) =>
             String(item.allocationId || item._id) === routeParams.allocationId,
         );
@@ -1379,9 +1446,7 @@ const StandardTripdetails = ({ movementOnly = false }) => {
                 </div>
               ) : trips.length > 0 ? (
                 trips.map((trip, index) => {
-                  const allocatedVehicleCount = safeArray(
-                    trip.allocatedVehicles,
-                  ).length;
+                  const allocatedVehicleCount = getCurrentVehicles(trip).length;
                   const requirementVehicleCount = safeArray(
                     trip?.vehicleRequirements,
                   ).reduce((total, requirement) => {
@@ -1618,54 +1683,43 @@ const StandardTripdetails = ({ movementOnly = false }) => {
               </button>
             </header>
             <div className="trip-movement-body">
-              {safeArray(movementTrip.allocatedVehicles).length === 0 ? (
+              {getCurrentVehicles(movementTrip).length === 0 ? (
                 <div className="trip-movement-empty">
                   No allocated vehicles are available for this trip.
                 </div>
               ) : (
                 <>
                   <div className="trip-movement-vehicle-tabs">
-                    {safeArray(movementTrip.allocatedVehicles).map(
-                      (vehicle, index) => {
-                        const id =
-                          vehicle.allocationId ||
-                          vehicle._id ||
-                          `vehicle-${index}`;
-                        const latest = getLatestTracking(vehicle);
-                        return (
-                          <button
-                            type="button"
-                            key={id}
-                            className={`trip-movement-vehicle-tab ${movementVehicleId === id ? "active" : ""}`}
-                            onClick={() => selectMovementVehicle(vehicle)}
-                          >
-                            <Truck size={14} />
-                            <span>
-                              <strong>
-                                {safeText(
-                                  vehicle.vehicleNumber,
-                                  `Vehicle ${index + 1}`,
-                                )}
-                              </strong>
-                              {safeArray(vehicle.replacementHistory).length >
-                                0 && (
-                                <em className="trip-vehicle-replaced-badge">
-                                  Replaced{" "}
-                                  {vehicle.replacementCount ||
-                                    vehicle.replacementHistory.length}
-                                </em>
+                    {getCurrentVehicles(movementTrip).map((vehicle, index) => {
+                      const id =
+                        vehicle.allocationId ||
+                        vehicle._id ||
+                        `vehicle-${index}`;
+                      const latest = getLatestTracking(vehicle);
+                      return (
+                        <button
+                          type="button"
+                          key={id}
+                          className={`trip-movement-vehicle-tab ${movementVehicleId === id ? "active" : ""}`}
+                          onClick={() => selectMovementVehicle(vehicle)}
+                        >
+                          <Truck size={14} />
+                          <span>
+                            <strong>
+                              {safeText(
+                                vehicle.vehicleNumber,
+                                `Vehicle ${index + 1}`,
                               )}
-                              <small>{getVehicleDisplayStatus(vehicle)}</small>
-                            </span>
-                          </button>
-                        );
-                      },
-                    )}
+                            </strong>
+
+                            <small>{getVehicleDisplayStatus(vehicle)}</small>
+                          </span>
+                        </button>
+                      );
+                    })}
                   </div>
                   {(() => {
-                    const vehicle = safeArray(
-                      movementTrip.allocatedVehicles,
-                    ).find(
+                    const vehicle = getCurrentVehicles(movementTrip).find(
                       (item) =>
                         (item.allocationId || item._id) === movementVehicleId,
                     );
@@ -2135,6 +2189,96 @@ const StandardTripdetails = ({ movementOnly = false }) => {
                                   />
                                 </label>
                               </div>
+                              <div
+                                className="trip-pod-upload-row"
+                                style={{
+                                  padding: "0 14px 14px",
+                                  gap: "10px",
+                                  flexWrap: "wrap",
+                                }}
+                              >
+                                <div className="trip-pod-file-info">
+                                  <span className="trip-pod-file-icon">
+                                    <FileText size={16} />
+                                  </span>
+                                  <div>
+                                    <small>DOCUMENT</small>
+                                    <strong
+                                      title={
+                                        movementForm.lrFile?.name ||
+                                        vehicle?.lr?.originalName ||
+                                        vehicle?.lr?.fileName ||
+                                        ""
+                                      }
+                                    >
+                                      {movementForm.lrFile?.name ||
+                                        vehicle?.lr?.originalName ||
+                                        vehicle?.lr?.fileName ||
+                                        "No file selected"}
+                                    </strong>
+                                  </div>
+                                </div>
+                                <div className="trip-pod-actions">
+                                  <label className="trip-document-upload-button">
+                                    <Upload size={13} />
+                                    {vehicle?.lr?.fileName
+                                      ? "Replace File"
+                                      : "Choose File"}
+                                    <input
+                                      key={
+                                        movementForm.lrFile
+                                          ? "selected-lrFile"
+                                          : "empty-lrFile"
+                                      }
+                                      type="file"
+                                      accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                                      disabled={movementSaving}
+                                      onChange={(event) =>
+                                        updateMovementField(
+                                          "lrFile",
+                                          event.target.files?.[0] || null,
+                                        )
+                                      }
+                                    />
+                                  </label>
+                                  {movementForm.lrFile ? (
+                                    <button
+                                      type="button"
+                                      className="trip-document-view-button"
+                                      disabled={movementSaving}
+                                      onClick={() =>
+                                        removeMovementFile("lr", true)
+                                      }
+                                    >
+                                      <X size={13} /> Clear Selected
+                                    </button>
+                                  ) : vehicle?.lr?.fileName ? (
+                                    <button
+                                      type="button"
+                                      className="trip-document-view-button"
+                                      style={{
+                                        color: "#b42318",
+                                        borderColor: "#f1c9c5",
+                                      }}
+                                      disabled={movementSaving}
+                                      onClick={() => removeMovementFile("lr")}
+                                    >
+                                      <X size={13} /> Remove File
+                                    </button>
+                                  ) : null}
+                                  {vehicle?.lr?.fileName && (
+                                    <button
+                                      type="button"
+                                      className="trip-document-view-button"
+                                      onClick={() =>
+                                        viewMovementDocument(vehicle, "lr")
+                                      }
+                                    >
+                                      <Eye size={13} /> View
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
                             </div>
                             <div className="trip-movement-document-card">
                               <div className="trip-movement-document-head">
@@ -2195,6 +2339,101 @@ const StandardTripdetails = ({ movementOnly = false }) => {
                                   />
                                 </label>
                               </div>
+                              <div
+                                className="trip-pod-upload-row"
+                                style={{
+                                  padding: "0 14px 14px",
+                                  gap: "10px",
+                                  flexWrap: "wrap",
+                                }}
+                              >
+                                <div className="trip-pod-file-info">
+                                  <span className="trip-pod-file-icon">
+                                    <FileText size={16} />
+                                  </span>
+                                  <div>
+                                    <small>DOCUMENT</small>
+                                    <strong
+                                      title={
+                                        movementForm.ewayBillFile?.name ||
+                                        vehicle?.ewayBill?.originalName ||
+                                        vehicle?.ewayBill?.fileName ||
+                                        ""
+                                      }
+                                    >
+                                      {movementForm.ewayBillFile?.name ||
+                                        vehicle?.ewayBill?.originalName ||
+                                        vehicle?.ewayBill?.fileName ||
+                                        "No file selected"}
+                                    </strong>
+                                  </div>
+                                </div>
+                                <div className="trip-pod-actions">
+                                  <label className="trip-document-upload-button">
+                                    <Upload size={13} />
+                                    {vehicle?.ewayBill?.fileName
+                                      ? "Replace File"
+                                      : "Choose File"}
+                                    <input
+                                      key={
+                                        movementForm.ewayBillFile
+                                          ? "selected-ewayBillFile"
+                                          : "empty-ewayBillFile"
+                                      }
+                                      type="file"
+                                      accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                                      disabled={movementSaving}
+                                      onChange={(event) =>
+                                        updateMovementField(
+                                          "ewayBillFile",
+                                          event.target.files?.[0] || null,
+                                        )
+                                      }
+                                    />
+                                  </label>
+                                  {movementForm.ewayBillFile ? (
+                                    <button
+                                      type="button"
+                                      className="trip-document-view-button"
+                                      disabled={movementSaving}
+                                      onClick={() =>
+                                        removeMovementFile("ewayBill", true)
+                                      }
+                                    >
+                                      <X size={13} /> Clear Selected
+                                    </button>
+                                  ) : vehicle?.ewayBill?.fileName ? (
+                                    <button
+                                      type="button"
+                                      className="trip-document-view-button"
+                                      style={{
+                                        color: "#b42318",
+                                        borderColor: "#f1c9c5",
+                                      }}
+                                      disabled={movementSaving}
+                                      onClick={() =>
+                                        removeMovementFile("ewayBill")
+                                      }
+                                    >
+                                      <X size={13} /> Remove File
+                                    </button>
+                                  ) : null}
+                                  {vehicle?.ewayBill?.fileName && (
+                                    <button
+                                      type="button"
+                                      className="trip-document-view-button"
+                                      onClick={() =>
+                                        viewMovementDocument(
+                                          vehicle,
+                                          "ewayBill",
+                                        )
+                                      }
+                                    >
+                                      <Eye size={13} /> View
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
                             </div>
                             <div className="trip-movement-document-card trip-pod-full-row">
                               <div className="trip-movement-document-head">
@@ -2253,6 +2492,11 @@ const StandardTripdetails = ({ movementOnly = false }) => {
                                       ? "Replace"
                                       : "Choose File"}
                                     <input
+                                      key={
+                                        movementForm.podFile
+                                          ? "selected-podFile"
+                                          : "empty-podFile"
+                                      }
                                       type="file"
                                       accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
                                       disabled={!unloadingCompleted}
@@ -2264,6 +2508,31 @@ const StandardTripdetails = ({ movementOnly = false }) => {
                                       }
                                     />
                                   </label>
+                                  {movementForm.podFile ? (
+                                    <button
+                                      type="button"
+                                      className="trip-document-view-button"
+                                      disabled={movementSaving}
+                                      onClick={() =>
+                                        removeMovementFile("pod", true)
+                                      }
+                                    >
+                                      <X size={13} /> Clear Selected
+                                    </button>
+                                  ) : vehicle?.pod?.fileName ? (
+                                    <button
+                                      type="button"
+                                      className="trip-document-view-button"
+                                      style={{
+                                        color: "#b42318",
+                                        borderColor: "#f1c9c5",
+                                      }}
+                                      disabled={movementSaving}
+                                      onClick={() => removeMovementFile("pod")}
+                                    >
+                                      <X size={13} /> Remove File
+                                    </button>
+                                  ) : null}
                                   {vehicle?.pod?.fileName && (
                                     <button
                                       type="button"
@@ -2281,11 +2550,16 @@ const StandardTripdetails = ({ movementOnly = false }) => {
                             </div>
                           </div>
                         </section>
-                        <section className="trip-movement-history">
+
+                        <section
+                          id="daily-movement-history"
+                          className="trip-movement-history"
+                          aria-label="Daily Movement History"
+                        >
                           <div className="trip-movement-section-title">
                             <div>
                               <small>HISTORY</small>
-                              <h3>Movement History</h3>
+                              <h3>Daily Movement History</h3>
                             </div>
                             <span>
                               {historyDayCount} Days · {savedUpdateCount}{" "}
@@ -2347,97 +2621,6 @@ const StandardTripdetails = ({ movementOnly = false }) => {
                         {/* =========================================
                       VEHICLE REPLACEMENT HISTORY
                   ========================================= */}
-                        <section className="movement-section movement-replacement-history-section">
-                          <div className="movement-section-header">
-                            <div>
-                              <span className="movement-section-eyebrow">
-                                HISTORY
-                              </span>
-                              <h3>Vehicle Replacement History</h3>
-                            </div>
-                            <span className="movement-history-count">
-                              {
-                                safeArray(
-                                  safeArray(
-                                    movementTrip?.allocatedVehicles,
-                                  ).find(
-                                    (item) =>
-                                      (item.allocationId || item._id) ===
-                                      movementVehicleId,
-                                  )?.replacementHistory,
-                                ).length
-                              }{" "}
-                              Replacements
-                            </span>
-                          </div>
-                          {(() => {
-                            const selectedVehicle = safeArray(
-                              movementTrip?.allocatedVehicles,
-                            ).find(
-                              (item) =>
-                                (item.allocationId || item._id) ===
-                                movementVehicleId,
-                            );
-                            const replacementHistory = safeArray(
-                              selectedVehicle?.replacementHistory,
-                            )
-                              .slice()
-                              .reverse();
-                            if (!replacementHistory.length) {
-                              return (
-                                <div className="movement-replacement-empty">
-                                  <RefreshCw size={16} />
-                                  <span>No vehicle replacement history.</span>
-                                </div>
-                              );
-                            }
-                            return (
-                              <div className="movement-replacement-table-wrap">
-                                <div className="movement-replacement-table-head">
-                                  <span>DATE</span>
-                                  <span>PREVIOUS VEHICLE</span>
-                                  <span>REPLACED WITH</span>
-                                  <span>SOURCE</span>
-                                  <span>REASON</span>
-                                  <span>REPLACED BY</span>
-                                  <span>REMARKS</span>
-                                </div>
-                                <div className="movement-replacement-table-body">
-                                  {replacementHistory.map((item, index) => (
-                                    <div
-                                      className="movement-replacement-table-row"
-                                      key={
-                                        item?.replacementId ||
-                                        `${selectedVehicle?.allocationId}-replacement-${index}`
-                                      }
-                                    >
-                                      <span>
-                                        {item?.replacedAt
-                                          ? formatDate(item.replacedAt)
-                                          : "-"}
-                                      </span>
-                                      <strong className="movement-replacement-old-vehicle">
-                                        {safeText(item?.oldVehicleNumber)}
-                                      </strong>
-                                      <strong className="movement-replacement-new-vehicle">
-                                        {safeText(item?.newVehicleNumber)}
-                                      </strong>
-                                      <span>
-                                        {safeText(
-                                          item?.replacementSource ||
-                                            item?.source,
-                                        )}
-                                      </span>
-                                      <span>{safeText(item?.reason)}</span>
-                                      <span>{safeText(item?.replacedBy)}</span>
-                                      <span>{safeText(item?.remarks)}</span>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            );
-                          })()}
-                        </section>
                       </>
                     );
                   })()}
@@ -2458,6 +2641,7 @@ const StandardTripdetails = ({ movementOnly = false }) => {
                 >
                   Close
                 </button>
+
                 {movementForm && (
                   <button
                     type="button"
@@ -2553,6 +2737,8 @@ const cjformFor = (record, trip, vehicle) => ({
   ewayBillValidUpto: record?.ewayBill?.validUpto
     ? String(record.ewayBill.validUpto).slice(0, 10)
     : "",
+  lrFile: null,
+  ewayBillFile: null,
   podFile: null,
   remarks: record?.remarks || "",
   updatedBy: record?.updatedBy || "",
@@ -2607,6 +2793,11 @@ const CraneJourneyPopup = () => {
     [vehicle],
   );
   const current = journeys.find((j) => j.journeyId === selectedId);
+  const totalHistory = journeys.flatMap((journey, tripIndex) => {
+    const records = cjlist(journey.history);
+    return (records.length ? records : [journey]).map((entry, index) => ({ ...entry, journeyId: journey.journeyId, tripNumber: tripIndex + 1, rowKey: `${journey.journeyId}-${entry.historyId || index}` }));
+  }).sort((a, b) => String(a.date || "").localeCompare(String(b.date || "")) || new Date(a.savedAt || a.updatedAt || 0) - new Date(b.savedAt || b.updatedAt || 0));
+
   const day = form
     ? tripDaysThroughPointOut(
         form.loading.pointInAt,
@@ -2778,6 +2969,8 @@ const CraneJourneyPopup = () => {
         body: JSON.stringify({
           ...form,
           podFile: undefined,
+          lrFile: undefined,
+          ewayBillFile: undefined,
           lr: {
             number: form.lrNumber,
             date: form.lrDate,
@@ -2807,33 +3000,34 @@ const CraneJourneyPopup = () => {
         throw new Error(
           "The server response did not include the saved trip. Refresh to verify it.",
         );
-      setTrip(order);
+      let updatedOrder = order;
+      let updatedVehicle = target;
+      let updatedJourney = saved;
+      const pendingFiles = { lrFile: form.lrFile, ewayBillFile: form.ewayBillFile, podFile: form.podFile };
+      setTrip(updatedOrder);
       setSelectedId(saved.journeyId);
-      setForm(cjformFor(saved, order, target));
-      if (form.podFile) {
+      setForm({ ...cjformFor(updatedJourney, updatedOrder, updatedVehicle), ...pendingFiles });
+      for (const [type, field, label] of [["lr", "lrFile", "LR"], ["ewayBill", "ewayBillFile", "E-Way Bill"], ["pod", "podFile", "POD"]]) {
+        if (!pendingFiles[field]) continue;
         const upload = new FormData();
-        upload.append("document", form.podFile);
+        upload.append("document", pendingFiles[field]);
         upload.append("uploadedBy", form.updatedBy);
+        upload.append("revision", String(updatedJourney.revision));
         const uploaded = await fetch(
-          `${cjBASE}/api/triporders/${encodeURIComponent(order._id)}/allocated-vehicles/${encodeURIComponent(vehicle.allocationId)}/crane-trips/${encodeURIComponent(saved.journeyId)}/pod`,
+          `${cjBASE}/api/triporders/${encodeURIComponent(updatedOrder._id)}/allocated-vehicles/${encodeURIComponent(vehicle.allocationId)}/crane-trips/${encodeURIComponent(saved.journeyId)}/${type}`,
           { method: "PUT", headers: headers(), body: upload },
         );
-        const uploadedResult = await uploaded.json();
-        if (!uploaded.ok) {
-          setForm((previous) => ({ ...previous, podFile: form.podFile }));
-          throw new Error(
-            `Movement saved, but POD upload failed: ${uploadedResult.message || "Retry upload"}`,
-          );
-        }
-        const withPod = cjunwrap(uploadedResult);
-        const uploadedVehicle = cjlist(withPod.allocatedVehicles).find(
-          (v) => v.allocationId === vehicle.allocationId,
-        );
-        const uploadedTrip = cjlist(uploadedVehicle?.craneTrips).find(
-          (j) => j.journeyId === saved.journeyId,
-        );
-        setTrip(withPod);
-        setForm(cjformFor(uploadedTrip, withPod, uploadedVehicle));
+        let uploadedResult;
+        try { uploadedResult = await uploaded.json(); }
+        catch { throw new Error(`Movement saved, but ${label} upload could not be confirmed. Your remaining selected files are kept. Refresh to verify before retrying.`); }
+        if (!uploaded.ok) throw new Error(`Movement saved, but ${label} upload failed: ${uploadedResult.message || "Please retry"}. Remaining selected files are kept.`);
+        updatedOrder = cjunwrap(uploadedResult);
+        updatedVehicle = cjlist(updatedOrder.allocatedVehicles).find(v => v.allocationId === vehicle.allocationId);
+        updatedJourney = cjlist(updatedVehicle?.craneTrips).find(j => j.journeyId === saved.journeyId);
+        if (!updatedJourney) throw new Error("Movement saved, but uploaded document could not be confirmed. Refresh to verify.");
+        pendingFiles[field] = null;
+        setTrip(updatedOrder);
+        setForm({ ...cjformFor(updatedJourney, updatedOrder, updatedVehicle), ...pendingFiles });
       }
       setNotice(
         "Movement saved for this trip. Use Add Trip for another journey on the same date.",
@@ -2844,22 +3038,22 @@ const CraneJourneyPopup = () => {
       setSaving(false);
     }
   };
-  const viewPod = async () => {
+  const viewPod = async (type = "pod") => {
     let preview = window.open("", "_blank");
     try {
-      if (!current?.pod?.fileName) throw new Error("Save a POD file first.");
+      if (!current?.[type]?.fileName) throw new Error("Save a document first.");
       const response = await fetch(
-        `${cjBASE}/api/triporders/${encodeURIComponent(trip._id)}/allocated-vehicles/${encodeURIComponent(vehicle.allocationId)}/crane-trips/${encodeURIComponent(current.journeyId)}/pod/file`,
+        `${cjBASE}/api/triporders/${encodeURIComponent(trip._id)}/allocated-vehicles/${encodeURIComponent(vehicle.allocationId)}/crane-trips/${encodeURIComponent(current.journeyId)}/${type}/file`,
         { headers: headers() },
       );
-      if (!response.ok) throw new Error("Unable to view POD document.");
+      if (!response.ok) throw new Error("Unable to view document.");
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       if (preview) preview.location.href = url;
       else {
         const link = document.createElement("a");
         link.href = url;
-        link.download = current.pod.fileName;
+        link.download = current[type].fileName;
         link.click();
       }
       setTimeout(() => URL.revokeObjectURL(url), 60000);
@@ -2868,6 +3062,14 @@ const CraneJourneyPopup = () => {
       setError(err.message);
     }
   };
+  const documentUpload = (type, field, label) => (
+    <div className="trip-pod-upload-row">
+      <div className="trip-pod-file-info"><span className="trip-pod-file-icon"><FileText size={16} /></span><div><small>{label} FILE</small><strong>{form[field]?.name || current?.[type]?.fileName || "No file selected"}</strong></div></div>
+      <div className="trip-pod-actions"><label className={`trip-document-upload-button ${locked ? "disabled" : ""}`}><Upload size={13} />{current?.[type]?.fileName ? "Replace" : "Upload"}<input key={`${selectedId}-${field}-${form[field] ? "chosen" : "empty"}`} type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" disabled={locked} onChange={event => setField(field, event.target.files?.[0] || null)} /></label>
+      {form[field] && <button type="button" className="trip-document-view-button" disabled={locked} onClick={() => setField(field, null)}>Clear selected</button>}
+      {current?.[type]?.fileName && <button type="button" className="trip-document-view-button" onClick={() => viewPod(type)}><Eye size={13} />View</button>}</div>
+    </div>
+  );
   const input = (name, label, type = "text") => (
     <label>
       <span>{label}</span>
@@ -3197,6 +3399,7 @@ const CraneJourneyPopup = () => {
                           />
                         </label>
                       </div>
+                      {documentUpload("lr", "lrFile", "LR")}
                     </div>
                     <div className="trip-movement-document-card">
                       <div className="trip-movement-document-head">
@@ -3254,6 +3457,7 @@ const CraneJourneyPopup = () => {
                           />
                         </label>
                       </div>
+                      {documentUpload("ewayBill", "ewayBillFile", "E-WAY BILL")}
                     </div>
                     <div className="trip-movement-document-card trip-pod-full-row">
                       <div className="trip-movement-document-head">
@@ -3331,89 +3535,17 @@ const CraneJourneyPopup = () => {
                     </div>
                   </div>
                 </section>
-                <section className="trip-movement-history">
-                  <div className="trip-movement-section-title">
-                    <div>
-                      <small>HISTORY</small>
-                      <h3>Movement History</h3>
-                    </div>
-                    <span>
-                      {new Set(history.map((entry) => entry.date)).size} Days ·{" "}
-                      {cjlist(current?.history).length} Updates
-                    </span>
-                  </div>
-                  {history.length ? (
-                    <div className="trip-movement-history-table">
-                      <div className="trip-movement-history-head">
-                        <span>Date</span>
-                        <span>Day</span>
-                        <span>Location</span>
-                        <span>KM</span>
-                        <span>Status</span>
-                        <span>Remarks</span>
-                      </div>
-                      {history.map((item, index) => (
-                        <div
-                          className="trip-movement-history-row"
-                          key={`${item.date || "movement"}-${index}`}
-                        >
-                          <span>{formatDate(item.date)}</span>
-                          <span>Day {item.day ?? "-"}</span>
-                          <span>
-                            {item.isMissingDay
-                              ? "—"
-                              : safeText(item.currentLocation)}
-                          </span>
-                          <span>
-                            {item.isMissingDay
-                              ? "—"
-                              : `${item.runningKm ?? 0} KM`}
-                          </span>
-                          <span>
-                            {item.isMissingDay ? (
-                              <span>No update</span>
-                            ) : (
-                              <b
-                                className={`trip-history-status ${getStatusClass(item.status)}`}
-                              >
-                                {safeText(item.status, "Idle")}
-                              </b>
-                            )}
-                          </span>
-                          <span>
-                            {item.isMissingDay
-                              ? "No update recorded"
-                              : safeText(item.remarks)}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="trip-movement-empty small">
-                      No movement history yet.
-                    </div>
-                  )}
+                <section className="trip-movement-section cj-total-history" aria-label="Full vehicle movement history">
+                  <div className="trip-movement-section-head"><div><small>ALL TRIPS · SAVED UPDATES</small><h3>Total Movement History</h3></div><span>{totalHistory.length} updates · {journeys.length} trips</span></div>
+                  <div style={{ overflowX: "auto", maxHeight: "380px" }}><table style={{ width: "100%", minWidth: "1100px", borderCollapse: "collapse", fontSize: "11px", textAlign: "left" }}><thead><tr>{["Trip", "Date", "From", "To", "Location", "Start KM", "Today KM", "Running KM", "Status", "Updated by", "Saved at", "Remarks"].map(label => <th key={label} scope="col" style={{ padding: "11px 12px", background: "#edf6f8", color: "#42677b", position: "sticky", top: 0 }}>{label}</th>)}</tr></thead><tbody>
+                    {totalHistory.map(entry => <tr key={entry.rowKey}>{[
+                      `Trip ${entry.tripNumber}`, entry.date, entry.origin, entry.destination, entry.currentLocation, entry.startKm, entry.endKm,
+                      entry.endKm != null && entry.startKm != null ? Number(entry.endKm) - Number(entry.startKm) : null,
+                      entry.status, entry.updatedBy, cjformatTime(entry.savedAt || entry.updatedAt), entry.remarks,
+                    ].map((value, index) => <td key={index} style={{ padding: "10px 12px", borderBottom: "1px solid #e5edf2", color: "#254b5e" }}>{cjdisplay(value)}</td>)}</tr>)}
+                    {!totalHistory.length && <tr><td colSpan={12} style={{ padding: "24px", textAlign: "center" }}>No saved movement history yet.</td></tr>}
+                  </tbody></table></div>
                 </section>
-                {cjlist(vehicle.dailyTracking).length > 0 && (
-                  <details
-                    className="trip-movement-form-card"
-                    style={{ padding: 16 }}
-                  >
-                    <summary>
-                      Previous vehicle movement history (
-                      {vehicle.dailyTracking.length} updates)
-                    </summary>
-                    {[...vehicle.dailyTracking]
-                      .reverse()
-                      .map((entry, index) => (
-                        <p key={entry.trackingId || index}>
-                          {cjformatTime(entry.date)} ·{" "}
-                          {cjdisplay(entry.currentLocation)} ·{" "}
-                          {cjdisplay(entry.status)} · {cjdisplay(entry.remarks)}
-                        </p>
-                      ))}
-                  </details>
-                )}
               </>
             )}
           </div>

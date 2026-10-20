@@ -27,7 +27,13 @@ const trackingApiFetch = (url, options = {}) => {
   headers.set("Authorization", `Bearer ${token}`);
   return fetch(url, { ...options, headers });
 };
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 import {
   ArrowLeft,
@@ -409,65 +415,71 @@ const AllocateVehicle = () => {
      FETCH ORDERS
   ======================================================= */
 
-  const fetchOrders = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError("");
+  const fetchOrders = useCallback(
+    async (options = {}) => {
+      try {
+        if (!options.silent) setLoading(true);
+        setError("");
 
-      const response = await trackingApiFetch(API_URL);
+        const response = await trackingApiFetch(API_URL);
 
-      const payload = await response.json();
+        const payload = await response.json();
 
-      if (!response.ok) {
-        throw new Error(payload?.message || "Unable to load tracking orders.");
+        if (!response.ok) {
+          throw new Error(
+            payload?.message || "Unable to load tracking orders.",
+          );
+        }
+
+        const result = getResponseData(payload);
+
+        const allOrders = Array.isArray(result) ? result : [];
+
+        /*
+         * TRACKING INPUT ELIGIBILITY:
+         *
+         * PO Document and Vendor Finalization are OPTIONAL.
+         *
+         * Once an order is placed/released to Tracking,
+         * show it here even when PO, quotation, vendor
+         * finalization, or vehicle allocation is pending.
+         */
+        const eligibleOrders = allOrders.filter(isTrackingEligibleOrder);
+
+        setOrders(eligibleOrders);
+
+        setSelectedOrderId((previous) => {
+          if (
+            previous &&
+            eligibleOrders.some((order) => getMongoId(order) === previous)
+          ) {
+            return previous;
+          }
+
+          const incomingId = getMongoId(incomingTrip);
+
+          if (
+            incomingId &&
+            eligibleOrders.some((order) => getMongoId(order) === incomingId)
+          ) {
+            return incomingId;
+          }
+
+          return getMongoId(eligibleOrders[0]) || "";
+        });
+      } catch (fetchError) {
+        console.error(fetchError);
+
+        if (!options.silent) setOrders([]);
+
+        setError(fetchError.message || "Unable to load tracking orders.");
+        if (options.silent) throw fetchError;
+      } finally {
+        if (!options.silent) setLoading(false);
       }
-
-      const result = getResponseData(payload);
-
-      const allOrders = Array.isArray(result) ? result : [];
-
-      /*
-       * TRACKING INPUT ELIGIBILITY:
-       *
-       * PO Document and Vendor Finalization are OPTIONAL.
-       *
-       * Once an order is placed/released to Tracking,
-       * show it here even when PO, quotation, vendor
-       * finalization, or vehicle allocation is pending.
-       */
-      const eligibleOrders = allOrders.filter(isTrackingEligibleOrder);
-
-      setOrders(eligibleOrders);
-
-      setSelectedOrderId((previous) => {
-        if (
-          previous &&
-          eligibleOrders.some((order) => getMongoId(order) === previous)
-        ) {
-          return previous;
-        }
-
-        const incomingId = getMongoId(incomingTrip);
-
-        if (
-          incomingId &&
-          eligibleOrders.some((order) => getMongoId(order) === incomingId)
-        ) {
-          return incomingId;
-        }
-
-        return getMongoId(eligibleOrders[0]) || "";
-      });
-    } catch (fetchError) {
-      console.error(fetchError);
-
-      setOrders([]);
-
-      setError(fetchError.message || "Unable to load tracking orders.");
-    } finally {
-      setLoading(false);
-    }
-  }, [incomingTrip]);
+    },
+    [incomingTrip],
+  );
 
   useEffect(() => {
     fetchOrders();
@@ -518,7 +530,11 @@ const AllocateVehicle = () => {
       return;
     }
 
-    setActiveVehicleModal(allocations[0].allocationId);
+    const firstCurrent = allocations.find(
+      (allocation) =>
+        String(allocation?.vehicleStatus || "").toLowerCase() !== "replaced",
+    );
+    if (firstCurrent) setActiveVehicleModal(firstCurrent.allocationId);
   }, [incomingMode, allocations, activeVehicleModal]);
 
   /* =======================================================
@@ -560,6 +576,7 @@ const AllocateVehicle = () => {
   };
 
   const closeAllocationForm = (requirementId) => {
+    if (saving) return;
     setAllocationForms((previous) => {
       const next = {
         ...previous,
@@ -743,6 +760,10 @@ const AllocateVehicle = () => {
   ======================================================= */
 
   const openReplacementForm = (allocation) => {
+    if (String(allocation?.vehicleStatus || "").toLowerCase() === "replaced") {
+      setError("This vehicle was replaced. Its saved records are read-only.");
+      return;
+    }
     setReplacementForm({
       allocationId: allocation.allocationId,
       oldVehicleNumber: allocation.vehicleNumber || "",
@@ -894,6 +915,10 @@ const AllocateVehicle = () => {
   ======================================================= */
 
   const handleUpdateAllocation = async (allocation) => {
+    if (String(allocation?.vehicleStatus || "").toLowerCase() === "replaced") {
+      setError("This vehicle was replaced. Its saved records are read-only.");
+      return;
+    }
     if (!selectedOrder || !allocation?.allocationId) {
       return;
     }
@@ -1002,6 +1027,10 @@ const AllocateVehicle = () => {
   ======================================================= */
 
   const openTrackingForm = (allocation) => {
+    if (String(allocation?.vehicleStatus || "").toLowerCase() === "replaced") {
+      setError("This vehicle was replaced. Its saved records are read-only.");
+      return;
+    }
     setTrackingForms((previous) => ({
       ...previous,
 
@@ -1040,6 +1069,10 @@ const AllocateVehicle = () => {
   ======================================================= */
 
   const handleAddTracking = async (allocation) => {
+    if (String(allocation?.vehicleStatus || "").toLowerCase() === "replaced") {
+      setError("This vehicle was replaced. Its saved records are read-only.");
+      return;
+    }
     if (!selectedOrder || !allocation?.allocationId) {
       return;
     }
@@ -1600,7 +1633,7 @@ const AllocateVehicle = () => {
                                       <td>
                                         {isCraneOrder(selectedOrder)
                                           ? "Multiple"
-                                          : (requirement.quantity ?? "—")}
+                                          : approvedQuantity}
                                       </td>
 
                                       <td>
@@ -1692,7 +1725,9 @@ const AllocateVehicle = () => {
                                           }
                                         }}
                                       >
-                                        <div className="tracking-allocation-modal">
+                                        <div
+                                          className={`tracking-allocation-modal${isCraneOrder(selectedOrder) ? " crane-compact-modal" : ""}`}
+                                        >
                                           <div className="tracking-allocation-modal-head">
                                             <div className="tracking-allocation-modal-title">
                                               <span className="tracking-vehicle-number-icon">
@@ -1728,192 +1763,279 @@ const AllocateVehicle = () => {
                                           </div>
 
                                           <div className="tracking-allocation-modal-body">
-                                            <article className="tracking-vehicle-entry-card tracking-vehicle-expanded-card tracking-required-allocation-form">
-                                              <section className="allocation-details-v2">
-                                                <div className="allocation-details-heading">
-                                                  <strong>
-                                                    Vehicle &amp; Cargo
-                                                  </strong>
-                                                  <span>
-                                                    Vehicle information and
-                                                    transport documents
-                                                  </span>
-                                                </div>
-                                                <div className="allocation-details-inputs">
-                                                  {[
-                                                    [
-                                                      "Vehicle Type",
-                                                      "vehicleType",
-                                                      "e.g. Trailer",
-                                                    ],
-                                                    [
-                                                      "LSP",
-                                                      "lsp",
-                                                      "Logistics provider",
-                                                    ],
-                                                    [
-                                                      "Cargo",
-                                                      "cargo",
-                                                      "Cargo description",
-                                                    ],
-                                                    [
-                                                      "Weight (Tons)",
-                                                      "weight",
-                                                      "0.00",
-                                                    ],
-                                                    [
-                                                      "LR No",
-                                                      "lrNo",
-                                                      "LR number",
-                                                    ],
-                                                    [
-                                                      "E-Way No",
-                                                      "ewayNo",
-                                                      "E-Way bill number",
-                                                    ],
-                                                  ].map(
-                                                    ([
-                                                      label,
-                                                      name,
-                                                      placeholder,
-                                                    ]) => (
-                                                      <FormField
-                                                        key={name}
-                                                        label={label}
-                                                        name={name}
-                                                        type={
-                                                          name === "weight"
-                                                            ? "number"
-                                                            : "text"
-                                                        }
-                                                        min={
-                                                          name === "weight"
-                                                            ? "0"
-                                                            : undefined
-                                                        }
-                                                        step={
-                                                          name === "weight"
-                                                            ? "0.01"
-                                                            : undefined
-                                                        }
-                                                        value={
-                                                          allocationForm[
-                                                            name
-                                                          ] ?? ""
-                                                        }
-                                                        onChange={(event) =>
-                                                          handleAllocationChange(
-                                                            requirementId,
-                                                            event,
-                                                          )
-                                                        }
-                                                        placeholder={
-                                                          placeholder
-                                                        }
-                                                      />
-                                                    ),
+                                            {isCraneOrder(selectedOrder) ? (
+                                              <CraneBulkAllocation
+                                                onBusyChange={setSaving}
+                                                existingNumbers={allocations
+                                                  .filter(
+                                                    (item) =>
+                                                      String(
+                                                        item.vehicleStatus ||
+                                                          "",
+                                                      )
+                                                        .trim()
+                                                        .toLowerCase() !==
+                                                      "replaced",
+                                                  )
+                                                  .map(
+                                                    (item) =>
+                                                      item.vehicleNumber,
                                                   )}
-                                                  <fieldset className="allocation-dimensions-v2">
-                                                    <legend>
-                                                      Dimensions{" "}
-                                                      <span>(Feet)</span>
-                                                    </legend>
-                                                    <div>
-                                                      {[
-                                                        ["Length", "length"],
-                                                        ["Height", "height"],
-                                                        ["Width", "width"],
-                                                      ].map(([label, name]) => (
-                                                        <FormField
-                                                          key={name}
-                                                          label={label}
-                                                          name={name}
-                                                          type="number"
-                                                          min="0"
-                                                          step="0.01"
-                                                          value={
-                                                            allocationForm[
-                                                              name
-                                                            ] ?? ""
-                                                          }
-                                                          placeholder="0.00"
-                                                          onChange={(event) =>
-                                                            handleAllocationChange(
-                                                              requirementId,
-                                                              event,
-                                                            )
-                                                          }
-                                                        />
-                                                      ))}
+                                                onCancel={() =>
+                                                  closeAllocationForm(
+                                                    requirementId,
+                                                  )
+                                                }
+                                                onFinished={async (count) => {
+                                                  setSuccess(
+                                                    `${count} vehicles allocated successfully.`,
+                                                  );
+                                                  await fetchOrders({
+                                                    silent: true,
+                                                  });
+                                                }}
+                                                onSaveRow={async (row) => {
+                                                  const text = (value) =>
+                                                    String(value || "").trim();
+                                                  const response =
+                                                    await trackingApiFetch(
+                                                      `${API_URL}/${getMongoId(selectedOrder)}/allocated-vehicles`,
+                                                      {
+                                                        method: "POST",
+                                                        headers: {
+                                                          "Content-Type":
+                                                            "application/json",
+                                                        },
+                                                        body: JSON.stringify({
+                                                          requirementId,
+                                                          confirmationId:
+                                                            confirmation.confirmationId,
+                                                          quotationId:
+                                                            quotation.quotationId,
+                                                          vehicleNumber:
+                                                            row.vehicleNumber,
+                                                          vehicleType: text(
+                                                            row.vehicleType,
+                                                          ),
+                                                          lsp: text(row.lsp),
+                                                          cargo: text(
+                                                            row.cargo,
+                                                          ),
+                                                          weight:
+                                                            row.weight === ""
+                                                              ? null
+                                                              : Number(
+                                                                  row.weight,
+                                                                ),
+                                                          dimensions:
+                                                            Object.fromEntries(
+                                                              [
+                                                                "length",
+                                                                "height",
+                                                                "width",
+                                                              ].map((key) => [
+                                                                key,
+                                                                row[key] === ""
+                                                                  ? null
+                                                                  : Number(
+                                                                      row[key],
+                                                                    ),
+                                                              ]),
+                                                            ),
+                                                          lr: {
+                                                            number: text(
+                                                              row.lrNo,
+                                                            ),
+                                                          },
+                                                          ewayBill: {
+                                                            number: text(
+                                                              row.ewayNo,
+                                                            ),
+                                                          },
+                                                          driver: {
+                                                            name: text(
+                                                              row.driverName,
+                                                            ),
+                                                            contactNumber: text(
+                                                              row.driverContactNumber,
+                                                            ),
+                                                          },
+                                                          escort: {
+                                                            vehicleNumber: text(
+                                                              row.escortVehicleNumber,
+                                                            ).toUpperCase(),
+                                                            name: text(
+                                                              row.escortName,
+                                                            ),
+                                                            contactNumber: text(
+                                                              row.escortContactNumber,
+                                                            ),
+                                                          },
+                                                          supervisor: {
+                                                            name: text(
+                                                              row.supervisorName,
+                                                            ),
+                                                            contactNumber: text(
+                                                              row.supervisorContactNumber,
+                                                            ),
+                                                          },
+                                                        }),
+                                                      },
+                                                    );
+                                                  const result =
+                                                    await response.json();
+                                                  if (!response.ok)
+                                                    throw new Error(
+                                                      result?.message ||
+                                                        "Unable to allocate vehicle.",
+                                                    );
+                                                }}
+                                              />
+                                            ) : (
+                                              <article className="tracking-vehicle-entry-card tracking-vehicle-expanded-card tracking-required-allocation-form">
+                                                {isCraneOrder(
+                                                  selectedOrder,
+                                                ) && (
+                                                  <section className="allocation-details-v2">
+                                                    <div className="allocation-details-heading">
+                                                      <strong>
+                                                        Vehicle &amp; Cargo
+                                                      </strong>
+                                                      <span>
+                                                        Vehicle information and
+                                                        transport documents
+                                                      </span>
                                                     </div>
-                                                  </fieldset>
-                                                </div>
-                                              </section>
+                                                    <div className="allocation-details-inputs">
+                                                      {[
+                                                        [
+                                                          "Vehicle Type",
+                                                          "vehicleType",
+                                                          "e.g. Trailer",
+                                                        ],
+                                                        [
+                                                          "LSP",
+                                                          "lsp",
+                                                          "Logistics provider",
+                                                        ],
+                                                        [
+                                                          "Cargo",
+                                                          "cargo",
+                                                          "Cargo description",
+                                                        ],
+                                                        [
+                                                          "Weight (Tons)",
+                                                          "weight",
+                                                          "0.00",
+                                                        ],
+                                                        [
+                                                          "LR No",
+                                                          "lrNo",
+                                                          "LR number",
+                                                        ],
+                                                        [
+                                                          "E-Way No",
+                                                          "ewayNo",
+                                                          "E-Way bill number",
+                                                        ],
+                                                      ].map(
+                                                        ([
+                                                          label,
+                                                          name,
+                                                          placeholder,
+                                                        ]) => (
+                                                          <FormField
+                                                            key={name}
+                                                            label={label}
+                                                            name={name}
+                                                            type={
+                                                              name === "weight"
+                                                                ? "number"
+                                                                : "text"
+                                                            }
+                                                            min={
+                                                              name === "weight"
+                                                                ? "0"
+                                                                : undefined
+                                                            }
+                                                            step={
+                                                              name === "weight"
+                                                                ? "0.01"
+                                                                : undefined
+                                                            }
+                                                            value={
+                                                              allocationForm[
+                                                                name
+                                                              ] ?? ""
+                                                            }
+                                                            onChange={(event) =>
+                                                              handleAllocationChange(
+                                                                requirementId,
+                                                                event,
+                                                              )
+                                                            }
+                                                            placeholder={
+                                                              placeholder
+                                                            }
+                                                          />
+                                                        ),
+                                                      )}
+                                                      <fieldset className="allocation-dimensions-v2">
+                                                        <legend>
+                                                          Dimensions{" "}
+                                                          <span>(Feet)</span>
+                                                        </legend>
+                                                        <div>
+                                                          {[
+                                                            [
+                                                              "Length",
+                                                              "length",
+                                                            ],
+                                                            [
+                                                              "Height",
+                                                              "height",
+                                                            ],
+                                                            ["Width", "width"],
+                                                          ].map(
+                                                            ([label, name]) => (
+                                                              <FormField
+                                                                key={name}
+                                                                label={label}
+                                                                name={name}
+                                                                type="number"
+                                                                min="0"
+                                                                step="0.01"
+                                                                value={
+                                                                  allocationForm[
+                                                                    name
+                                                                  ] ?? ""
+                                                                }
+                                                                placeholder="0.00"
+                                                                onChange={(
+                                                                  event,
+                                                                ) =>
+                                                                  handleAllocationChange(
+                                                                    requirementId,
+                                                                    event,
+                                                                  )
+                                                                }
+                                                              />
+                                                            ),
+                                                          )}
+                                                        </div>
+                                                      </fieldset>
+                                                    </div>
+                                                  </section>
+                                                )}
 
-                                              <div className="tracking-vehicle-entry-grid tracking-driver-data-grid">
-                                                <FormField
-                                                  label="Vehicle Number"
-                                                  required
-                                                  icon={<Truck size={15} />}
-                                                  name="vehicleNumber"
-                                                  value={
-                                                    allocationForm.vehicleNumber
-                                                  }
-                                                  onChange={(event) =>
-                                                    handleAllocationChange(
-                                                      requirementId,
-                                                      event,
-                                                    )
-                                                  }
-                                                  placeholder="KA01AB1234"
-                                                />
-
-                                                <FormField
-                                                  label="Driver Name"
-                                                  icon={<UserRound size={15} />}
-                                                  name="driverName"
-                                                  value={
-                                                    allocationForm.driverName
-                                                  }
-                                                  onChange={(event) =>
-                                                    handleAllocationChange(
-                                                      requirementId,
-                                                      event,
-                                                    )
-                                                  }
-                                                  placeholder="Driver name"
-                                                />
-
-                                                <FormField
-                                                  label="Driver Contact Number"
-                                                  icon={<UserRound size={15} />}
-                                                  name="driverContactNumber"
-                                                  value={
-                                                    allocationForm.driverContactNumber
-                                                  }
-                                                  onChange={(event) =>
-                                                    handleAllocationChange(
-                                                      requirementId,
-                                                      event,
-                                                    )
-                                                  }
-                                                  placeholder="Contact number"
-                                                />
-                                              </div>
-
-                                              <div className="tracking-trip-support-grid">
-                                                <SupportCard
-                                                  title="Escort Details"
-                                                  subtitle="Vehicle-specific escort information"
-                                                  icon={<Truck size={15} />}
-                                                  className="escort"
-                                                >
+                                                <div className="tracking-vehicle-entry-grid tracking-driver-data-grid">
                                                   <FormField
-                                                    label="Escort Vehicle Number"
+                                                    label="Vehicle Number"
+                                                    required
                                                     icon={<Truck size={15} />}
-                                                    name="escortVehicleNumber"
+                                                    name="vehicleNumber"
                                                     value={
-                                                      allocationForm.escortVehicleNumber
+                                                      allocationForm.vehicleNumber
                                                     }
                                                     onChange={(event) =>
                                                       handleAllocationChange(
@@ -1921,17 +2043,17 @@ const AllocateVehicle = () => {
                                                         event,
                                                       )
                                                     }
-                                                    placeholder="Escort vehicle"
+                                                    placeholder="KA01AB1234"
                                                   />
 
                                                   <FormField
-                                                    label="Escort Name"
+                                                    label="Driver Name"
                                                     icon={
                                                       <UserRound size={15} />
                                                     }
-                                                    name="escortName"
+                                                    name="driverName"
                                                     value={
-                                                      allocationForm.escortName
+                                                      allocationForm.driverName
                                                     }
                                                     onChange={(event) =>
                                                       handleAllocationChange(
@@ -1939,17 +2061,17 @@ const AllocateVehicle = () => {
                                                         event,
                                                       )
                                                     }
-                                                    placeholder="Escort name"
+                                                    placeholder="Driver name"
                                                   />
 
                                                   <FormField
-                                                    label="Escort Contact Number"
+                                                    label="Driver Contact Number"
                                                     icon={
                                                       <UserRound size={15} />
                                                     }
-                                                    name="escortContactNumber"
+                                                    name="driverContactNumber"
                                                     value={
-                                                      allocationForm.escortContactNumber
+                                                      allocationForm.driverContactNumber
                                                     }
                                                     onChange={(event) =>
                                                       handleAllocationChange(
@@ -1959,92 +2081,155 @@ const AllocateVehicle = () => {
                                                     }
                                                     placeholder="Contact number"
                                                   />
-                                                </SupportCard>
-
-                                                <SupportCard
-                                                  title="Supervisor Details"
-                                                  subtitle="Vehicle-specific supervisor information"
-                                                  icon={<UserRound size={15} />}
-                                                  className="supervisor"
-                                                >
-                                                  <FormField
-                                                    label="Supervisor Name"
-                                                    icon={
-                                                      <UserRound size={15} />
-                                                    }
-                                                    name="supervisorName"
-                                                    value={
-                                                      allocationForm.supervisorName
-                                                    }
-                                                    onChange={(event) =>
-                                                      handleAllocationChange(
-                                                        requirementId,
-                                                        event,
-                                                      )
-                                                    }
-                                                    placeholder="Supervisor name"
-                                                  />
-
-                                                  <FormField
-                                                    label="Supervisor Contact"
-                                                    icon={
-                                                      <UserRound size={15} />
-                                                    }
-                                                    name="supervisorContactNumber"
-                                                    value={
-                                                      allocationForm.supervisorContactNumber
-                                                    }
-                                                    onChange={(event) =>
-                                                      handleAllocationChange(
-                                                        requirementId,
-                                                        event,
-                                                      )
-                                                    }
-                                                    placeholder="Contact number"
-                                                  />
-                                                </SupportCard>
-                                              </div>
-
-                                              <div className="tracking-form-footer">
-                                                <div />
-
-                                                <div className="tracking-form-footer-actions">
-                                                  <button
-                                                    type="button"
-                                                    className="tracking-form-cancel"
-                                                    disabled={saving}
-                                                    onClick={() =>
-                                                      closeAllocationForm(
-                                                        requirementId,
-                                                      )
-                                                    }
-                                                  >
-                                                    Cancel
-                                                  </button>
-
-                                                  <button
-                                                    type="button"
-                                                    className="tracking-form-save"
-                                                    disabled={saving}
-                                                    onClick={() =>
-                                                      handleAllocateVehicle(
-                                                        requirement,
-                                                        confirmation,
-                                                        quotation,
-                                                      )
-                                                    }
-                                                  >
-                                                    <Save size={15} />
-
-                                                    <span>
-                                                      {saving
-                                                        ? "Saving..."
-                                                        : "Allocate Vehicle"}
-                                                    </span>
-                                                  </button>
                                                 </div>
-                                              </div>
-                                            </article>
+
+                                                <div className="tracking-trip-support-grid">
+                                                  <SupportCard
+                                                    title="Escort Details"
+                                                    subtitle="Vehicle-specific escort information"
+                                                    icon={<Truck size={15} />}
+                                                    className="escort"
+                                                  >
+                                                    <FormField
+                                                      label="Escort Vehicle Number"
+                                                      icon={<Truck size={15} />}
+                                                      name="escortVehicleNumber"
+                                                      value={
+                                                        allocationForm.escortVehicleNumber
+                                                      }
+                                                      onChange={(event) =>
+                                                        handleAllocationChange(
+                                                          requirementId,
+                                                          event,
+                                                        )
+                                                      }
+                                                      placeholder="Escort vehicle"
+                                                    />
+
+                                                    <FormField
+                                                      label="Escort Name"
+                                                      icon={
+                                                        <UserRound size={15} />
+                                                      }
+                                                      name="escortName"
+                                                      value={
+                                                        allocationForm.escortName
+                                                      }
+                                                      onChange={(event) =>
+                                                        handleAllocationChange(
+                                                          requirementId,
+                                                          event,
+                                                        )
+                                                      }
+                                                      placeholder="Escort name"
+                                                    />
+
+                                                    <FormField
+                                                      label="Escort Contact Number"
+                                                      icon={
+                                                        <UserRound size={15} />
+                                                      }
+                                                      name="escortContactNumber"
+                                                      value={
+                                                        allocationForm.escortContactNumber
+                                                      }
+                                                      onChange={(event) =>
+                                                        handleAllocationChange(
+                                                          requirementId,
+                                                          event,
+                                                        )
+                                                      }
+                                                      placeholder="Contact number"
+                                                    />
+                                                  </SupportCard>
+
+                                                  <SupportCard
+                                                    title="Supervisor Details"
+                                                    subtitle="Vehicle-specific supervisor information"
+                                                    icon={
+                                                      <UserRound size={15} />
+                                                    }
+                                                    className="supervisor"
+                                                  >
+                                                    <FormField
+                                                      label="Supervisor Name"
+                                                      icon={
+                                                        <UserRound size={15} />
+                                                      }
+                                                      name="supervisorName"
+                                                      value={
+                                                        allocationForm.supervisorName
+                                                      }
+                                                      onChange={(event) =>
+                                                        handleAllocationChange(
+                                                          requirementId,
+                                                          event,
+                                                        )
+                                                      }
+                                                      placeholder="Supervisor name"
+                                                    />
+
+                                                    <FormField
+                                                      label="Supervisor Contact"
+                                                      icon={
+                                                        <UserRound size={15} />
+                                                      }
+                                                      name="supervisorContactNumber"
+                                                      value={
+                                                        allocationForm.supervisorContactNumber
+                                                      }
+                                                      onChange={(event) =>
+                                                        handleAllocationChange(
+                                                          requirementId,
+                                                          event,
+                                                        )
+                                                      }
+                                                      placeholder="Contact number"
+                                                    />
+                                                  </SupportCard>
+                                                </div>
+
+                                                <div className="tracking-form-footer">
+                                                  <div />
+
+                                                  <div className="tracking-form-footer-actions">
+                                                    <button
+                                                      type="button"
+                                                      className="tracking-form-cancel"
+                                                      disabled={saving}
+                                                      onClick={() =>
+                                                        closeAllocationForm(
+                                                          requirementId,
+                                                        )
+                                                      }
+                                                    >
+                                                      Cancel
+                                                    </button>
+
+                                                    <button
+                                                      type="button"
+                                                      className="tracking-form-save"
+                                                      disabled={saving}
+                                                      onClick={() =>
+                                                        handleAllocateVehicle(
+                                                          requirement,
+                                                          confirmation,
+                                                          quotation,
+                                                        )
+                                                      }
+                                                    >
+                                                      <Save size={15} />
+
+                                                      <span>
+                                                        {saving
+                                                          ? "Saving..."
+                                                          : "Allocate Vehicle"}
+                                                      </span>
+                                                    </button>
+                                                  </div>
+                                                </div>
+                                              </article>
+                                            )}
                                           </div>
                                         </div>
                                       </div>
@@ -2073,1373 +2258,1433 @@ const AllocateVehicle = () => {
                   subtitle="Manage driver, escort, supervisor, loading, unloading and daily movement."
                 >
                   <span className="tracking-trip-id-badge">
-                    {allocations.length} Vehicles
+                    {
+                      allocations.filter(
+                        (allocation) =>
+                          String(
+                            allocation?.vehicleStatus || "",
+                          ).toLowerCase() !== "replaced",
+                      ).length
+                    }{" "}
+                    Current vehicles
                   </span>
                 </CardHeader>
 
                 <div className="tracking-form-card-body">
-                  {allocations.length === 0 ? (
+                  <VehicleAllocationHistory
+                    order={selectedOrder}
+                    showAmounts={false}
+                  />
+                  {allocations.filter(
+                    (allocation) =>
+                      String(allocation?.vehicleStatus || "").toLowerCase() !==
+                      "replaced",
+                  ).length === 0 ? (
                     <div className="tracking-route-location-empty">
-                      No actual vehicles have been allocated yet.
+                      No current vehicle is allocated. Use Allocate above to add
+                      a vehicle.
                     </div>
                   ) : (
                     <div className="tracking-vehicle-list">
-                      {allocations.map((allocation, index) => {
-                        const requirement = getRequirement(
-                          selectedOrder,
-                          allocation.requirementId,
-                        );
-
-                        const confirmation =
-                          getConfirmation(
-                            selectedOrder,
-                            allocation.confirmationId,
-                          ) ||
-                          getApprovedConfirmation(
+                      {allocations
+                        .filter(
+                          (allocation) =>
+                            String(
+                              allocation?.vehicleStatus || "",
+                            ).toLowerCase() !== "replaced",
+                        )
+                        .map((allocation, index) => {
+                          const requirement = getRequirement(
                             selectedOrder,
                             allocation.requirementId,
                           );
 
-                        const quotation = getQuotation(
-                          selectedOrder,
-                          allocation.quotationId || confirmation?.quotationId,
-                        );
+                          const confirmation =
+                            getConfirmation(
+                              selectedOrder,
+                              allocation.confirmationId,
+                            ) ||
+                            getApprovedConfirmation(
+                              selectedOrder,
+                              allocation.requirementId,
+                            );
 
-                        const latest = getLatestTracking(allocation);
+                          const quotation = getQuotation(
+                            selectedOrder,
+                            allocation.quotationId || confirmation?.quotationId,
+                          );
 
-                        const trackingForm =
-                          trackingForms[allocation.allocationId];
+                          const latest = getLatestTracking(allocation);
 
-                        return (
-                          <article
-                            key={allocation.allocationId}
-                            className="tracking-vehicle-entry-card tracking-vehicle-expanded-card"
-                          >
-                            <div className="tracking-vehicle-entry-header">
-                              <div className="tracking-vehicle-entry-title">
-                                <span className="tracking-vehicle-number-icon">
-                                  <Truck size={15} />
-                                </span>
+                          const trackingForm =
+                            trackingForms[allocation.allocationId];
 
-                                <div>
-                                  <strong>
-                                    {allocation.vehicleNumber ||
-                                      `Vehicle ${index + 1}`}
-                                  </strong>
-
-                                  <small>
-                                    {requirement?.vehicleType ||
-                                      allocation.requirementId}
-                                  </small>
-                                </div>
-                              </div>
-
-                              <div className="tracking-live-vehicle-summary">
-                                <div>
-                                  <span>Driver</span>
-                                  <strong>
-                                    {allocation.driver?.name || "—"}
-                                  </strong>
-                                </div>
-                                <div>
-                                  <span>Loading</span>
-                                  <strong>
-                                    {allocation.loading?.status || "Pending"}
-                                  </strong>
-                                </div>
-                                <div>
-                                  <span>Unloading</span>
-                                  <strong>
-                                    {allocation.unloading?.status || "Pending"}
-                                  </strong>
-                                </div>
-                              </div>
-
-                              <button
-                                type="button"
-                                className="tracking-replace-vehicle-button tracking-live-replace-button"
-                                disabled={saving}
-                                onClick={() => openReplacementForm(allocation)}
-                              >
-                                <RefreshCw size={13} />
-                                Replace Vehicle
-                              </button>
-                            </div>
-
-                            {safeArray(allocation.replacementHistory).length >
-                              0 && (
-                              <div className="tracking-live-replacement-history">
-                                <div className="tracking-live-replacement-history-title">
-                                  <div>
-                                    <RefreshCw size={12} />
-                                    <strong>Replacement History</strong>
-                                  </div>
-                                  <span>
-                                    {allocation.replacementCount ||
-                                      allocation.replacementHistory.length}
+                          return (
+                            <article
+                              key={allocation.allocationId}
+                              className="tracking-vehicle-entry-card tracking-vehicle-expanded-card"
+                            >
+                              {allocation.vehicleStatus === "Replaced" && (
+                                <p>
+                                  Replaced vehicle — saved records are
+                                  read-only.
+                                </p>
+                              )}
+                              <div className="tracking-vehicle-entry-header">
+                                <div className="tracking-vehicle-entry-title">
+                                  <span className="tracking-vehicle-number-icon">
+                                    <Truck size={15} />
                                   </span>
+
+                                  <div>
+                                    <strong>
+                                      {allocation.vehicleNumber ||
+                                        `Vehicle ${index + 1}`}
+                                    </strong>
+
+                                    <small>
+                                      {requirement?.vehicleType ||
+                                        allocation.requirementId}
+                                    </small>
+                                  </div>
                                 </div>
 
-                                <div className="tracking-live-replacement-history-list">
-                                  {safeArray(allocation.replacementHistory)
-                                    .slice()
-                                    .reverse()
-                                    .map((item, historyIndex) => (
-                                      <div
-                                        className="tracking-live-replacement-history-row"
-                                        key={
-                                          item?.replacementId ||
-                                          `${allocation.allocationId}-history-${historyIndex}`
-                                        }
-                                      >
-                                        <div className="tracking-live-history-vehicle">
-                                          <span>Previous</span>
-                                          <strong>
-                                            {item?.oldVehicleNumber || "—"}
-                                          </strong>
-                                        </div>
-
-                                        <ChevronRight
-                                          className="tracking-live-history-arrow"
-                                          size={13}
-                                        />
-
-                                        <div className="tracking-live-history-vehicle current">
-                                          <span>Replaced With</span>
-                                          <strong>
-                                            {item?.newVehicleNumber || "—"}
-                                          </strong>
-                                        </div>
-
-                                        <div className="tracking-live-history-detail">
-                                          <span>Source</span>
-                                          <strong>
-                                            {item?.replacementSource ||
-                                              item?.source ||
-                                              "—"}
-                                          </strong>
-                                        </div>
-
-                                        <div className="tracking-live-history-detail">
-                                          <span>Reason</span>
-                                          <strong>{item?.reason || "—"}</strong>
-                                        </div>
-
-                                        <div className="tracking-live-history-detail">
-                                          <span>Replaced By</span>
-                                          <strong>
-                                            {item?.replacedBy || "—"}
-                                          </strong>
-                                        </div>
-
-                                        <div className="tracking-live-history-detail">
-                                          <span>Date</span>
-                                          <strong>
-                                            {item?.replacedAt
-                                              ? new Date(
-                                                  item.replacedAt,
-                                                ).toLocaleDateString("en-GB", {
-                                                  day: "2-digit",
-                                                  month: "short",
-                                                  year: "numeric",
-                                                })
-                                              : "—"}
-                                          </strong>
-                                        </div>
-                                      </div>
-                                    ))}
+                                <div className="tracking-live-vehicle-summary">
+                                  <div>
+                                    <span>Driver</span>
+                                    <strong>
+                                      {allocation.driver?.name || "—"}
+                                    </strong>
+                                  </div>
+                                  <div>
+                                    <span>Loading</span>
+                                    <strong>
+                                      {allocation.loading?.status || "Pending"}
+                                    </strong>
+                                  </div>
+                                  <div>
+                                    <span>Unloading</span>
+                                    <strong>
+                                      {allocation.unloading?.status ||
+                                        "Pending"}
+                                    </strong>
+                                  </div>
                                 </div>
-                              </div>
-                            )}
 
-                            {activeVehicleModal === allocation.allocationId && (
-                              <div
-                                className="tracking-vehicle-modal-overlay"
-                                role="dialog"
-                                aria-modal="true"
-                                aria-label={`Manage ${allocation.vehicleNumber || "vehicle"}`}
-                                onMouseDown={(event) => {
-                                  if (event.target === event.currentTarget) {
-                                    setActiveVehicleModal(null);
+                                <button
+                                  type="button"
+                                  className="tracking-replace-vehicle-button tracking-live-replace-button"
+                                  disabled={saving}
+                                  onClick={() =>
+                                    openReplacementForm(allocation)
                                   }
-                                }}
-                              >
-                                <div className="tracking-vehicle-modal">
-                                  <div className="tracking-vehicle-modal-head">
-                                    <div className="tracking-vehicle-modal-title">
-                                      <span className="tracking-vehicle-number-icon">
-                                        <Truck size={16} />
-                                      </span>
-                                      <div>
-                                        <span className="tracking-vehicle-modal-kicker">
-                                          VEHICLE OPERATIONS
-                                        </span>
-                                        <h3>
-                                          {allocation.vehicleNumber ||
-                                            `Vehicle ${index + 1}`}
-                                        </h3>
-                                        <p>
-                                          Driver, escort, supervisor, loading,
-                                          unloading and movement.
-                                        </p>
-                                      </div>
-                                    </div>
+                                >
+                                  <RefreshCw size={13} />
+                                  Replace Vehicle
+                                </button>
+                              </div>
 
-                                    <div className="tracking-vehicle-modal-actions">
-                                      <button
-                                        type="button"
-                                        className="tracking-replace-vehicle-button"
-                                        disabled={saving}
-                                        onClick={() =>
-                                          openReplacementForm(allocation)
-                                        }
-                                      >
-                                        Replace Vehicle
-                                      </button>
-
-                                      <button
-                                        type="button"
-                                        className="tracking-vehicle-modal-close"
-                                        aria-label="Close vehicle details"
-                                        onClick={() =>
-                                          setActiveVehicleModal(null)
-                                        }
-                                      >
-                                        ×
-                                      </button>
+                              {safeArray(allocation.replacementHistory).length >
+                                0 && (
+                                <div className="tracking-live-replacement-history">
+                                  <div className="tracking-live-replacement-history-title">
+                                    <div>
+                                      <RefreshCw size={12} />
+                                      <strong>Replacement History</strong>
                                     </div>
+                                    <span>
+                                      {allocation.replacementCount ||
+                                        allocation.replacementHistory.length}
+                                    </span>
                                   </div>
 
-                                  <div className="tracking-vehicle-modal-body">
+                                  <div className="tracking-live-replacement-history-list">
                                     {safeArray(allocation.replacementHistory)
-                                      .length > 0 && (
-                                      <div className="tracking-replacement-history">
-                                        <div className="tracking-replacement-history-head">
-                                          <strong>
-                                            Vehicle Replacement History
-                                          </strong>
-                                          <span>
-                                            {allocation.replacementCount ||
-                                              allocation.replacementHistory
-                                                .length}{" "}
-                                            Replacement(s)
-                                          </span>
+                                      .slice()
+                                      .reverse()
+                                      .map((item, historyIndex) => (
+                                        <div
+                                          className="tracking-live-replacement-history-row"
+                                          key={
+                                            item?.replacementId ||
+                                            `${allocation.allocationId}-history-${historyIndex}`
+                                          }
+                                        >
+                                          <div className="tracking-live-history-vehicle">
+                                            <span>Previous</span>
+                                            <strong>
+                                              {item?.oldVehicleNumber || "—"}
+                                            </strong>
+                                          </div>
+
+                                          <ChevronRight
+                                            className="tracking-live-history-arrow"
+                                            size={13}
+                                          />
+
+                                          <div className="tracking-live-history-vehicle current">
+                                            <span>Replaced With</span>
+                                            <strong>
+                                              {item?.newVehicleNumber || "—"}
+                                            </strong>
+                                          </div>
+
+                                          <div className="tracking-live-history-detail">
+                                            <span>Source</span>
+                                            <strong>
+                                              {item?.replacementSource ||
+                                                item?.source ||
+                                                "—"}
+                                            </strong>
+                                          </div>
+
+                                          <div className="tracking-live-history-detail">
+                                            <span>Reason</span>
+                                            <strong>
+                                              {item?.reason || "—"}
+                                            </strong>
+                                          </div>
+
+                                          <div className="tracking-live-history-detail">
+                                            <span>Replaced By</span>
+                                            <strong>
+                                              {item?.replacedBy || "—"}
+                                            </strong>
+                                          </div>
+
+                                          <div className="tracking-live-history-detail">
+                                            <span>Date</span>
+                                            <strong>
+                                              {item?.replacedAt
+                                                ? new Date(
+                                                    item.replacedAt,
+                                                  ).toLocaleDateString(
+                                                    "en-GB",
+                                                    {
+                                                      day: "2-digit",
+                                                      month: "short",
+                                                      year: "numeric",
+                                                    },
+                                                  )
+                                                : "—"}
+                                            </strong>
+                                          </div>
                                         </div>
+                                      ))}
+                                  </div>
+                                </div>
+                              )}
 
-                                        {safeArray(
-                                          allocation.replacementHistory,
-                                        )
-                                          .slice()
-                                          .reverse()
-                                          .map((item) => (
-                                            <div
-                                              className="tracking-replacement-history-row"
-                                              key={item.replacementId}
-                                            >
-                                              <div>
-                                                <span>Previous</span>
-                                                <strong>
-                                                  {item.oldVehicleNumber || "—"}
-                                                </strong>
-                                              </div>
-                                              <span className="tracking-replacement-arrow">
-                                                →
-                                              </span>
-                                              <div>
-                                                <span>New</span>
-                                                <strong>
-                                                  {item.newVehicleNumber || "—"}
-                                                </strong>
-                                              </div>
-                                              <div>
-                                                <span>Source</span>
-                                                <strong>
-                                                  {item.replacementSource ||
-                                                    "—"}
-                                                </strong>
-                                              </div>
-                                              <div>
-                                                <span>Reason</span>
-                                                <strong>
-                                                  {item.reason || "—"}
-                                                </strong>
-                                              </div>
-                                            </div>
-                                          ))}
-                                      </div>
-                                    )}
-
-                                    {/* CONFIRMED DETAILS */}
-
-                                    <VehicleSectionTitle
-                                      icon={<Building2 size={15} />}
-                                      title="Confirmed Requirement"
-                                      type="tracking"
-                                    />
-
-                                    <div className="tracking-requirement-summary">
-                                      <div className="tracking-summary-item">
-                                        <span className="tracking-summary-label">
-                                          Vehicle Type
+                              {activeVehicleModal ===
+                                allocation.allocationId && (
+                                <div
+                                  className="tracking-vehicle-modal-overlay"
+                                  role="dialog"
+                                  aria-modal="true"
+                                  aria-label={`Manage ${allocation.vehicleNumber || "vehicle"}`}
+                                  onMouseDown={(event) => {
+                                    if (event.target === event.currentTarget) {
+                                      setActiveVehicleModal(null);
+                                    }
+                                  }}
+                                >
+                                  <div className="tracking-vehicle-modal">
+                                    <div className="tracking-vehicle-modal-head">
+                                      <div className="tracking-vehicle-modal-title">
+                                        <span className="tracking-vehicle-number-icon">
+                                          <Truck size={16} />
                                         </span>
-                                        <div className="tracking-summary-value">
-                                          <Truck size={15} />
-                                          <strong>
-                                            {requirement?.vehicleType || "—"}
-                                          </strong>
-                                        </div>
-                                      </div>
-
-                                      <span
-                                        className="tracking-summary-divider"
-                                        aria-hidden="true"
-                                      />
-
-                                      <div className="tracking-summary-item">
-                                        <span className="tracking-summary-label">
-                                          Configuration
-                                        </span>
-                                        <div className="tracking-summary-value">
-                                          <Truck size={15} />
-                                          <strong>
-                                            {requirement?.configuration || "—"}
-                                          </strong>
-                                        </div>
-                                      </div>
-
-                                      <span
-                                        className="tracking-summary-divider"
-                                        aria-hidden="true"
-                                      />
-
-                                      <div className="tracking-summary-item">
-                                        <span className="tracking-summary-label">
-                                          Confirmed Transporter
-                                        </span>
-                                        <div className="tracking-summary-value">
-                                          <Building2 size={15} />
-                                          <strong>
-                                            {quotation?.transporter || "—"}
-                                          </strong>
-                                        </div>
-                                      </div>
-
-                                      <span
-                                        className="tracking-summary-divider"
-                                        aria-hidden="true"
-                                      />
-
-                                      <div className="tracking-summary-item">
-                                        <span className="tracking-summary-label">
-                                          Latest Status
-                                        </span>
-                                        <div className="tracking-summary-value">
-                                          <Navigation size={15} />
-                                          <strong>
-                                            {latest?.status || "Idle"}
-                                          </strong>
-                                        </div>
-                                      </div>
-
-                                      <span
-                                        className="tracking-summary-divider"
-                                        aria-hidden="true"
-                                      />
-
-                                      <div className="tracking-summary-item">
-                                        <span className="tracking-summary-label">
-                                          Latest Location
-                                        </span>
-                                        <div className="tracking-summary-value">
-                                          <MapPin size={15} />
-                                          <strong>
-                                            {latest?.currentLocation || "—"}
-                                          </strong>
-                                        </div>
-                                      </div>
-
-                                      <span
-                                        className="tracking-summary-divider"
-                                        aria-hidden="true"
-                                      />
-
-                                      <div className="tracking-summary-item">
-                                        <span className="tracking-summary-label">
-                                          Current Day
-                                        </span>
-                                        <div className="tracking-summary-value">
-                                          <CalendarDays size={15} />
-                                          <strong>
-                                            {latest?.day
-                                              ? `Day ${latest.day}`
-                                              : "No movement update"}
-                                          </strong>
-                                        </div>
-                                      </div>
-                                    </div>
-
-                                    {/* MOVEMENT DETAILS */}
-
-                                    <VehicleSectionTitle
-                                      icon={<Navigation size={15} />}
-                                      title="Movement Details"
-                                      type="tracking"
-                                    />
-
-                                    <div className="tracking-requirement-summary">
-                                      <div className="tracking-summary-item">
-                                        <span className="tracking-summary-label">
-                                          Movement Date
-                                        </span>
-                                        <div className="tracking-summary-value">
-                                          <CalendarDays size={15} />
-                                          <strong>
-                                            {latest?.date
-                                              ? formatDateForInput(latest.date)
-                                              : "—"}
-                                          </strong>
-                                        </div>
-                                      </div>
-
-                                      <span
-                                        className="tracking-summary-divider"
-                                        aria-hidden="true"
-                                      />
-
-                                      <div className="tracking-summary-item">
-                                        <span className="tracking-summary-label">
-                                          Movement Day
-                                        </span>
-                                        <div className="tracking-summary-value">
-                                          <Clock3 size={15} />
-                                          <strong>
-                                            {latest?.day
-                                              ? `Day ${latest.day}`
-                                              : "—"}
-                                          </strong>
-                                        </div>
-                                      </div>
-
-                                      <span
-                                        className="tracking-summary-divider"
-                                        aria-hidden="true"
-                                      />
-
-                                      <div className="tracking-summary-item">
-                                        <span className="tracking-summary-label">
-                                          Yesterday Location
-                                        </span>
-                                        <div className="tracking-summary-value">
-                                          <MapPin size={15} />
-                                          <strong>
-                                            {latest?.yesterdayLocation || "—"}
-                                          </strong>
-                                        </div>
-                                      </div>
-
-                                      <span
-                                        className="tracking-summary-divider"
-                                        aria-hidden="true"
-                                      />
-
-                                      <div className="tracking-summary-item">
-                                        <span className="tracking-summary-label">
-                                          Current Location
-                                        </span>
-                                        <div className="tracking-summary-value">
-                                          <MapPin size={15} />
-                                          <strong>
-                                            {latest?.currentLocation || "—"}
-                                          </strong>
-                                        </div>
-                                      </div>
-
-                                      <span
-                                        className="tracking-summary-divider"
-                                        aria-hidden="true"
-                                      />
-
-                                      <div className="tracking-summary-item">
-                                        <span className="tracking-summary-label">
-                                          Yesterday KM
-                                        </span>
-                                        <div className="tracking-summary-value">
-                                          <Gauge size={15} />
-                                          <strong>
-                                            {latest?.yesterdayKm ?? 0} KM
-                                          </strong>
-                                        </div>
-                                      </div>
-
-                                      <span
-                                        className="tracking-summary-divider"
-                                        aria-hidden="true"
-                                      />
-
-                                      <div className="tracking-summary-item">
-                                        <span className="tracking-summary-label">
-                                          Today KM
-                                        </span>
-                                        <div className="tracking-summary-value">
-                                          <Gauge size={15} />
-                                          <strong>
-                                            {latest?.todayKm ?? 0} KM
-                                          </strong>
-                                        </div>
-                                      </div>
-
-                                      <span
-                                        className="tracking-summary-divider"
-                                        aria-hidden="true"
-                                      />
-
-                                      <div className="tracking-summary-item">
-                                        <span className="tracking-summary-label">
-                                          Running KM
-                                        </span>
-                                        <div className="tracking-summary-value">
-                                          <Route size={15} />
-                                          <strong>
-                                            {latest?.runningKm ?? 0} KM
-                                          </strong>
-                                        </div>
-                                      </div>
-
-                                      <span
-                                        className="tracking-summary-divider"
-                                        aria-hidden="true"
-                                      />
-
-                                      <div className="tracking-summary-item">
-                                        <span className="tracking-summary-label">
-                                          Speed
-                                        </span>
-                                        <div className="tracking-summary-value">
-                                          <Gauge size={15} />
-                                          <strong>
-                                            {latest?.speed ?? 0} KM/H
-                                          </strong>
-                                        </div>
-                                      </div>
-
-                                      <span
-                                        className="tracking-summary-divider"
-                                        aria-hidden="true"
-                                      />
-
-                                      <div className="tracking-summary-item">
-                                        <span className="tracking-summary-label">
-                                          Movement Status
-                                        </span>
-                                        <div className="tracking-summary-value">
-                                          <Navigation size={15} />
-                                          <strong>
-                                            {latest?.status || "Idle"}
-                                          </strong>
-                                        </div>
-                                      </div>
-
-                                      <span
-                                        className="tracking-summary-divider"
-                                        aria-hidden="true"
-                                      />
-
-                                      <div className="tracking-summary-item">
-                                        <span className="tracking-summary-label">
-                                          Updated By
-                                        </span>
-                                        <div className="tracking-summary-value">
-                                          <UserRound size={15} />
-                                          <strong>
-                                            {latest?.updatedBy || "—"}
-                                          </strong>
-                                        </div>
-                                      </div>
-
-                                      <span
-                                        className="tracking-summary-divider"
-                                        aria-hidden="true"
-                                      />
-
-                                      <div className="tracking-summary-item">
-                                        <span className="tracking-summary-label">
-                                          Latitude
-                                        </span>
-                                        <div className="tracking-summary-value">
-                                          <MapPin size={15} />
-                                          <strong>
-                                            {latest?.latitude ?? "—"}
-                                          </strong>
-                                        </div>
-                                      </div>
-
-                                      <span
-                                        className="tracking-summary-divider"
-                                        aria-hidden="true"
-                                      />
-
-                                      <div className="tracking-summary-item">
-                                        <span className="tracking-summary-label">
-                                          Longitude
-                                        </span>
-                                        <div className="tracking-summary-value">
-                                          <MapPin size={15} />
-                                          <strong>
-                                            {latest?.longitude ?? "—"}
-                                          </strong>
-                                        </div>
-                                      </div>
-                                    </div>
-
-                                    {latest?.remarks && (
-                                      <div className="tracking-route-note">
-                                        <MessageSquareText size={15} />
                                         <div>
-                                          <span>Latest Movement Remarks</span>
-                                          <strong>{latest.remarks}</strong>
+                                          <span className="tracking-vehicle-modal-kicker">
+                                            VEHICLE OPERATIONS
+                                          </span>
+                                          <h3>
+                                            {allocation.vehicleNumber ||
+                                              `Vehicle ${index + 1}`}
+                                          </h3>
+                                          <p>
+                                            Driver, escort, supervisor, loading,
+                                            unloading and movement.
+                                          </p>
                                         </div>
                                       </div>
-                                    )}
 
-                                    {/* DRIVER / ESCORT / SUPERVISOR - SINGLE ROW */}
-                                    <div className="tracking-personnel-row">
-                                      <SupportCard
-                                        title="Driver Details"
-                                        subtitle="Vehicle and driver information"
-                                        icon={<UserRound size={15} />}
-                                        className="driver"
-                                      >
-                                        <AllocatedField
-                                          label="Vehicle Number"
-                                          icon={<Truck size={15} />}
-                                          value={allocation.vehicleNumber}
-                                          onChange={(value) =>
-                                            handleAllocatedVehicleChange(
-                                              allocation.allocationId,
-                                              "root",
-                                              "vehicleNumber",
-                                              value,
-                                            )
+                                      <div className="tracking-vehicle-modal-actions">
+                                        <button
+                                          type="button"
+                                          className="tracking-replace-vehicle-button"
+                                          disabled={saving}
+                                          onClick={() =>
+                                            openReplacementForm(allocation)
                                           }
-                                        />
+                                        >
+                                          Replace Vehicle
+                                        </button>
 
-                                        <AllocatedField
-                                          label="Driver Name"
-                                          icon={<UserRound size={15} />}
-                                          value={allocation?.driver?.name}
-                                          onChange={(value) =>
-                                            handleAllocatedVehicleChange(
-                                              allocation.allocationId,
-                                              "driver",
-                                              "name",
-                                              value,
-                                            )
+                                        <button
+                                          type="button"
+                                          className="tracking-vehicle-modal-close"
+                                          aria-label="Close vehicle details"
+                                          onClick={() =>
+                                            setActiveVehicleModal(null)
                                           }
-                                        />
-
-                                        <AllocatedField
-                                          label="Driver Contact Number"
-                                          icon={<UserRound size={15} />}
-                                          value={
-                                            allocation?.driver?.contactNumber
-                                          }
-                                          onChange={(value) =>
-                                            handleAllocatedVehicleChange(
-                                              allocation.allocationId,
-                                              "driver",
-                                              "contactNumber",
-                                              value,
-                                            )
-                                          }
-                                        />
-                                      </SupportCard>
-
-                                      <SupportCard
-                                        title="Escort Details"
-                                        subtitle="Vehicle-specific escort information"
-                                        icon={<Truck size={15} />}
-                                        className="escort"
-                                      >
-                                        <AllocatedField
-                                          label="Escort Vehicle Number"
-                                          icon={<Truck size={15} />}
-                                          value={
-                                            allocation?.escort?.vehicleNumber
-                                          }
-                                          onChange={(value) =>
-                                            handleAllocatedVehicleChange(
-                                              allocation.allocationId,
-                                              "escort",
-                                              "vehicleNumber",
-                                              value,
-                                            )
-                                          }
-                                        />
-
-                                        <AllocatedField
-                                          label="Escort Name"
-                                          icon={<UserRound size={15} />}
-                                          value={allocation?.escort?.name}
-                                          onChange={(value) =>
-                                            handleAllocatedVehicleChange(
-                                              allocation.allocationId,
-                                              "escort",
-                                              "name",
-                                              value,
-                                            )
-                                          }
-                                        />
-
-                                        <AllocatedField
-                                          label="Escort Contact"
-                                          icon={<UserRound size={15} />}
-                                          value={
-                                            allocation?.escort?.contactNumber
-                                          }
-                                          onChange={(value) =>
-                                            handleAllocatedVehicleChange(
-                                              allocation.allocationId,
-                                              "escort",
-                                              "contactNumber",
-                                              value,
-                                            )
-                                          }
-                                        />
-                                      </SupportCard>
-
-                                      <SupportCard
-                                        title="Supervisor Details"
-                                        subtitle="Vehicle-specific supervisor information"
-                                        icon={<UserRound size={15} />}
-                                        className="supervisor"
-                                      >
-                                        <AllocatedField
-                                          label="Supervisor Name"
-                                          icon={<UserRound size={15} />}
-                                          value={allocation?.supervisor?.name}
-                                          onChange={(value) =>
-                                            handleAllocatedVehicleChange(
-                                              allocation.allocationId,
-                                              "supervisor",
-                                              "name",
-                                              value,
-                                            )
-                                          }
-                                        />
-
-                                        <AllocatedField
-                                          label="Supervisor Contact"
-                                          icon={<UserRound size={15} />}
-                                          value={
-                                            allocation?.supervisor
-                                              ?.contactNumber
-                                          }
-                                          onChange={(value) =>
-                                            handleAllocatedVehicleChange(
-                                              allocation.allocationId,
-                                              "supervisor",
-                                              "contactNumber",
-                                              value,
-                                            )
-                                          }
-                                        />
-                                      </SupportCard>
+                                        >
+                                          ×
+                                        </button>
+                                      </div>
                                     </div>
 
-                                    {/* LOADING + UNLOADING - SIDE BY SIDE */}
-                                    <div className="tracking-operation-row">
-                                      <section className="tracking-operation-card loading">
-                                        <div className="tracking-operation-card-header">
-                                          <div className="tracking-operation-card-icon">
-                                            <Truck size={17} />
-                                          </div>
-                                          <div>
-                                            <strong>Loading Details</strong>
+                                    <div className="tracking-vehicle-modal-body">
+                                      {safeArray(allocation.replacementHistory)
+                                        .length > 0 && (
+                                        <div className="tracking-replacement-history">
+                                          <div className="tracking-replacement-history-head">
+                                            <strong>
+                                              Vehicle Replacement History
+                                            </strong>
                                             <span>
-                                              Loading point and dispatch
-                                              information
+                                              {allocation.replacementCount ||
+                                                allocation.replacementHistory
+                                                  .length}{" "}
+                                              Replacement(s)
                                             </span>
                                           </div>
-                                        </div>
 
-                                        <div className="tracking-operation-card-grid">
-                                          <AllocatedSelect
-                                            label="Loading Status"
-                                            icon={<Truck size={15} />}
-                                            value={
-                                              allocation?.loading?.status ||
-                                              "Pending"
-                                            }
-                                            options={[
-                                              "Pending",
-                                              "At Loading Point",
-                                              "Loading",
-                                              "Loaded",
-                                              "Departed",
-                                            ]}
-                                            onChange={(value) =>
-                                              handleAllocatedVehicleChange(
-                                                allocation.allocationId,
-                                                "loading",
-                                                "status",
-                                                value,
-                                              )
-                                            }
-                                          />
-
-                                          <AllocatedField
-                                            label="Point In Date"
-                                            type="date"
-                                            icon={<CalendarDays size={15} />}
-                                            value={formatDateForInput(
-                                              allocation?.loading?.pointInDate,
-                                            )}
-                                            onChange={(value) =>
-                                              handleAllocatedVehicleChange(
-                                                allocation.allocationId,
-                                                "loading",
-                                                "pointInDate",
-                                                value,
-                                              )
-                                            }
-                                          />
-
-                                          <AllocatedField
-                                            label="Loading Date"
-                                            type="date"
-                                            icon={<CalendarDays size={15} />}
-                                            value={formatDateForInput(
-                                              allocation?.loading?.loadingDate,
-                                            )}
-                                            onChange={(value) =>
-                                              handleAllocatedVehicleChange(
-                                                allocation.allocationId,
-                                                "loading",
-                                                "loadingDate",
-                                                value,
-                                              )
-                                            }
-                                          />
-
-                                          <AllocatedField
-                                            label="Point Out Date"
-                                            type="date"
-                                            icon={<CalendarDays size={15} />}
-                                            value={formatDateForInput(
-                                              allocation?.loading?.pointOutDate,
-                                            )}
-                                            onChange={(value) =>
-                                              handleAllocatedVehicleChange(
-                                                allocation.allocationId,
-                                                "loading",
-                                                "pointOutDate",
-                                                value,
-                                              )
-                                            }
-                                          />
-
-                                          <AllocatedField
-                                            label="Halting Days"
-                                            type="number"
-                                            min="0"
-                                            icon={<Clock3 size={15} />}
-                                            value={
-                                              allocation?.loading
-                                                ?.haltingDays ?? ""
-                                            }
-                                            onChange={(value) =>
-                                              handleAllocatedVehicleChange(
-                                                allocation.allocationId,
-                                                "loading",
-                                                "haltingDays",
-                                                value,
-                                              )
-                                            }
-                                          />
-
-                                          <AllocatedField
-                                            label="Loading Remarks"
-                                            icon={
-                                              <MessageSquareText size={15} />
-                                            }
-                                            value={allocation?.loading?.remarks}
-                                            onChange={(value) =>
-                                              handleAllocatedVehicleChange(
-                                                allocation.allocationId,
-                                                "loading",
-                                                "remarks",
-                                                value,
-                                              )
-                                            }
-                                          />
-                                        </div>
-                                      </section>
-
-                                      <section className="tracking-operation-card unloading">
-                                        <div className="tracking-operation-card-header">
-                                          <div className="tracking-operation-card-icon">
-                                            <PackageCheck size={17} />
-                                          </div>
-                                          <div>
-                                            <strong>Unloading Details</strong>
-                                            <span>
-                                              Delivery point and unloading
-                                              information
-                                            </span>
-                                          </div>
-                                        </div>
-
-                                        <div className="tracking-operation-card-grid">
-                                          <AllocatedSelect
-                                            label="Unloading Status"
-                                            icon={<PackageCheck size={15} />}
-                                            value={
-                                              allocation?.unloading?.status ||
-                                              "Pending"
-                                            }
-                                            options={[
-                                              "Pending",
-                                              "At Unloading Point",
-                                              "Unloading",
-                                              "Unloaded",
-                                              "Completed",
-                                            ]}
-                                            onChange={(value) =>
-                                              handleAllocatedVehicleChange(
-                                                allocation.allocationId,
-                                                "unloading",
-                                                "status",
-                                                value,
-                                              )
-                                            }
-                                          />
-
-                                          <AllocatedField
-                                            label="Point In Date"
-                                            type="date"
-                                            icon={<CalendarDays size={15} />}
-                                            value={formatDateForInput(
-                                              allocation?.unloading
-                                                ?.pointInDate,
-                                            )}
-                                            onChange={(value) =>
-                                              handleAllocatedVehicleChange(
-                                                allocation.allocationId,
-                                                "unloading",
-                                                "pointInDate",
-                                                value,
-                                              )
-                                            }
-                                          />
-
-                                          <AllocatedField
-                                            label="Unloading Date"
-                                            type="date"
-                                            icon={<CalendarDays size={15} />}
-                                            value={formatDateForInput(
-                                              allocation?.unloading
-                                                ?.unloadingDate,
-                                            )}
-                                            onChange={(value) =>
-                                              handleAllocatedVehicleChange(
-                                                allocation.allocationId,
-                                                "unloading",
-                                                "unloadingDate",
-                                                value,
-                                              )
-                                            }
-                                          />
-
-                                          <AllocatedField
-                                            label="Point Out Date"
-                                            type="date"
-                                            icon={<CalendarDays size={15} />}
-                                            value={formatDateForInput(
-                                              allocation?.unloading
-                                                ?.pointOutDate,
-                                            )}
-                                            onChange={(value) =>
-                                              handleAllocatedVehicleChange(
-                                                allocation.allocationId,
-                                                "unloading",
-                                                "pointOutDate",
-                                                value,
-                                              )
-                                            }
-                                          />
-
-                                          <AllocatedField
-                                            label="Halting Days"
-                                            type="number"
-                                            min="0"
-                                            icon={<Clock3 size={15} />}
-                                            value={
-                                              allocation?.unloading
-                                                ?.haltingDays ?? ""
-                                            }
-                                            onChange={(value) =>
-                                              handleAllocatedVehicleChange(
-                                                allocation.allocationId,
-                                                "unloading",
-                                                "haltingDays",
-                                                value,
-                                              )
-                                            }
-                                          />
-
-                                          <AllocatedField
-                                            label="Unloading Remarks"
-                                            icon={
-                                              <MessageSquareText size={15} />
-                                            }
-                                            value={
-                                              allocation?.unloading?.remarks
-                                            }
-                                            onChange={(value) =>
-                                              handleAllocatedVehicleChange(
-                                                allocation.allocationId,
-                                                "unloading",
-                                                "remarks",
-                                                value,
-                                              )
-                                            }
-                                          />
-                                        </div>
-                                      </section>
-                                    </div>
-
-                                    <div className="tracking-form-footer tracking-vehicle-modal-footer">
-                                      <div className="tracking-vehicle-modal-footer-note">
-                                        Changes are saved for this vehicle only.
-                                      </div>
-
-                                      <button
-                                        type="button"
-                                        className="tracking-form-save"
-                                        disabled={saving}
-                                        onClick={() =>
-                                          handleUpdateAllocation(allocation)
-                                        }
-                                      >
-                                        <Save size={15} />
-
-                                        <span>
-                                          {saving
-                                            ? "Saving..."
-                                            : "Save Vehicle Details"}
-                                        </span>
-                                      </button>
-                                    </div>
-
-                                    {/* DAILY TRACKING */}
-
-                                    {trackingForm && (
-                                      <div
-                                        className="tracking-movement-modal-overlay"
-                                        role="dialog"
-                                        aria-modal="true"
-                                        aria-label={`Add movement for ${allocation.vehicleNumber || "vehicle"}`}
-                                        onMouseDown={(event) => {
-                                          if (
-                                            event.target === event.currentTarget
-                                          ) {
-                                            closeTrackingForm(
-                                              allocation.allocationId,
-                                            );
-                                          }
-                                        }}
-                                      >
-                                        <div className="tracking-movement-modal">
-                                          <div className="tracking-movement-modal-head">
-                                            <div>
-                                              <span className="tracking-movement-modal-kicker">
-                                                DAILY TRACKING
-                                              </span>
-                                              <h3>Add Movement</h3>
-                                              <p>
-                                                {allocation.vehicleNumber ||
-                                                  "Vehicle"}{" "}
-                                                · Update today’s movement
-                                                information.
-                                              </p>
-                                            </div>
-                                            <button
-                                              type="button"
-                                              className="tracking-movement-modal-close"
-                                              disabled={saving}
-                                              onClick={() =>
-                                                closeTrackingForm(
-                                                  allocation.allocationId,
-                                                )
-                                              }
-                                              aria-label="Close movement modal"
-                                            >
-                                              ×
-                                            </button>
-                                          </div>
-                                          <div className="tracking-movement-modal-body">
-                                            <VehicleSectionTitle
-                                              icon={<Navigation size={15} />}
-                                              title="Daily Movement"
-                                              type="tracking"
-                                            />
-
-                                            <div className="tracking-vehicle-entry-grid tracking-driver-data-grid tracking-movement-grid">
-                                              <FormField
-                                                label="Date"
-                                                type="date"
-                                                icon={
-                                                  <CalendarDays size={15} />
-                                                }
-                                                name="date"
-                                                value={trackingForm.date}
-                                                onChange={(event) =>
-                                                  handleTrackingChange(
-                                                    allocation.allocationId,
-                                                    event,
-                                                  )
-                                                }
-                                              />
-
-                                              <FormField
-                                                label="Day"
-                                                type="number"
-                                                min="1"
-                                                icon={
-                                                  <CalendarDays size={15} />
-                                                }
-                                                name="day"
-                                                value={trackingForm.day}
-                                                onChange={(event) =>
-                                                  handleTrackingChange(
-                                                    allocation.allocationId,
-                                                    event,
-                                                  )
-                                                }
-                                              />
-
-                                              <FormField
-                                                label="Yesterday KM"
-                                                type="number"
-                                                min="0"
-                                                icon={<Gauge size={15} />}
-                                                name="yesterdayKm"
-                                                value={trackingForm.yesterdayKm}
-                                                onChange={(event) =>
-                                                  handleTrackingChange(
-                                                    allocation.allocationId,
-                                                    event,
-                                                  )
-                                                }
-                                              />
-
-                                              <FormField
-                                                label="Today KM"
-                                                type="number"
-                                                min="0"
-                                                icon={<Gauge size={15} />}
-                                                name="todayKm"
-                                                value={trackingForm.todayKm}
-                                                onChange={(event) =>
-                                                  handleTrackingChange(
-                                                    allocation.allocationId,
-                                                    event,
-                                                  )
-                                                }
-                                              />
-
-                                              <FormField
-                                                label="Running KM"
-                                                readOnly
-                                                icon={<Gauge size={15} />}
-                                                value={Math.max(
-                                                  numberValue(
-                                                    trackingForm.todayKm,
-                                                    0,
-                                                  ) -
-                                                    numberValue(
-                                                      trackingForm.yesterdayKm,
-                                                      0,
-                                                    ),
-                                                  0,
-                                                )}
-                                              />
-
-                                              <FormField
-                                                label="Yesterday Location"
-                                                icon={<MapPin size={15} />}
-                                                name="yesterdayLocation"
-                                                value={
-                                                  trackingForm.yesterdayLocation
-                                                }
-                                                onChange={(event) =>
-                                                  handleTrackingChange(
-                                                    allocation.allocationId,
-                                                    event,
-                                                  )
-                                                }
-                                              />
-
-                                              <FormField
-                                                label="Current Location"
-                                                required
-                                                icon={<MapPin size={15} />}
-                                                name="currentLocation"
-                                                value={
-                                                  trackingForm.currentLocation
-                                                }
-                                                onChange={(event) =>
-                                                  handleTrackingChange(
-                                                    allocation.allocationId,
-                                                    event,
-                                                  )
-                                                }
-                                              />
-
-                                              <NormalSelect
-                                                label="Movement Status"
-                                                icon={<Navigation size={15} />}
-                                                name="status"
-                                                value={trackingForm.status}
-                                                onChange={(event) =>
-                                                  handleTrackingChange(
-                                                    allocation.allocationId,
-                                                    event,
-                                                  )
-                                                }
-                                                options={[
-                                                  "Moving",
-                                                  "Idle",
-                                                  "Stopped",
-                                                  "Breakdown",
-                                                  "Reached",
-                                                ]}
-                                              />
-
-                                              <FormField
-                                                label="Updated By"
-                                                icon={<UserRound size={15} />}
-                                                name="updatedBy"
-                                                value={trackingForm.updatedBy}
-                                                onChange={(event) =>
-                                                  handleTrackingChange(
-                                                    allocation.allocationId,
-                                                    event,
-                                                  )
-                                                }
-                                              />
-
-                                              <FormField
-                                                label="Remarks"
-                                                icon={
-                                                  <MessageSquareText
-                                                    size={15}
-                                                  />
-                                                }
-                                                name="remarks"
-                                                value={trackingForm.remarks}
-                                                onChange={(event) =>
-                                                  handleTrackingChange(
-                                                    allocation.allocationId,
-                                                    event,
-                                                  )
-                                                }
-                                              />
-                                            </div>
-
-                                            <div className="tracking-form-footer">
-                                              <div />
-
-                                              <div className="tracking-form-footer-actions">
-                                                <button
-                                                  type="button"
-                                                  className="tracking-form-cancel"
-                                                  disabled={saving}
-                                                  onClick={() =>
-                                                    closeTrackingForm(
-                                                      allocation.allocationId,
-                                                    )
-                                                  }
-                                                >
-                                                  Cancel
-                                                </button>
-
-                                                <button
-                                                  type="button"
-                                                  className="tracking-form-save"
-                                                  disabled={saving}
-                                                  onClick={() =>
-                                                    handleAddTracking(
-                                                      allocation,
-                                                    )
-                                                  }
-                                                >
-                                                  <Save size={15} />
-
-                                                  <span>
-                                                    {saving
-                                                      ? "Saving..."
-                                                      : "Save Movement"}
-                                                  </span>
-                                                </button>
-                                              </div>
-                                            </div>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    )}
-
-                                    {/* HISTORY */}
-
-                                    {safeArray(allocation.dailyTracking)
-                                      .length > 0 && (
-                                      <>
-                                        <VehicleSectionTitle
-                                          icon={<Clock3 size={15} />}
-                                          title="Movement History"
-                                          type="tracking"
-                                        />
-
-                                        <div className="tracking-route-location-list">
-                                          {safeArray(allocation.dailyTracking)
+                                          {safeArray(
+                                            allocation.replacementHistory,
+                                          )
                                             .slice()
                                             .reverse()
-                                            .map((tracking, trackingIndex) => (
+                                            .map((item) => (
                                               <div
-                                                key={
-                                                  tracking.trackingId ||
-                                                  trackingIndex
-                                                }
-                                                className="tracking-route-location-row"
+                                                className="tracking-replacement-history-row"
+                                                key={item.replacementId}
                                               >
-                                                <span className="tracking-route-location-number">
-                                                  {tracking.day ||
-                                                    trackingIndex + 1}
+                                                <div>
+                                                  <span>Previous</span>
+                                                  <strong>
+                                                    {item.oldVehicleNumber ||
+                                                      "—"}
+                                                  </strong>
+                                                </div>
+                                                <span className="tracking-replacement-arrow">
+                                                  →
                                                 </span>
-
-                                                <div className="tracking-route-location-input">
-                                                  <MapPin size={14} />
-
-                                                  <span>
-                                                    {tracking.currentLocation ||
-                                                      "—"}{" "}
-                                                    • {tracking.runningKm ?? 0}{" "}
-                                                    KM •{" "}
-                                                    {tracking.status || "Idle"}
-                                                  </span>
+                                                <div>
+                                                  <span>New</span>
+                                                  <strong>
+                                                    {item.newVehicleNumber ||
+                                                      "—"}
+                                                  </strong>
+                                                </div>
+                                                <div>
+                                                  <span>Source</span>
+                                                  <strong>
+                                                    {item.replacementSource ||
+                                                      "—"}
+                                                  </strong>
+                                                </div>
+                                                <div>
+                                                  <span>Reason</span>
+                                                  <strong>
+                                                    {item.reason || "—"}
+                                                  </strong>
                                                 </div>
                                               </div>
                                             ))}
                                         </div>
-                                      </>
-                                    )}
+                                      )}
+
+                                      {/* CONFIRMED DETAILS */}
+
+                                      <VehicleSectionTitle
+                                        icon={<Building2 size={15} />}
+                                        title="Confirmed Requirement"
+                                        type="tracking"
+                                      />
+
+                                      <div className="tracking-requirement-summary">
+                                        <div className="tracking-summary-item">
+                                          <span className="tracking-summary-label">
+                                            Vehicle Type
+                                          </span>
+                                          <div className="tracking-summary-value">
+                                            <Truck size={15} />
+                                            <strong>
+                                              {requirement?.vehicleType || "—"}
+                                            </strong>
+                                          </div>
+                                        </div>
+
+                                        <span
+                                          className="tracking-summary-divider"
+                                          aria-hidden="true"
+                                        />
+
+                                        <div className="tracking-summary-item">
+                                          <span className="tracking-summary-label">
+                                            Configuration
+                                          </span>
+                                          <div className="tracking-summary-value">
+                                            <Truck size={15} />
+                                            <strong>
+                                              {requirement?.configuration ||
+                                                "—"}
+                                            </strong>
+                                          </div>
+                                        </div>
+
+                                        <span
+                                          className="tracking-summary-divider"
+                                          aria-hidden="true"
+                                        />
+
+                                        <div className="tracking-summary-item">
+                                          <span className="tracking-summary-label">
+                                            Confirmed Transporter
+                                          </span>
+                                          <div className="tracking-summary-value">
+                                            <Building2 size={15} />
+                                            <strong>
+                                              {quotation?.transporter || "—"}
+                                            </strong>
+                                          </div>
+                                        </div>
+
+                                        <span
+                                          className="tracking-summary-divider"
+                                          aria-hidden="true"
+                                        />
+
+                                        <div className="tracking-summary-item">
+                                          <span className="tracking-summary-label">
+                                            Latest Status
+                                          </span>
+                                          <div className="tracking-summary-value">
+                                            <Navigation size={15} />
+                                            <strong>
+                                              {latest?.status || "Idle"}
+                                            </strong>
+                                          </div>
+                                        </div>
+
+                                        <span
+                                          className="tracking-summary-divider"
+                                          aria-hidden="true"
+                                        />
+
+                                        <div className="tracking-summary-item">
+                                          <span className="tracking-summary-label">
+                                            Latest Location
+                                          </span>
+                                          <div className="tracking-summary-value">
+                                            <MapPin size={15} />
+                                            <strong>
+                                              {latest?.currentLocation || "—"}
+                                            </strong>
+                                          </div>
+                                        </div>
+
+                                        <span
+                                          className="tracking-summary-divider"
+                                          aria-hidden="true"
+                                        />
+
+                                        <div className="tracking-summary-item">
+                                          <span className="tracking-summary-label">
+                                            Current Day
+                                          </span>
+                                          <div className="tracking-summary-value">
+                                            <CalendarDays size={15} />
+                                            <strong>
+                                              {latest?.day
+                                                ? `Day ${latest.day}`
+                                                : "No movement update"}
+                                            </strong>
+                                          </div>
+                                        </div>
+                                      </div>
+
+                                      {/* MOVEMENT DETAILS */}
+
+                                      <VehicleSectionTitle
+                                        icon={<Navigation size={15} />}
+                                        title="Movement Details"
+                                        type="tracking"
+                                      />
+
+                                      <div className="tracking-requirement-summary">
+                                        <div className="tracking-summary-item">
+                                          <span className="tracking-summary-label">
+                                            Movement Date
+                                          </span>
+                                          <div className="tracking-summary-value">
+                                            <CalendarDays size={15} />
+                                            <strong>
+                                              {latest?.date
+                                                ? formatDateForInput(
+                                                    latest.date,
+                                                  )
+                                                : "—"}
+                                            </strong>
+                                          </div>
+                                        </div>
+
+                                        <span
+                                          className="tracking-summary-divider"
+                                          aria-hidden="true"
+                                        />
+
+                                        <div className="tracking-summary-item">
+                                          <span className="tracking-summary-label">
+                                            Movement Day
+                                          </span>
+                                          <div className="tracking-summary-value">
+                                            <Clock3 size={15} />
+                                            <strong>
+                                              {latest?.day
+                                                ? `Day ${latest.day}`
+                                                : "—"}
+                                            </strong>
+                                          </div>
+                                        </div>
+
+                                        <span
+                                          className="tracking-summary-divider"
+                                          aria-hidden="true"
+                                        />
+
+                                        <div className="tracking-summary-item">
+                                          <span className="tracking-summary-label">
+                                            Yesterday Location
+                                          </span>
+                                          <div className="tracking-summary-value">
+                                            <MapPin size={15} />
+                                            <strong>
+                                              {latest?.yesterdayLocation || "—"}
+                                            </strong>
+                                          </div>
+                                        </div>
+
+                                        <span
+                                          className="tracking-summary-divider"
+                                          aria-hidden="true"
+                                        />
+
+                                        <div className="tracking-summary-item">
+                                          <span className="tracking-summary-label">
+                                            Current Location
+                                          </span>
+                                          <div className="tracking-summary-value">
+                                            <MapPin size={15} />
+                                            <strong>
+                                              {latest?.currentLocation || "—"}
+                                            </strong>
+                                          </div>
+                                        </div>
+
+                                        <span
+                                          className="tracking-summary-divider"
+                                          aria-hidden="true"
+                                        />
+
+                                        <div className="tracking-summary-item">
+                                          <span className="tracking-summary-label">
+                                            Yesterday KM
+                                          </span>
+                                          <div className="tracking-summary-value">
+                                            <Gauge size={15} />
+                                            <strong>
+                                              {latest?.yesterdayKm ?? 0} KM
+                                            </strong>
+                                          </div>
+                                        </div>
+
+                                        <span
+                                          className="tracking-summary-divider"
+                                          aria-hidden="true"
+                                        />
+
+                                        <div className="tracking-summary-item">
+                                          <span className="tracking-summary-label">
+                                            Today KM
+                                          </span>
+                                          <div className="tracking-summary-value">
+                                            <Gauge size={15} />
+                                            <strong>
+                                              {latest?.todayKm ?? 0} KM
+                                            </strong>
+                                          </div>
+                                        </div>
+
+                                        <span
+                                          className="tracking-summary-divider"
+                                          aria-hidden="true"
+                                        />
+
+                                        <div className="tracking-summary-item">
+                                          <span className="tracking-summary-label">
+                                            Running KM
+                                          </span>
+                                          <div className="tracking-summary-value">
+                                            <Route size={15} />
+                                            <strong>
+                                              {latest?.runningKm ?? 0} KM
+                                            </strong>
+                                          </div>
+                                        </div>
+
+                                        <span
+                                          className="tracking-summary-divider"
+                                          aria-hidden="true"
+                                        />
+
+                                        <div className="tracking-summary-item">
+                                          <span className="tracking-summary-label">
+                                            Speed
+                                          </span>
+                                          <div className="tracking-summary-value">
+                                            <Gauge size={15} />
+                                            <strong>
+                                              {latest?.speed ?? 0} KM/H
+                                            </strong>
+                                          </div>
+                                        </div>
+
+                                        <span
+                                          className="tracking-summary-divider"
+                                          aria-hidden="true"
+                                        />
+
+                                        <div className="tracking-summary-item">
+                                          <span className="tracking-summary-label">
+                                            Movement Status
+                                          </span>
+                                          <div className="tracking-summary-value">
+                                            <Navigation size={15} />
+                                            <strong>
+                                              {latest?.status || "Idle"}
+                                            </strong>
+                                          </div>
+                                        </div>
+
+                                        <span
+                                          className="tracking-summary-divider"
+                                          aria-hidden="true"
+                                        />
+
+                                        <div className="tracking-summary-item">
+                                          <span className="tracking-summary-label">
+                                            Updated By
+                                          </span>
+                                          <div className="tracking-summary-value">
+                                            <UserRound size={15} />
+                                            <strong>
+                                              {latest?.updatedBy || "—"}
+                                            </strong>
+                                          </div>
+                                        </div>
+
+                                        <span
+                                          className="tracking-summary-divider"
+                                          aria-hidden="true"
+                                        />
+
+                                        <div className="tracking-summary-item">
+                                          <span className="tracking-summary-label">
+                                            Latitude
+                                          </span>
+                                          <div className="tracking-summary-value">
+                                            <MapPin size={15} />
+                                            <strong>
+                                              {latest?.latitude ?? "—"}
+                                            </strong>
+                                          </div>
+                                        </div>
+
+                                        <span
+                                          className="tracking-summary-divider"
+                                          aria-hidden="true"
+                                        />
+
+                                        <div className="tracking-summary-item">
+                                          <span className="tracking-summary-label">
+                                            Longitude
+                                          </span>
+                                          <div className="tracking-summary-value">
+                                            <MapPin size={15} />
+                                            <strong>
+                                              {latest?.longitude ?? "—"}
+                                            </strong>
+                                          </div>
+                                        </div>
+                                      </div>
+
+                                      {latest?.remarks && (
+                                        <div className="tracking-route-note">
+                                          <MessageSquareText size={15} />
+                                          <div>
+                                            <span>Latest Movement Remarks</span>
+                                            <strong>{latest.remarks}</strong>
+                                          </div>
+                                        </div>
+                                      )}
+
+                                      {/* DRIVER / ESCORT / SUPERVISOR - SINGLE ROW */}
+                                      <div className="tracking-personnel-row">
+                                        <SupportCard
+                                          title="Driver Details"
+                                          subtitle="Vehicle and driver information"
+                                          icon={<UserRound size={15} />}
+                                          className="driver"
+                                        >
+                                          <AllocatedField
+                                            label="Vehicle Number"
+                                            icon={<Truck size={15} />}
+                                            value={allocation.vehicleNumber}
+                                            onChange={(value) =>
+                                              handleAllocatedVehicleChange(
+                                                allocation.allocationId,
+                                                "root",
+                                                "vehicleNumber",
+                                                value,
+                                              )
+                                            }
+                                          />
+
+                                          <AllocatedField
+                                            label="Driver Name"
+                                            icon={<UserRound size={15} />}
+                                            value={allocation?.driver?.name}
+                                            onChange={(value) =>
+                                              handleAllocatedVehicleChange(
+                                                allocation.allocationId,
+                                                "driver",
+                                                "name",
+                                                value,
+                                              )
+                                            }
+                                          />
+
+                                          <AllocatedField
+                                            label="Driver Contact Number"
+                                            icon={<UserRound size={15} />}
+                                            value={
+                                              allocation?.driver?.contactNumber
+                                            }
+                                            onChange={(value) =>
+                                              handleAllocatedVehicleChange(
+                                                allocation.allocationId,
+                                                "driver",
+                                                "contactNumber",
+                                                value,
+                                              )
+                                            }
+                                          />
+                                        </SupportCard>
+
+                                        <SupportCard
+                                          title="Escort Details"
+                                          subtitle="Vehicle-specific escort information"
+                                          icon={<Truck size={15} />}
+                                          className="escort"
+                                        >
+                                          <AllocatedField
+                                            label="Escort Vehicle Number"
+                                            icon={<Truck size={15} />}
+                                            value={
+                                              allocation?.escort?.vehicleNumber
+                                            }
+                                            onChange={(value) =>
+                                              handleAllocatedVehicleChange(
+                                                allocation.allocationId,
+                                                "escort",
+                                                "vehicleNumber",
+                                                value,
+                                              )
+                                            }
+                                          />
+
+                                          <AllocatedField
+                                            label="Escort Name"
+                                            icon={<UserRound size={15} />}
+                                            value={allocation?.escort?.name}
+                                            onChange={(value) =>
+                                              handleAllocatedVehicleChange(
+                                                allocation.allocationId,
+                                                "escort",
+                                                "name",
+                                                value,
+                                              )
+                                            }
+                                          />
+
+                                          <AllocatedField
+                                            label="Escort Contact"
+                                            icon={<UserRound size={15} />}
+                                            value={
+                                              allocation?.escort?.contactNumber
+                                            }
+                                            onChange={(value) =>
+                                              handleAllocatedVehicleChange(
+                                                allocation.allocationId,
+                                                "escort",
+                                                "contactNumber",
+                                                value,
+                                              )
+                                            }
+                                          />
+                                        </SupportCard>
+
+                                        <SupportCard
+                                          title="Supervisor Details"
+                                          subtitle="Vehicle-specific supervisor information"
+                                          icon={<UserRound size={15} />}
+                                          className="supervisor"
+                                        >
+                                          <AllocatedField
+                                            label="Supervisor Name"
+                                            icon={<UserRound size={15} />}
+                                            value={allocation?.supervisor?.name}
+                                            onChange={(value) =>
+                                              handleAllocatedVehicleChange(
+                                                allocation.allocationId,
+                                                "supervisor",
+                                                "name",
+                                                value,
+                                              )
+                                            }
+                                          />
+
+                                          <AllocatedField
+                                            label="Supervisor Contact"
+                                            icon={<UserRound size={15} />}
+                                            value={
+                                              allocation?.supervisor
+                                                ?.contactNumber
+                                            }
+                                            onChange={(value) =>
+                                              handleAllocatedVehicleChange(
+                                                allocation.allocationId,
+                                                "supervisor",
+                                                "contactNumber",
+                                                value,
+                                              )
+                                            }
+                                          />
+                                        </SupportCard>
+                                      </div>
+
+                                      {/* LOADING + UNLOADING - SIDE BY SIDE */}
+                                      <div className="tracking-operation-row">
+                                        <section className="tracking-operation-card loading">
+                                          <div className="tracking-operation-card-header">
+                                            <div className="tracking-operation-card-icon">
+                                              <Truck size={17} />
+                                            </div>
+                                            <div>
+                                              <strong>Loading Details</strong>
+                                              <span>
+                                                Loading point and dispatch
+                                                information
+                                              </span>
+                                            </div>
+                                          </div>
+
+                                          <div className="tracking-operation-card-grid">
+                                            <AllocatedSelect
+                                              label="Loading Status"
+                                              icon={<Truck size={15} />}
+                                              value={
+                                                allocation?.loading?.status ||
+                                                "Pending"
+                                              }
+                                              options={[
+                                                "Pending",
+                                                "At Loading Point",
+                                                "Loading",
+                                                "Loaded",
+                                                "Departed",
+                                              ]}
+                                              onChange={(value) =>
+                                                handleAllocatedVehicleChange(
+                                                  allocation.allocationId,
+                                                  "loading",
+                                                  "status",
+                                                  value,
+                                                )
+                                              }
+                                            />
+
+                                            <AllocatedField
+                                              label="Point In Date"
+                                              type="date"
+                                              icon={<CalendarDays size={15} />}
+                                              value={formatDateForInput(
+                                                allocation?.loading
+                                                  ?.pointInDate,
+                                              )}
+                                              onChange={(value) =>
+                                                handleAllocatedVehicleChange(
+                                                  allocation.allocationId,
+                                                  "loading",
+                                                  "pointInDate",
+                                                  value,
+                                                )
+                                              }
+                                            />
+
+                                            <AllocatedField
+                                              label="Loading Date"
+                                              type="date"
+                                              icon={<CalendarDays size={15} />}
+                                              value={formatDateForInput(
+                                                allocation?.loading
+                                                  ?.loadingDate,
+                                              )}
+                                              onChange={(value) =>
+                                                handleAllocatedVehicleChange(
+                                                  allocation.allocationId,
+                                                  "loading",
+                                                  "loadingDate",
+                                                  value,
+                                                )
+                                              }
+                                            />
+
+                                            <AllocatedField
+                                              label="Point Out Date"
+                                              type="date"
+                                              icon={<CalendarDays size={15} />}
+                                              value={formatDateForInput(
+                                                allocation?.loading
+                                                  ?.pointOutDate,
+                                              )}
+                                              onChange={(value) =>
+                                                handleAllocatedVehicleChange(
+                                                  allocation.allocationId,
+                                                  "loading",
+                                                  "pointOutDate",
+                                                  value,
+                                                )
+                                              }
+                                            />
+
+                                            <AllocatedField
+                                              label="Halting Days"
+                                              type="number"
+                                              min="0"
+                                              icon={<Clock3 size={15} />}
+                                              value={
+                                                allocation?.loading
+                                                  ?.haltingDays ?? ""
+                                              }
+                                              onChange={(value) =>
+                                                handleAllocatedVehicleChange(
+                                                  allocation.allocationId,
+                                                  "loading",
+                                                  "haltingDays",
+                                                  value,
+                                                )
+                                              }
+                                            />
+
+                                            <AllocatedField
+                                              label="Loading Remarks"
+                                              icon={
+                                                <MessageSquareText size={15} />
+                                              }
+                                              value={
+                                                allocation?.loading?.remarks
+                                              }
+                                              onChange={(value) =>
+                                                handleAllocatedVehicleChange(
+                                                  allocation.allocationId,
+                                                  "loading",
+                                                  "remarks",
+                                                  value,
+                                                )
+                                              }
+                                            />
+                                          </div>
+                                        </section>
+
+                                        <section className="tracking-operation-card unloading">
+                                          <div className="tracking-operation-card-header">
+                                            <div className="tracking-operation-card-icon">
+                                              <PackageCheck size={17} />
+                                            </div>
+                                            <div>
+                                              <strong>Unloading Details</strong>
+                                              <span>
+                                                Delivery point and unloading
+                                                information
+                                              </span>
+                                            </div>
+                                          </div>
+
+                                          <div className="tracking-operation-card-grid">
+                                            <AllocatedSelect
+                                              label="Unloading Status"
+                                              icon={<PackageCheck size={15} />}
+                                              value={
+                                                allocation?.unloading?.status ||
+                                                "Pending"
+                                              }
+                                              options={[
+                                                "Pending",
+                                                "At Unloading Point",
+                                                "Unloading",
+                                                "Unloaded",
+                                                "Completed",
+                                              ]}
+                                              onChange={(value) =>
+                                                handleAllocatedVehicleChange(
+                                                  allocation.allocationId,
+                                                  "unloading",
+                                                  "status",
+                                                  value,
+                                                )
+                                              }
+                                            />
+
+                                            <AllocatedField
+                                              label="Point In Date"
+                                              type="date"
+                                              icon={<CalendarDays size={15} />}
+                                              value={formatDateForInput(
+                                                allocation?.unloading
+                                                  ?.pointInDate,
+                                              )}
+                                              onChange={(value) =>
+                                                handleAllocatedVehicleChange(
+                                                  allocation.allocationId,
+                                                  "unloading",
+                                                  "pointInDate",
+                                                  value,
+                                                )
+                                              }
+                                            />
+
+                                            <AllocatedField
+                                              label="Unloading Date"
+                                              type="date"
+                                              icon={<CalendarDays size={15} />}
+                                              value={formatDateForInput(
+                                                allocation?.unloading
+                                                  ?.unloadingDate,
+                                              )}
+                                              onChange={(value) =>
+                                                handleAllocatedVehicleChange(
+                                                  allocation.allocationId,
+                                                  "unloading",
+                                                  "unloadingDate",
+                                                  value,
+                                                )
+                                              }
+                                            />
+
+                                            <AllocatedField
+                                              label="Point Out Date"
+                                              type="date"
+                                              icon={<CalendarDays size={15} />}
+                                              value={formatDateForInput(
+                                                allocation?.unloading
+                                                  ?.pointOutDate,
+                                              )}
+                                              onChange={(value) =>
+                                                handleAllocatedVehicleChange(
+                                                  allocation.allocationId,
+                                                  "unloading",
+                                                  "pointOutDate",
+                                                  value,
+                                                )
+                                              }
+                                            />
+
+                                            <AllocatedField
+                                              label="Halting Days"
+                                              type="number"
+                                              min="0"
+                                              icon={<Clock3 size={15} />}
+                                              value={
+                                                allocation?.unloading
+                                                  ?.haltingDays ?? ""
+                                              }
+                                              onChange={(value) =>
+                                                handleAllocatedVehicleChange(
+                                                  allocation.allocationId,
+                                                  "unloading",
+                                                  "haltingDays",
+                                                  value,
+                                                )
+                                              }
+                                            />
+
+                                            <AllocatedField
+                                              label="Unloading Remarks"
+                                              icon={
+                                                <MessageSquareText size={15} />
+                                              }
+                                              value={
+                                                allocation?.unloading?.remarks
+                                              }
+                                              onChange={(value) =>
+                                                handleAllocatedVehicleChange(
+                                                  allocation.allocationId,
+                                                  "unloading",
+                                                  "remarks",
+                                                  value,
+                                                )
+                                              }
+                                            />
+                                          </div>
+                                        </section>
+                                      </div>
+
+                                      <div className="tracking-form-footer tracking-vehicle-modal-footer">
+                                        <div className="tracking-vehicle-modal-footer-note">
+                                          Changes are saved for this vehicle
+                                          only.
+                                        </div>
+
+                                        <button
+                                          type="button"
+                                          className="tracking-form-save"
+                                          disabled={saving}
+                                          onClick={() =>
+                                            handleUpdateAllocation(allocation)
+                                          }
+                                        >
+                                          <Save size={15} />
+
+                                          <span>
+                                            {saving
+                                              ? "Saving..."
+                                              : "Save Vehicle Details"}
+                                          </span>
+                                        </button>
+                                      </div>
+
+                                      {/* DAILY TRACKING */}
+
+                                      {trackingForm && (
+                                        <div
+                                          className="tracking-movement-modal-overlay"
+                                          role="dialog"
+                                          aria-modal="true"
+                                          aria-label={`Add movement for ${allocation.vehicleNumber || "vehicle"}`}
+                                          onMouseDown={(event) => {
+                                            if (
+                                              event.target ===
+                                              event.currentTarget
+                                            ) {
+                                              closeTrackingForm(
+                                                allocation.allocationId,
+                                              );
+                                            }
+                                          }}
+                                        >
+                                          <div className="tracking-movement-modal">
+                                            <div className="tracking-movement-modal-head">
+                                              <div>
+                                                <span className="tracking-movement-modal-kicker">
+                                                  DAILY TRACKING
+                                                </span>
+                                                <h3>Add Movement</h3>
+                                                <p>
+                                                  {allocation.vehicleNumber ||
+                                                    "Vehicle"}{" "}
+                                                  · Update today’s movement
+                                                  information.
+                                                </p>
+                                              </div>
+                                              <button
+                                                type="button"
+                                                className="tracking-movement-modal-close"
+                                                disabled={saving}
+                                                onClick={() =>
+                                                  closeTrackingForm(
+                                                    allocation.allocationId,
+                                                  )
+                                                }
+                                                aria-label="Close movement modal"
+                                              >
+                                                ×
+                                              </button>
+                                            </div>
+                                            <div className="tracking-movement-modal-body">
+                                              <VehicleSectionTitle
+                                                icon={<Navigation size={15} />}
+                                                title="Daily Movement"
+                                                type="tracking"
+                                              />
+
+                                              <div className="tracking-vehicle-entry-grid tracking-driver-data-grid tracking-movement-grid">
+                                                <FormField
+                                                  label="Date"
+                                                  type="date"
+                                                  icon={
+                                                    <CalendarDays size={15} />
+                                                  }
+                                                  name="date"
+                                                  value={trackingForm.date}
+                                                  onChange={(event) =>
+                                                    handleTrackingChange(
+                                                      allocation.allocationId,
+                                                      event,
+                                                    )
+                                                  }
+                                                />
+
+                                                <FormField
+                                                  label="Day"
+                                                  type="number"
+                                                  min="1"
+                                                  icon={
+                                                    <CalendarDays size={15} />
+                                                  }
+                                                  name="day"
+                                                  value={trackingForm.day}
+                                                  onChange={(event) =>
+                                                    handleTrackingChange(
+                                                      allocation.allocationId,
+                                                      event,
+                                                    )
+                                                  }
+                                                />
+
+                                                <FormField
+                                                  label="Yesterday KM"
+                                                  type="number"
+                                                  min="0"
+                                                  icon={<Gauge size={15} />}
+                                                  name="yesterdayKm"
+                                                  value={
+                                                    trackingForm.yesterdayKm
+                                                  }
+                                                  onChange={(event) =>
+                                                    handleTrackingChange(
+                                                      allocation.allocationId,
+                                                      event,
+                                                    )
+                                                  }
+                                                />
+
+                                                <FormField
+                                                  label="Today KM"
+                                                  type="number"
+                                                  min="0"
+                                                  icon={<Gauge size={15} />}
+                                                  name="todayKm"
+                                                  value={trackingForm.todayKm}
+                                                  onChange={(event) =>
+                                                    handleTrackingChange(
+                                                      allocation.allocationId,
+                                                      event,
+                                                    )
+                                                  }
+                                                />
+
+                                                <FormField
+                                                  label="Running KM"
+                                                  readOnly
+                                                  icon={<Gauge size={15} />}
+                                                  value={Math.max(
+                                                    numberValue(
+                                                      trackingForm.todayKm,
+                                                      0,
+                                                    ) -
+                                                      numberValue(
+                                                        trackingForm.yesterdayKm,
+                                                        0,
+                                                      ),
+                                                    0,
+                                                  )}
+                                                />
+
+                                                <FormField
+                                                  label="Yesterday Location"
+                                                  icon={<MapPin size={15} />}
+                                                  name="yesterdayLocation"
+                                                  value={
+                                                    trackingForm.yesterdayLocation
+                                                  }
+                                                  onChange={(event) =>
+                                                    handleTrackingChange(
+                                                      allocation.allocationId,
+                                                      event,
+                                                    )
+                                                  }
+                                                />
+
+                                                <FormField
+                                                  label="Current Location"
+                                                  required
+                                                  icon={<MapPin size={15} />}
+                                                  name="currentLocation"
+                                                  value={
+                                                    trackingForm.currentLocation
+                                                  }
+                                                  onChange={(event) =>
+                                                    handleTrackingChange(
+                                                      allocation.allocationId,
+                                                      event,
+                                                    )
+                                                  }
+                                                />
+
+                                                <NormalSelect
+                                                  label="Movement Status"
+                                                  icon={
+                                                    <Navigation size={15} />
+                                                  }
+                                                  name="status"
+                                                  value={trackingForm.status}
+                                                  onChange={(event) =>
+                                                    handleTrackingChange(
+                                                      allocation.allocationId,
+                                                      event,
+                                                    )
+                                                  }
+                                                  options={[
+                                                    "Moving",
+                                                    "Idle",
+                                                    "Stopped",
+                                                    "Breakdown",
+                                                    "Reached",
+                                                  ]}
+                                                />
+
+                                                <FormField
+                                                  label="Updated By"
+                                                  icon={<UserRound size={15} />}
+                                                  name="updatedBy"
+                                                  value={trackingForm.updatedBy}
+                                                  onChange={(event) =>
+                                                    handleTrackingChange(
+                                                      allocation.allocationId,
+                                                      event,
+                                                    )
+                                                  }
+                                                />
+
+                                                <FormField
+                                                  label="Remarks"
+                                                  icon={
+                                                    <MessageSquareText
+                                                      size={15}
+                                                    />
+                                                  }
+                                                  name="remarks"
+                                                  value={trackingForm.remarks}
+                                                  onChange={(event) =>
+                                                    handleTrackingChange(
+                                                      allocation.allocationId,
+                                                      event,
+                                                    )
+                                                  }
+                                                />
+                                              </div>
+
+                                              <div className="tracking-form-footer">
+                                                <div />
+
+                                                <div className="tracking-form-footer-actions">
+                                                  <button
+                                                    type="button"
+                                                    className="tracking-form-cancel"
+                                                    disabled={saving}
+                                                    onClick={() =>
+                                                      closeTrackingForm(
+                                                        allocation.allocationId,
+                                                      )
+                                                    }
+                                                  >
+                                                    Cancel
+                                                  </button>
+
+                                                  <button
+                                                    type="button"
+                                                    className="tracking-form-save"
+                                                    disabled={saving}
+                                                    onClick={() =>
+                                                      handleAddTracking(
+                                                        allocation,
+                                                      )
+                                                    }
+                                                  >
+                                                    <Save size={15} />
+
+                                                    <span>
+                                                      {saving
+                                                        ? "Saving..."
+                                                        : "Save Movement"}
+                                                    </span>
+                                                  </button>
+                                                </div>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      )}
+
+                                      {/* HISTORY */}
+
+                                      {safeArray(allocation.dailyTracking)
+                                        .length > 0 && (
+                                        <>
+                                          <VehicleSectionTitle
+                                            icon={<Clock3 size={15} />}
+                                            title="Movement History"
+                                            type="tracking"
+                                          />
+
+                                          <div className="tracking-route-location-list">
+                                            {safeArray(allocation.dailyTracking)
+                                              .slice()
+                                              .reverse()
+                                              .map(
+                                                (tracking, trackingIndex) => (
+                                                  <div
+                                                    key={
+                                                      tracking.trackingId ||
+                                                      trackingIndex
+                                                    }
+                                                    className="tracking-route-location-row"
+                                                  >
+                                                    <span className="tracking-route-location-number">
+                                                      {tracking.day ||
+                                                        trackingIndex + 1}
+                                                    </span>
+
+                                                    <div className="tracking-route-location-input">
+                                                      <MapPin size={14} />
+
+                                                      <span>
+                                                        {tracking.currentLocation ||
+                                                          "—"}{" "}
+                                                        •{" "}
+                                                        {tracking.runningKm ??
+                                                          0}{" "}
+                                                        KM •{" "}
+                                                        {tracking.status ||
+                                                          "Idle"}
+                                                      </span>
+                                                    </div>
+                                                  </div>
+                                                ),
+                                              )}
+                                          </div>
+                                        </>
+                                      )}
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                            )}
-                          </article>
-                        );
-                      })}
+                              )}
+                            </article>
+                          );
+                        })}
                     </div>
                   )}
                 </div>
@@ -3755,3 +4000,657 @@ const VehicleSectionTitle = ({ icon, title, type }) => (
 );
 
 export default AllocateVehicle;
+
+/* Vehicle allocation history — component and scoped styles kept in this file. */
+const VehicleAllocationHistory = (() => {
+  const list = (value) => (Array.isArray(value) ? value : []);
+  const text = (value) => (value == null || value === "" ? "—" : String(value));
+  const lower = (value) => String(value || "").toLowerCase();
+  const isPrevious = (vehicle) => lower(vehicle?.vehicleStatus) === "replaced";
+  const money = (value) =>
+    value == null || value === "" || !Number.isFinite(Number(value))
+      ? "—"
+      : `₹${Number(value).toLocaleString("en-IN")}`;
+  const timestamp = (value) => {
+    if (!value) return "Date not recorded";
+    const d = new Date(value);
+    return Number.isNaN(d.getTime())
+      ? "Date not recorded"
+      : d.toLocaleString("en-IN", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+  };
+  const stateClass = (status) =>
+    ["approved", "pending", "rejected"].includes(lower(status))
+      ? lower(status)
+      : "neutral";
+  function Pair({ label, children }) {
+    return (
+      <div className="vah-pair">
+        <span>{label}</span>
+        <strong>{children || "—"}</strong>
+      </div>
+    );
+  }
+
+  return function VehicleAllocationHistory({ order, showAmounts = true }) {
+    const [tab, setTab] = useState("current");
+    const vehicles = list(order?.allocatedVehicles);
+    const previous = vehicles.filter(isPrevious);
+    const quotes = list(order?.trafficQuotations);
+    const requests = list(order?.transportReplacementRequests);
+    const current = list(order?.vehicleConfirmations)
+      .filter((confirmation) => lower(confirmation.status) === "approved")
+      .map((confirmation) => ({
+        confirmation,
+        quote: quotes.find((q) => q.quotationId === confirmation.quotationId),
+        assigned: vehicles.filter(
+          (v) =>
+            !isPrevious(v) &&
+            v.confirmationId === confirmation.confirmationId &&
+            v.quotationId === confirmation.quotationId,
+        ),
+      }))
+      .filter((row) => row.quote);
+    const byId = (id) =>
+      id ? vehicles.find((v) => v.allocationId === id) : null;
+    const quoteFor = (vehicle) =>
+      quotes.find((q) => q.quotationId === vehicle.quotationId);
+    if (!current.length && !previous.length) return null;
+    return (
+      <section
+        className={`vah${isCraneOrder(order) ? " vah-crane" : ""}`}
+        aria-label="Vehicle change history"
+      >
+        <header className="vah-head">
+          <div>
+            <h3>Transport &amp; vehicles</h3>
+            <p>Current transport details and previous history.</p>
+          </div>
+          <span className="vah-total">
+            {previous.length} previous vehicle{previous.length === 1 ? "" : "s"}
+          </span>
+        </header>
+        <div className="vah-tabs" role="group" aria-label="History view">
+          <button
+            type="button"
+            aria-pressed={tab === "current"}
+            onClick={() => setTab("current")}
+          >
+            Current transport <span>{current.length}</span>
+          </button>
+          <button
+            type="button"
+            aria-pressed={tab === "history"}
+            onClick={() => setTab("history")}
+          >
+            History <span>{previous.length}</span>
+          </button>
+        </div>
+        <div
+          className={`vah-content ${tab === "current" ? "vah-current-grid" : ""}`}
+          key={`${order?._id || order?.tripId || ""}-${tab}`}
+        >
+          {tab === "current" &&
+            (current.length ? (
+              current.map(({ confirmation, quote, assigned }) => {
+                const unlimited =
+                  String(quote.quantity).toLowerCase() === "multiple";
+                const quantity = Number(quote.quantity);
+                const pending =
+                  !unlimited && Number.isFinite(quantity)
+                    ? Math.max(0, quantity - assigned.length)
+                    : null;
+                const request = requests.find(
+                  (r) =>
+                    lower(r.status) === "pending" &&
+                    r.currentConfirmationId === confirmation.confirmationId,
+                );
+                return (
+                  <article
+                    className="vah-current"
+                    key={confirmation.confirmationId}
+                  >
+                    {isCraneOrder(order) ? (
+                      <>
+                        <div className="vah-crane-summary">
+                          <div className="vah-crane-title">
+                            <span className="vah-crane-icon" aria-hidden="true">
+                              <Truck size={17} />
+                            </span>
+                            <strong>
+                              {!quote.transporter ||
+                              lower(quote.transporter) === "multiple"
+                                ? "Crane vehicles"
+                                : text(quote.transporter)}
+                            </strong>
+                          </div>
+                          <div className="vah-crane-count">
+                            <strong>{assigned.length}</strong>
+                            <span>allocated</span>
+                          </div>
+                        </div>
+                        <div
+                          className="vah-crane-vehicles"
+                          aria-label="Allocated vehicle numbers"
+                        >
+                          {assigned.length ? (
+                            assigned.map((vehicle) => (
+                              <span
+                                className="vah-crane-number"
+                                key={vehicle.allocationId}
+                              >
+                                {text(vehicle.vehicleNumber)}
+                              </span>
+                            ))
+                          ) : (
+                            <span className="vah-crane-empty">
+                              No vehicles allocated yet.
+                            </span>
+                          )}
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="vah-current-head">
+                          <strong>{text(quote.transporter)}</strong>
+                        </div>
+                        <div className="vah-current-body">
+                          <Pair label="Approved quantity">
+                            {unlimited ? "Multiple" : text(quote.quantity)}
+                          </Pair>
+                          <Pair label="Assigned">
+                            {String(assigned.length)}
+                          </Pair>
+                          <Pair label="Awaiting allocation">
+                            {pending === null ? "As needed" : String(pending)}
+                          </Pair>
+                          <div className="vah-pair vah-card-vehicles">
+                            <span>Vehicle number</span>
+                            <div className="vah-current-vehicles">
+                              {assigned.length ? (
+                                assigned.map((vehicle) => (
+                                  <span
+                                    className="vah-vehicle-chip"
+                                    key={vehicle.allocationId}
+                                  >
+                                    {text(vehicle.vehicleNumber)}
+                                  </span>
+                                ))
+                              ) : (
+                                <strong className="vah-awaiting">
+                                  Not assigned
+                                </strong>
+                              )}
+                            </div>
+                          </div>
+                          {showAmounts && (
+                            <Pair label="Amount / vehicle">
+                              {money(quote.amount)}
+                            </Pair>
+                          )}
+                        </div>
+                      </>
+                    )}
+                    {request && (
+                      <p className="vah-note vah-pending-note">
+                        Transporter change awaiting approval.
+                      </p>
+                    )}
+                  </article>
+                );
+              })
+            ) : (
+              <p className="vah-empty">No current approved transporter.</p>
+            ))}
+          {tab === "history" && (
+            <h4 className="vah-section-title">
+              Previous vehicle records · {previous.length}
+            </h4>
+          )}
+          {tab === "history" &&
+            (previous.length ? (
+              previous.map((vehicle, index) => {
+                const quote = quoteFor(vehicle);
+                const next = byId(vehicle.replacedByAllocationId);
+                const request = requests.find(
+                  (r) => r.requestId === vehicle.transportReplacementRequestId,
+                );
+                const tracking = list(vehicle.dailyTracking);
+                return (
+                  <details
+                    className="vah-entry"
+                    key={vehicle.allocationId || index}
+                  >
+                    <summary>
+                      <div className="vah-record-body">
+                        <Pair label="Previous vehicle">
+                          <span className="vah-old-number">
+                            {text(vehicle.vehicleNumber)}
+                          </span>
+                        </Pair>
+                        <Pair label="Replaced with">
+                          {next?.vehicleNumber ||
+                            (request?.status === "Approved"
+                              ? "Awaiting allocation"
+                              : "Not linked")}
+                        </Pair>
+                        <Pair label="Transporter">{quote?.transporter}</Pair>
+                        <Pair label="Reason">
+                          {vehicle.replacementReason || request?.reason}
+                        </Pair>
+                        <Pair label="Replaced by">
+                          {vehicle.replacedBy || vehicle.transportReplacedBy}
+                        </Pair>
+                        <Pair label="Date">
+                          {timestamp(
+                            vehicle.replacedAt || vehicle.transportReplacedAt,
+                          )}
+                        </Pair>
+                        <span className="vah-expand">
+                          Details <span>⌄</span>
+                        </span>
+                      </div>
+                    </summary>
+                    <div className="vah-details">
+                      <div className="vah-grid">
+                        <Pair label="Driver">{vehicle.driver?.name}</Pair>
+                        <Pair label="Driver phone">
+                          {vehicle.driver?.contactNumber}
+                        </Pair>
+                        <Pair label="Allocated on">
+                          {timestamp(vehicle.allocatedAt)}
+                        </Pair>
+                        <Pair label="Allocated by">
+                          {vehicle.allocatedBy || "Not recorded"}
+                        </Pair>
+                        <Pair label="Replaced on">
+                          {timestamp(
+                            vehicle.replacedAt || vehicle.transportReplacedAt,
+                          )}
+                        </Pair>
+                        <Pair label="Replaced by">
+                          {vehicle.replacedBy || vehicle.transportReplacedBy}
+                        </Pair>
+                        <Pair label="Reason">
+                          {vehicle.replacementReason || request?.reason}
+                        </Pair>
+                        <Pair label="Loading / unloading">
+                          {vehicle.loading?.status || "Pending"} /{" "}
+                          {vehicle.unloading?.status || "Pending"}
+                        </Pair>
+                        <Pair label="LR">
+                          {vehicle.lr?.number || vehicle.lr?.fileName}
+                        </Pair>
+                        <Pair label="E-way bill">
+                          {vehicle.ewayBill?.number ||
+                            vehicle.ewayBill?.fileName}
+                        </Pair>
+                        <Pair label="POD">{vehicle.pod?.fileName}</Pair>
+                      </div>
+                      <details className="vah-tracking">
+                        <summary>
+                          Movement history{" "}
+                          <span>{tracking.length} update(s)</span>
+                        </summary>
+                        {tracking.length ? (
+                          tracking.map((entry, i) => (
+                            <div
+                              className="vah-movement"
+                              key={entry.trackingId || i}
+                            >
+                              <strong>
+                                {text(entry.currentLocation || entry.location)}
+                              </strong>
+                              <span>
+                                {timestamp(
+                                  entry.date ||
+                                    entry.trackingDate ||
+                                    entry.createdAt,
+                                )}{" "}
+                                · {text(entry.status)}
+                              </span>
+                              {entry.remarks && <p>{entry.remarks}</p>}
+                            </div>
+                          ))
+                        ) : (
+                          <p className="vah-empty">
+                            No movement updates saved for this vehicle.
+                          </p>
+                        )}
+                      </details>
+                      <p className="vah-note">
+                        Saved record · Open this vehicle in Tripdetails to view
+                        or download its documents.
+                      </p>
+                    </div>
+                  </details>
+                );
+              })
+            ) : (
+              <p className="vah-empty">No previous vehicles.</p>
+            ))}
+        </div>
+      </section>
+    );
+  };
+})();
+
+/* Crane movement only: compact independent vehicle rows. */
+const newCraneRow = () => ({
+  id: globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random()}`,
+  vehicleNumber: "",
+  vehicleType: "",
+  driverName: "",
+  driverContactNumber: "",
+  lsp: "",
+  cargo: "",
+  weight: "",
+  length: "",
+  height: "",
+  width: "",
+  lrNo: "",
+  ewayNo: "",
+  escortVehicleNumber: "",
+  escortName: "",
+  escortContactNumber: "",
+  supervisorName: "",
+  supervisorContactNumber: "",
+  state: "draft",
+  error: "",
+});
+const craneExtraFields = [
+  ["LSP", "lsp"],
+  ["Cargo", "cargo"],
+  ["Weight (tons)", "weight"],
+  ["Length (ft)", "length"],
+  ["Height (ft)", "height"],
+  ["Width (ft)", "width"],
+  ["LR number", "lrNo"],
+  ["E-Way number", "ewayNo"],
+  ["Escort vehicle", "escortVehicleNumber"],
+  ["Escort name", "escortName"],
+  ["Escort contact", "escortContactNumber"],
+  ["Supervisor", "supervisorName"],
+  ["Supervisor contact", "supervisorContactNumber"],
+];
+const craneNumericFields = ["weight", "length", "height", "width"];
+const normalizeCraneNumber = (value) =>
+  String(value || "")
+    .trim()
+    .toUpperCase();
+
+function CraneBulkAllocation({
+  onSaveRow,
+  onFinished,
+  onCancel,
+  onBusyChange,
+  existingNumbers = [],
+}) {
+  const [rows, setRows] = useState(() => [newCraneRow()]);
+  const [busy, setBusy] = useState(false);
+  const [expanded, setExpanded] = useState({});
+  const [message, setMessage] = useState("");
+  const lock = useRef(false);
+  const patch = (id, changes) =>
+    setRows((current) =>
+      current.map((row) => (row.id === id ? { ...row, ...changes } : row)),
+    );
+  const add = (count) =>
+    setRows((current) => [
+      ...current,
+      ...Array.from({ length: count }, newCraneRow),
+    ]);
+  const input = (row, name, label, required = false) => (
+    <input
+      aria-label={`${label} for vehicle row ${rows.indexOf(row) + 1}`}
+      required={required}
+      type={craneNumericFields.includes(name) ? "number" : "text"}
+      min={craneNumericFields.includes(name) ? "0" : undefined}
+      step={craneNumericFields.includes(name) ? "any" : undefined}
+      inputMode={/Contact/.test(name) ? "tel" : undefined}
+      placeholder={label}
+      value={row[name]}
+      disabled={busy || row.state === "saved"}
+      onChange={(event) =>
+        patch(row.id, { [name]: event.target.value, error: "", state: "draft" })
+      }
+    />
+  );
+  const save = async () => {
+    if (lock.current) return;
+    const pending = rows.filter((row) => row.state !== "saved");
+    if (!pending.length) {
+      setMessage("All rows are already saved. Add another row to continue.");
+      return;
+    }
+    const counts = new Map();
+    rows.forEach((row) => {
+      const key = normalizeCraneNumber(row.vehicleNumber);
+      counts.set(key, (counts.get(key) || 0) + 1);
+    });
+    const existing = new Set(existingNumbers.map(normalizeCraneNumber));
+    let invalid = false;
+    const validated = rows.map((row) => {
+      if (row.state === "saved") return row;
+      const key = normalizeCraneNumber(row.vehicleNumber);
+      let error = !key
+        ? "Enter a vehicle number or remove this row."
+        : counts.get(key) > 1
+          ? "Duplicate vehicle number in this list."
+          : existing.has(key)
+            ? "This vehicle is already allocated."
+            : "";
+      if (
+        !error &&
+        craneNumericFields.some(
+          (name) =>
+            row[name] !== "" &&
+            (!Number.isFinite(Number(row[name])) || Number(row[name]) < 0),
+        )
+      )
+        error = "Weight and dimensions must be zero or greater.";
+      invalid ||= Boolean(error);
+      return { ...row, error, state: error ? "error" : "draft" };
+    });
+    setRows(validated);
+    if (invalid) {
+      setMessage("Correct the highlighted rows before saving.");
+      return;
+    }
+    lock.current = true;
+    setBusy(true);
+    onBusyChange(true);
+    setMessage("");
+    let saved = 0;
+    try {
+      for (const row of validated.filter((item) => item.state !== "saved")) {
+        patch(row.id, { state: "saving" });
+        try {
+          await onSaveRow({
+            ...row,
+            vehicleNumber: normalizeCraneNumber(row.vehicleNumber),
+          });
+          patch(row.id, { state: "saved", error: "" });
+          saved += 1;
+        } catch (error) {
+          patch(row.id, {
+            state: "error",
+            error:
+              error.message ||
+              "Unable to save. Check allocation before retrying.",
+          });
+          // Stop on the first failure; later rows remain available for correction/retry.
+          break;
+        }
+      }
+      setMessage(
+        `${saved} vehicle${saved === 1 ? "" : "s"} saved in this attempt. Saved rows are locked; remaining rows can be retried.`,
+      );
+      if (saved) await onFinished(saved);
+    } catch (error) {
+      setMessage(
+        `Vehicles saved, but refreshing failed: ${error.message}. Refresh the allocation list before retrying.`,
+      );
+    } finally {
+      lock.current = false;
+      setBusy(false);
+      onBusyChange(false);
+    }
+  };
+  return (
+    <section className="crane-bulk">
+      <div className="crane-bulk-toolbar">
+        <div>
+          <strong>Vehicle entries</strong>
+          <p>
+            One vehicle per row. Expand More for cargo, documents and support
+            details.
+          </p>
+        </div>
+        <div className="crane-bulk-add">
+          {[1, 5, 10].map((count) => (
+            <button
+              key={count}
+              type="button"
+              disabled={busy}
+              onClick={() => add(count)}
+            >
+              + Add {count === 1 ? "row" : count}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="crane-bulk-scroll">
+        <div className="crane-bulk-table">
+          <div className="crane-bulk-columns" aria-hidden="true">
+            <span>#</span>
+            <span>Vehicle number *</span>
+            <span>Vehicle type</span>
+            <span>Driver name</span>
+            <span>Driver contact</span>
+            <span>Details / status</span>
+            <span />
+          </div>
+          {rows.map((row, index) => (
+            <div
+              key={row.id}
+              className={`crane-bulk-record ${row.error ? "has-error" : ""}`}
+            >
+              <div className="crane-bulk-line">
+                <span className="crane-bulk-index">{index + 1}</span>
+                {input(row, "vehicleNumber", "Vehicle number", true)}
+                {input(row, "vehicleType", "e.g. Trailer")}
+                {input(row, "driverName", "Driver name")}
+                {input(row, "driverContactNumber", "Driver contact")}
+                <div className="crane-bulk-row-actions">
+                  <button
+                    type="button"
+                    aria-expanded={Boolean(expanded[row.id])}
+                    aria-controls={`crane-details-${row.id}`}
+                    onClick={() =>
+                      setExpanded((current) => ({
+                        ...current,
+                        [row.id]: !current[row.id],
+                      }))
+                    }
+                  >
+                    {expanded[row.id] ? "Less ▴" : "More ▾"}
+                  </button>
+                  <span
+                    className={`crane-bulk-status ${row.state}`}
+                    aria-live="polite"
+                  >
+                    {row.state === "saved"
+                      ? "✓ Saved"
+                      : row.state === "saving"
+                        ? "Saving…"
+                        : row.error
+                          ? "Check row"
+                          : "Not saved"}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  className="crane-bulk-remove"
+                  aria-label={`Remove vehicle row ${index + 1}`}
+                  disabled={busy || row.state === "saved"}
+                  onClick={() =>
+                    setRows((current) =>
+                      current.filter((item) => item.id !== row.id),
+                    )
+                  }
+                >
+                  ×
+                </button>
+              </div>
+              {expanded[row.id] && (
+                <div
+                  className="crane-bulk-expanded"
+                  id={`crane-details-${row.id}`}
+                >
+                  <div className="crane-bulk-details-heading">
+                    Details for{" "}
+                    <strong>
+                      {row.vehicleNumber || `Vehicle ${index + 1}`}
+                    </strong>
+                  </div>
+                  <div className="crane-bulk-extra">
+                    {craneExtraFields.slice(0, 8).map(([label, name]) => (
+                      <label key={name}>
+                        <span>{label}</span>
+                        {input(row, name, label)}
+                      </label>
+                    ))}
+                  </div>
+                  <details>
+                    <summary>Escort &amp; supervisor details</summary>
+                    <div className="crane-bulk-extra">
+                      {craneExtraFields.slice(8).map(([label, name]) => (
+                        <label key={name}>
+                          <span>{label}</span>
+                          {input(row, name, label)}
+                        </label>
+                      ))}
+                    </div>
+                  </details>
+                </div>
+              )}
+              {row.error && (
+                <p role="alert" className="crane-bulk-error">
+                  {row.error}
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="crane-bulk-footer">
+        <div aria-live="polite">
+          <strong>
+            {rows.length} rows ·{" "}
+            {rows.filter((row) => row.state === "saved").length} saved
+          </strong>
+          {message && <p>{message}</p>}
+        </div>
+        <div>
+          <button type="button" disabled={busy} onClick={onCancel}>
+            Close
+          </button>
+          <button
+            className="crane-bulk-primary"
+            type="button"
+            disabled={busy || !rows.some((row) => row.state !== "saved")}
+            onClick={save}
+          >
+            {busy ? "Saving vehicles…" : "Save Vehicles"}
+          </button>
+        </div>
+      </div>
+    </section>
+  );
+}

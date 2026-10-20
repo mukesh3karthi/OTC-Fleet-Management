@@ -1,3 +1,18 @@
+const isCraneVehicleTrip = (trip) =>
+  ["crane", "cranemovement"].includes(
+    String(
+      trip?.movementType ||
+        trip?.movement ||
+        trip?.movementName ||
+        trip?.movementCategory ||
+        trip?.orderFinalization?.movementType ||
+        trip?.enquiryDetails?.movementType ||
+        "",
+    )
+      .trim()
+      .toLowerCase()
+      .replace(/[\s_-]+/g, ""),
+  );
 // Intercarting orders are managed in the Intercarting module.
 const isIntercartingOrder = (order) => {
   const movement =
@@ -53,6 +68,14 @@ const API_BASE = (
 ).replace(/\/+$/, "");
 const API_URL = `${API_BASE}/api/triporders`;
 const array = (value) => (Array.isArray(value) ? value : []);
+// Preserve all saved allocations on the trip; current views exclude replacements.
+const getCurrentVehicles = (trip) =>
+  array(trip?.allocatedVehicles).filter(
+    (vehicle) =>
+      String(vehicle?.vehicleStatus || "")
+        .trim()
+        .toLowerCase() !== "replaced",
+  );
 const idText = (value) => String(value?.$oid ?? value ?? "");
 const display = (value, fallback = "—") =>
   value == null || value === ""
@@ -119,6 +142,84 @@ const vehicleId = (vehicle) =>
       vehicle?.id ||
       vehicle?.vehicleNumber,
   );
+
+// Present saved per-journey Crane data using the existing read-only detail fields.
+const craneVehicleView = (vehicle, selectedJourneyId = "") => {
+  const journeys = array(vehicle?.craneTrips);
+  if (!journeys.length) return vehicle;
+  const rows = journeys
+    .flatMap((journey, journeyIndex) => {
+      const records = array(journey.history);
+      return (records.length ? records : [journey]).map((entry, index) => ({
+        ...entry,
+        journeyId: journey.journeyId,
+        tripNumber: journeyIndex + 1,
+        trackingId: entry.historyId || `${journey.journeyId}-${index}`,
+        updatedAt: entry.savedAt || entry.updatedAt || journey.updatedAt,
+        date: entry.date || journey.date,
+        _journeyStart:
+          journey.loading?.pointInAt || records[0]?.date || journey.date,
+      }));
+    })
+    .sort(
+      (a, b) =>
+        String(a.date || "").localeCompare(String(b.date || "")) ||
+        (new Date(a.updatedAt || 0).getTime() || 0) -
+          (new Date(b.updatedAt || 0).getTime() || 0),
+    );
+  const allTracking = rows.map((entry, index) => {
+    const previous = rows
+      .slice(0, index)
+      .reverse()
+      .find(
+        (row) => row.journeyId === entry.journeyId && row.date < entry.date,
+      );
+    const start =
+      entry.startKm == null || entry.startKm === ""
+        ? null
+        : Number(entry.startKm);
+    const end =
+      entry.endKm == null || entry.endKm === "" ? null : Number(entry.endKm);
+    return {
+      ...entry,
+      day: daysBetween(entry._journeyStart, entry.date, true),
+      todayKm: end,
+      runningKm: start != null && end != null ? Math.max(0, end - start) : null,
+      yesterdayKm: previous?.endKm ?? null,
+      yesterdayLocation: previous?.currentLocation || "",
+    };
+  });
+  const journey =
+    journeys.find((item) => item.journeyId === selectedJourneyId) ||
+    journeys.find((item) => item.journeyId === allTracking.at(-1)?.journeyId) ||
+    journeys.at(-1);
+  const dailyTracking = allTracking.filter(
+    (entry) => entry.journeyId === journey.journeyId,
+  );
+  const latest = dailyTracking.at(-1);
+  const operation = (raw = {}, type) => ({
+    ...raw,
+    pointInDate: raw.pointInAt || null,
+    pointOutDate: raw.pointOutAt || null,
+    [type === "loading" ? "loadingDate" : "unloadingDate"]:
+      raw.completedAt || null,
+  });
+  return {
+    ...vehicle,
+    dailyTracking,
+    latestTracking: latest,
+    currentLocation: latest?.currentLocation || journey.currentLocation,
+    status: latest?.status || journey.status,
+    loading: operation(journey.loading, "loading"),
+    unloading: operation(journey.unloading, "unloading"),
+    lr: journey.lr || {},
+    ewayBill: journey.ewayBill || {},
+    pod: journey.pod || {},
+    _craneJourneyId: journey.journeyId,
+    _craneCoveredKm: latest?.runningKm ?? 0,
+    _craneTripNumber: journeys.indexOf(journey) + 1,
+  };
+};
 const trackingEntries = (vehicle) =>
   array(vehicle?.dailyTracking)
     .slice()
@@ -313,6 +414,19 @@ const VehicleDetails = () => {
   const [error, setError] = useState("");
   const [selectedVehicle, setSelectedVehicle] = useState("");
   const [activeTab, setActiveTab] = useState("overview");
+  const [craneDetailOpen, setCraneDetailOpen] = useState(false);
+  const [selectedCraneJourney, setSelectedCraneJourney] = useState("");
+  useEffect(() => {
+    setSelectedCraneJourney("");
+  }, [tripId, selectedVehicle]);
+  const [craneSearch, setCraneSearch] = useState("");
+  useEffect(() => {
+    setCraneDetailOpen(
+      Boolean(searchParams.get("allocationId") || location.state?.allocationId),
+    );
+    setCraneSearch("");
+    setActiveTab("overview");
+  }, [tripId, searchParams, location.state?.allocationId]);
   const [today, setToday] = useState(() => dateKey(new Date()));
   const [documentError, setDocumentError] = useState("");
   const [documentBusy, setDocumentBusy] = useState("");
@@ -396,7 +510,7 @@ const VehicleDetails = () => {
             item &&
             !isIntercartingOrder(item) &&
             (item._id || item.tripId) &&
-            (array(item.allocatedVehicles).length ||
+            (getCurrentVehicles(item).length ||
               display(item.orderPlaced?.status, "").toLowerCase() ===
                 "completed" ||
               [
@@ -472,24 +586,36 @@ const VehicleDetails = () => {
     return () => window.clearInterval(timer);
   }, []);
   useEffect(() => {
-    const vehicles = array(trip?.allocatedVehicles),
+    const vehicles = getCurrentVehicles(trip).map((item) =>
+        isCraneVehicleTrip(trip) ? craneVehicleView(item) : item,
+      ),
       preferred =
         searchParams.get("allocationId") || location.state?.allocationId;
     setSelectedVehicle((current) =>
       vehicleId(
-        vehicles.find((item) => vehicleId(item) === current) ||
-          vehicles.find((item) => vehicleId(item) === preferred) ||
+        vehicles.find((item) => vehicleId(item) === preferred) ||
+          vehicles.find((item) => vehicleId(item) === current) ||
           vehicles[0],
       ),
     );
     setDocumentError("");
   }, [trip, searchParams, location.state?.allocationId]);
-  const vehicles = array(trip?.allocatedVehicles);
+  const vehicles = getCurrentVehicles(trip).map((item) =>
+    isCraneVehicleTrip(trip)
+      ? craneVehicleView(
+          item,
+          vehicleId(item) === selectedVehicle ? selectedCraneJourney : "",
+        )
+      : item,
+  );
   const vehicle =
     vehicles.find((item) => vehicleId(item) === selectedVehicle) || vehicles[0];
   const latest = latestEntry(vehicle);
   const history = useMemo(
-    () => everyDayHistory(vehicle, today),
+    () =>
+      vehicle?._craneJourneyId
+        ? trackingEntries(vehicle).slice().reverse()
+        : everyDayHistory(vehicle, today),
     [vehicle, today],
   );
   const requirement =
@@ -506,25 +632,36 @@ const VehicleDetails = () => {
         item.quotationId === (vehicle?.quotationId || confirmation.quotationId),
     ) || {};
   const totalKm = number(trip?.totalKm ?? trip?.distance ?? trip?.totalKM);
-  const coveredKm = array(vehicle?.dailyTracking).reduce(
-    (sum, entry) => sum + Math.max(0, number(entry.runningKm)),
-    0,
-  );
-  const currentDay = daysBetween(
-    vehicle?.loading?.pointInDate,
-    vehicle?.unloading?.pointOutDate || today,
-    true,
-  );
+  const coveredKm = vehicle?._craneJourneyId
+    ? vehicle._craneCoveredKm
+    : array(vehicle?.dailyTracking).reduce(
+        (sum, entry) => sum + Math.max(0, number(entry.runningKm)),
+        0,
+      );
+  // Match Current Day to the latest saved movement shown in the history.
+  const currentDay = (() => {
+    const recordedDay = Number(latest?.day);
+    if (Number.isInteger(recordedDay) && recordedDay > 0) return recordedDay;
+    const movementDate = latest?.date || latest?.updatedAt;
+    const end = vehicle?.unloading?.pointOutDate || movementDate || today;
+    const loadingDay = daysBetween(vehicle?.loading?.pointInDate, end, true);
+    if (loadingDay !== null) return loadingDay;
+    const entries = trackingEntries(vehicle);
+    const first = entries[0];
+    return daysBetween(first?.date || first?.updatedAt, end, true);
+  })();
   const status = getVehicleStatus(vehicle, today);
   const points = routePoints(trip);
   const currentPosition = display(
     latest?.currentLocation || vehicle?.currentLocation,
     "",
   );
-  const currentIndex = points.findIndex(
+  const matchedRouteIndex = points.findIndex(
     (point) => point.toLowerCase() === currentPosition.trim().toLowerCase(),
   );
   const routeReached = display(latest?.status, "").toLowerCase() === "reached";
+  const currentIndex =
+    routeReached && points.length ? points.length - 1 : matchedRouteIndex;
   const replacements = array(vehicle?.replacementHistory);
 
   const activateTab = (index) => {
@@ -558,7 +695,7 @@ const VehicleDetails = () => {
       if (!mongoId || !allocationId)
         throw new Error("Trip or allocation ID is missing. Refresh this page.");
       const response = await authFetch(
-        `${API_URL}/${encodeURIComponent(mongoId)}/allocated-vehicles/${encodeURIComponent(allocationId)}/${type}/file?disposition=${download ? "attachment" : "inline"}`,
+        `${API_URL}/${encodeURIComponent(mongoId)}/allocated-vehicles/${encodeURIComponent(allocationId)}${vehicle?._craneJourneyId ? `/crane-trips/${encodeURIComponent(vehicle._craneJourneyId)}` : ""}/${type}/file?disposition=${download ? "attachment" : "inline"}`,
       );
       const contentType = response.headers.get("content-type") || "";
       if (!response.ok || /application\/json|text\/html/i.test(contentType)) {
@@ -656,17 +793,28 @@ const VehicleDetails = () => {
 
   return (
     <main className="vdt-page">
+      <style>{`.vct-panel{border:1px solid #d6e4ed;border-radius:11px;background:#fff;overflow:hidden;color:#163d50}.vct-toolbar{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 16px}.vct-toolbar h2{font-size:14px;margin:0;font-weight:700}.vct-toolbar h2 span{display:inline-block;padding:2px 7px;margin-left:5px;border-radius:5px;background:#e9f6f5;color:#008780;font-size:11px}.vct-toolbar p{font-size:11px;margin:5px 0 0;color:#708798}.vct-search input{width:270px;max-width:100%;height:35px;padding:8px 11px;border:1px solid #d5e3eb;border-radius:7px;background:#fff;color:#23495d;font:inherit;font-size:11px}.vct-search input:focus{outline:2px solid #72c5c0;outline-offset:1px}.vct-scroll{max-height:62vh;overflow:auto}.vct-table{width:100%;min-width:1080px;border-collapse:collapse;text-align:left;font-size:11px;white-space:nowrap}.vct-table thead{position:sticky;top:0;z-index:1}.vct-table th{background:#edf5f8;color:#507083;font-size:10px;font-weight:700;padding:11px 12px;border-top:1px solid #dce9ef;border-bottom:1px solid #dce9ef;text-transform:uppercase;letter-spacing:.3px}.vct-table td{padding:10px 12px;border-bottom:1px solid #edf2f6;color:#355466}.vct-table tbody tr{background:#fff;cursor:pointer}.vct-table tbody tr:nth-child(even){background:#fafcfd}.vct-table tbody tr:hover{background:#eaf7f5}.vct-table tbody tr:focus-visible{outline:2px solid #08978c;outline-offset:-2px}.vct-table td strong{color:#16495c;font-weight:700}.vct-table button,.vct-selected button{display:inline-flex;align-items:center;gap:6px;border:1px solid #b8dcd9;background:#eef9f7;color:#087e77;border-radius:6px;padding:6px 9px;font:inherit;font-size:10px;font-weight:600;cursor:pointer}.vct-table button:focus-visible,.vct-selected button:focus-visible{outline:2px solid #08978c;outline-offset:2px}.vct-table .vct-empty{text-align:center;padding:30px;color:#7d919e;cursor:default}.vct-footer{padding:10px 16px;font-size:10px;color:#7b8e9c;background:#fbfdfe;border-top:1px solid #e2ecf2}.vct-selected{display:flex;align-items:center;gap:14px;background:#fff;padding:10px 12px;border:1px solid #d6e4ed;border-radius:9px;margin-bottom:10px;color:#174a5b;font-size:12px}@media(max-width:650px){.vct-toolbar{align-items:stretch;flex-direction:column;padding:12px}.vct-search input{width:100%}.vct-scroll{max-height:58vh}}`}</style>
       <header className="vdt-page-heading">
         <button
           type="button"
           className="vdt-button vdt-back"
-          onClick={() => navigate("/tracking")}
+          onClick={() => {
+            if (isCraneVehicleTrip(trip) && craneDetailOpen) {
+              setCraneDetailOpen(false);
+              return;
+            }
+            navigate(location.state?.returnTo || "/tracking");
+          }}
         >
           <ArrowLeft size={15} />
           Back
         </button>
         <div className="vdt-title">
-          <h1>Vehicle Details</h1>
+          <h1>
+            {isCraneVehicleTrip(trip) && !craneDetailOpen
+              ? "Crane Vehicles"
+              : "Vehicle Details"}
+          </h1>
           <p>
             {trip
               ? `${display(trip.tripId)} · ${display(trip.origin)} → ${display(trip.destination)}`
@@ -736,552 +884,864 @@ const VehicleDetails = () => {
       )}
       {trip && (
         <>
-          <section className="vdt-vehicle-selector" aria-label="Select vehicle">
-            <div className="vdt-vehicle-options">
-              {vehicles.map((item, index) => (
-                <button
-                  type="button"
-                  key={vehicleId(item) || index}
-                  className="vdt-vehicle-option"
-                  aria-pressed={vehicleId(item) === vehicleId(vehicle)}
-                  onClick={() => {
-                    setSelectedVehicle(vehicleId(item));
-                    setDocumentError("");
-                  }}
-                >
-                  <Truck size={15} />
-                  <strong>
-                    {display(item.vehicleNumber || item.vehicleNo)}
-                  </strong>
-                  <Badge>{getVehicleStatus(item, today)}</Badge>
-                </button>
-              ))}
-            </div>
-            <span className="vdt-vehicle-total">
-              {vehicles.length} {vehicles.length === 1 ? "vehicle" : "vehicles"}
-            </span>
-          </section>
-          {!vehicle ? (
-            <div className="vdt-empty">
-              <Truck size={28} />
-              <strong>No vehicles allocated</strong>
-              <p>Allocate a vehicle to this trip to view its details.</p>
-            </div>
-          ) : (
-            <>
-              <div className="vdt-tab-shell">
-                <nav
-                  className="vdt-tab-list"
-                  role="tablist"
-                  aria-label="Vehicle information"
-                >
-                  {TABS.map(({ id, label, icon: Icon }, index) => (
-                    <button
-                      type="button"
-                      key={id}
-                      role="tab"
-                      id={`vdt-tab-${id}`}
-                      aria-controls={`vdt-panel-${id}`}
-                      aria-selected={activeTab === id}
-                      tabIndex={activeTab === id ? 0 : -1}
-                      ref={(element) => {
-                        tabRefs.current[index] = element;
-                      }}
-                      onClick={() => setActiveTab(id)}
-                      onKeyDown={(event) => handleTabKeys(event, index)}
-                    >
-                      <Icon size={15} />
-                      <span>{label}</span>
-                    </button>
-                  ))}
-                </nav>
-                <section
-                  className="vdt-tab-panel"
-                  id="vdt-panel-overview"
-                  role="tabpanel"
-                  aria-labelledby="vdt-tab-overview"
-                  hidden={activeTab !== "overview"}
-                >
-                  <section className="vdt-route" aria-label="Vehicle route">
-                    <ol>
-                      {points.map((point, index) => (
-                        <li
-                          key={`${point}-${index}`}
-                          className={
-                            routeReached || index <= currentIndex
-                              ? "is-covered"
-                              : ""
-                          }
-                          aria-current={
-                            index === currentIndex ? "location" : undefined
-                          }
-                        >
-                          <span className="vdt-route-icon">
-                            {index === points.length - 1 ? (
-                              <Truck size={13} />
-                            ) : (
-                              <MapPin size={13} />
-                            )}
-                          </span>
-                          <strong>{point}</strong>
-                          <small>
-                            {index === 0
-                              ? "Origin"
-                              : index === points.length - 1
-                                ? "Destination"
-                                : ""}
-                          </small>
-                        </li>
+          {isCraneVehicleTrip(trip) && !craneDetailOpen ? (
+            <section className="vct-panel" aria-label="Crane vehicle list">
+              <div className="vct-toolbar">
+                <div>
+                  <h2>
+                    Allocated vehicles <span>{vehicles.length}</span>
+                  </h2>
+                  <p>Select a row to view the vehicle’s details.</p>
+                </div>
+                <label className="vct-search">
+                  <span className="vdt-sr-only">Search vehicles</span>
+                  <input
+                    value={craneSearch}
+                    onChange={(event) => setCraneSearch(event.target.value)}
+                    placeholder="Search vehicle, type, LSP, cargo…"
+                  />
+                </label>
+              </div>
+              <div className="vct-scroll">
+                <table className="vct-table">
+                  <thead>
+                    <tr>
+                      {[
+                        "#",
+                        "Vehicle number",
+                        "Type",
+                        "LSP",
+                        "Cargo",
+                        "Driver",
+                        "LR no",
+                        "E-way no",
+                        "Weight",
+                        "Dimensions (ft)",
+                        "Details",
+                      ].map((label) => (
+                        <th key={label} scope="col">
+                          {label}
+                        </th>
                       ))}
-                    </ol>
-                    {!points.length && (
-                      <p className="vdt-no-file">
-                        No route locations available.
-                      </p>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {vehicles
+                      .filter((item) =>
+                        [
+                          item.vehicleNumber,
+                          item.vehicleNo,
+                          item.vehicleType,
+                          item.type,
+                          item.lsp,
+                          item.cargo,
+                          item.driver?.name,
+                          item.lr?.number,
+                          item.ewayBill?.number,
+                        ]
+                          .filter(Boolean)
+                          .join(" ")
+                          .toLowerCase()
+                          .includes(craneSearch.trim().toLowerCase()),
+                      )
+                      .map((item, index) => {
+                        const openDetails = () => {
+                          setSelectedVehicle(vehicleId(item));
+                          setDocumentError("");
+                          setActiveTab("overview");
+                          setCraneDetailOpen(true);
+                        };
+                        const requirement = array(
+                          trip?.vehicleRequirements,
+                        ).find(
+                          (row) => row.requirementId === item.requirementId,
+                        );
+                        const dimensionText = [
+                          item.dimensions?.length,
+                          item.dimensions?.height,
+                          item.dimensions?.width,
+                        ].some((value) => value != null && value !== "")
+                          ? [
+                              item.dimensions?.length,
+                              item.dimensions?.height,
+                              item.dimensions?.width,
+                            ]
+                              .map(display)
+                              .join(" × ")
+                          : "—";
+                        return (
+                          <tr
+                            key={vehicleId(item) || index}
+                            tabIndex={0}
+                            aria-label={`View ${display(item.vehicleNumber || item.vehicleNo)}`}
+                            onClick={openDetails}
+                            onKeyDown={(event) => {
+                              if (
+                                event.target === event.currentTarget &&
+                                (event.key === "Enter" || event.key === " ")
+                              ) {
+                                event.preventDefault();
+                                openDetails();
+                              }
+                            }}
+                          >
+                            <td>{index + 1}</td>
+                            <td>
+                              <strong>
+                                {display(item.vehicleNumber || item.vehicleNo)}
+                              </strong>
+                            </td>
+                            <td>
+                              {display(
+                                item.vehicleType ||
+                                  item.type ||
+                                  requirement?.vehicleType,
+                              )}
+                            </td>
+                            <td>{display(item.lsp)}</td>
+                            <td>{display(item.cargo || trip.materialType)}</td>
+                            <td>{display(item.driver?.name)}</td>
+                            <td>{display(item.lr?.number)}</td>
+                            <td>{display(item.ewayBill?.number)}</td>
+                            <td>
+                              {item.weight == null || item.weight === ""
+                                ? "—"
+                                : `${item.weight} TON`}
+                            </td>
+                            <td>{dimensionText}</td>
+                            <td>
+                              <button
+                                type="button"
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  openDetails();
+                                }}
+                              >
+                                View details
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    {!vehicles.some((item) =>
+                      [
+                        item.vehicleNumber,
+                        item.vehicleNo,
+                        item.vehicleType,
+                        item.type,
+                        item.lsp,
+                        item.cargo,
+                        item.driver?.name,
+                        item.lr?.number,
+                        item.ewayBill?.number,
+                      ]
+                        .filter(Boolean)
+                        .join(" ")
+                        .toLowerCase()
+                        .includes(craneSearch.trim().toLowerCase()),
+                    ) && (
+                      <tr>
+                        <td colSpan={11} className="vct-empty">
+                          {vehicles.length
+                            ? "No matching vehicles."
+                            : "No vehicles allocated to this trip."}
+                        </td>
+                      </tr>
                     )}
-                  </section>
-                  <div className="vdt-distance-grid">
-                    {[
-                      ["Total KM", totalKm, "total"],
-                      ["KM Covered", coveredKm, "covered"],
-                      ["Balance", Math.max(0, totalKm - coveredKm), "balance"],
-                    ].map(([label, value, type]) => (
-                      <div
-                        className={`vdt-distance vdt-distance-${type}`}
-                        key={type}
-                      >
-                        <span>{label}</span>
-                        <strong>{km(value)}</strong>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="vdt-two-columns">
-                    <Card
-                      title="Movement Status"
-                      icon={Navigation}
-                      right={<Badge>{status}</Badge>}
+                  </tbody>
+                </table>
+              </div>
+              <div className="vct-footer">
+                {vehicles.length} allocated vehicles · Click a row to view
+                details
+              </div>
+            </section>
+          ) : null}
+          {(!isCraneVehicleTrip(trip) || craneDetailOpen) && (
+            <>
+              {isCraneVehicleTrip(trip) ? (
+                <div className="vct-selected">
+                  <button
+                    type="button"
+                    onClick={() => setCraneDetailOpen(false)}
+                  >
+                    <ArrowLeft size={14} /> Back to vehicles
+                  </button>
+                  <strong>
+                    {display(vehicle?.vehicleNumber || vehicle?.vehicleNo)}
+                  </strong>
+                  {array(vehicle?.craneTrips).length > 0 && (
+                    <div
+                      role="group"
+                      aria-label="Select crane trip"
+                      style={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        gap: "7px",
+                        alignItems: "center",
+                      }}
                     >
-                      <Rows
-                        rows={[
-                          ["Current Position", display(currentPosition)],
-                          [
-                            "Yesterday Position",
-                            display(latest?.yesterdayLocation),
-                          ],
-                          ["Yesterday KM", km(latest?.yesterdayKm)],
-                          ["Today KM", km(latest?.todayKm)],
-                          ["Running KM", km(latest?.runningKm)],
-                          [
-                            "Current Day",
-                            currentDay === null ? "—" : `Day ${currentDay}`,
-                          ],
-                          [
-                            "Last Update",
-                            dateText(latest?.updatedAt || latest?.date),
-                          ],
-                        ]}
-                      />
-                    </Card>
-                    <Card title="Vehicle & Transport Details" icon={Truck}>
-                      <Rows
-                        rows={[
-                          [
-                            "Vehicle Type",
-                            display(
-                              requirement.vehicleType ||
-                                vehicle.vehicleType ||
-                                trip.vehicleType,
-                            ),
-                          ],
-                          [
-                            "Configuration",
-                            display(
-                              requirement.configuration ||
-                                vehicle.configuration,
-                            ),
-                          ],
-                          [
-                            "Classification",
-                            display(
-                              requirement.classification ||
-                                vehicle.classification,
-                            ),
-                          ],
-                          [
-                            "Vehicle Number",
-                            display(vehicle.vehicleNumber || vehicle.vehicleNo),
-                          ],
-                          [
-                            "Transporter",
-                            display(
-                              quotation.transporter ||
-                                vehicle.transporter ||
-                                trip.lsp,
-                            ),
-                          ],
-                          [
-                            "Allocation Source",
-                            display(vehicle.allocatedSource),
-                          ],
-                          ["Allocated On", dateText(vehicle.allocatedAt)],
-                        ]}
-                      />
-                    </Card>
-                  </div>
-                </section>
-                <section
-                  className="vdt-tab-panel"
-                  id="vdt-panel-operations"
-                  role="tabpanel"
-                  aria-labelledby="vdt-tab-operations"
-                  hidden={activeTab !== "operations"}
-                >
-                  <div className="vdt-two-columns">
-                    {operationsCard("loading")}
-                    {operationsCard("unloading")}
-                  </div>
-                </section>
-                <section
-                  className="vdt-tab-panel"
-                  id="vdt-panel-documents"
-                  role="tabpanel"
-                  aria-labelledby="vdt-tab-documents"
-                  hidden={activeTab !== "documents"}
-                >
-                  {documentError && (
-                    <div className="vdt-error" role="alert">
-                      {documentError}
+                      {array(vehicle.craneTrips).map((journey, index) => (
+                        <button
+                          key={journey.journeyId}
+                          type="button"
+                          aria-pressed={
+                            vehicle._craneJourneyId === journey.journeyId
+                          }
+                          onClick={() => {
+                            setSelectedCraneJourney(journey.journeyId);
+                            setDocumentError("");
+                            setActiveTab("overview");
+                          }}
+                          style={{
+                            background:
+                              vehicle._craneJourneyId === journey.journeyId
+                                ? "#087f80"
+                                : "#f5fafb",
+                            color:
+                              vehicle._craneJourneyId === journey.journeyId
+                                ? "#fff"
+                                : "#315a6b",
+                            borderColor:
+                              vehicle._craneJourneyId === journey.journeyId
+                                ? "#087f80"
+                                : "#d2e3e9",
+                            padding: "8px 12px",
+                          }}
+                        >
+                          <span>Trip {index + 1}</span>
+                          <span style={{ fontSize: "10px", opacity: 0.8 }}>
+                            {dateText(journey.date)}
+                          </span>
+                        </button>
+                      ))}
                     </div>
                   )}
-                  <div className="vdt-three-columns">
-                    <Card
-                      title="LR Details"
-                      right={
-                        <Badge>
-                          {vehicle.lr?.number || vehicle.lr?.date
-                            ? "Completed"
-                            : "Pending"}
-                        </Badge>
-                      }
-                    >
-                      <Rows
-                        rows={[
-                          ["LR Number", display(vehicle.lr?.number)],
-                          ["LR Date", dateText(vehicle.lr?.date)],
-                          [
-                            "File Name",
-                            display(
-                              vehicle.lr?.originalName || vehicle.lr?.fileName,
-                            ),
-                          ],
-                          ["Remarks", display(vehicle.lr?.remarks)],
-                        ]}
-                      />
-                      {documentButtons("lr")}
-                    </Card>
-                    <Card
-                      title="E-Way Bill"
-                      right={
-                        <Badge>{billStatus(vehicle.ewayBill, today)}</Badge>
-                      }
-                    >
-                      <Rows
-                        rows={[
-                          ["E-Way Number", display(vehicle.ewayBill?.number)],
-                          ["Valid Upto", dateText(vehicle.ewayBill?.validUpto)],
-                          [
-                            "File Name",
-                            display(
-                              vehicle.ewayBill?.originalName ||
-                                vehicle.ewayBill?.fileName,
-                            ),
-                          ],
-                          ["Remarks", display(vehicle.ewayBill?.remarks)],
-                        ]}
-                      />
-                      {documentButtons("ewayBill")}
-                    </Card>
-                    <Card
-                      title="POD Document"
-                      right={
-                        <Badge>
-                          {hasFile(vehicle.pod) ? "Uploaded" : "Pending"}
-                        </Badge>
-                      }
-                    >
-                      <Rows
-                        rows={[
-                          [
-                            "File Name",
-                            display(
-                              vehicle.pod?.originalName ||
-                                vehicle.pod?.fileName,
-                            ),
-                          ],
-                          ["Uploaded On", dateText(vehicle.pod?.uploadedAt)],
-                          ["Uploaded By", display(vehicle.pod?.uploadedBy)],
-                          ["Remarks", display(vehicle.pod?.remarks)],
-                        ]}
-                      />
-                      {documentButtons("pod")}
-                    </Card>
-                  </div>
-                </section>
+                </div>
+              ) : (
                 <section
-                  className="vdt-tab-panel"
-                  id="vdt-panel-contacts"
-                  role="tabpanel"
-                  aria-labelledby="vdt-tab-contacts"
-                  hidden={activeTab !== "contacts"}
+                  className="vdt-vehicle-selector"
+                  aria-label="Select vehicle"
                 >
-                  <div className="vdt-three-columns">
-                    <Card title="Driver Details" icon={UsersRound}>
-                      <Rows
-                        rows={[
-                          [
-                            "Name",
-                            display(vehicle.driver?.name || vehicle.driverName),
-                          ],
-                          [
-                            "Contact",
-                            display(
-                              vehicle.driver?.contactNumber ||
-                                vehicle.driverNumber,
-                            ),
-                          ],
-                        ]}
-                      />
-                    </Card>
-                    <Card title="Escort Details" icon={UsersRound}>
-                      <Rows
-                        rows={[
-                          [
-                            "Vehicle Number",
-                            display(vehicle.escort?.vehicleNumber),
-                          ],
-                          ["Name", display(vehicle.escort?.name)],
-                          ["Contact", display(vehicle.escort?.contactNumber)],
-                        ]}
-                      />
-                    </Card>
-                    <Card title="Supervisor Details" icon={UsersRound}>
-                      <Rows
-                        rows={[
-                          ["Name", display(vehicle.supervisor?.name)],
-                          [
-                            "Contact",
-                            display(vehicle.supervisor?.contactNumber),
-                          ],
-                        ]}
-                      />
-                    </Card>
+                  <div className="vdt-vehicle-options">
+                    {vehicles.map((item, index) => (
+                      <button
+                        type="button"
+                        key={vehicleId(item) || index}
+                        className="vdt-vehicle-option"
+                        aria-pressed={vehicleId(item) === vehicleId(vehicle)}
+                        onClick={() => {
+                          setSelectedVehicle(vehicleId(item));
+                          setDocumentError("");
+                        }}
+                      >
+                        <Truck size={15} />
+                        <strong>
+                          {display(item.vehicleNumber || item.vehicleNo)}
+                        </strong>
+                        <Badge>{getVehicleStatus(item, today)}</Badge>
+                      </button>
+                    ))}
                   </div>
+                  <span className="vdt-vehicle-total">
+                    {vehicles.length}{" "}
+                    {vehicles.length === 1 ? "vehicle" : "vehicles"}
+                  </span>
                 </section>
-                <section
-                  className="vdt-tab-panel"
-                  id="vdt-panel-history"
-                  role="tabpanel"
-                  aria-labelledby="vdt-tab-history"
-                  hidden={activeTab !== "history"}
-                >
-                  <Card
-                    title="Daily Movement History"
-                    icon={History}
-                    right={
-                      <span className="vdt-count">
-                        {
-                          new Set(history.map((entry) => dateKey(entry.date)))
-                            .size
-                        }{" "}
-                        Days · {array(vehicle.dailyTracking).length} Updates
-                      </span>
-                    }
-                  >
-                    <div className="vdt-table-wrap">
-                      <table className="vdt-table">
-                        <thead>
-                          <tr>
-                            {[
-                              "Date",
-                              "Day",
-                              "Location",
-                              "Running KM",
-                              "Status",
-                              "Updated By",
-                              "Remarks",
-                            ].map((label) => (
-                              <th scope="col" key={label}>
-                                {label}
-                              </th>
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {history.map((entry, index) => (
-                            <tr
-                              key={`${entry.trackingId || entry.date}-${index}`}
+              )}
+              {!vehicle ? (
+                <div className="vdt-empty">
+                  <Truck size={28} />
+                  <strong>No vehicles allocated</strong>
+                  <p>Allocate a vehicle to this trip to view its details.</p>
+                </div>
+              ) : (
+                <>
+                  <div className="vdt-tab-shell">
+                    <nav
+                      className="vdt-tab-list"
+                      role="tablist"
+                      aria-label="Vehicle information"
+                    >
+                      {TABS.map(({ id, label, icon: Icon }, index) => (
+                        <button
+                          type="button"
+                          key={id}
+                          role="tab"
+                          id={`vdt-tab-${id}`}
+                          aria-controls={`vdt-panel-${id}`}
+                          aria-selected={activeTab === id}
+                          tabIndex={activeTab === id ? 0 : -1}
+                          ref={(element) => {
+                            tabRefs.current[index] = element;
+                          }}
+                          onClick={() => setActiveTab(id)}
+                          onKeyDown={(event) => handleTabKeys(event, index)}
+                        >
+                          <Icon size={15} />
+                          <span>{label}</span>
+                        </button>
+                      ))}
+                    </nav>
+                    <section
+                      className="vdt-tab-panel"
+                      id="vdt-panel-overview"
+                      role="tabpanel"
+                      aria-labelledby="vdt-tab-overview"
+                      hidden={activeTab !== "overview"}
+                    >
+                      <section className="vdt-route" aria-label="Vehicle route">
+                        <div className="vdt-route-update">
+                          <span>
+                            Current position:{" "}
+                            <strong>
+                              {currentPosition || "Awaiting update"}
+                            </strong>
+                          </span>
+                        </div>
+                        <ol>
+                          {points.map((point, index) => (
+                            <li
+                              key={`${point}-${index}`}
+                              className={
+                                index === currentIndex
+                                  ? "is-current"
+                                  : index < currentIndex
+                                    ? "is-covered"
+                                    : "is-upcoming"
+                              }
+                              aria-current={
+                                index === currentIndex ? "location" : undefined
+                              }
                             >
-                              <td>{dateText(entry.date)}</td>
-                              <td>
-                                {entry.day == null ? "—" : `Day ${entry.day}`}
-                              </td>
-                              <td>
-                                {entry.missing
-                                  ? "—"
-                                  : display(entry.currentLocation)}
-                              </td>
-                              <td>
-                                {entry.missing ? "—" : km(entry.runningKm)}
-                              </td>
-                              <td>
-                                {entry.missing ? (
-                                  <span className="vdt-muted">No update</span>
+                              <span className="vdt-route-icon">
+                                {index === currentIndex ||
+                                index === points.length - 1 ? (
+                                  <Truck size={13} />
                                 ) : (
-                                  <Badge>{display(entry.status, "Idle")}</Badge>
+                                  <MapPin size={13} />
                                 )}
-                              </td>
-                              <td>
-                                {entry.missing ? "—" : display(entry.updatedBy)}
-                              </td>
-                              <td>
-                                {entry.missing
-                                  ? "No update recorded"
-                                  : display(entry.remarks)}
-                              </td>
-                            </tr>
+                              </span>
+                              <strong>{point}</strong>
+                              <small>
+                                {index === currentIndex
+                                  ? "Current"
+                                  : index === 0
+                                    ? "Origin"
+                                    : index === points.length - 1
+                                      ? "Destination"
+                                      : ""}
+                              </small>
+                            </li>
                           ))}
-                        </tbody>
-                      </table>
-                      {!history.length && (
-                        <p className="vdt-no-file">
-                          No movement history available.
-                        </p>
+                        </ol>
+                        {!points.length && (
+                          <p className="vdt-no-file">
+                            No route locations available.
+                          </p>
+                        )}
+                      </section>
+                      <div className="vdt-distance-grid">
+                        {[
+                          ["Total KM", totalKm, "total"],
+                          ["KM Covered", coveredKm, "covered"],
+                          [
+                            "Balance",
+                            Math.max(0, totalKm - coveredKm),
+                            "balance",
+                          ],
+                        ].map(([label, value, type]) => (
+                          <div
+                            className={`vdt-distance vdt-distance-${type}`}
+                            key={type}
+                          >
+                            <span>{label}</span>
+                            <strong>{km(value)}</strong>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="vdt-two-columns">
+                        <Card
+                          title="Movement Status"
+                          icon={Navigation}
+                          right={<Badge>{status}</Badge>}
+                        >
+                          <Rows
+                            rows={[
+                              ["Current Position", display(currentPosition)],
+                              [
+                                "Yesterday Position",
+                                display(latest?.yesterdayLocation),
+                              ],
+                              ["Yesterday KM", km(latest?.yesterdayKm)],
+                              ["Today KM", km(latest?.todayKm)],
+                              ["Running KM", km(latest?.runningKm)],
+                              [
+                                "Current Day",
+                                currentDay === null
+                                  ? "Not started"
+                                  : `Day ${currentDay}`,
+                              ],
+                              [
+                                "Last Update",
+                                dateText(latest?.updatedAt || latest?.date),
+                              ],
+                            ]}
+                          />
+                        </Card>
+                        <Card title="Vehicle & Transport Details" icon={Truck}>
+                          <Rows
+                            rows={[
+                              [
+                                "Vehicle Type",
+                                display(
+                                  requirement.vehicleType ||
+                                    vehicle.vehicleType ||
+                                    trip.vehicleType,
+                                ),
+                              ],
+                              [
+                                "Configuration",
+                                display(
+                                  requirement.configuration ||
+                                    vehicle.configuration,
+                                ),
+                              ],
+                              [
+                                "Classification",
+                                display(
+                                  requirement.classification ||
+                                    vehicle.classification,
+                                ),
+                              ],
+                              [
+                                "Vehicle Number",
+                                display(
+                                  vehicle.vehicleNumber || vehicle.vehicleNo,
+                                ),
+                              ],
+                              [
+                                "Transporter",
+                                display(
+                                  quotation.transporter ||
+                                    vehicle.transporter ||
+                                    trip.lsp,
+                                ),
+                              ],
+                              [
+                                "Allocation Source",
+                                display(vehicle.allocatedSource),
+                              ],
+                              ["Allocated On", dateText(vehicle.allocatedAt)],
+                            ]}
+                          />
+                        </Card>
+                      </div>
+                    </section>
+                    <section
+                      className="vdt-tab-panel"
+                      id="vdt-panel-operations"
+                      role="tabpanel"
+                      aria-labelledby="vdt-tab-operations"
+                      hidden={activeTab !== "operations"}
+                    >
+                      <div className="vdt-two-columns">
+                        {operationsCard("loading")}
+                        {operationsCard("unloading")}
+                      </div>
+                    </section>
+                    <section
+                      className="vdt-tab-panel"
+                      id="vdt-panel-documents"
+                      role="tabpanel"
+                      aria-labelledby="vdt-tab-documents"
+                      hidden={activeTab !== "documents"}
+                    >
+                      {documentError && (
+                        <div className="vdt-error" role="alert">
+                          {documentError}
+                        </div>
                       )}
-                    </div>
-                  </Card>
-                  <Card
-                    title="Vehicle Replacement History"
-                    icon={Truck}
-                    right={
-                      <span className="vdt-count">
-                        {replacements.length} Replacements
-                      </span>
-                    }
-                  >
-                    {replacements.length ? (
-                      <div className="vdt-table-wrap">
-                        <table className="vdt-table">
-                          <thead>
-                            <tr>
-                              {[
-                                "Date",
-                                "Previous Vehicle",
-                                "New Vehicle",
-                                "Source",
-                                "Reason",
-                              ].map((label) => (
-                                <th scope="col" key={label}>
-                                  {label}
-                                </th>
-                              ))}
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {replacements
-                              .slice()
-                              .reverse()
-                              .map((entry, index) => (
-                                <tr key={entry.replacementId || index}>
-                                  <td>{dateText(entry.replacedAt)}</td>
-                                  <td>{display(entry.oldVehicleNumber)}</td>
-                                  <td>{display(entry.newVehicleNumber)}</td>
+                      <div className="vdt-three-columns">
+                        <Card
+                          title="LR Details"
+                          right={
+                            <Badge>
+                              {vehicle.lr?.number || vehicle.lr?.date
+                                ? "Completed"
+                                : "Pending"}
+                            </Badge>
+                          }
+                        >
+                          <Rows
+                            rows={[
+                              ["LR Number", display(vehicle.lr?.number)],
+                              ["LR Date", dateText(vehicle.lr?.date)],
+                              [
+                                "File Name",
+                                display(
+                                  vehicle.lr?.originalName ||
+                                    vehicle.lr?.fileName,
+                                ),
+                              ],
+                              ["Remarks", display(vehicle.lr?.remarks)],
+                            ]}
+                          />
+                          {documentButtons("lr")}
+                        </Card>
+                        <Card
+                          title="E-Way Bill"
+                          right={
+                            <Badge>{billStatus(vehicle.ewayBill, today)}</Badge>
+                          }
+                        >
+                          <Rows
+                            rows={[
+                              [
+                                "E-Way Number",
+                                display(vehicle.ewayBill?.number),
+                              ],
+                              [
+                                "Valid Upto",
+                                dateText(vehicle.ewayBill?.validUpto),
+                              ],
+                              [
+                                "File Name",
+                                display(
+                                  vehicle.ewayBill?.originalName ||
+                                    vehicle.ewayBill?.fileName,
+                                ),
+                              ],
+                              ["Remarks", display(vehicle.ewayBill?.remarks)],
+                            ]}
+                          />
+                          {documentButtons("ewayBill")}
+                        </Card>
+                        <Card
+                          title="POD Document"
+                          right={
+                            <Badge>
+                              {hasFile(vehicle.pod) ? "Uploaded" : "Pending"}
+                            </Badge>
+                          }
+                        >
+                          <Rows
+                            rows={[
+                              [
+                                "File Name",
+                                display(
+                                  vehicle.pod?.originalName ||
+                                    vehicle.pod?.fileName,
+                                ),
+                              ],
+                              [
+                                "Uploaded On",
+                                dateText(vehicle.pod?.uploadedAt),
+                              ],
+                              ["Uploaded By", display(vehicle.pod?.uploadedBy)],
+                              ["Remarks", display(vehicle.pod?.remarks)],
+                            ]}
+                          />
+                          {documentButtons("pod")}
+                        </Card>
+                      </div>
+                    </section>
+                    <section
+                      className="vdt-tab-panel"
+                      id="vdt-panel-contacts"
+                      role="tabpanel"
+                      aria-labelledby="vdt-tab-contacts"
+                      hidden={activeTab !== "contacts"}
+                    >
+                      <div className="vdt-three-columns">
+                        <Card title="Driver Details" icon={UsersRound}>
+                          <Rows
+                            rows={[
+                              [
+                                "Name",
+                                display(
+                                  vehicle.driver?.name || vehicle.driverName,
+                                ),
+                              ],
+                              [
+                                "Contact",
+                                display(
+                                  vehicle.driver?.contactNumber ||
+                                    vehicle.driverNumber,
+                                ),
+                              ],
+                            ]}
+                          />
+                        </Card>
+                        <Card title="Escort Details" icon={UsersRound}>
+                          <Rows
+                            rows={[
+                              [
+                                "Vehicle Number",
+                                display(vehicle.escort?.vehicleNumber),
+                              ],
+                              ["Name", display(vehicle.escort?.name)],
+                              [
+                                "Contact",
+                                display(vehicle.escort?.contactNumber),
+                              ],
+                            ]}
+                          />
+                        </Card>
+                        <Card title="Supervisor Details" icon={UsersRound}>
+                          <Rows
+                            rows={[
+                              ["Name", display(vehicle.supervisor?.name)],
+                              [
+                                "Contact",
+                                display(vehicle.supervisor?.contactNumber),
+                              ],
+                            ]}
+                          />
+                        </Card>
+                      </div>
+                    </section>
+                    <section
+                      className="vdt-tab-panel"
+                      id="vdt-panel-history"
+                      role="tabpanel"
+                      aria-labelledby="vdt-tab-history"
+                      hidden={activeTab !== "history"}
+                    >
+                      <Card
+                        title={
+                          vehicle?._craneJourneyId
+                            ? `Trip ${vehicle._craneTripNumber} Movement History`
+                            : "Daily Movement History"
+                        }
+                        icon={History}
+                        right={
+                          <span className="vdt-count">
+                            {
+                              new Set(
+                                history.map((entry) => dateKey(entry.date)),
+                              ).size
+                            }{" "}
+                            Days · {array(vehicle.dailyTracking).length} Updates
+                          </span>
+                        }
+                      >
+                        <div className="vdt-table-wrap">
+                          <table className="vdt-table">
+                            <thead>
+                              <tr>
+                                {[
+                                  "Date",
+                                  "Day",
+                                  "Location",
+                                  "Running KM",
+                                  "Status",
+                                  "Updated By",
+                                  "Remarks",
+                                ].map((label) => (
+                                  <th scope="col" key={label}>
+                                    {label}
+                                  </th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {history.map((entry, index) => (
+                                <tr
+                                  key={`${entry.trackingId || entry.date}-${index}`}
+                                >
                                   <td>
-                                    {display(
-                                      entry.replacementSource || entry.source,
+                                    {dateText(entry.date)}
+                                    {entry.tripNumber && (
+                                      <small
+                                        style={{
+                                          display: "block",
+                                          color: "#6f8797",
+                                          marginTop: "3px",
+                                        }}
+                                      >
+                                        Trip {entry.tripNumber}
+                                      </small>
                                     )}
                                   </td>
                                   <td>
-                                    {display(entry.reason || entry.remarks)}
+                                    {entry.day == null
+                                      ? "—"
+                                      : `Day ${entry.day}`}
+                                  </td>
+                                  <td>
+                                    {entry.missing
+                                      ? "—"
+                                      : display(entry.currentLocation)}
+                                  </td>
+                                  <td>
+                                    {entry.missing ? "—" : km(entry.runningKm)}
+                                  </td>
+                                  <td>
+                                    {entry.missing ? (
+                                      <span className="vdt-muted">
+                                        No update
+                                      </span>
+                                    ) : (
+                                      <Badge>
+                                        {display(entry.status, "Idle")}
+                                      </Badge>
+                                    )}
+                                  </td>
+                                  <td>
+                                    {entry.missing
+                                      ? "—"
+                                      : display(entry.updatedBy)}
+                                  </td>
+                                  <td>
+                                    {entry.missing
+                                      ? "No update recorded"
+                                      : display(entry.remarks)}
                                   </td>
                                 </tr>
                               ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    ) : (
-                      <p className="vdt-no-file">No vehicle replacements.</p>
-                    )}
-                  </Card>
-                </section>
-                <section
-                  className="vdt-tab-panel"
-                  id="vdt-panel-trip"
-                  role="tabpanel"
-                  aria-labelledby="vdt-tab-trip"
-                  hidden={activeTab !== "trip"}
-                >
-                  <div className="vdt-two-columns">
-                    <Card title="Order Information" icon={Info}>
-                      <Rows
-                        rows={[
-                          ["Trip ID", display(trip.tripId)],
-                          ["Customer", display(trip.customer)],
-                          [
-                            "Material",
-                            display(trip.materialType || trip.materialName),
-                          ],
-                          ["Origin", display(trip.origin)],
-                          ["Destination", display(trip.destination)],
-                          ["Total KM", km(totalKm)],
-                          [
-                            "Required Vehicles",
-                            display(
-                              trip.totalVehicles ??
-                                array(trip.vehicleRequirements).reduce(
-                                  (sum, item) => sum + number(item.quantity),
-                                  0,
+                            </tbody>
+                          </table>
+                          {!history.length && (
+                            <p className="vdt-no-file">
+                              No movement history available.
+                            </p>
+                          )}
+                        </div>
+                      </Card>
+                      <Card
+                        title="Vehicle Replacement History"
+                        icon={Truck}
+                        right={
+                          <span className="vdt-count">
+                            {replacements.length} Replacements
+                          </span>
+                        }
+                      >
+                        {replacements.length ? (
+                          <div className="vdt-table-wrap">
+                            <table className="vdt-table">
+                              <thead>
+                                <tr>
+                                  {[
+                                    "Date",
+                                    "Previous Vehicle",
+                                    "New Vehicle",
+                                    "Source",
+                                    "Reason",
+                                  ].map((label) => (
+                                    <th scope="col" key={label}>
+                                      {label}
+                                    </th>
+                                  ))}
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {replacements
+                                  .slice()
+                                  .reverse()
+                                  .map((entry, index) => (
+                                    <tr key={entry.replacementId || index}>
+                                      <td>{dateText(entry.replacedAt)}</td>
+                                      <td>{display(entry.oldVehicleNumber)}</td>
+                                      <td>{display(entry.newVehicleNumber)}</td>
+                                      <td>
+                                        {display(
+                                          entry.replacementSource ||
+                                            entry.source,
+                                        )}
+                                      </td>
+                                      <td>
+                                        {display(entry.reason || entry.remarks)}
+                                      </td>
+                                    </tr>
+                                  ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        ) : (
+                          <p className="vdt-no-file">
+                            No vehicle replacements.
+                          </p>
+                        )}
+                      </Card>
+                    </section>
+                    <section
+                      className="vdt-tab-panel"
+                      id="vdt-panel-trip"
+                      role="tabpanel"
+                      aria-labelledby="vdt-tab-trip"
+                      hidden={activeTab !== "trip"}
+                    >
+                      <div className="vdt-two-columns">
+                        <Card title="Order Information" icon={Info}>
+                          <Rows
+                            rows={[
+                              ["Trip ID", display(trip.tripId)],
+                              ["Customer", display(trip.customer)],
+                              [
+                                "Material",
+                                display(trip.materialType || trip.materialName),
+                              ],
+                              ["Origin", display(trip.origin)],
+                              ["Destination", display(trip.destination)],
+                              ["Total KM", km(totalKm)],
+                              [
+                                "Required Vehicles",
+                                display(
+                                  trip.totalVehicles ??
+                                    array(trip.vehicleRequirements).reduce(
+                                      (sum, item) =>
+                                        sum + number(item.quantity),
+                                      0,
+                                    ),
                                 ),
-                            ),
-                          ],
-                          ["Stage", display(trip.stage)],
-                          ["Created On", dateText(trip.createdAt)],
-                        ]}
-                      />
-                    </Card>
-                    <Card title="Customer & Logistics" icon={UsersRound}>
-                      <Rows
-                        rows={[
-                          [
-                            "Contact Person",
-                            display(
-                              trip.clientContactPerson || trip.contactPerson,
-                            ),
-                          ],
-                          [
-                            "Phone",
-                            display(trip.clientPhone || trip.contactNumber),
-                          ],
-                          ["Email", display(trip.email)],
-                          ["LSP", display(trip.lsp)],
-                          [
-                            "Transport Contact",
-                            display(trip.transporterContactPerson),
-                          ],
-                          ["Transport Phone", display(trip.transporterPhone)],
-                          ["Assigned KAM", display(trip.assignedKam)],
-                          [
-                            "Estimated Transit",
-                            trip.estimatedTransitDays == null
-                              ? "—"
-                              : `${trip.estimatedTransitDays} Days`,
-                          ],
-                          ["Remarks", display(trip.remarks || trip.remark)],
-                        ]}
-                      />
-                    </Card>
+                              ],
+                              ["Stage", display(trip.stage)],
+                              ["Created On", dateText(trip.createdAt)],
+                            ]}
+                          />
+                        </Card>
+                        <Card title="Customer & Logistics" icon={UsersRound}>
+                          <Rows
+                            rows={[
+                              [
+                                "Contact Person",
+                                display(
+                                  trip.clientContactPerson ||
+                                    trip.contactPerson,
+                                ),
+                              ],
+                              [
+                                "Phone",
+                                display(trip.clientPhone || trip.contactNumber),
+                              ],
+                              ["Email", display(trip.email)],
+                              ["LSP", display(trip.lsp)],
+                              [
+                                "Transport Contact",
+                                display(trip.transporterContactPerson),
+                              ],
+                              [
+                                "Transport Phone",
+                                display(trip.transporterPhone),
+                              ],
+                              ["Assigned KAM", display(trip.assignedKam)],
+                              [
+                                "Estimated Transit",
+                                trip.estimatedTransitDays == null
+                                  ? "—"
+                                  : `${trip.estimatedTransitDays} Days`,
+                              ],
+                              ["Remarks", display(trip.remarks || trip.remark)],
+                            ]}
+                          />
+                        </Card>
+                      </div>
+                    </section>
                   </div>
-                </section>
-              </div>
+                </>
+              )}
             </>
           )}
         </>
