@@ -61,6 +61,12 @@ import {
 } from "lucide-react";
 import "./vehicledetails.css";
 
+// ExcelJS preserves the colours, merged title, borders and column widths
+// used by the supplied vehicle report sample. Install: npm i exceljs
+import ExcelJS from "exceljs/dist/exceljs.min.js";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
+
 const API_BASE = (
   import.meta.env.VITE_API_URL ||
   import.meta.env.VITE_API_BASE_URL ||
@@ -68,6 +74,20 @@ const API_BASE = (
 ).replace(/\/+$/, "");
 const API_URL = `${API_BASE}/api/triporders`;
 const array = (value) => (Array.isArray(value) ? value : []);
+const reportDate = (value) => {
+  if (!value) return "";
+  const date = new Date(value);
+  if (!Number.isFinite(date.getTime())) return "";
+  return `${String(date.getDate()).padStart(2, "0")}-${String(date.getMonth() + 1).padStart(2, "0")}-${date.getFullYear()}`;
+};
+const reportStatus = (vehicle) => {
+  const unloading = String(vehicle?.unloading?.status || "").toLowerCase();
+  const loading = String(vehicle?.loading?.status || "").toLowerCase();
+  if (unloading === "in progress") return "Unloading Process";
+  if (unloading === "completed") return "Unloading Completed";
+  if (loading === "in progress") return "Loading Process";
+  return vehicle?.status || vehicle?.vehicleStatus || "Pending";
+};
 // Preserve all saved allocations on the trip; current views exclude replacements.
 const getCurrentVehicles = (trip) =>
   array(trip?.allocatedVehicles).filter(
@@ -209,6 +229,9 @@ const craneVehicleView = (vehicle, selectedJourneyId = "") => {
     dailyTracking,
     latestTracking: latest,
     currentLocation: latest?.currentLocation || journey.currentLocation,
+    loadedMaterial: latest?.loadedMaterial || journey.loadedMaterial || "",
+    loadedWeightTons: latest?.loadedWeightTons ?? journey.loadedWeightTons ?? null,
+    tgNo: latest?.tgNo || journey.tgNo || "",
     status: latest?.status || journey.status,
     loading: operation(journey.loading, "loading"),
     unloading: operation(journey.unloading, "unloading"),
@@ -430,6 +453,7 @@ const VehicleDetails = () => {
   const [today, setToday] = useState(() => dateKey(new Date()));
   const [documentError, setDocumentError] = useState("");
   const [documentBusy, setDocumentBusy] = useState("");
+  const [exportChoiceOpen, setExportChoiceOpen] = useState(false);
   const request = useRef(null),
     mounted = useRef(false),
     tabRefs = useRef([]);
@@ -608,6 +632,155 @@ const VehicleDetails = () => {
         )
       : item,
   );
+  const craneReportRows = () =>
+    getCurrentVehicles(trip).flatMap((item, vehicleIndex) => {
+      if (!isCraneVehicleTrip(trip)) {
+        return [{ vehicle: item, vehicleIndex, tripNumber: 1 }];
+      }
+      const journeys = array(item.craneTrips);
+      if (!journeys.length) return [{ vehicle: item, vehicleIndex, tripNumber: 1 }];
+      return journeys.map((journey, journeyIndex) => ({
+        vehicle: craneVehicleView(item, journey.journeyId),
+        vehicleIndex,
+        tripNumber: journeyIndex + 1,
+      }));
+    });
+  const craneReportValues = ({ vehicle, vehicleIndex, tripNumber }) => {
+    const journey = !isCraneVehicleTrip(trip) || vehicle._craneJourneyId ? vehicle : null;
+    const loading = journey?.loading || {};
+    const unloading = journey?.unloading || {};
+    return [
+      vehicleIndex + 1,
+      tripNumber,
+      journey?.tgNo || "",
+      vehicle.vehicleNumber || vehicle.vehicleNo || "",
+      vehicle.driver?.contactNumber || vehicle.driverNumber || "",
+      vehicle.vehicleType || vehicle.type || "",
+      journey?.lr?.number || vehicle.lrNumber || "",
+      reportDate(loading.pointInAt || loading.pointInDate),
+      reportDate(loading.completedAt || loading.loadingDate),
+      reportDate(unloading.pointInAt || unloading.pointInDate),
+      reportDate(unloading.completedAt || unloading.unloadingDate),
+      journey?.currentLocation || vehicle.currentLocation || vehicle.latestTracking?.currentLocation || "",
+      journey ? reportStatus(journey) : "Not Started",
+    ];
+  };
+  const downloadCraneVehicleReport = async () => {
+    if (!trip) return;
+    try {
+      const workbook = new ExcelJS.Workbook();
+      workbook.creator = "OTC Groups";
+      workbook.created = new Date();
+      const sheet = workbook.addWorksheet("Vehicle Details", {
+        pageSetup: { orientation: "landscape", paperSize: 8, fitToPage: true, fitToWidth: 1, fitToHeight: 0 },
+        views: [{ state: "frozen", ySplit: 2 }],
+      });
+      const headings = [
+        "Si No", "Trip", "TG No", "Vehicle NO", "Mobile No", "Vehicle Type",
+        "LR No", "L/P In date", "Loaded Date", "U/P In date",
+        "Unloaded Date", "Current Location", "Status",
+      ];
+      const widths = [8, 9, 10, 20, 17, 17, 20, 16, 16, 16, 18, 22, 23];
+      widths.forEach((width, index) => { sheet.getColumn(index + 1).width = width; });
+      sheet.mergeCells(1, 1, 1, headings.length);
+      const reportTitle = `${trip.customer || "Customer"} - ${trip.origin || "Origin"} to ${trip.destination || "Destination"} - Vehicle Details - ${reportDate(new Date())}`;
+      const titleCell = sheet.getCell("A1");
+      titleCell.value = reportTitle;
+      titleCell.font = { name: "Cambria", size: 17, bold: true, color: { argb: "FF132775" } };
+      titleCell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFC6E0B4" } };
+      titleCell.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
+      sheet.getRow(1).height = 32;
+      const border = {
+        top: { style: "thin", color: { argb: "FF222222" } },
+        bottom: { style: "thin", color: { argb: "FF222222" } },
+        left: { style: "thin", color: { argb: "FF222222" } },
+        right: { style: "thin", color: { argb: "FF222222" } },
+      };
+      const headRow = sheet.getRow(2);
+      headRow.values = headings;
+      headRow.height = 42;
+      headRow.eachCell((cell) => {
+        cell.font = { name: "Cambria", bold: true, size: 11, color: { argb: "FF7030A0" } };
+        cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFFFF2CC" } };
+        cell.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
+        cell.border = border;
+      });
+      // Every saved Crane journey is included, including earlier completed trips.
+      craneReportRows().forEach((entry, index) => {
+        const row = sheet.addRow(craneReportValues(entry));
+        row.height = 30;
+        row.eachCell({ includeEmpty: true }, (cell) => {
+          cell.font = { name: "Cambria", size: 11, color: { argb: "FF111111" } };
+          cell.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
+          cell.border = border;
+          if (index % 2 === 1) {
+            cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFF7F7F7" } };
+          }
+        });
+        row.getCell(4).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFC9C9C9" } };
+      });
+      const bytes = await workbook.xlsx.writeBuffer();
+      const objectUrl = URL.createObjectURL(new Blob([bytes], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      }));
+      const link = document.createElement("a");
+      link.href = objectUrl;
+      link.download = `Vehicle_Report_${String(trip.tripId || "Crane").replace(/[^a-z0-9_-]/gi, "_")}_${reportDate(new Date())}.xlsx`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(objectUrl), 30000);
+      setExportChoiceOpen(false);
+    } catch (error) {
+      setDocumentError(error.message || "Unable to download vehicle report.");
+    }
+  };
+  const downloadCranePdfReport = () => {
+    if (!trip) return;
+    try {
+      setDocumentError("");
+      const headings = [
+        "Si No", "Trip", "TG No", "Vehicle NO", "Mobile No", "Vehicle Type",
+        "LR No", "L/P In date", "Loaded Date", "U/P In date",
+        "Unloaded Date", "Current Location", "Status",
+      ];
+      const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a3" });
+      const title = `${trip.customer || "Customer"} - ${trip.origin || "Origin"} to ${trip.destination || "Destination"}`;
+      const pageWidth = doc.internal.pageSize.getWidth();
+      doc.setFillColor(198, 224, 180);
+      doc.rect(10, 10, pageWidth - 20, 14, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(13);
+      doc.setTextColor(19, 39, 117);
+      doc.text(title, pageWidth / 2, 16, { align: "center", maxWidth: pageWidth - 30 });
+      doc.setFontSize(8);
+      doc.text(`Vehicle Details - ${reportDate(new Date())}`, pageWidth / 2, 21, { align: "center" });
+      autoTable(doc, {
+        startY: 26,
+        head: [headings],
+        body: craneReportRows().map((entry) => craneReportValues(entry).map((value) => String(value ?? ""))),
+        theme: "grid",
+        showHead: "everyPage",
+        margin: { top: 15, left: 10, right: 10, bottom: 16 },
+        styles: { font: "helvetica", fontSize: 8, cellPadding: 2.5, lineColor: [45, 55, 65], lineWidth: 0.15, valign: "middle", halign: "center", overflow: "linebreak" },
+        headStyles: { fillColor: [255, 242, 204], textColor: [112, 48, 160], fontStyle: "bold" },
+        alternateRowStyles: { fillColor: [247, 247, 247] },
+        columnStyles: { 3: { fillColor: [222, 222, 222] } },
+      });
+      const totalPages = doc.getNumberOfPages();
+      for (let page = 1; page <= totalPages; page += 1) {
+        doc.setPage(page);
+        doc.setFontSize(8);
+        doc.setTextColor(90, 105, 115);
+        doc.text(`Page ${page} of ${totalPages}`, pageWidth - 12, doc.internal.pageSize.getHeight() - 7, { align: "right" });
+      }
+      const safeTripId = String(trip.tripId || "Crane").replace(/[^a-z0-9_-]/gi, "_");
+      doc.save(`Vehicle_Report_${safeTripId}_${reportDate(new Date())}.pdf`);
+      setExportChoiceOpen(false);
+    } catch (error) {
+      setDocumentError(error.message || "Unable to download PDF report.");
+    }
+  };
   const vehicle =
     vehicles.find((item) => vehicleId(item) === selectedVehicle) || vehicles[0];
   const latest = latestEntry(vehicle);
@@ -822,6 +995,18 @@ const VehicleDetails = () => {
           </p>
         </div>
         <div className="vdt-heading-actions">
+          <button
+            type="button"
+            className="vdt-button"
+            onClick={() => {
+              setDocumentError("");
+              setExportChoiceOpen(true);
+            }}
+            disabled={!trip || !getCurrentVehicles(trip).length}
+          >
+            <Download size={14} />
+            <span>Export Report</span>
+          </button>
           <label className="vdt-trip-dropdown">
             <span className="vdt-sr-only">Select trip</span>
             <select
@@ -867,6 +1052,33 @@ const VehicleDetails = () => {
           </button>
         </div>
       </header>
+      {exportChoiceOpen && (
+        <div className="vct-export-overlay" onClick={() => setExportChoiceOpen(false)}>
+          <div className="vct-export-dialog" role="dialog" aria-modal="true" aria-labelledby="vct-export-title" onClick={(event) => event.stopPropagation()}>
+            <div className="vct-export-dialog-heading">
+              <span className="vct-export-dialog-icon"><Download size={19} /></span>
+              <div>
+                <h3 id="vct-export-title">Download Movement Report</h3>
+                <p>{isCraneVehicleTrip(trip) ? "All allocated vehicles and every saved Crane trip." : "All allocated vehicles for this movement."}</p>
+              </div>
+            </div>
+            <div className="vct-export-formats">
+              <button type="button" onClick={downloadCraneVehicleReport}>
+                <FileText size={19} />
+                <span><strong>Excel (.xlsx)</strong><small>Editable spreadsheet</small></span>
+                <Download size={15} />
+              </button>
+              <button type="button" onClick={downloadCranePdfReport}>
+                <FileText size={19} />
+                <span><strong>PDF (.pdf)</strong><small>Printable report</small></span>
+                <Download size={15} />
+              </button>
+            </div>
+            <button type="button" className="vct-export-cancel" onClick={() => setExportChoiceOpen(false)}>Cancel</button>
+            {documentError && <p role="alert" className="vdt-error">{documentError}</p>}
+          </div>
+        </div>
+      )}
       {tripListError && (
         <div className="vdt-trip-list-message" role="status">
           {tripListError} Use Refresh to retry.
@@ -893,30 +1105,35 @@ const VehicleDetails = () => {
                   </h2>
                   <p>Select a row to view the vehicle’s details.</p>
                 </div>
-                <label className="vct-search">
-                  <span className="vdt-sr-only">Search vehicles</span>
-                  <input
-                    value={craneSearch}
-                    onChange={(event) => setCraneSearch(event.target.value)}
-                    placeholder="Search vehicle, type, LSP, cargo…"
-                  />
-                </label>
+                <div className="vct-toolbar-actions">
+                  <label className="vct-search">
+                    <span className="vdt-sr-only">Search vehicles</span>
+                    <input
+                      value={craneSearch}
+                      onChange={(event) => setCraneSearch(event.target.value)}
+                      placeholder="Search vehicle, LSP, loaded material, TG…"
+                    />
+                  </label>
+                </div>
               </div>
+              {documentError && (
+                <p className="vdt-error" role="alert">{documentError}</p>
+              )}
               <div className="vct-scroll">
                 <table className="vct-table">
                   <thead>
                     <tr>
                       {[
-                        "#",
                         "Vehicle number",
                         "Type",
                         "LSP",
-                        "Cargo",
-                        "Driver",
-                        "LR no",
-                        "E-way no",
-                        "Weight",
-                        "Dimensions (ft)",
+                        "Loaded Material",
+                        "TG No",
+                        "Current Location",
+                        "Trip",
+                        "Loading",
+                        "Unloading",
+                        "Weight (tons)",
                         "Details",
                       ].map((label) => (
                         <th key={label} scope="col">
@@ -934,10 +1151,12 @@ const VehicleDetails = () => {
                           item.vehicleType,
                           item.type,
                           item.lsp,
-                          item.cargo,
-                          item.driver?.name,
-                          item.lr?.number,
-                          item.ewayBill?.number,
+                          item.loadedMaterial,
+                          item.tgNo,
+                          item.currentLocation,
+                          item._craneTripNumber,
+                          item.loading?.status,
+                          item.unloading?.status,
                         ]
                           .filter(Boolean)
                           .join(" ")
@@ -951,24 +1170,6 @@ const VehicleDetails = () => {
                           setActiveTab("overview");
                           setCraneDetailOpen(true);
                         };
-                        const requirement = array(
-                          trip?.vehicleRequirements,
-                        ).find(
-                          (row) => row.requirementId === item.requirementId,
-                        );
-                        const dimensionText = [
-                          item.dimensions?.length,
-                          item.dimensions?.height,
-                          item.dimensions?.width,
-                        ].some((value) => value != null && value !== "")
-                          ? [
-                              item.dimensions?.length,
-                              item.dimensions?.height,
-                              item.dimensions?.width,
-                            ]
-                              .map(display)
-                              .join(" × ")
-                          : "—";
                         return (
                           <tr
                             key={vehicleId(item) || index}
@@ -985,30 +1186,27 @@ const VehicleDetails = () => {
                               }
                             }}
                           >
-                            <td>{index + 1}</td>
                             <td>
                               <strong>
                                 {display(item.vehicleNumber || item.vehicleNo)}
                               </strong>
                             </td>
                             <td>
-                              {display(
-                                item.vehicleType ||
-                                  item.type ||
-                                  requirement?.vehicleType,
-                              )}
+                              {display(item.vehicleType || item.type)}
                             </td>
                             <td>{display(item.lsp)}</td>
-                            <td>{display(item.cargo || trip.materialType)}</td>
-                            <td>{display(item.driver?.name)}</td>
-                            <td>{display(item.lr?.number)}</td>
-                            <td>{display(item.ewayBill?.number)}</td>
+                            <td>{display(item.loadedMaterial)}</td>
+                            <td>{display(item.tgNo)}</td>
+                            <td>{display(item.currentLocation)}</td>
+                            <td>{item._craneTripNumber ? `Trip ${item._craneTripNumber}` : "—"}</td>
+                            <td>{item._craneJourneyId ? display(item.loading?.status) : "—"}</td>
+                            <td>{item._craneJourneyId ? display(item.unloading?.status) : "—"}</td>
                             <td>
-                              {item.weight == null || item.weight === ""
+                              {(item.loadedWeightTons ?? item.weight) == null ||
+                              (item.loadedWeightTons ?? item.weight) === ""
                                 ? "—"
-                                : `${item.weight} TON`}
+                                : `${item.loadedWeightTons ?? item.weight} TON`}
                             </td>
-                            <td>{dimensionText}</td>
                             <td>
                               <button
                                 type="button"
@@ -1030,10 +1228,12 @@ const VehicleDetails = () => {
                         item.vehicleType,
                         item.type,
                         item.lsp,
-                        item.cargo,
-                        item.driver?.name,
-                        item.lr?.number,
-                        item.ewayBill?.number,
+                          item.loadedMaterial,
+                          item.tgNo,
+                          item.currentLocation,
+                          item._craneTripNumber,
+                          item.loading?.status,
+                          item.unloading?.status,
                       ]
                         .filter(Boolean)
                         .join(" ")
@@ -1061,12 +1261,7 @@ const VehicleDetails = () => {
             <>
               {isCraneVehicleTrip(trip) ? (
                 <div className="vct-selected">
-                  <button
-                    type="button"
-                    onClick={() => setCraneDetailOpen(false)}
-                  >
-                    <ArrowLeft size={14} /> Back to vehicles
-                  </button>
+                  
                   <strong>
                     {display(vehicle?.vehicleNumber || vehicle?.vehicleNo)}
                   </strong>
@@ -1276,6 +1471,15 @@ const VehicleDetails = () => {
                               ["Yesterday KM", km(latest?.yesterdayKm)],
                               ["Today KM", km(latest?.todayKm)],
                               ["Running KM", km(latest?.runningKm)],
+                              ["Loaded Material", display(latest?.loadedMaterial || vehicle.loadedMaterial)],
+                              ["Weight (tons)",
+                                (latest?.loadedWeightTons ?? vehicle.loadedWeightTons) == null
+                                  ? "—"
+                                  : `${latest?.loadedWeightTons ?? vehicle.loadedWeightTons} TON`,
+                              ],
+                              ...(isCraneVehicleTrip(trip)
+                                ? [["TG No", display(latest?.tgNo || vehicle.tgNo)]]
+                                : []),
                               [
                                 "Current Day",
                                 currentDay === null
@@ -1295,9 +1499,7 @@ const VehicleDetails = () => {
                               [
                                 "Vehicle Type",
                                 display(
-                                  requirement.vehicleType ||
-                                    vehicle.vehicleType ||
-                                    trip.vehicleType,
+                                  vehicle.vehicleType || vehicle.type,
                                 ),
                               ],
                               [
@@ -1327,6 +1529,14 @@ const VehicleDetails = () => {
                                     vehicle.transporter ||
                                     trip.lsp,
                                 ),
+                              ],
+                              ["LSP", display(vehicle.lsp)],
+                              ["Dimensions (L × H × W)",
+                                [vehicle.dimensions?.length, vehicle.dimensions?.height, vehicle.dimensions?.width]
+                                  .some((value) => value != null && value !== "")
+                                  ? [vehicle.dimensions?.length, vehicle.dimensions?.height, vehicle.dimensions?.width]
+                                      .map(display).join(" × ") + " FT"
+                                  : "—",
                               ],
                               [
                                 "Allocation Source",
@@ -1534,6 +1744,9 @@ const VehicleDetails = () => {
                                   "Date",
                                   "Day",
                                   "Location",
+                                  "Loaded Material",
+                                  "Weight (tons)",
+                                  ...(isCraneVehicleTrip(trip) ? ["TG No"] : []),
                                   "Running KM",
                                   "Status",
                                   "Updated By",
@@ -1574,6 +1787,13 @@ const VehicleDetails = () => {
                                       ? "—"
                                       : display(entry.currentLocation)}
                                   </td>
+                                  <td>{entry.missing ? "—" : display(entry.loadedMaterial)}</td>
+                                  <td>{entry.missing || entry.loadedWeightTons == null
+                                    ? "—"
+                                    : `${entry.loadedWeightTons} TON`}</td>
+                                  {isCraneVehicleTrip(trip) && (
+                                    <td>{entry.missing ? "—" : display(entry.tgNo)}</td>
+                                  )}
                                   <td>
                                     {entry.missing ? "—" : km(entry.runningKm)}
                                   </td>

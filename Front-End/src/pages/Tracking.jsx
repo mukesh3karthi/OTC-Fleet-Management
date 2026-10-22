@@ -360,70 +360,64 @@ const TripActivity = ({ data }) => {
   );
 };
 
-const TripStatusChart = ({ counts, selectedStatus, onSelect }) => {
-  const total = STATUSES.reduce((sum, status) => sum + counts[status], 0);
-  const circumference = 2 * Math.PI * 49;
-  let consumed = 0;
+const trackingTimestamp = (value) => {
+  const raw = value?.$date ?? value;
+  const parsed = new Date(raw?.$numberLong ? Number(raw.$numberLong) : raw).getTime();
+  return raw == null || raw === "" || !Number.isFinite(parsed) ? 0 : parsed;
+};
+const buildRecentTrackingUpdates = (trips) => trips.flatMap((trip) =>
+  list(trip.allocatedVehicles).filter((vehicle) =>
+    text(vehicle?.vehicleStatus).trim().toLowerCase() !== "replaced",
+  ).flatMap((vehicle, vehicleIndex) => {
+    const entries = list(vehicle.dailyTracking);
+    if (!entries.length) return [];
+    const entry = entries.reduce((latest, candidate) => {
+      const latestTime = trackingTimestamp(latest.updatedAt) || trackingTimestamp(latest.date);
+      const candidateTime = trackingTimestamp(candidate.updatedAt) || trackingTimestamp(candidate.date);
+      return candidateTime >= latestTime ? candidate : latest;
+    });
+    return [{ trip, vehicle, vehicleIndex, entry,
+      timestamp: trackingTimestamp(entry.updatedAt) || trackingTimestamp(entry.date) }];
+  }),
+).sort((a, b) => b.timestamp - a.timestamp).slice(0, 5);
+
+const RecentTrackingUpdates = ({ trips }) => {
+  const updates = useMemo(() => buildRecentTrackingUpdates(trips), [trips]);
   return (
-    <section className="td-panel">
+    <section className="td-panel td-recent-tracking-panel">
       <header className="td-panel-heading">
-        <div>
-          <h2>Trip status</h2>
-          <p>Click a status to filter</p>
-        </div>
-        <span className="td-chart-total">{total} trips</span>
+        <div><h2>Recent tracking updates</h2></div>
       </header>
-      <div className="td-distribution">
-        <svg
-          viewBox="0 0 134 134"
-          className="td-donut"
-          role="img"
-          aria-label={`Trip status: ${STATUSES.map((status) => `${status}: ${counts[status]}`).join(", ")}`}
-        >
-          <circle cx="67" cy="67" r="49" className="td-donut-track" />
-          {STATUSES.map((status) => {
-            const length = total ? (counts[status] / total) * circumference : 0;
-            const offset = consumed;
-            consumed += length;
-            return length > 0 ? (
-              <circle
-                key={status}
-                cx="67"
-                cy="67"
-                r="49"
-                className={`td-donut-segment td-color-${status.toLowerCase()}`}
-                strokeDasharray={`${length} ${circumference - length}`}
-                strokeDashoffset={-offset}
-                transform="rotate(-90 67 67)"
-              />
-            ) : null;
+      {updates.length ? (
+        <ul className="td-recent-list">
+          {updates.map(({ trip, vehicle, vehicleIndex, entry, timestamp }) => {
+            const id = keyOf(trip);
+            const vehicleNo = text(vehicle.vehicleNumber || vehicle.vehicleNo);
+            return (
+              <li className="td-recent-row" key={`${id}-${vehicle.allocationId || vehicleIndex}`}>
+                <div className="td-recent-heading">
+                  <div className="td-recent-identity">
+                  {id ? (
+                    <Link className="td-trip-link" to={`/vehicle-details/${encodeURIComponent(id)}`}
+                      state={{ mongoId: id, tripId: trip.tripId }}>
+                      {text(trip.tripId) || id}<ArrowUpRight size={12} />
+                    </Link>
+                  ) : <strong>{text(trip.tripId) || "Missing trip ID"}</strong>}
+                  <span className="td-recent-vehicle">{vehicleNo || "Vehicle not specified"}</span>
+                  </div>
+                  <span className="td-recent-status">{text(entry.status) || "Not recorded"}</span>
+                </div>
+                <div className="td-recent-meta">
+                  <strong className="td-recent-location">{text(entry.currentLocation) || "Location not recorded"}</strong>
+                  <span>{timestamp ? new Date(timestamp).toLocaleString("en-IN", {
+                    day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "Asia/Kolkata",
+                  }) : "Time not recorded"}</span>
+                </div>
+              </li>
+            );
           })}
-          <text x="67" y="65" className="td-donut-value" textAnchor="middle">
-            {total}
-          </text>
-          <text x="67" y="85" className="td-donut-label" textAnchor="middle">
-            Trips
-          </text>
-        </svg>
-        <div className="td-legend">
-          {STATUSES.map((status) => (
-            <button
-              type="button"
-              key={status}
-              onClick={() =>
-                onSelect(selectedStatus === status ? "All" : status)
-              }
-              aria-pressed={selectedStatus === status}
-            >
-              <span
-                className={`td-legend-dot td-color-${status.toLowerCase()}`}
-              />
-              <span>{status}</span>
-              <strong>{counts[status]}</strong>
-            </button>
-          ))}
-        </div>
-      </div>
+        </ul>
+      ) : <p className="td-recent-empty">No tracking updates for the current filters.</p>}
     </section>
   );
 };
@@ -855,11 +849,7 @@ const Tracking = () => {
         </section>
         <aside className="td-graphs" aria-label="Trip graphs">
           <TripActivity data={activity} />
-          <TripStatusChart
-            counts={counts}
-            selectedStatus={statusFilter}
-            onSelect={selectStatus}
-          />
+          <RecentTrackingUpdates trips={scopedTrips} />
         </aside>
       </div>
     </main>

@@ -1300,6 +1300,10 @@ const allocateVehicle = async (req, res) => {
       const transporterCount = getAllocatedVehicles(trip).filter(v => isActiveAllocation(v) && v.confirmationId === confirmationId && v.quotationId === quotationId).length;
       if (transporterCount >= getQuotationQuantity(trip, quotation)) return sendError(res, 409, "All approved vehicle slots for this transporter are allocated.");
     }
+    const allocationCapacity = req.body.capacity == null || req.body.capacity === "" ? null : Number(req.body.capacity);
+    if (allocationCapacity !== null && (!Number.isFinite(allocationCapacity) || allocationCapacity < 0)) {
+      return sendError(res, 400, "Capacity must be a non-negative number in tons.");
+    }
     const allocationWeight = req.body.weight == null || req.body.weight === "" ? null : Number(req.body.weight);
     if (allocationWeight !== null && (!Number.isFinite(allocationWeight) || allocationWeight < 0)) {
       return sendError(res, 400, "Weight must be a non-negative number in tons.");
@@ -1320,6 +1324,7 @@ const allocateVehicle = async (req, res) => {
       vehicleType: cleanString(req.body.vehicleType),
       lsp: cleanString(req.body.lsp),
       cargo: cleanString(req.body.cargo),
+      capacity: allocationCapacity,
       weight: allocationWeight,
       dimensions: allocationDimensions,
       lr: { number: cleanString(req.body.lr?.number) },
@@ -1803,6 +1808,10 @@ const allocateTrafficVehicle = async (req, res) => {
       const transporterCount = getAllocatedVehicles(trip).filter(v => isActiveAllocation(v) && v.confirmationId === confirmationId && v.quotationId === quotationId).length;
       if (transporterCount >= getQuotationQuantity(trip, quotation)) return sendError(res, 409, "All approved vehicle slots for this transporter are allocated.");
     }
+    const allocationCapacity = req.body.capacity == null || req.body.capacity === "" ? null : Number(req.body.capacity);
+    if (allocationCapacity !== null && (!Number.isFinite(allocationCapacity) || allocationCapacity < 0)) {
+      return sendError(res, 400, "Capacity must be a non-negative number in tons.");
+    }
     const allocationWeight = req.body.weight == null || req.body.weight === "" ? null : Number(req.body.weight);
     if (allocationWeight !== null && (!Number.isFinite(allocationWeight) || allocationWeight < 0)) {
       return sendError(res, 400, "Weight must be a non-negative number in tons.");
@@ -1823,6 +1832,7 @@ const allocateTrafficVehicle = async (req, res) => {
       vehicleType: cleanString(req.body.vehicleType),
       lsp: cleanString(req.body.lsp),
       cargo: cleanString(req.body.cargo),
+      capacity: allocationCapacity,
       weight: allocationWeight,
       dimensions: allocationDimensions,
       lr: { number: cleanString(req.body.lr?.number) },
@@ -1994,7 +2004,7 @@ const replaceAllocatedVehicle = async (req, res, replacementSource) => {
       vehicleNumber: newVehicleNumber,
       vehicleType: previous.vehicleType,
       lsp: previous.lsp, cargo: previous.cargo,
-      weight: previous.weight, dimensions: previous.dimensions,
+      capacity: previous.capacity, weight: previous.weight, dimensions: previous.dimensions,
       escort: previous.escort, supervisor: previous.supervisor,
       driver: newDriver,
       allocatedAt: now, allocatedBy: replacement.replacedBy,
@@ -2586,6 +2596,13 @@ const addDailyTracking = async (req, res) => {
       startDate === null
         ? history.length + 1
         : trackingDaysBetween(vehicle.loading.pointInDate, trackingDate, true);
+    const rawLoadedWeight = req.body.loadedWeightTons;
+    const loadedWeightTons = rawLoadedWeight == null || rawLoadedWeight === ""
+      ? null
+      : Number(rawLoadedWeight);
+    if (loadedWeightTons !== null && (!Number.isFinite(loadedWeightTons) || loadedWeightTons < 0)) {
+      return sendError(res, 400, "Loaded weight must be a non-negative number in tons.");
+    }
     const tracking = {
       trackingId: makeId("TRACK"),
       date: toDateOrNull(req.body.date) || new Date(),
@@ -2595,6 +2612,14 @@ const addDailyTracking = async (req, res) => {
       runningKm,
       yesterdayLocation,
       currentLocation,
+      loadedMaterial: cleanString(
+        req.body.loadedMaterial ??
+        req.body.movementMaterial ??
+        req.body.material ??
+        vehicle.loadedMaterial ??
+        previousEntry?.loadedMaterial,
+      ),
+      loadedWeightTons,
       latitude: toNullableNumber(req.body.latitude),
       longitude: toNullableNumber(req.body.longitude),
       speed: Math.max(0, toNumber(req.body.speed, 0)),
@@ -2604,6 +2629,7 @@ const addDailyTracking = async (req, res) => {
       updatedAt: new Date(),
     };
     vehicle.dailyTracking.push(tracking);
+    vehicle.loadedMaterial = tracking.loadedMaterial;
     if (cleanString(trip.stage).toLowerCase() !== "trip complete") {
       trip.status = "Active";
       trip.stage = "Tracking";
@@ -3131,7 +3157,45 @@ const saveCraneJourney = async (req, res) => {
     const lr = readDocumentDetails(req.body.lr), ewayBill = readDocumentDetails(req.body.ewayBill);
     if (req.body.lr?.date && !lr.date || req.body.ewayBill?.validUpto && !ewayBill.validUpto) return sendError(res, 400, "Enter valid document dates.");
     const now = new Date();
-    const details = { lr, ewayBill, date, origin, destination, currentLocation: cleanString(req.body.currentLocation), startKm, endKm, status, loading, unloading, remarks: cleanString(req.body.remarks), updatedBy };
+    const loadedMaterial = cleanString(
+      req.body.loadedMaterial ??
+      req.body.movementMaterial ??
+      req.body.material ??
+      existing?.loadedMaterial ??
+      existing?.movementMaterial ??
+      existing?.material,
+    );
+    const tgNo = cleanString(
+      req.body.tgNo ??
+      req.body.tgNumber ??
+      existing?.tgNo ??
+      existing?.tgNumber,
+    );
+    const rawLoadedWeight = req.body.loadedWeightTons ?? existing?.loadedWeightTons;
+    const loadedWeightTons = rawLoadedWeight == null || rawLoadedWeight === ""
+      ? null
+      : Number(rawLoadedWeight);
+    if (loadedWeightTons !== null && (!Number.isFinite(loadedWeightTons) || loadedWeightTons < 0)) {
+      return sendError(res, 400, "Loaded weight must be a non-negative number in tons.");
+    }
+    const details = {
+      lr,
+      ewayBill,
+      date,
+      origin,
+      destination,
+      currentLocation: cleanString(req.body.currentLocation),
+      loadedMaterial,
+      loadedWeightTons,
+      tgNo,
+      startKm,
+      endKm,
+      status,
+      loading,
+      unloading,
+      remarks: cleanString(req.body.remarks),
+      updatedBy,
+    };
     const record = { ...details, journeyId, createdAt: existing?.createdAt || now, updatedAt: now, revision: (Number(existing?.revision) || 0) + 1,
       history: [...(existing?.history || []), { ...details, historyId: makeId("CJH"), savedAt: now }] };
     const condition = { allocationId, vehicleStatus: { $ne: "Replaced" } };
@@ -3237,7 +3301,87 @@ const downloadCraneJourneyDocument = async (req, res) => {
   } catch (error) { return sendError(res, 500, "Unable to view Crane document.", error); }
 };
 
+// Invoice documents use the existing authenticated trip access scope.
+const invoiceTripFilter = (req) => ({
+  $and: [{ _id: req.params.id }, req.tripAccessFilter || {}],
+});
+const saveInvoicePayment = async (req, res) => {
+  try {
+    if (!isValidMongoId(req.params.id)) return sendError(res, 400, "Invalid order ID.");
+    const trip = await TripOrder.findOne(invoiceTripFilter(req)).select(
+      "+invoicePayment.proFormaDocument.fileData +invoicePayment.invoiceDocument.fileData",
+    );
+    if (!trip) return sendError(res, 404, "Order not found.");
+    const completed = cleanString(trip.stage).toLowerCase() === "trip complete" ||
+      (cleanString(trip.status).toLowerCase() === "completed" &&
+        trip.allocatedVehicles?.length > 0 && trip.allocatedVehicles.every(
+          (v) => cleanString(v.unloading?.status).toLowerCase() === "completed"));
+    if (completed) return sendError(res, 409, "Trip is completed and cannot be modified.");
+    const body = req.body || {};
+    const proFormaInvoiceNumber = cleanString(body.proFormaInvoiceNumber);
+    const invoiceNumber = cleanString(body.invoiceNumber);
+    const paymentRemarks = cleanString(body.paymentRemarks);
+    if (proFormaInvoiceNumber.length > 100 || invoiceNumber.length > 100 || paymentRemarks.length > 2000)
+      return sendError(res, 400, "Invoice numbers allow 100 characters; remarks allow 2000.");
+    const amountText = cleanString(body.receivedAmount);
+    const receivedAmount = amountText === "" ? null : Number(amountText);
+    if (receivedAmount !== null && (!Number.isFinite(receivedAmount) || receivedAmount < 0))
+      return sendError(res, 400, "Received amount must be a valid non-negative number.");
+    const paymentDate = cleanString(body.paymentDate);
+    if (paymentDate && (!/^\d{4}-\d{2}-\d{2}$/.test(paymentDate) ||
+      !Number.isFinite(Date.parse(paymentDate)) || new Date(paymentDate).toISOString().slice(0, 10) !== paymentDate))
+      return sendError(res, 400, "Enter a valid payment date.");
+    if ((receivedAmount !== null) !== Boolean(paymentDate))
+      return sendError(res, 400, "Enter both the received amount and payment date.");
+    const previous = trip.invoicePayment?.toObject?.() || {};
+    if (!trip.invoicePayment) trip.invoicePayment = {};
+    const details = trip.invoicePayment;
+    const fields = { proFormaInvoiceNumber, invoiceNumber, receivedAmount, paymentDate, paymentRemarks };
+    const changes = Object.entries(fields).map(([key, value]) => [key, previous[key], value]);
+    Object.assign(details, fields);
+    for (const field of ["proFormaDocument", "invoiceDocument"]) {
+      const file = req.files?.[field]?.[0];
+      if (file) {
+        details[field] = { fileName: file.originalname, mimeType: file.mimetype,
+          fileSize: file.size, fileData: file.buffer };
+        changes.push([field, previous[field]?.fileName, file.originalname]);
+      }
+    }
+    details.updatedBy = cleanString(req.user?.username || req.user?.name) || "Key Account";
+    details.updatedAt = new Date();
+    recordLifecycleChanges(trip, previous, "Invoice & Payment", changes, details.updatedBy);
+    trip.markModified("invoicePayment");
+    await trip.save();
+    const savedTrip = await TripOrder.findOne(invoiceTripFilter(req)).lean();
+    return sendSuccess(res, 200, "Invoice & Payment saved successfully.", savedTrip);
+  } catch (error) {
+    return sendError(res, error.name === "ValidationError" ? 400 : 500,
+      "Unable to save Invoice & Payment.", error);
+  }
+};
+const downloadInvoicePaymentDocument = async (req, res) => {
+  try {
+    if (!isValidMongoId(req.params.id)) return sendError(res, 400, "Invalid order ID.");
+    const field = req.params.documentType;
+    if (!["proFormaDocument", "invoiceDocument"].includes(field))
+      return sendError(res, 400, "Invalid document type.");
+    const trip = await TripOrder.findOne(invoiceTripFilter(req)).select(`+invoicePayment.${field}.fileData`);
+    if (!trip) return sendError(res, 404, "Order not found.");
+    const file = trip.invoicePayment?.[field];
+    if (!file?.fileData) return sendError(res, 404, "Document not found.");
+    const filename = String(file.fileName || "invoice-document").replace(/[\r\n"\\]/g, "_");
+    res.setHeader("Content-Type", file.mimeType || "application/octet-stream");
+    res.setHeader("Content-Disposition", `attachment; filename="invoice-document"; filename*=UTF-8''${encodeURIComponent(filename)}`);
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    return res.send(file.fileData);
+  } catch (error) {
+    return sendError(res, 500, "Unable to download invoice document.", error);
+  }
+};
+
 module.exports = {
+  saveInvoicePayment,
+  downloadInvoicePaymentDocument,
   saveCraneJourneyDocument,
   downloadCraneJourneyDocument,
   saveCraneJourneyPod,

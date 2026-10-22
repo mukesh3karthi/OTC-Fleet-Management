@@ -1088,6 +1088,16 @@ const dailyTrackingSchema = new Schema(
       default: "",
     },
 
+    // Actual material loaded on this vehicle for this daily movement.
+    // Independent of the parent order's materialType.
+    loadedMaterial: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    // Actual load for this day's movement, independent of vehicle capacity.
+    loadedWeightTons: { type: Number, min: 0, default: null },
+
     latitude: {
       type: Number,
 
@@ -1268,27 +1278,51 @@ const vehicleReplacementSchema = new Schema(
   },
 );
 
-const craneJourneySchema = new Schema({
-  journeyId: { type: String, required: true },
-  date: { type: String, required: true },
-  origin: { type: String, required: true, trim: true },
-  destination: { type: String, required: true, trim: true },
-  currentLocation: { type: String, trim: true, default: "" },
-  startKm: { type: Number, min: 0, default: null },
-  endKm: { type: Number, min: 0, default: null },
-  status: { type: String, enum: ["Planned", "Loading", "In Transit", "Unloading", "Completed", "Idle", "Moving", "Stopped", "Breakdown", "Reached"], default: "Planned" },
-  loading: { type: Schema.Types.Mixed, default: () => ({}) },
-  unloading: { type: Schema.Types.Mixed, default: () => ({}) },
-  lr: { type: movementDocumentSchema, default: () => ({}) },
-  ewayBill: { type: movementDocumentSchema, default: () => ({}) },
-  pod: { type: movementDocumentSchema, default: () => ({}) },
-  remarks: { type: String, default: "" },
-  updatedBy: { type: String, required: true, trim: true },
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now },
-  revision: { type: Number, default: 1 },
-  history: { type: [Schema.Types.Mixed], default: [] },
-}, { _id: false });
+const craneJourneySchema = new Schema(
+  {
+    journeyId: { type: String, required: true },
+    date: { type: String, required: true },
+    origin: { type: String, required: true, trim: true },
+    destination: { type: String, required: true, trim: true },
+    currentLocation: { type: String, trim: true, default: "" },
+    // Each journey can carry different goods, even on the same vehicle.
+    loadedMaterial: { type: String, trim: true, default: "" },
+    // Actual weight loaded on this journey; separate from vehicle capacity.
+    loadedWeightTons: { type: Number, min: 0, default: null },
+    // TG number belongs to this specific Crane journey, not the parent order.
+    tgNo: { type: String, trim: true, default: "" },
+    startKm: { type: Number, min: 0, default: null },
+    endKm: { type: Number, min: 0, default: null },
+    status: {
+      type: String,
+      enum: [
+        "Planned",
+        "Loading",
+        "In Transit",
+        "Unloading",
+        "Completed",
+        "Idle",
+        "Moving",
+        "Stopped",
+        "Breakdown",
+        "Reached",
+      ],
+      default: "Planned",
+    },
+    loading: { type: Schema.Types.Mixed, default: () => ({}) },
+    unloading: { type: Schema.Types.Mixed, default: () => ({}) },
+    lr: { type: movementDocumentSchema, default: () => ({}) },
+    ewayBill: { type: movementDocumentSchema, default: () => ({}) },
+    pod: { type: movementDocumentSchema, default: () => ({}) },
+    remarks: { type: String, default: "" },
+    updatedBy: { type: String, required: true, trim: true },
+    createdAt: { type: Date, default: Date.now },
+    updatedAt: { type: Date, default: Date.now },
+    revision: { type: Number, default: 1 },
+    history: { type: [Schema.Types.Mixed], default: [] },
+  },
+  { _id: false },
+);
 
 const allocatedVehicleSchema = new Schema(
   {
@@ -1305,6 +1339,9 @@ const allocatedVehicleSchema = new Schema(
     transportReplacedAt: { type: Date, default: null },
     transportReplacedBy: { type: String, default: "" },
     craneTrips: { type: [craneJourneySchema], default: [] },
+    // Latest loaded material for a normal allocated vehicle.
+    // Crane journeys store their own loadedMaterial separately.
+    loadedMaterial: { type: String, trim: true, default: "" },
     allocationId: {
       type: String,
 
@@ -1350,6 +1387,7 @@ const allocatedVehicleSchema = new Schema(
     vehicleType: { type: String, trim: true, default: "" },
     lsp: { type: String, trim: true, default: "" },
     cargo: { type: String, trim: true, default: "" },
+    capacity: { type: Number, min: 0, default: null },
     weight: { type: Number, min: 0, default: null },
     dimensions: { type: dimensionsSchema, default: () => ({}) },
 
@@ -1519,6 +1557,35 @@ const amountChangeSchema = new Schema(
     source: { type: String, default: "" },
 
     changedAt: { type: Date, default: Date.now },
+  },
+  { _id: false },
+);
+
+const invoiceFileSchema = new Schema(
+  {
+    fileName: { type: String, default: "" },
+    mimeType: { type: String, default: "" },
+    fileSize: { type: Number, default: 0 },
+    fileData: { type: Buffer, select: false, default: null },
+  },
+  { _id: false },
+);
+const invoicePaymentSchema = new Schema(
+  {
+    proFormaInvoiceNumber: {
+      type: String,
+      trim: true,
+      maxlength: 100,
+      default: "",
+    },
+    invoiceNumber: { type: String, trim: true, maxlength: 100, default: "" },
+    proFormaDocument: { type: invoiceFileSchema, default: () => ({}) },
+    invoiceDocument: { type: invoiceFileSchema, default: () => ({}) },
+    receivedAmount: { type: Number, min: 0, default: null },
+    paymentDate: { type: String, default: "" },
+    paymentRemarks: { type: String, trim: true, maxlength: 2000, default: "" },
+    updatedBy: { type: String, default: "" },
+    updatedAt: { type: Date, default: null },
   },
   { _id: false },
 );
@@ -1809,6 +1876,8 @@ const tripOrderSchema = new Schema(
 
       default: () => ({}),
     },
+
+    invoicePayment: { type: invoicePaymentSchema, default: () => ({}) },
 
     poDocument: {
       type: poDocumentSchema,

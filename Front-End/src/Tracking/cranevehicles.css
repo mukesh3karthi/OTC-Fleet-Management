@@ -1,5 +1,9 @@
 .crane-vehicles-page {
-  padding: 24px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  padding: 16px;
+  overflow-x: hidden;
   background: #f4f7fa;
   min-height: 100%;
   color: #173b4b;
@@ -15,7 +19,7 @@
 .crane-vehicles-header {
   justify-content: space-between;
   flex-wrap: wrap;
-  margin-bottom: 22px;
+  margin-bottom: 14px;
 }
 .crane-back,
 .crane-refresh {
@@ -27,7 +31,7 @@
   border-radius: 9px;
   background: #fff;
   color: #205566;
-  padding: 10px 12px;
+  padding: 8px 11px;
   cursor: pointer;
 }
 .crane-eyebrow {
@@ -37,8 +41,8 @@
   color: #078982;
 }
 .crane-vehicles-heading h1 {
-  margin: 4px 0 6px;
-  font-size: 23px;
+  margin: 3px 0 4px;
+  font-size: 21px;
   font-weight: 750;
 }
 .crane-vehicles-heading p {
@@ -63,6 +67,8 @@
   font-weight: 500;
 }
 .crane-vehicles-panel {
+  width: 100%;
+  min-width: 0;
   border: 1px solid #d6e2e8;
   background: #fff;
   border-radius: 14px;
@@ -75,10 +81,10 @@
   align-items: center;
   gap: 16px;
   flex-wrap: wrap;
-  padding: 18px 20px;
+  padding: 13px 16px;
 }
 .crane-table-toolbar h2 {
-  margin: 0 0 5px;
+  margin: 0 0 3px;
   font-size: 15px;
 }
 .crane-table-toolbar p {
@@ -90,7 +96,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 12px;
+  padding: 8px 11px;
   border: 1px solid #dbe5eb;
   border-radius: 8px;
   color: #7b929e;
@@ -105,29 +111,45 @@
   color: #254a5c;
 }
 .crane-vehicles-table-wrap {
-  overflow-x: auto;
+  width: 100%;
+  max-height: 62vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #466372 #0b1721;
   background: #0b1721;
 }
 .crane-vehicles-table {
   width: 100%;
+  min-width: 0;
+  table-layout: fixed;
   border-collapse: collapse;
   color: #dce8f1;
-  font-size: 12px;
+  font-size: 11.5px;
   text-align: left;
-  white-space: nowrap;
+  white-space: normal;
 }
 .crane-vehicles-table th {
-  padding: 15px;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: 12px 7px;
   background: #08131d;
   color: #809bb3;
-  font-size: 10px;
+  font-size: 9.5px;
   font-weight: 750;
-  letter-spacing: 0.7px;
+  letter-spacing: 0.15px;
+  line-height: 1.35;
+  white-space: normal;
+  overflow-wrap: anywhere;
   text-transform: uppercase;
   border-bottom: 1px solid #1c2d3a;
 }
 .crane-vehicles-table td {
-  padding: 15px;
+  padding: 8px 7px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  vertical-align: middle;
   border-bottom: 1px solid #172735;
 }
 .crane-vehicles-table tr:last-child td {
@@ -139,10 +161,60 @@
 .crane-vehicles-table tbody tr:hover {
   background: #132939;
 }
+.crane-vehicles-table tbody tr {
+  height: 46px;
+}
+.crane-vehicles-table th,
+.crane-vehicles-table td {
+  text-align: left;
+}
+.crane-vehicles-table th:nth-child(7),
+.crane-vehicles-table td:nth-child(7),
+.crane-vehicles-table th:nth-child(12),
+.crane-vehicles-table td:nth-child(12) {
+  text-align: center;
+}
+.crane-vehicles-table th:nth-child(1) {
+  width: 9%;
+}
+.crane-vehicles-table th:nth-child(2) {
+  width: 7%;
+}
+.crane-vehicles-table th:nth-child(3) {
+  width: 7%;
+}
+.crane-vehicles-table th:nth-child(4) {
+  width: 7%;
+}
+.crane-vehicles-table th:nth-child(5) {
+  width: 11%;
+}
+.crane-vehicles-table th:nth-child(6) {
+  width: 10%;
+}
+.crane-vehicles-table th:nth-child(7) {
+  width: 7%;
+}
+.crane-vehicles-table th:nth-child(8) {
+  width: 7%;
+}
+.crane-vehicles-table th:nth-child(9) {
+  width: 7%;
+}
+.crane-vehicles-table th:nth-child(10) {
+  width: 7%;
+}
+.crane-vehicles-table th:nth-child(11) {
+  width: 11%;
+}
+.crane-vehicles-table th:nth-child(12) {
+  width: 10%;
+}
 .crane-vehicle-number {
   font-family: ui-monospace, monospace;
   color: #f3f8ff;
-  font-size: 12px;
+  font-size: 11px;
+  overflow-wrap: anywhere;
   font-weight: 750;
 }
 .crane-mono {
@@ -152,23 +224,34 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 11px;
+  max-width: 100%;
+  padding: 7px 8px;
   border: 1px solid #258d89;
   border-radius: 7px;
   background: #123b41;
   color: #9ce1dc;
   font-family: inherit;
   font-size: 10px;
+  white-space: normal;
   font-weight: 700;
   cursor: pointer;
 }
 .crane-movement-btn:hover {
   background: #165359;
 }
+.crane-movement-btn svg {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
 .crane-vehicle-status {
+  display: inline-flex;
+  align-items: center;
   padding: 5px 8px;
   border-radius: 6px;
   font-size: 10px;
+  white-space: normal;
+  font-weight: 700;
 }
 .crane-vehicle-status.active {
   background: #12372f;
@@ -229,5 +312,1997 @@
   }
   .crane-search input {
     width: 100%;
+  }
+}
+
+/* Crane journey: compact seven-field overview. */
+.trip-movement-summary.crane-journey-summary {
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 7px;
+}
+.crane-journey-summary > div {
+  padding: 9px 8px;
+}
+.crane-journey-summary strong {
+  font-size: 10px;
+}
+@media (max-width: 1250px) {
+  .trip-movement-summary.crane-journey-summary {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+@media (max-width: 760px) {
+  .trip-movement-summary.crane-journey-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+/* Standalone scoped styling for the Crane Journey movement screen. */
+.crane-journey-page,
+.crane-journey-page * {
+  box-sizing: border-box;
+}
+.crane-journey-page {
+  width: 100%;
+  min-height: calc(100vh - 80px);
+  padding: 22px 28px 36px;
+  color: #1d3559;
+  background: #f4f7fb;
+  font-family: Inter, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+@media (max-width: 850px) {
+  .crane-journey-page {
+    padding: 18px 14px 28px;
+  }
+}
+@media (max-width: 560px) {
+  .crane-journey-page {
+    width: 100%;
+    min-height: calc(100vh - 70px);
+    padding: 16px 12px 30px;
+    background: #f4f7fb;
+  }
+}
+@media (max-width: 390px) {
+  .crane-journey-page {
+    padding: 14px 9px 25px;
+  }
+}
+.crane-journey-page .trip-movement-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  padding: 22px;
+  display: grid;
+  place-items: center;
+  background: rgba(8, 35, 50, 0.58);
+  backdrop-filter: blur(5px);
+}
+.crane-journey-page .trip-movement-modal {
+  width: min(1380px, 96vw);
+  height: min(820px, 92vh);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #b9d7dc;
+  border-radius: 18px;
+  background: #f6fafb;
+  box-shadow: 0 26px 70px rgba(5, 36, 52, 0.28);
+}
+.crane-journey-page .trip-movement-head {
+  min-height: 78px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid #d6e5e8;
+  background: linear-gradient(110deg, #0b3447 0%, #0b4f59 55%, #0d8f87 100%);
+  color: #fff;
+}
+.crane-journey-page .trip-movement-title {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+.crane-journey-page .trip-movement-title-icon {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.1);
+}
+.crane-journey-page .trip-movement-title small {
+  display: block;
+  margin-bottom: 3px;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #aee7df;
+}
+.crane-journey-page .trip-movement-title h2 {
+  margin: 0;
+  font-size: 19px;
+  color: #fff;
+}
+.crane-journey-page .trip-movement-title p {
+  margin: 3px 0 0;
+  font-size: 9px;
+  color: #d8eef0;
+}
+.crane-journey-page .trip-movement-close {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 9px;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.09);
+  cursor: pointer;
+}
+.crane-journey-page .trip-movement-close:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+.crane-journey-page .trip-movement-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 16px 18px 20px;
+}
+.crane-journey-page .trip-movement-alert {
+  margin-bottom: 12px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 650;
+}
+.crane-journey-page .trip-movement-alert.error {
+  border: 1px solid #efc7cb;
+  color: #a73c45;
+  background: #fff4f5;
+}
+.crane-journey-page .trip-movement-alert.success {
+  border: 1px solid #b9dfd8;
+  color: #08776f;
+  background: #effaf8;
+}
+.crane-journey-page .trip-movement-vehicle-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 10px;
+}
+.crane-journey-page .trip-movement-vehicle-tab {
+  min-width: 170px;
+  padding: 9px 11px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #d2e1e5;
+  border-radius: 10px;
+  color: #36576a;
+  background: #fff;
+  cursor: pointer;
+  text-align: left;
+}
+.crane-journey-page .trip-movement-vehicle-tab.active {
+  border-color: #0d8f87;
+  background: #edf9f7;
+  box-shadow: inset 3px 0 0 #0d8f87;
+}
+.crane-journey-page .trip-movement-vehicle-tab strong,
+.crane-journey-page .trip-movement-vehicle-tab small {
+  display: block;
+}
+.crane-journey-page .trip-movement-vehicle-tab strong {
+  font-size: 10px;
+  color: #123d50;
+}
+.crane-journey-page .trip-movement-vehicle-tab small {
+  margin-top: 2px;
+  font-size: 8px;
+  color: #738b98;
+}
+.crane-journey-page .trip-movement-summary {
+  margin: 2px 0 14px;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  overflow: hidden;
+  border: 1px solid #d5e4e8;
+  border-radius: 11px;
+  background: #fff;
+}
+.crane-journey-page .trip-movement-summary > div {
+  min-width: 0;
+  padding: 10px 12px;
+  border-right: 1px solid #e1ebee;
+}
+.crane-journey-page .trip-movement-summary > div:last-child {
+  border-right: 0;
+}
+.crane-journey-page .trip-movement-summary span {
+  display: block;
+  margin-bottom: 5px;
+  color: #6e8794;
+  font-size: 7.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.45px;
+}
+.crane-journey-page .trip-movement-summary strong {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #10394c;
+  font-size: 9.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.crane-journey-page .trip-movement-summary svg {
+  color: #0d8f87;
+  flex: 0 0 auto;
+}
+.crane-journey-page .trip-movement-form-card,
+.crane-journey-page .trip-movement-history {
+  margin-top: 12px;
+  overflow: hidden;
+  border: 1px solid #d4e3e7;
+  border-radius: 12px;
+  background: #fff;
+}
+.crane-journey-page .trip-movement-section-title {
+  min-height: 54px;
+  padding: 10px 13px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #e1eaed;
+  background: #f4f9fa;
+}
+.crane-journey-page .trip-movement-section-title small {
+  display: block;
+  margin-bottom: 2px;
+  color: #0d8f87;
+  font-size: 7.5px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+}
+.crane-journey-page .trip-movement-section-title h3 {
+  margin: 0;
+  color: #10394c;
+  font-size: 12px;
+}
+.crane-journey-page .trip-movement-section-title > span {
+  padding: 4px 8px;
+  border: 1px solid #b9ddd8;
+  border-radius: 999px;
+  color: #08776f;
+  background: #edf9f7;
+  font-size: 8px;
+  font-weight: 750;
+}
+.crane-journey-page .trip-movement-form-grid {
+  padding: 13px;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 11px;
+}
+.crane-journey-page .trip-movement-form-grid label {
+  min-width: 0;
+}
+.crane-journey-page .trip-movement-form-grid label > span {
+  display: block;
+  margin-bottom: 5px;
+  color: #617d8d;
+  font-size: 8px;
+  font-weight: 750;
+  text-transform: uppercase;
+}
+.crane-journey-page .trip-movement-form-grid input,
+.crane-journey-page .trip-movement-form-grid select {
+  width: 100%;
+  height: 38px;
+  padding: 0 10px;
+  border: 1px solid #cfe0e4;
+  border-radius: 8px;
+  outline: none;
+  color: #173c4e;
+  background: #fbfdfd;
+  font: inherit;
+  font-size: 9.5px;
+  font-weight: 600;
+}
+.crane-journey-page .trip-movement-form-grid input:focus,
+.crane-journey-page .trip-movement-form-grid select:focus {
+  border-color: #0d8f87;
+  box-shadow: 0 0 0 3px rgba(13, 143, 135, 0.08);
+  background: #fff;
+}
+.crane-journey-page .trip-movement-history-table {
+  width: 100%;
+  overflow-x: auto;
+}
+.crane-journey-page .trip-movement-history-head,
+.crane-journey-page .trip-movement-history-row {
+  min-width: 850px;
+  display: grid;
+  grid-template-columns: 0.85fr 0.55fr 1.35fr 0.7fr 0.8fr 1.8fr;
+  gap: 10px;
+  align-items: center;
+  padding: 9px 12px;
+}
+.crane-journey-page .trip-movement-history-head {
+  color: #6a8391;
+  background: #f8fbfc;
+  font-size: 7.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+.crane-journey-page .trip-movement-history-row {
+  border-top: 1px solid #edf2f4;
+  color: #36576a;
+  font-size: 9px;
+}
+.crane-journey-page .trip-movement-empty {
+  padding: 35px;
+  text-align: center;
+  color: #7b909c;
+  font-size: 10px;
+}
+.crane-journey-page .trip-movement-empty.small {
+  padding: 18px;
+}
+.crane-journey-page .trip-movement-footer {
+  min-height: 68px;
+  padding: 11px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 9px;
+  border-top: 1px solid #d6e4e8;
+  background: #fff;
+}
+.crane-journey-page .trip-movement-cancel,
+.crane-journey-page .trip-movement-save {
+  min-height: 38px;
+  padding: 0 15px;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 9px;
+  font-weight: 750;
+  cursor: pointer;
+}
+.crane-journey-page .trip-movement-cancel {
+  border: 1px solid #cedde2;
+  color: #567181;
+  background: #fff;
+}
+.crane-journey-page .trip-movement-save {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #0d8f87;
+  color: #fff;
+  background: #0d8f87;
+  box-shadow: 0 5px 13px rgba(13, 143, 135, 0.16);
+}
+.crane-journey-page .trip-movement-save:hover {
+  background: #08776f;
+}
+.crane-journey-page .trip-movement-save:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+@media (max-width: 1050px) {
+  .crane-journey-page .trip-movement-summary {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .crane-journey-page .trip-movement-summary > div {
+    border-bottom: 1px solid #e1ebee;
+  }
+  .crane-journey-page .trip-movement-form-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 650px) {
+  .crane-journey-page .trip-movement-overlay {
+    padding: 0;
+  }
+  .crane-journey-page .trip-movement-modal {
+    width: 100vw;
+    height: 100vh;
+    max-height: none;
+    border: 0;
+    border-radius: 0;
+  }
+  .crane-journey-page .trip-movement-head {
+    border-radius: 0;
+  }
+  .crane-journey-page .trip-movement-body {
+    padding: 12px;
+  }
+  .crane-journey-page .trip-movement-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .crane-journey-page .trip-movement-form-grid {
+    grid-template-columns: 1fr;
+  }
+  .crane-journey-page .trip-movement-footer {
+    padding: 10px 12px;
+  }
+  .crane-journey-page .trip-movement-cancel,
+  .crane-journey-page .trip-movement-save {
+    flex: 1;
+  }
+}
+.crane-journey-page .trip-movement-operation-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.crane-journey-page .trip-movement-operation-card {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid #dfe7f1;
+  border-radius: 11px;
+  background: #fff;
+}
+.crane-journey-page .trip-movement-operation-head {
+  min-height: 54px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border-bottom: 1px solid #e7edf4;
+  background: #f8fbff;
+}
+.crane-journey-page .trip-movement-operation-head small {
+  display: block;
+  margin-bottom: 3px;
+  color: #8391a4;
+  font-size: 7.5px;
+  font-weight: 700;
+  letter-spacing: 0.55px;
+}
+.crane-journey-page .trip-movement-operation-head h3 {
+  margin: 0;
+  color: #17345f;
+  font-size: 12px;
+  font-weight: 700;
+}
+.crane-journey-page .trip-movement-operation-head > span {
+  padding: 5px 8px;
+  border: 1px solid #cbdcf5;
+  border-radius: 999px;
+  color: #2457b2;
+  background: #edf4ff;
+  font-size: 8px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.crane-journey-page .trip-movement-operation-fields {
+  padding: 11px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+}
+.crane-journey-page .trip-movement-operation-fields label {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.crane-journey-page .trip-movement-operation-fields label > span {
+  color: #657a96;
+  font-size: 8px;
+  font-weight: 700;
+}
+.crane-journey-page .trip-movement-operation-fields input,
+.crane-journey-page .trip-movement-operation-fields select {
+  width: 100%;
+  min-width: 0;
+  height: 35px;
+  padding: 0 9px;
+  border: 1px solid #d8e1ec;
+  border-radius: 7px;
+  outline: none;
+  color: #2d4668;
+  background: #fff;
+  font: inherit;
+  font-size: 9px;
+  font-weight: 600;
+}
+.crane-journey-page .trip-movement-operation-fields input:focus,
+.crane-journey-page .trip-movement-operation-fields select:focus {
+  border-color: #7da7df;
+  box-shadow: 0 0 0 2px rgba(36, 87, 178, 0.08);
+}
+.crane-journey-page .trip-movement-operation-fields .remarks {
+  grid-column: auto;
+}
+@media (max-width: 900px) {
+  .crane-journey-page .trip-movement-operation-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 650px) {
+  .crane-journey-page .trip-movement-operation-fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .crane-journey-page .trip-movement-operation-fields .remarks {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 430px) {
+  .crane-journey-page .trip-movement-operation-fields {
+    grid-template-columns: 1fr;
+  }
+  .crane-journey-page .trip-movement-operation-fields .remarks {
+    grid-column: auto;
+  }
+}
+.crane-journey-page .trip-movement-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(8, 31, 48, 0.58);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
+.crane-journey-page .trip-movement-modal {
+  width: min(1180px, 96vw);
+  max-height: 92vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #d6e3e8;
+  border-radius: 18px;
+  background: #f5f9fa;
+  box-shadow: 0 24px 70px rgba(5, 42, 58, 0.28);
+}
+.crane-journey-page .trip-movement-head {
+  min-height: 82px;
+  padding: 16px 20px;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+  background: linear-gradient(110deg, #0b3447 0%, #0b4f59 55%, #0d8f87 100%);
+}
+.crane-journey-page .trip-movement-title {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.crane-journey-page .trip-movement-title-icon {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 11px;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.12);
+}
+.crane-journey-page .trip-movement-title small {
+  display: block;
+  margin-bottom: 3px;
+  color: #9fe3dd;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 1.05px;
+}
+.crane-journey-page .trip-movement-title h2 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 750;
+  line-height: 1.2;
+}
+.crane-journey-page .trip-movement-title p {
+  margin: 4px 0 0;
+  overflow: hidden;
+  color: #d8ebee;
+  font-size: 10px;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.crane-journey-page .trip-movement-close {
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 9px;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  transition:
+    background 150ms ease,
+    transform 150ms ease;
+}
+.crane-journey-page .trip-movement-close:hover {
+  background: rgba(255, 255, 255, 0.19);
+  transform: translateY(-1px);
+}
+.crane-journey-page .trip-movement-body {
+  min-height: 0;
+  padding: 16px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #b9cdd2 transparent;
+}
+.crane-journey-page .trip-movement-body::-webkit-scrollbar {
+  width: 7px;
+}
+.crane-journey-page .trip-movement-body::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  background: #b9cdd2;
+}
+.crane-journey-page .trip-movement-alert {
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border-radius: 9px;
+  font-size: 9.5px;
+  font-weight: 650;
+}
+.crane-journey-page .trip-movement-alert.error {
+  border: 1px solid #efc9ce;
+  color: #aa3540;
+  background: #fff4f5;
+}
+.crane-journey-page .trip-movement-alert.success {
+  border: 1px solid #b7e2d9;
+  color: #08776f;
+  background: #ecfaf7;
+}
+.crane-journey-page .trip-movement-empty {
+  padding: 34px 20px;
+  border: 1px dashed #c7d9df;
+  border-radius: 12px;
+  color: #668697;
+  background: #ffffff;
+  text-align: center;
+  font-size: 10px;
+  font-weight: 600;
+}
+.crane-journey-page .trip-movement-vehicle-tabs {
+  margin-bottom: 13px;
+  padding: 6px;
+  display: flex;
+  gap: 7px;
+  overflow-x: auto;
+  border: 1px solid #dce8eb;
+  border-radius: 12px;
+  background: #ffffff;
+}
+.crane-journey-page .trip-movement-vehicle-tab {
+  min-width: 155px;
+  min-height: 47px;
+  padding: 7px 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  color: #526f7d;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+.crane-journey-page .trip-movement-vehicle-tab > svg {
+  flex: 0 0 auto;
+  color: #7897a5;
+}
+.crane-journey-page .trip-movement-vehicle-tab span {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.crane-journey-page .trip-movement-vehicle-tab strong {
+  max-width: 115px;
+  overflow: hidden;
+  color: #173c4e;
+  font-size: 9.5px;
+  font-weight: 750;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.crane-journey-page .trip-movement-vehicle-tab small {
+  margin-top: 2px;
+  color: #78909c;
+  font-size: 7.5px;
+  font-weight: 600;
+}
+.crane-journey-page .trip-movement-vehicle-tab:hover {
+  border-color: #c7dcdf;
+  background: #f3f9f9;
+}
+.crane-journey-page .trip-movement-vehicle-tab.active {
+  border-color: #a9ddd6;
+  background: #ecfaf7;
+  box-shadow: inset 3px 0 0 #0d8f87;
+}
+.crane-journey-page .trip-movement-vehicle-tab.active > svg,
+.crane-journey-page .trip-movement-vehicle-tab.active strong {
+  color: #08776f;
+}
+.crane-journey-page .trip-movement-summary {
+  margin-bottom: 13px;
+  padding: 11px;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  border: 1px solid #dce8eb;
+  border-radius: 12px;
+  background: #ffffff;
+}
+.crane-journey-page .trip-movement-summary > div {
+  min-width: 0;
+  padding: 9px 10px;
+  border: 1px solid #e5eef0;
+  border-radius: 9px;
+  background: #f8fbfb;
+}
+.crane-journey-page .trip-movement-summary span {
+  display: block;
+  margin-bottom: 5px;
+  color: #78909c;
+  font-size: 7.5px;
+  font-weight: 750;
+  letter-spacing: 0.25px;
+  text-transform: uppercase;
+}
+.crane-journey-page .trip-movement-summary strong {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  overflow: hidden;
+  color: #173c4e;
+  font-size: 9px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.crane-journey-page .trip-movement-summary strong svg {
+  flex: 0 0 auto;
+  color: #0d8f87;
+}
+.crane-journey-page .trip-movement-form-card,
+.crane-journey-page .trip-movement-history {
+  margin-bottom: 13px;
+  overflow: hidden;
+  border: 1px solid #dce8eb;
+  border-radius: 12px;
+  background: #ffffff;
+}
+.crane-journey-page .trip-movement-section-title {
+  min-height: 55px;
+  padding: 10px 13px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border-bottom: 1px solid #e4edef;
+  background: #f8fbfb;
+}
+.crane-journey-page .trip-movement-section-title small {
+  display: block;
+  margin-bottom: 2px;
+  color: #0d8f87;
+  font-size: 7.5px;
+  font-weight: 800;
+  letter-spacing: 0.75px;
+}
+.crane-journey-page .trip-movement-section-title h3 {
+  margin: 0;
+  color: #10394c;
+  font-size: 12px;
+  font-weight: 750;
+}
+.crane-journey-page .trip-movement-section-title > span {
+  padding: 5px 9px;
+  border: 1px solid #bfe0dc;
+  border-radius: 999px;
+  color: #08776f;
+  background: #ecfaf7;
+  font-size: 8px;
+  font-weight: 750;
+}
+.crane-journey-page .trip-movement-form-card label {
+  min-width: 0;
+}
+.crane-journey-page .trip-movement-form-card label > span {
+  color: #668697;
+  font-size: 8px;
+  font-weight: 700;
+}
+.crane-journey-page .trip-movement-form-card input,
+.crane-journey-page .trip-movement-form-card select,
+.crane-journey-page .trip-movement-form-card textarea {
+  border-color: #c9dde3 !important;
+  border-radius: 8px !important;
+  color: #173c4e !important;
+  background: #f8fafb !important;
+  font-size: 9px !important;
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease,
+    background 150ms ease;
+}
+.crane-journey-page .trip-movement-form-card input:focus,
+.crane-journey-page .trip-movement-form-card select:focus,
+.crane-journey-page .trip-movement-form-card textarea:focus {
+  border-color: #0d8f87 !important;
+  background: #ffffff !important;
+  box-shadow: 0 0 0 3px rgba(13, 143, 135, 0.09) !important;
+  outline: none !important;
+}
+.crane-journey-page .trip-movement-operation-grid {
+  margin-bottom: 13px;
+  gap: 12px;
+}
+.crane-journey-page .trip-movement-operation-card {
+  border-color: #dce8eb;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(8, 43, 60, 0.035);
+}
+.crane-journey-page .trip-movement-operation-head {
+  min-height: 57px;
+  padding: 10px 13px;
+  border-bottom-color: #e4edef;
+  background: #f8fbfb;
+}
+.crane-journey-page .trip-movement-operation-head small {
+  color: #78909c;
+}
+.crane-journey-page .trip-movement-operation-head h3 {
+  color: #10394c;
+  font-size: 12px;
+}
+.crane-journey-page .trip-movement-operation-head > span {
+  border-color: #bfe0dc;
+  color: #08776f;
+  background: #ecfaf7;
+}
+.crane-journey-page .trip-movement-operation-fields {
+  padding: 12px;
+  gap: 10px;
+}
+.crane-journey-page .trip-movement-operation-fields label > span {
+  color: #668697;
+}
+.crane-journey-page .trip-movement-operation-fields input,
+.crane-journey-page .trip-movement-operation-fields select {
+  height: 37px;
+  border-color: #c9dde3;
+  color: #173c4e;
+  background: #f8fafb;
+}
+.crane-journey-page .trip-movement-operation-fields input:hover,
+.crane-journey-page .trip-movement-operation-fields select:hover {
+  border-color: #aac8cf;
+}
+.crane-journey-page .trip-movement-operation-fields input:focus,
+.crane-journey-page .trip-movement-operation-fields select:focus {
+  border-color: #0d8f87;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(13, 143, 135, 0.09);
+}
+.crane-journey-page .trip-movement-history {
+  margin-bottom: 0;
+}
+.crane-journey-page .trip-movement-history table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.crane-journey-page .trip-movement-history th {
+  color: #668697;
+  background: #f5f9fa;
+  font-size: 7.5px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+.crane-journey-page .trip-movement-history td {
+  color: #35596a;
+  font-size: 8.5px;
+}
+.crane-journey-page .trip-movement-history tr:not(:last-child) td {
+  border-bottom: 1px solid #e8eff1;
+}
+.crane-journey-page .trip-movement-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 4;
+  margin: 14px -16px -16px;
+  padding: 11px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  border-top: 1px solid #dce8eb;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.crane-journey-page .trip-movement-footer button {
+  min-height: 37px;
+  padding: 0 14px;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 9px;
+  font-weight: 750;
+  cursor: pointer;
+}
+.crane-journey-page .trip-movement-footer button:last-child {
+  border: 1px solid #0d8f87;
+  color: #ffffff;
+  background: linear-gradient(135deg, #0d8f87, #08776f);
+  box-shadow: 0 6px 14px rgba(13, 143, 135, 0.16);
+}
+.crane-journey-page .trip-movement-footer button:last-child:hover {
+  background: linear-gradient(135deg, #087f78, #066d67);
+}
+.crane-journey-page .trip-movement-footer button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+@media (max-width: 1000px) {
+  .crane-journey-page .trip-movement-summary {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 760px) {
+  .crane-journey-page .trip-movement-overlay {
+    padding: 12px;
+    align-items: flex-end;
+  }
+  .crane-journey-page .trip-movement-modal {
+    width: 100%;
+    max-height: 94vh;
+    border-radius: 16px 16px 0 0;
+  }
+  .crane-journey-page .trip-movement-head {
+    min-height: 74px;
+    padding: 13px 14px;
+  }
+  .crane-journey-page .trip-movement-body {
+    padding: 12px;
+  }
+  .crane-journey-page .trip-movement-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .crane-journey-page .trip-movement-footer {
+    margin: 12px -12px -12px;
+    padding: 10px 12px;
+  }
+}
+@media (max-width: 480px) {
+  .crane-journey-page .trip-movement-overlay {
+    padding: 0;
+  }
+  .crane-journey-page .trip-movement-modal {
+    max-height: 100vh;
+    min-height: 100vh;
+    border: 0;
+    border-radius: 0;
+  }
+  .crane-journey-page .trip-movement-title p {
+    max-width: 220px;
+  }
+  .crane-journey-page .trip-movement-vehicle-tab {
+    min-width: 140px;
+  }
+  .crane-journey-page .trip-movement-summary {
+    grid-template-columns: 1fr 1fr;
+  }
+  .crane-journey-page .trip-movement-operation-fields {
+    grid-template-columns: 1fr;
+  }
+}
+.crane-journey-page .trip-movement-body {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  scrollbar-gutter: stable;
+}
+.crane-journey-page .trip-movement-body,
+.crane-journey-page .trip-movement-vehicle-tabs,
+.crane-journey-page .trip-movement-history {
+  scroll-behavior: smooth;
+}
+.crane-journey-page .trip-movement-title small {
+  font-size: 9px;
+}
+.crane-journey-page .trip-movement-title h2 {
+  font-size: 20px;
+}
+.crane-journey-page .trip-movement-title p {
+  font-size: 11px;
+}
+.crane-journey-page .trip-movement-vehicle-tab strong {
+  font-size: 10.5px;
+}
+.crane-journey-page .trip-movement-vehicle-tab small {
+  font-size: 8.5px;
+}
+.crane-journey-page .trip-movement-summary span {
+  font-size: 8.5px;
+}
+.crane-journey-page .trip-movement-summary strong {
+  font-size: 10px;
+}
+.crane-journey-page .trip-movement-section-title small,
+.crane-journey-page .trip-movement-operation-head small {
+  font-size: 8.5px;
+}
+.crane-journey-page .trip-movement-section-title h3,
+.crane-journey-page .trip-movement-operation-head h3 {
+  font-size: 13px;
+}
+.crane-journey-page .trip-movement-section-title > span,
+.crane-journey-page .trip-movement-operation-head > span {
+  font-size: 9px;
+}
+.crane-journey-page .trip-movement-form-card label > span,
+.crane-journey-page .trip-movement-operation-fields label > span {
+  font-size: 9px;
+}
+.crane-journey-page .trip-movement-form-card input,
+.crane-journey-page .trip-movement-form-card select,
+.crane-journey-page .trip-movement-form-card textarea,
+.crane-journey-page .trip-movement-operation-fields input,
+.crane-journey-page .trip-movement-operation-fields select {
+  font-size: 10px !important;
+}
+.crane-journey-page .trip-movement-alert,
+.crane-journey-page .trip-movement-empty {
+  font-size: 10.5px;
+}
+.crane-journey-page .trip-movement-history th {
+  font-size: 8.5px;
+}
+.crane-journey-page .trip-movement-history td {
+  font-size: 9.5px;
+}
+.crane-journey-page .trip-movement-footer button {
+  font-size: 10px;
+}
+.crane-journey-page .trip-movement-body::-webkit-scrollbar {
+  width: 8px;
+}
+.crane-journey-page .trip-movement-body::-webkit-scrollbar-track {
+  margin: 5px 0;
+  background: transparent;
+}
+.crane-journey-page .trip-movement-body::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: #aac4ca;
+  background-clip: padding-box;
+}
+.crane-journey-page .trip-movement-body::-webkit-scrollbar-thumb:hover {
+  background: #829fa7;
+  background-clip: padding-box;
+}
+@media (max-width: 760px) {
+  .crane-journey-page .trip-movement-title h2 {
+    font-size: 18px;
+  }
+  .crane-journey-page .trip-movement-title p {
+    font-size: 10.5px;
+  }
+  .crane-journey-page .trip-movement-section-title h3,
+  .crane-journey-page .trip-movement-operation-head h3 {
+    font-size: 12.5px;
+  }
+  .crane-journey-page .trip-movement-form-card input,
+  .crane-journey-page .trip-movement-form-card select,
+  .crane-journey-page .trip-movement-form-card textarea,
+  .crane-journey-page .trip-movement-operation-fields input,
+  .crane-journey-page .trip-movement-operation-fields select {
+    font-size: 10px !important;
+  }
+}
+.crane-journey-page .trip-movement-overlay {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  background: rgba(8, 31, 48, 0.64) !important;
+}
+.crane-journey-page .trip-movement-modal {
+  contain: layout paint;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+.crane-journey-page .trip-movement-body {
+  scroll-behavior: auto !important;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  will-change: scroll-position;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+.crane-journey-page .trip-movement-footer {
+  background: #ffffff !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+.crane-journey-page .trip-movement-form-card input,
+.crane-journey-page .trip-movement-form-card select,
+.crane-journey-page .trip-movement-form-card textarea,
+.crane-journey-page .trip-movement-operation-fields input,
+.crane-journey-page .trip-movement-operation-fields select {
+  transition:
+    border-color 120ms ease,
+    background-color 120ms ease !important;
+}
+.crane-journey-page .trip-movement-operation-card {
+  box-shadow: none !important;
+}
+.crane-journey-page .trip-movement-body {
+  scrollbar-width: thin;
+  scrollbar-color: #aac4ca transparent;
+}
+.crane-journey-page .trip-movement-body::-webkit-scrollbar {
+  width: 7px;
+}
+.crane-journey-page .trip-movement-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+.crane-journey-page .trip-movement-body::-webkit-scrollbar-thumb {
+  border: 0 !important;
+  border-radius: 999px;
+  background: #aac4ca !important;
+  background-clip: border-box !important;
+}
+.crane-journey-page .trip-movement-body::-webkit-scrollbar-thumb:hover {
+  background: #829fa7 !important;
+}
+.crane-journey-page .trip-movement-documents {
+  margin-bottom: 13px;
+  overflow: hidden;
+  border: 1px solid #dce8eb;
+  border-radius: 12px;
+  background: #ffffff;
+}
+.crane-journey-page .trip-movement-document-grid {
+  padding: 12px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.crane-journey-page .trip-movement-document-card {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid #dce8eb;
+  border-radius: 11px;
+  background: #ffffff;
+}
+.crane-journey-page .trip-movement-document-head {
+  min-height: 58px;
+  padding: 10px 12px;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+  border-bottom: 1px solid #e4edef;
+  background: #f8fbfb;
+}
+.crane-journey-page .trip-movement-document-icon {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #bfe0dc;
+  border-radius: 9px;
+  color: #08776f;
+  background: #ecfaf7;
+}
+.crane-journey-page .trip-movement-document-head small {
+  display: block;
+  margin-bottom: 2px;
+  color: #78909c;
+  font-size: 8.5px;
+  font-weight: 800;
+  letter-spacing: 0.55px;
+}
+.crane-journey-page .trip-movement-document-head h4 {
+  margin: 0;
+  color: #10394c;
+  font-size: 13px;
+  font-weight: 750;
+}
+.crane-journey-page .trip-movement-document-head b {
+  padding: 5px 8px;
+  border: 1px solid #e1d9b5;
+  border-radius: 999px;
+  color: #806c25;
+  background: #fff9e7;
+  font-size: 9px;
+  font-weight: 750;
+}
+.crane-journey-page .trip-movement-document-head b.uploaded {
+  border-color: #bfe0dc;
+  color: #08776f;
+  background: #ecfaf7;
+}
+.crane-journey-page .trip-movement-document-fields {
+  padding: 12px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+.crane-journey-page .trip-movement-document-fields label {
+  min-width: 0;
+}
+.crane-journey-page .trip-movement-document-fields label > span {
+  display: block;
+  margin-bottom: 5px;
+  color: #668697;
+  font-size: 9px;
+  font-weight: 700;
+}
+.crane-journey-page .trip-movement-document-fields input,
+.crane-journey-page .trip-movement-document-fields select {
+  width: 100%;
+  height: 37px;
+  padding: 0 9px;
+  border: 1px solid #c9dde3;
+  border-radius: 8px;
+  outline: none;
+  color: #173c4e;
+  background: #f8fafb;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 600;
+}
+.crane-journey-page .trip-movement-document-fields input:focus,
+.crane-journey-page .trip-movement-document-fields select:focus {
+  border-color: #0d8f87;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(13, 143, 135, 0.09);
+}
+.crane-journey-page .trip-document-file-field {
+  display: none;
+}
+.crane-journey-page .trip-movement-document-actions {
+  min-height: 51px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border-top: 1px solid #edf2f3;
+  background: #fbfdfd;
+}
+.crane-journey-page .trip-movement-document-actions > span {
+  min-width: 0;
+  overflow: hidden;
+  color: #668697;
+  font-size: 9px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.crane-journey-page .trip-movement-document-actions > div {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.crane-journey-page .trip-document-upload-button,
+.crane-journey-page .trip-document-view-button {
+  min-height: 31px;
+  padding: 0 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border-radius: 7px;
+  font: inherit;
+  font-size: 9px;
+  font-weight: 750;
+  cursor: pointer;
+}
+.crane-journey-page .trip-document-upload-button {
+  border: 1px solid #bfe0dc;
+  color: #08776f;
+  background: #ecfaf7;
+}
+.crane-journey-page .trip-document-upload-button:hover {
+  border-color: #0d8f87;
+  background: #e3f6f3;
+}
+.crane-journey-page .trip-document-upload-button input {
+  display: none;
+}
+.crane-journey-page .trip-document-view-button {
+  border: 1px solid #cbdcf5;
+  color: #2457b2;
+  background: #edf4ff;
+}
+.crane-journey-page .trip-document-view-button:hover {
+  border-color: #2457b2;
+  background: #e4efff;
+}
+@media (max-width: 900px) {
+  .crane-journey-page .trip-movement-document-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 650px) {
+  .crane-journey-page .trip-movement-document-fields {
+    grid-template-columns: 1fr 1fr;
+  }
+  .crane-journey-page .trip-movement-document-actions {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+@media (max-width: 430px) {
+  .crane-journey-page .trip-movement-document-fields {
+    grid-template-columns: 1fr;
+  }
+  .crane-journey-page .trip-movement-document-actions > div {
+    width: 100%;
+  }
+  .crane-journey-page .trip-document-upload-button,
+  .crane-journey-page .trip-document-view-button {
+    flex: 1;
+  }
+}
+.crane-journey-page .trip-pod-full-row {
+  grid-column: 1 / -1;
+}
+.crane-journey-page .trip-pod-upload-row {
+  width: 100%;
+  min-height: 64px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: #fbfdfd;
+}
+.crane-journey-page .trip-pod-file-info {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.crane-journey-page .trip-pod-file-icon {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #bfe0dc;
+  border-radius: 8px;
+  color: #08776f;
+  background: #ecfaf7;
+}
+.crane-journey-page .trip-pod-file-info > div {
+  min-width: 0;
+}
+.crane-journey-page .trip-pod-file-info small {
+  display: block;
+  margin-bottom: 3px;
+  color: #78909c;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.45px;
+}
+.crane-journey-page .trip-pod-file-info strong {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  color: #3d5875;
+  font-size: 10px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.crane-journey-page .trip-pod-actions {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+@media (max-width: 900px) {
+  .crane-journey-page .trip-pod-full-row {
+    grid-column: auto;
+  }
+}
+@media (max-width: 650px) {
+  .crane-journey-page .trip-pod-upload-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .crane-journey-page .trip-pod-actions {
+    width: 100%;
+  }
+}
+@media (max-width: 430px) {
+  .crane-journey-page .trip-pod-actions .trip-document-upload-button,
+  .crane-journey-page .trip-pod-actions .trip-document-view-button {
+    flex: 1;
+  }
+}
+.crane-journey-page .trip-movement-type-cell {
+  min-width: 0;
+}
+.crane-journey-page .trip-movement-type-badge {
+  width: fit-content;
+  max-width: 100%;
+  min-height: 28px;
+  padding: 0 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  overflow: hidden;
+  border: 1px solid #d8e3e7;
+  border-radius: 7px;
+  color: #607d8b;
+  background: #f5f8f9;
+  font-size: 8.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.crane-journey-page .trip-movement-type-badge > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.crane-journey-page .trip-movement-type-badge svg {
+  flex: 0 0 auto;
+}
+.crane-journey-page .trip-movement-type-badge.wtg {
+  color: #2457b2;
+  border-color: #cbdcf5;
+  background: #edf4ff;
+}
+.crane-journey-page .trip-movement-type-badge.wtg svg {
+  color: #2457b2;
+}
+.crane-journey-page .trip-movement-type-badge.crane {
+  color: #08776f;
+  border-color: #bfe0dc;
+  background: #ecfaf7;
+}
+.crane-journey-page .trip-movement-type-badge.crane svg {
+  color: #0d8f87;
+}
+.crane-journey-page .trip-movement-type-badge.default {
+  color: #607d8b;
+  border-color: #d8e3e7;
+  background: #f5f8f9;
+}
+@media (max-width: 850px) {
+  .crane-journey-page .trip-movement-type-badge {
+    min-height: 29px;
+    font-size: 9px;
+  }
+}
+@media (max-width: 560px) {
+  .crane-journey-page .trip-movement-type-cell {
+    min-width: 0;
+  }
+  .crane-journey-page .trip-movement-type-badge {
+    max-width: 100%;
+  }
+}
+.crane-journey-page {
+  color: var(--otc-text);
+  background: var(--otc-page);
+}
+.crane-journey-page .trip-document-view-button {
+  color: var(--otc-teal-dark);
+  border-color: var(--otc-teal-border);
+  background: var(--otc-teal-soft);
+}
+.crane-journey-page .trip-document-view-button:hover {
+  color: #fff;
+  border-color: var(--otc-teal);
+  background: var(--otc-teal);
+}
+.crane-journey-page .trip-movement-type-badge.wtg {
+  color: var(--otc-teal-dark);
+  border-color: var(--otc-teal-border);
+  background: var(--otc-teal-soft);
+}
+.crane-journey-page .trip-movement-type-badge.wtg svg {
+  color: var(--otc-teal);
+}
+.crane-journey-page .trip-movement-badge {
+  border-color: #b9dfdb;
+  background: #edf9f7;
+  color: #08776f;
+}
+.crane-journey-page .trip-movement-badge svg {
+  color: #0d8f87;
+}
+.crane-journey-page .trip-movement-btn {
+  min-height: 32px;
+  border-radius: 8px;
+  font-weight: 700;
+  box-shadow: none;
+}
+.crane-journey-page .trip-movement-btn {
+  border: 1px solid #a9d9d4;
+  background: #edf9f7;
+  color: #08776f;
+}
+.crane-journey-page .trip-movement-btn:hover {
+  border-color: #0d8f87;
+  background: #def3f0;
+  color: #066b65;
+}
+.crane-journey-page .trip-movement-footer {
+  padding: 11px 54px 11px 18px;
+  justify-content: space-between;
+}
+.crane-journey-page .trip-movement-footer-message {
+  min-width: 0;
+  flex: 1 1 auto;
+  padding-right: 18px;
+}
+.crane-journey-page .trip-movement-footer-message .error {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  color: #b43b44;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+.crane-journey-page .trip-movement-footer-actions {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.crane-journey-page .trip-movement-operation-fields input[readonly] {
+  color: #456273;
+  background: #f3f7f8;
+  cursor: default;
+}
+.crane-journey-page .trip-unloading-lock {
+  margin: 9px 11px 0;
+  padding: 8px 10px;
+  border: 1px solid #d9e5e8;
+  border-radius: 7px;
+  color: #6d8592;
+  background: #f6f9fa;
+  font-size: 8px;
+  font-weight: 650;
+  line-height: 1.4;
+}
+.crane-journey-page .trip-document-upload-button.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.crane-journey-page .trip-movement-toast {
+  position: absolute;
+  right: 28px;
+  bottom: 82px;
+  z-index: 30;
+  width: min(350px, calc(100% - 40px));
+  min-height: 58px;
+  padding: 11px 11px 11px 15px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  overflow: hidden;
+  border: 1px solid #cde4df;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 12px 30px rgba(10, 48, 60, 0.14);
+}
+.crane-journey-page .trip-movement-toast::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 4px;
+  background: #0d8f87;
+}
+.crane-journey-page .trip-movement-toast.error {
+  border-color: #efcfd2;
+}
+.crane-journey-page .trip-movement-toast.error::before {
+  background: #d94b55;
+}
+.crane-journey-page .trip-movement-toast > div {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.crane-journey-page .trip-movement-toast strong {
+  color: #173f50;
+  font-size: 10px;
+  font-weight: 800;
+}
+.crane-journey-page .trip-movement-toast span {
+  color: #66808d;
+  font-size: 8.5px;
+  font-weight: 550;
+  line-height: 1.4;
+}
+.crane-journey-page .trip-movement-toast.error strong {
+  color: #a83b44;
+}
+.crane-journey-page .trip-movement-toast > button {
+  width: 26px;
+  height: 26px;
+  flex: 0 0 26px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  color: #6d8490;
+  background: #f2f7f7;
+  cursor: pointer;
+}
+@media (max-width: 650px) {
+  .crane-journey-page .trip-movement-footer {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+  .crane-journey-page .trip-movement-footer-message {
+    display: none;
+  }
+  .crane-journey-page .trip-movement-footer-actions {
+    width: 100%;
+  }
+  .crane-journey-page .trip-movement-toast {
+    right: 12px;
+    bottom: 72px;
+    width: calc(100% - 24px);
+  }
+}
+.crane-journey-page .trip-movement-vehicle-tabs {
+  width: 100%;
+  display: flex;
+  align-items: stretch;
+  gap: 9px;
+  padding: 7px 3px 10px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: #b9cdd2 transparent;
+}
+.crane-journey-page .trip-movement-vehicle-tabs::-webkit-scrollbar {
+  height: 5px;
+}
+.crane-journey-page .trip-movement-vehicle-tabs::-webkit-scrollbar-track {
+  background: transparent;
+}
+.crane-journey-page .trip-movement-vehicle-tabs::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: #b9cdd2;
+}
+.crane-journey-page .trip-movement-vehicle-tab {
+  position: relative;
+  min-width: 190px;
+  min-height: 68px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow: hidden;
+  border: 1px solid #d7e4e7;
+  border-radius: 11px;
+  color: #36576a;
+  background: #ffffff;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(13, 63, 78, 0.045);
+  transition:
+    border-color 0.16s ease,
+    background-color 0.16s ease,
+    box-shadow 0.16s ease,
+    transform 0.16s ease;
+}
+.crane-journey-page .trip-movement-vehicle-tab::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 9px;
+  bottom: 9px;
+  width: 3px;
+  border-radius: 0 4px 4px 0;
+  background: transparent;
+}
+.crane-journey-page .trip-movement-vehicle-tab:hover {
+  border-color: #abd9d5;
+  background: #fbfefe;
+  box-shadow: 0 5px 14px rgba(8, 113, 108, 0.08);
+  transform: translateY(-1px);
+}
+.crane-journey-page .trip-movement-vehicle-tab.active {
+  border-color: #8fd7d1;
+  background: linear-gradient(135deg, #f2fbfa 0%, #e9f8f6 100%);
+  box-shadow: 0 4px 13px rgba(7, 155, 145, 0.11);
+}
+.crane-journey-page .trip-movement-vehicle-tab.active::before {
+  background: #079b91;
+}
+.crane-journey-page .trip-movement-vehicle-tab > svg {
+  width: 19px;
+  height: 19px;
+  flex: 0 0 19px;
+  color: #7895a2;
+}
+.crane-journey-page .trip-movement-vehicle-tab.active > svg {
+  color: #079b91;
+}
+.crane-journey-page .trip-movement-vehicle-tab > div {
+  min-width: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.crane-journey-page .trip-movement-vehicle-tab strong {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  color: #163f52;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: 0.05px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.crane-journey-page .trip-movement-vehicle-tab.active strong {
+  color: #087e78;
+}
+.crane-journey-page .trip-movement-vehicle-tab em,
+.crane-journey-page .trip-movement-vehicle-tab i {
+  display: block;
+  width: 100%;
+  margin: 2px 0 0;
+  overflow: hidden;
+  color: #657e8b;
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.crane-journey-page .trip-movement-vehicle-tab small {
+  position: relative;
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  margin-top: 4px;
+  padding-left: 10px;
+  overflow: hidden;
+  color: #728a96;
+  font-size: 8px;
+  font-weight: 700;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.crane-journey-page .trip-movement-vehicle-tab small::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #9aadb6;
+  transform: translateY(-50%);
+}
+.crane-journey-page
+  .trip-movement-vehicle-tab:has(small[class*="moving"])
+  small::before,
+.crane-journey-page .trip-movement-vehicle-tab small.moving::before {
+  background: #079b91;
+}
+.crane-journey-page
+  .trip-movement-vehicle-tab:has(small[class*="reached"])
+  small::before,
+.crane-journey-page .trip-movement-vehicle-tab small.reached::before {
+  background: #1b9a63;
+}
+.crane-journey-page
+  .trip-movement-vehicle-tab:has(small[class*="idle"])
+  small::before,
+.crane-journey-page
+  .trip-movement-vehicle-tab:has(small[class*="pending"])
+  small::before,
+.crane-journey-page .trip-movement-vehicle-tab small.idle::before,
+.crane-journey-page .trip-movement-vehicle-tab small.pending::before {
+  background: #d99a29;
+}
+.crane-journey-page
+  .trip-movement-vehicle-tab:has(small[class*="breakdown"])
+  small::before,
+.crane-journey-page
+  .trip-movement-vehicle-tab:has(small[class*="stopped"])
+  small::before,
+.crane-journey-page .trip-movement-vehicle-tab small.breakdown::before,
+.crane-journey-page .trip-movement-vehicle-tab small.stopped::before {
+  background: #d85660;
+}
+.crane-journey-page .trip-movement-vehicle-tab:focus-visible {
+  outline: 2px solid rgba(7, 155, 145, 0.25);
+  outline-offset: 2px;
+}
+@media (max-width: 700px) {
+  .crane-journey-page .trip-movement-vehicle-tabs {
+    gap: 8px;
+    padding-bottom: 8px;
+  }
+  .crane-journey-page .trip-movement-vehicle-tab {
+    min-width: 172px;
+    min-height: 64px;
+    padding: 9px 10px;
+    gap: 8px;
+  }
+  .crane-journey-page .trip-movement-vehicle-tab > svg {
+    width: 17px;
+    height: 17px;
+    flex-basis: 17px;
+  }
+  .crane-journey-page .trip-movement-vehicle-tab strong {
+    font-size: 10px;
+  }
+}
+.crane-journey-page .trip-movement-document-head b.eway-status-active {
+  border-color: #bfe0dc;
+  color: #08776f;
+  background: #ecfaf7;
+}
+.crane-journey-page .trip-movement-document-head b.eway-status-expiring-soon {
+  border-color: #f4d28a;
+  color: #995e08;
+  background: #fff6df;
+}
+.crane-journey-page .trip-movement-document-head b.eway-status-expires-today {
+  border-color: #f0b88e;
+  color: #a74e16;
+  background: #fff0e5;
+}
+.crane-journey-page .trip-movement-document-head b.eway-status-expired {
+  border-color: #f1bfc4;
+  color: #b82f41;
+  background: #fff0f2;
+}
+.crane-journey-page .trip-movement-document-head b.eway-status-pending {
+  border-color: #d7e0e5;
+  color: #667985;
+  background: #f4f7f8;
+}
+
+/* Crane vehicle list: keep all columns on desktop without sideways scrolling. */
+@media (min-width: 701px) and (max-width: 1200px) {
+  .crane-vehicles-table th {
+    padding: 9px 3px;
+    font-size: 8px;
+  }
+  .crane-vehicles-table td {
+    padding: 9px 3px;
+    font-size: 9px;
+  }
+  .crane-vehicle-number {
+    font-size: 9px;
+  }
+  .crane-movement-btn {
+    padding: 6px 3px;
+    font-size: 8px;
+  }
+}
+
+/* Narrow screens use readable stacked rows, never a horizontal table scroll. */
+@media (max-width: 700px) {
+  .crane-vehicles-table-wrap {
+    max-height: 65vh;
+    overflow-x: hidden;
+  }
+  .crane-vehicles-table,
+  .crane-vehicles-table tbody,
+  .crane-vehicles-table tr,
+  .crane-vehicles-table td {
+    display: block;
+    width: 100%;
+  }
+  .crane-vehicles-table thead {
+    display: none;
+  }
+  .crane-vehicles-table tbody tr {
+    height: auto;
+    margin: 8px;
+    width: calc(100% - 16px);
+    padding: 7px;
+    border: 1px solid #263c4a;
+    border-radius: 9px;
+  }
+  .crane-vehicles-table tbody td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 7px 5px;
+    text-align: right;
+  }
+  .crane-vehicles-table tbody td::before {
+    color: #9db6cc;
+    font-size: 9px;
+    font-weight: 700;
+    text-align: left;
+    flex: 0 0 42%;
+  }
+  .crane-vehicles-table tbody td:nth-child(1)::before {
+    content: "Vehicle No";
+  }
+  .crane-vehicles-table tbody td:nth-child(2)::before {
+    content: "Type";
+  }
+  .crane-vehicles-table tbody td:nth-child(3)::before {
+    content: "TG No";
+  }
+  .crane-vehicles-table tbody td:nth-child(4)::before {
+    content: "LSP";
+  }
+  .crane-vehicles-table tbody td:nth-child(5)::before {
+    content: "Loaded Material";
+  }
+  .crane-vehicles-table tbody td:nth-child(6)::before {
+    content: "Current Location";
+  }
+  .crane-vehicles-table tbody td:nth-child(7)::before {
+    content: "Status";
+  }
+  .crane-vehicles-table tbody td:nth-child(8)::before {
+    content: "LR No";
+  }
+  .crane-vehicles-table tbody td:nth-child(9)::before {
+    content: "E-Way";
+  }
+  .crane-vehicles-table tbody td:nth-child(10)::before {
+    content: "Weight";
+  }
+  .crane-vehicles-table tbody td:nth-child(11)::before {
+    content: "Dimensions";
+  }
+  .crane-vehicles-table tbody td:nth-child(12)::before {
+    content: "Action";
   }
 }

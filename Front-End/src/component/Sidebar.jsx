@@ -264,29 +264,17 @@ const Sidebar = ({
         "/intercartingdash",
       dataEntry: true,
     },
-    {
-      title:
-        "Own Vehicle",
-      icon:
-        <FaCar />,
-      path:
-        "/ownvehicledetaildash",
-      dataEntry: true,
-    },
-    {
-      title:
-        "Vehicle Documents",
-      icon:
-        <FaFileAlt />,
-      path:
-        "/vehicle-documents",
-    },
+    
     {
       title: "Order Management",
       icon:
         <FaFileAlt />,
       path:
         "/trip-dashboard",
+      excludedPaths: [
+        "/trip-dashboard/traffic-management",
+        "/trip-dashboard/approval-management",
+      ],
       subLinks: [
         {
           key: "kam",
@@ -295,21 +283,19 @@ const Sidebar = ({
           path:
             "/trip-dashboard/key-account",
         },
-        {
-          key: "traffic",
-          title:
-            "Traffic-Management",
-          path:
-            "/trip-dashboard/traffic-management",
-        },
-        {
-          key: "approval",
-          title:
-            "Approval Management",
-          path:
-            "/trip-dashboard/approval-management",
-        },
       ],
+    },
+    {
+      key: "traffic",
+      title: "Traffic Management",
+      icon: <FaTruck />,
+      path: "/trip-dashboard/traffic-management",
+    },
+    {
+      key: "approval",
+      title: "Approval Management",
+      icon: <FaFileAlt />,
+      path: "/trip-dashboard/approval-management",
     },
   ];
   const liveMenu = [
@@ -327,29 +313,33 @@ const Sidebar = ({
         "/trip-details",
       ],
     },
-    // {
-    //   title:
-    //     "Inbound & Outbound",
-    //   icon:
-    //     <FaTruck />,
-    //   path:
-    //     "/inbound-outbound",
-    // },
     {
-      title: "Assets",
+      title:
+        "Own Vehicle",
       icon:
-        <FaBoxOpen />,
+        <FaCar />,
       path:
+        "/ownvehicledetaildash",
+      dataEntry: true,
+      relatedPaths: [
+        "/ownvehicledetaildash",
         "/assets",
-      secureLogin: true,
+      ],
+      subLinks: [
+        {
+          key: "assets",
+          title: "Assets",
+          path: "/assets",
+        },
+      ],
     },
     {
       title:
-        "Warehouse",
+        "Vehicle Documents",
       icon:
-        <FaWarehouse />,
+        <FaFileAlt />,
       path:
-        "/warehouse",
+        "/vehicle-documents",
     },
     {
       title:
@@ -391,6 +381,14 @@ const Sidebar = ({
       normalizePath(
         location.pathname
       );
+    if (
+      item.excludedPaths?.some((path) => {
+        const excludedPath = normalizePath(path);
+        return currentPath === excludedPath || currentPath.startsWith(`${excludedPath}/`);
+      })
+    ) {
+      return false;
+    }
     if (
       Array.isArray(
         item.relatedPaths
@@ -676,6 +674,27 @@ const Sidebar = ({
     () => {
       closeMobileSidebar();
     };
+  const isDataEntryActive = (item) => {
+    const currentPath = normalizePath(location.pathname);
+    if (item.title === "Intercarting") {
+      return showIntercartingLogin ||
+        currentPath === "/intercartingdash/intercarting" ||
+        currentPath.startsWith("/intercartingdash/intercarting/");
+    }
+    if (item.title === "Own Vehicle") {
+      return showOwnVehicleLogin ||
+        currentPath === "/ownvehicledetaildash/ownvehicledetails" ||
+        currentPath.startsWith("/ownvehicledetaildash/ownvehicledetails/");
+    }
+    if (item.title === "Tracking") {
+      return showTrackingLogin ||
+        currentPath === "/trip-details" ||
+        currentPath.startsWith("/trip-details/") ||
+        currentPath === "/tracking-input" ||
+        currentPath.startsWith("/tracking-input/");
+    }
+    return false;
+  };
   const renderMenuItems = (
     items
   ) => {
@@ -692,6 +711,7 @@ const Sidebar = ({
         const showSubLinks =
           Array.isArray(item.subLinks) &&
           item.subLinks.length > 0 &&
+          active &&
           !collapsed;
         return (
           <div
@@ -708,7 +728,7 @@ const Sidebar = ({
                 item.path ===
                 "/dashboard"
               }
-              className={
+              className={() =>
                 `sidebar-link ${active
                   ? "active"
                   : ""
@@ -725,9 +745,11 @@ const Sidebar = ({
                   : undefined
               }
               onClick={
-                item.secureLogin
-                  ? handleAssetsClick
-                  : handleMenuClick
+                item.key === "traffic" || item.key === "approval"
+                  ? (event) => handleTripsSubLinkClick(event, item)
+                  : item.secureLogin
+                    ? handleAssetsClick
+                    : handleMenuClick
               }
             >
               <span
@@ -748,7 +770,7 @@ const Sidebar = ({
               >
                 <button
                   type="button"
-                  className="sidebar-submenu-link"
+                  className={`sidebar-submenu-link ${isDataEntryActive(item) ? "active" : ""}`}
                   onClick={() =>
                     handleDataEntry(
                       item.title
@@ -789,7 +811,7 @@ const Sidebar = ({
                       className={({
                         isActive,
                       }) =>
-                        `sidebar-submenu-link ${isActive
+                        `sidebar-submenu-link ${isActive || (subLink.key === "assets" && showAssetsLogin)
                           ? "active"
                           : ""
                         }`
@@ -797,10 +819,12 @@ const Sidebar = ({
                       onClick={(
                         event
                       ) =>
-                        handleTripsSubLinkClick(
-                          event,
-                          subLink
-                        )
+                        subLink.key === "assets"
+                          ? handleAssetsClick(event)
+                          : handleTripsSubLinkClick(
+                              event,
+                              subLink
+                            )
                       }
                     >
                       <span
@@ -811,7 +835,7 @@ const Sidebar = ({
                         className="sidebar-submenu-icon"
                         aria-hidden="true"
                       >
-                        <FaDatabase />
+                        {subLink.key === "assets" ? <FaBoxOpen /> : <FaDatabase />}
                       </span>
                       <span
                         className="sidebar-submenu-text"

@@ -9,7 +9,8 @@ const tripAccess = require("../middleware/tripAccess");
 router.use(tripAccess);
 
 const {
-  saveCraneJourney,
+  saveInvoicePayment,
+  downloadInvoicePaymentDocument,  saveCraneJourney,
   saveCraneJourneyDocument,
   downloadCraneJourneyDocument,
   saveCraneJourneyPod,
@@ -675,4 +676,22 @@ router.get(
   "/:id/allocated-vehicles/:allocationId/crane-trips/:journeyId/:documentType/file",
   downloadCraneJourneyDocument,
 );
+const invoiceUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024, files: 2, fields: 10, fieldSize: 16 * 1024 },
+  fileFilter: (req, file, callback) => {
+    if (!["application/pdf", "image/jpeg", "image/png"].includes(file.mimetype))
+      return callback(new Error("Only PDF, JPG and PNG invoice documents are allowed."));
+    return callback(null, true);
+  },
+}).fields([{ name: "proFormaDocument", maxCount: 1 }, { name: "invoiceDocument", maxCount: 1 }]);
+router.put("/:id/invoice-payment", (req, res, next) => {
+  invoiceUpload(req, res, (error) => {
+    if (error) return res.status(400).json({ success: false,
+      message: error.code === "LIMIT_FILE_SIZE" ? "Each invoice document must be 5 MB or smaller." : error.message });
+    return next();
+  });
+}, saveInvoicePayment);
+router.get("/:id/invoice-payment/:documentType/file", downloadInvoicePaymentDocument);
+
 module.exports = router;

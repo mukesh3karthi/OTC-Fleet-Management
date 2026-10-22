@@ -334,7 +334,17 @@ const PIPELINE_CONFIG = [
   {
     label: "Tracking",
     icon: <FaMapMarkerAlt />,
-    keywords: ["tracking", "tracking input", "trip complete"],
+    keywords: ["tracking", "tracking input"],
+  },
+  {
+    label: "Invoice & Payment",
+    icon: <FaFileInvoice />,
+    keywords: ["invoice", "payment"],
+  },
+  {
+    label: "Completed",
+    icon: <FaCheckCircle />,
+    keywords: [],
   },
 ];
 
@@ -481,7 +491,16 @@ const OrderManagement = () => {
       ...config,
       total,
       value: kamOrders.filter((trip) => {
+        const completed = isCompletedTrip(trip);
+        if (config.label === "Completed") return completed;
+        if (completed) return false;
+
         const stage = normalize(getStage(trip));
+        const invoiceStage = ["invoice", "payment"].some((keyword) =>
+          stage.includes(keyword),
+        );
+        if (config.label === "Invoice & Payment") return invoiceStage;
+        if (invoiceStage) return false;
 
         return config.keywords.some((keyword) =>
           stage.includes(normalize(keyword)),

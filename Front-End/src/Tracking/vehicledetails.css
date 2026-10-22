@@ -832,3 +832,106 @@
     animation: none;
   }
 }
+
+/* Downloadable Excel report action in the Crane vehicle toolbar. */
+.vdt-page .vct-toolbar-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+.vdt-page .vct-toolbar-actions .vct-search input { width: 255px; max-width: 100%; }
+.vdt-page .vct-export-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 35px;
+  padding: 8px 12px;
+  border: 1px solid #0c8e85;
+  border-radius: 8px;
+  background: #078b82;
+  color: #fff;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.vdt-page .vct-export-button:hover { background: #076e69; }
+.vdt-page .vct-export-button:disabled { opacity: .55; cursor: not-allowed; }
+@media (max-width: 700px) {
+  .vdt-page .vct-toolbar-actions,
+  .vdt-page .vct-toolbar-actions .vct-search,
+  .vdt-page .vct-toolbar-actions .vct-search input { width: 100%; }
+  .vdt-page .vct-export-button { width: 100%; }
+}
+/* Crane report format picker */
+.vct-export-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(12, 32, 46, 0.48);
+}
+.vct-export-dialog {
+  width: min(100%, 410px);
+  padding: 22px;
+  border: 1px solid #d9e5eb;
+  border-radius: 15px;
+  background: #fff;
+  box-shadow: 0 18px 60px rgba(13, 39, 53, 0.18);
+  color: #173b4b;
+  font-family: inherit;
+}
+.vct-export-dialog-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.vct-export-dialog-icon {
+  display: grid;
+  width: 39px;
+  height: 39px;
+  flex: none;
+  place-items: center;
+  border-radius: 10px;
+  background: #e5f3f4;
+  color: #087f79;
+}
+.vct-export-dialog h3 { margin: 0 0 4px; font-size: 16px; font-weight: 700; }
+.vct-export-dialog p { margin: 0; font-size: 11px; color: #657b86; }
+.vct-export-formats { display: grid; gap: 9px; }
+.vct-export-formats button {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  width: 100%;
+  padding: 13px;
+  border: 1px solid #d9e5eb;
+  border-radius: 10px;
+  background: #f9fcfd;
+  text-align: left;
+  color: #205566;
+  cursor: pointer;
+}
+.vct-export-formats button:hover { border-color: #16958c; background: #edf8f7; }
+.vct-export-formats button span { display: grid; flex: 1; gap: 3px; }
+.vct-export-formats button strong { font-size: 12px; }
+.vct-export-formats button small { font-size: 10px; color: #6b8290; }
+.vct-export-cancel {
+  width: 100%;
+  margin-top: 14px;
+  padding: 10px;
+  border: 0;
+  border-radius: 9px;
+  background: #edf2f5;
+  color: #435d69;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}

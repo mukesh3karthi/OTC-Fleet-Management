@@ -1,4 +1,3 @@
-// Intercarting orders are managed in the Intercarting module.
 const isIntercartingOrder = (order) => {
   const movement =
     order?.movementType ||
@@ -1818,39 +1817,14 @@ const AllocateVehicle = () => {
                                                             row.vehicleType,
                                                           ),
                                                           lsp: text(row.lsp),
-                                                          cargo: text(
-                                                            row.cargo,
-                                                          ),
-                                                          weight:
-                                                            row.weight === ""
+                                                          capacity:
+                                                            row.capacity === ""
                                                               ? null
-                                                              : Number(
-                                                                  row.weight,
-                                                                ),
-                                                          dimensions:
-                                                            Object.fromEntries(
-                                                              [
-                                                                "length",
-                                                                "height",
-                                                                "width",
-                                                              ].map((key) => [
-                                                                key,
-                                                                row[key] === ""
-                                                                  ? null
-                                                                  : Number(
-                                                                      row[key],
-                                                                    ),
-                                                              ]),
-                                                            ),
-                                                          lr: {
-                                                            number: text(
-                                                              row.lrNo,
-                                                            ),
-                                                          },
-                                                          ewayBill: {
-                                                            number: text(
-                                                              row.ewayNo,
-                                                            ),
+                                                              : Number(row.capacity),
+                                                          dimensions: {
+                                                            length: row.length === "" ? null : Number(row.length),
+                                                            height: row.height === "" ? null : Number(row.height),
+                                                            width: row.width === "" ? null : Number(row.width),
                                                           },
                                                           driver: {
                                                             name: text(
@@ -4348,13 +4322,10 @@ const newCraneRow = () => ({
   driverName: "",
   driverContactNumber: "",
   lsp: "",
-  cargo: "",
-  weight: "",
+  capacity: "",
   length: "",
   height: "",
   width: "",
-  lrNo: "",
-  ewayNo: "",
   escortVehicleNumber: "",
   escortName: "",
   escortContactNumber: "",
@@ -4363,22 +4334,14 @@ const newCraneRow = () => ({
   state: "draft",
   error: "",
 });
-const craneExtraFields = [
-  ["LSP", "lsp"],
-  ["Cargo", "cargo"],
-  ["Weight (tons)", "weight"],
-  ["Length (ft)", "length"],
-  ["Height (ft)", "height"],
-  ["Width (ft)", "width"],
-  ["LR number", "lrNo"],
-  ["E-Way number", "ewayNo"],
+const craneSupportFields = [
   ["Escort vehicle", "escortVehicleNumber"],
   ["Escort name", "escortName"],
   ["Escort contact", "escortContactNumber"],
   ["Supervisor", "supervisorName"],
   ["Supervisor contact", "supervisorContactNumber"],
 ];
-const craneNumericFields = ["weight", "length", "height", "width"];
+const craneMeasurementFields = ["capacity", "length", "height", "width"];
 const normalizeCraneNumber = (value) =>
   String(value || "")
     .trim()
@@ -4409,9 +4372,9 @@ function CraneBulkAllocation({
     <input
       aria-label={`${label} for vehicle row ${rows.indexOf(row) + 1}`}
       required={required}
-      type={craneNumericFields.includes(name) ? "number" : "text"}
-      min={craneNumericFields.includes(name) ? "0" : undefined}
-      step={craneNumericFields.includes(name) ? "any" : undefined}
+      type={craneMeasurementFields.includes(name) ? "number" : "text"}
+      min={craneMeasurementFields.includes(name) ? "0" : undefined}
+      step={craneMeasurementFields.includes(name) ? "any" : undefined}
       inputMode={/Contact/.test(name) ? "tel" : undefined}
       placeholder={label}
       value={row[name]}
@@ -4445,15 +4408,9 @@ function CraneBulkAllocation({
           : existing.has(key)
             ? "This vehicle is already allocated."
             : "";
-      if (
-        !error &&
-        craneNumericFields.some(
-          (name) =>
-            row[name] !== "" &&
-            (!Number.isFinite(Number(row[name])) || Number(row[name]) < 0),
-        )
-      )
-        error = "Weight and dimensions must be zero or greater.";
+      if (!error && craneMeasurementFields.some((field) =>
+        row[field] !== "" && (!Number.isFinite(Number(row[field])) || Number(row[field]) < 0)
+      )) error = "Capacity and dimensions must be valid non-negative numbers.";
       invalid ||= Boolean(error);
       return { ...row, error, state: error ? "error" : "draft" };
     });
@@ -4508,8 +4465,7 @@ function CraneBulkAllocation({
         <div>
           <strong>Vehicle entries</strong>
           <p>
-            One vehicle per row. Expand More for cargo, documents and support
-            details.
+            Vehicle and driver information above; LSP, capacity and dimensions below.
           </p>
         </div>
         <div className="crane-bulk-add">
@@ -4588,36 +4544,37 @@ function CraneBulkAllocation({
                   ×
                 </button>
               </div>
+              <div className="crane-bulk-specifications">
+                <div className="crane-bulk-measurements">
+                  <label><span>LSP</span>{input(row, "lsp", "LSP")}</label>
+                  <label><span>Capacity (tons)</span>{input(row, "capacity", "Capacity")}</label>
+                  <fieldset className="crane-bulk-size">
+                    <legend>DIMENSIONS (L × H × W)</legend>
+                    <div className="crane-bulk-size-inputs">
+                      {input(row, "length", "L")}
+                      <span aria-hidden="true">×</span>
+                      {input(row, "height", "H")}
+                      <span aria-hidden="true">×</span>
+                      {input(row, "width", "W")}
+                      <span className="crane-bulk-size-unit" aria-hidden="true">FT</span>
+                    </div>
+                  </fieldset>
+                </div>
+              </div>
               {expanded[row.id] && (
                 <div
                   className="crane-bulk-expanded"
                   id={`crane-details-${row.id}`}
                 >
-                  <div className="crane-bulk-details-heading">
-                    Details for{" "}
-                    <strong>
-                      {row.vehicleNumber || `Vehicle ${index + 1}`}
-                    </strong>
-                  </div>
+                  <div className="crane-bulk-details-heading">Escort &amp; supervisor contacts — <strong>{row.vehicleNumber || `Vehicle ${index + 1}`}</strong></div>
                   <div className="crane-bulk-extra">
-                    {craneExtraFields.slice(0, 8).map(([label, name]) => (
+                    {craneSupportFields.map(([label, name]) => (
                       <label key={name}>
                         <span>{label}</span>
                         {input(row, name, label)}
                       </label>
                     ))}
                   </div>
-                  <details>
-                    <summary>Escort &amp; supervisor details</summary>
-                    <div className="crane-bulk-extra">
-                      {craneExtraFields.slice(8).map(([label, name]) => (
-                        <label key={name}>
-                          <span>{label}</span>
-                          {input(row, name, label)}
-                        </label>
-                      ))}
-                    </div>
-                  </details>
                 </div>
               )}
               {row.error && (

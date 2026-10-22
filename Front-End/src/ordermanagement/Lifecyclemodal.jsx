@@ -353,6 +353,11 @@ const buildLifecycle = (order) => {
     { key: "order-placed", title: "Order Placed", status: orderPlacedStatus },
     { key: "tracking", title: "Tracking", status: trackingStatus },
     {
+      key: "invoice-payment",
+      title: "Invoice & Payment",
+      status: "Pending",
+    },
+    {
       key: "trip-complete",
       title: "Trip Complete",
       status: tripCompleteStatus,
@@ -368,7 +373,7 @@ const getLifecycleCurrentIndex = (order, lifecycle) => {
       .trim()
       .toLowerCase();
   if (getStepStatus("trip-complete") === "completed") {
-    return 6;
+    return 7;
   }
   if (
     isIntercartingMovement(order) &&
@@ -1075,6 +1080,38 @@ const Lifecyclemodal = ({
     [workingOrder, lifecycle],
   );
   const [activeStepIndex, setActiveStepIndex] = useState(0);
+  const [invoicePaymentForm, setInvoicePaymentForm] = useState({
+    proFormaInvoiceNumber: "",
+    invoiceNumber: "",
+    receivedAmount: "",
+    paymentDate: "",
+    paymentRemarks: "",
+  });
+  const [proFormaDocument, setProFormaDocument] = useState(null);
+  const proFormaDocumentInputRef = useRef(null);
+  const [invoiceDocument, setInvoiceDocument] = useState(null);
+  const invoiceDocumentInputRef = useRef(null);
+  useEffect(() => {
+    setInvoicePaymentForm({
+      proFormaInvoiceNumber: "",
+      invoiceNumber: "",
+      receivedAmount: "",
+      paymentDate: "",
+      paymentRemarks: "",
+    });
+    setProFormaDocument(null);
+    if (proFormaDocumentInputRef.current) {
+      proFormaDocumentInputRef.current.value = "";
+    }
+    setInvoiceDocument(null);
+    if (invoiceDocumentInputRef.current) {
+      invoiceDocumentInputRef.current.value = "";
+    }
+  }, [order?._id, order?.tripId]);
+  const updateInvoicePaymentField = (field, value) => {
+    setInvoicePaymentForm((previous) => ({ ...previous, [field]: value }));
+  };
+
   const [approvalRequested, setApprovalRequested] = useState(
     order?.orderApproval?.status === "Pending" &&
       Boolean(order?.orderApproval?.requestedAt),
@@ -1656,7 +1693,7 @@ const Lifecyclemodal = ({
     // It is available only when buildLifecycle() has independently validated
     // every prerequisite and every required vehicle unloading.
     if (
-      index === 6 &&
+      index === 7 &&
       String(
         lifecycle.find((step) => step.key === "trip-complete")?.status || "",
       )
@@ -1679,7 +1716,8 @@ const Lifecyclemodal = ({
       currentLifecycleIndex >= 5;
     const canOpenOptionalOrOrderPlaced =
       orderApproved && (index === 2 || index === 3 || index === 4);
-    const canOpenTracking = orderPlacedCompleted && index === 5;
+    const canOpenTracking =
+      orderPlacedCompleted && (index === 5 || index === 6);
     if (
       index <= currentLifecycleIndex ||
       canOpenOptionalOrOrderPlaced ||
@@ -2029,7 +2067,7 @@ const Lifecyclemodal = ({
     totalRequiredVehicles > 0 &&
     approvedQuotationVehicleCount >= totalRequiredVehicles;
   const displayCurrentStage = (() => {
-    if (currentLifecycleIndex >= 6) {
+    if (currentLifecycleIndex >= 7) {
       return "Trip Complete";
     }
     if (currentLifecycleIndex >= 5) {
@@ -2146,7 +2184,7 @@ const Lifecyclemodal = ({
                         )
                           .trim()
                           .toLowerCase() === "completed";
-                      if (index === 6 && !tripCompleteValidated) {
+                      if (index === 7 && !tripCompleteValidated) {
                         return true;
                       }
                       const orderApproved =
@@ -2165,7 +2203,7 @@ const Lifecyclemodal = ({
                         orderApproved &&
                         (index === 2 || index === 3 || index === 4);
                       const canOpenTracking =
-                        orderPlacedCompleted && index === 5;
+                        orderPlacedCompleted && (index === 5 || index === 6);
                       return !(
                         index <= currentLifecycleIndex ||
                         canOpenOptionalOrOrderPlaced ||
@@ -3842,11 +3880,136 @@ const Lifecyclemodal = ({
               </section>
             </div>
           )}
+          {/* INVOICE & PAYMENT */}
+          {activeStepIndex === 6 && (
+            <div className="kam-step-page kam-step-page-invoice-payment">
+              <section className="kam-invoice-common-section">
+                <div className="kam-invoice-common-heading">
+                  <h3>Invoice & Payment</h3>
+                  <span>Trip ID: <strong>{order?.tripId || "—"}</strong></span>
+                </div>
+                <div className="kam-invoice-groups">
+                  <div className="kam-invoice-group">
+                    <h4 className="kam-invoice-subheading">Pro Forma Invoice</h4>
+                    <div className="kam-invoice-fields">
+                      <label className="kam-client-trip-field">
+                    <span>Pro Forma Invoice Number</span>
+                    <input
+                      className="kam-original-edit-input"
+                      type="text"
+                      name="proFormaInvoiceNumber"
+                      maxLength={100}
+                      placeholder="Enter pro forma invoice number"
+                      value={invoicePaymentForm.proFormaInvoiceNumber}
+                      onChange={(event) =>
+                        updateInvoicePaymentField("proFormaInvoiceNumber", event.target.value)
+                      }
+                    />
+                  </label>
+                      <label className="kam-client-trip-field">
+                    <span>Pro Forma Invoice Document</span>
+                    <input
+                      ref={proFormaDocumentInputRef}
+                      className="kam-original-edit-input"
+                      type="file"
+                      name="proFormaDocument"
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      onChange={(event) =>
+                        setProFormaDocument(event.target.files?.[0] || null)
+                      }
+                    />
+                    {proFormaDocument && <strong>{proFormaDocument.name}</strong>}
+                  </label>
+                    </div>
+                  </div>
+                  <div className="kam-invoice-group">
+                    <h4 className="kam-invoice-subheading">Invoice</h4>
+                    <div className="kam-invoice-fields">
+                      <label className="kam-client-trip-field">
+                    <span>Invoice Number</span>
+                    <input
+                      className="kam-original-edit-input"
+                      type="text"
+                      name="invoiceNumber"
+                      maxLength={100}
+                      placeholder="Enter invoice number"
+                      value={invoicePaymentForm.invoiceNumber}
+                      onChange={(event) =>
+                        updateInvoicePaymentField("invoiceNumber", event.target.value)
+                      }
+                    />
+                  </label>
+                      <label className="kam-client-trip-field">
+                    <span>Invoice Document</span>
+                    <input
+                      ref={invoiceDocumentInputRef}
+                      className="kam-original-edit-input"
+                      type="file"
+                      name="invoiceDocument"
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      onChange={(event) =>
+                        setInvoiceDocument(event.target.files?.[0] || null)
+                      }
+                    />
+                    {invoiceDocument && <strong>{invoiceDocument.name}</strong>}
+                  </label>
+                    </div>
+                  </div>
+                  <div className="kam-invoice-group">
+                    <h4 className="kam-invoice-subheading">Payment Received</h4>
+                    <div className="kam-invoice-fields">
+                      <label className="kam-client-trip-field">
+                    <span>Received Amount (₹)</span>
+                    <input
+                      className="kam-original-edit-input"
+                      type="number"
+                      name="receivedAmount"
+                      min="0"
+                      step="0.01"
+                      placeholder="Enter received amount"
+                      value={invoicePaymentForm.receivedAmount}
+                      onChange={(event) =>
+                        updateInvoicePaymentField("receivedAmount", event.target.value)
+                      }
+                    />
+                  </label>
+                      <label className="kam-client-trip-field">
+                    <span>Payment Date</span>
+                    <input
+                      className="kam-original-edit-input"
+                      type="date"
+                      name="paymentDate"
+                      value={invoicePaymentForm.paymentDate}
+                      onChange={(event) =>
+                        updateInvoicePaymentField("paymentDate", event.target.value)
+                      }
+                    />
+                  </label>
+                      <label className="kam-client-trip-field kam-payment-remarks">
+                        <span>Remarks</span>
+                        <textarea
+                          className="kam-original-edit-input"
+                          name="paymentRemarks"
+                          rows={2}
+                          maxLength={2000}
+                          placeholder="Enter payment remarks"
+                          value={invoicePaymentForm.paymentRemarks}
+                          onChange={(event) =>
+                            updateInvoicePaymentField("paymentRemarks", event.target.value)
+                          }
+                        />
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            </div>
+          )}
           {/* =================================================
               TRIP COMPLETE - COMPACT OVERALL SUMMARY
               READ ONLY
           ================================================= */}
-          {activeStepIndex === 6 &&
+          {activeStepIndex === 7 &&
             String(
               lifecycle.find((step) => step.key === "trip-complete")?.status ||
                 "",
@@ -4078,6 +4241,7 @@ const Lifecyclemodal = ({
                 "escort",
                 "supervisor",
               ],
+              ["invoice", "payment", "billing"],
               ["trip complete", "completion", "unloading"],
             ];
             const stageHistory = safeArray(

@@ -7541,7 +7541,7 @@
   background: #fff;
   border: 1px solid #d5e5eb;
   border-radius: 14px;
-  padding: 18px;
+  padding: 12px;
   font-family: inherit;
 }
 .crane-bulk * {
@@ -7585,25 +7585,22 @@
 }
 .crane-bulk-scroll {
   overflow-x: auto;
-  margin: 18px 0;
+  margin: 11px 0;
   max-height: 57vh;
   overflow-y: auto;
   border: 1px solid #dce8ee;
   border-radius: 10px;
 }
 .crane-bulk-table {
-  min-width: 870px;
+  min-width: 880px;
 }
 .crane-bulk-columns,
 .crane-bulk-line {
   display: grid;
-  grid-template-columns: 30px minmax(155px, 1.2fr) minmax(140px, 1fr) minmax(
-      140px,
-      1fr
-    ) minmax(140px, 1fr) 85px 30px;
-  gap: 10px;
+  grid-template-columns: 24px minmax(160px, 1.3fr) minmax(130px, 1fr) minmax(155px, 1.1fr) minmax(145px, 1fr) 83px 24px;
+  gap: 8px;
   align-items: center;
-  padding: 10px 12px;
+  padding: 8px 10px;
 }
 .crane-bulk-columns {
   position: sticky;
@@ -7631,7 +7628,7 @@
 .crane-bulk input {
   width: 100%;
   min-width: 0;
-  height: 38px;
+  height: 34px;
   border: 1px solid #cbdfe8;
   border-radius: 7px;
   padding: 8px 10px;
@@ -7763,8 +7760,8 @@
   border-color: #b9d9dc;
 }
 .crane-bulk .crane-bulk-expanded {
-  padding: 12px 16px 12px 52px;
-  background: #f0faf9;
+  padding: 9px 14px 11px 42px;
+  background: #f7faf8;
   border-top: 1px solid #d3e9e6;
 }
 .crane-bulk .crane-bulk-details-heading {
@@ -7772,10 +7769,11 @@
   color: #527784;
 }
 .crane-bulk .crane-bulk-expanded details {
-  padding: 9px 0 0;
+  padding: 5px 0 0;
 }
 .crane-bulk .crane-bulk-expanded .crane-bulk-extra {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  padding: 7px 0 2px;
 }
 .crane-bulk .crane-bulk-footer {
   background: #fff;
@@ -7922,5 +7920,319 @@
   .vah.vah-crane .vah-crane-number {
     font-size: 10px;
     padding: 5px 8px;
+  }
+}
+
+/* Crane bulk dimensions — single segmented field, matching the reference. */
+.crane-bulk .crane-dimensions {
+  width: 100%;
+  margin: 9px 0 10px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.crane-bulk .crane-dimensions-title {
+  display: block;
+  margin-bottom: 5px;
+  color: #24485c;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+}
+
+.crane-bulk .crane-dimensions-control {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 18px minmax(0, 1fr) 18px minmax(0, 1fr) 48px;
+  align-items: center;
+  width: 100%;
+  max-width: 420px;
+  height: 42px;
+  overflow: hidden;
+  border: 1px solid #c7dce6;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.crane-bulk .crane-dimensions-control > input {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  margin: 0;
+  padding: 0 5px;
+  border: 0;
+  border-radius: 0;
+  outline: none;
+  background: transparent;
+  color: #24485c;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: none;
+}
+
+.crane-bulk .crane-dimensions-control > input:focus {
+  outline: none;
+  background: #f0faf9;
+}
+
+.crane-bulk .crane-dimensions-control > input::placeholder {
+  color: #869eac;
+  opacity: 1;
+  font-weight: 700;
+}
+
+.crane-bulk .crane-multiply {
+  text-align: center;
+  color: #8ca3af;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.crane-bulk .crane-dimensions-unit {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  border-left: 1px solid #dbe6ec;
+  background: #f7fafc;
+  color: #24485c;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+/* Allocation page theme: warm slate surfaces with forest-green accents. */
+.tracking-input-page {
+  --tracking-navy: #293e37;
+  --tracking-navy-2: #35584b;
+  --tracking-teal: #277553;
+  --tracking-teal-dark: #1e5c41;
+  --tracking-teal-soft: #eaf4ec;
+  --tracking-ink: #253d34;
+  --tracking-text: #334b43;
+  --tracking-muted: #718278;
+  --tracking-line: #dce6dd;
+  --tracking-line-soft: #e8eee8;
+  --tracking-page: #f6f7f2;
+  background: #f6f7f2;
+}
+.tracking-input-page .tracking-form-card,
+.tracking-input-page .tracking-vehicle-expanded-card {
+  border-color: #dce6dd;
+  box-shadow: 0 3px 12px rgba(31, 65, 47, 0.04);
+}
+.tracking-input-page .tracking-form-card-header,
+.tracking-input-page .tracking-vehicle-entry-header {
+  background: #f2f6f0;
+  border-bottom-color: #dce6dd;
+}
+.tracking-input-page .tracking-form-card-icon,
+.tracking-input-page .tracking-vehicle-number-icon {
+  color: #277553;
+  background: #e4efe6;
+}
+
+/* Same theme inside the allocation popup. */
+.crane-compact-modal.tracking-allocation-modal {
+  border-color: #d3dfd5;
+  background: #f6f7f2;
+}
+.crane-compact-modal .tracking-allocation-modal-head {
+  background: #edf3ea;
+  border-bottom-color: #d3dfd5;
+}
+.crane-compact-modal .tracking-allocation-modal-body {
+  background: #f6f7f2;
+}
+.crane-compact-modal .crane-bulk {
+  border-color: #d8e4d8;
+  color: #293e37;
+}
+.crane-compact-modal .crane-bulk-columns {
+  background: #e8efe8;
+  color: #2d4c3c;
+}
+.crane-compact-modal .crane-bulk .crane-bulk-expanded {
+  background: #f3f7f0;
+  border-top-color: #dce6dd;
+}
+.crane-compact-modal .crane-bulk .crane-bulk-primary {
+  background: #277553;
+  border-color: #277553;
+}
+.crane-compact-modal .crane-bulk .crane-bulk-row-actions button {
+  color: #246b4e;
+  border-color: #bcd8c6;
+}
+
+/* LSP, Cargo, Weight and Dimensions in one compact row. */
+.crane-bulk .crane-bulk-details-heading {
+  margin-bottom: 8px;
+  color: #41654f;
+  font-size: 11px;
+  font-weight: 700;
+}
+.crane-bulk .crane-bulk-detail-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(310px, 1.65fr);
+  align-items: end;
+  gap: 10px;
+}
+.crane-bulk .crane-bulk-detail-field {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 5px;
+}
+.crane-bulk .crane-bulk-detail-field > span {
+  color: #647b6d;
+  font-size: 10px;
+  font-weight: 700;
+}
+.crane-bulk .crane-bulk-detail-row .crane-dimensions {
+  min-width: 0;
+  margin: 0;
+}
+.crane-bulk .crane-bulk-detail-row .crane-dimensions-control {
+  max-width: none;
+  height: 38px;
+  border-color: #cbdccd;
+}
+.crane-bulk .crane-bulk-detail-row .crane-dimensions-title {
+  margin-bottom: 5px;
+  color: #647b6d;
+}
+.crane-bulk .crane-bulk-detail-row .crane-bulk-detail-field input {
+  height: 38px;
+  border-color: #cbdccd;
+}
+@media (max-width: 1100px) {
+  .crane-bulk .crane-bulk-detail-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .crane-bulk .crane-bulk-detail-row .crane-dimensions {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 600px) {
+  .crane-bulk .crane-bulk-detail-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .crane-bulk .crane-bulk-detail-row .crane-dimensions {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 900px) {
+  .crane-bulk .crane-bulk-expanded .crane-bulk-extra {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Crane allocation: specifications always visible below vehicle row. */
+.crane-bulk .crane-bulk-specifications {
+  padding: 10px 14px 11px 42px;
+  background: #f6f9f6;
+  border-top: 1px solid #edf2ee;
+}
+.crane-bulk .crane-bulk-measurements {
+  display: grid;
+  grid-template-columns: minmax(140px, 0.9fr) minmax(155px, 0.9fr) minmax(350px, 2.4fr);
+  gap: 14px;
+  align-items: end;
+  padding: 0;
+}
+.crane-bulk .crane-bulk-measurements label,
+.crane-bulk .crane-bulk-size {
+  min-width: 0;
+}
+.crane-bulk .crane-bulk-measurements label > span,
+.crane-bulk .crane-bulk-size legend {
+  display: block;
+  margin-bottom: 5px;
+  color: #526f5d;
+  font-size: 10px;
+  font-weight: 700;
+}
+.crane-bulk .crane-bulk-measurements label > input {
+  height: 42px;
+  border-color: #cfdfd4;
+  border-radius: 9px;
+  background: #fff;
+}
+.crane-bulk .crane-bulk-size {
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+.crane-bulk .crane-bulk-size-inputs {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 16px minmax(0, 1fr) 16px minmax(0, 1fr) 58px;
+  align-items: center;
+  gap: 0;
+  height: 46px;
+  overflow: hidden;
+  border: 1px solid #cddfd4;
+  border-radius: 12px;
+  background: #fff;
+}
+.crane-bulk .crane-bulk-size-inputs > input {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  margin: 0;
+  padding: 0 6px;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+  text-align: center;
+  color: #274d5e;
+  font-size: 12px;
+  font-weight: 650;
+  outline: 0;
+  appearance: textfield;
+}
+.crane-bulk .crane-bulk-size-inputs > input:focus {
+  outline: 0;
+  background: #ecf7f2;
+}
+.crane-bulk .crane-bulk-size-inputs > input::-webkit-inner-spin-button,
+.crane-bulk .crane-bulk-size-inputs > input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.crane-bulk .crane-bulk-size-inputs > input::placeholder {
+  color: #8ea5b4;
+  opacity: 1;
+  font-weight: 700;
+}
+.crane-bulk .crane-bulk-size-inputs > span {
+  text-align: center;
+  color: #8ba299;
+  font-weight: 700;
+}
+.crane-bulk .crane-bulk-size-inputs .crane-bulk-size-unit {
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-left: 1px solid #dbe7e9;
+  background: #f7fafc;
+  color: #244860;
+  font-size: 11px;
+  font-weight: 750;
+}
+@media (max-width: 700px) {
+  .crane-bulk .crane-bulk-specifications {
+    padding: 8px 12px;
+  }
+  .crane-bulk .crane-bulk-measurements {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .crane-bulk .crane-bulk-size {
+    grid-column: 1 / -1;
   }
 }
