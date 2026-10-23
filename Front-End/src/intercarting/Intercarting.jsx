@@ -1,231 +1,249 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import { ArrowRight, Calendar, Car, ClipboardList, Truck } from "lucide-react";
 import {
   Bar,
   BarChart,
   CartesianGrid,
-  Cell,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
-import "../Intercartingcss/intercarting.css";
+import "./intercarting.css";
 
-const weeklyChartData = [
-  { name: "Mon", value: 180 },
-  { name: "Tue", value: 280 },
-  { name: "Wed", value: 360 },
-  { name: "Thu", value: 240 },
-  { name: "Fri", value: 390 },
-  { name: "Sat", value: 300 },
-  { name: "Sun", value: 160 },
-];
-const monthlyChartData = [
-  { name: "Week 1", value: 780 },
-  { name: "Week 2", value: 950 },
-  { name: "Week 3", value: 1120 },
-  { name: "Week 4", value: 890 },
-];
-const cards = [
+const API_BASE_URL = (
+  import.meta.env.VITE_API_URL || "http://localhost:5000"
+).replace(/\/+$/, "");
+const VEHICLES_URL = `${API_BASE_URL}/api/vehicles`;
+
+const pages = [
   {
     icon: Car,
     title: "Vehicle Details",
-    description:
-      "View individual asset metrics, maintenance history, and health status.",
-    linkText: "Vehicle Details",
+    description: "Vehicle registration, documents and current status.",
+    label: "Vehicle Details",
     path: "/intercartingdash/intercarting/vehicle-details",
   },
   {
     icon: ClipboardList,
     title: "Daily Logs",
-    description:
-      "Access operational activity records and driver shift performance logs.",
-    linkText: "Review Logs",
+    description: "Daily distance, diesel, attendance and driver records.",
+    label: "Review Logs",
     path: "/intercartingdash/intercarting/daily-logs",
   },
   {
     icon: Calendar,
     title: "Monthly Logs",
-    description:
-      "Generate comprehensive monthly trends and fiscal efficiency reports.",
-    linkText: "View Reports",
+    description: "Monthly vehicle utilization and operational reports.",
+    label: "View Reports",
     path: "/intercartingdash/intercarting/monthly-logs",
   },
   {
     icon: Truck,
     title: "Intercarting Orders",
-    description:
-      "View customer orders, site locations, vehicle requirements and progress.",
-    linkText: "View Orders",
+    description: "Customer orders and intercarting movement progress.",
+    label: "View Orders",
     path: "/intercartingdash/intercarting/intercarting-orders",
   },
 ];
-const stats = [
-  { title: "TOTAL FLEET", value: "124", unit: "units" },
-  { title: "ACTIVE NOW", value: "98", unit: "79%" },
-  { title: "FUEL EFFICIENCY", value: "12.4", unit: "km/L" },
-  { title: "INCIDENTS", value: "0", unit: "Today", danger: true },
-];
+
+const localDate = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+const readKm = (logs, dateKey) => {
+  if (!logs || typeof logs !== "object") return 0;
+  const number = Number(logs[dateKey] ?? 0);
+  return Number.isFinite(number) ? number : 0;
+};
 
 export default function Intercarting() {
-  const [range, setRange] = useState("Month");
   const navigate = useNavigate();
-  const chartData = useMemo(
-    () => (range === "Week" ? weeklyChartData : monthlyChartData),
-    [range],
-  );
-  const highlightIndex = chartData.length >= 3 ? 2 : 0;
+  const [range, setRange] = useState("Week");
+  const [vehicles, setVehicles] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const token = localStorage.getItem("token");
+    axios
+      .get(VEHICLES_URL, {
+        signal: controller.signal,
+        timeout: 20000,
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      })
+      .then(({ data }) => {
+        const records = Array.isArray(data)
+          ? data
+          : data?.vehicles || data?.data || [];
+        setVehicles(Array.isArray(records) ? records : []);
+        setError("");
+      })
+      .catch((requestError) => {
+        if (requestError.code !== "ERR_CANCELED") {
+          setError(
+            requestError.response?.data?.message ||
+              "Unable to load fleet data.",
+          );
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
+    return () => controller.abort();
+  }, []);
+
+  const chartData = useMemo(() => {
+    const today = new Date();
+    if (range === "Week") {
+      return Array.from({ length: 7 }, (_, index) => {
+        const date = new Date(
+          today.getFullYear(),
+          today.getMonth(),
+          today.getDate() - (6 - index),
+        );
+        const key = localDate(date);
+        return {
+          name: date.toLocaleDateString("en-IN", { weekday: "short" }),
+          km: vehicles.reduce(
+            (sum, vehicle) => sum + readKm(vehicle.dailyKmLogs, key),
+            0,
+          ),
+        };
+      });
+    }
+    return Array.from({ length: 4 }, (_, index) => {
+      const end = index === 3 ? today.getDate() : (index + 1) * 7;
+      const start = index * 7 + 1;
+      const month = today.getMonth();
+      const year = today.getFullYear();
+      let km = 0;
+      for (let day = start; day <= Math.min(end, today.getDate()); day += 1) {
+        const key = localDate(new Date(year, month, day));
+        km += vehicles.reduce(
+          (sum, vehicle) => sum + readKm(vehicle.dailyKmLogs, key),
+          0,
+        );
+      }
+      return { name: `Week ${index + 1}`, km };
+    });
+  }, [range, vehicles]);
+
   return (
     <main className="fleet-page">
       <header className="fleet-header">
         <span className="fleet-title-line" aria-hidden="true" />
         <div className="fleet-heading-content">
-          <h1>Fleet Performance Overview</h1>
+          <h1>Intercarting Vehicle Overview</h1>
           <p>
-            Monitor real-time operational efficiency and logistics telemetry
-            across your regional fleet assets.
+            Manage vehicle registrations, daily logs, monthly reports and
+            customer movements.
           </p>
         </div>
       </header>
-      <section className="fleet-card-grid" aria-label="Fleet management pages">
-        {cards.map((item) => {
-          const Icon = item.icon;
-          return (
-            <article
-              key={item.path}
-              className="fleet-feature-card"
-              role="link"
-              tabIndex={0}
-              aria-label={`Open ${item.title}`}
-              onClick={() => navigate(item.path)}
-              onKeyDown={(event) => {
-                if (event.target !== event.currentTarget) return;
-                if (event.key === "Enter" || event.key === " ") {
-                  event.preventDefault();
-                  navigate(item.path);
-                }
-              }}
+
+      <section className="fleet-card-grid" aria-label="Intercarting pages">
+        {pages.map(({ icon: Icon, ...page }) => (
+          <article className="fleet-feature-card" key={page.path}>
+            <div className="fleet-icon-box">
+              <Icon size={23} aria-hidden="true" />
+            </div>
+            <h2>{page.title}</h2>
+            <p>{page.description}</p>
+            <button
+              type="button"
+              className="fleet-card-link"
+              onClick={() => navigate(page.path)}
             >
-              <div className="fleet-icon-box">
-                <Icon size={28} aria-hidden="true" />
-              </div>
-              <h2>{item.title}</h2>
-              <p>{item.description}</p>
-              <button
-                type="button"
-                className="fleet-card-link"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  navigate(item.path);
-                }}
-                aria-label={`Open ${item.title}`}
-              >
-                <span>{item.linkText}</span>
-                <ArrowRight size={16} aria-hidden="true" />
-              </button>
-            </article>
-          );
-        })}
+              {page.label}
+              <ArrowRight size={16} aria-hidden="true" />
+            </button>
+          </article>
+        ))}
       </section>
-      <section className="fleet-chart-card">
+
+      <section
+        className="fleet-chart-card"
+        aria-label="Recorded vehicle distance"
+      >
         <div className="fleet-chart-top">
           <div>
-            <h2>Fleet Activity Trends</h2>
+            <h2>Fleet Distance Trends</h2>
             <p>
-              REGIONAL OPERATIONAL OUTPUT •{" "}
-              {range === "Week" ? "LAST 7 DAYS" : "LAST 30 DAYS"}
+              Recorded distance in kilometers ·{" "}
+              {range === "Week" ? "Last 7 days" : "Current month"}
             </p>
           </div>
           <div className="fleet-range-toggle" aria-label="Chart date range">
-            {["Week", "Month"].map((value) => (
+            {["Week", "Month"].map((option) => (
               <button
-                key={value}
                 type="button"
-                className={`fleet-range-button ${range === value ? "active" : ""}`}
-                onClick={() => setRange(value)}
-                aria-pressed={range === value}
+                key={option}
+                className={`fleet-range-button ${range === option ? "active" : ""}`}
+                onClick={() => setRange(option)}
+                aria-pressed={range === option}
               >
-                {value}
+                {option}
               </button>
             ))}
           </div>
         </div>
-        <div className="fleet-chart-container">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={chartData}
-              margin={{ top: 16, right: 12, bottom: 8, left: 0 }}
-            >
-              <CartesianGrid
-                vertical={false}
-                strokeDasharray="4 4"
-                stroke="#e5eaf1"
-              />
-              <XAxis
-                dataKey="name"
-                axisLine={false}
-                tickLine={false}
-                tick={{ fill: "#667085", fontSize: 12 }}
-              />
-              <YAxis
-                axisLine={false}
-                tickLine={false}
-                width={42}
-                tick={{ fill: "#667085", fontSize: 12 }}
-              />
-              <Tooltip
-                cursor={{ fill: "rgba(18, 62, 145, 0.05)" }}
-                contentStyle={{
-                  border: "1px solid #dbe2ea",
-                  borderRadius: "8px",
-                  boxShadow: "0 8px 20px rgba(15, 23, 42, 0.1)",
-                }}
-              />
-              <Bar
-                dataKey="value"
-                name="Operations"
-                radius={[5, 5, 0, 0]}
-                maxBarSize={70}
+        {error && (
+          <p className="fleet-error" role="alert">
+            {error}
+          </p>
+        )}
+        {loading ? (
+          <p className="fleet-loading">Loading vehicle activity…</p>
+        ) : (
+          <div className="fleet-chart-container">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={chartData}
+                margin={{ top: 14, right: 12, bottom: 5, left: 0 }}
               >
-                {chartData.map((entry, index) => (
-                  <Cell
-                    key={`${entry.name}-${entry.value}`}
-                    fill={index === highlightIndex ? "#079b91" : "#b9ddd9"}
-                  />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-        <footer className="fleet-chart-footer">
-          <div className="fleet-legend">
-            <span
-              className="fleet-legend-dot fleet-legend-active"
-              aria-hidden="true"
-            />
-            <span>Active Operations</span>
+                <CartesianGrid
+                  vertical={false}
+                  strokeDasharray="4 4"
+                  stroke="#e5eaf1"
+                />
+                <XAxis
+                  dataKey="name"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: "#667085", fontSize: 11 }}
+                />
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  width={48}
+                  tick={{ fill: "#667085", fontSize: 11 }}
+                />
+                <Tooltip
+                  formatter={(value) => [
+                    `${Number(value).toLocaleString("en-IN")} km`,
+                    "Distance",
+                  ]}
+                />
+                <Bar
+                  dataKey="km"
+                  fill="#1683a6"
+                  radius={[5, 5, 0, 0]}
+                  maxBarSize={74}
+                />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
-          <div className="fleet-legend">
-            <span
-              className="fleet-legend-dot fleet-legend-idle"
-              aria-hidden="true"
-            />
-            <span>Scheduled Idle</span>
-          </div>
-        </footer>
-      </section>
-      <section className="fleet-stats-grid" aria-label="Fleet statistics">
-        {stats.map((item) => (
-          <article className="fleet-stat-card" key={item.title}>
-            <p>{item.title}</p>
-            <h2 className={item.danger ? "fleet-stat-danger" : ""}>
-              {item.value}
-              <span>{item.unit}</span>
-            </h2>
-          </article>
-        ))}
+        )}
+        <p className="fleet-chart-note">
+          Based on saved Daily Logs records. Blank days are counted as zero.
+        </p>
       </section>
     </main>
   );

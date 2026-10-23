@@ -3,6 +3,7 @@ import React, {
   useRef,
   useState,
 } from "react";
+import axios from "axios";
 
 import {
   Building2,
@@ -13,12 +14,18 @@ import {
   X,
 } from "lucide-react";
 
-import "../Intercartingcss/Addvehicle.css";
+import "./Addvehicle.css";
+
+const API_BASE_URL = (import.meta.env.VITE_API_URL || "http://localhost:5000").replace(/\/+$/, "");
+const VEHICLES_URL = `${API_BASE_URL}/api/vehicles`;
 
 const createInitialState = () => ({
   vehicleNumber: "",
+  vehicleModel: "",
   manufacturingYear: "",
   siteName: "",
+  customerName: "",
+  customerEmail: "",
   vehicleType: "",
   transportProvider: "",
   dieselScope: "",
@@ -29,7 +36,10 @@ const createInitialState = () => ({
   driverName: "",
   driverNumber: "",
   vendorName: "",
+  vendorContact: "",
   vendorEmail: "",
+  period: "",
+  remarks: "",
 });
 
 const normalizeDateValue = (value) => {
@@ -47,20 +57,29 @@ const normalizeStatus = (vehicle) => {
     .trim()
     .toLowerCase();
 
-  if (status === "maintenance") {
+  if (status === "maintenance" || status === "under maintenance" || status === "undermaintenance") {
     return "Maintenance";
+  }
+
+  if (status === "under induction" || status === "underinduction" || status === "induction") {
+    return "Under Induction";
+  }
+
+  if (status === "under induction" || status === "underinduction") {
+    return "Under Induction";
   }
 
   if (
     status === "inactive" ||
+    status === "released" ||
     status === "off duty" ||
     status === "off-duty"
   ) {
-    return "Inactive";
+    return "Released";
   }
 
   return vehicle?.activeStatus === false
-    ? "Inactive"
+    ? "Released"
     : "Active";
 };
 
@@ -68,6 +87,7 @@ const Addvehicles = ({
   closeModal,
   onSave,
   vehicle = null,
+  vehicles = [],
   saving = false,
 }) => {
   const [formData, setFormData] =
@@ -79,21 +99,54 @@ const Addvehicles = ({
   const [formError, setFormError] =
     useState("");
 
+  const [existingSiteNames, setExistingSiteNames] = useState([]);
+
+  useEffect(() => {
+    let active = true;
+    const fetchSites = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await axios.get(VEHICLES_URL, {
+          timeout: 15000,
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        const rows = Array.isArray(response.data)
+          ? response.data
+          : Array.isArray(response.data?.vehicles)
+            ? response.data.vehicles
+            : Array.isArray(response.data?.data)
+              ? response.data.data : [];
+        if (active) setExistingSiteNames(rows.map((row) => row.siteName || row.site || ""));
+      } catch (error) {
+        console.warn("Existing site suggestions could not be loaded:", error);
+      }
+    };
+    fetchSites();
+    return () => { active = false; };
+  }, []);
+
+  const siteSuggestions = [...new Map(
+    [...existingSiteNames, ...vehicles.map((item) => item.siteName || item.site || "")]
+      .map((value) => String(value || "").trim())
+      .filter(Boolean)
+      .map((value) => [value.toLowerCase(), value])
+  ).values()].sort((a, b) => a.localeCompare(b));
+
   const firstInputRef = useRef(null);
 
   const isEditing = Boolean(vehicle);
 
   const modalTitle = isEditing
-    ? "Edit Vehicle Details"
-    : "Add Vehicle Details";
+    ? "Edit Intercarting Vehicle"
+    : "Add Intercarting Vehicle";
 
   const saveButtonText = saving
     ? isEditing
       ? "Updating..."
       : "Saving..."
     : isEditing
-      ? "Update Vehicle"
-      : "Save Vehicle";
+      ? "Update Intercarting Vehicle"
+      : "Save Intercarting Vehicle";
 
   useEffect(() => {
     if (vehicle) {
@@ -108,6 +161,10 @@ const Addvehicles = ({
         manufacturingYear: String(
           vehicle.manufacturingYear || ""
         ),
+
+        vehicleModel: vehicle.vehicleModel || "",
+        customerName: vehicle.customerName || "",
+        customerEmail: vehicle.customerEmail || "",
 
         siteName:
           vehicle.siteName || "",
@@ -149,6 +206,10 @@ const Addvehicles = ({
 
         vendorName:
           vehicle.vendorName || "",
+
+        vendorContact: String(vehicle.vendorContact || ""),
+        period: vehicle.period || "",
+        remarks: vehicle.remarks || "",
 
         vendorEmail:
           vehicle.vendorEmail || "",
@@ -347,6 +408,14 @@ const Addvehicles = ({
         "Driver number must contain 10 digits.";
     }
 
+    if (formData.vendorContact && !/^\d{10}$/.test(formData.vendorContact)) {
+      newErrors.vendorContact = "Vendor contact must contain 10 digits.";
+    }
+
+    if (formData.customerEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.customerEmail.trim())) {
+      newErrors.customerEmail = "Enter a valid customer email address.";
+    }
+
     if (
       formData.vendorEmail &&
       !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
@@ -404,6 +473,10 @@ const Addvehicles = ({
     manufacturingYear:
       formData.manufacturingYear,
 
+    vehicleModel: formData.vehicleModel.trim(),
+    customerName: formData.customerName.trim(),
+    customerEmail: formData.customerEmail.trim().toLowerCase(),
+
     siteName:
       formData.siteName.trim(),
 
@@ -439,6 +512,10 @@ const Addvehicles = ({
 
     vendorName:
       formData.vendorName.trim(),
+
+    vendorContact: formData.vendorContact.trim(),
+    period: formData.period.trim(),
+    remarks: formData.remarks.trim(),
 
     vendorEmail:
       formData.vendorEmail
@@ -571,8 +648,21 @@ const Addvehicles = ({
             </div>
 
             <div className="add-vehicle-form-group">
+              <label htmlFor="vehicleModel">Vehicle Model</label>
+              <input
+                id="vehicleModel"
+                name="vehicleModel"
+                type="text"
+                value={formData.vehicleModel}
+                onChange={handleChange}
+                placeholder="Enter vehicle model"
+                disabled={saving}
+              />
+            </div>
+
+            <div className="add-vehicle-form-group">
               <label htmlFor="manufacturingYear">
-                Manufacturing Year
+                M&F Year
               </label>
 
               <input
@@ -598,60 +688,6 @@ const Addvehicles = ({
                   }
                 </p>
               )}
-            </div>
-
-            <div className="add-vehicle-form-group">
-              <label htmlFor="siteName">
-                Site Name
-              </label>
-
-              <select
-                id="siteName"
-                name="siteName"
-                value={formData.siteName}
-                onChange={handleChange}
-                disabled={saving}
-              >
-                <option value="">
-                  Select site
-                </option>
-
-                <option value="Cleanmax-Kalikanagar">
-                  Cleanmax-Kalikanagar
-                </option>
-
-                <option value="Heft-Mudgal">
-                  Heft-Mudgal
-                </option>
-
-                <option value="Avada-Kaij">
-                  Avada-Kaij
-                </option>
-
-                <option value="Serentica-naregal">
-                  Serentica-naregal
-                </option>
-
-                <option value="Cleanmax-Theni">
-                  Cleanmax-Theni
-                </option>
-
-                <option value="Heft-Bidar">
-                  Heft-Bidar
-                </option>
-
-                <option value="Jsw-Kudligi">
-                  Jsw-Kudligi
-                </option>
-
-                <option value="Suzlon-Kurnool">
-                  Suzlon-Kurnool
-                </option>
-
-                <option value="FirstEnergy-Rajula">
-                  FirstEnergy-Rajula
-                </option>
-              </select>
             </div>
 
             <div className="add-vehicle-form-group">
@@ -723,24 +759,6 @@ const Addvehicles = ({
             </div>
 
             <div className="add-vehicle-form-group">
-              <label htmlFor="transportProvider">
-                Transport Provider
-              </label>
-
-              <input
-                id="transportProvider"
-                type="text"
-                name="transportProvider"
-                value={
-                  formData.transportProvider
-                }
-                onChange={handleChange}
-                placeholder="Enter provider name"
-                disabled={saving}
-              />
-            </div>
-
-            <div className="add-vehicle-form-group">
               <label htmlFor="dieselScope">
                 Diesel Scope
               </label>
@@ -770,6 +788,36 @@ const Addvehicles = ({
                   Vendor
                 </option>
               </select>
+            </div>
+
+            <div className="add-vehicle-form-group">
+              <label htmlFor="vendorName">Vendor Name</label>
+              <input id="vendorName" type="text" name="vendorName"
+                value={formData.vendorName} onChange={handleChange}
+                placeholder="Enter vendor name" disabled={saving} />
+            </div>
+
+            <div className="add-vehicle-form-group">
+              <label htmlFor="vendorContact">Vendor Contact</label>
+              <input id="vendorContact" type="tel" name="vendorContact"
+                value={formData.vendorContact}
+                onChange={(event) => {
+                  setFormData((previous) => ({ ...previous,
+                    vendorContact: event.target.value.replace(/\D/g, "").slice(0, 10),
+                  }));
+                  clearFieldError("vendorContact");
+                }}
+                maxLength={10} inputMode="numeric" placeholder="10-digit mobile number"
+                disabled={saving} />
+              {errors.vendorContact && <p className="field-error">{errors.vendorContact}</p>}
+            </div>
+
+            <div className="add-vehicle-form-group">
+              <label htmlFor="vendorEmail">Vendor Email</label>
+              <input id="vendorEmail" type="email" name="vendorEmail"
+                value={formData.vendorEmail} onChange={handleChange}
+                placeholder="vendor@example.com" disabled={saving} />
+              {errors.vendorEmail && <p className="field-error">{errors.vendorEmail}</p>}
             </div>
 
             <div className="add-vehicle-form-group">
@@ -804,32 +852,12 @@ const Addvehicles = ({
             </div>
 
             <div className="add-vehicle-form-group">
-              <label htmlFor="status">
-                Status
-              </label>
-
-              <select
-                id="status"
-                name="status"
-                value={
-                  formData.status
-                }
-                onChange={handleChange}
-                disabled={saving}
-              >
-                <option value="Active">
-                  Active
-                </option>
-
-                <option value="Maintenance">
-                  Maintenance
-                </option>
-
-                <option value="Inactive">
-                  Inactive
-                </option>
-              </select>
+              <label htmlFor="period">Period</label>
+              <input id="period" name="period" type="text"
+                value={formData.period} onChange={handleChange}
+                placeholder="e.g. Monthly / Daily / Trip" disabled={saving} />
             </div>
+
           </div>
         </section>
 
@@ -885,6 +913,16 @@ const Addvehicles = ({
                   }
                 </p>
               )}
+            </div>
+            <div className="add-vehicle-form-group">
+              <label htmlFor="status">Status</label>
+              <select id="status" name="status" value={formData.status}
+                onChange={handleChange} disabled={saving}>
+                <option value="Active">Active</option>
+                <option value="Maintenance">Maintenance</option>
+                <option value="Under Induction">Under Induction</option>
+                <option value="Released">Released</option>
+              </select>
             </div>
           </div>
         </section>
@@ -956,50 +994,66 @@ const Addvehicles = ({
             <Building2 size={20} />
 
             <span>
-              Vendor Details
+              Customer Details
             </span>
           </h3>
 
           <div className="add-vehicle-form-grid">
             <div className="add-vehicle-form-group">
-              <label htmlFor="vendorName">
-                Vendor Name
+              <label htmlFor="customerName">
+                Customer Name
               </label>
 
               <input
-                id="vendorName"
+                id="customerName"
                 type="text"
-                name="vendorName"
+                name="customerName"
                 value={
-                  formData.vendorName
+                  formData.customerName
                 }
                 onChange={handleChange}
-                placeholder="Enter vendor name"
+                placeholder="Enter customer name"
                 disabled={saving}
               />
             </div>
 
             <div className="add-vehicle-form-group">
-              <label htmlFor="vendorEmail">
-                Vendor Email
+              <label htmlFor="siteName">Site Name</label>
+              <input id="siteName" name="siteName" type="text"
+                list="existing-vehicle-sites" value={formData.siteName}
+                onChange={handleChange} placeholder="Enter or select site name"
+                autoComplete="off" disabled={saving} />
+              <datalist id="existing-vehicle-sites">
+                {siteSuggestions.map((site) => <option key={site} value={site} />)}
+              </datalist>
+              {siteSuggestions.length > 0 && (
+                <div className="add-vehicle-site-hint">
+                  {siteSuggestions.length} existing site{siteSuggestions.length !== 1 ? "s" : ""} available as suggestions
+                </div>
+              )}
+            </div>
+
+            <div className="add-vehicle-form-group">
+              <label htmlFor="customerEmail">
+                Customer Email
               </label>
 
               <input
-                id="vendorEmail"
+                id="customerEmail"
                 type="email"
-                name="vendorEmail"
+                name="customerEmail"
                 value={
-                  formData.vendorEmail
+                  formData.customerEmail
                 }
                 onChange={handleChange}
-                placeholder="vendor@example.com"
+                placeholder="customer@example.com"
                 disabled={saving}
               />
 
-              {errors.vendorEmail && (
+              {errors.customerEmail && (
                 <p className="field-error">
                   {
-                    errors.vendorEmail
+                    errors.customerEmail
                   }
                 </p>
               )}
@@ -1007,6 +1061,17 @@ const Addvehicles = ({
           </div>
         </section>
       </div>
+
+      <section className="add-vehicle-card add-vehicle-remarks-card">
+        <h3><Info size={20} /><span>Remarks</span></h3>
+        <div className="add-vehicle-form-group">
+          <label htmlFor="remarks">Remarks</label>
+          <textarea id="remarks" name="remarks" rows={3}
+            value={formData.remarks} onChange={handleChange}
+            placeholder="Enter vehicle remarks or additional information"
+            disabled={saving} />
+        </div>
+      </section>
 
       <footer className="add-vehicle-footer">
         <button

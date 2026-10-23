@@ -3,17 +3,21 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
+import companyLogo from "../asset/otclogo.jpg";
 import {
+  AlertCircle,
   ArrowLeft,
   CalendarDays,
+  CheckCircle2,
+  Download,
   FileSpreadsheet,
   FileText,
+  LoaderCircle,
   Search,
   X,
 } from "lucide-react";
 
-import "../Intercartingcss/monthlylog.css";
+import "./monthlylog.css";
 
 const API_BASE_URL = (
   import.meta.env.VITE_API_URL ||
@@ -27,7 +31,7 @@ const API_OPTIONS = {
 };
 
 const COMPANY = {
-  name: "OM TRANS INFRA CORPORATION PVT.LTD",
+  name: "OM TRANNS INFRA CORPORATION PVT.LTD",
   office:
     "Corporate Office : I/53, Poonamallee High Road, Vanagaram, Chennai - 600095",
   gst: "33AAECO2317B1Z5",
@@ -248,6 +252,17 @@ const Monthlylog = () => {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [downloadType, setDownloadType] = useState(null);
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  // Notifications disappear automatically, but remain dismissible.
+  useEffect(() => {
+    if (!message && !error) return undefined;
+    const timer = window.setTimeout(() => {
+      setMessage("");
+      setError("");
+    }, 4500);
+    return () => window.clearTimeout(timer);
+  }, [message, error]);
 
   useEffect(() => {
     const fetchVehicles = async () => {
@@ -280,7 +295,7 @@ const Monthlylog = () => {
 
   useEffect(() => {
     const handleEscape = (event) => {
-      if (event.key === "Escape" && downloadType) {
+      if (event.key === "Escape" && downloadType && !isDownloading) {
         setDownloadType(null);
       }
     };
@@ -290,7 +305,7 @@ const Monthlylog = () => {
     return () => {
       document.removeEventListener("keydown", handleEscape);
     };
-  }, [downloadType]);
+  }, [downloadType, isDownloading]);
 
   useEffect(() => {
     const modalIsOpen = Boolean(downloadType);
@@ -507,120 +522,192 @@ const Monthlylog = () => {
     XLSX.writeFile(workbook, createFileName("xlsx"));
   };
 
-  const downloadPdf = () => {
+  const downloadPdf = async () => {
     if (!selectedVehicle) {
       setError("Please select a vehicle before downloading.");
       return;
     }
 
-    const document = new jsPDF({
+    const pdf = new jsPDF({
       orientation: "portrait",
       unit: "mm",
-      format: "a4",
+      format: "letter",
+    });
+    // Coordinates follow the merged-cell layout of kalikanagar.pdf.
+    const x = 19, y = 17, width = 178;
+    const green = [198, 218, 160];
+    const grey = [195, 195, 195];
+    const columnWidths = [22.5, 17, 15, 11.5, 13, 74, 25];
+    const setInk = () => {
+      pdf.setTextColor(0, 0, 0);
+      pdf.setDrawColor(20, 20, 20);
+      pdf.setLineWidth(0.22);
+    };
+    const box = (left, top, w, h, fill) => {
+      if (fill) {
+        pdf.setFillColor(...fill);
+        pdf.rect(left, top, w, h, "FD");
+      } else {
+        pdf.rect(left, top, w, h, "S");
+      }
+    };
+    const write = (value, left, top, w, h, opts = {}) => {
+      const {
+        size = 8, bold = false, align = "center", pad = 1.5,
+      } = opts;
+      pdf.setFont("helvetica", bold ? "bold" : "normal");
+      pdf.setFontSize(size);
+      const raw = String(value ?? "");
+      const maxWidth = Math.max(1, w - 2 * pad);
+      let printed = raw;
+      while (printed && pdf.getTextWidth(printed) > maxWidth) {
+        printed = printed.slice(0, -1);
+      }
+      const textX = align === "left" ? left + pad :
+        align === "right" ? left + w - pad : left + w / 2;
+      pdf.text(printed, textX, top + h / 2 + size * 0.12,
+        { align, baseline: "middle" });
+    };
+    setInk();
+
+    // Green, merged company heading and the logo in its own cell.
+    // Snap merged header and metadata edges to boundaries in the day grid.
+    const firstGroupWidth = columnWidths[0] + columnWidths[1];
+    const secondGroupWidth = columnWidths[2] + columnWidths[3] + columnWidths[4];
+    const descriptionWidth = columnWidths[5];
+    const signatureWidth = columnWidths[6];
+    const logoWidth = firstGroupWidth;
+    const headingWidth = width - logoWidth;
+    box(x, y, logoWidth, 16);
+    box(x + logoWidth, y, headingWidth, 8, green);
+    box(x + logoWidth, y + 8, headingWidth, 8, green);
+    write("LOG SHEET", x + logoWidth, y, headingWidth, 8,
+      { size: 11, bold: true });
+    write(COMPANY.name, x + logoWidth, y + 8, headingWidth, 8,
+      { size: 9.7, bold: true });
+    try {
+      const logo = await new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = companyLogo;
+      });
+      const aspect = logo.naturalWidth / logo.naturalHeight;
+      const h = 14;
+      const w = Math.min(logoWidth - 4, h * aspect);
+      pdf.addImage(logo, "PNG",
+        x + (logoWidth - w) / 2, y + 1, w, h);
+    } catch (err) {
+      console.warn("Logo unavailable for export", err);
+    }
+
+    let cursor = y + 16;
+    box(x, cursor, width, 7, grey);
+    write(COMPANY.office, x, cursor, width, 7,
+      { size: 8.5, bold: true });
+    cursor += 7;
+
+    // Label/value cells have the same merged geometry as the sample.
+    const metaRow = (leftLabel, leftValue, rightLabel, rightValue, first) => {
+      const h = 6;
+      const cells = first
+        ? [
+            [0, firstGroupWidth + secondGroupWidth, leftLabel + " " + leftValue, grey],
+            [firstGroupWidth + secondGroupWidth, descriptionWidth, rightLabel, grey],
+            [firstGroupWidth + secondGroupWidth + descriptionWidth, signatureWidth, rightValue, null],
+          ]
+        : [
+            [0, firstGroupWidth, leftLabel, grey],
+            [firstGroupWidth, secondGroupWidth, leftValue, null],
+            [firstGroupWidth + secondGroupWidth, descriptionWidth, rightLabel, grey],
+            [firstGroupWidth + secondGroupWidth + descriptionWidth, signatureWidth, rightValue, null],
+          ];
+      cells.forEach(([offset, w, value, fill]) => {
+        box(x + offset, cursor, w, h, fill);
+        write(value, x + offset, cursor, w, h, {
+          size: first ? 8.4 : 8.2,
+          bold: Boolean(fill),
+        });
+      });
+      cursor += h;
+    };
+    metaRow("GST No :", COMPANY.gst, "Period:", formatMonth(month), true);
+    metaRow("Vehicle Type:", selectedVehicle.vehicleType || "", "Client Name:", clientName);
+    metaRow("Vehicle Number:", selectedVehicle.vehicleNumber || "",
+      "Site Name:", siteName);
+
+    // One uninterrupted 7-column grid.
+    const headers = [
+      "DATE", "IN TIME", "OUT TIME", "Hours",
+      "KM", "Work Description", "E.Sign",
+    ];
+    let colX = x;
+    headers.forEach((label, index) => {
+      box(colX, cursor, columnWidths[index], 8, grey);
+      write(label, colX, cursor, columnWidths[index], 8,
+        { size: 8, bold: true });
+      colX += columnWidths[index];
+    });
+    cursor += 8;
+
+    const rowHeight = 5.25;
+    rows.forEach((row) => {
+      const values = [
+        new Date(row.date + "T00:00:00").toLocaleDateString("en-GB", {
+          day: "numeric", month: "short", year: "2-digit",
+        }).replace(/ /g, "-"),
+        row.inTime ? (() => {
+          const [hr, mn] = row.inTime.split(":").map(Number);
+          return `${hr % 12 || 12}.${String(mn).padStart(2, "0")}${hr >= 12 ? "PM" : "AM"}`;
+        })() : "",
+        row.outTime ? (() => {
+          const [hr, mn] = row.outTime.split(":").map(Number);
+          return `${hr % 12 || 12}.${String(mn).padStart(2, "0")}${hr >= 12 ? "PM" : "AM"}`;
+        })() : "",
+        row.hours, row.km, row.workDescription, row.engineerSign,
+      ];
+      colX = x;
+      values.forEach((value, index) => {
+        const w = columnWidths[index];
+        box(colX, cursor, w, rowHeight);
+        write(value, colX, cursor, w, rowHeight, {
+          size: 7.5,
+          align: index >= 5 ? "left" : "center",
+        });
+        colX += w;
+      });
+      cursor += rowHeight;
     });
 
-    document.setFontSize(14);
-    document.text("LOG SHEET", 105, 12, { align: "center" });
-
-    document.setFontSize(11);
-    document.text(COMPANY.name, 105, 18, { align: "center" });
-
-    document.setFontSize(7);
-    document.text(COMPANY.office, 105, 23, { align: "center" });
-
-    document.setFontSize(8);
-    document.text(`GST No: ${COMPANY.gst}`, 14, 29);
-    document.text(`Period: ${formatMonth(month)}`, 125, 29);
-    document.text(
-      `Vehicle Type: ${selectedVehicle.vehicleType || "-"}`,
-      14,
-      34
-    );
-    document.text(`Client Name: ${clientName || "-"}`, 125, 34);
-    document.text(
-      `Vehicle Number: ${selectedVehicle.vehicleNumber || "-"}`,
-      14,
-      39
-    );
-    document.text(`Site Name: ${siteName || "-"}`, 125, 39);
-
-    autoTable(document, {
-      startY: 44,
-      head: [
-        [
-          "DATE",
-          "IN TIME",
-          "OUT TIME",
-          "HOURS",
-          "KM",
-          "WORK DESCRIPTION",
-          "ENGINEER SIGN",
-        ],
-      ],
-      body: rows.map((row) => [
-        formatDate(row.date),
-        row.inTime || "",
-        row.outTime || "",
-        row.hours || "",
-        row.km || "",
-        row.workDescription || "",
-        row.engineerSign || "",
-      ]),
-      styles: {
-        fontSize: 6.5,
-        cellPadding: 1.1,
-        minCellHeight: 5.3,
-        lineColor: [0, 0, 0],
-        lineWidth: 0.2,
-      },
-      headStyles: {
-        fillColor: [196, 196, 196],
-        textColor: [0, 0, 0],
-        halign: "center",
-        fontStyle: "bold",
-      },
-      columnStyles: {
-        0: { cellWidth: 22 },
-        1: { cellWidth: 18 },
-        2: { cellWidth: 18 },
-        3: { cellWidth: 16 },
-        4: { cellWidth: 16 },
-        5: { cellWidth: 76 },
-        6: { cellWidth: 24 },
-      },
-      margin: { left: 13, right: 13 },
+    // Three compact KM rows, matching the sample's lower-left cells.
+    [
+      ["Open Kms", openKm],
+      ["Close Kms", closeKm],
+      ["Total Kms", totalKm],
+    ].forEach(([label, value]) => {
+      box(x, cursor, columnWidths[0], 5.2);
+      box(x + columnWidths[0], cursor, columnWidths[1], 5.2);
+      write(label, x, cursor, columnWidths[0], 5.2,
+        { size: 8, bold: true });
+      write(value, x + columnWidths[0], cursor, columnWidths[1], 5.2,
+        { size: 8 });
+      cursor += 5.2;
     });
 
-    const finalY = document.lastAutoTable.finalY + 5;
-
-    document.setFontSize(8);
-    document.text(`Open Kms: ${openKm || "-"}`, 14, finalY);
-    document.text(`Close Kms: ${closeKm || "-"}`, 14, finalY + 5);
-    document.text(`Total Kms: ${totalKm}`, 14, finalY + 10);
-
-    document.text(`Total Days: ${enteredDays}`, 70, finalY);
-    document.text(
-      `Working Days: ${workingDays || "-"}`,
-      70,
-      finalY + 5
-    );
-    document.text(
-      `Breakdown Days: ${breakdownDays || "-"}`,
-      70,
-      finalY + 10
-    );
-
-    document.text(`Remarks: ${remarks || "-"}`, 120, finalY);
-    document.text(
-      `Site Manager Signature: ${siteManagerSignature || "-"}`,
-      120,
-      finalY + 10
-    );
-
-    document.save(createFileName("pdf"));
+    // Signature row aligned to the same report grid.
+    pdf.line(x, cursor, x + width, cursor);
+    write("Om Tranns Infra corporation Pvt. Ltd.",
+      x, cursor + 0.5, width / 2, 6,
+      { size: 8, bold: true, align: "left", pad: 0.5 });
+    write(siteManagerSignature || "Site Manager Sign",
+      x + width / 2, cursor + 0.5, width / 2, 6,
+      { size: 8, bold: true });
+    // No automatic table pagination: 31 rows fit on one Letter page.
+    pdf.save(createFileName("pdf"));
   };
 
   const requestDownload = (type) => {
+    if (isDownloading) return;
     if (!selectedVehicle) {
       setError("Please select a vehicle before downloading.");
       return;
@@ -630,16 +717,24 @@ const Monthlylog = () => {
     setDownloadType(type);
   };
 
-  const confirmDownload = () => {
-    if (downloadType === "excel") {
-      downloadExcel();
+  const confirmDownload = async () => {
+    if (!downloadType || isDownloading) return;
+    const type = downloadType;
+    setIsDownloading(true);
+    try {
+      if (type === "excel") downloadExcel();
+      if (type === "pdf") await downloadPdf();
+      setDownloadType(null);
+      setError("");
+      setMessage(`${type === "excel" ? "Excel" : "PDF"} report prepared successfully.`);
+    } catch (downloadError) {
+      console.error("Unable to prepare report:", downloadError);
+      setMessage("");
+      setError("Unable to prepare the report. Please try again.");
+      setDownloadType(null);
+    } finally {
+      setIsDownloading(false);
     }
-
-    if (downloadType === "pdf") {
-      downloadPdf();
-    }
-
-    setDownloadType(null);
   };
 
   return (
@@ -747,29 +842,35 @@ const Monthlylog = () => {
         </div>
       </div>
 
-      {error && (
-        <div
-          className="monthly-log-alert error no-print"
-          role="alert"
-        >
-          {error}
-        </div>
-      )}
-
-      {message && (
-        <div
-          className="monthly-log-alert success no-print"
-          role="status"
-          aria-live="polite"
-        >
-          {message}
+      {(error || message) && (
+        <div className="monthly-toast-region no-print" aria-live="polite">
+          <div
+            className={`monthly-toast ${error ? "error" : "success"}`}
+            role={error ? "alert" : "status"}
+          >
+            <span className="monthly-toast-icon">
+              {error ? <AlertCircle size={19} /> : <CheckCircle2 size={19} />}
+            </span>
+            <div className="monthly-toast-copy">
+              <strong>{error ? "Action required" : "Report ready"}</strong>
+              <span>{error || message}</span>
+            </div>
+            <button
+              type="button"
+              className="monthly-toast-dismiss"
+              aria-label="Dismiss notification"
+              onClick={() => { setError(""); setMessage(""); }}
+            >
+              <X size={16} />
+            </button>
+          </div>
         </div>
       )}
 
       <div className="monthly-sheet">
         <div className="monthly-sheet-header">
           <div className="company-logo-box">
-            <div className="company-logo-mark">OM</div>
+            <img src={companyLogo} alt="OTC Company Logo" className="company-logo-image" />
           </div>
 
           <div className="company-heading">
@@ -781,8 +882,7 @@ const Monthlylog = () => {
         <div className="company-office">{COMPANY.office}</div>
 
         <div className="monthly-meta-grid">
-          <div className="meta-label">GST No :</div>
-          <div className="meta-value">{COMPANY.gst}</div>
+          <div className="meta-label meta-gst">GST No : {COMPANY.gst}</div>
           <div className="meta-label">Period</div>
           <div className="meta-value period-value">{formatMonth(month)}</div>
 
@@ -1002,7 +1102,7 @@ const Monthlylog = () => {
         <div
           className="monthly-confirm-overlay no-print"
           onMouseDown={(event) => {
-            if (event.target === event.currentTarget) {
+            if (event.target === event.currentTarget && !isDownloading) {
               setDownloadType(null);
             }
           }}
@@ -1018,33 +1118,35 @@ const Monthlylog = () => {
               className="monthly-confirm-close"
               onClick={() => setDownloadType(null)}
               aria-label="Close confirmation"
+              disabled={isDownloading}
             >
               <X size={20} />
             </button>
 
             <div className={`monthly-confirm-icon ${downloadType}`}>
-              {downloadType === "excel" ? (
-                <FileSpreadsheet size={28} />
-              ) : (
-                <FileText size={28} />
-              )}
+              {downloadType === "excel" ? <FileSpreadsheet size={25} /> : <FileText size={25} />}
             </div>
 
             <h2 id="monthly-download-title">
-              Download {downloadType === "excel" ? "Excel" : "PDF"} file?
+              Download monthly log
             </h2>
 
             <p>
-              The monthly log for{" "}
-              <strong>{selectedVehicle?.vehicleNumber || "this vehicle"}</strong>{" "}
-              and <strong>{formatMonth(month)}</strong> will be downloaded.
+              Your report is ready to export. Please confirm the details below.
             </p>
+
+            <div className="monthly-download-details">
+              <div><span>Vehicle</span><strong>{selectedVehicle?.vehicleNumber || "—"}</strong></div>
+              <div><span>Period</span><strong>{formatMonth(month)}</strong></div>
+              <div><span>File format</span><strong>{downloadType === "excel" ? "Excel (.xlsx)" : "PDF (.pdf)"}</strong></div>
+            </div>
 
             <div className="monthly-confirm-actions">
               <button
                 type="button"
                 className="monthly-confirm-cancel"
                 onClick={() => setDownloadType(null)}
+                disabled={isDownloading}
               >
                 Cancel
               </button>
@@ -1053,13 +1155,10 @@ const Monthlylog = () => {
                 type="button"
                 className={`monthly-confirm-download ${downloadType}`}
                 onClick={confirmDownload}
+                disabled={isDownloading}
               >
-                {downloadType === "excel" ? (
-                  <FileSpreadsheet size={17} />
-                ) : (
-                  <FileText size={17} />
-                )}
-                Download
+                {isDownloading ? <LoaderCircle size={17} className="monthly-spinner" /> : <Download size={17} />}
+                {isDownloading ? "Preparing..." : "Download file"}
               </button>
             </div>
           </div>

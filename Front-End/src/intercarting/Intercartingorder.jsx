@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, RefreshCw, Search, Truck } from "lucide-react";
-import "../Intercartingcss/intercartingorder.css";
+import "./intercartingorder.css";
 
 const API_BASE_URL = (
   import.meta.env.VITE_API_URL || "http://localhost:5000"

@@ -1,417 +1,176 @@
-const dns =
-  require("dns");
-
-dns.setServers([
-  "8.8.8.8",
-  "1.1.1.1",
-]);
-
-const express =
-  require("express");
-
-const mongoose =
-  require("mongoose");
-
-const cors =
-  require("cors");
-
-const dotenv =
-  require("dotenv");
-
-const path =
-  require("path");
-
+const dns = require("dns");
+dns.setServers(["8.8.8.8", "1.1.1.1"]);
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+const dotenv = require("dotenv");
+const path = require("path");
 
 /* ==========================================
    ENVIRONMENT
 ========================================== */
-
 dotenv.config();
-
 
 /* ==========================================
    ROUTES
 ========================================== */
-
-const authRoutes =
-  require(
-    "./routes/authRoutes"
-  );
-
-const vehicleRoutes =
-  require(
-    "./routes/vehicleRoutes"
-  );
-
-const ownvehicleRoutes =
-  require(
-    "./routes/ownvehicleRoutes"
-  );
-
+const authRoutes = require("./routes/authRoutes");
+const vehicleRoutes = require("./routes/vehicleRoutes");
+const ownvehicleRoutes = require("./routes/ownvehicleRoutes");
 /*
   IMPORTANT:
   Route file name is triporderRoute.js
 */
-
-const triporderRoutes =
-  require(
-    "./routes/triporderRoute"
-  );
-
+const triporderRoutes = require("./routes/triporderRoute");
 
 /* ==========================================
    EXPRESS APP
 ========================================== */
-
-const app =
-  express();
-
+const app = express();
 
 /* ==========================================
    PORT
 ========================================== */
-
-const PORT =
-  process.env.PORT ||
-  5000;
-
+const PORT = process.env.PORT || 5000;
 
 /* ==========================================
    CORS
 ========================================== */
-
 const allowedOrigins = [
-
   /* LOCAL */
-
   "http://localhost:5173",
-
   "http://127.0.0.1:5173",
 
-
   /* VERCEL */
-
   "https://otc-fleet-management.vercel.app",
-
   "https://otc-fleet-management-git-main-mukesh3karthis-projects.vercel.app",
-
   "https://otc-fleet-management-gamma.vercel.app",
 
-
   /* CUSTOM DOMAIN */
-
   "https://fleet.otcgroups.in",
-
 ];
 
-
 const corsOptions = {
-
-  origin: (
-    origin,
-    callback
-  ) => {
-
+  origin: (origin, callback) => {
     /*
       Requests from Postman,
       server-to-server, etc.
     */
-
     if (!origin) {
-
-      return callback(
-        null,
-        true
-      );
-
+      return callback(null, true);
     }
-
 
     /* Exact allowed URLs */
-
-    if (
-      allowedOrigins.includes(
-        origin
-      )
-    ) {
-
-      return callback(
-        null,
-        true
-      );
-
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
     }
-
 
     /* Any localhost port */
+    const isLocalhost = /^http:\/\/localhost:\d+$/.test(origin);
 
-    const isLocalhost =
+    const isLocalIp = /^http:\/\/127\.0\.0\.1:\d+$/.test(origin);
 
-      /^http:\/\/localhost:\d+$/.test(
-        origin
-      );
-
-
-    const isLocalIp =
-
-      /^http:\/\/127\.0\.0\.1:\d+$/.test(
-        origin
-      );
-
-
-    if (
-      isLocalhost ||
-      isLocalIp
-    ) {
-
-      return callback(
-        null,
-        true
-      );
-
+    if (isLocalhost || isLocalIp) {
+      return callback(null, true);
     }
-
 
     /* Vercel previews */
-
     const isVercelPreview =
-
       /^https:\/\/otc-fleet-management-[a-zA-Z0-9-]+-mukesh3karthis-projects\.vercel\.app$/.test(
-        origin
+        origin,
       );
 
-
-    if (
-      isVercelPreview
-    ) {
-
-      return callback(
-        null,
-        true
-      );
-
+    if (isVercelPreview) {
+      return callback(null, true);
     }
 
+    console.log("❌ Blocked CORS Origin:", origin);
 
-    console.log(
-      "❌ Blocked CORS Origin:",
-      origin
-    );
-
-
-    return callback(
-
-      new Error(
-        "Not allowed by CORS."
-      )
-
-    );
-
+    return callback(new Error("Not allowed by CORS."));
   },
 
+  credentials: true,
 
-  credentials:
-    true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
 
-
-  methods: [
-
-    "GET",
-
-    "POST",
-
-    "PUT",
-
-    "PATCH",
-
-    "DELETE",
-
-    "OPTIONS",
-
-  ],
-
-
-  allowedHeaders: [
-
-    "Content-Type",
-
-    "Authorization",
-
-    "Accept",
-
-  ],
-
+  allowedHeaders: ["Content-Type", "Authorization", "Accept"],
 
   /*
     Frontend needs these
     when fetching documents.
   */
+  exposedHeaders: ["Content-Disposition", "Content-Type", "Content-Length"],
 
-  exposedHeaders: [
-
-    "Content-Disposition",
-
-    "Content-Type",
-
-    "Content-Length",
-
-  ],
-
-
-  optionsSuccessStatus:
-    204,
-
+  optionsSuccessStatus: 204,
 };
-
 
 /* ==========================================
    APPLY CORS
    MUST BE BEFORE ROUTES
 ========================================== */
-
-app.use(
-  cors(
-    corsOptions
-  )
-);
-
+app.use(cors(corsOptions));
 
 /* ==========================================
    BODY PARSER
 ========================================== */
-
 /*
   Increased because your
   asset images are Base64.
 */
-
 app.use(
   express.json({
-
-    limit:
-      "50mb",
-
-  })
+    limit: "50mb",
+  }),
 );
-
 
 app.use(
   express.urlencoded({
-
-    extended:
-      true,
-
-    limit:
-      "50mb",
-
-  })
+    extended: true,
+    limit: "50mb",
+  }),
 );
-
 
 /* ==========================================
    STATIC UPLOADS
 ========================================== */
+const uploadsDirectory = path.resolve(__dirname, "uploads");
 
-const uploadsDirectory =
-  path.resolve(
-    __dirname,
-    "uploads"
-  );
-
-
-console.log(
-  "📁 Static uploads directory:"
-);
-
-console.log(
-  uploadsDirectory
-);
-
+console.log("📁 Static uploads directory:");
+console.log(uploadsDirectory);
 
 app.use(
-
   "/uploads",
-
-  express.static(
-
-    uploadsDirectory,
-
-    {
-
-      fallthrough:
-        true,
-
-      etag:
-        true,
-
-      maxAge:
-        0,
-
-      setHeaders: (
-        res
-      ) => {
-
-        res.setHeader(
-          "Cache-Control",
-          "no-store"
-        );
-
-      },
-
-    }
-
-  )
-
+  express.static(uploadsDirectory, {
+    fallthrough: true,
+    etag: true,
+    maxAge: 0,
+    setHeaders: (res) => {
+      res.setHeader("Cache-Control", "no-store");
+    },
+  }),
 );
-
 
 /* ==========================================
    API ROUTES
 ========================================== */
 
-
 /* ------------------------------------------
    AUTH
 ------------------------------------------ */
-
-app.use(
-
-  "/api/auth",
-
-  authRoutes
-
-);
-
+app.use("/api/auth", authRoutes);
 
 /* ------------------------------------------
    VEHICLES
 ------------------------------------------ */
-
-app.use(
-
-  "/api/vehicles",
-
-  vehicleRoutes
-
-);
-
+app.use("/api/vehicles", vehicleRoutes);
 
 /* ------------------------------------------
    OWN VEHICLES
 ------------------------------------------ */
-
-app.use(
-
-  "/api/ownvehicles",
-
-  ownvehicleRoutes
-
-);
-
+app.use("/api/ownvehicles", ownvehicleRoutes);
 
 /* ------------------------------------------
    TRIP ORDERS
-
    KEY ACCOUNT
        ↓
    ORDER FINALIZATION
@@ -426,682 +185,311 @@ app.use(
        ↓
    TRACKING
 ------------------------------------------ */
-
-app.use(
-
-  "/api/triporders",
-
-  triporderRoutes
-
-);
-
+app.use("/api/triporders", triporderRoutes);
 
 /* ==========================================
    HEALTH CHECK
 ========================================== */
+app.get("/", (req, res) => {
+  return res.status(200).json({
+    success: true,
 
-app.get(
-  "/",
+    message: "Fleet Management Backend API is running successfully.",
 
-  (
-    req,
-    res
-  ) => {
+    serverTime: new Date().toISOString(),
 
-    return res
-      .status(200)
-      .json({
+    database:
+      mongoose.connection.readyState === 1 ? "Connected" : "Disconnected",
 
-        success:
-          true,
+    version: "1.0.0",
 
+    routes: {
+      auth: "/api/auth",
 
-        message:
-          "Fleet Management Backend API is running successfully.",
+      vehicles: "/api/vehicles",
 
+      ownVehicles: "/api/ownvehicles",
 
-        serverTime:
-          new Date()
-            .toISOString(),
+      tripOrders: "/api/triporders",
 
+      tripOrderWorkflow: {
+        getAll: "/api/triporders",
+        create: "/api/triporders",
+        getByMongoId: "/api/triporders/:id",
+        getByTripId: "/api/triporders/trip/:tripId",
+        update: "/api/triporders/:id",
+        delete: "/api/triporders/:id",
 
-        database:
-
-          mongoose.connection
-            .readyState ===
-          1
-
-            ? "Connected"
-
-            : "Disconnected",
-
-
-        version:
-          "1.0.0",
-
-
-        routes: {
-
-          auth:
-            "/api/auth",
-
-
-          vehicles:
-            "/api/vehicles",
-
-
-          ownVehicles:
-            "/api/ownvehicles",
-
-
-          tripOrders:
-            "/api/triporders",
-
-
-          tripOrderWorkflow: {
-
-            getAll:
-              "/api/triporders",
-
-            create:
-              "/api/triporders",
-
-            getByMongoId:
-              "/api/triporders/:id",
-
-            getByTripId:
-              "/api/triporders/trip/:tripId",
-
-            update:
-              "/api/triporders/:id",
-
-            delete:
-              "/api/triporders/:id",
-
-
-            /*
+        /*
               KEY ACCOUNT
               ORDER FINALIZATION
             */
+        orderFinalization: "/api/triporders/:id/order-finalization",
 
-            orderFinalization:
-              "/api/triporders/:id/order-finalization",
-
-
-            /*
+        /*
               FIRST APPROVAL
             */
+        orderApproval: "/api/triporders/:id/order-approval",
 
-            orderApproval:
-              "/api/triporders/:id/order-approval",
-
-
-            /*
+        /*
               TRAFFIC
             */
+        quotations: "/api/triporders/:id/quotations",
 
-            quotations:
-              "/api/triporders/:id/quotations",
-
-
-            /*
+        /*
               SECOND APPROVAL
             */
+        confirmQuotation: "/api/triporders/:id/confirm-quotation",
 
-            confirmQuotation:
-              "/api/triporders/:id/confirm-quotation",
-
-
-            /*
+        /*
               TRACKING INPUT
             */
+        allocateVehicle: "/api/triporders/:id/allocated-vehicles",
+        updateAllocatedVehicle:
+          "/api/triporders/:id/allocated-vehicles/:allocationId",
+        dailyTracking:
+          "/api/triporders/:id/allocated-vehicles/:allocationId/tracking",
+      },
 
-            allocateVehicle:
-              "/api/triporders/:id/allocated-vehicles",
+      ownVehicleAssets: {
+        get: "/api/ownvehicles/:id/assets",
+        save: "/api/ownvehicles/:id/assets",
+      },
 
-            updateAllocatedVehicle:
-              "/api/triporders/:id/allocated-vehicles/:allocationId",
+      ownVehicleDocuments: "/api/ownvehicles/:id/documents",
 
-            dailyTracking:
-              "/api/triporders/:id/allocated-vehicles/:allocationId/tracking",
+      ownVehicleDownloadTest: "/api/ownvehicles/download-test",
 
-          },
-
-
-          ownVehicleAssets: {
-
-            get:
-              "/api/ownvehicles/:id/assets",
-
-            save:
-              "/api/ownvehicles/:id/assets",
-
-          },
-
-
-          ownVehicleDocuments:
-            "/api/ownvehicles/:id/documents",
-
-
-          ownVehicleDownloadTest:
-            "/api/ownvehicles/download-test",
-
-
-          ownVehicleDownload:
-            "/api/ownvehicles/download/:fileName",
-
-        },
-
-      });
-
-  }
-);
-
+      ownVehicleDownload: "/api/ownvehicles/download/:fileName",
+    },
+  });
+});
 
 /* ==========================================
    DEBUG - UPLOAD DIRECTORY
 ========================================== */
-
 /*
   Useful for checking that
   local upload folder exists.
 */
+app.get("/api/debug/uploads", (req, res) => {
+  const ownVehicleFolder = path.resolve(__dirname, "uploads", "ownvehicles");
 
-app.get(
-  "/api/debug/uploads",
+  const fs = require("fs");
 
-  (
-    req,
-    res
-  ) => {
+  const exists = fs.existsSync(ownVehicleFolder);
 
-    const ownVehicleFolder =
-      path.resolve(
-        __dirname,
-        "uploads",
-        "ownvehicles"
-      );
+  let files = [];
 
-
-    const fs =
-      require("fs");
-
-
-    const exists =
-      fs.existsSync(
-        ownVehicleFolder
-      );
-
-
-    let files = [];
-
-
-    if (
-      exists
-    ) {
-
-      files =
-        fs.readdirSync(
-          ownVehicleFolder
-        );
-
-    }
-
-
-    return res
-      .status(200)
-      .json({
-
-        success:
-          true,
-
-        folder:
-          ownVehicleFolder,
-
-        exists,
-
-        count:
-          files.length,
-
-        files,
-
-      });
-
+  if (exists) {
+    files = fs.readdirSync(ownVehicleFolder);
   }
-);
 
+  return res.status(200).json({
+    success: true,
+    folder: ownVehicleFolder,
+    exists,
+    count: files.length,
+    files,
+  });
+});
 
 /* ==========================================
    404 HANDLER
 ========================================== */
+app.use((req, res) => {
+  return res.status(404).json({
+    success: false,
 
-app.use(
-  (
-    req,
-    res
-  ) => {
+    message: "API route not found.",
 
-    return res
-      .status(404)
-      .json({
-
-        success:
-          false,
-
-
-        message:
-          "API route not found.",
-
-
-        requestedUrl:
-          req.originalUrl,
-
-      });
-
-  }
-);
-
+    requestedUrl: req.originalUrl,
+  });
+});
 
 /* ==========================================
    GLOBAL ERROR HANDLER
 ========================================== */
+app.use((error, req, res, next) => {
+  console.error("Server Error:", error);
 
-app.use(
-  (
-    error,
-    req,
-    res,
-    next
-  ) => {
+  /* CORS */
+  if (error.message === "Not allowed by CORS.") {
+    return res.status(403).json({
+      success: false,
 
-    console.error(
-      "Server Error:",
-      error
-    );
-
-
-    /* CORS */
-
-    if (
-      error.message ===
-      "Not allowed by CORS."
-    ) {
-
-      return res
-        .status(403)
-        .json({
-
-          success:
-            false,
-
-
-          message:
-            "Frontend origin is not allowed by CORS.",
-
-        });
-
-    }
-
-
-    /* General */
-
-    return res
-      .status(
-        error.status ||
-        500
-      )
-      .json({
-
-        success:
-          false,
-
-
-        message:
-          error.message ||
-          "Internal Server Error.",
-
-      });
-
+      message: "Frontend origin is not allowed by CORS.",
+    });
   }
-);
 
+  /* General */
+  return res.status(error.status || 500).json({
+    success: false,
+
+    message: error.message || "Internal Server Error.",
+  });
+});
 
 /* ==========================================
    DATABASE CONNECTION
 ========================================== */
-
-const connectDatabase =
-  async () => {
-
-    try {
-
-      if (
-        !process.env
-          .MONGODB_URI
-      ) {
-
-        throw new Error(
-          "MONGODB_URI is missing in environment variables."
-        );
-
-      }
-
-
-      await mongoose.connect(
-
-        process.env
-          .MONGODB_URI,
-
-        {
-
-          autoIndex:
-            true,
-
-        }
-
-      );
-
-
-      console.log(
-        "=========================================="
-      );
-
-
-      console.log(
-        "✅ MongoDB Connected Successfully"
-      );
-
-
-      console.log(
-        "Database:",
-        mongoose.connection
-          .name
-      );
-
-
-      console.log(
-        "Host:",
-        mongoose.connection
-          .host
-      );
-
-
-      console.log(
-        "=========================================="
-      );
-
-    } catch (error) {
-
-      console.error(
-        "❌ MongoDB Connection Error"
-      );
-
-
-      console.error(
-        error
-      );
-
-
-      throw error;
-
+const connectDatabase = async () => {
+  try {
+    if (!process.env.MONGODB_URI) {
+      throw new Error("MONGODB_URI is missing in environment variables.");
     }
 
-  };
+    await mongoose.connect(process.env.MONGODB_URI, {
+      autoIndex: true,
+    });
 
+    console.log("==========================================");
+
+    console.log("✅ MongoDB Connected Successfully");
+
+    console.log("Database:", mongoose.connection.name);
+
+    console.log("Host:", mongoose.connection.host);
+
+    console.log("==========================================");
+  } catch (error) {
+    console.error("❌ MongoDB Connection Error");
+
+    console.error(error);
+
+    throw error;
+  }
+};
 
 /* ==========================================
    START SERVER
 ========================================== */
+const startServer = async () => {
+  try {
+    await connectDatabase();
 
-const startServer =
-  async () => {
+    app.listen(PORT, () => {
+      console.log("");
 
-    try {
+      console.log("==========================================");
 
-      await connectDatabase();
+      console.log("🚀 OTC Fleet Management Backend Started");
 
+      console.log("==========================================");
 
-      app.listen(
-        PORT,
+      console.log(`Server URL  : http://localhost:${PORT}`);
 
-        () => {
+      console.log(`Server Port : ${PORT}`);
 
-          console.log("");
+      console.log(`Environment : ${process.env.NODE_ENV || "development"}`);
 
+      console.log("");
 
-          console.log(
-            "=========================================="
-          );
+      console.log("Important APIs");
 
+      console.log("------------------------------------------");
 
-          console.log(
-            "🚀 OTC Fleet Management Backend Started"
-          );
+      console.log(`Health Test        : http://localhost:${PORT}/`);
 
-
-          console.log(
-            "=========================================="
-          );
-
-
-          console.log(
-            `Server URL  : http://localhost:${PORT}`
-          );
-
-
-          console.log(
-            `Server Port : ${PORT}`
-          );
-
-
-          console.log(
-            `Environment : ${
-              process.env
-                .NODE_ENV ||
-              "development"
-            }`
-          );
-
-
-          console.log("");
-
-
-          console.log(
-            "Important APIs"
-          );
-
-
-          console.log(
-            "------------------------------------------"
-          );
-
-
-          console.log(
-            `Health Test        : http://localhost:${PORT}/`
-          );
-
-
-          console.log(
-            `Trip Orders        : http://localhost:${PORT}/api/triporders`
-          );
-
-
-          console.log(
-            `Own Vehicles       : http://localhost:${PORT}/api/ownvehicles`
-          );
-
-
-          console.log(
-            `Download Test      : http://localhost:${PORT}/api/ownvehicles/download-test`
-          );
-
-
-          console.log(
-            `Uploads Debug      : http://localhost:${PORT}/api/debug/uploads`
-          );
-
-
-          console.log(
-            `Static Uploads     : http://localhost:${PORT}/uploads/ownvehicles/FILE_NAME`
-          );
-
-
-          console.log(
-            "------------------------------------------"
-          );
-
-
-          console.log(
-            "Trip Order Workflow APIs"
-          );
-
-
-          console.log(
-            "------------------------------------------"
-          );
-
-
-          console.log(
-            `Get Trips          : GET  http://localhost:${PORT}/api/triporders`
-          );
-
-
-          console.log(
-            `Create Trip        : POST http://localhost:${PORT}/api/triporders`
-          );
-
-
-          console.log(
-            `Order Finalization : PUT  http://localhost:${PORT}/api/triporders/:id/order-finalization`
-          );
-
-
-          console.log(
-            `Order Approval     : PUT  http://localhost:${PORT}/api/triporders/:id/order-approval`
-          );
-
-
-          console.log(
-            `Add Quotation      : POST http://localhost:${PORT}/api/triporders/:id/quotations`
-          );
-
-
-          console.log(
-            `Confirm Quotation  : PUT  http://localhost:${PORT}/api/triporders/:id/confirm-quotation`
-          );
-
-
-          console.log(
-            `Allocate Vehicle   : POST http://localhost:${PORT}/api/triporders/:id/allocated-vehicles`
-          );
-
-
-          console.log(
-            `Update Vehicle     : PUT  http://localhost:${PORT}/api/triporders/:id/allocated-vehicles/:allocationId`
-          );
-
-
-          console.log(
-            `Daily Tracking     : POST http://localhost:${PORT}/api/triporders/:id/allocated-vehicles/:allocationId/tracking`
-          );
-
-
-          console.log(
-            "=========================================="
-          );
-
-        }
-
+      console.log(
+        `Trip Orders        : http://localhost:${PORT}/api/triporders`,
       );
 
-    } catch (error) {
-
-      console.error(
-        "Unable to start server."
+      console.log(
+        `Own Vehicles       : http://localhost:${PORT}/api/ownvehicles`,
       );
 
-
-      console.error(
-        error
+      console.log(
+        `Download Test      : http://localhost:${PORT}/api/ownvehicles/download-test`,
       );
 
+      console.log(
+        `Uploads Debug      : http://localhost:${PORT}/api/debug/uploads`,
+      );
 
-      process.exit(1);
+      console.log(
+        `Static Uploads     : http://localhost:${PORT}/uploads/ownvehicles/FILE_NAME`,
+      );
 
-    }
+      console.log("------------------------------------------");
 
-  };
+      console.log("Trip Order Workflow APIs");
 
+      console.log("------------------------------------------");
+
+      console.log(
+        `Get Trips          : GET  http://localhost:${PORT}/api/triporders`,
+      );
+
+      console.log(
+        `Create Trip        : POST http://localhost:${PORT}/api/triporders`,
+      );
+
+      console.log(
+        `Order Finalization : PUT  http://localhost:${PORT}/api/triporders/:id/order-finalization`,
+      );
+
+      console.log(
+        `Order Approval     : PUT  http://localhost:${PORT}/api/triporders/:id/order-approval`,
+      );
+
+      console.log(
+        `Add Quotation      : POST http://localhost:${PORT}/api/triporders/:id/quotations`,
+      );
+
+      console.log(
+        `Confirm Quotation  : PUT  http://localhost:${PORT}/api/triporders/:id/confirm-quotation`,
+      );
+
+      console.log(
+        `Allocate Vehicle   : POST http://localhost:${PORT}/api/triporders/:id/allocated-vehicles`,
+      );
+
+      console.log(
+        `Update Vehicle     : PUT  http://localhost:${PORT}/api/triporders/:id/allocated-vehicles/:allocationId`,
+      );
+
+      console.log(
+        `Daily Tracking     : POST http://localhost:${PORT}/api/triporders/:id/allocated-vehicles/:allocationId/tracking`,
+      );
+
+      console.log("==========================================");
+    });
+  } catch (error) {
+    console.error("Unable to start server.");
+
+    console.error(error);
+
+    process.exit(1);
+  }
+};
 
 /* ==========================================
    START APPLICATION
 ========================================== */
-
 startServer();
-
 
 /* ==========================================
    GRACEFUL SHUTDOWN
 ========================================== */
+const gracefulShutdown = async (signal) => {
+  console.log(`\n🛑 ${signal} received. Shutting down server...`);
 
-const gracefulShutdown =
-  async (
-    signal
-  ) => {
+  try {
+    await mongoose.connection.close();
 
-    console.log(
-      `\n🛑 ${signal} received. Shutting down server...`
-    );
+    console.log("✅ MongoDB connection closed.");
 
+    process.exit(0);
+  } catch (error) {
+    console.error("Error while closing MongoDB:");
 
-    try {
+    console.error(error);
 
-      await mongoose
-        .connection
-        .close();
+    process.exit(1);
+  }
+};
 
+process.on("SIGINT", () => gracefulShutdown("SIGINT"));
 
-      console.log(
-        "✅ MongoDB connection closed."
-      );
-
-
-      process.exit(0);
-
-    } catch (error) {
-
-      console.error(
-        "Error while closing MongoDB:"
-      );
-
-
-      console.error(
-        error
-      );
-
-
-      process.exit(1);
-
-    }
-
-  };
-
-
-process.on(
-  "SIGINT",
-
-  () =>
-    gracefulShutdown(
-      "SIGINT"
-    )
-);
-
-
-process.on(
-  "SIGTERM",
-
-  () =>
-    gracefulShutdown(
-      "SIGTERM"
-    )
-);
+process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));

@@ -818,11 +818,25 @@ body.modal-open {
 }
 
 .vehicle-table {
-    width: max-content;
-    min-width: 1580px;
+    width: 100%;
+    min-width: 1240px;
     background: #ffffff;
     border-collapse: collapse;
     border-spacing: 0;
+}
+
+/* Hide secondary details while showing customer, diesel, driver contact and hire. */
+.vehicle-table th:nth-child(6),
+.vehicle-table td:nth-child(6),
+.vehicle-table th:nth-child(9),
+.vehicle-table td:nth-child(9),
+.vehicle-table th:nth-child(12),
+.vehicle-table td:nth-child(12),
+.vehicle-table th:nth-child(13),
+.vehicle-table td:nth-child(13),
+.vehicle-table th:nth-child(14),
+.vehicle-table td:nth-child(14) {
+    display: none;
 }
 
 .vehicle-table th,
@@ -1015,13 +1029,13 @@ body.modal-open {
 
 @media (max-width: 1200px) {
     .vehicle-table {
-        min-width: 1600px;
+        min-width: 1240px;
     }
 }
 
 @media (max-width: 992px) {
     .vehicle-table {
-        min-width: 1480px;
+        min-width: 1240px;
     }
 
     .vehicle-table th,
@@ -1042,7 +1056,7 @@ body.modal-open {
 
 @media (max-width: 768px) {
     .vehicle-table {
-        min-width: 1380px;
+        min-width: 1240px;
     }
 
     .vehicle-table th,

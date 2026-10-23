@@ -294,7 +294,7 @@
 /* TOOLBAR */
 .approval-toolbar {
   min-height: 58px;
-  margin-bottom: 14px;
+  margin-bottom: 0;
   padding: 0 14px;
   display: flex;
   align-items: center;
@@ -950,7 +950,6 @@
   }
 
   .approval-order-info-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .approval-quotation-main {
@@ -979,7 +978,6 @@
   }
 
   .approval-tabs {
-    width: 100%;
     height: 42px;
   }
 
@@ -1374,7 +1372,6 @@
   }
 
   .approval-md-commercial-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -1400,10 +1397,9 @@
 
 .approval-vehicle-readonly-header,
 .approval-vehicle-readonly-row {
-  grid-template-columns: 42px minmax(150px, 1.2fr) minmax(150px, 1.1fr) minmax(
-      155px,
-      1.15fr
-    ) 90px 100px minmax(180px, 1.3fr);
+  grid-template-columns:
+    42px minmax(150px, 1.2fr) minmax(150px, 1.1fr) minmax(155px, 1.15fr)
+    90px 100px minmax(180px, 1.3fr);
   align-items: stretch;
 }
 
@@ -2111,10 +2107,9 @@
 .approval-vehicle-readonly-header,
 .approval-vehicle-readonly-row {
   display: grid;
-  grid-template-columns: 52px minmax(170px, 1.2fr) minmax(155px, 1.1fr) minmax(
-      165px,
-      1.15fr
-    ) 90px 100px minmax(190px, 1.3fr);
+  grid-template-columns:
+    52px minmax(170px, 1.2fr) minmax(155px, 1.1fr) minmax(165px, 1.15fr)
+    90px 100px minmax(190px, 1.3fr);
 }
 
 .approval-vehicle-readonly-header {
@@ -2219,7 +2214,6 @@
 
   .approval-order-info-grid {
     grid-template-columns: 1fr;
-    padding: 5px;
   }
 }
 
@@ -3067,12 +3061,9 @@
   }
 
   .approval-qv-actionbar {
-    align-items: flex-start;
-    flex-direction: column;
   }
 
   .approval-qv-actions {
-    width: 100%;
     justify-content: flex-end;
   }
 
@@ -3105,7 +3096,6 @@
   }
 
   .approval-qaction-summary {
-    grid-template-columns: 1fr 1fr;
   }
 }
 
@@ -3941,10 +3931,9 @@
 .approval-quotation-head-details {
   min-width: 0;
   display: grid;
-  grid-template-columns: minmax(100px, 0.7fr) minmax(230px, 1.55fr) minmax(
-      135px,
-      0.9fr
-    ) minmax(90px, 0.65fr);
+  grid-template-columns:
+    minmax(100px, 0.7fr) minmax(230px, 1.55fr) minmax(135px, 0.9fr)
+    minmax(90px, 0.65fr);
   align-items: center;
   gap: 0;
 }
@@ -5376,8 +5365,6 @@
   }
 
   #approval-management-root .approval-md-main-row td {
-    padding-left: 8px;
-    padding-right: 8px;
   }
 }
 
@@ -5938,8 +5925,6 @@
   }
 
   .approval-replacement-modal-content {
-    max-height: 94vh;
-    padding: 10px;
   }
 
   .approval-replacement-modal-close {
@@ -6375,7 +6360,6 @@
   }
 
   .approval-replacement-detail-actions button {
-    width: 100%;
   }
 }
 
@@ -7673,10 +7657,136 @@
   line-height: 1.35;
 }
 
-#approval-management-root table td,
-#approval-management-root table td strong,
-#approval-management-root table td span,
-#approval-management-root table td small,
+#approval-management-root
+  :is(
+    .approval-table,
+    .approval-quotation-main-table,
+    .approval-replacement-table,
+    .approval-amount-table
+  )
+  tbody
+  td,
+#approval-management-root
+  :is(
+    .approval-table,
+    .approval-quotation-main-table,
+    .approval-replacement-table,
+    .approval-amount-table
+  )
+  tbody
+  td
+  > :is(small, a),
+#approval-management-root
+  :is(
+    .approval-table,
+    .approval-quotation-main-table,
+    .approval-replacement-table,
+    .approval-amount-table
+  )
+  tbody
+  td
+  > span:not(.approval-status):not(.approval-md-status) {
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  letter-spacing: normal;
+}
+
+/* Emphasize only primary fields, IDs, totals and changed amounts. */
+#approval-management-root
+  :is(
+    .approval-table,
+    .approval-quotation-main-table,
+    .approval-replacement-table,
+    .approval-amount-table
+  )
+  tbody
+  td
+  > strong {
+  font-size: 12px !important;
+  font-weight: 700 !important;
+}
+
+/* Unified visible row typography across all four approval tabs. */
+#approval-management-root
+  :is(.approval-md-trip, .approval-replacement-order-id) {
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  letter-spacing: normal !important;
+}
+
+#approval-management-root
+  :is(
+    .approval-md-client,
+    .approval-quotation-customer,
+    .approval-replacement-order strong
+  ) {
+  font-size: 12px !important;
+  font-weight: 700 !important;
+}
+
+#approval-management-root
+  :is(
+    .approval-md-route,
+    .approval-quotation-route,
+    .approval-replacement-order
+  )
+  :is(span, strong, b),
+#approval-management-root .approval-md-route {
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  letter-spacing: normal !important;
+}
+
+#approval-management-root
+  :is(
+    .approval-md-placement,
+    .approval-quotation-row-value,
+    .approval-replacement-placement
+  ) {
+  font-size: 12px !important;
+  font-weight: 500 !important;
+}
+
+#approval-management-root
+  :is(
+    .approval-md-rate,
+    .approval-replacement-qty,
+    .approval-quotation-confirmed-count,
+    .approval-amount-table td strong
+  ) {
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  letter-spacing: normal !important;
+}
+
+#approval-management-root :is(.approval-md-terms, .approval-md-sla) {
+  font-size: 11px !important;
+  font-weight: 400 !important;
+}
+
+#approval-management-root :is(.approval-md-terms, .approval-md-sla) strong {
+  font-size: 11px !important;
+  font-weight: 700 !important;
+}
+
+#approval-management-root.approval-management-page
+  :is(.approval-table, .approval-replacement-table, .approval-amount-table)
+  tbody
+  tr
+  td
+  :is(
+    .approval-md-movement,
+    .approval-quotation-movement,
+    .approval-replacement-movement,
+    .approval-status,
+    .approval-md-status,
+    .approval-quotation-requirement-count
+  ) {
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  letter-spacing: normal !important;
+}
+
 #approval-management-root .approval-order-details-modal table td,
 #approval-management-root .approval-order-details-modal table td strong,
 #approval-management-root .approval-order-details-modal table td span,
@@ -7685,7 +7795,7 @@
 #approval-management-root .approval-quotation-modal table td strong,
 #approval-management-root .approval-quotation-modal table td span,
 #approval-management-root .approval-quotation-modal table td small {
-  font-size: 11px;
+  font-size: 12px !important;
 }
 
 /* Standard table headings */
@@ -7695,10 +7805,18 @@
   line-height: 1.3;
 }
 
-#approval-management-root table th,
+#approval-management-root
+  :is(
+    .approval-table,
+    .approval-quotation-main-table,
+    .approval-replacement-table,
+    .approval-amount-table
+  )
+  thead
+  th,
 #approval-management-root .approval-order-details-modal table th,
 #approval-management-root .approval-quotation-modal table th {
-  font-size: 9px;
+  font-size: 10px !important;
 }
 
 /* Standard field labels in popup cards */
@@ -8690,11 +8808,13 @@
 #approval-management-root .approval-replacement-order-id,
 #approval-management-root .approval-replacement-order strong,
 #approval-management-root .approval-replacement-qty {
-  font-size: 9.5px;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 #approval-management-root .approval-replacement-order span {
-  font-size: 8.5px;
+  font-size: 12px;
+  font-weight: 500;
 }
 
 #approval-management-root .approval-replacement-movement {
@@ -8971,6 +9091,29 @@
 .approval-amount-table td strong {
   color: var(--ap-primary-dark);
   font-weight: 850;
+}
+
+/* New Amount: compact highlight matching movement-type badges. */
+#approval-management-root
+  .approval-amount-table
+  tbody
+  td:nth-child(5)
+  > strong {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 100%;
+  min-height: 28px;
+  padding: 4px 11px;
+  border: 1px solid #a8dcd5;
+  border-radius: 999px;
+  background: #eaf7f5;
+  color: #08786e;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: normal;
+  white-space: nowrap;
 }
 
 @keyframes approvalUnreadAppear {
@@ -9694,10 +9837,9 @@
 @media (max-width: 900px) {
   .ar-columns,
   .ar-request > summary {
-    grid-template-columns: 145px minmax(120px, 1fr) minmax(
-        145px,
-        0.9fr
-      ) 80px 14px;
+    grid-template-columns:
+      145px minmax(120px, 1fr) minmax(145px, 0.9fr)
+      80px 14px;
     gap: 10px;
   }
   .ar-details dl {
@@ -9721,7 +9863,6 @@
   }
   .ar-toolbar {
     padding: 10px 12px;
-    flex-wrap: wrap;
   }
   .ar-body {
     padding: 0 12px 12px;
@@ -9742,7 +9883,6 @@
     grid-row: 2;
   }
   .ar-money {
-    grid-column: 1/-1;
     grid-row: 3;
   }
   .ar-status {
@@ -9751,7 +9891,6 @@
   }
   .ar-expand {
     grid-column: 3;
-    grid-row: 1;
   }
   .ar-review {
     flex-direction: column;
@@ -9764,7 +9903,6 @@
     padding: 0 8px 12px;
   }
   .ar-wide {
-    grid-column: 1/-1;
   }
   .ar-filters button {
     padding: 6px 8px;
@@ -9772,4 +9910,16 @@
   .ar-footer {
     padding: 10px 14px;
   }
+}
+
+/* Bold all Approval Management tabs */
+#approval-management-root .approval-tabs > button {
+  font-size: 12px;
+  font-weight: 700 !important;
+}
+
+/* Active tab - bold with existing highlight */
+#approval-management-root .approval-tabs > button.active {
+  font-weight: 800 !important;
+  color: var(--ap-primary);
 }

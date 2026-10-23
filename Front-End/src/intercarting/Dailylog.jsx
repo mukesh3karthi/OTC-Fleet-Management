@@ -18,7 +18,7 @@ import {
   Search,
   X,
 } from "lucide-react";
-import "../Intercartingcss/dailylog.css";
+import "./dailylog.css";
 const API_BASE_URL = (
   import.meta.env.VITE_API_URL ||
   "http://localhost:5000"
@@ -304,7 +304,7 @@ const isVehicleAvailableOnDate = (vehicle, selectedDate) => {
 };
 const getVehicleStatus = (vehicle) => {
   const status = normalizeText(
-    vehicle.vehicleStatus || vehicle.status
+    vehicle.status || vehicle.vehicleStatus
   );
   if (
     status === "under maintenance" ||
@@ -322,9 +322,10 @@ const getVehicleStatus = (vehicle) => {
     status === "inactive" ||
     status === "off duty" ||
     status === "off-duty" ||
+    status === "released" ||
     vehicle.activeStatus === false
   ) {
-    return "Inactive";
+    return "Released";
   }
   return "Active";
 };
@@ -1539,6 +1540,7 @@ const Dailylog = () => {
                           <option value="Under Induction">
                             Under Induction
                           </option>
+                          <option value="Released">Released</option>
                         </select>
                       </td>
                       <td>
