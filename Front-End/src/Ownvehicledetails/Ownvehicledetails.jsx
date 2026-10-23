@@ -11,15 +11,16 @@ import { createPortal } from "react-dom";
 import {
   ChevronLeft,
   ChevronRight,
+  CircleCheck,
   FolderOpen,
   MoreVertical,
   Pencil,
   Plus,
   Trash2,
+  Wrench,
 } from "lucide-react";
 
-import "../Ownvehicledetails/ownvehicledetails.css";
-// import "../pagescss/ownvehicledetails-actions.css";
+import "./ownvehicledetails.css";
 
 import DocumentUploadModal, {
   createInitialDocuments,
@@ -322,14 +323,19 @@ const Ownvehicledetails = () => {
      Statistics
   ========================================== */
 
-  const gpsAvailableCount =
+  const activeVehiclesCount =
     vehicles.filter(
-      (vehicle) => vehicle.gps === true
+      (vehicle) =>
+        String(vehicle.status || vehicle.vehicleStatus || "")
+          .trim()
+          .toLowerCase() === "active"
     ).length;
 
-  const withoutGpsCount =
+  const maintenanceVehiclesCount =
     vehicles.filter(
-      (vehicle) => vehicle.gps !== true
+      (vehicle) =>
+        ["maintenance", "in maintenance", "under maintenance", "undermaintenance"]
+          .includes(String(vehicle.status || vehicle.vehicleStatus || "").trim().toLowerCase())
     ).length;
 
   const currentYear = String(
@@ -759,7 +765,7 @@ const Ownvehicledetails = () => {
         <div>
           <span className="ownvehicle-page-eyebrow">Fleet Management</span>
           <h1>Own Vehicle Management</h1>
-          <p>Manage company-owned vehicles, GPS availability, documents, purchase details and vehicle records.</p>
+          <p>Manage company-owned vehicles, fleet status, documents, purchase details and vehicle records.</p>
         </div>
       </div>
 {/* API error */}
@@ -791,27 +797,27 @@ const Ownvehicledetails = () => {
 
         <article className="stat-card">
           <div className="stat-details">
-            <h4>GPS Available</h4>
+            <h4>Active Vehicles</h4>
 
             <h2>
-              {gpsAvailableCount}
+              {activeVehiclesCount}
             </h2>
           </div>
 
           <div className="stat-icon">
-            GPS
+            <CircleCheck size={25} />
           </div>
         </article>
 
         <article className="stat-card">
           <div className="stat-details">
-            <h4>Without GPS</h4>
+            <h4>In Maintenance</h4>
 
-            <h2>{withoutGpsCount}</h2>
+            <h2>{maintenanceVehiclesCount}</h2>
           </div>
 
           <div className="stat-icon">
-            GPS
+            <Wrench size={25} />
           </div>
         </article>
 
@@ -873,9 +879,9 @@ const Ownvehicledetails = () => {
               <th>Transport Owner</th>
               <th>Engine No.</th>
               <th>Chassis No.</th>
-              <th>GPS</th>
+              {/* <th>GPS</th> */}
               <th>Purchase Year</th>
-              <th>Purchased From</th>
+              {/* <th>Purchased From</th> */}
               <th>Documents</th>
               <th>Actions</th>
             </tr>
@@ -953,7 +959,7 @@ const Ownvehicledetails = () => {
                       {vehicle.chassisNo || "-"}
                     </td>
 
-                    <td>
+                    {/* <td>
                       <span
                         className={`status-badge ${vehicle.gps
                             ? "status-active"
@@ -964,17 +970,17 @@ const Ownvehicledetails = () => {
                           ? "Available"
                           : "Not Available"}
                       </span>
-                    </td>
+                    </td> */}
 
                     <td>
                       {vehicle.purchaseYear ||
                         "-"}
                     </td>
 
-                    <td>
+                    {/* <td>
                       {vehicle.purchasedFrom ||
                         "-"}
-                    </td>
+                    </td> */}
 
                     <td>
                       <button

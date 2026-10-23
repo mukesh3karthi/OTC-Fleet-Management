@@ -65,10 +65,6 @@ const normalizeStatus = (vehicle) => {
     return "Under Induction";
   }
 
-  if (status === "under induction" || status === "underinduction") {
-    return "Under Induction";
-  }
-
   if (
     status === "inactive" ||
     status === "released" ||

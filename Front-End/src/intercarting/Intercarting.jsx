@@ -241,9 +241,7 @@ export default function Intercarting() {
             </ResponsiveContainer>
           </div>
         )}
-        <p className="fleet-chart-note">
-          Based on saved Daily Logs records. Blank days are counted as zero.
-        </p>
+        
       </section>
     </main>
   );

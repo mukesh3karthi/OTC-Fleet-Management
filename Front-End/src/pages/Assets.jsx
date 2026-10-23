@@ -2607,7 +2607,7 @@ const Assets = () => {
                 </p>
               </div>
 
-              <div className="assets-table-export-actions">
+              {/* <div className="assets-table-export-actions">
                 <button
                   type="button"
                   className="assets-export-button excel"
@@ -2647,7 +2647,7 @@ const Assets = () => {
                     ? "Preparing..."
                     : "All PDF"}
                 </button>
-              </div>
+              </div> */}
             </div>
 
             <div className="assets-table-wrapper">

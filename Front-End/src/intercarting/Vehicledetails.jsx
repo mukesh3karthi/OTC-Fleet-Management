@@ -733,6 +733,10 @@ const Vehicledetails = () => {
 
   const filteredVehicles = useMemo(() => {
     return vehicles.filter((vehicle) => {
+      // Released vehicles remain saved, but are hidden from the Asset List.
+      const vehicleStatus = getVehicleStatus(vehicle);
+      if (vehicleStatus === "Released") return false;
+
       const searchableValues = [
         vehicle.vehicleNumber,
         vehicle.siteName,
@@ -754,8 +758,7 @@ const Vehicledetails = () => {
         !normalizedSearch ||
         searchableValues.some((value) => value.includes(normalizedSearch));
 
-      const matchesStatus =
-        status === "All Status" || getVehicleStatus(vehicle) === status;
+      const matchesStatus = status === "All Status" || vehicleStatus === status;
 
       return matchesSearch && matchesStatus;
     });
@@ -913,8 +916,6 @@ const Vehicledetails = () => {
 
                 <option value="Maintenance">Maintenance</option>
                 <option value="Under Induction">Under Induction</option>
-
-                <option value="Released">Released</option>
               </select>
             </label>
           </div>

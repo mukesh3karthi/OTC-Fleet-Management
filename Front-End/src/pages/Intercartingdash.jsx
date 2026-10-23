@@ -11,7 +11,7 @@ import {
   ChevronLeft,
   ChevronRight,
   CircleCheck,
-  PauseCircle,
+  Files,
   Search,
   Truck,
   Wrench,
@@ -156,6 +156,21 @@ const getVehicleStatus = (
     key: "inactive",
     label: "Inactive",
   };
+};
+
+const hasVehicleDocuments = (vehicle) => {
+  const fileFields = ["filePath", "fileName", "originalName", "url", "path", "documentUrl"];
+  const hasFile = (value) => {
+    if (!value) return false;
+    if (typeof value === "string") return Boolean(value.trim());
+    if (Array.isArray(value)) return value.some(hasFile);
+    if (typeof value === "object") {
+      if (fileFields.some((field) => typeof value[field] === "string" && value[field].trim())) return true;
+      return Object.values(value).some((entry) => entry && typeof entry === "object" && hasFile(entry));
+    }
+    return false;
+  };
+  return hasFile(vehicle?.documents) || hasFile(vehicle?.documentFiles);
 };
 /* =========================================================
    MONGODB DATE
@@ -475,6 +490,7 @@ const Intercartingdash = () => {
           active,
           maintenance,
           inactive,
+          documents: vehicles.filter(hasVehicleDocuments).length,
         };
       },
       [
@@ -825,7 +841,7 @@ const Intercartingdash = () => {
               }
             </strong>
             <small>
-              Registered fleet assets
+              Registered Vehicles
             </small>
           </div>
         </article>
@@ -842,7 +858,7 @@ const Intercartingdash = () => {
           </div>
           <div>
             <span>
-              Active On-Road
+              Active Vehicles
             </span>
             <strong>
               {
@@ -851,7 +867,7 @@ const Intercartingdash = () => {
               }
             </strong>
             <small>
-              Currently operational
+              Active Vehicles
             </small>
           </div>
         </article>
@@ -868,7 +884,7 @@ const Intercartingdash = () => {
           </div>
           <div>
             <span>
-              In Maintenance
+              Maintenance
             </span>
             <strong>
               {
@@ -877,33 +893,33 @@ const Intercartingdash = () => {
               }
             </strong>
             <small>
-              Under service
+              Maintenance Vehicles
             </small>
           </div>
         </article>
-        {/* OFF DUTY */}
+        {/* DOCUMENTS */}
         <article
           className="intercarting-stat-card inactive-card"
         >
           <div
             className="intercarting-stat-icon inactive"
           >
-            <PauseCircle
+            <Files
               size={23}
             />
           </div>
           <div>
             <span>
-              Off-Duty
+              Documents
             </span>
             <strong>
               {
                 vehicleStatistics
-                  .inactive
+                  .documents
               }
             </strong>
             <small>
-              Currently inactive
+              Vehicles with Documents
             </small>
           </div>
         </article>

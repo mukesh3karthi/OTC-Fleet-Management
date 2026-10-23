@@ -512,7 +512,7 @@ const Dailylog = () => {
         [
           vehicle.vehicleNumber,
           vehicle.driverNumber,
-          vehicle.transportProvider,
+          vehicle.vendorName,
           vehicle.vehicleType,
           vehicle.siteName,
           vehicle.driverName,
@@ -587,7 +587,7 @@ const Dailylog = () => {
     "S.No": index + 1,
     "Vehicle No": vehicle.vehicleNumber || "-",
     "Driver Phone No": vehicle.driverNumber || "-",
-    "Transport Name": vehicle.transportProvider || "-",
+    "Vendor Name": vehicle.vendorName || "-",
     "Vehicle Type": vehicle.vehicleType || "-",
     "Site Name": vehicle.siteName || "-",
     "Month Open KM": displayKm(vehicle.monthOpenKm),
@@ -642,7 +642,7 @@ const Dailylog = () => {
           "S.No",
           "Vehicle No",
           "Driver Phone",
-          "Transport Name",
+          "Vendor Name",
           "Vehicle Type",
           "Site Name",
           "Month Open KM",
@@ -691,7 +691,7 @@ const Dailylog = () => {
         ...vehicle,
         vehicleNumber: vehicle.vehicleNumber ?? "",
         driverNumber: vehicle.driverNumber ?? "",
-        transportProvider: vehicle.transportProvider ?? "",
+        vendorName: vehicle.vendorName ?? "",
         vehicleType: vehicle.vehicleType ?? "",
         siteName: vehicle.siteName ?? "",
         monthOpenKm: zeroToEmpty(vehicle.monthOpenKm),
@@ -828,8 +828,6 @@ const Dailylog = () => {
           row.siteName?.trim() || "",
         vehicleType:
           row.vehicleType?.trim() || "",
-        transportProvider:
-          row.transportProvider?.trim() || "",
         dieselScope:
           row.dieselScope?.trim() || "",
         hireAmount:
@@ -1191,7 +1189,7 @@ const Dailylog = () => {
               <th>S.NO</th>
               <th>VEHICLE NO</th>
               <th>DRIVER PH NO</th>
-              <th>TRANSPORT NAME</th>
+              <th>VENDOR NAME</th>
               <th>TYPE OF VEHICLE</th>
               <th>SITE NAME</th>
               <th>MONTH OPEN KM</th>
@@ -1222,7 +1220,7 @@ const Dailylog = () => {
                   <td>{(currentPage - 1) * rowsPerPage + index + 1}</td>
                   <td>{vehicle.vehicleNumber || "-"}</td>
                   <td>{vehicle.driverNumber || "-"}</td>
-                  <td>{vehicle.transportProvider || "-"}</td>
+                  <td>{vehicle.vendorName || "-"}</td>
                   <td>{vehicle.vehicleType || "-"}</td>
                   <td>{vehicle.siteName || "-"}</td>
                   <td>{displayKm(vehicle.monthOpenKm)}</td>
@@ -1357,7 +1355,7 @@ const Dailylog = () => {
                     <th>S.No</th>
                     <th>Vehicle No</th>
                     <th>Driver Phone</th>
-                    <th>Transport Name</th>
+                    <th>Vendor Name</th>
                     <th>Vehicle Type</th>
                     <th>Site Name</th>
                     <th>Month Open KM</th>
@@ -1403,11 +1401,11 @@ const Dailylog = () => {
                       <td>
                         <input
                           type="text"
-                          value={row.transportProvider}
+                          value={row.vendorName}
                           onChange={(event) =>
                             handleBulkChange(
                               rowIndex,
-                              "transportProvider",
+                              "vendorName",
                               event.target.value
                             )
                           }

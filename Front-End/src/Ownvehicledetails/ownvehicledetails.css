@@ -380,13 +380,13 @@
   width: 100%;
   overflow-x: auto;
   overflow-y: visible;
-  border: 1px solid #c5dde1;
+  border: 1px solid #d9e6e9;
   border-radius: 0 0 11px 11px;
   background: #ffffff;
   box-shadow:
     0 5px 14px rgba(15, 23, 42, 0.035);
   scrollbar-width: thin;
-  scrollbar-color: #b9ced3 transparent;
+  scrollbar-color: #9fc8c8 #f3f8f9;
 }
 
 .ownvehicle-page .table-container::-webkit-scrollbar {
@@ -410,48 +410,81 @@
    TABLE
 \========================================================= */
 .ownvehicle-page .vehicle-table {
+  display: table;
   width: 100%;
-  min-width: 1320px;
+  min-width: 1370px;
+  table-layout: fixed;
   border-collapse: collapse;
 }
 
+/* Explicit tracks prevent a long value from widening the entire table. */
+.ownvehicle-page .vehicle-table thead,
+.ownvehicle-page .vehicle-table tbody {
+  display: table-row-group;
+  width: 100%;
+}
+
 .ownvehicle-page .vehicle-table thead {
-  background: #eaf7f6;
+  display: table-header-group;
+}
+
+.ownvehicle-page .vehicle-table thead tr,
+.ownvehicle-page .vehicle-table tbody tr {
+  display: table-row;
+  width: 100%;
+}
+
+.ownvehicle-page .vehicle-table thead {
+  background: #eef7f7;
 }
 
 .ownvehicle-page .vehicle-table th,
 .ownvehicle-page .vehicle-table td {
-  padding: 7px 9px;
-  border-bottom: 1px solid #e1ebed;
+  display: table-cell;
+  min-width: 0;
+  width: auto;
+  padding: 12px 10px;
+  border-bottom: 1px solid #e5edef;
   text-align: left;
   vertical-align: middle;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+.ownvehicle-page .vehicle-table td.no-data {
+  text-align: center;
 }
 
 /* TABLE HEADER */
 .ownvehicle-page .vehicle-table th {
-  color: #536f7d;
-  font-size: 9px;
+  color: #24506a;
+  font-size: 10px;
   font-weight: 700;
-  line-height: 1.3;
-  letter-spacing: 0.04em;
+  line-height: 1.35;
+  letter-spacing: 0.01em;
   text-transform: uppercase;
+  hyphens: none;
 }
 
 /* TABLE DATA */
 .ownvehicle-page .vehicle-table td {
-  color: #536f7d;
-  font-size: 10px;
-  font-weight: 500;
-  line-height: 1.4;
+  color: #213b50;
+  font-size: 11px;
+  font-weight: 550;
+  line-height: 1.45;
 }
 
 .ownvehicle-page .vehicle-table tbody tr {
   transition: background-color 0.18s ease;
 }
 
+.ownvehicle-page .vehicle-table tbody tr:nth-child(even) {
+  background: #f8fbfc;
+}
+
 .ownvehicle-page .vehicle-table tbody tr:hover {
-  background: #f8fbfb;
+  background: #eaf7f5;
 }
 
 .ownvehicle-page .vehicle-table tbody tr:last-child td {
@@ -460,14 +493,33 @@
 
 .ownvehicle-page .vehicle-table th:first-child,
 .ownvehicle-page .vehicle-table td:first-child {
-  padding-left: 15px;
+  padding-left: 12px;
 }
 
 .ownvehicle-page .vehicle-table th:last-child,
 .ownvehicle-page .vehicle-table td:last-child {
-  padding-right: 15px;
+  padding-right: 12px;
   text-align: center;
 }
+
+.ownvehicle-page .vehicle-table th:nth-child(11),
+.ownvehicle-page .vehicle-table td:nth-child(11) {
+  text-align: center;
+}
+
+/* Widths match the 12 visible JSX columns; GPS and Purchased From are commented out. */
+.ownvehicle-page .vehicle-table th:nth-child(1) { width: 4%; }
+.ownvehicle-page .vehicle-table th:nth-child(2) { width: 9%; }
+.ownvehicle-page .vehicle-table th:nth-child(3) { width: 9%; }
+.ownvehicle-page .vehicle-table th:nth-child(4) { width: 10%; }
+.ownvehicle-page .vehicle-table th:nth-child(5) { width: 10%; }
+.ownvehicle-page .vehicle-table th:nth-child(6) { width: 10%; }
+.ownvehicle-page .vehicle-table th:nth-child(7) { width: 10%; }
+.ownvehicle-page .vehicle-table th:nth-child(8) { width: 10%; }
+.ownvehicle-page .vehicle-table th:nth-child(9) { width: 10%; }
+.ownvehicle-page .vehicle-table th:nth-child(10) { width: 7%; }
+.ownvehicle-page .vehicle-table th:nth-child(11) { width: 7%; }
+.ownvehicle-page .vehicle-table th:nth-child(12) { width: 4%; }
 
 /* =========================================================
    VEHICLE NUMBER
@@ -475,7 +527,7 @@
 .ownvehicle-page .vehicle-number {
   display: inline-block;
   color: #079b91;
-  font-size: 10px;
+  font-size: 10.5px;
   font-weight: 700;
   letter-spacing: 0.25px;
   white-space: nowrap;
@@ -485,12 +537,12 @@
    STATUS BADGES
 \========================================================= */
 .ownvehicle-page .status-badge {
-  min-width: 76px;
-  min-height: 24px;
+  min-width: 0;
+  min-height: 23px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 3px 9px;
+  padding: 3px 7px;
   border: 1px solid transparent;
   border-radius: 999px;
   font-size: 9px;
@@ -523,14 +575,31 @@
    UPLOAD BUTTON
 \========================================================= */
 .ownvehicle-page .upload-btn {
-  min-height: 29px;
-  padding: 0 10px;
+  min-height: 28px;
+  min-width: 0;
+  max-width: 100%;
+  padding: 4px 6px;
+  gap: 4px;
   border: 1px solid #bde8e2;
-  border-radius: 7px;
+  border-radius: 8px;
   background: #eaf7f6;
   color: #079b91;
-  font-size: 9px;
-  font-weight: 600;
+  font-size: 10px;
+  font-weight: 650;
+  line-height: 1;
+  white-space: nowrap;
+  flex-wrap: nowrap;
+}
+
+.ownvehicle-page .upload-btn span {
+  white-space: nowrap;
+  overflow-wrap: normal;
+}
+
+.ownvehicle-page .upload-btn svg {
+  flex-shrink: 0;
+  width: 13px;
+  height: 13px;
 }
 
 .ownvehicle-page .upload-btn:hover {
