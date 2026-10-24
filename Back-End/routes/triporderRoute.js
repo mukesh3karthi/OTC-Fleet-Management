@@ -10,6 +10,7 @@ router.use(tripAccess);
 
 const {
   saveInvoicePayment,
+  addInvoicePayment,
   downloadInvoicePaymentDocument,  saveCraneJourney,
   saveCraneJourneyDocument,
   downloadCraneJourneyDocument,
@@ -692,6 +693,7 @@ router.put("/:id/invoice-payment", (req, res, next) => {
     return next();
   });
 }, saveInvoicePayment);
+router.post("/:id/invoice-payment/payments", addInvoicePayment);
 router.get("/:id/invoice-payment/:documentType/file", downloadInvoicePaymentDocument);
 
 module.exports = router;

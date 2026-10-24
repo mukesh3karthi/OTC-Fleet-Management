@@ -1572,6 +1572,16 @@ const invoiceFileSchema = new Schema(
 );
 const invoicePaymentSchema = new Schema(
   {
+    payments: {
+      type: [new Schema({
+        amount: { type: Number, required: true, min: 0.01 },
+        paymentDate: { type: String, required: true },
+        remarks: { type: String, trim: true, maxlength: 2000, default: "" },
+        receivedBy: { type: String, default: "" },
+        createdAt: { type: Date, default: Date.now },
+      })],
+      default: [],
+    },
     proFormaInvoiceNumber: {
       type: String,
       trim: true,

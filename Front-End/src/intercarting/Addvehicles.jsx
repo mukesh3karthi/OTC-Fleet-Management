@@ -18,6 +18,10 @@ import "./Addvehicle.css";
 
 const API_BASE_URL = (import.meta.env.VITE_API_URL || "http://localhost:5000").replace(/\/+$/, "");
 const VEHICLES_URL = `${API_BASE_URL}/api/vehicles`;
+const VEHICLE_TYPE_CHOICES = [
+  "T1", "T2", "T3", "T4", "T5", "SLBT", "LBT", "Blade",
+  "I crown", "II crown", "Axle Puller", "Towing puller",
+];
 
 const createInitialState = () => ({
   vehicleNumber: "",
@@ -691,67 +695,29 @@ const Addvehicles = ({
                 Vehicle Type
               </label>
 
-              <select
+              <input
                 id="vehicleType"
                 name="vehicleType"
-                value={
-                  formData.vehicleType
-                }
-                onChange={handleChange}
+                type="text"
+                list="vehicleTypeSuggestions"
+                value={formData.vehicleType}
+                onChange={(event) => {
+                  setFormData((previous) => ({
+                    ...previous,
+                    vehicleType: event.target.value.slice(0, 80),
+                  }));
+                  clearFieldError("vehicleType");
+                }}
+                placeholder="Select or type vehicle type"
+                maxLength={80}
+                autoComplete="off"
                 disabled={saving}
-              >
-                <option value="">
-                  Select type
-                </option>
-
-                <option value="T1">
-                  T1
-                </option>
-
-                <option value="T2">
-                  T2
-                </option>
-
-                <option value="T3">
-                  T3
-                </option>
-
-                <option value="T4">
-                  T4
-                </option>
-
-                <option value="T5">
-                  T5
-                </option>
-
-                <option value="SLBT">
-                  SLBT
-                </option>
-
-                <option value="LBT">
-                  LBT
-                </option>
-
-                <option value="Blade">
-                  Blade
-                </option>
-
-                <option value="I crown">
-                  I crown
-                </option>
-
-                <option value="II crown">
-                  II crown
-                </option>
-
-                <option value="Axle Puller">
-                  Axle Puller
-                </option>
-
-                <option value="Towing puller">
-                  Towing puller
-                </option>
-              </select>
+              />
+              <datalist id="vehicleTypeSuggestions">
+                {VEHICLE_TYPE_CHOICES.map((type) => (
+                  <option key={type} value={type} />
+                ))}
+              </datalist>
             </div>
 
             <div className="add-vehicle-form-group">
@@ -915,7 +881,7 @@ const Addvehicles = ({
               <select id="status" name="status" value={formData.status}
                 onChange={handleChange} disabled={saving}>
                 <option value="Active">Active</option>
-                <option value="Maintenance">Maintenance</option>
+                <option value="Maintenance">Under Maintenance</option>
                 <option value="Under Induction">Under Induction</option>
                 <option value="Released">Released</option>
               </select>

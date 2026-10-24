@@ -1091,6 +1091,142 @@ const Lifecyclemodal = ({
   const proFormaDocumentInputRef = useRef(null);
   const [invoiceDocument, setInvoiceDocument] = useState(null);
   const invoiceDocumentInputRef = useRef(null);
+  const [invoiceSaving, setInvoiceSaving] = useState(false);
+  const [paymentSaving, setPaymentSaving] = useState(false);
+  const [paymentEntryOpen, setPaymentEntryOpen] = useState(false);
+  const [paymentEntry, setPaymentEntry] = useState({
+    amount: "",
+    paymentDate: "",
+    remarks: "",
+  });
+  const invoiceData = workingOrder?.invoicePayment || {};
+  const finalRateString = String(
+    workingOrder?.orderFinalization?.finalRate ?? workingOrder?.finalRate ?? "",
+  ).replace(/[₹,\s]/g, "");
+  const totalPayable = Number(finalRateString);
+  const hasFinalRate =
+    finalRateString !== "" && Number.isFinite(totalPayable) && totalPayable > 0;
+  const payments =
+    Array.isArray(invoiceData.payments) && invoiceData.payments.length
+      ? invoiceData.payments
+      : Number(invoiceData.receivedAmount) > 0 && invoiceData.paymentDate
+        ? [
+            {
+              _id: "previous-payment",
+              amount: Number(invoiceData.receivedAmount),
+              paymentDate: invoiceData.paymentDate,
+              remarks: invoiceData.paymentRemarks || "",
+              receivedBy: invoiceData.updatedBy || "",
+            },
+          ]
+        : [];
+  const receivedTotal =
+    payments.reduce(
+      (sum, item) => sum + Math.round(Number(item.amount || 0) * 100),
+      0,
+    ) / 100;
+  const dueBalance = hasFinalRate
+    ? Math.max(0, Math.round(totalPayable * 100 - receivedTotal * 100) / 100)
+    : 0;
+  const formatRupees = (amount) =>
+    `₹${Number(amount || 0).toLocaleString("en-IN", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`;
+  useEffect(() => {
+    setInvoicePaymentForm((previous) => ({
+      ...previous,
+      proFormaInvoiceNumber: invoiceData.proFormaInvoiceNumber || "",
+      invoiceNumber: invoiceData.invoiceNumber || "",
+    }));
+  }, [
+    workingOrder?._id,
+    invoiceData.proFormaInvoiceNumber,
+    invoiceData.invoiceNumber,
+  ]);
+  const saveInvoiceDetails = async () => {
+    if (!workingOrder?._id) return;
+    setInvoiceSaving(true);
+    try {
+      const form = new FormData();
+      form.append(
+        "proFormaInvoiceNumber",
+        invoicePaymentForm.proFormaInvoiceNumber.trim(),
+      );
+      form.append("invoiceNumber", invoicePaymentForm.invoiceNumber.trim());
+      if (proFormaDocument) form.append("proFormaDocument", proFormaDocument);
+      if (invoiceDocument) form.append("invoiceDocument", invoiceDocument);
+      const response = await lifecycleApiFetch(
+        `${TRIP_API_URL}/${workingOrder._id}/invoice-payment`,
+        {
+          method: "PUT",
+          body: form,
+        },
+      );
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok)
+        throw new Error(payload.message || "Unable to save invoice details.");
+      const updated = payload.data || payload.trip || payload.order;
+      if (!updated?._id) throw new Error("Updated order was not returned.");
+      setLocalOrder(updated);
+      if (typeof onOrderUpdated === "function") onOrderUpdated(updated);
+      setProFormaDocument(null);
+      setInvoiceDocument(null);
+      if (proFormaDocumentInputRef.current)
+        proFormaDocumentInputRef.current.value = "";
+      if (invoiceDocumentInputRef.current)
+        invoiceDocumentInputRef.current.value = "";
+      showToast("Invoice details saved successfully.");
+    } catch (error) {
+      showToast(error.message || "Unable to save invoice details.", "error");
+    } finally {
+      setInvoiceSaving(false);
+    }
+  };
+  const savePaymentInstallment = async () => {
+    const amount = Number(paymentEntry.amount);
+    if (!hasFinalRate)
+      return showToast("Set Final Rate in Order Finalization first.", "error");
+    if (
+      !paymentEntry.amount ||
+      !Number.isFinite(amount) ||
+      amount <= 0 ||
+      Math.abs(amount * 100 - Math.round(amount * 100)) > 0.000001
+    )
+      return showToast(
+        "Enter a positive amount with up to two decimals.",
+        "error",
+      );
+    if (Math.round(amount * 100) > Math.round(dueBalance * 100))
+      return showToast("Payment exceeds the remaining balance.", "error");
+    if (!paymentEntry.paymentDate)
+      return showToast("Select a payment date.", "error");
+    setPaymentSaving(true);
+    try {
+      const response = await lifecycleApiFetch(
+        `${TRIP_API_URL}/${workingOrder._id}/invoice-payment/payments`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(paymentEntry),
+        },
+      );
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok)
+        throw new Error(payload.message || "Unable to add payment.");
+      const updated = payload.data || payload.trip || payload.order;
+      if (!updated?._id) throw new Error("Updated order was not returned.");
+      setLocalOrder(updated);
+      if (typeof onOrderUpdated === "function") onOrderUpdated(updated);
+      setPaymentEntry({ amount: "", paymentDate: "", remarks: "" });
+      setPaymentEntryOpen(false);
+      showToast("Partial payment saved successfully.");
+    } catch (error) {
+      showToast(error.message || "Unable to add payment.", "error");
+    } finally {
+      setPaymentSaving(false);
+    }
+  };
   useEffect(() => {
     setInvoicePaymentForm({
       proFormaInvoiceNumber: "",
@@ -3886,119 +4022,241 @@ const Lifecyclemodal = ({
               <section className="kam-invoice-common-section">
                 <div className="kam-invoice-common-heading">
                   <h3>Invoice & Payment</h3>
-                  <span>Trip ID: <strong>{order?.tripId || "—"}</strong></span>
+                  <span>
+                    Trip ID: <strong>{order?.tripId || "—"}</strong>
+                  </span>
                 </div>
                 <div className="kam-invoice-groups">
                   <div className="kam-invoice-group">
-                    <h4 className="kam-invoice-subheading">Pro Forma Invoice</h4>
+                    <h4 className="kam-invoice-subheading">
+                      Pro Forma Invoice
+                    </h4>
                     <div className="kam-invoice-fields">
                       <label className="kam-client-trip-field">
-                    <span>Pro Forma Invoice Number</span>
-                    <input
-                      className="kam-original-edit-input"
-                      type="text"
-                      name="proFormaInvoiceNumber"
-                      maxLength={100}
-                      placeholder="Enter pro forma invoice number"
-                      value={invoicePaymentForm.proFormaInvoiceNumber}
-                      onChange={(event) =>
-                        updateInvoicePaymentField("proFormaInvoiceNumber", event.target.value)
-                      }
-                    />
-                  </label>
+                        <span>Pro Forma Invoice Number</span>
+                        <input
+                          className="kam-original-edit-input"
+                          type="text"
+                          name="proFormaInvoiceNumber"
+                          maxLength={100}
+                          placeholder="Enter pro forma invoice number"
+                          value={invoicePaymentForm.proFormaInvoiceNumber}
+                          onChange={(event) =>
+                            updateInvoicePaymentField(
+                              "proFormaInvoiceNumber",
+                              event.target.value,
+                            )
+                          }
+                        />
+                      </label>
                       <label className="kam-client-trip-field">
-                    <span>Pro Forma Invoice Document</span>
-                    <input
-                      ref={proFormaDocumentInputRef}
-                      className="kam-original-edit-input"
-                      type="file"
-                      name="proFormaDocument"
-                      accept=".pdf,.jpg,.jpeg,.png"
-                      onChange={(event) =>
-                        setProFormaDocument(event.target.files?.[0] || null)
-                      }
-                    />
-                    {proFormaDocument && <strong>{proFormaDocument.name}</strong>}
-                  </label>
+                        <span>Pro Forma Invoice Document</span>
+                        <input
+                          ref={proFormaDocumentInputRef}
+                          className="kam-original-edit-input"
+                          type="file"
+                          name="proFormaDocument"
+                          accept=".pdf,.jpg,.jpeg,.png"
+                          onChange={(event) =>
+                            setProFormaDocument(event.target.files?.[0] || null)
+                          }
+                        />
+                        {proFormaDocument && (
+                          <strong>{proFormaDocument.name}</strong>
+                        )}
+                      </label>
                     </div>
                   </div>
                   <div className="kam-invoice-group">
                     <h4 className="kam-invoice-subheading">Invoice</h4>
                     <div className="kam-invoice-fields">
                       <label className="kam-client-trip-field">
-                    <span>Invoice Number</span>
-                    <input
-                      className="kam-original-edit-input"
-                      type="text"
-                      name="invoiceNumber"
-                      maxLength={100}
-                      placeholder="Enter invoice number"
-                      value={invoicePaymentForm.invoiceNumber}
-                      onChange={(event) =>
-                        updateInvoicePaymentField("invoiceNumber", event.target.value)
-                      }
-                    />
-                  </label>
+                        <span>Invoice Number</span>
+                        <input
+                          className="kam-original-edit-input"
+                          type="text"
+                          name="invoiceNumber"
+                          maxLength={100}
+                          placeholder="Enter invoice number"
+                          value={invoicePaymentForm.invoiceNumber}
+                          onChange={(event) =>
+                            updateInvoicePaymentField(
+                              "invoiceNumber",
+                              event.target.value,
+                            )
+                          }
+                        />
+                      </label>
                       <label className="kam-client-trip-field">
-                    <span>Invoice Document</span>
-                    <input
-                      ref={invoiceDocumentInputRef}
-                      className="kam-original-edit-input"
-                      type="file"
-                      name="invoiceDocument"
-                      accept=".pdf,.jpg,.jpeg,.png"
-                      onChange={(event) =>
-                        setInvoiceDocument(event.target.files?.[0] || null)
-                      }
-                    />
-                    {invoiceDocument && <strong>{invoiceDocument.name}</strong>}
-                  </label>
+                        <span>Invoice Document</span>
+                        <input
+                          ref={invoiceDocumentInputRef}
+                          className="kam-original-edit-input"
+                          type="file"
+                          name="invoiceDocument"
+                          accept=".pdf,.jpg,.jpeg,.png"
+                          onChange={(event) =>
+                            setInvoiceDocument(event.target.files?.[0] || null)
+                          }
+                        />
+                        {invoiceDocument && (
+                          <strong>{invoiceDocument.name}</strong>
+                        )}
+                      </label>
+                    </div>
+                    <div className="kam-payment-toolbar">
+                      <span>
+                        {invoiceData.invoiceDocument?.fileName
+                          ? `Saved: ${invoiceData.invoiceDocument.fileName}`
+                          : ""}
+                      </span>
+                      <button
+                        type="button"
+                        className="kam-request-approval-btn"
+                        onClick={saveInvoiceDetails}
+                        disabled={
+                          invoiceSaving || isCompletedTrip(workingOrder)
+                        }
+                      >
+                        {invoiceSaving ? "Saving..." : "Save Invoice Details"}
+                      </button>
                     </div>
                   </div>
                   <div className="kam-invoice-group">
                     <h4 className="kam-invoice-subheading">Payment Received</h4>
-                    <div className="kam-invoice-fields">
-                      <label className="kam-client-trip-field">
-                    <span>Received Amount (₹)</span>
-                    <input
-                      className="kam-original-edit-input"
-                      type="number"
-                      name="receivedAmount"
-                      min="0"
-                      step="0.01"
-                      placeholder="Enter received amount"
-                      value={invoicePaymentForm.receivedAmount}
-                      onChange={(event) =>
-                        updateInvoicePaymentField("receivedAmount", event.target.value)
-                      }
-                    />
-                  </label>
-                      <label className="kam-client-trip-field">
-                    <span>Payment Date</span>
-                    <input
-                      className="kam-original-edit-input"
-                      type="date"
-                      name="paymentDate"
-                      value={invoicePaymentForm.paymentDate}
-                      onChange={(event) =>
-                        updateInvoicePaymentField("paymentDate", event.target.value)
-                      }
-                    />
-                  </label>
-                      <label className="kam-client-trip-field kam-payment-remarks">
-                        <span>Remarks</span>
-                        <textarea
-                          className="kam-original-edit-input"
-                          name="paymentRemarks"
-                          rows={2}
-                          maxLength={2000}
-                          placeholder="Enter payment remarks"
-                          value={invoicePaymentForm.paymentRemarks}
-                          onChange={(event) =>
-                            updateInvoicePaymentField("paymentRemarks", event.target.value)
-                          }
-                        />
-                      </label>
+                    <div className="kam-payment-summary">
+                      <div>
+                        <span>Total Amount (Final Rate)</span>
+                        <strong>
+                          {hasFinalRate
+                            ? formatRupees(totalPayable)
+                            : "Set Final Rate"}
+                        </strong>
+                      </div>
+                      <div>
+                        <span>Total Received</span>
+                        <strong>{formatRupees(receivedTotal)}</strong>
+                      </div>
+                      <div>
+                        <span>Remaining Balance</span>
+                        <strong>
+                          {hasFinalRate ? formatRupees(dueBalance) : "—"}
+                        </strong>
+                      </div>
+                    </div>
+                    <div className="kam-payment-toolbar">
+                      <span className="kam-payment-pill">
+                        {hasFinalRate && dueBalance === 0
+                          ? "Fully Paid"
+                          : receivedTotal > 0
+                            ? "Partially Paid"
+                            : "Pending"}
+                      </span>
+                      <button
+                        type="button"
+                        className="kam-request-approval-btn"
+                        disabled={
+                          !hasFinalRate ||
+                          dueBalance <= 0 ||
+                          paymentSaving ||
+                          isCompletedTrip(workingOrder)
+                        }
+                        onClick={() => setPaymentEntryOpen((open) => !open)}
+                      >
+                        {paymentEntryOpen ? "Cancel" : "+ Add Amount"}
+                      </button>
+                    </div>
+                    {paymentEntryOpen && (
+                      <div className="kam-invoice-fields kam-payment-entry">
+                        <label className="kam-client-trip-field">
+                          <span>Received Amount (₹)</span>
+                          <input
+                            className="kam-original-edit-input"
+                            type="number"
+                            min="0.01"
+                            max={dueBalance}
+                            step="0.01"
+                            value={paymentEntry.amount}
+                            placeholder="Enter installment amount"
+                            onChange={(event) =>
+                              setPaymentEntry((p) => ({
+                                ...p,
+                                amount: event.target.value,
+                              }))
+                            }
+                          />
+                        </label>
+                        <label className="kam-client-trip-field">
+                          <span>Payment Date</span>
+                          <input
+                            className="kam-original-edit-input"
+                            type="date"
+                            value={paymentEntry.paymentDate}
+                            onChange={(event) =>
+                              setPaymentEntry((p) => ({
+                                ...p,
+                                paymentDate: event.target.value,
+                              }))
+                            }
+                          />
+                        </label>
+                        <label className="kam-client-trip-field kam-payment-remarks">
+                          <span>Remarks</span>
+                          <textarea
+                            className="kam-original-edit-input"
+                            rows={2}
+                            maxLength={2000}
+                            value={paymentEntry.remarks}
+                            onChange={(event) =>
+                              setPaymentEntry((p) => ({
+                                ...p,
+                                remarks: event.target.value,
+                              }))
+                            }
+                          />
+                        </label>
+                        <button
+                          type="button"
+                          className="kam-request-approval-btn"
+                          disabled={paymentSaving}
+                          onClick={savePaymentInstallment}
+                        >
+                          {paymentSaving ? "Saving..." : "Save Payment"}
+                        </button>
+                      </div>
+                    )}
+                    <div className="kam-payment-history">
+                      <h4>Payment History ({payments.length})</h4>
+                      {payments.length ? (
+                        <table className="kam-history-table">
+                          <thead>
+                            <tr>
+                              <th>#</th>
+                              <th>Date</th>
+                              <th>Amount</th>
+                              <th>Remarks</th>
+                              <th>Received By</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {payments.map((payment, index) => (
+                              <tr key={payment._id || index}>
+                                <td>{index + 1}</td>
+                                <td>{payment.paymentDate || "—"}</td>
+                                <td>
+                                  <strong>
+                                    {formatRupees(payment.amount)}
+                                  </strong>
+                                </td>
+                                <td>{payment.remarks || "—"}</td>
+                                <td>{payment.receivedBy || "—"}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      ) : (
+                        <p>No payments recorded yet.</p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -4244,19 +4502,34 @@ const Lifecyclemodal = ({
               ["invoice", "payment", "billing"],
               ["trip complete", "completion", "unloading"],
             ];
+            const historyOrder = workingOrder || order;
             const stageHistory = safeArray(
-              order?.lifecycleChangeHistory,
+              historyOrder?.lifecycleChangeHistory,
             ).filter((item) => {
               const section = String(item?.section || "")
                 .trim()
                 .toLowerCase();
+              const field = String(item?.field || "")
+                .trim()
+                .toLowerCase();
+              // The corrections endpoint stores many sections as "Order Lifecycle".
+              // Route those records to their actual stage using the field path.
+              if (section === "order lifecycle") {
+                if (field.startsWith("orderfinalization.")) {
+                  return activeStepIndex === 1;
+                }
+                if (field.startsWith("allocatedvehicles.")) {
+                  return activeStepIndex === 5;
+                }
+                return activeStepIndex === 0;
+              }
               return (historyByStage[activeStepIndex] || []).some((term) =>
                 section.includes(term),
               );
             });
             if (activeStepIndex === 1) {
               stageHistory.push(
-                ...safeArray(order?.amountChangeHistory).map((item) => ({
+                ...safeArray(historyOrder?.amountChangeHistory).map((item) => ({
                   section: "Amount Change",
                   field: item.fieldLabel || item.field,
                   oldValue: formatAmount(item.oldAmount),

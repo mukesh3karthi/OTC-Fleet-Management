@@ -5895,3 +5895,162 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+.kam-payment-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:12px 0}
+.kam-payment-summary>div{display:flex;flex-direction:column;gap:7px;padding:12px 14px;background:#f5f9fb;border:1px solid #dce8ed;border-radius:10px}
+.kam-payment-summary span{font-size:11px;font-weight:600;color:#567080}
+.kam-payment-summary strong{font-size:19px;font-weight:700;color:#143e53}
+.kam-payment-summary>div:nth-child(2) strong{color:#087f71}
+.kam-payment-summary>div:nth-child(3) strong{color:#b77218}
+.kam-payment-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:12px 0;flex-wrap:wrap}
+.kam-payment-toolbar>span{font-size:11px;color:#64748b}
+.kam-payment-pill{border-radius:20px;padding:6px 10px;background:#e5f4f2;color:#087f71!important;font-weight:700}
+.kam-payment-entry{padding:12px;border:1px solid #cce3e7;background:#f8fcfd;border-radius:10px;margin-bottom:12px}
+.kam-payment-entry button{align-self:end;min-height:36px}
+.kam-payment-history{overflow-x:auto;margin-top:14px}
+.kam-payment-history h4{margin:0 0 10px;font-size:13px;color:#18485b}
+.kam-payment-history .kam-history-table{width:100%}
+.kam-payment-history p{color:#728593;font-size:12px;margin:8px 0}
+@media(max-width:650px){.kam-payment-summary{grid-template-columns:1fr}}
+
+/* COMPACT PAYMENT SECTION */
+
+.kam-invoice-group {
+  gap: 6px;
+  padding: 9px 0;
+}
+
+/* Summary cards */
+.kam-payment-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 5px 0 2px;
+}
+
+.kam-payment-summary > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 9px 12px;
+  min-height: 58px;
+  background: #f5f9fb;
+  border: 1px solid #dce8ed;
+  border-radius: 8px;
+}
+
+.kam-payment-summary span {
+  font-size: 10px;
+  font-weight: 600;
+  color: #567080;
+}
+
+.kam-payment-summary strong {
+  font-size: 17px;
+  font-weight: 700;
+  color: #143e53;
+}
+
+.kam-payment-summary > div:nth-child(2) strong {
+  color: #087f71;
+}
+
+.kam-payment-summary > div:nth-child(3) strong {
+  color: #b77218;
+}
+
+/* Payment status and action */
+.kam-payment-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 3px 0;
+  flex-wrap: wrap;
+}
+
+.kam-payment-pill {
+  padding: 4px 9px;
+  border-radius: 20px;
+  background: #e5f4f2;
+  color: #087f71;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+/* Compact buttons */
+.kam-payment-toolbar .kam-request-approval-btn,
+.kam-payment-entry .kam-request-approval-btn {
+  width: auto;
+  min-width: 105px;
+  max-width: max-content;
+  height: 32px;
+  min-height: 32px;
+  padding: 5px 14px;
+  margin: 0;
+  border-radius: 7px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* Payment entry */
+.kam-payment-entry {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.5fr auto;
+  align-items: end;
+  gap: 10px;
+  padding: 10px;
+  margin: 4px 0 8px;
+  border: 1px solid #cce3e7;
+  background: #f8fcfd;
+  border-radius: 8px;
+}
+
+.kam-payment-entry .kam-client-trip-field {
+  gap: 4px;
+}
+
+.kam-payment-entry .kam-original-edit-input {
+  height: 34px;
+  min-height: 34px;
+  padding: 6px 9px;
+  font-size: 11px;
+}
+
+.kam-payment-entry textarea {
+  height: 34px;
+  min-height: 34px;
+  resize: vertical;
+}
+
+.kam-payment-entry button {
+  align-self: end;
+}
+
+/* Payment history */
+.kam-payment-history {
+  margin-top: 8px;
+  overflow-x: auto;
+}
+
+.kam-payment-history h4 {
+  margin: 0 0 6px;
+  font-size: 12px;
+  color: #18485b;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .kam-payment-entry {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .kam-payment-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .kam-payment-entry {
+    grid-template-columns: 1fr;
+  }
+}

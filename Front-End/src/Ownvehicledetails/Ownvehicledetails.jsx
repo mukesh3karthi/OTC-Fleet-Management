@@ -879,9 +879,7 @@ const Ownvehicledetails = () => {
               <th>Transport Owner</th>
               <th>Engine No.</th>
               <th>Chassis No.</th>
-              {/* <th>GPS</th> */}
               <th>Purchase Year</th>
-              {/* <th>Purchased From</th> */}
               <th>Documents</th>
               <th>Actions</th>
             </tr>
@@ -891,7 +889,7 @@ const Ownvehicledetails = () => {
             {loading ? (
               <tr>
                 <td
-                  colSpan="14"
+                  colSpan="12"
                   className="no-data"
                 >
                   Loading vehicle
@@ -902,7 +900,7 @@ const Ownvehicledetails = () => {
               0 ? (
               <tr>
                 <td
-                  colSpan="14"
+                  colSpan="12"
                   className="no-data"
                 >
                   No vehicles found.
@@ -959,28 +957,13 @@ const Ownvehicledetails = () => {
                       {vehicle.chassisNo || "-"}
                     </td>
 
-                    {/* <td>
-                      <span
-                        className={`status-badge ${vehicle.gps
-                            ? "status-active"
-                            : "status-inactive"
-                          }`}
-                      >
-                        {vehicle.gps
-                          ? "Available"
-                          : "Not Available"}
-                      </span>
-                    </td> */}
+              
 
                     <td>
                       {vehicle.purchaseYear ||
                         "-"}
                     </td>
 
-                    {/* <td>
-                      {vehicle.purchasedFrom ||
-                        "-"}
-                    </td> */}
 
                     <td>
                       <button

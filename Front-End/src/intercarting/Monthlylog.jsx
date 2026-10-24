@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 import jsPDF from "jspdf";
 import companyLogo from "../asset/otclogo.jpg";
 import {
@@ -468,58 +468,203 @@ const Monthlylog = () => {
     return `monthly-log-${vehicleNumber}-${month}.${extension}`;
   };
 
-  const downloadExcel = () => {
+  const downloadExcel = async () => {
     if (!selectedVehicle) {
       setError("Please select a vehicle before downloading.");
       return;
     }
 
-    const workbook = XLSX.utils.book_new();
-    const summary = [
-      ["LOG SHEET"],
-      [COMPANY.name],
-      [COMPANY.office],
-      ["GST No", COMPANY.gst, "Period", formatMonth(month)],
-      ["Vehicle Type", selectedVehicle.vehicleType || ""],
-      ["Vehicle Number", selectedVehicle.vehicleNumber || ""],
-      ["Client Name", clientName],
-      ["Site Name", siteName],
-      [],
-    ];
-
-    const worksheet = XLSX.utils.aoa_to_sheet(summary);
-
-    XLSX.utils.sheet_add_json(worksheet, createExportRows(), {
-      origin: "A10",
-      skipHeader: false,
+    const workbook = new ExcelJS.Workbook();
+    workbook.creator = COMPANY.name;
+    workbook.created = new Date();
+    const sheet = workbook.addWorksheet("Monthly Log", {
+      pageSetup: {
+        paperSize: 1, // US Letter, same as the existing PDF.
+        orientation: "portrait",
+        fitToPage: true,
+        fitToWidth: 1,
+        fitToHeight: 1,
+        margins: {
+          left: 0.22, right: 0.22, top: 0.22,
+          bottom: 0.22, header: 0, footer: 0,
+        },
+      },
+      views: [{ state: "frozen", ySplit: 8 }],
     });
 
-    XLSX.utils.sheet_add_aoa(
-      worksheet,
-      [
-        [],
-        ["Open Kms", openKm, "Total Days", enteredDays],
-        ["Close Kms", closeKm, "Working days", workingDays],
-        ["Total Kms", totalKm, "Breakdown days", breakdownDays],
-        ["Remarks", remarks],
-        ["Site Manager Signature", siteManagerSignature],
-      ],
-      { origin: `A${12 + rows.length}` }
+    // Seven columns match the PDF's uninterrupted seven-column grid.
+    const widths = [17, 13, 12, 10, 11, 54, 18];
+    widths.forEach((width, i) => { sheet.getColumn(i + 1).width = width; });
+    sheet.properties.defaultRowHeight = 14;
+    sheet.pageSetup.printArea = `A1:G${14 + rows.length}`;
+    sheet.headerFooter.oddHeader = "";
+    sheet.headerFooter.oddFooter = "";
+
+    const green = "C6DAA0";
+    const grey = "C3C3C3";
+    const border = {
+      top: { style: "thin", color: { argb: "FF202020" } },
+      left: { style: "thin", color: { argb: "FF202020" } },
+      bottom: { style: "thin", color: { argb: "FF202020" } },
+      right: { style: "thin", color: { argb: "FF202020" } },
+    };
+    const paint = (range, value, { fill, bold = false, size = 9,
+      alignment = "center", height } = {}) => {
+      if (range.includes(":")) sheet.mergeCells(range);
+      const cell = sheet.getCell(range.split(":")[0]);
+      cell.value = value ?? "";
+      cell.font = { name: "Arial", size, bold, color: { argb: "FF000000" } };
+      cell.alignment = {
+        horizontal: alignment, vertical: "middle",
+        wrapText: true, indent: alignment === "left" ? 1 : 0,
+      };
+      // Style every constituent cell, including those merged into labels.
+      const [first, last] = range.split(":");
+      const start = sheet.getCell(first);
+      const end = sheet.getCell(last || first);
+      for (let r = start.row; r <= end.row; r++) {
+        for (let c = start.col; c <= end.col; c++) {
+          const target = sheet.getCell(r, c);
+          target.border = border;
+          if (fill) target.fill = {
+            type: "pattern", pattern: "solid",
+            fgColor: { argb: `FF${fill}` },
+          };
+        }
+      }
+      if (height) sheet.getRow(start.row).height = height;
+    };
+
+    paint("A1:B2", "", { height: 25 });
+    paint("C1:G1", "LOG SHEET", { fill: green, bold: true, size: 13, height: 22 });
+    paint("C2:G2", COMPANY.name, { fill: green, bold: true, size: 11, height: 24 });
+    paint("A3:G3", COMPANY.office, { fill: grey, bold: true, size: 9, height: 21 });
+    paint("A4:E4", `GST No : ${COMPANY.gst}`, { fill: grey, bold: true, height: 19 });
+    paint("F4", "Period:", { fill: grey, bold: true });
+    paint("G4", formatMonth(month));
+    paint("A5:B5", "Vehicle Type:", { fill: grey, bold: true, height: 19 });
+    paint("C5:E5", selectedVehicle.vehicleType || "");
+    paint("F5", "Client Name:", { fill: grey, bold: true });
+    paint("G5", clientName);
+    paint("A6:B6", "Vehicle Number:", { fill: grey, bold: true, height: 19 });
+    paint("C6:E6", selectedVehicle.vehicleNumber || "");
+    paint("F6", "Site Name:", { fill: grey, bold: true });
+    paint("G6", siteName);
+
+    // The company logo is placed inside the same top-left merged cell.
+    try {
+      const response = await fetch(companyLogo);
+      if (!response.ok) throw new Error("Logo asset could not be loaded");
+      const logoBlob = await response.blob();
+      const base64 = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(new Error("Could not read logo"));
+        reader.readAsDataURL(logoBlob);
+      });
+      const logoId = workbook.addImage({
+        base64,
+        extension: /png/i.test(logoBlob.type) ? "png" : "jpeg",
+      });
+      sheet.addImage(logoId, {
+        tl: { col: 0.12, row: 0.12 },
+        br: { col: 1.9, row: 1.88 },
+        editAs: "oneCell",
+      });
+    } catch (logoError) {
+      console.warn("Excel logo unavailable:", logoError);
+    }
+
+    const headers = ["DATE", "IN TIME", "OUT TIME", "Hours", "KM", "Work Description", "E.Sign"];
+    headers.forEach((label, i) => paint(`${String.fromCharCode(65 + i)}7`, label,
+      { fill: grey, bold: true, size: 9, height: 22 }));
+    rows.forEach((row, rowIndex) => {
+      const excelRow = rowIndex + 8;
+      const showTime = (time) => {
+        if (!time) return "";
+        const [hour, minute] = time.split(":").map(Number);
+        if (!Number.isFinite(hour) || !Number.isFinite(minute)) return time;
+        return `${hour % 12 || 12}.${pad(minute)}${hour >= 12 ? "PM" : "AM"}`;
+      };
+      const values = [
+        new Date(`${row.date}T00:00:00`).toLocaleDateString("en-GB", {
+          day: "numeric", month: "short", year: "2-digit",
+        }).replace(/ /g, "-"),
+        showTime(row.inTime), showTime(row.outTime),
+        row.hours === "" ? "" : Number(row.hours),
+        row.km === "" ? "" : Number(row.km),
+        row.workDescription || "", row.engineerSign || "",
+      ];
+      values.forEach((value, index) => {
+        const col = String.fromCharCode(65 + index);
+        paint(`${col}${excelRow}`, value, {
+          alignment: index >= 5 ? "left" : "center", size: 8, height: 14,
+        });
+        if (index === 3 || index === 4) {
+          sheet.getCell(`${col}${excelRow}`).numFmt = "0.##";
+        }
+      });
+    });
+
+    const bottom = rows.length + 8;
+    [["Open Kms", openKm], ["Close Kms", closeKm], ["Total Kms", totalKm]].forEach(
+      ([label, value], index) => {
+        const line = bottom + index;
+        paint(`A${line}`, label, { bold: true, height: 17 });
+        paint(`B${line}`, value === "" ? "" : Number(value));
+        // Hide the A/B internal division, keeping one outlined KM box.
+        sheet.getCell(`A${line}`).border = {
+          top: border.top, left: border.left, bottom: border.bottom,
+        };
+        sheet.getCell(`B${line}`).border = {
+          top: border.top, right: border.right, bottom: border.bottom,
+        };
+      }
     );
+    // The white Remarks panel occupies the full unused area beside KM totals.
+    // Merging all three rows leaves no missing border at the right edge.
+    paint(`C${bottom}:G${bottom + 2}`, `Remarks: ${remarks || ""}`, {
+      fill: "FFFFFF", bold: false, alignment: "left", size: 9,
+    });
+    const remarksCell = sheet.getCell(`C${bottom}`);
+    remarksCell.alignment = {
+      horizontal: "left", vertical: "top", wrapText: true, indent: 1,
+    };
+    remarksCell.font = { name: "Arial", size: 9, color: { argb: "FF000000" } };
+    const signRow = bottom + 3;
+    paint(`A${signRow}:E${signRow}`, "Om Tranns Infra corporation Pvt. Ltd.",
+      { bold: true, alignment: "left", height: 82 });
+    paint(`F${signRow}:G${signRow}`, siteManagerSignature || "Site Manager Sign",
+      { bold: true });
+    // Signature area is ONE tall outer rectangle, not two separate bordered boxes.
+    for (let col = 1; col <= 7; col++) {
+      const cell = sheet.getCell(signRow, col);
+      cell.border = {
+        top: border.top, bottom: border.bottom,
+        ...(col === 1 ? { left: border.left } : {}),
+        ...(col === 7 ? { right: border.right } : {}),
+      };
+    }
+    sheet.getCell(`A${signRow}`).alignment = {
+      horizontal: "left", vertical: "top", indent: 0,
+    };
+    sheet.getCell(`F${signRow}`).alignment = {
+      horizontal: "right", vertical: "top", indent: 0,
+    };
+    sheet.pageSetup.printArea = `A1:G${signRow}`;
 
-    worksheet["!cols"] = [
-      { wch: 8 },
-      { wch: 14 },
-      { wch: 12 },
-      { wch: 12 },
-      { wch: 10 },
-      { wch: 10 },
-      { wch: 45 },
-      { wch: 20 },
-    ];
-
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Monthly Log");
-    XLSX.writeFile(workbook, createFileName("xlsx"));
+    const bytes = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([bytes], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = createFileName("xlsx");
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
 
   const downloadPdf = async () => {
@@ -679,29 +824,45 @@ const Monthlylog = () => {
       cursor += rowHeight;
     });
 
-    // Three compact KM rows, matching the sample's lower-left cells.
+    // One complete bordered bottom panel: KM rows on the left and
+    // a large white Remarks cell on the right, matching the Excel export.
+    const summaryTop = cursor;
+    const kmBlockWidth = columnWidths[0] + columnWidths[1];
+    const summaryHeight = 3 * 5.2;
+    box(x + kmBlockWidth, summaryTop, width - kmBlockWidth, summaryHeight);
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(8.5);
+    pdf.text("Remarks:", x + kmBlockWidth + 2, summaryTop + 4);
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(8);
+    const remarkLines = pdf.splitTextToSize(
+      String(remarks || ""), width - kmBlockWidth - 5
+    ).slice(0, 3);
+    if (remarkLines.length) {
+      pdf.text(remarkLines, x + kmBlockWidth + 2, summaryTop + 8);
+    }
+
     [
       ["Open Kms", openKm],
       ["Close Kms", closeKm],
       ["Total Kms", totalKm],
     ].forEach(([label, value]) => {
-      box(x, cursor, columnWidths[0], 5.2);
-      box(x + columnWidths[0], cursor, columnWidths[1], 5.2);
-      write(label, x, cursor, columnWidths[0], 5.2,
-        { size: 8, bold: true });
-      write(value, x + columnWidths[0], cursor, columnWidths[1], 5.2,
-        { size: 8 });
+      box(x, cursor, kmBlockWidth, 5.2);
+      write(label, x + 1, cursor, columnWidths[0] + 2, 5.2,
+        { size: 8, bold: true, align: "left" });
+      write(value, x + columnWidths[0], cursor, columnWidths[1] - 1, 5.2,
+        { size: 8, align: "right" });
       cursor += 5.2;
     });
 
-    // Signature row aligned to the same report grid.
-    pdf.line(x, cursor, x + width, cursor);
-    write("Om Tranns Infra corporation Pvt. Ltd.",
-      x, cursor + 0.5, width / 2, 6,
-      { size: 8, bold: true, align: "left", pad: 0.5 });
-    write(siteManagerSignature || "Site Manager Sign",
-      x + width / 2, cursor + 0.5, width / 2, 6,
-      { size: 8, bold: true });
+    // One tall signature area with a continuous outer border, as shown
+    // in the reference screenshot. No vertical partition through the box.
+    box(x, cursor, width, 22);
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(8.5);
+    pdf.text("Om Tranns Infra corporation Pvt. Ltd.", x + 1, cursor + 4.8);
+    pdf.text(String(siteManagerSignature || "Site Manager Sign"),
+      x + width - 3, cursor + 4.8, { align: "right" });
     // No automatic table pagination: 31 rows fit on one Letter page.
     pdf.save(createFileName("pdf"));
   };
@@ -722,7 +883,7 @@ const Monthlylog = () => {
     const type = downloadType;
     setIsDownloading(true);
     try {
-      if (type === "excel") downloadExcel();
+      if (type === "excel") await downloadExcel();
       if (type === "pdf") await downloadPdf();
       setDownloadType(null);
       setError("");

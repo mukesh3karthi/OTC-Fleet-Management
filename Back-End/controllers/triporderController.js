@@ -5,13 +5,27 @@ const cleanString = (value) =>
   value === null || value === undefined ? "" : String(value).trim();
 // Crane orders share a document-based requirement with no allocation quantity cap.
 const isCraneAllocationOrder = (trip, requirement) => {
-  const normalize = (value) => cleanString(value).toLowerCase().replace(/[\s_-]+/g, "");
-  const movement = normalize(trip?.movementType || trip?.movement || trip?.movementName || trip?.movementCategory || trip?.orderFinalization?.movementType || trip?.enquiryDetails?.movementType);
+  const normalize = (value) =>
+    cleanString(value)
+      .toLowerCase()
+      .replace(/[\s_-]+/g, "");
+  const movement = normalize(
+    trip?.movementType ||
+      trip?.movement ||
+      trip?.movementName ||
+      trip?.movementCategory ||
+      trip?.orderFinalization?.movementType ||
+      trip?.enquiryDetails?.movementType,
+  );
   if (movement === "crane" || movement === "cranemovement") return true;
   // Explicit movement types take priority over legacy document/requirement metadata.
   if (movement) return false;
   const type = normalize(requirement?.vehicleType);
-  return type === "crane" || type === "cranemovement" || Boolean(trip?.craneDocument?.fileName);
+  return (
+    type === "crane" ||
+    type === "cranemovement" ||
+    Boolean(trip?.craneDocument?.fileName)
+  );
 };
 const trackingDateUtc = (value) => {
   if (!value) return null;
@@ -113,7 +127,8 @@ const isDuplicateVehicleNumber = (
 ) =>
   getAllocatedVehicles(trip).some(
     (vehicle) =>
-      isActiveAllocation(vehicle) && vehicle.allocationId !== cleanString(ignoredAllocationId) &&
+      isActiveAllocation(vehicle) &&
+      vehicle.allocationId !== cleanString(ignoredAllocationId) &&
       cleanUpperString(vehicle.vehicleNumber) ===
         cleanUpperString(vehicleNumber),
   );
@@ -734,12 +749,12 @@ const savePoDocument = async (req, res) => {
       "PO Document";
     trip.poDocument.uploadedBy =
       cleanString(req.body.uploadedBy) || "Key Account";
-    trip.poDocument.uploadedAt = new Date();
     if (req.file) {
       trip.poDocument.fileName = req.file.originalname;
       trip.poDocument.mimeType = req.file.mimetype;
       trip.poDocument.fileSize = req.file.size;
       trip.poDocument.fileData = req.file.buffer;
+      trip.poDocument.uploadedAt = new Date();
     }
     trip.markModified("poDocument");
     /*
@@ -773,14 +788,44 @@ const savePoDocument = async (req, res) => {
         ? "Order Placed"
         : "Vendor Finalization";
     }
-    const poChanges = [
-      "poNumber",
-      "poValidityPeriod",
-      "billingGstin",
-      "documentName",
-      "fileName",
-    ].map((field) => [field, beforePo[field], trip.poDocument[field]]);
-    recordLifecycleChanges(trip, beforePo, "PO Document", poChanges, updatedBy);
+    const hadExistingPO = Boolean(
+      cleanString(beforePo?.poNumber) || cleanString(beforePo?.fileName),
+    );
+    if (hadExistingPO) {
+      const normalizePoValue = (field, value) => {
+        if (value === null || value === undefined) return "";
+        if (field === "poValidityPeriod") {
+          const parsed = new Date(value);
+          return Number.isNaN(parsed.getTime())
+            ? ""
+            : parsed.toISOString().slice(0, 10);
+        }
+        if (field === "billingGstin") return cleanUpperString(value);
+        return cleanString(value);
+      };
+      const poChanges = [
+        "poNumber",
+        "poValidityPeriod",
+        "billingGstin",
+        "documentName",
+        "fileName",
+      ]
+        .filter(
+          (field) =>
+            normalizePoValue(field, beforePo[field]) !==
+            normalizePoValue(field, trip.poDocument[field]),
+        )
+        .map((field) => [field, beforePo[field], trip.poDocument[field]]);
+      if (poChanges.length) {
+        recordLifecycleChanges(
+          trip,
+          beforePo,
+          "PO Document",
+          poChanges,
+          updatedBy,
+        );
+      }
+    }
     await trip.save();
     const savedTrip = await TripOrder.findById(trip._id).lean();
     return sendSuccess(res, 200, "PO document saved successfully.", savedTrip);
@@ -911,10 +956,13 @@ const addTrafficQuotation = async (req, res) => {
     const allocatedBy = cleanString(req.body.allocatedBy) || quotedBy;
     const remarks = cleanString(req.body.remarks);
     const amount = Number(req.body.amount);
-    const quantity = isCrane
-      ? "Multiple"
-      : Number(req.body.quantity ?? 1);
-    if (!isCrane && quantity !== 1) return sendError(res, 400, "Each new transport quotation must be for one vehicle. Add separate rows for additional vehicles.");
+    const quantity = isCrane ? "Multiple" : Number(req.body.quantity ?? 1);
+    if (!isCrane && quantity !== 1)
+      return sendError(
+        res,
+        400,
+        "Each new transport quotation must be for one vehicle. Add separate rows for additional vehicles.",
+      );
     if (!requirementId) {
       return sendError(res, 400, "Requirement ID is required.");
     }
@@ -1043,7 +1091,17 @@ const confirmVehicleQuotation = async (req, res) => {
         "One or more selected quotations were not found for this vehicle requirement.",
       );
     }
-    if (getConfirmations(trip).some(item => quotationIds.includes(item.quotationId) && item.status === "Replaced")) return sendError(res, 409, "A replaced quotation cannot be approved again.");
+    if (
+      getConfirmations(trip).some(
+        (item) =>
+          quotationIds.includes(item.quotationId) && item.status === "Replaced",
+      )
+    )
+      return sendError(
+        res,
+        409,
+        "A replaced quotation cannot be approved again.",
+      );
     const requiredQuantity = Math.max(
       1,
       Math.floor(toNumber(requirement.quantity, 1)),
@@ -1195,8 +1253,17 @@ const confirmVehicleQuotation = async (req, res) => {
       trip.stage = "Quotation Approval";
     }
     trip.markModified("vehicleConfirmations");
-    const write = await commitTransportReplacement(trip, ["vehicleConfirmations", "status", "stage"]);
-    if (!write.matchedCount) return sendError(res, 409, "Order changed during approval. Refresh and review the selection again.");
+    const write = await commitTransportReplacement(trip, [
+      "vehicleConfirmations",
+      "status",
+      "stage",
+    ]);
+    if (!write.matchedCount)
+      return sendError(
+        res,
+        409,
+        "Order changed during approval. Refresh and review the selection again.",
+      );
     const updatedTrip = await TripOrder.findById(trip._id).lean();
     return sendSuccess(
       res,
@@ -1219,7 +1286,12 @@ const allocateVehicle = async (req, res) => {
       return sendError(res, result.status, result.error);
     }
     const trip = result.trip;
-    if (isClosedReplacementOrder(trip)) return sendError(res, 409, "Completed or cancelled orders cannot receive allocations.");
+    if (isClosedReplacementOrder(trip))
+      return sendError(
+        res,
+        409,
+        "Completed or cancelled orders cannot receive allocations.",
+      );
     const requirementId = cleanString(req.body.requirementId);
     const confirmationId = cleanString(req.body.confirmationId);
     const quotationId = cleanString(req.body.quotationId);
@@ -1277,7 +1349,9 @@ const allocateVehicle = async (req, res) => {
       );
     }
     const duplicateVehicle = getAllocatedVehicles(trip).some(
-      (vehicle) => isActiveAllocation(vehicle) && cleanUpperString(vehicle.vehicleNumber) === vehicleNumber,
+      (vehicle) =>
+        isActiveAllocation(vehicle) &&
+        cleanUpperString(vehicle.vehicleNumber) === vehicleNumber,
     );
     if (duplicateVehicle) {
       return sendError(
@@ -1287,9 +1361,13 @@ const allocateVehicle = async (req, res) => {
       );
     }
     const allocatedCount = getAllocatedVehicles(trip).filter(
-      (vehicle) => vehicle.requirementId === requirementId && isActiveAllocation(vehicle),
+      (vehicle) =>
+        vehicle.requirementId === requirementId && isActiveAllocation(vehicle),
     ).length;
-    if (!isCraneAllocationOrder(trip, requirement) && allocatedCount >= Number(requirement.quantity || 1)) {
+    if (
+      !isCraneAllocationOrder(trip, requirement) &&
+      allocatedCount >= Number(requirement.quantity || 1)
+    ) {
       return sendError(
         res,
         409,
@@ -1297,22 +1375,57 @@ const allocateVehicle = async (req, res) => {
       );
     }
     if (!isCraneAllocationOrder(trip, requirement)) {
-      const transporterCount = getAllocatedVehicles(trip).filter(v => isActiveAllocation(v) && v.confirmationId === confirmationId && v.quotationId === quotationId).length;
-      if (transporterCount >= getQuotationQuantity(trip, quotation)) return sendError(res, 409, "All approved vehicle slots for this transporter are allocated.");
+      const transporterCount = getAllocatedVehicles(trip).filter(
+        (v) =>
+          isActiveAllocation(v) &&
+          v.confirmationId === confirmationId &&
+          v.quotationId === quotationId,
+      ).length;
+      if (transporterCount >= getQuotationQuantity(trip, quotation))
+        return sendError(
+          res,
+          409,
+          "All approved vehicle slots for this transporter are allocated.",
+        );
     }
-    const allocationCapacity = req.body.capacity == null || req.body.capacity === "" ? null : Number(req.body.capacity);
-    if (allocationCapacity !== null && (!Number.isFinite(allocationCapacity) || allocationCapacity < 0)) {
-      return sendError(res, 400, "Capacity must be a non-negative number in tons.");
+    const allocationCapacity =
+      req.body.capacity == null || req.body.capacity === ""
+        ? null
+        : Number(req.body.capacity);
+    if (
+      allocationCapacity !== null &&
+      (!Number.isFinite(allocationCapacity) || allocationCapacity < 0)
+    ) {
+      return sendError(
+        res,
+        400,
+        "Capacity must be a non-negative number in tons.",
+      );
     }
-    const allocationWeight = req.body.weight == null || req.body.weight === "" ? null : Number(req.body.weight);
-    if (allocationWeight !== null && (!Number.isFinite(allocationWeight) || allocationWeight < 0)) {
-      return sendError(res, 400, "Weight must be a non-negative number in tons.");
+    const allocationWeight =
+      req.body.weight == null || req.body.weight === ""
+        ? null
+        : Number(req.body.weight);
+    if (
+      allocationWeight !== null &&
+      (!Number.isFinite(allocationWeight) || allocationWeight < 0)
+    ) {
+      return sendError(
+        res,
+        400,
+        "Weight must be a non-negative number in tons.",
+      );
     }
     const allocationDimensions = {};
     for (const field of ["length", "height", "width"]) {
       const raw = req.body.dimensions?.[field];
       const value = raw == null || raw === "" ? null : Number(raw);
-      if (value !== null && (!Number.isFinite(value) || value < 0)) return sendError(res, 400, "Dimensions must be non-negative numbers in feet.");
+      if (value !== null && (!Number.isFinite(value) || value < 0))
+        return sendError(
+          res,
+          400,
+          "Dimensions must be non-negative numbers in feet.",
+        );
       allocationDimensions[field] = value;
     }
     const allocatedVehicle = {
@@ -1331,7 +1444,10 @@ const allocateVehicle = async (req, res) => {
       ewayBill: { number: cleanString(req.body.ewayBill?.number) },
 
       allocatedAt: new Date(),
-      allocatedBy: cleanString(req.user?.username || req.user?.name || req.body.allocatedBy) || "Tracking Team",
+      allocatedBy:
+        cleanString(
+          req.user?.username || req.user?.name || req.body.allocatedBy,
+        ) || "Tracking Team",
       allocatedSource: "Tracking",
       vehicleStatus: "Active",
       replacementCount: 0,
@@ -1378,8 +1494,17 @@ const allocateVehicle = async (req, res) => {
       trip.status = "Active";
       trip.stage = "Tracking";
     }
-    const write = await commitTransportReplacement(trip, ["allocatedVehicles", "status", "stage"]);
-    if (!write.matchedCount) return sendError(res, 409, "Order changed during allocation. Refresh and retry.");
+    const write = await commitTransportReplacement(trip, [
+      "allocatedVehicles",
+      "status",
+      "stage",
+    ]);
+    if (!write.matchedCount)
+      return sendError(
+        res,
+        409,
+        "Order changed during allocation. Refresh and retry.",
+      );
     return sendSuccess(res, 201, "Vehicle allocated successfully.", trip);
   } catch (error) {
     console.error("Allocate Vehicle Error:", error);
@@ -1410,44 +1535,108 @@ const allocateVehicle = async (req, res) => {
    Approval Management must approve the request first.
 ========================================================= */
 const isClosedReplacementOrder = (trip) =>
-  ["trip complete", "trip completed", "completed", "cancelled", "canceled"].includes(cleanString(trip?.stage).toLowerCase()) ||
-  ["completed", "cancelled", "canceled"].includes(cleanString(trip?.status).toLowerCase());
-const allocationObject = (vehicle) => vehicle?.toObject ? vehicle.toObject() : { ...vehicle };
+  [
+    "trip complete",
+    "trip completed",
+    "completed",
+    "cancelled",
+    "canceled",
+  ].includes(cleanString(trip?.stage).toLowerCase()) ||
+  ["completed", "cancelled", "canceled"].includes(
+    cleanString(trip?.status).toLowerCase(),
+  );
+const allocationObject = (vehicle) =>
+  vehicle?.toObject ? vehicle.toObject() : { ...vehicle };
 // Link the next allocation to an archived vehicle from this approved request.
 const linkApprovedReplacementAllocation = (trip, allocation) => {
-  const request = getTransportReplacementRequests(trip).find(item => item.status === "Approved" && item.replacementConfirmationId === allocation.confirmationId);
+  const request = getTransportReplacementRequests(trip).find(
+    (item) =>
+      item.status === "Approved" &&
+      item.replacementConfirmationId === allocation.confirmationId,
+  );
   if (!request) return;
   allocation.originTransportReplacementRequestId = request.requestId;
-  const previous = getAllocatedVehicles(trip).find(item =>
-    !isActiveAllocation(item) && item.transportReplacementRequestId === request.requestId && !item.replacedByAllocationId);
+  const previous = getAllocatedVehicles(trip).find(
+    (item) =>
+      !isActiveAllocation(item) &&
+      item.transportReplacementRequestId === request.requestId &&
+      !item.replacedByAllocationId,
+  );
   if (!previous) return;
   allocation.previousAllocationId = previous.allocationId;
-  allocation.rootAllocationId = previous.rootAllocationId || previous.allocationId;
+  allocation.rootAllocationId =
+    previous.rootAllocationId || previous.allocationId;
   previous.replacedByAllocationId = allocation.allocationId;
 };
-const isActiveAllocation = (vehicle) => cleanString(vehicle?.vehicleStatus).toLowerCase() !== "replaced";
-const replacementSelection = (trip, quotation, confirmation, quantity, selectedIds = []) => {
-  if (!Number.isInteger(quantity) || quantity < 1) return { error: "Replacement quantity must be a positive whole number." };
-  const unlimited = isCraneAllocationOrder(trip, findRequirement(trip, confirmation.requirementId)) && quotation.quantity === "Multiple";
+const isActiveAllocation = (vehicle) =>
+  cleanString(vehicle?.vehicleStatus).toLowerCase() !== "replaced";
+const replacementSelection = (
+  trip,
+  quotation,
+  confirmation,
+  quantity,
+  selectedIds = [],
+) => {
+  if (!Number.isInteger(quantity) || quantity < 1)
+    return { error: "Replacement quantity must be a positive whole number." };
+  const unlimited =
+    isCraneAllocationOrder(
+      trip,
+      findRequirement(trip, confirmation.requirementId),
+    ) && quotation.quantity === "Multiple";
   const available = unlimited ? null : getQuotationQuantity(trip, quotation);
-  if (available !== null && quantity > available) return { error: "Replacement quantity exceeds the current approved quantity." };
-  if (!Array.isArray(selectedIds) || selectedIds.some(id => typeof id !== "string" || !id.trim()) || new Set(selectedIds).size !== selectedIds.length) return { error: "Select valid, unique vehicle allocation IDs." };
-  const active = getAllocatedVehicles(trip).filter(v => isActiveAllocation(v) && v.confirmationId === confirmation.confirmationId && v.quotationId === quotation.quotationId && v.requirementId === confirmation.requirementId);
-  const selected = selectedIds.map(id => active.find(v => v.allocationId === id));
-  if (selected.some(v => !v)) return { error: "A selected vehicle is no longer active under this transporter. Refresh the order." };
-  if (selected.length > quantity) return { error: "Selected vehicles cannot exceed replacement quantity." };
+  if (available !== null && quantity > available)
+    return {
+      error: "Replacement quantity exceeds the current approved quantity.",
+    };
+  if (
+    !Array.isArray(selectedIds) ||
+    selectedIds.some((id) => typeof id !== "string" || !id.trim()) ||
+    new Set(selectedIds).size !== selectedIds.length
+  )
+    return { error: "Select valid, unique vehicle allocation IDs." };
+  const active = getAllocatedVehicles(trip).filter(
+    (v) =>
+      isActiveAllocation(v) &&
+      v.confirmationId === confirmation.confirmationId &&
+      v.quotationId === quotation.quotationId &&
+      v.requirementId === confirmation.requirementId,
+  );
+  const selected = selectedIds.map((id) =>
+    active.find((v) => v.allocationId === id),
+  );
+  if (selected.some((v) => !v))
+    return {
+      error:
+        "A selected vehicle is no longer active under this transporter. Refresh the order.",
+    };
+  if (selected.length > quantity)
+    return { error: "Selected vehicles cannot exceed replacement quantity." };
   const remaining = available === null ? null : available - quantity;
-  if (remaining !== null && active.length - selected.length > remaining) return { error: `Select at least ${active.length - remaining} existing vehicle(s) to free the replacement quantity.` };
+  if (remaining !== null && active.length - selected.length > remaining)
+    return {
+      error: `Select at least ${active.length - remaining} existing vehicle(s) to free the replacement quantity.`,
+    };
   return { available, remaining, selected, unlimited };
 };
 // Protect approval/request changes from concurrent reviews without rewriting vehicle documents.
-const commitTransportReplacement = async (trip, fields, retiredIds = [], requestId = "", reviewedBy = "") => {
-  const query = { _id: trip._id, __v: trip.__v == null ? { $exists: false } : trip.__v };
-  const set = Object.fromEntries(fields.map(key => [key, trip[key]]));
+const commitTransportReplacement = async (
+  trip,
+  fields,
+  retiredIds = [],
+  requestId = "",
+  reviewedBy = "",
+) => {
+  const query = {
+    _id: trip._id,
+    __v: trip.__v == null ? { $exists: false } : trip.__v,
+  };
+  const set = Object.fromEntries(fields.map((key) => [key, trip[key]]));
   const options = { runValidators: true };
   if (retiredIds.length) {
     set["allocatedVehicles.$[retired].vehicleStatus"] = "Replaced";
-    set["allocatedVehicles.$[retired].transportReplacementRequestId"] = requestId;
+    set["allocatedVehicles.$[retired].transportReplacementRequestId"] =
+      requestId;
     set["allocatedVehicles.$[retired].transportReplacedAt"] = new Date();
     set["allocatedVehicles.$[retired].transportReplacedBy"] = reviewedBy;
     options.arrayFilters = [{ "retired.allocationId": { $in: retiredIds } }];
@@ -1462,7 +1651,12 @@ const requestTransportReplacement = async (req, res) => {
       return sendError(res, result.status, result.error);
     }
     const trip = result.trip;
-    if (isClosedReplacementOrder(trip)) return sendError(res, 409, "Completed or cancelled orders cannot be replaced.");
+    if (isClosedReplacementOrder(trip))
+      return sendError(
+        res,
+        409,
+        "Completed or cancelled orders cannot be replaced.",
+      );
     if (trip.orderApproval?.status !== "Approved") {
       return sendError(
         res,
@@ -1517,8 +1711,22 @@ const requestTransportReplacement = async (req, res) => {
     if (!currentQuotation || currentQuotation.requirementId !== requirementId) {
       return sendError(res, 404, "Current approved quotation not found.");
     }
-    if (proposedTransporter.toLowerCase() === cleanString(currentQuotation.transporter).toLowerCase()) return sendError(res, 400, "Enter a different transporter. Use vehicle replacement to keep the same transporter.");
-    const selection = replacementSelection(trip, currentQuotation, currentConfirmation, quantity, selectedAllocationIds);
+    if (
+      proposedTransporter.toLowerCase() ===
+      cleanString(currentQuotation.transporter).toLowerCase()
+    )
+      return sendError(
+        res,
+        400,
+        "Enter a different transporter. Use vehicle replacement to keep the same transporter.",
+      );
+    const selection = replacementSelection(
+      trip,
+      currentQuotation,
+      currentConfirmation,
+      quantity,
+      selectedAllocationIds,
+    );
     if (selection.error) return sendError(res, 409, selection.error);
     const pendingRequest = getTransportReplacementRequests(trip).find(
       (item) =>
@@ -1541,7 +1749,7 @@ const requestTransportReplacement = async (req, res) => {
       currentQuantity: selection.available,
       remainingQuantity: selection.remaining,
       selectedAllocationIds,
-      selectedVehicleNumbers: selection.selected.map(v => v.vehicleNumber),
+      selectedVehicleNumbers: selection.selected.map((v) => v.vehicleNumber),
       currentTransporter: cleanString(currentQuotation.transporter),
       currentAmount: toNumber(currentQuotation.amount, 0),
       proposedTransporter,
@@ -1559,8 +1767,15 @@ const requestTransportReplacement = async (req, res) => {
       replacementConfirmationId: "",
     });
     trip.markModified("transportReplacementRequests");
-    const write = await commitTransportReplacement(trip, ["transportReplacementRequests"]);
-    if (!write.matchedCount) return sendError(res, 409, "Order changed. Refresh before submitting again.");
+    const write = await commitTransportReplacement(trip, [
+      "transportReplacementRequests",
+    ]);
+    if (!write.matchedCount)
+      return sendError(
+        res,
+        409,
+        "Order changed. Refresh before submitting again.",
+      );
     const updatedTrip = await TripOrder.findById(trip._id).lean();
     return sendSuccess(
       res,
@@ -1632,9 +1847,10 @@ const reviewTransportReplacement = async (req, res) => {
       replacementRequest.currentQuotationId,
     );
     if (
-      status === "Approved" && (!currentConfirmation ||
-      !currentQuotation ||
-      currentConfirmation.status !== "Approved")
+      status === "Approved" &&
+      (!currentConfirmation ||
+        !currentQuotation ||
+        currentConfirmation.status !== "Approved")
     ) {
       return sendError(
         res,
@@ -1644,14 +1860,51 @@ const reviewTransportReplacement = async (req, res) => {
     }
     let selection;
     if (status === "Approved") {
-      if (isClosedReplacementOrder(trip)) return sendError(res, 409, "Completed or cancelled orders cannot be replaced.");
-      if (trip.orderApproval?.status !== "Approved") return sendError(res, 409, "Order approval is no longer current.");
-      if (currentConfirmation.requirementId !== replacementRequest.requirementId || currentQuotation.requirementId !== replacementRequest.requirementId || currentConfirmation.quotationId !== currentQuotation.quotationId) return sendError(res, 409, "Original transporter links changed.");
-      selection = replacementSelection(trip, currentQuotation, currentConfirmation, Number(replacementRequest.quantity), replacementRequest.selectedAllocationIds || []);
+      if (isClosedReplacementOrder(trip))
+        return sendError(
+          res,
+          409,
+          "Completed or cancelled orders cannot be replaced.",
+        );
+      if (trip.orderApproval?.status !== "Approved")
+        return sendError(res, 409, "Order approval is no longer current.");
+      if (
+        currentConfirmation.requirementId !==
+          replacementRequest.requirementId ||
+        currentQuotation.requirementId !== replacementRequest.requirementId ||
+        currentConfirmation.quotationId !== currentQuotation.quotationId
+      )
+        return sendError(res, 409, "Original transporter links changed.");
+      selection = replacementSelection(
+        trip,
+        currentQuotation,
+        currentConfirmation,
+        Number(replacementRequest.quantity),
+        replacementRequest.selectedAllocationIds || [],
+      );
       if (selection.error) return sendError(res, 409, selection.error);
-      if (replacementRequest.currentQuantity != null && Number(replacementRequest.currentQuantity) !== selection.available) return sendError(res, 409, "Approved quantity changed. Reject this request and submit a fresh one.");
+      if (
+        replacementRequest.currentQuantity != null &&
+        Number(replacementRequest.currentQuantity) !== selection.available
+      )
+        return sendError(
+          res,
+          409,
+          "Approved quantity changed. Reject this request and submit a fresh one.",
+        );
       const originalNumbers = replacementRequest.selectedVehicleNumbers || [];
-      if (selection.selected.some((v,index) => originalNumbers[index] && originalNumbers[index] !== v.vehicleNumber)) return sendError(res, 409, "A selected vehicle was replaced. Reject and resubmit this request.");
+      if (
+        selection.selected.some(
+          (v, index) =>
+            originalNumbers[index] &&
+            originalNumbers[index] !== v.vehicleNumber,
+        )
+      )
+        return sendError(
+          res,
+          409,
+          "A selected vehicle was replaced. Reject and resubmit this request.",
+        );
       replacementRequest.currentQuantity = selection.available;
       replacementRequest.remainingQuantity = selection.remaining;
     }
@@ -1681,9 +1934,12 @@ const reviewTransportReplacement = async (req, res) => {
           }`.trim(),
       });
       // Only the replaced quantity moves; the balance keeps its approval.
-      if (!selection.unlimited && selection.remaining === 0) currentConfirmation.status = "Replaced";
-      else if (!selection.unlimited) currentQuotation.quantity = selection.remaining;
-      if (!selection.unlimited && selection.remaining === 0) currentConfirmation.confirmedAt = now;
+      if (!selection.unlimited && selection.remaining === 0)
+        currentConfirmation.status = "Replaced";
+      else if (!selection.unlimited)
+        currentQuotation.quantity = selection.remaining;
+      if (!selection.unlimited && selection.remaining === 0)
+        currentConfirmation.confirmedAt = now;
       currentConfirmation.remarks =
         `Replaced ${replacementRequest.quantity} vehicle slot(s) with ${replacementRequest.proposedTransporter}; ${selection.remaining ?? "Multiple"} remain. ${
           reviewRemarks || ""
@@ -1705,8 +1961,25 @@ const reviewTransportReplacement = async (req, res) => {
     trip.markModified("trafficQuotations");
     trip.markModified("vehicleConfirmations");
     trip.markModified("transportReplacementRequests");
-    const write = await commitTransportReplacement(trip, ["trafficQuotations", "vehicleConfirmations", "transportReplacementRequests"], status === "Approved" ? (replacementRequest.selectedAllocationIds || []) : [], requestId, reviewedBy);
-    if (!write.matchedCount) return sendError(res, 409, "Order changed during review. Refresh before retrying.");
+    const write = await commitTransportReplacement(
+      trip,
+      [
+        "trafficQuotations",
+        "vehicleConfirmations",
+        "transportReplacementRequests",
+      ],
+      status === "Approved"
+        ? replacementRequest.selectedAllocationIds || []
+        : [],
+      requestId,
+      reviewedBy,
+    );
+    if (!write.matchedCount)
+      return sendError(
+        res,
+        409,
+        "Order changed during review. Refresh before retrying.",
+      );
     const updatedTrip = await TripOrder.findById(trip._id).lean();
     return sendSuccess(
       res,
@@ -1734,7 +2007,12 @@ const allocateTrafficVehicle = async (req, res) => {
       return sendError(res, result.status, result.error);
     }
     const trip = result.trip;
-    if (isClosedReplacementOrder(trip)) return sendError(res, 409, "Completed or cancelled orders cannot receive allocations.");
+    if (isClosedReplacementOrder(trip))
+      return sendError(
+        res,
+        409,
+        "Completed or cancelled orders cannot receive allocations.",
+      );
     if (hasTrackingStarted(trip)) {
       return sendError(
         res,
@@ -1795,9 +2073,13 @@ const allocateTrafficVehicle = async (req, res) => {
       );
     }
     const allocatedCount = getAllocatedVehicles(trip).filter(
-      (vehicle) => vehicle.requirementId === requirementId && isActiveAllocation(vehicle),
+      (vehicle) =>
+        vehicle.requirementId === requirementId && isActiveAllocation(vehicle),
     ).length;
-    if (!isCraneAllocationOrder(trip, requirement) && allocatedCount >= Number(requirement.quantity || 1)) {
+    if (
+      !isCraneAllocationOrder(trip, requirement) &&
+      allocatedCount >= Number(requirement.quantity || 1)
+    ) {
       return sendError(
         res,
         409,
@@ -1805,22 +2087,57 @@ const allocateTrafficVehicle = async (req, res) => {
       );
     }
     if (!isCraneAllocationOrder(trip, requirement)) {
-      const transporterCount = getAllocatedVehicles(trip).filter(v => isActiveAllocation(v) && v.confirmationId === confirmationId && v.quotationId === quotationId).length;
-      if (transporterCount >= getQuotationQuantity(trip, quotation)) return sendError(res, 409, "All approved vehicle slots for this transporter are allocated.");
+      const transporterCount = getAllocatedVehicles(trip).filter(
+        (v) =>
+          isActiveAllocation(v) &&
+          v.confirmationId === confirmationId &&
+          v.quotationId === quotationId,
+      ).length;
+      if (transporterCount >= getQuotationQuantity(trip, quotation))
+        return sendError(
+          res,
+          409,
+          "All approved vehicle slots for this transporter are allocated.",
+        );
     }
-    const allocationCapacity = req.body.capacity == null || req.body.capacity === "" ? null : Number(req.body.capacity);
-    if (allocationCapacity !== null && (!Number.isFinite(allocationCapacity) || allocationCapacity < 0)) {
-      return sendError(res, 400, "Capacity must be a non-negative number in tons.");
+    const allocationCapacity =
+      req.body.capacity == null || req.body.capacity === ""
+        ? null
+        : Number(req.body.capacity);
+    if (
+      allocationCapacity !== null &&
+      (!Number.isFinite(allocationCapacity) || allocationCapacity < 0)
+    ) {
+      return sendError(
+        res,
+        400,
+        "Capacity must be a non-negative number in tons.",
+      );
     }
-    const allocationWeight = req.body.weight == null || req.body.weight === "" ? null : Number(req.body.weight);
-    if (allocationWeight !== null && (!Number.isFinite(allocationWeight) || allocationWeight < 0)) {
-      return sendError(res, 400, "Weight must be a non-negative number in tons.");
+    const allocationWeight =
+      req.body.weight == null || req.body.weight === ""
+        ? null
+        : Number(req.body.weight);
+    if (
+      allocationWeight !== null &&
+      (!Number.isFinite(allocationWeight) || allocationWeight < 0)
+    ) {
+      return sendError(
+        res,
+        400,
+        "Weight must be a non-negative number in tons.",
+      );
     }
     const allocationDimensions = {};
     for (const field of ["length", "height", "width"]) {
       const raw = req.body.dimensions?.[field];
       const value = raw == null || raw === "" ? null : Number(raw);
-      if (value !== null && (!Number.isFinite(value) || value < 0)) return sendError(res, 400, "Dimensions must be non-negative numbers in feet.");
+      if (value !== null && (!Number.isFinite(value) || value < 0))
+        return sendError(
+          res,
+          400,
+          "Dimensions must be non-negative numbers in feet.",
+        );
       allocationDimensions[field] = value;
     }
     const allocatedVehicle = {
@@ -1839,7 +2156,10 @@ const allocateTrafficVehicle = async (req, res) => {
       ewayBill: { number: cleanString(req.body.ewayBill?.number) },
 
       allocatedAt: new Date(),
-      allocatedBy: cleanString(req.user?.username || req.user?.name || req.body.allocatedBy) || "Traffic Team",
+      allocatedBy:
+        cleanString(
+          req.user?.username || req.user?.name || req.body.allocatedBy,
+        ) || "Traffic Team",
       allocatedSource: "Traffic",
       vehicleStatus: "Active",
       replacementCount: 0,
@@ -1879,7 +2199,12 @@ const allocateTrafficVehicle = async (req, res) => {
     trip.allocatedVehicles.push(allocatedVehicle);
     trip.markModified("allocatedVehicles");
     const write = await commitTransportReplacement(trip, ["allocatedVehicles"]);
-    if (!write.matchedCount) return sendError(res, 409, "Order changed during allocation. Refresh and retry.");
+    if (!write.matchedCount)
+      return sendError(
+        res,
+        409,
+        "Order changed during allocation. Refresh and retry.",
+      );
     const updatedTrip = await TripOrder.findById(trip._id).lean();
     return sendSuccess(
       res,
@@ -1902,13 +2227,23 @@ const replaceAllocatedVehicle = async (req, res, replacementSource) => {
       return sendError(res, result.status, result.error);
     }
     const trip = result.trip;
-    if (isClosedReplacementOrder(trip)) return sendError(res, 409, "Completed or cancelled orders cannot be replaced.");
+    if (isClosedReplacementOrder(trip))
+      return sendError(
+        res,
+        409,
+        "Completed or cancelled orders cannot be replaced.",
+      );
     const allocationId = cleanString(req.params.allocationId);
     const vehicle = findAllocatedVehicle(trip, allocationId);
     if (!vehicle) {
       return sendError(res, 404, "Allocated vehicle not found.");
     }
-    if (!isActiveAllocation(vehicle)) return sendError(res, 409, "This vehicle was replaced. Its saved history is read-only.");
+    if (!isActiveAllocation(vehicle))
+      return sendError(
+        res,
+        409,
+        "This vehicle was replaced. Its saved history is read-only.",
+      );
     const trackingStarted = hasTrackingStarted(trip);
     if (replacementSource === "Traffic" && trackingStarted) {
       return sendError(
@@ -1982,7 +2317,10 @@ const replaceAllocatedVehicle = async (req, res, replacementSource) => {
     const newAllocationId = makeId("ALLOC");
     replacement.oldAllocationId = vehicle.allocationId;
     replacement.newAllocationId = newAllocationId;
-    const history = [...(vehicle.replacementHistory || []).map(allocationObject), replacement];
+    const history = [
+      ...(vehicle.replacementHistory || []).map(allocationObject),
+      replacement,
+    ];
     const previous = allocationObject(vehicle);
     vehicle.vehicleStatus = "Replaced";
     vehicle.replacedAt = now;
@@ -2000,14 +2338,20 @@ const replaceAllocatedVehicle = async (req, res, replacementSource) => {
       quotationId: vehicle.quotationId,
       previousAllocationId: vehicle.allocationId,
       rootAllocationId: vehicle.rootAllocationId || vehicle.allocationId,
-      originTransportReplacementRequestId: vehicle.originTransportReplacementRequestId || "",
+      originTransportReplacementRequestId:
+        vehicle.originTransportReplacementRequestId || "",
       vehicleNumber: newVehicleNumber,
       vehicleType: previous.vehicleType,
-      lsp: previous.lsp, cargo: previous.cargo,
-      capacity: previous.capacity, weight: previous.weight, dimensions: previous.dimensions,
-      escort: previous.escort, supervisor: previous.supervisor,
+      lsp: previous.lsp,
+      cargo: previous.cargo,
+      capacity: previous.capacity,
+      weight: previous.weight,
+      dimensions: previous.dimensions,
+      escort: previous.escort,
+      supervisor: previous.supervisor,
       driver: newDriver,
-      allocatedAt: now, allocatedBy: replacement.replacedBy,
+      allocatedAt: now,
+      allocatedBy: replacement.replacedBy,
       allocatedSource: replacementSource,
       vehicleStatus: "Active",
       replacementCount: history.length,
@@ -2015,7 +2359,12 @@ const replaceAllocatedVehicle = async (req, res, replacementSource) => {
       dailyTracking: [],
     });
     const write = await commitTransportReplacement(trip, ["allocatedVehicles"]);
-    if (!write.matchedCount) return sendError(res, 409, "Order changed during replacement. Refresh and retry.");
+    if (!write.matchedCount)
+      return sendError(
+        res,
+        409,
+        "Order changed during replacement. Refresh and retry.",
+      );
     const updatedTrip = await TripOrder.findById(trip._id).lean();
     return sendSuccess(
       res,
@@ -2057,7 +2406,12 @@ const updateAllocatedVehicle = async (req, res) => {
     if (!vehicle) {
       return sendError(res, 404, "Allocated vehicle not found.");
     }
-    if (!isActiveAllocation(vehicle)) return sendError(res, 409, "This vehicle was replaced. Its saved history is read-only.");
+    if (!isActiveAllocation(vehicle))
+      return sendError(
+        res,
+        409,
+        "This vehicle was replaced. Its saved history is read-only.",
+      );
     /* =====================================================
        VEHICLE NUMBER
        Vehicle number changes must use a replacement endpoint
@@ -2184,7 +2538,8 @@ const updateAllocatedVehicle = async (req, res) => {
     /* =====================================================
        CHECK COMPLETE TRIP
     ===================================================== */
-    const allocatedVehicles = getAllocatedVehicles(trip).filter(isActiveAllocation);
+    const allocatedVehicles =
+      getAllocatedVehicles(trip).filter(isActiveAllocation);
     /*
      * Trip becomes completed only when:
      *
@@ -2363,10 +2718,20 @@ const saveMovementDocument = async (req, res, documentType) => {
     if (!vehicle) {
       return sendError(res, 404, "Allocated vehicle not found.");
     }
-    if (!isActiveAllocation(vehicle)) return sendError(res, 409, "This vehicle was replaced. Its saved history is read-only.");
+    if (!isActiveAllocation(vehicle))
+      return sendError(
+        res,
+        409,
+        "This vehicle was replaced. Its saved history is read-only.",
+      );
     // Remove only the uploaded file; preserve document numbers and dates.
     if (req.body.removeFile === true || req.body.removeFile === "true") {
-      if (req.file) return sendError(res, 400, "Cannot upload and remove a file in the same request.");
+      if (req.file)
+        return sendError(
+          res,
+          400,
+          "Cannot upload and remove a file in the same request.",
+        );
       const base = `allocatedVehicles.$[target].${documentType}`;
       const fileFields = {
         [`${base}.fileName`]: "",
@@ -2378,18 +2743,34 @@ const saveMovementDocument = async (req, res, documentType) => {
         [`${base}.documentName`]: "",
       };
       const write = await TripOrder.updateOne(
-        { _id: trip._id, __v: trip.__v == null ? { $exists: false } : trip.__v },
+        {
+          _id: trip._id,
+          __v: trip.__v == null ? { $exists: false } : trip.__v,
+        },
         { $set: fileFields, $inc: { __v: 1 } },
-        { arrayFilters: [{ "target.allocationId": allocationId }], runValidators: true },
+        {
+          arrayFilters: [{ "target.allocationId": allocationId }],
+          runValidators: true,
+        },
       );
-      if (!write.matchedCount) return sendError(res, 409, "Vehicle changed. Refresh and retry file removal.");
+      if (!write.matchedCount)
+        return sendError(
+          res,
+          409,
+          "Vehicle changed. Refresh and retry file removal.",
+        );
       const updatedTrip = await TripOrder.findById(trip._id).lean();
       for (const item of getAllocatedVehicles(updatedTrip)) {
         for (const type of ["lr", "pod", "ewayBill"]) {
           if (item[type]) delete item[type].fileData;
         }
       }
-      return sendSuccess(res, 200, "Uploaded file removed. Document details kept.", updatedTrip);
+      return sendSuccess(
+        res,
+        200,
+        "Uploaded file removed. Document details kept.",
+        updatedTrip,
+      );
     }
     const currentDocument = vehicle[documentType] || {};
     const number = cleanString(req.body.number);
@@ -2552,7 +2933,12 @@ const addDailyTracking = async (req, res) => {
     if (!vehicle) {
       return sendError(res, 404, "Allocated vehicle not found.");
     }
-    if (!isActiveAllocation(vehicle)) return sendError(res, 409, "This vehicle was replaced. Its saved history is read-only.");
+    if (!isActiveAllocation(vehicle))
+      return sendError(
+        res,
+        409,
+        "This vehicle was replaced. Its saved history is read-only.",
+      );
     const history = Array.isArray(vehicle.dailyTracking)
       ? vehicle.dailyTracking
       : [];
@@ -2597,11 +2983,19 @@ const addDailyTracking = async (req, res) => {
         ? history.length + 1
         : trackingDaysBetween(vehicle.loading.pointInDate, trackingDate, true);
     const rawLoadedWeight = req.body.loadedWeightTons;
-    const loadedWeightTons = rawLoadedWeight == null || rawLoadedWeight === ""
-      ? null
-      : Number(rawLoadedWeight);
-    if (loadedWeightTons !== null && (!Number.isFinite(loadedWeightTons) || loadedWeightTons < 0)) {
-      return sendError(res, 400, "Loaded weight must be a non-negative number in tons.");
+    const loadedWeightTons =
+      rawLoadedWeight == null || rawLoadedWeight === ""
+        ? null
+        : Number(rawLoadedWeight);
+    if (
+      loadedWeightTons !== null &&
+      (!Number.isFinite(loadedWeightTons) || loadedWeightTons < 0)
+    ) {
+      return sendError(
+        res,
+        400,
+        "Loaded weight must be a non-negative number in tons.",
+      );
     }
     const tracking = {
       trackingId: makeId("TRACK"),
@@ -2614,10 +3008,10 @@ const addDailyTracking = async (req, res) => {
       currentLocation,
       loadedMaterial: cleanString(
         req.body.loadedMaterial ??
-        req.body.movementMaterial ??
-        req.body.material ??
-        vehicle.loadedMaterial ??
-        previousEntry?.loadedMaterial,
+          req.body.movementMaterial ??
+          req.body.material ??
+          vehicle.loadedMaterial ??
+          previousEntry?.loadedMaterial,
       ),
       loadedWeightTons,
       latitude: toNullableNumber(req.body.latitude),
@@ -3108,75 +3502,187 @@ const saveCraneJourney = async (req, res) => {
     if (result.error) return sendError(res, result.status, result.error);
     const trip = result.trip;
     const allocationId = cleanString(req.params.allocationId);
-    const vehicle = getAllocatedVehicles(trip).find((item) => item.allocationId === allocationId);
+    const vehicle = getAllocatedVehicles(trip).find(
+      (item) => item.allocationId === allocationId,
+    );
     if (!vehicle) return sendError(res, 404, "Allocated vehicle not found.");
-    if (!isCraneAllocationOrder(trip, findRequirement(trip, vehicle.requirementId))) return sendError(res, 400, "Separate journeys are available for Crane orders only.");
-    if (cleanString(vehicle.vehicleStatus).toLowerCase() === "replaced") return sendError(res, 409, "Movement cannot be added to a replaced vehicle.");
-    const completedOrder = ["trip complete", "trip completed", "completed"].includes(cleanString(trip.stage).toLowerCase()) || cleanString(trip.status).toLowerCase() === "completed";
-    if (completedOrder) return sendError(res, 409, "This order is completed and cannot receive new movement.");
-    const journeys = Array.isArray(vehicle.craneTrips) ? vehicle.craneTrips : [];
+    if (
+      !isCraneAllocationOrder(
+        trip,
+        findRequirement(trip, vehicle.requirementId),
+      )
+    )
+      return sendError(
+        res,
+        400,
+        "Separate journeys are available for Crane orders only.",
+      );
+    if (cleanString(vehicle.vehicleStatus).toLowerCase() === "replaced")
+      return sendError(
+        res,
+        409,
+        "Movement cannot be added to a replaced vehicle.",
+      );
+    const completedOrder =
+      ["trip complete", "trip completed", "completed"].includes(
+        cleanString(trip.stage).toLowerCase(),
+      ) || cleanString(trip.status).toLowerCase() === "completed";
+    if (completedOrder)
+      return sendError(
+        res,
+        409,
+        "This order is completed and cannot receive new movement.",
+      );
+    const journeys = Array.isArray(vehicle.craneTrips)
+      ? vehicle.craneTrips
+      : [];
     const editing = Boolean(req.params.journeyId);
     const journeyId = cleanString(req.params.journeyId || req.body.journeyId);
-    if (!journeyId || journeyId.length > 100 || !/^[a-zA-Z0-9_-]+$/.test(journeyId)) return sendError(res, 400, "A valid journey ID is required.");
+    if (
+      !journeyId ||
+      journeyId.length > 100 ||
+      !/^[a-zA-Z0-9_-]+$/.test(journeyId)
+    )
+      return sendError(res, 400, "A valid journey ID is required.");
     const existing = journeys.find((item) => item.journeyId === journeyId);
-    if (editing && !existing) return sendError(res, 404, "Crane trip not found.");
-    if (!editing && existing) return sendSuccess(res, 200, "This Crane trip was already saved.", trip);
-    if (editing && Number(req.body.revision) !== Number(existing.revision)) return sendError(res, 409, "This trip changed elsewhere. Refresh before saving.");
+    if (editing && !existing)
+      return sendError(res, 404, "Crane trip not found.");
+    if (!editing && existing)
+      return sendSuccess(res, 200, "This Crane trip was already saved.", trip);
+    if (editing && Number(req.body.revision) !== Number(existing.revision))
+      return sendError(
+        res,
+        409,
+        "This trip changed elsewhere. Refresh before saving.",
+      );
     const date = cleanString(req.body.date);
-    const validDate = /^\d{4}-\d{2}-\d{2}$/.test(date) && Number.isFinite(Date.parse(date)) && new Date(date).toISOString().slice(0, 10) === date;
+    const validDate =
+      /^\d{4}-\d{2}-\d{2}$/.test(date) &&
+      Number.isFinite(Date.parse(date)) &&
+      new Date(date).toISOString().slice(0, 10) === date;
     if (!validDate) return sendError(res, 400, "Enter a valid trip date.");
     const origin = cleanString(req.body.origin);
     const destination = cleanString(req.body.destination);
     const updatedBy = cleanString(req.body.updatedBy);
-    if (!origin || !destination || !updatedBy) return sendError(res, 400, "From, To and Updated By are required.");
+    if (!origin || !destination || !updatedBy)
+      return sendError(res, 400, "From, To and Updated By are required.");
     const status = cleanString(req.body.status) || "Planned";
-    if (!["Planned", "Loading", "In Transit", "Unloading", "Completed", "Idle", "Moving", "Stopped", "Breakdown", "Reached"].includes(status)) return sendError(res, 400, "Invalid trip status.");
-    const readKm = (raw) => raw == null || raw === "" ? null : Number(raw);
-    const startKm = readKm(req.body.startKm), endKm = readKm(req.body.endKm);
-    if ([startKm, endKm].some((v) => v !== null && (!Number.isFinite(v) || v < 0)) || endKm !== null && (startKm === null || endKm < startKm)) return sendError(res, 400, "End KM must be at least Start KM; KM values must be non-negative.");
+    if (
+      ![
+        "Planned",
+        "Loading",
+        "In Transit",
+        "Unloading",
+        "Completed",
+        "Idle",
+        "Moving",
+        "Stopped",
+        "Breakdown",
+        "Reached",
+      ].includes(status)
+    )
+      return sendError(res, 400, "Invalid trip status.");
+    const readKm = (raw) => (raw == null || raw === "" ? null : Number(raw));
+    const startKm = readKm(req.body.startKm),
+      endKm = readKm(req.body.endKm);
+    if (
+      [startKm, endKm].some(
+        (v) => v !== null && (!Number.isFinite(v) || v < 0),
+      ) ||
+      (endKm !== null && (startKm === null || endKm < startKm))
+    )
+      return sendError(
+        res,
+        400,
+        "End KM must be at least Start KM; KM values must be non-negative.",
+      );
     const readOperation = (raw = {}) => {
-      const operation = { status: cleanString(raw.status) || "Pending", remarks: cleanString(raw.remarks) };
-      if (!["Pending", "In Progress", "Completed"].includes(operation.status)) throw new Error("Invalid loading/unloading status.");
+      const operation = {
+        status: cleanString(raw.status) || "Pending",
+        remarks: cleanString(raw.remarks),
+      };
+      if (!["Pending", "In Progress", "Completed"].includes(operation.status))
+        throw new Error("Invalid loading/unloading status.");
       for (const key of ["pointInAt", "completedAt", "pointOutAt"]) {
         const value = raw[key];
-        if (value && !Number.isFinite(Date.parse(value))) throw new Error("Enter valid loading/unloading times.");
+        if (value && !Number.isFinite(Date.parse(value)))
+          throw new Error("Enter valid loading/unloading times.");
         operation[key] = value ? new Date(value).toISOString() : null;
       }
-      const dates = [operation.pointInAt, operation.completedAt, operation.pointOutAt].filter(Boolean);
-      if (dates.some((value, index) => index > 0 && value < dates[index - 1])) throw new Error("Loading/unloading times must be chronological.");
+      const dates = [
+        operation.pointInAt,
+        operation.completedAt,
+        operation.pointOutAt,
+      ].filter(Boolean);
+      if (dates.some((value, index) => index > 0 && value < dates[index - 1]))
+        throw new Error("Loading/unloading times must be chronological.");
       return operation;
     };
     let loading, unloading;
-    try { loading = readOperation(req.body.loading); unloading = readOperation(req.body.unloading); }
-    catch (error) { return sendError(res, 400, error.message); }
-    const lastLoading = loading.pointOutAt || loading.completedAt || loading.pointInAt;
-    const firstUnloading = unloading.pointInAt || unloading.completedAt || unloading.pointOutAt;
-    if (lastLoading && firstUnloading && firstUnloading < lastLoading) return sendError(res, 400, "Unloading cannot be before loading.");
-    if (status === "Completed" && (loading.status !== "Completed" || unloading.status !== "Completed")) return sendError(res, 400, "Complete loading and unloading before marking this trip Completed.");
-    const readDocumentDetails = (raw = {}) => ({ number: cleanString(raw.number), date: raw.date ? toDateOrNull(raw.date) : null, validUpto: raw.validUpto ? toDateOrNull(raw.validUpto) : null, remarks: cleanString(raw.remarks) });
-    const lr = readDocumentDetails(req.body.lr), ewayBill = readDocumentDetails(req.body.ewayBill);
-    if (req.body.lr?.date && !lr.date || req.body.ewayBill?.validUpto && !ewayBill.validUpto) return sendError(res, 400, "Enter valid document dates.");
+    try {
+      loading = readOperation(req.body.loading);
+      unloading = readOperation(req.body.unloading);
+    } catch (error) {
+      return sendError(res, 400, error.message);
+    }
+    const lastLoading =
+      loading.pointOutAt || loading.completedAt || loading.pointInAt;
+    const firstUnloading =
+      unloading.pointInAt || unloading.completedAt || unloading.pointOutAt;
+    if (lastLoading && firstUnloading && firstUnloading < lastLoading)
+      return sendError(res, 400, "Unloading cannot be before loading.");
+    if (
+      status === "Completed" &&
+      (loading.status !== "Completed" || unloading.status !== "Completed")
+    )
+      return sendError(
+        res,
+        400,
+        "Complete loading and unloading before marking this trip Completed.",
+      );
+    const readDocumentDetails = (raw = {}) => ({
+      number: cleanString(raw.number),
+      date: raw.date ? toDateOrNull(raw.date) : null,
+      validUpto: raw.validUpto ? toDateOrNull(raw.validUpto) : null,
+      remarks: cleanString(raw.remarks),
+    });
+    const lr = readDocumentDetails(req.body.lr),
+      ewayBill = readDocumentDetails(req.body.ewayBill);
+    if (
+      (req.body.lr?.date && !lr.date) ||
+      (req.body.ewayBill?.validUpto && !ewayBill.validUpto)
+    )
+      return sendError(res, 400, "Enter valid document dates.");
     const now = new Date();
     const loadedMaterial = cleanString(
       req.body.loadedMaterial ??
-      req.body.movementMaterial ??
-      req.body.material ??
-      existing?.loadedMaterial ??
-      existing?.movementMaterial ??
-      existing?.material,
+        req.body.movementMaterial ??
+        req.body.material ??
+        existing?.loadedMaterial ??
+        existing?.movementMaterial ??
+        existing?.material,
     );
     const tgNo = cleanString(
       req.body.tgNo ??
-      req.body.tgNumber ??
-      existing?.tgNo ??
-      existing?.tgNumber,
+        req.body.tgNumber ??
+        existing?.tgNo ??
+        existing?.tgNumber,
     );
-    const rawLoadedWeight = req.body.loadedWeightTons ?? existing?.loadedWeightTons;
-    const loadedWeightTons = rawLoadedWeight == null || rawLoadedWeight === ""
-      ? null
-      : Number(rawLoadedWeight);
-    if (loadedWeightTons !== null && (!Number.isFinite(loadedWeightTons) || loadedWeightTons < 0)) {
-      return sendError(res, 400, "Loaded weight must be a non-negative number in tons.");
+    const rawLoadedWeight =
+      req.body.loadedWeightTons ?? existing?.loadedWeightTons;
+    const loadedWeightTons =
+      rawLoadedWeight == null || rawLoadedWeight === ""
+        ? null
+        : Number(rawLoadedWeight);
+    if (
+      loadedWeightTons !== null &&
+      (!Number.isFinite(loadedWeightTons) || loadedWeightTons < 0)
+    ) {
+      return sendError(
+        res,
+        400,
+        "Loaded weight must be a non-negative number in tons.",
+      );
     }
     const details = {
       lr,
@@ -3196,31 +3702,73 @@ const saveCraneJourney = async (req, res) => {
       remarks: cleanString(req.body.remarks),
       updatedBy,
     };
-    const record = { ...details, journeyId, createdAt: existing?.createdAt || now, updatedAt: now, revision: (Number(existing?.revision) || 0) + 1,
-      history: [...(existing?.history || []), { ...details, historyId: makeId("CJH"), savedAt: now }] };
+    const record = {
+      ...details,
+      journeyId,
+      createdAt: existing?.createdAt || now,
+      updatedAt: now,
+      revision: (Number(existing?.revision) || 0) + 1,
+      history: [
+        ...(existing?.history || []),
+        { ...details, historyId: makeId("CJH"), savedAt: now },
+      ],
+    };
     const condition = { allocationId, vehicleStatus: { $ne: "Replaced" } };
     let update, options;
     if (editing) {
-      condition.craneTrips = { $elemMatch: { journeyId, revision: Number(existing.revision) } };
+      condition.craneTrips = {
+        $elemMatch: { journeyId, revision: Number(existing.revision) },
+      };
       // Set individual fields to preserve independently uploaded POD binary.
       const fields = {};
       for (const [key, value] of Object.entries(record)) {
         // Update document metadata by leaf path, preserving uploaded binary and file metadata.
         if (key === "lr" || key === "ewayBill") {
-          for (const [field, detail] of Object.entries(value)) fields[`allocatedVehicles.$[vehicle].craneTrips.$[journey].${key}.${field}`] = detail;
-        } else fields[`allocatedVehicles.$[vehicle].craneTrips.$[journey].${key}`] = value;
+          for (const [field, detail] of Object.entries(value))
+            fields[
+              `allocatedVehicles.$[vehicle].craneTrips.$[journey].${key}.${field}`
+            ] = detail;
+        } else
+          fields[`allocatedVehicles.$[vehicle].craneTrips.$[journey].${key}`] =
+            value;
       }
       update = { $set: fields };
-      options = { runValidators: true, arrayFilters: [{ "vehicle.allocationId": allocationId }, { "journey.journeyId": journeyId, "journey.revision": Number(existing.revision) }] };
+      options = {
+        runValidators: true,
+        arrayFilters: [
+          { "vehicle.allocationId": allocationId },
+          {
+            "journey.journeyId": journeyId,
+            "journey.revision": Number(existing.revision),
+          },
+        ],
+      };
     } else {
       condition["craneTrips.journeyId"] = { $ne: journeyId };
       update = { $push: { "allocatedVehicles.$[vehicle].craneTrips": record } };
-      options = { runValidators: true, arrayFilters: [{ "vehicle.allocationId": allocationId }] };
+      options = {
+        runValidators: true,
+        arrayFilters: [{ "vehicle.allocationId": allocationId }],
+      };
     }
-    const write = await TripOrder.updateOne({ _id: trip._id, allocatedVehicles: { $elemMatch: condition } }, update, options);
-    if (!write.matchedCount) return sendError(res, 409, "The vehicle or trip changed. Refresh before retrying.");
+    const write = await TripOrder.updateOne(
+      { _id: trip._id, allocatedVehicles: { $elemMatch: condition } },
+      update,
+      options,
+    );
+    if (!write.matchedCount)
+      return sendError(
+        res,
+        409,
+        "The vehicle or trip changed. Refresh before retrying.",
+      );
     const updated = await TripOrder.findById(trip._id).lean();
-    return sendSuccess(res, editing ? 200 : 201, "Crane trip saved successfully.", updated);
+    return sendSuccess(
+      res,
+      editing ? 200 : 201,
+      "Crane trip saved successfully.",
+      updated,
+    );
   } catch (error) {
     console.error("Save Crane Journey Error:", error);
     return sendError(res, 500, "Unable to save Crane trip.", error);
@@ -3233,145 +3781,445 @@ const saveCraneJourneyPod = async (req, res) => {
     const result = await getTripDocument(req.params.id);
     if (result.error) return sendError(res, result.status, result.error);
     const trip = result.trip;
-    const vehicle = getAllocatedVehicles(trip).find(v => v.allocationId === req.params.allocationId);
-    const journey = vehicle?.craneTrips?.find(j => j.journeyId === req.params.journeyId);
+    const vehicle = getAllocatedVehicles(trip).find(
+      (v) => v.allocationId === req.params.allocationId,
+    );
+    const journey = vehicle?.craneTrips?.find(
+      (j) => j.journeyId === req.params.journeyId,
+    );
     if (!journey) return sendError(res, 404, "Crane trip not found.");
-    if (!isCraneAllocationOrder(trip, findRequirement(trip, vehicle.requirementId))) return sendError(res, 400, "Crane orders only.");
-    if (cleanString(vehicle.vehicleStatus).toLowerCase() === "replaced" || ["completed", "trip complete", "trip completed"].includes(cleanString(trip.stage).toLowerCase()) || cleanString(trip.status).toLowerCase() === "completed") return sendError(res, 409, "This vehicle or order is closed.");
-    if (journey.unloading?.status !== "Completed") return sendError(res, 400, "Complete unloading before uploading POD.");
+    if (
+      !isCraneAllocationOrder(
+        trip,
+        findRequirement(trip, vehicle.requirementId),
+      )
+    )
+      return sendError(res, 400, "Crane orders only.");
+    if (
+      cleanString(vehicle.vehicleStatus).toLowerCase() === "replaced" ||
+      ["completed", "trip complete", "trip completed"].includes(
+        cleanString(trip.stage).toLowerCase(),
+      ) ||
+      cleanString(trip.status).toLowerCase() === "completed"
+    )
+      return sendError(res, 409, "This vehicle or order is closed.");
+    if (journey.unloading?.status !== "Completed")
+      return sendError(res, 400, "Complete unloading before uploading POD.");
     if (!req.file) return sendError(res, 400, "Choose a POD document.");
-    const pod = { fileName: req.file.originalname, mimeType: req.file.mimetype, fileSize: req.file.size, fileData: req.file.buffer, documentName: "POD Document", uploadedBy: cleanString(req.body.uploadedBy) || "Tracking", uploadedAt: new Date() };
-    const write = await TripOrder.updateOne({ _id: trip._id, allocatedVehicles: { $elemMatch: { allocationId: vehicle.allocationId, vehicleStatus: { $ne: "Replaced" }, craneTrips: { $elemMatch: { journeyId: journey.journeyId, "unloading.status": "Completed" } } } } }, { $set: { "allocatedVehicles.$[vehicle].craneTrips.$[journey].pod": pod } }, { runValidators: true, arrayFilters: [{ "vehicle.allocationId": vehicle.allocationId }, { "journey.journeyId": journey.journeyId }] });
-    if (!write.matchedCount) return sendError(res, 409, "Trip changed. Refresh before uploading.");
-    return sendSuccess(res, 200, "POD saved.", await TripOrder.findById(trip._id).lean());
-  } catch (error) { return sendError(res, 500, "Unable to save POD.", error); }
+    const pod = {
+      fileName: req.file.originalname,
+      mimeType: req.file.mimetype,
+      fileSize: req.file.size,
+      fileData: req.file.buffer,
+      documentName: "POD Document",
+      uploadedBy: cleanString(req.body.uploadedBy) || "Tracking",
+      uploadedAt: new Date(),
+    };
+    const write = await TripOrder.updateOne(
+      {
+        _id: trip._id,
+        allocatedVehicles: {
+          $elemMatch: {
+            allocationId: vehicle.allocationId,
+            vehicleStatus: { $ne: "Replaced" },
+            craneTrips: {
+              $elemMatch: {
+                journeyId: journey.journeyId,
+                "unloading.status": "Completed",
+              },
+            },
+          },
+        },
+      },
+      {
+        $set: { "allocatedVehicles.$[vehicle].craneTrips.$[journey].pod": pod },
+      },
+      {
+        runValidators: true,
+        arrayFilters: [
+          { "vehicle.allocationId": vehicle.allocationId },
+          { "journey.journeyId": journey.journeyId },
+        ],
+      },
+    );
+    if (!write.matchedCount)
+      return sendError(res, 409, "Trip changed. Refresh before uploading.");
+    return sendSuccess(
+      res,
+      200,
+      "POD saved.",
+      await TripOrder.findById(trip._id).lean(),
+    );
+  } catch (error) {
+    return sendError(res, 500, "Unable to save POD.", error);
+  }
 };
 const downloadCraneJourneyPod = async (req, res) => {
   try {
-    if (!isValidMongoId(req.params.id)) return sendError(res, 400, "Invalid order ID.");
-    const trip = await TripOrder.findById(req.params.id).select("+allocatedVehicles.craneTrips.pod.fileData");
-    const vehicle = trip?.allocatedVehicles?.find(v => v.allocationId === req.params.allocationId);
-    const document = vehicle?.craneTrips?.find(j => j.journeyId === req.params.journeyId)?.pod;
-    if (!document?.fileData || !document.fileName) return sendError(res, 404, "POD document not found.");
-    res.setHeader("Content-Type", document.mimeType || "application/octet-stream");
-    res.setHeader("Content-Disposition", `inline; filename*=UTF-8''${encodeURIComponent(document.fileName)}`);
+    if (!isValidMongoId(req.params.id))
+      return sendError(res, 400, "Invalid order ID.");
+    const trip = await TripOrder.findById(req.params.id).select(
+      "+allocatedVehicles.craneTrips.pod.fileData",
+    );
+    const vehicle = trip?.allocatedVehicles?.find(
+      (v) => v.allocationId === req.params.allocationId,
+    );
+    const document = vehicle?.craneTrips?.find(
+      (j) => j.journeyId === req.params.journeyId,
+    )?.pod;
+    if (!document?.fileData || !document.fileName)
+      return sendError(res, 404, "POD document not found.");
+    res.setHeader(
+      "Content-Type",
+      document.mimeType || "application/octet-stream",
+    );
+    res.setHeader(
+      "Content-Disposition",
+      `inline; filename*=UTF-8''${encodeURIComponent(document.fileName)}`,
+    );
     return res.send(document.fileData);
-  } catch (error) { return sendError(res, 500, "Unable to view POD.", error); }
+  } catch (error) {
+    return sendError(res, 500, "Unable to view POD.", error);
+  }
 };
-
 
 // LR and E-Way files are attached to the selected Crane journey.
 const saveCraneJourneyDocument = async (req, res) => {
   try {
     const type = req.params.documentType;
-    if (!["lr", "ewayBill"].includes(type)) return sendError(res, 400, "Unsupported document type.");
+    if (!["lr", "ewayBill"].includes(type))
+      return sendError(res, 400, "Unsupported document type.");
     const result = await getTripDocument(req.params.id);
     if (result.error) return sendError(res, result.status, result.error);
     const trip = result.trip;
-    const vehicle = getAllocatedVehicles(trip).find(v => v.allocationId === req.params.allocationId);
-    const journey = vehicle?.craneTrips?.find(j => j.journeyId === req.params.journeyId);
+    const vehicle = getAllocatedVehicles(trip).find(
+      (v) => v.allocationId === req.params.allocationId,
+    );
+    const journey = vehicle?.craneTrips?.find(
+      (j) => j.journeyId === req.params.journeyId,
+    );
     if (!journey) return sendError(res, 404, "Crane trip not found.");
-    if (!isCraneAllocationOrder(trip, findRequirement(trip, vehicle.requirementId))) return sendError(res, 400, "Crane orders only.");
-    if (cleanString(vehicle.vehicleStatus).toLowerCase() === "replaced" || ["completed", "trip complete", "trip completed"].includes(cleanString(trip.stage).toLowerCase()) || cleanString(trip.status).toLowerCase() === "completed") return sendError(res, 409, "This vehicle or order is closed.");
+    if (
+      !isCraneAllocationOrder(
+        trip,
+        findRequirement(trip, vehicle.requirementId),
+      )
+    )
+      return sendError(res, 400, "Crane orders only.");
+    if (
+      cleanString(vehicle.vehicleStatus).toLowerCase() === "replaced" ||
+      ["completed", "trip complete", "trip completed"].includes(
+        cleanString(trip.stage).toLowerCase(),
+      ) ||
+      cleanString(trip.status).toLowerCase() === "completed"
+    )
+      return sendError(res, 409, "This vehicle or order is closed.");
     if (!req.file) return sendError(res, 400, "Choose a document.");
     const revision = Number(req.body.revision);
-    if (!Number.isInteger(revision) || revision !== Number(journey.revision)) return sendError(res, 409, "This trip changed. Refresh before uploading.");
+    if (!Number.isInteger(revision) || revision !== Number(journey.revision))
+      return sendError(
+        res,
+        409,
+        "This trip changed. Refresh before uploading.",
+      );
     const base = `allocatedVehicles.$[vehicle].craneTrips.$[journey]`;
-    const document = { fileName: req.file.originalname, mimeType: req.file.mimetype, fileSize: req.file.size, fileData: req.file.buffer, documentName: type === "lr" ? "LR Document" : "E-Way Bill Document", uploadedBy: cleanString(req.body.uploadedBy) || "Tracking", uploadedAt: new Date() };
-    const fields = Object.fromEntries(Object.entries(document).map(([key, value]) => [`${base}.${type}.${key}`, value]));
+    const document = {
+      fileName: req.file.originalname,
+      mimeType: req.file.mimetype,
+      fileSize: req.file.size,
+      fileData: req.file.buffer,
+      documentName: type === "lr" ? "LR Document" : "E-Way Bill Document",
+      uploadedBy: cleanString(req.body.uploadedBy) || "Tracking",
+      uploadedAt: new Date(),
+    };
+    const fields = Object.fromEntries(
+      Object.entries(document).map(([key, value]) => [
+        `${base}.${type}.${key}`,
+        value,
+      ]),
+    );
     fields[`${base}.updatedAt`] = new Date();
-    const write = await TripOrder.updateOne({ _id: trip._id, allocatedVehicles: { $elemMatch: { allocationId: vehicle.allocationId, vehicleStatus: { $ne: "Replaced" }, craneTrips: { $elemMatch: { journeyId: journey.journeyId, revision } } } } }, { $set: fields, $inc: { [`${base}.revision`]: 1 } }, { runValidators: true, arrayFilters: [{ "vehicle.allocationId": vehicle.allocationId }, { "journey.journeyId": journey.journeyId, "journey.revision": revision }] });
-    if (!write.matchedCount) return sendError(res, 409, "Trip changed. Refresh before uploading.");
-    return sendSuccess(res, 200, "Document uploaded.", await TripOrder.findById(trip._id).lean());
-  } catch (error) { return sendError(res, 500, "Unable to upload Crane document.", error); }
+    const write = await TripOrder.updateOne(
+      {
+        _id: trip._id,
+        allocatedVehicles: {
+          $elemMatch: {
+            allocationId: vehicle.allocationId,
+            vehicleStatus: { $ne: "Replaced" },
+            craneTrips: {
+              $elemMatch: { journeyId: journey.journeyId, revision },
+            },
+          },
+        },
+      },
+      { $set: fields, $inc: { [`${base}.revision`]: 1 } },
+      {
+        runValidators: true,
+        arrayFilters: [
+          { "vehicle.allocationId": vehicle.allocationId },
+          {
+            "journey.journeyId": journey.journeyId,
+            "journey.revision": revision,
+          },
+        ],
+      },
+    );
+    if (!write.matchedCount)
+      return sendError(res, 409, "Trip changed. Refresh before uploading.");
+    return sendSuccess(
+      res,
+      200,
+      "Document uploaded.",
+      await TripOrder.findById(trip._id).lean(),
+    );
+  } catch (error) {
+    return sendError(res, 500, "Unable to upload Crane document.", error);
+  }
 };
 const downloadCraneJourneyDocument = async (req, res) => {
   try {
     const type = req.params.documentType;
-    if (!["lr", "ewayBill"].includes(type)) return sendError(res, 400, "Unsupported document type.");
-    if (!isValidMongoId(req.params.id)) return sendError(res, 400, "Invalid order ID.");
-    const trip = await TripOrder.findById(req.params.id).select(`+allocatedVehicles.craneTrips.${type}.fileData`);
-    const vehicle = trip?.allocatedVehicles?.find(v => v.allocationId === req.params.allocationId);
-    const document = vehicle?.craneTrips?.find(j => j.journeyId === req.params.journeyId)?.[type];
-    if (!document?.fileData || !document.fileName) return sendError(res, 404, "Document not found.");
-    res.setHeader("Content-Type", document.mimeType || "application/octet-stream");
+    if (!["lr", "ewayBill"].includes(type))
+      return sendError(res, 400, "Unsupported document type.");
+    if (!isValidMongoId(req.params.id))
+      return sendError(res, 400, "Invalid order ID.");
+    const trip = await TripOrder.findById(req.params.id).select(
+      `+allocatedVehicles.craneTrips.${type}.fileData`,
+    );
+    const vehicle = trip?.allocatedVehicles?.find(
+      (v) => v.allocationId === req.params.allocationId,
+    );
+    const document = vehicle?.craneTrips?.find(
+      (j) => j.journeyId === req.params.journeyId,
+    )?.[type];
+    if (!document?.fileData || !document.fileName)
+      return sendError(res, 404, "Document not found.");
+    res.setHeader(
+      "Content-Type",
+      document.mimeType || "application/octet-stream",
+    );
     res.setHeader("X-Content-Type-Options", "nosniff");
-    res.setHeader("Content-Disposition", `inline; filename*=UTF-8''${encodeURIComponent(document.fileName)}`);
+    res.setHeader(
+      "Content-Disposition",
+      `inline; filename*=UTF-8''${encodeURIComponent(document.fileName)}`,
+    );
     return res.send(document.fileData);
-  } catch (error) { return sendError(res, 500, "Unable to view Crane document.", error); }
+  } catch (error) {
+    return sendError(res, 500, "Unable to view Crane document.", error);
+  }
 };
 
 // Invoice documents use the existing authenticated trip access scope.
 const invoiceTripFilter = (req) => ({
   $and: [{ _id: req.params.id }, req.tripAccessFilter || {}],
 });
+const getInvoiceTotal = (trip) => {
+  const raw = String(
+    trip?.orderFinalization?.finalRate ?? trip?.finalRate ?? "",
+  ).replace(/[₹,\s]/g, "");
+  const amount = Number(raw);
+  return raw && Number.isFinite(amount) && amount > 0 ? amount : null;
+};
+const addInvoicePayment = async (req, res) => {
+  try {
+    if (!isValidMongoId(req.params.id))
+      return sendError(res, 400, "Invalid order ID.");
+    const trip = await TripOrder.findOne(invoiceTripFilter(req));
+    if (!trip) return sendError(res, 404, "Order not found.");
+    const completed =
+      cleanString(trip.stage).toLowerCase() === "trip complete" ||
+      (cleanString(trip.status).toLowerCase() === "completed" &&
+        trip.allocatedVehicles?.length > 0 &&
+        trip.allocatedVehicles.every(
+          (v) => cleanString(v.unloading?.status).toLowerCase() === "completed",
+        ));
+    if (completed) return sendError(res, 409, "Completed trips are read-only.");
+    const total = getInvoiceTotal(trip);
+    if (total === null)
+      return sendError(
+        res,
+        400,
+        "Set a valid Final Rate in Order Finalization first.",
+      );
+    const amount = Number(req.body?.amount);
+    if (
+      !Number.isFinite(amount) ||
+      amount <= 0 ||
+      Math.abs(amount * 100 - Math.round(amount * 100)) > 0.000001
+    )
+      return sendError(
+        res,
+        400,
+        "Enter a positive amount with no more than two decimals.",
+      );
+    const paymentDate = cleanString(req.body?.paymentDate);
+    if (
+      !/^\d{4}-\d{2}-\d{2}$/.test(paymentDate) ||
+      !Number.isFinite(Date.parse(paymentDate)) ||
+      new Date(paymentDate).toISOString().slice(0, 10) !== paymentDate
+    )
+      return sendError(res, 400, "Enter a valid payment date.");
+    const remarks = cleanString(req.body?.remarks);
+    if (remarks.length > 2000)
+      return sendError(res, 400, "Remarks exceed 2000 characters.");
+    if (!trip.invoicePayment) trip.invoicePayment = {};
+    const details = trip.invoicePayment;
+    if (!Array.isArray(details.payments)) details.payments = [];
+    if (
+      !details.payments.length &&
+      Number(details.receivedAmount) > 0 &&
+      details.paymentDate
+    ) {
+      details.payments.push({
+        amount: Number(details.receivedAmount),
+        paymentDate: details.paymentDate,
+        remarks: details.paymentRemarks || "",
+        receivedBy: details.updatedBy || "Previous Payment",
+      });
+    }
+    const paidCents = details.payments.reduce(
+      (sum, payment) => sum + Math.round(Number(payment.amount || 0) * 100),
+      0,
+    );
+    const amountCents = Math.round(amount * 100);
+    if (paidCents + amountCents > Math.round(total * 100))
+      return sendError(res, 400, "Payment exceeds the outstanding balance.");
+    const receivedBy =
+      cleanString(req.user?.username || req.user?.name) || "Key Account";
+    details.payments.push({ amount, paymentDate, remarks, receivedBy });
+    details.receivedAmount = (paidCents + amountCents) / 100;
+    details.paymentDate = paymentDate;
+    details.paymentRemarks = remarks;
+    details.updatedBy = receivedBy;
+    details.updatedAt = new Date();
+    trip.markModified("invoicePayment");
+    await trip.save();
+    return sendSuccess(
+      res,
+      200,
+      "Payment added successfully.",
+      await TripOrder.findOne(invoiceTripFilter(req)).lean(),
+    );
+  } catch (error) {
+    return sendError(
+      res,
+      error.name === "ValidationError" ? 400 : 500,
+      "Unable to add payment.",
+      error,
+    );
+  }
+};
 const saveInvoicePayment = async (req, res) => {
   try {
-    if (!isValidMongoId(req.params.id)) return sendError(res, 400, "Invalid order ID.");
+    if (!isValidMongoId(req.params.id))
+      return sendError(res, 400, "Invalid order ID.");
     const trip = await TripOrder.findOne(invoiceTripFilter(req)).select(
       "+invoicePayment.proFormaDocument.fileData +invoicePayment.invoiceDocument.fileData",
     );
     if (!trip) return sendError(res, 404, "Order not found.");
-    const completed = cleanString(trip.stage).toLowerCase() === "trip complete" ||
+    const completed =
+      cleanString(trip.stage).toLowerCase() === "trip complete" ||
       (cleanString(trip.status).toLowerCase() === "completed" &&
-        trip.allocatedVehicles?.length > 0 && trip.allocatedVehicles.every(
-          (v) => cleanString(v.unloading?.status).toLowerCase() === "completed"));
-    if (completed) return sendError(res, 409, "Trip is completed and cannot be modified.");
+        trip.allocatedVehicles?.length > 0 &&
+        trip.allocatedVehicles.every(
+          (v) => cleanString(v.unloading?.status).toLowerCase() === "completed",
+        ));
+    if (completed)
+      return sendError(res, 409, "Trip is completed and cannot be modified.");
     const body = req.body || {};
     const proFormaInvoiceNumber = cleanString(body.proFormaInvoiceNumber);
     const invoiceNumber = cleanString(body.invoiceNumber);
-    const paymentRemarks = cleanString(body.paymentRemarks);
-    if (proFormaInvoiceNumber.length > 100 || invoiceNumber.length > 100 || paymentRemarks.length > 2000)
-      return sendError(res, 400, "Invoice numbers allow 100 characters; remarks allow 2000.");
-    const amountText = cleanString(body.receivedAmount);
-    const receivedAmount = amountText === "" ? null : Number(amountText);
-    if (receivedAmount !== null && (!Number.isFinite(receivedAmount) || receivedAmount < 0))
-      return sendError(res, 400, "Received amount must be a valid non-negative number.");
-    const paymentDate = cleanString(body.paymentDate);
-    if (paymentDate && (!/^\d{4}-\d{2}-\d{2}$/.test(paymentDate) ||
-      !Number.isFinite(Date.parse(paymentDate)) || new Date(paymentDate).toISOString().slice(0, 10) !== paymentDate))
-      return sendError(res, 400, "Enter a valid payment date.");
-    if ((receivedAmount !== null) !== Boolean(paymentDate))
-      return sendError(res, 400, "Enter both the received amount and payment date.");
+    if (proFormaInvoiceNumber.length > 100 || invoiceNumber.length > 100)
+      return sendError(res, 400, "Invoice numbers allow 100 characters.");
     const previous = trip.invoicePayment?.toObject?.() || {};
     if (!trip.invoicePayment) trip.invoicePayment = {};
     const details = trip.invoicePayment;
-    const fields = { proFormaInvoiceNumber, invoiceNumber, receivedAmount, paymentDate, paymentRemarks };
-    const changes = Object.entries(fields).map(([key, value]) => [key, previous[key], value]);
+    const fields = { proFormaInvoiceNumber, invoiceNumber };
+    const changes = Object.entries(fields).map(([key, value]) => [
+      key,
+      previous[key],
+      value,
+    ]);
     Object.assign(details, fields);
     for (const field of ["proFormaDocument", "invoiceDocument"]) {
       const file = req.files?.[field]?.[0];
       if (file) {
-        details[field] = { fileName: file.originalname, mimeType: file.mimetype,
-          fileSize: file.size, fileData: file.buffer };
+        details[field] = {
+          fileName: file.originalname,
+          mimeType: file.mimetype,
+          fileSize: file.size,
+          fileData: file.buffer,
+        };
         changes.push([field, previous[field]?.fileName, file.originalname]);
       }
     }
-    details.updatedBy = cleanString(req.user?.username || req.user?.name) || "Key Account";
+    details.updatedBy =
+      cleanString(req.user?.username || req.user?.name) || "Key Account";
     details.updatedAt = new Date();
-    recordLifecycleChanges(trip, previous, "Invoice & Payment", changes, details.updatedBy);
+    // Record only genuine edits to previously saved invoice details.
+    const hadExistingInvoice = Boolean(
+      cleanString(previous?.invoiceNumber) ||
+      cleanString(previous?.proFormaInvoiceNumber) ||
+      cleanString(previous?.invoiceDocument?.fileName) ||
+      cleanString(previous?.proFormaDocument?.fileName),
+    );
+
+    if (hadExistingInvoice) {
+      const actualChanges = changes.filter(
+        ([, oldValue, newValue]) =>
+          String(oldValue ?? "").trim() !== String(newValue ?? "").trim(),
+      );
+
+      if (actualChanges.length > 0) {
+        recordLifecycleChanges(
+          trip,
+          previous,
+          "Invoice & Payment",
+          actualChanges,
+          details.updatedBy,
+        );
+      }
+    }
     trip.markModified("invoicePayment");
     await trip.save();
     const savedTrip = await TripOrder.findOne(invoiceTripFilter(req)).lean();
-    return sendSuccess(res, 200, "Invoice & Payment saved successfully.", savedTrip);
+    return sendSuccess(
+      res,
+      200,
+      "Invoice & Payment saved successfully.",
+      savedTrip,
+    );
   } catch (error) {
-    return sendError(res, error.name === "ValidationError" ? 400 : 500,
-      "Unable to save Invoice & Payment.", error);
+    return sendError(
+      res,
+      error.name === "ValidationError" ? 400 : 500,
+      "Unable to save Invoice & Payment.",
+      error,
+    );
   }
 };
 const downloadInvoicePaymentDocument = async (req, res) => {
   try {
-    if (!isValidMongoId(req.params.id)) return sendError(res, 400, "Invalid order ID.");
+    if (!isValidMongoId(req.params.id))
+      return sendError(res, 400, "Invalid order ID.");
     const field = req.params.documentType;
     if (!["proFormaDocument", "invoiceDocument"].includes(field))
       return sendError(res, 400, "Invalid document type.");
-    const trip = await TripOrder.findOne(invoiceTripFilter(req)).select(`+invoicePayment.${field}.fileData`);
+    const trip = await TripOrder.findOne(invoiceTripFilter(req)).select(
+      `+invoicePayment.${field}.fileData`,
+    );
     if (!trip) return sendError(res, 404, "Order not found.");
     const file = trip.invoicePayment?.[field];
     if (!file?.fileData) return sendError(res, 404, "Document not found.");
-    const filename = String(file.fileName || "invoice-document").replace(/[\r\n"\\]/g, "_");
+    const filename = String(file.fileName || "invoice-document").replace(
+      /[\r\n"\\]/g,
+      "_",
+    );
     res.setHeader("Content-Type", file.mimeType || "application/octet-stream");
-    res.setHeader("Content-Disposition", `attachment; filename="invoice-document"; filename*=UTF-8''${encodeURIComponent(filename)}`);
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="invoice-document"; filename*=UTF-8''${encodeURIComponent(filename)}`,
+    );
     res.setHeader("X-Content-Type-Options", "nosniff");
     return res.send(file.fileData);
   } catch (error) {
@@ -3381,6 +4229,7 @@ const downloadInvoicePaymentDocument = async (req, res) => {
 
 module.exports = {
   saveInvoicePayment,
+  addInvoicePayment,
   downloadInvoicePaymentDocument,
   saveCraneJourneyDocument,
   downloadCraneJourneyDocument,

@@ -1,217 +1,119 @@
-const dns = require("dns");
-dns.setServers(["8.8.8.8", "1.1.1.1"]);
+"use strict";
+
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const path = require("path");
+const fs = require("fs");
 
-/* ==========================================
-   ENVIRONMENT
-========================================== */
 dotenv.config();
 
-/* ==========================================
-   ROUTES
-========================================== */
 const authRoutes = require("./routes/authRoutes");
 const vehicleRoutes = require("./routes/vehicleRoutes");
 const ownvehicleRoutes = require("./routes/ownvehicleRoutes");
-/*
-  IMPORTANT:
-  Route file name is triporderRoute.js
-*/
 const triporderRoutes = require("./routes/triporderRoute");
 
-/* ==========================================
-   EXPRESS APP
-========================================== */
 const app = express();
+const PORT = Number(process.env.PORT || 5000);
+const IS_PRODUCTION = process.env.NODE_ENV === "production";
 
-/* ==========================================
-   PORT
-========================================== */
-const PORT = process.env.PORT || 5000;
+if (!Number.isInteger(PORT) || PORT < 1 || PORT > 65535) {
+  throw new Error("PORT must be a valid TCP port number.");
+}
 
-/* ==========================================
-   CORS
-========================================== */
-const allowedOrigins = [
-  /* LOCAL */
+// Set FRONTEND_URL and/or CORS_ORIGINS on Render / AWS (comma separated).
+// No AWS Amplify wildcard: specify the actual deployed origin.
+const configuredOrigins = [process.env.FRONTEND_URL, process.env.CORS_ORIGINS]
+  .filter(Boolean)
+  .flatMap((entry) => entry.split(","))
+  .map((entry) => entry.trim().replace(/\/$/, ""))
+  .filter(Boolean);
+
+const allowedOrigins = new Set([
   "http://localhost:5173",
   "http://127.0.0.1:5173",
-
-  /* VERCEL */
   "https://otc-fleet-management.vercel.app",
   "https://otc-fleet-management-git-main-mukesh3karthis-projects.vercel.app",
   "https://otc-fleet-management-gamma.vercel.app",
-
-  /* CUSTOM DOMAIN */
   "https://fleet.otcgroups.in",
-];
+  ...configuredOrigins,
+]);
+
+app.disable("x-powered-by");
+// Trust only one known reverse proxy hop; change if your actual architecture differs.
+app.set("trust proxy", 1);
 
 const corsOptions = {
-  origin: (origin, callback) => {
-    /*
-      Requests from Postman,
-      server-to-server, etc.
-    */
-    if (!origin) {
+  origin(origin, callback) {
+    if (!origin || allowedOrigins.has(origin)) return callback(null, true);
+
+    if (
+      !IS_PRODUCTION &&
+      /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin)
+    ) {
       return callback(null, true);
     }
 
-    /* Exact allowed URLs */
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-
-    /* Any localhost port */
-    const isLocalhost = /^http:\/\/localhost:\d+$/.test(origin);
-
-    const isLocalIp = /^http:\/\/127\.0\.0\.1:\d+$/.test(origin);
-
-    if (isLocalhost || isLocalIp) {
-      return callback(null, true);
-    }
-
-    /* Vercel previews */
-    const isVercelPreview =
+    if (
       /^https:\/\/otc-fleet-management-[a-zA-Z0-9-]+-mukesh3karthis-projects\.vercel\.app$/.test(
         origin,
-      );
-
-    if (isVercelPreview) {
+      )
+    ) {
       return callback(null, true);
     }
 
-    console.log("❌ Blocked CORS Origin:", origin);
-
+    console.warn("Blocked CORS origin:", origin);
     return callback(new Error("Not allowed by CORS."));
   },
-
   credentials: true,
-
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-
   allowedHeaders: ["Content-Type", "Authorization", "Accept"],
-
-  /*
-    Frontend needs these
-    when fetching documents.
-  */
   exposedHeaders: ["Content-Disposition", "Content-Type", "Content-Length"],
-
   optionsSuccessStatus: 204,
 };
 
-/* ==========================================
-   APPLY CORS
-   MUST BE BEFORE ROUTES
-========================================== */
 app.use(cors(corsOptions));
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
-/* ==========================================
-   BODY PARSER
-========================================== */
-/*
-  Increased because your
-  asset images are Base64.
-*/
-app.use(
-  express.json({
-    limit: "50mb",
-  }),
-);
-
-app.use(
-  express.urlencoded({
-    extended: true,
-    limit: "50mb",
-  }),
-);
-
-/* ==========================================
-   STATIC UPLOADS
-========================================== */
 const uploadsDirectory = path.resolve(__dirname, "uploads");
+// CAUTION: /uploads is publicly readable if enabled. Audit document permissions
+// and migrate private files to authenticated downloads / S3 before production.
+// For compatibility, only enable explicitly in production.
+if (!IS_PRODUCTION || process.env.ENABLE_PUBLIC_UPLOADS === "true") {
+  app.use(
+    "/uploads",
+    express.static(uploadsDirectory, {
+      fallthrough: true,
+      etag: true,
+      maxAge: 0,
+      setHeaders(res) {
+        res.setHeader("Cache-Control", "no-store");
+      },
+    }),
+  );
+}
 
-console.log("📁 Static uploads directory:");
-console.log(uploadsDirectory);
-
-app.use(
-  "/uploads",
-  express.static(uploadsDirectory, {
-    fallthrough: true,
-    etag: true,
-    maxAge: 0,
-    setHeaders: (res) => {
-      res.setHeader("Cache-Control", "no-store");
-    },
-  }),
-);
-
-/* ==========================================
-   API ROUTES
-========================================== */
-
-/* ------------------------------------------
-   AUTH
------------------------------------------- */
+// Preserve all existing route mount paths.
 app.use("/api/auth", authRoutes);
-
-/* ------------------------------------------
-   VEHICLES
------------------------------------------- */
 app.use("/api/vehicles", vehicleRoutes);
-
-/* ------------------------------------------
-   OWN VEHICLES
------------------------------------------- */
 app.use("/api/ownvehicles", ownvehicleRoutes);
-
-/* ------------------------------------------
-   TRIP ORDERS
-   KEY ACCOUNT
-       ↓
-   ORDER FINALIZATION
-       ↓
-   FIRST APPROVAL
-       ↓
-   TRAFFIC QUOTATION
-       ↓
-   SECOND APPROVAL
-       ↓
-   VEHICLE ALLOCATION
-       ↓
-   TRACKING
------------------------------------------- */
 app.use("/api/triporders", triporderRoutes);
 
-/* ==========================================
-   HEALTH CHECK
-========================================== */
-app.get("/", (req, res) => {
-  return res.status(200).json({
+app.get("/", (req, res) =>
+  res.status(200).json({
     success: true,
-
     message: "Fleet Management Backend API is running successfully.",
-
     serverTime: new Date().toISOString(),
-
     database:
       mongoose.connection.readyState === 1 ? "Connected" : "Disconnected",
-
     version: "1.0.0",
-
     routes: {
       auth: "/api/auth",
-
       vehicles: "/api/vehicles",
-
       ownVehicles: "/api/ownvehicles",
-
       tripOrders: "/api/triporders",
-
       tripOrderWorkflow: {
         getAll: "/api/triporders",
         create: "/api/triporders",
@@ -219,277 +121,116 @@ app.get("/", (req, res) => {
         getByTripId: "/api/triporders/trip/:tripId",
         update: "/api/triporders/:id",
         delete: "/api/triporders/:id",
-
-        /*
-              KEY ACCOUNT
-              ORDER FINALIZATION
-            */
         orderFinalization: "/api/triporders/:id/order-finalization",
-
-        /*
-              FIRST APPROVAL
-            */
         orderApproval: "/api/triporders/:id/order-approval",
-
-        /*
-              TRAFFIC
-            */
         quotations: "/api/triporders/:id/quotations",
-
-        /*
-              SECOND APPROVAL
-            */
         confirmQuotation: "/api/triporders/:id/confirm-quotation",
-
-        /*
-              TRACKING INPUT
-            */
         allocateVehicle: "/api/triporders/:id/allocated-vehicles",
         updateAllocatedVehicle:
           "/api/triporders/:id/allocated-vehicles/:allocationId",
         dailyTracking:
           "/api/triporders/:id/allocated-vehicles/:allocationId/tracking",
       },
-
       ownVehicleAssets: {
         get: "/api/ownvehicles/:id/assets",
         save: "/api/ownvehicles/:id/assets",
       },
-
       ownVehicleDocuments: "/api/ownvehicles/:id/documents",
-
       ownVehicleDownloadTest: "/api/ownvehicles/download-test",
-
       ownVehicleDownload: "/api/ownvehicles/download/:fileName",
     },
+  }),
+);
+
+app.get("/health", (req, res) => {
+  const connected = mongoose.connection.readyState === 1;
+  res.status(connected ? 200 : 503).json({
+    success: connected,
+    service: "otc-fleet-backend",
+    database: connected ? "Connected" : "Disconnected",
   });
 });
 
-/* ==========================================
-   DEBUG - UPLOAD DIRECTORY
-========================================== */
-/*
-  Useful for checking that
-  local upload folder exists.
-*/
-app.get("/api/debug/uploads", (req, res) => {
-  const ownVehicleFolder = path.resolve(__dirname, "uploads", "ownvehicles");
-
-  const fs = require("fs");
-
-  const exists = fs.existsSync(ownVehicleFolder);
-
-  let files = [];
-
-  if (exists) {
-    files = fs.readdirSync(ownVehicleFolder);
-  }
-
-  return res.status(200).json({
-    success: true,
-    folder: ownVehicleFolder,
-    exists,
-    count: files.length,
-    files,
+// File paths and filenames are sensitive. Never publish this diagnostic route.
+if (!IS_PRODUCTION) {
+  app.get("/api/debug/uploads", (req, res) => {
+    const folder = path.join(uploadsDirectory, "ownvehicles");
+    const exists = fs.existsSync(folder);
+    const files = exists ? fs.readdirSync(folder) : [];
+    res.json({ success: true, folder, exists, count: files.length, files });
   });
-});
+}
 
-/* ==========================================
-   404 HANDLER
-========================================== */
-app.use((req, res) => {
-  return res.status(404).json({
+app.use((req, res) =>
+  res.status(404).json({
     success: false,
-
     message: "API route not found.",
-
     requestedUrl: req.originalUrl,
-  });
-});
+  }),
+);
 
-/* ==========================================
-   GLOBAL ERROR HANDLER
-========================================== */
 app.use((error, req, res, next) => {
-  console.error("Server Error:", error);
-
-  /* CORS */
   if (error.message === "Not allowed by CORS.") {
-    return res.status(403).json({
-      success: false,
-
-      message: "Frontend origin is not allowed by CORS.",
-    });
+    return res
+      .status(403)
+      .json({
+        success: false,
+        message: "Frontend origin is not allowed by CORS.",
+      });
   }
-
-  /* General */
-  return res.status(error.status || 500).json({
+  console.error("Server error:", error);
+  const status =
+    Number.isInteger(error.status) && error.status >= 400 && error.status < 600
+      ? error.status
+      : 500;
+  return res.status(status).json({
     success: false,
-
-    message: error.message || "Internal Server Error.",
+    message:
+      IS_PRODUCTION && status === 500
+        ? "Internal Server Error."
+        : error.message || "Internal Server Error.",
   });
 });
 
-/* ==========================================
-   DATABASE CONNECTION
-========================================== */
-const connectDatabase = async () => {
+let server;
+async function startServer() {
   try {
-    if (!process.env.MONGODB_URI) {
-      throw new Error("MONGODB_URI is missing in environment variables.");
-    }
-
+    if (!process.env.MONGODB_URI) throw new Error("MONGODB_URI is missing.");
     await mongoose.connect(process.env.MONGODB_URI, {
-      autoIndex: true,
+      autoIndex: !IS_PRODUCTION,
     });
-
-    console.log("==========================================");
-
-    console.log("✅ MongoDB Connected Successfully");
-
-    console.log("Database:", mongoose.connection.name);
-
-    console.log("Host:", mongoose.connection.host);
-
-    console.log("==========================================");
-  } catch (error) {
-    console.error("❌ MongoDB Connection Error");
-
-    console.error(error);
-
-    throw error;
-  }
-};
-
-/* ==========================================
-   START SERVER
-========================================== */
-const startServer = async () => {
-  try {
-    await connectDatabase();
-
-    app.listen(PORT, () => {
-      console.log("");
-
-      console.log("==========================================");
-
-      console.log("🚀 OTC Fleet Management Backend Started");
-
-      console.log("==========================================");
-
-      console.log(`Server URL  : http://localhost:${PORT}`);
-
-      console.log(`Server Port : ${PORT}`);
-
-      console.log(`Environment : ${process.env.NODE_ENV || "development"}`);
-
-      console.log("");
-
-      console.log("Important APIs");
-
-      console.log("------------------------------------------");
-
-      console.log(`Health Test        : http://localhost:${PORT}/`);
-
-      console.log(
-        `Trip Orders        : http://localhost:${PORT}/api/triporders`,
-      );
-
-      console.log(
-        `Own Vehicles       : http://localhost:${PORT}/api/ownvehicles`,
-      );
-
-      console.log(
-        `Download Test      : http://localhost:${PORT}/api/ownvehicles/download-test`,
-      );
-
-      console.log(
-        `Uploads Debug      : http://localhost:${PORT}/api/debug/uploads`,
-      );
-
-      console.log(
-        `Static Uploads     : http://localhost:${PORT}/uploads/ownvehicles/FILE_NAME`,
-      );
-
-      console.log("------------------------------------------");
-
-      console.log("Trip Order Workflow APIs");
-
-      console.log("------------------------------------------");
-
-      console.log(
-        `Get Trips          : GET  http://localhost:${PORT}/api/triporders`,
-      );
-
-      console.log(
-        `Create Trip        : POST http://localhost:${PORT}/api/triporders`,
-      );
-
-      console.log(
-        `Order Finalization : PUT  http://localhost:${PORT}/api/triporders/:id/order-finalization`,
-      );
-
-      console.log(
-        `Order Approval     : PUT  http://localhost:${PORT}/api/triporders/:id/order-approval`,
-      );
-
-      console.log(
-        `Add Quotation      : POST http://localhost:${PORT}/api/triporders/:id/quotations`,
-      );
-
-      console.log(
-        `Confirm Quotation  : PUT  http://localhost:${PORT}/api/triporders/:id/confirm-quotation`,
-      );
-
-      console.log(
-        `Allocate Vehicle   : POST http://localhost:${PORT}/api/triporders/:id/allocated-vehicles`,
-      );
-
-      console.log(
-        `Update Vehicle     : PUT  http://localhost:${PORT}/api/triporders/:id/allocated-vehicles/:allocationId`,
-      );
-
-      console.log(
-        `Daily Tracking     : POST http://localhost:${PORT}/api/triporders/:id/allocated-vehicles/:allocationId/tracking`,
-      );
-
-      console.log("==========================================");
+    console.log("MongoDB connected:", mongoose.connection.name);
+    server = app.listen(PORT, "0.0.0.0", () => {
+      console.log(`OTC Fleet Management backend listening on port ${PORT}`);
     });
   } catch (error) {
-    console.error("Unable to start server.");
-
-    console.error(error);
-
-    process.exit(1);
+    console.error("Unable to start backend:", error);
+    process.exitCode = 1;
+    await mongoose.disconnect().catch(() => {});
   }
-};
+}
 
-/* ==========================================
-   START APPLICATION
-========================================== */
-startServer();
-
-/* ==========================================
-   GRACEFUL SHUTDOWN
-========================================== */
-const gracefulShutdown = async (signal) => {
-  console.log(`\n🛑 ${signal} received. Shutting down server...`);
-
+let shuttingDown = false;
+async function gracefulShutdown(signal) {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  console.log(`${signal} received. Closing server.`);
+  const forceExit = setTimeout(() => process.exit(1), 10000);
+  forceExit.unref();
   try {
-    await mongoose.connection.close();
-
-    console.log("✅ MongoDB connection closed.");
-
+    if (server)
+      await new Promise((resolve, reject) =>
+        server.close((err) => (err ? reject(err) : resolve())),
+      );
+    await mongoose.disconnect();
+    clearTimeout(forceExit);
     process.exit(0);
   } catch (error) {
-    console.error("Error while closing MongoDB:");
-
-    console.error(error);
-
+    console.error("Shutdown error:", error);
     process.exit(1);
   }
-};
+}
 
 process.on("SIGINT", () => gracefulShutdown("SIGINT"));
-
 process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
+startServer();
