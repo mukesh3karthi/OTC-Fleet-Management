@@ -1,94 +1,118 @@
+"use strict";
+
 const jwt = require("jsonwebtoken");
+
+/* =========================================================
+   ADMIN LOGIN
+========================================================= */
 
 const login = (req, res) => {
   try {
-    const username = String(
-      req.body.username || ""
-    ).trim();
+    // Get login credentials
+    const username = String(req.body?.username || "").trim();
 
-    const password = String(
-      req.body.password || ""
-    );
+    const password = String(req.body?.password || "");
+
+    /* =====================================================
+       INPUT VALIDATION
+    ===================================================== */
 
     if (!username && !password) {
       return res.status(400).json({
         success: false,
-        message:
-          "Please enter username and password.",
+        message: "Please enter username and password.",
       });
     }
 
     if (!username) {
       return res.status(400).json({
         success: false,
-        message:
-          "Please enter username.",
+        message: "Please enter username.",
       });
     }
 
     if (!password) {
       return res.status(400).json({
         success: false,
-        message:
-          "Please enter password.",
+        message: "Please enter password.",
       });
     }
 
-    const validUsername =
-      process.env.ADMIN_USERNAME ||
-      "mukesh";
+    /* =====================================================
+       ADMIN CREDENTIALS FROM ENVIRONMENT
+    ===================================================== */
 
-    const validPassword =
-      process.env.ADMIN_PASSWORD ||
-      "OTC@2026";
+    const validUsername = process.env.ADMIN_USERNAME;
 
-    if (
-      username !== validUsername ||
-      password !== validPassword
-    ) {
-      return res.status(401).json({
+    const validPassword = process.env.ADMIN_PASSWORD;
+
+    const jwtSecret = process.env.JWT_SECRET;
+
+    /* =====================================================
+       CHECK ENVIRONMENT CONFIGURATION
+    ===================================================== */
+
+    if (!validUsername || !validPassword || !jwtSecret) {
+      console.error("Admin authentication environment variables are missing.");
+
+      return res.status(503).json({
         success: false,
         message:
-          "Invalid username or password.",
+          "Authentication service is not configured. Contact the administrator.",
       });
     }
 
-    const jwtSecret =
-      process.env.JWT_SECRET ||
-      "otc_fleet_secret_2026";
+    /* =====================================================
+       VERIFY ADMIN USERNAME AND PASSWORD
+    ===================================================== */
+
+    if (username !== validUsername || password !== validPassword) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid username or password.",
+      });
+    }
+
+    /* =====================================================
+       GENERATE JWT TOKEN
+    ===================================================== */
 
     const token = jwt.sign(
       {
         username: validUsername,
+        role: "admin",
       },
       jwtSecret,
       {
         expiresIn: "1d",
-      }
+      },
     );
+
+    /* =====================================================
+       LOGIN SUCCESS
+    ===================================================== */
 
     return res.status(200).json({
       success: true,
-      message:
-        "Login successful.",
+      message: "Login successful.",
       token,
       user: {
         username: validUsername,
       },
     });
   } catch (error) {
-    console.error(
-      "Login error:",
-      error
-    );
+    console.error("Admin login error:", error.message);
 
     return res.status(500).json({
       success: false,
-      message:
-        "Unable to login. Please try again.",
+      message: "Unable to login. Please try again.",
     });
   }
 };
+
+/* =========================================================
+   EXPORT CONTROLLER
+========================================================= */
 
 module.exports = {
   login,
