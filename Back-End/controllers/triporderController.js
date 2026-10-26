@@ -4013,12 +4013,32 @@ const downloadCraneJourneyDocument = async (req, res) => {
 const invoiceTripFilter = (req) => ({
   $and: [{ _id: req.params.id }, req.tripAccessFilter || {}],
 });
+const cents = (value) => Math.round(Number(value || 0) * 100);
 const getInvoiceTotal = (trip) => {
-  const raw = String(
-    trip?.orderFinalization?.finalRate ?? trip?.finalRate ?? "",
-  ).replace(/[₹,\s]/g, "");
+  const invoice = trip?.invoicePayment;
+  if (invoice?.totalAmount != null && Number.isFinite(Number(invoice.totalAmount))) {
+    return Number(invoice.totalAmount);
+  }
+  const raw = String(trip?.orderFinalization?.finalRate ?? trip?.finalRate ?? "")
+    .replace(/[₹,\s]/g, "");
   const amount = Number(raw);
   return raw && Number.isFinite(amount) && amount > 0 ? amount : null;
+};
+const getReceivedCents = (details) => {
+  if (Array.isArray(details?.payments) && details.payments.length) {
+    return details.payments.reduce((sum, payment) => sum + cents(payment.amount), 0);
+  }
+  return cents(details?.receivedAmount);
+};
+const updatePaymentSummary = (trip) => {
+  const details = trip.invoicePayment;
+  const received = getReceivedCents(details);
+  const total = getInvoiceTotal(trip);
+  details.totalReceived = received / 100;
+  details.receivedAmount = received / 100;
+  details.remainingBalance = total === null ? null : Math.max(0, cents(total) - received) / 100;
+  details.paymentStatus = total !== null && received >= cents(total)
+    ? "Fully Paid" : received > 0 ? "Partially Paid" : "Pending";
 };
 const addInvoicePayment = async (req, res) => {
   try {
@@ -4092,6 +4112,7 @@ const addInvoicePayment = async (req, res) => {
     details.paymentRemarks = remarks;
     details.updatedBy = receivedBy;
     details.updatedAt = new Date();
+    updatePaymentSummary(trip);
     trip.markModified("invoicePayment");
     await trip.save();
     return sendSuccess(
@@ -4111,8 +4132,7 @@ const addInvoicePayment = async (req, res) => {
 };
 const saveInvoicePayment = async (req, res) => {
   try {
-    if (!isValidMongoId(req.params.id))
-      return sendError(res, 400, "Invalid order ID.");
+    if (!isValidMongoId(req.params.id)) return sendError(res, 400, "Invalid order ID.");
     const trip = await TripOrder.findOne(invoiceTripFilter(req)).select(
       "+invoicePayment.proFormaDocument.fileData +invoicePayment.invoiceDocument.fileData",
     );
@@ -4124,78 +4144,90 @@ const saveInvoicePayment = async (req, res) => {
         trip.allocatedVehicles.every(
           (v) => cleanString(v.unloading?.status).toLowerCase() === "completed",
         ));
-    if (completed)
-      return sendError(res, 409, "Trip is completed and cannot be modified.");
+    if (completed) return sendError(res, 409, "Completed trips are read-only.");
+
     const body = req.body || {};
-    const proFormaInvoiceNumber = cleanString(body.proFormaInvoiceNumber);
-    const invoiceNumber = cleanString(body.invoiceNumber);
-    if (proFormaInvoiceNumber.length > 100 || invoiceNumber.length > 100)
-      return sendError(res, 400, "Invoice numbers allow 100 characters.");
     const previous = trip.invoicePayment?.toObject?.() || {};
     if (!trip.invoicePayment) trip.invoicePayment = {};
     const details = trip.invoicePayment;
-    const fields = { proFormaInvoiceNumber, invoiceNumber };
-    const changes = Object.entries(fields).map(([key, value]) => [
-      key,
-      previous[key],
-      value,
-    ]);
-    Object.assign(details, fields);
-    for (const field of ["proFormaDocument", "invoiceDocument"]) {
-      const file = req.files?.[field]?.[0];
-      if (file) {
-        details[field] = {
-          fileName: file.originalname,
-          mimeType: file.mimetype,
-          fileSize: file.size,
-          fileData: file.buffer,
-        };
-        changes.push([field, previous[field]?.fileName, file.originalname]);
+    const changes = [];
+    for (const key of ["proFormaInvoiceNumber", "invoiceNumber"]) {
+      if (!Object.prototype.hasOwnProperty.call(body, key)) continue;
+      const value = cleanString(body[key]);
+      if (value.length > 100) return sendError(res, 400, "Invoice numbers allow 100 characters.");
+      if (cleanString(previous[key]) !== value) changes.push([key, previous[key], value]);
+      details[key] = value;
+    }
+
+    // Accept invoiceAmount or the existing form's amount field.
+    const amountInput = body.invoiceAmount ?? body.amount;
+    const hasAmount = amountInput !== undefined && amountInput !== null && amountInput !== "";
+    const hasGst = body.gstPercentage !== undefined && body.gstPercentage !== null && body.gstPercentage !== "";
+    const amount = hasAmount ? Number(amountInput) : details.invoiceAmount;
+    const gst = hasGst ? Number(body.gstPercentage) : Number(details.gstPercentage || 0);
+    if ((hasAmount && (!Number.isFinite(amount) || amount < 0 || Math.abs(amount * 100 - Math.round(amount * 100)) > 0.000001)) ||
+        !Number.isFinite(gst) || gst < 0 || gst > 100 ||
+        Math.abs(gst * 100 - Math.round(gst * 100)) > 0.000001) {
+      return sendError(res, 400, "Amount or GST percentage is invalid.");
+    }
+    if (hasAmount || hasGst || details.invoiceAmount !== null && details.invoiceAmount !== undefined) {
+      const baseCents = cents(amount);
+      const gstCents = Math.round(baseCents * gst / 100);
+      const totalCents = baseCents + gstCents;
+      if (getReceivedCents(details) > totalCents)
+        return sendError(res, 400, "Invoice total cannot be less than payments already received.");
+      const values = {
+        invoiceAmount: baseCents / 100,
+        gstPercentage: gst,
+        gstAmount: gstCents / 100,
+        totalAmount: totalCents / 100,
+      };
+      for (const [field, value] of Object.entries(values)) {
+        if (Number(previous[field] ?? 0) !== value)
+          changes.push([field, previous[field], value]);
+        details[field] = value;
       }
     }
+
+    for (const field of ["proFormaDocument", "invoiceDocument"]) {
+      const file = req.files?.[field]?.[0];
+      if (!file) continue;
+      details[field] = {
+        fileName: file.originalname,
+        mimeType: file.mimetype,
+        fileSize: file.size,
+        fileData: file.buffer,
+      };
+      if (cleanString(previous[field]?.fileName) !== file.originalname)
+        changes.push([field, previous[field]?.fileName, file.originalname]);
+    }
+
     details.updatedBy =
       cleanString(req.user?.username || req.user?.name) || "Key Account";
     details.updatedAt = new Date();
-    // Record only genuine edits to previously saved invoice details.
+    updatePaymentSummary(trip);
+    // Initial save is not a change; only record edits to existing invoice details.
     const hadExistingInvoice = Boolean(
       cleanString(previous?.invoiceNumber) ||
       cleanString(previous?.proFormaInvoiceNumber) ||
       cleanString(previous?.invoiceDocument?.fileName) ||
-      cleanString(previous?.proFormaDocument?.fileName),
+      cleanString(previous?.proFormaDocument?.fileName) ||
+      previous?.invoiceAmount != null,
     );
-
-    if (hadExistingInvoice) {
-      const actualChanges = changes.filter(
-        ([, oldValue, newValue]) =>
-          String(oldValue ?? "").trim() !== String(newValue ?? "").trim(),
+    if (hadExistingInvoice && changes.length) {
+      recordLifecycleChanges(
+        trip, previous, "Invoice & Payment", changes, details.updatedBy,
       );
-
-      if (actualChanges.length > 0) {
-        recordLifecycleChanges(
-          trip,
-          previous,
-          "Invoice & Payment",
-          actualChanges,
-          details.updatedBy,
-        );
-      }
     }
     trip.markModified("invoicePayment");
     await trip.save();
-    const savedTrip = await TripOrder.findOne(invoiceTripFilter(req)).lean();
     return sendSuccess(
-      res,
-      200,
-      "Invoice & Payment saved successfully.",
-      savedTrip,
+      res, 200, "Invoice & Payment saved successfully.",
+      await TripOrder.findOne(invoiceTripFilter(req)).lean(),
     );
   } catch (error) {
-    return sendError(
-      res,
-      error.name === "ValidationError" ? 400 : 500,
-      "Unable to save Invoice & Payment.",
-      error,
-    );
+    return sendError(res, error.name === "ValidationError" ? 400 : 500,
+      "Unable to save Invoice & Payment.", error);
   }
 };
 const downloadInvoicePaymentDocument = async (req, res) => {

@@ -4831,3 +4831,213 @@
   font-size: 12px;
 }
 .key-account-page .kam-unified-toolbar .new-trip-plus { font-size: 17px; }
+
+/* =========================================================
+   MINIMAL HEADER: NOTIFICATION / PROFILE / NEW TRIP
+   Keep payment list styles separate from the button.
+========================================================= */
+.key-account-page .kam-page-heading {
+  position: relative;
+  z-index: 100;
+  overflow: visible;
+}
+.key-account-page .kam-heading-actions.kam-unified-toolbar {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  width: auto;
+  min-height: 52px;
+  padding: 5px 6px;
+  overflow: visible;
+  border: 1px solid #e1e9ed;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 4px 14px rgba(16, 47, 68, .06);
+}
+.key-account-page .kam-payment-alerts {
+  position: relative;
+  z-index: 110;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  padding: 0 12px 0 3px;
+  margin-right: 11px;
+  border-right: 1px solid #e1e9ed;
+}
+.key-account-page .kam-payment-alert-button {
+  width: 39px;
+  height: 39px;
+  min-width: 39px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #f0f6f8;
+  color: #123b56;
+  cursor: pointer;
+  box-shadow: none;
+}
+.key-account-page .kam-payment-alert-button:hover,
+.key-account-page .kam-payment-alert-button.is-open {
+  background: #e6f5f2;
+  color: #0b8279;
+}
+.key-account-page .kam-payment-alert-button:focus-visible {
+  outline: 3px solid rgba(13,148,136,.3);
+  outline-offset: 2px;
+}
+.key-account-page .kam-payment-alert-icon {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+}
+.key-account-page .kam-payment-alert-count {
+  position: absolute;
+  top: -5px;
+  right: -6px;
+  min-width: 19px;
+  height: 19px;
+  padding: 0 4px;
+  display: grid;
+  place-items: center;
+  border: 2px solid white;
+  border-radius: 20px;
+  background: #ef3543;
+  color: white;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+}
+.key-account-page .kam-unified-toolbar .kam-user-profile {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 14px 0 0;
+  margin: 0 12px 0 0;
+  border: 0;
+  border-right: 1px solid #e1e9ed;
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+}
+.key-account-page .kam-unified-toolbar .kam-user-avatar {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  border: 0;
+  border-radius: 50%;
+  background: #e0f7f3;
+  color: #103b50;
+  font-size: 13px;
+  font-weight: 800;
+}
+.key-account-page .kam-unified-toolbar .kam-user-info strong {
+  font-size: 12px;
+  font-weight: 750;
+}
+.key-account-page .kam-unified-toolbar .kam-user-info span {
+  font-size: 10px;
+}
+.key-account-page .kam-profile-chevron {
+  margin-left: 7px;
+  color: #24485b;
+  flex-shrink: 0;
+}
+.key-account-page .kam-unified-toolbar .new-trip-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 112px;
+  height: 38px;
+  min-height: 38px;
+  padding: 0 17px;
+  border: 0;
+  border-radius: 999px;
+  background: #0d9488;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 750;
+  box-shadow: none;
+}
+.key-account-page .kam-unified-toolbar .new-trip-button:hover { background: #0b7c73; }
+/* Floating dropdown remains fully above cards and table. */
+.key-account-page .kam-payment-alert-popover {
+  position: absolute;
+  top: calc(100% + 13px);
+  right: -8px;
+  z-index: 1200;
+  width: 540px;
+  max-width: calc(100vw - 30px);
+  overflow: hidden;
+  border: 1px solid #dce6ea;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 22px 50px rgba(15, 47, 67, .18);
+}
+.key-account-page .kam-payment-alert-popover-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 15px 17px;
+  border-bottom: 1px solid #e5edf0;
+}
+.key-account-page .kam-payment-alert-popover-heading > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.key-account-page .kam-payment-alert-popover-heading strong { color: #123247; font-size: 15px; }
+.key-account-page .kam-payment-alert-popover-heading span { color: #7890a0; font-size: 11px; }
+.key-account-page .kam-payment-alert-total {
+  color: #087f78 !important;
+  font-size: 14px !important;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.key-account-page .kam-payment-alert-list { max-height: 350px; overflow-y: auto; padding: 7px 12px; }
+.key-account-page .kam-payment-alert-item {
+  width: 100%;
+  display: block;
+  padding: 12px;
+  margin: 0 0 7px;
+  border: 1px solid #e1eaf0;
+  border-radius: 11px;
+  background: #fff;
+  text-align: left;
+  cursor: pointer;
+}
+.key-account-page .kam-payment-alert-item:hover { border-color: #a9d9d4; background: #f7fcfb; }
+.key-account-page .kam-payment-alert-item-grid {
+  display: grid;
+  grid-template-columns: .8fr 1fr 1fr 1.3fr 14px;
+  gap: 8px;
+  align-items: center;
+}
+.key-account-page .kam-payment-alert-item-grid > span { display: flex; min-width: 0; flex-direction: column; gap: 5px; }
+.key-account-page .kam-payment-alert-item-grid small { color: #8096a3; font-size: 9px; }
+.key-account-page .kam-payment-alert-item-grid b { color: #173a4e; font-size: 11px; overflow-wrap: anywhere; }
+.key-account-page .kam-payment-alert-item-grid .kam-payment-alert-due { color: #df4242; }
+.key-account-page .kam-payment-alert-link { display: inline-flex; align-items: center; gap: 5px; margin-top: 9px; color: #078d84; font-size: 10px; font-weight: 700; }
+.key-account-page .kam-payment-alert-view-all { display: flex; width: 100%; align-items: center; justify-content: center; gap: 5px; padding: 12px; border: 0; background: #f0f7f7; color: #087c74; font-weight: 700; cursor: pointer; }
+.key-account-page .kam-payment-alert-empty { padding: 24px; color: #718898; text-align: center; font-size: 12px; }
+@media (max-width: 740px) {
+  .key-account-page .kam-page-heading { flex-wrap: wrap; }
+  .key-account-page .kam-heading-actions.kam-unified-toolbar { margin-left: auto; }
+  .key-account-page .kam-payment-alert-popover { right: -10px; }
+}
+@media (max-width: 480px) {
+  .key-account-page .kam-unified-toolbar .kam-user-profile { gap: 5px; padding-right: 7px; margin-right: 7px; }
+  .key-account-page .kam-profile-chevron { display: none; }
+  .key-account-page .kam-unified-toolbar .new-trip-button { min-width: 88px; padding: 0 10px; }
+  .key-account-page .kam-payment-alerts { padding-right: 8px; margin-right: 8px; }
+  .key-account-page .kam-payment-alert-popover { position: fixed; left: 12px; right: 12px; top: 105px; width: auto; max-width: none; }
+  .key-account-page .kam-payment-alert-item-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .key-account-page .kam-payment-alert-item-grid > svg { display: none; }
+}

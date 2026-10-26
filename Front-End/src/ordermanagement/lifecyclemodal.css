@@ -6054,3 +6054,43 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Invoice amount and GST: compact, matching the existing blue theme. */
+.kam-invoice-amount-breakdown {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 8px 0 4px;
+}
+.kam-invoice-amount-breakdown > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid #dce8ed;
+  border-radius: 9px;
+  background: #f5f9fb;
+}
+.kam-invoice-amount-breakdown span {
+  font-size: 10px;
+  font-weight: 600;
+  color: #567080;
+}
+.kam-invoice-amount-breakdown strong {
+  font-size: 15px;
+  font-weight: 750;
+  color: #143e53;
+}
+.kam-invoice-amount-breakdown .kam-invoice-grand-total {
+  background: #eaf4fa;
+  border-color: #bdd9ea;
+}
+.kam-invoice-amount-breakdown .kam-invoice-grand-total strong {
+  color: #087f71;
+}
+@media (max-width: 650px) {
+  .kam-invoice-amount-breakdown {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1589,6 +1589,18 @@ const invoicePaymentSchema = new Schema(
       default: "",
     },
     invoiceNumber: { type: String, trim: true, maxlength: 100, default: "" },
+    // Values entered in Invoice & Payment. Totals are calculated server-side.
+    invoiceAmount: { type: Number, min: 0, default: null },
+    gstPercentage: { type: Number, min: 0, max: 100, default: 0 },
+    gstAmount: { type: Number, min: 0, default: 0 },
+    totalAmount: { type: Number, min: 0, default: null },
+    totalReceived: { type: Number, min: 0, default: 0 },
+    remainingBalance: { type: Number, min: 0, default: null },
+    paymentStatus: {
+      type: String,
+      enum: ["Pending", "Partially Paid", "Fully Paid"],
+      default: "Pending",
+    },
     proFormaDocument: { type: invoiceFileSchema, default: () => ({}) },
     invoiceDocument: { type: invoiceFileSchema, default: () => ({}) },
     receivedAmount: { type: Number, min: 0, default: null },

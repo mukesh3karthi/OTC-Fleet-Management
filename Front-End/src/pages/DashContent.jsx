@@ -503,7 +503,7 @@ const DashContent = () => {
   const achievements = [
     { number: "15+", title: "Years", description: "Industry Experience" },
     { number: "4", title: "Branches", description: "Strategic Locations" },
-    { number: "1000+", title: "Clients", description: "Successfully Served" },
+    { number: "100+", title: "Clients", description: "Successfully Served" },
     { number: "24/7", title: "Operations", description: "Logistics Support" },
   ];
   const locations = [

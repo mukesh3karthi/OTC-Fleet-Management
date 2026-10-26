@@ -523,6 +523,7 @@ const Lifecyclemodal = ({
   onClose,
   onOrderUpdated,
   initialEdit = false,
+  initialStep = null,
 }) => {
   const [localOrder, setLocalOrder] = useState(null);
   const [latestOrderLoading, setLatestOrderLoading] = useState(true);
@@ -1081,14 +1082,10 @@ const Lifecyclemodal = ({
   );
   const [activeStepIndex, setActiveStepIndex] = useState(0);
   const [invoicePaymentForm, setInvoicePaymentForm] = useState({
-    proFormaInvoiceNumber: "",
     invoiceNumber: "",
-    receivedAmount: "",
-    paymentDate: "",
-    paymentRemarks: "",
+    amount: "",
+    gstPercentage: "0",
   });
-  const [proFormaDocument, setProFormaDocument] = useState(null);
-  const proFormaDocumentInputRef = useRef(null);
   const [invoiceDocument, setInvoiceDocument] = useState(null);
   const invoiceDocumentInputRef = useRef(null);
   const [invoiceSaving, setInvoiceSaving] = useState(false);
@@ -1103,9 +1100,35 @@ const Lifecyclemodal = ({
   const finalRateString = String(
     workingOrder?.orderFinalization?.finalRate ?? workingOrder?.finalRate ?? "",
   ).replace(/[₹,\s]/g, "");
-  const totalPayable = Number(finalRateString);
-  const hasFinalRate =
-    finalRateString !== "" && Number.isFinite(totalPayable) && totalPayable > 0;
+  const amountInput = Number(invoicePaymentForm.amount);
+  const gstInput = Number(invoicePaymentForm.gstPercentage);
+  const validAmount =
+    invoicePaymentForm.amount !== "" &&
+    Number.isFinite(amountInput) &&
+    amountInput > 0;
+  const validGst =
+    invoicePaymentForm.gstPercentage !== "" &&
+    Number.isFinite(gstInput) &&
+    gstInput >= 0 &&
+    gstInput <= 100;
+  const baseAmount = validAmount ? Math.round(amountInput * 100) / 100 : 0;
+  const gstPercentage = validGst ? gstInput : 0;
+  const gstAmount = Math.round(baseAmount * gstPercentage) / 100;
+  const totalPayable = Math.round((baseAmount + gstAmount) * 100) / 100;
+  const hasFinalRate = validAmount && validGst;
+  const savedAmount = Number(
+    invoiceData.invoiceAmount ?? invoiceData.amount ?? invoiceData.baseAmount ?? finalRateString,
+  );
+  const savedGst = Number(invoiceData.gstPercentage ?? 0);
+  // Prefer the server-calculated total to avoid rounding/readback differences.
+  const storedTotal = Number(invoiceData.totalAmount);
+  const savedTotal =
+    invoiceData.totalAmount !== null &&
+    invoiceData.totalAmount !== undefined &&
+    Number.isFinite(storedTotal)
+      ? storedTotal
+      : Math.round((savedAmount * (100 + savedGst))) / 100;
+  const hasUnsavedInvoiceAmount = Math.abs(totalPayable - savedTotal) > 0.005;
   const payments =
     Array.isArray(invoiceData.payments) && invoiceData.payments.length
       ? invoiceData.payments
@@ -1136,26 +1159,45 @@ const Lifecyclemodal = ({
   useEffect(() => {
     setInvoicePaymentForm((previous) => ({
       ...previous,
-      proFormaInvoiceNumber: invoiceData.proFormaInvoiceNumber || "",
       invoiceNumber: invoiceData.invoiceNumber || "",
+      amount: String(
+        invoiceData.invoiceAmount ?? invoiceData.amount ?? invoiceData.baseAmount ?? finalRateString,
+      ),
+      gstPercentage: String(invoiceData.gstPercentage ?? 0),
     }));
   }, [
     workingOrder?._id,
-    invoiceData.proFormaInvoiceNumber,
     invoiceData.invoiceNumber,
+    invoiceData.invoiceAmount,
+    invoiceData.totalAmount,
+    invoiceData.amount,
+    invoiceData.baseAmount,
+    invoiceData.gstPercentage,
+    finalRateString,
   ]);
   const saveInvoiceDetails = async () => {
     if (!workingOrder?._id) return;
+    if (!validAmount || !validGst || !Number.isFinite(totalPayable)) {
+      return showToast(
+        "Enter a valid amount and GST percentage between 0 and 100.",
+        "error",
+      );
+    }
+    if (totalPayable + 0.005 < receivedTotal) {
+      return showToast(
+        "Total amount cannot be less than payments already received.",
+        "error",
+      );
+    }
     setInvoiceSaving(true);
     try {
       const form = new FormData();
-      form.append(
-        "proFormaInvoiceNumber",
-        invoicePaymentForm.proFormaInvoiceNumber.trim(),
-      );
       form.append("invoiceNumber", invoicePaymentForm.invoiceNumber.trim());
-      if (proFormaDocument) form.append("proFormaDocument", proFormaDocument);
       if (invoiceDocument) form.append("invoiceDocument", invoiceDocument);
+      form.append("amount", baseAmount.toFixed(2));
+      form.append("gstPercentage", String(gstPercentage));
+      form.append("gstAmount", gstAmount.toFixed(2));
+      form.append("totalAmount", totalPayable.toFixed(2));
       const response = await lifecycleApiFetch(
         `${TRIP_API_URL}/${workingOrder._id}/invoice-payment`,
         {
@@ -1170,10 +1212,7 @@ const Lifecyclemodal = ({
       if (!updated?._id) throw new Error("Updated order was not returned.");
       setLocalOrder(updated);
       if (typeof onOrderUpdated === "function") onOrderUpdated(updated);
-      setProFormaDocument(null);
       setInvoiceDocument(null);
-      if (proFormaDocumentInputRef.current)
-        proFormaDocumentInputRef.current.value = "";
       if (invoiceDocumentInputRef.current)
         invoiceDocumentInputRef.current.value = "";
       showToast("Invoice details saved successfully.");
@@ -1186,7 +1225,15 @@ const Lifecyclemodal = ({
   const savePaymentInstallment = async () => {
     const amount = Number(paymentEntry.amount);
     if (!hasFinalRate)
-      return showToast("Set Final Rate in Order Finalization first.", "error");
+      return showToast(
+        "Enter the invoice amount and valid GST percentage first.",
+        "error",
+      );
+    if (hasUnsavedInvoiceAmount)
+      return showToast(
+        "Save the updated invoice amount and GST before recording payment.",
+        "error",
+      );
     if (
       !paymentEntry.amount ||
       !Number.isFinite(amount) ||
@@ -1229,20 +1276,13 @@ const Lifecyclemodal = ({
   };
   useEffect(() => {
     setInvoicePaymentForm({
-      proFormaInvoiceNumber: "",
       invoiceNumber: "",
-      receivedAmount: "",
-      paymentDate: "",
-      paymentRemarks: "",
+      amount: "",
+      gstPercentage: "0",
     });
-    setProFormaDocument(null);
-    if (proFormaDocumentInputRef.current) {
-      proFormaDocumentInputRef.current.value = "";
-    }
     setInvoiceDocument(null);
-    if (invoiceDocumentInputRef.current) {
+    if (invoiceDocumentInputRef.current)
       invoiceDocumentInputRef.current.value = "";
-    }
   }, [order?._id, order?.tripId]);
   const updateInvoicePaymentField = (field, value) => {
     setInvoicePaymentForm((previous) => ({ ...previous, [field]: value }));
@@ -1322,9 +1362,14 @@ const Lifecyclemodal = ({
   });
   useEffect(() => {
     if (workingOrder) {
-      setActiveStepIndex(currentLifecycleIndex);
+      const requestedIndex =
+        typeof initialStep === "string"
+          ? lifecycle.findIndex((step) => step.key === initialStep)
+          : -1;
+      setActiveStepIndex(requestedIndex >= 0 ? requestedIndex : currentLifecycleIndex);
     }
   }, [
+    initialStep,
     currentLifecycleIndex,
     workingOrder?._id,
     workingOrder?.stage,
@@ -4028,46 +4073,6 @@ const Lifecyclemodal = ({
                 </div>
                 <div className="kam-invoice-groups">
                   <div className="kam-invoice-group">
-                    <h4 className="kam-invoice-subheading">
-                      Pro Forma Invoice
-                    </h4>
-                    <div className="kam-invoice-fields">
-                      <label className="kam-client-trip-field">
-                        <span>Pro Forma Invoice Number</span>
-                        <input
-                          className="kam-original-edit-input"
-                          type="text"
-                          name="proFormaInvoiceNumber"
-                          maxLength={100}
-                          placeholder="Enter pro forma invoice number"
-                          value={invoicePaymentForm.proFormaInvoiceNumber}
-                          onChange={(event) =>
-                            updateInvoicePaymentField(
-                              "proFormaInvoiceNumber",
-                              event.target.value,
-                            )
-                          }
-                        />
-                      </label>
-                      <label className="kam-client-trip-field">
-                        <span>Pro Forma Invoice Document</span>
-                        <input
-                          ref={proFormaDocumentInputRef}
-                          className="kam-original-edit-input"
-                          type="file"
-                          name="proFormaDocument"
-                          accept=".pdf,.jpg,.jpeg,.png"
-                          onChange={(event) =>
-                            setProFormaDocument(event.target.files?.[0] || null)
-                          }
-                        />
-                        {proFormaDocument && (
-                          <strong>{proFormaDocument.name}</strong>
-                        )}
-                      </label>
-                    </div>
-                  </div>
-                  <div className="kam-invoice-group">
                     <h4 className="kam-invoice-subheading">Invoice</h4>
                     <div className="kam-invoice-fields">
                       <label className="kam-client-trip-field">
@@ -4088,7 +4093,44 @@ const Lifecyclemodal = ({
                         />
                       </label>
                       <label className="kam-client-trip-field">
-                        <span>Invoice Document</span>
+                        <span>Amount (₹)</span>
+                        <input
+                          className="kam-original-edit-input"
+                          type="number"
+                          name="amount"
+                          min="0.01"
+                          step="0.01"
+                          placeholder="Enter amount"
+                          value={invoicePaymentForm.amount}
+                          onChange={(event) =>
+                            updateInvoicePaymentField(
+                              "amount",
+                              event.target.value,
+                            )
+                          }
+                        />
+                      </label>
+                      <label className="kam-client-trip-field">
+                        <span>GST Percentage (%)</span>
+                        <input
+                          className="kam-original-edit-input"
+                          type="number"
+                          name="gstPercentage"
+                          min="0"
+                          max="100"
+                          step="0.01"
+                          placeholder="Enter GST %"
+                          value={invoicePaymentForm.gstPercentage}
+                          onChange={(event) =>
+                            updateInvoicePaymentField(
+                              "gstPercentage",
+                              event.target.value,
+                            )
+                          }
+                        />
+                      </label>
+                      <label className="kam-client-trip-field">
+                        <span>Upload Invoice (PDF / Image)</span>
                         <input
                           ref={invoiceDocumentInputRef}
                           className="kam-original-edit-input"
@@ -4102,12 +4144,32 @@ const Lifecyclemodal = ({
                         {invoiceDocument && (
                           <strong>{invoiceDocument.name}</strong>
                         )}
+                        {!invoiceDocument &&
+                          invoiceData.invoiceDocument?.fileName && (
+                            <small>
+                              Saved: {invoiceData.invoiceDocument.fileName}
+                            </small>
+                          )}
                       </label>
+                    </div>
+                    <div className="kam-invoice-amount-breakdown">
+                      <div>
+                        <span>Base Amount</span>
+                        <strong>{formatRupees(baseAmount)}</strong>
+                      </div>
+                      <div>
+                        <span>GST ({gstPercentage}%)</span>
+                        <strong>{formatRupees(gstAmount)}</strong>
+                      </div>
+                      <div className="kam-invoice-grand-total">
+                        <span>Total Including GST</span>
+                        <strong>{formatRupees(totalPayable)}</strong>
+                      </div>
                     </div>
                     <div className="kam-payment-toolbar">
                       <span>
-                        {invoiceData.invoiceDocument?.fileName
-                          ? `Saved: ${invoiceData.invoiceDocument.fileName}`
+                        {hasUnsavedInvoiceAmount
+                          ? "Save the calculated total before adding payments."
                           : ""}
                       </span>
                       <button
@@ -4126,11 +4188,11 @@ const Lifecyclemodal = ({
                     <h4 className="kam-invoice-subheading">Payment Received</h4>
                     <div className="kam-payment-summary">
                       <div>
-                        <span>Total Amount (Final Rate)</span>
+                        <span>Total Amount (Including GST)</span>
                         <strong>
                           {hasFinalRate
                             ? formatRupees(totalPayable)
-                            : "Set Final Rate"}
+                            : "Enter Amount & GST"}
                         </strong>
                       </div>
                       <div>
@@ -4157,6 +4219,7 @@ const Lifecyclemodal = ({
                         className="kam-request-approval-btn"
                         disabled={
                           !hasFinalRate ||
+                          hasUnsavedInvoiceAmount ||
                           dueBalance <= 0 ||
                           paymentSaving ||
                           isCompletedTrip(workingOrder)

@@ -2,9 +2,13 @@ import React, {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import {
+  Bell,
+  ChevronDown,
+  ChevronRight,
   FileText,
   Truck,
   CircleCheckBig,
@@ -25,6 +29,51 @@ const API_BASE_URL = (
 ).replace(/\/+$/, "");
 const TRIP_API_URL =
   `${API_BASE_URL}/api/triporders`;
+
+// Keep this calculation consistent with Lifecyclemodal's Invoice & Payment tab.
+const getOutstandingPayment = (order) => {
+  const asAmount = (value) => {
+    if (value === null || value === undefined || value === "") return null;
+    const parsed = Number(String(value).replace(/[₹,\s]/g, ""));
+    return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
+  };
+  const invoice = order?.invoicePayment || {};
+  const invoiceBase = asAmount(
+    invoice.invoiceAmount ?? invoice.amount ?? invoice.baseAmount
+  );
+  const invoiceGst = asAmount(invoice.gstPercentage) ?? 0;
+  const serverTotal = asAmount(invoice.totalAmount);
+  const originalFinalRate = asAmount(
+    order?.orderFinalization?.finalRate ?? order?.finalRate
+  );
+
+  // Saved invoice total takes precedence over the pre-GST final rate.
+  // Keep the original final rate as a fallback for orders without an invoice.
+  const payable = serverTotal !== null
+    ? serverTotal
+    : invoiceBase !== null
+      ? Math.round(invoiceBase * (100 + invoiceGst)) / 100
+      : originalFinalRate;
+  if (payable === null || payable <= 0) return null;
+
+  const payments = Array.isArray(invoice.payments) && invoice.payments.length > 0
+    ? invoice.payments
+    : invoice.paymentDate && (asAmount(invoice.receivedAmount) ?? 0) > 0
+      ? [{ amount: invoice.receivedAmount }]
+      : [];
+  const receivedCents = payments.reduce(
+    (sum, payment) => sum + Math.round((asAmount(payment.amount) ?? 0) * 100),
+    0
+  );
+  const dueCents = Math.max(0, Math.round(payable * 100) - receivedCents);
+  return dueCents > 0 ? dueCents / 100 : null;
+};
+
+const formatPendingRupees = (value) =>
+  `₹${Number(value || 0).toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
 /* =========================================================
   VEHICLE TYPES
 ========================================================= */
@@ -1511,6 +1560,41 @@ const KeyAccount = () => {
     setEditingOrderId,
   ] = useState(null);
   const [lifecycleEditOrderId, setLifecycleEditOrderId] = useState(null);
+  const [paymentAlertsOpen, setPaymentAlertsOpen] = useState(false);
+  const [showAllPaymentAlerts, setShowAllPaymentAlerts] = useState(false);
+  const [openPaymentStep, setOpenPaymentStep] = useState(false);
+  const paymentAlertsRef = useRef(null);
+  const pendingPaymentOrders = useMemo(
+    () => orders.map((order) => ({ order, due: getOutstandingPayment(order) }))
+      .filter((entry) => entry.due !== null)
+      .sort((a, b) => b.due - a.due),
+    [orders],
+  );
+  const pendingPaymentTotal = useMemo(
+    () => pendingPaymentOrders.reduce((sum, item) => sum + item.due, 0),
+    [pendingPaymentOrders],
+  );
+  useEffect(() => {
+    if (!paymentAlertsOpen) return undefined;
+    const closeOnOutsideClick = (event) => {
+      if (!paymentAlertsRef.current?.contains(event.target)) {
+        setPaymentAlertsOpen(false);
+        setShowAllPaymentAlerts(false);
+      }
+    };
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") {
+        setPaymentAlertsOpen(false);
+        setShowAllPaymentAlerts(false);
+      }
+    };
+    document.addEventListener("pointerdown", closeOnOutsideClick);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsideClick);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [paymentAlertsOpen]);
   const [
     isSaving,
     setIsSaving,
@@ -1836,6 +1920,7 @@ const KeyAccount = () => {
   ======================================================= */
   const handleOrderClick =
     (order) => {
+      setOpenPaymentStep(false);
       setSelectedOrderId(
         getOrderKey(
           order
@@ -1844,6 +1929,7 @@ const KeyAccount = () => {
     };
   const handleBackFromDetail =
     () => {
+      setOpenPaymentStep(false);
       setLifecycleEditOrderId(null);
       setSelectedOrderId(
         null
@@ -1876,6 +1962,7 @@ const KeyAccount = () => {
     All orders can be edited.
   ======================================================= */
   const handleEditTrip = (order) => {
+    setOpenPaymentStep(false);
     if (getDisplayStage(order) === "Trip Complete") {
       setToast("Completed trips are read-only.");
       return;
@@ -2738,6 +2825,74 @@ const KeyAccount = () => {
             </p>
           </div>
           <div className="kam-heading-actions kam-unified-toolbar">
+            <div className="kam-payment-alerts" ref={paymentAlertsRef}>
+              <button
+                type="button"
+                className={`kam-payment-alert-button ${paymentAlertsOpen ? "is-open" : ""}`}
+                aria-expanded={paymentAlertsOpen}
+                aria-controls="kam-pending-payments-popover"
+                aria-label={`Pending payments: ${pendingPaymentOrders.length} orders`}
+                title="Payment Alerts"
+                onClick={() => setPaymentAlertsOpen((open) => !open)}
+              >
+                <span className="kam-payment-alert-icon">
+                  <Bell size={20} strokeWidth={1.9} aria-hidden="true" />
+                  {pendingPaymentOrders.length > 0 && (
+                    <span className="kam-payment-alert-count">{pendingPaymentOrders.length > 99 ? "99+" : pendingPaymentOrders.length}</span>
+                  )}
+                </span>
+              </button>
+              {paymentAlertsOpen && (
+                <div
+                  id="kam-pending-payments-popover"
+                  className="kam-payment-alert-popover"
+                  role="region"
+                  aria-label="Pending payments"
+                >
+                  <div className="kam-payment-alert-popover-heading">
+                    <div>
+                      <strong>Pending Payments</strong>
+                      <span>{pendingPaymentOrders.length} orders need follow-up</span>
+                    </div>
+                    <span className="kam-payment-alert-total">{formatPendingRupees(pendingPaymentTotal)}</span>
+                  </div>
+                  <div className="kam-payment-alert-list">
+                    {pendingPaymentOrders.length === 0 ? (
+                      <div className="kam-payment-alert-empty">No pending payments found.</div>
+                    ) : (
+                      (showAllPaymentAlerts ? pendingPaymentOrders : pendingPaymentOrders.slice(0, 4))
+                        .map(({ order, due }) => (
+                          <button
+                            type="button"
+                            className="kam-payment-alert-item"
+                            key={getOrderKey(order)}
+                            onClick={() => {
+                              setOpenPaymentStep(true);
+                              setLifecycleEditOrderId(null);
+                              setSelectedOrderId(getOrderKey(order));
+                              setPaymentAlertsOpen(false);
+                              setShowAllPaymentAlerts(false);
+                            }}
+                          >
+                            <span className="kam-payment-alert-item-grid">
+                              <span><small>Order No.</small><b>{order.tripId || order.id || "—"}</b></span>
+                              <span><small>Customer</small><b>{order.customer || "—"}</b></span>
+                              <span><small>PO Number</small><b>{order.poDocument?.poNumber || "—"}</b></span>
+                              <span><small>Amount</small><b className="kam-payment-alert-due">{formatPendingRupees(due)} Due</b></span>
+                              <ChevronRight size={16} aria-hidden="true" />
+                            </span>
+                          </button>
+                        ))
+                    )}
+                  </div>
+                  {pendingPaymentOrders.length > 4 && !showAllPaymentAlerts && (
+                    <button type="button" className="kam-payment-alert-view-all" onClick={() => setShowAllPaymentAlerts(true)}>
+                      View All Pending <ChevronRight size={14} />
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
             {loggedInName && (
               <div className="kam-user-profile">
                 <span className="kam-user-avatar" aria-hidden="true">{profileInitials}</span>
@@ -2745,6 +2900,7 @@ const KeyAccount = () => {
                   <strong>{loggedInName}</strong>
                   <span>Key Account</span>
                 </div>
+                <ChevronDown className="kam-profile-chevron" size={15} aria-hidden="true" />
               </div>
             )}
             <button
@@ -3337,6 +3493,7 @@ const KeyAccount = () => {
             selectedOrder
           }
           initialEdit={lifecycleEditOrderId === getOrderKey(selectedOrder)}
+          initialStep={openPaymentStep ? "invoice-payment" : undefined}
           onOrderUpdated={(updated) => {
             const mapped = mapDbTripToOrder(updated);
             setOrders((previous) => previous.map((item) =>
