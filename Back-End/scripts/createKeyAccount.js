@@ -1,8 +1,13 @@
+
+"use strict";
+
 require("dotenv").config();
 
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const KeyAccountUser = require("../models/KeyAccountUser");
+
+const SALT_ROUNDS = 12;
 
 async function createAccounts() {
   try {
@@ -11,18 +16,20 @@ async function createAccounts() {
     }
 
     const accounts = [1, 2, 3, 4].map((number) => ({
-      username: (
+      username: String(
         process.env[`KAM_${number}_USERNAME`] || ""
       ).trim().toLowerCase(),
 
-      name: (
+      name: String(
         process.env[`KAM_${number}_NAME`] || ""
       ).trim(),
 
-      password: process.env[`KAM_${number}_PASSWORD`] || "",
+      password: String(
+        process.env[`KAM_${number}_PASSWORD`] || ""
+      ),
     }));
 
-    // Validate all four before creating any accounts.
+    // Validate all four accounts.
     for (const account of accounts) {
       if (
         !account.username ||
@@ -31,34 +38,78 @@ async function createAccounts() {
         account.password.startsWith("REPLACE_WITH_")
       ) {
         throw new Error(
-          "Provide all four usernames, names, and real passwords " +
-          "of at least 12 characters."
+          "All four accounts require a username, name, " +
+          "and password of at least 12 characters."
         );
       }
     }
 
-    if (
-      new Set(accounts.map((account) => account.username)).size !== 4
-    ) {
-      throw new Error("Each account must have a different username.");
+    // Prevent duplicate usernames.
+    const usernames = accounts.map(
+      (account) => account.username
+    );
+
+    if (new Set(usernames).size !== 4) {
+      throw new Error(
+        "Each Key Account must have a different username."
+      );
     }
 
     await mongoose.connect(process.env.MONGODB_URI);
+
+    console.log("MongoDB connected.");
+
     await KeyAccountUser.init();
 
     for (const account of accounts) {
       const existing = await KeyAccountUser.findOne({
         username: account.username,
-      });
+      }).select("+passwordHash");
 
       if (existing) {
+        // Check password against the existing MongoDB hash.
+        const passwordMatches =
+          typeof existing.passwordHash === "string" &&
+          await bcrypt.compare(
+            account.password,
+            existing.passwordHash
+          );
+
+        // Update password only when it has changed.
+        if (!passwordMatches) {
+          existing.passwordHash = await bcrypt.hash(
+            account.password,
+            SALT_ROUNDS
+          );
+
+          console.log(
+            `Password updated: ${account.username}`
+          );
+        } else {
+          console.log(
+            `Password unchanged: ${account.username}`
+          );
+        }
+
+        // Synchronize account details.
+        existing.name = account.name;
+        existing.role = "keyaccount";
+        existing.active = true;
+
+        await existing.save();
+
         console.log(
-          `Already exists: ${account.username}. Password unchanged.`
+          `Account verified: ${account.username}`
         );
+
         continue;
       }
 
-      const passwordHash = await bcrypt.hash(account.password, 12);
+      // Create new account.
+      const passwordHash = await bcrypt.hash(
+        account.password,
+        SALT_ROUNDS
+      );
 
       await KeyAccountUser.create({
         username: account.username,
@@ -68,12 +119,20 @@ async function createAccounts() {
         active: true,
       });
 
-      console.log(`Created: ${account.username} — ${account.name}`);
+      console.log(
+        `Account created: ${account.username}`
+      );
     }
 
-    console.log("Finished checking all four Key Account logins.");
+    console.log(
+      "All four Key Account accounts synchronized successfully."
+    );
   } catch (error) {
-    console.error("Account creation failed:", error.message);
+    console.error(
+      "Key Account setup failed:",
+      error.message
+    );
+
     process.exitCode = 1;
   } finally {
     await mongoose.disconnect();

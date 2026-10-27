@@ -18,6 +18,8 @@ const Trackingprotected = ({
       "trackingLoggedIn"
     ) === "true";
 
+  /* MAIN LOGIN PROTECTION */
+
   if (!token || !token.trim()) {
     return (
       <Navigate
@@ -29,6 +31,8 @@ const Trackingprotected = ({
       />
     );
   }
+
+  /* TRACKING LOGIN PROTECTION */
 
   if (!trackingLoggedIn) {
     return (

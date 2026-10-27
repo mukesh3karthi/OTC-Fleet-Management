@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Eye, EyeOff, Lock, User, ShieldCheck, ArrowRightLeft, X } from "lucide-react";
 import "../Loginpage/approvalmanagementlogin.css";
 
-const APPROVAL_USERNAME = "madmind";
-const APPROVAL_PASSWORD = "madmind@2026";
+const APPROVAL_USERNAME = "admin";
+const APPROVAL_PASSWORD = "admin@2026";
 const Approvalmanagementlogin = ({ open = false, onClose, onLoginSuccess }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");

@@ -1,3 +1,4 @@
+
 import React, {
   useCallback,
   useEffect,
@@ -16,129 +17,100 @@ import {
 
 import "./Trackinglogin.css";
 
+/* =========================================================
+   TRACKING LOGIN CREDENTIALS
+========================================================= */
 
 const VALID_USERNAME = "admin";
 const VALID_PASSWORD = "admin@2026";
 
+/* =========================================================
+   TRACKING LOGIN COMPONENT
+========================================================= */
 
 const Trackinglogin = ({
   open = true,
   onClose,
   onLoginSuccess,
 }) => {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
-  const [username, setUsername] =
-    useState("");
-
-  const [password, setPassword] =
-    useState("");
-
-  const [
-    showPassword,
-    setShowPassword,
-  ] = useState(false);
-
-  const [error, setError] =
-    useState("");
-
-  const [
-    isLoggingIn,
-    setIsLoggingIn,
-  ] = useState(false);
-
-  const usernameInputRef =
-    useRef(null);
-
+  const usernameInputRef = useRef(null);
 
   /* =========================================================
-     CLEAR FORM
+     CLEAR TRACKING SESSION
+  ========================================================= */
+
+  const clearTrackingSession = useCallback(() => {
+    const keys = [
+      "trackingAuthToken",
+      "trackingMainToken",
+      "trackingLoggedIn",
+      "trackingUsername",
+    ];
+
+    keys.forEach((key) => {
+      sessionStorage.removeItem(key);
+    });
+  }, []);
+
+  /* =========================================================
+     CLEAR LOGIN FORM
   ========================================================= */
 
   const clearForm = useCallback(() => {
-
     setUsername("");
     setPassword("");
     setShowPassword(false);
     setError("");
     setIsLoggingIn(false);
-
   }, []);
 
-
   /* =========================================================
-     CLOSE
+     CLOSE LOGIN POPUP
   ========================================================= */
 
   const handleClose = useCallback(() => {
-
     clearForm();
 
     onClose?.();
-
-  }, [
-    clearForm,
-    onClose,
-  ]);
-
+  }, [clearForm, onClose]);
 
   /* =========================================================
-     MODAL EFFECT
+     POPUP EFFECT
   ========================================================= */
 
   useEffect(() => {
-
     if (!open) {
-
-      clearForm();
-
       return undefined;
-
     }
-
 
     const previousOverflow =
       document.body.style.overflow;
 
-    document.body.style.overflow =
-      "hidden";
+    document.body.style.overflow = "hidden";
 
+    const focusTimer = window.setTimeout(() => {
+      usernameInputRef.current?.focus();
+    }, 50);
 
-    const focusTimer =
-      window.setTimeout(() => {
-
-        usernameInputRef
-          .current
-          ?.focus();
-
-      }, 50);
-
-
-    const handleEscape = (
-      event
-    ) => {
-
-      if (
-        event.key === "Escape"
-      ) {
-
+    const handleEscape = (event) => {
+      if (event.key === "Escape") {
         handleClose();
-
       }
-
     };
-
 
     window.addEventListener(
       "keydown",
       handleEscape
     );
 
-
     return () => {
-
-      window.clearTimeout(
-        focusTimer
-      );
+      window.clearTimeout(focusTimer);
 
       window.removeEventListener(
         "keydown",
@@ -147,15 +119,104 @@ const Trackinglogin = ({
 
       document.body.style.overflow =
         previousOverflow;
-
     };
+  }, [open, handleClose]);
 
-  }, [
-    open,
-    clearForm,
-    handleClose,
-  ]);
+  /* =========================================================
+     TRACKING LOGIN VALIDATION
+  ========================================================= */
 
+  const handleSubmit = (event) => {
+    event.preventDefault();
+
+    if (isLoggingIn) {
+      return;
+    }
+
+    setError("");
+
+    const cleanUsername = username.trim();
+    const cleanPassword = password;
+
+    /* BOTH FIELDS EMPTY */
+
+    if (
+      !cleanUsername &&
+      !cleanPassword.trim()
+    ) {
+      setError(
+        "Please enter username and password."
+      );
+
+      return;
+    }
+
+    /* USERNAME EMPTY */
+
+    if (!cleanUsername) {
+      setError("Please enter username.");
+      return;
+    }
+
+    /* PASSWORD EMPTY */
+
+    if (!cleanPassword.trim()) {
+      setError("Please enter password.");
+      return;
+    }
+
+    /* CHECK MAIN LOGIN SESSION */
+
+    const mainToken =
+      localStorage.getItem("token");
+
+    if (!mainToken?.trim()) {
+      clearTrackingSession();
+
+      setError(
+        "Main session expired. Please sign in again."
+      );
+
+      return;
+    }
+
+    /* VALIDATE USERNAME AND PASSWORD */
+
+    if (
+      cleanUsername !== VALID_USERNAME ||
+      cleanPassword !== VALID_PASSWORD
+    ) {
+      clearTrackingSession();
+
+      setError(
+        "Invalid username or password."
+      );
+
+      return;
+    }
+
+    /* =====================================================
+       LOGIN SUCCESS
+    ===================================================== */
+
+    sessionStorage.setItem(
+      "trackingLoggedIn",
+      "true"
+    );
+
+    sessionStorage.setItem(
+      "trackingUsername",
+      cleanUsername
+    );
+
+    setError("");
+
+    clearForm();
+
+    onLoginSuccess?.({
+      username: cleanUsername,
+    });
+  };
 
   /* =========================================================
      DON'T RENDER WHEN CLOSED
@@ -165,330 +226,102 @@ const Trackinglogin = ({
     return null;
   }
 
-
   /* =========================================================
-     LOGIN
-  ========================================================= */
-
-  // const handleSubmit = (
-  //   event
-  // ) => {
-
-  //   event.preventDefault();
-
-  //   setError("");
-
-
-  //   const cleanUsername =
-  //     username.trim();
-
-  //   const cleanPassword =
-  //     password.trim();
-
-
-  //   /* BOTH EMPTY */
-
-  //   if (
-  //     !cleanUsername &&
-  //     !cleanPassword
-  //   ) {
-
-  //     setError(
-  //       "Please enter username and password."
-  //     );
-
-  //     return;
-
-  //   }
-
-
-  //   /* USERNAME EMPTY */
-
-  //   if (!cleanUsername) {
-
-  //     setError(
-  //       "Please enter username."
-  //     );
-
-  //     return;
-
-  //   }
-
-
-  //   /* PASSWORD EMPTY */
-
-  //   if (!cleanPassword) {
-
-  //     setError(
-  //       "Please enter password."
-  //     );
-
-  //     return;
-
-  //   }
-
-
-  //   /* =========================================================
-  //      START LOGIN
-  //   ========================================================= */
-
-  //   setIsLoggingIn(true);
-
-
-  //   /* =========================================================
-  //      LOGIN SUCCESS
-  //   ========================================================= */
-
-  //   if (
-  //     cleanUsername ===
-  //       VALID_USERNAME &&
-  //     cleanPassword ===
-  //       VALID_PASSWORD
-  //   ) {
-
-  //     sessionStorage.setItem(
-  //       "trackingLoggedIn",
-  //       "true"
-  //     );
-
-  //     sessionStorage.setItem(
-  //       "trackingUsername",
-  //       cleanUsername
-  //     );
-
-
-  //     setIsLoggingIn(false);
-
-  //     setError("");
-
-
-  //     onLoginSuccess?.({
-  //       username:
-  //         cleanUsername,
-  //     });
-
-
-  //     onClose?.();
-
-  //     return;
-
-  //   }
-
-
-  //   /* =========================================================
-  //      INVALID LOGIN
-  //   ========================================================= */
-
-  //   setIsLoggingIn(false);
-
-  //   setError(
-  //     "Invalid username or password."
-  //   );
-
-  // };
-
-  const handleSubmit = (event) => {
-    event.preventDefault();
-
-    // TEMPORARY: bypass username/password login
-    sessionStorage.setItem("trackingLoggedIn", "true");
-    sessionStorage.setItem("trackingUsername", "Temporary User");
-
-    setIsLoggingIn(false);
-    setError("");
-
-    onLoginSuccess?.({
-      username: "Temporary User",
-    });
-
-    onClose?.();
-  };
-
-  /* =========================================================
-     RENDER
+     TRACKING LOGIN UI
   ========================================================= */
 
   return (
-
     <div
       className="tracking-login-overlay"
-
-      onMouseDown={(event) => {
-
-        if (
-          event.target ===
-          event.currentTarget
-        ) {
-
-          handleClose();
-
-        }
-
-      }}
-
       role="presentation"
+      onMouseDown={(event) => {
+        if (
+          event.target === event.currentTarget
+        ) {
+          handleClose();
+        }
+      }}
     >
-
       <div
         className="tracking-login-card"
-
         role="dialog"
-
         aria-modal="true"
-
         aria-labelledby="tracking-login-title"
-
         onMouseDown={(event) => {
-
           event.stopPropagation();
-
         }}
       >
+        {/* TOP COLOR BAR */}
 
+        <div className="tracking-login-topbar" />
 
-        {/* =====================================================
-            TOP BAR
-        ===================================================== */}
-
-        <div
-          className="tracking-login-topbar"
-        />
-
-
-        {/* =====================================================
-            CLOSE
-        ===================================================== */}
+        {/* CLOSE BUTTON */}
 
         <button
           type="button"
-
           className="tracking-login-close"
-
-          onClick={
-            handleClose
-          }
-
+          onClick={handleClose}
           aria-label="Close Tracking Login"
         >
-
-          <X
-            size={18}
-          />
-
+          <X size={18} />
         </button>
 
+        {/* LOGIN ICON */}
 
-        {/* =====================================================
-            ICON
-        ===================================================== */}
-
-        <div
-          className="tracking-login-icon"
-        >
-
-          <LockKeyhole
-            size={26}
-          />
-
+        <div className="tracking-login-icon">
+          <LockKeyhole size={26} />
         </div>
 
+        {/* SUBHEADING */}
 
-        {/* =====================================================
-            EYEBROW
-        ===================================================== */}
-
-        <p
-          className="tracking-login-eyebrow"
-        >
+        <p className="tracking-login-eyebrow">
           Secure access
         </p>
 
-
-        {/* =====================================================
-            TITLE
-        ===================================================== */}
+        {/* TITLE */}
 
         <h2
           id="tracking-login-title"
-
           className="tracking-login-title"
         >
           Tracking Login
         </h2>
 
+        {/* DESCRIPTION */}
 
-        {/* =====================================================
-            SUBTITLE
-        ===================================================== */}
-
-        <p
-          className="tracking-login-subtitle"
-        >
-          Sign in to continue with
-          Tracking Management.
+        <p className="tracking-login-subtitle">
+          Sign in to continue with Tracking Management.
         </p>
 
-
-        {/* =====================================================
-            FORM
-        ===================================================== */}
+        {/* LOGIN FORM */}
 
         <form
           className="tracking-login-form"
-
-          onSubmit={
-            handleSubmit
-          }
-
+          onSubmit={handleSubmit}
           noValidate
         >
+          {/* USERNAME FIELD */}
 
-
-          {/* =================================================
-              USERNAME
-          ================================================= */}
-
-          <div
-            className="tracking-login-field"
-          >
-
-            <label
-              htmlFor="trackingUsername"
-            >
+          <div className="tracking-login-field">
+            <label htmlFor="trackingUsername">
               Username
             </label>
 
-
-            <div
-              className="tracking-login-input-wrap"
-            >
-
+            <div className="tracking-login-input-wrap">
               <User
                 size={18}
-
                 className="tracking-login-input-icon"
               />
 
-
               <input
-                ref={
-                  usernameInputRef
-                }
-
+                ref={usernameInputRef}
                 id="trackingUsername"
-
                 type="text"
-
                 placeholder="Enter username"
-
-                value={
-                  username
-                }
-
+                value={username}
                 autoComplete="username"
-
+                disabled={isLoggingIn}
                 onChange={(event) => {
-
                   setUsername(
                     event.target.value
                   );
@@ -496,60 +329,36 @@ const Trackinglogin = ({
                   if (error) {
                     setError("");
                   }
-
                 }}
               />
-
             </div>
-
           </div>
 
+          {/* PASSWORD FIELD */}
 
-          {/* =================================================
-              PASSWORD
-          ================================================= */}
-
-          <div
-            className="tracking-login-field"
-          >
-
-            <label
-              htmlFor="trackingPassword"
-            >
+          <div className="tracking-login-field">
+            <label htmlFor="trackingPassword">
               Password
             </label>
 
-
-            <div
-              className="tracking-login-input-wrap"
-            >
-
+            <div className="tracking-login-input-wrap">
               <LockKeyhole
                 size={18}
-
                 className="tracking-login-input-icon"
               />
 
-
               <input
                 id="trackingPassword"
-
                 type={
                   showPassword
                     ? "text"
                     : "password"
                 }
-
                 placeholder="Enter password"
-
-                value={
-                  password
-                }
-
+                value={password}
                 autoComplete="current-password"
-
+                disabled={isLoggingIn}
                 onChange={(event) => {
-
                   setPassword(
                     event.target.value
                   );
@@ -557,134 +366,76 @@ const Trackinglogin = ({
                   if (error) {
                     setError("");
                   }
-
                 }}
               />
 
-
-              {/* PASSWORD EYE */}
+              {/* SHOW / HIDE PASSWORD */}
 
               <button
                 type="button"
-
                 className="tracking-login-eye"
-
-                onClick={() =>
+                onClick={() => {
                   setShowPassword(
-                    (previous) =>
-                      !previous
-                  )
-                }
-
+                    (previous) => !previous
+                  );
+                }}
                 aria-label={
                   showPassword
                     ? "Hide password"
                     : "Show password"
                 }
               >
-
-                {
-                  showPassword
-                    ? (
-                      <EyeOff
-                        size={18}
-                      />
-                    )
-                    : (
-                      <Eye
-                        size={18}
-                      />
-                    )
-                }
-
+                {showPassword ? (
+                  <EyeOff size={18} />
+                ) : (
+                  <Eye size={18} />
+                )}
               </button>
-
             </div>
-
           </div>
 
-
-          {/* =================================================
-              ERROR
-          ================================================= */}
+          {/* ERROR MESSAGE */}
 
           {error && (
-
             <p
               className="tracking-login-error"
-
               role="alert"
             >
               {error}
             </p>
-
           )}
 
-
-          {/* =================================================
-              LOGIN
-          ================================================= */}
+          {/* LOGIN BUTTON */}
 
           <button
             type="submit"
-
             className="tracking-login-submit"
-
-            disabled={
-              isLoggingIn
-            }
+            disabled={isLoggingIn}
           >
-
-            <ShieldCheck
-              size={16}
-            />
+            <ShieldCheck size={16} />
 
             <span>
-              {
-                isLoggingIn
-                  ? "Opening..."
-                  : "Login"
-              }
+              {isLoggingIn
+                ? "Signing in..."
+                : "Login"}
             </span>
-
           </button>
-
         </form>
 
+        {/* DIVIDER */}
 
-        {/* =====================================================
-            DIVIDER
-        ===================================================== */}
+        <div className="tracking-login-divider" />
 
-        <div
-          className="tracking-login-divider"
-        />
+        {/* FOOTER */}
 
-
-        {/* =====================================================
-            FOOTER
-        ===================================================== */}
-
-        <p
-          className="tracking-login-footer"
-        >
-
-          <LockKeyhole
-            size={13}
-          />
+        <p className="tracking-login-footer">
+          <LockKeyhole size={13} />
 
           Authorized personnel only
-
         </p>
-
-
       </div>
-
     </div>
-
   );
-
 };
-
 
 export default Trackinglogin;
