@@ -2816,6 +2816,68 @@ const Vehicledocument = () => {
     closeExportPopup();
   };
 
+  // Export the vehicle information only. Uploaded files are not fetched.
+  const exportReportAsPdf = async () => {
+    const exportData = getSelectedExportData();
+    if (!exportData) return;
+
+    if (exportPopup.mode === "allVehicles") {
+      if (!filteredVehicles.length) {
+        window.alert("No vehicles are available to export.");
+        return;
+      }
+
+      try {
+        const reportPdf = await PDFDocument.create();
+        const regularFont = await reportPdf.embedFont(StandardFonts.Helvetica);
+        const boldFont = await reportPdf.embedFont(StandardFonts.HelveticaBold);
+        for (const vehicle of filteredVehicles) {
+          await addVehicleSummaryPage({
+            finalPdf: reportPdf,
+            vehicle,
+            regularFont,
+            boldFont,
+            title: "Vehicle Document Report",
+          });
+        }
+        downloadPdfBytes(
+          await reportPdf.save(),
+          "all-vehicle-documents-report.pdf"
+        );
+        closeExportPopup();
+      } catch (error) {
+        console.error("Vehicle report PDF export error:", error);
+        window.alert("Unable to create the Vehicle Documents report PDF.");
+      }
+      return;
+    }
+
+    try {
+      const pdf = new jsPDF({ unit: "pt", format: "a4" });
+      pdf.setFontSize(16);
+      pdf.setTextColor(20, 44, 78);
+      pdf.text(exportData.title, 40, 42);
+      pdf.setFontSize(9);
+      pdf.setTextColor(100, 116, 139);
+      pdf.text(`Generated: ${new Date().toLocaleString("en-IN")}`, 40, 59);
+      autoTable(pdf, {
+        startY: 75,
+        head: [exportData.headers],
+        body: exportData.rows,
+        theme: "grid",
+        styles: { fontSize: 8, cellPadding: 5, overflow: "linebreak" },
+        headStyles: { fillColor: [18, 62, 145], textColor: [255, 255, 255], fontStyle: "bold" },
+        alternateRowStyles: { fillColor: [247, 249, 252] },
+        margin: { left: 30, right: 30 },
+      });
+      pdf.save(`${exportData.fileName}-report.pdf`);
+      closeExportPopup();
+    } catch (error) {
+      console.error("Vehicle report PDF export error:", error);
+      window.alert("Unable to create the Vehicle Documents report PDF.");
+    }
+  };
+
   const exportAsPdf = async () => {
 
     const exportData =
@@ -2959,11 +3021,53 @@ const Vehicledocument = () => {
       }
     }
 
-    /*
-      SINGLE EXPORT POPUP PDF:
-      keep the existing clean table export
-      for vehicle-details/documents-only data.
-    */
+    // Single vehicle: include its summary and available uploaded files.
+    if (exportPopup.vehicle) {
+      try {
+        const finalPdf = await PDFDocument.create();
+        const regularFont = await finalPdf.embedFont(StandardFonts.Helvetica);
+        const boldFont = await finalPdf.embedFont(StandardFonts.HelveticaBold);
+        await addVehicleSummaryPage({
+          finalPdf,
+          vehicle: exportPopup.vehicle,
+          regularFont,
+          boldFont,
+          title: "Vehicle Document Report",
+        });
+
+        let attachmentsAdded = 0;
+        for (const { key, label } of TABLE_DOCUMENT_COLUMNS) {
+          if (!getDocumentDownloadUrl(exportPopup.vehicle, key)) continue;
+          try {
+            const added = await addUploadedDocumentToPdf({
+              finalPdf,
+              vehicle: exportPopup.vehicle,
+              documentKey: key,
+              label,
+              regularFont,
+              boldFont,
+            });
+            if (added) attachmentsAdded += 1;
+          } catch (error) {
+            console.error(`Unable to include ${label} attachment:`, error);
+          }
+        }
+        if (!attachmentsAdded) {
+          window.alert("No readable PDF/image attachments were found. The vehicle report will still be downloaded.");
+        }
+        downloadPdfBytes(
+          await finalPdf.save(),
+          `${exportData.fileName}-with-attachments.pdf`
+        );
+        closeExportPopup();
+      } catch (error) {
+        console.error("Single vehicle PDF export error:", error);
+        window.alert("Unable to create the vehicle PDF with attachments.");
+      }
+      return;
+    }
+
+    /* Fallback printable table PDF. */
 
     const isWide =
       exportData.headers.length >
@@ -3735,6 +3839,21 @@ const Vehicledocument = () => {
               <button
                 type="button"
                 className="export-format-option pdf"
+                onClick={exportReportAsPdf}
+                title="Download vehicle details without uploaded attachments"
+              >
+                <span className="export-option-icon">
+                  <FileText size={25} />
+                </span>
+                <span className="export-option-content">
+                  <strong>PDF Report Only</strong>
+                  <small>Vehicle details, dates and expiry status</small>
+                </span>
+              </button>
+
+              <button
+                type="button"
+                className="export-format-option pdf"
                 onClick={exportAsPdf}
               >
                 <span className="export-option-icon">
@@ -3742,9 +3861,9 @@ const Vehicledocument = () => {
                 </span>
 
                 <span className="export-option-content">
-                  <strong>PDF</strong>
+                  <strong>PDF with Attachments</strong>
                   <small>
-                    Download as a printable PDF
+                    Report plus uploaded PDF/image files
                   </small>
                 </span>
               </button>
