@@ -1499,7 +1499,9 @@ const VehicleDetails = () => {
                               [
                                 "Vehicle Type",
                                 display(
-                                  vehicle.vehicleType || vehicle.type,
+                                  vehicle.vehicleType ||
+                                    vehicle.type ||
+                                    requirement.vehicleType,
                                 ),
                               ],
                               [
@@ -1530,7 +1532,15 @@ const VehicleDetails = () => {
                                     trip.lsp,
                                 ),
                               ],
-                              ["LSP", display(vehicle.lsp)],
+                              [
+                                "LSP",
+                                display(
+                                  vehicle.lsp ||
+                                    quotation.lsp ||
+                                    requirement.lsp ||
+                                    trip.lsp,
+                                ),
+                              ],
                               ["Dimensions (L × H × W)",
                                 [vehicle.dimensions?.length, vehicle.dimensions?.height, vehicle.dimensions?.width]
                                   .some((value) => value != null && value !== "")
@@ -1937,14 +1947,30 @@ const VehicleDetails = () => {
                                 display(trip.clientPhone || trip.contactNumber),
                               ],
                               ["Email", display(trip.email)],
-                              ["LSP", display(trip.lsp)],
+                              [
+                                "LSP",
+                                display(
+                                  vehicle.lsp ||
+                                    quotation.lsp ||
+                                    requirement.lsp ||
+                                    trip.lsp,
+                                ),
+                              ],
                               [
                                 "Transport Contact",
-                                display(trip.transporterContactPerson),
+                                display(
+                                  vehicle.transporterContactPerson ||
+                                    quotation.transporterContactPerson ||
+                                    trip.transporterContactPerson,
+                                ),
                               ],
                               [
                                 "Transport Phone",
-                                display(trip.transporterPhone),
+                                display(
+                                  vehicle.transporterPhone ||
+                                    quotation.transporterPhone ||
+                                    trip.transporterPhone,
+                                ),
                               ],
                               ["Assigned KAM", display(trip.assignedKam)],
                               [

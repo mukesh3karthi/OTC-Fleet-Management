@@ -207,6 +207,22 @@ const isIntercartingMovement = (order) =>
     .toLowerCase()
     .replace(/[\s-]+/g, "") === "intercarting";
 
+const invoiceIsFullyPaid = (order) => {
+  const invoice = order?.invoicePayment || {};
+  const total = Number(invoice.totalAmount);
+  const payments = safeArray(invoice.payments);
+  const received = payments.length
+    ? payments.reduce((sum, payment) => sum + Math.round(Number(payment.amount || 0) * 100), 0)
+    : Math.round(Number(invoice.receivedAmount || 0) * 100);
+  return Boolean(
+    String(invoice.invoiceNumber || "").trim() &&
+    String(invoice.invoiceDate || "").trim() &&
+    invoice.totalAmount != null &&
+    Number.isFinite(total) && total > 0 &&
+    received >= Math.round(total * 100)
+  );
+};
+
 const buildLifecycle = (order) => {
   const requirements = safeArray(order?.vehicleRequirements);
   const confirmations = safeArray(order?.vehicleConfirmations);
@@ -328,8 +344,11 @@ const buildLifecycle = (order) => {
     vendorCompleted &&
     orderPlacedCompleted &&
     allRequiredVehiclesAllocated &&
-    allAllocatedVehiclesUnloaded;
-  const trackingStatus = tripCompleted
+    allAllocatedVehiclesUnloaded &&
+    invoiceIsFullyPaid(order);
+  const transportCompleted =
+    orderPlacedCompleted && allRequiredVehiclesAllocated && allAllocatedVehiclesUnloaded;
+  const trackingStatus = transportCompleted
     ? "Completed"
     : orderPlacedCompleted && hasTracking
       ? "Tracking"
@@ -355,7 +374,7 @@ const buildLifecycle = (order) => {
     {
       key: "invoice-payment",
       title: "Invoice & Payment",
-      status: "Pending",
+      status: tripCompleted ? "Completed" : "Pending",
     },
     {
       key: "trip-complete",
@@ -395,6 +414,9 @@ const getLifecycleCurrentIndex = (order, lifecycle) => {
   }
   if (getStepStatus("order-placed") !== "completed") {
     return 4;
+  }
+  if (getStepStatus("tracking") === "completed") {
+    return 6;
   }
   return 5;
 };
@@ -507,17 +529,8 @@ const CommonStepDetails = ({ order, totalRequiredVehicles }) => {
    MAIN COMPONENT
 ========================================================= */
 const isCompletedTrip = (trip) =>
-  String(trip?.stage || "")
-    .trim()
-    .toLowerCase() === "trip complete" ||
-  (String(trip?.status || "")
-    .trim()
-    .toLowerCase() === "completed" &&
-    Array.isArray(trip?.allocatedVehicles) &&
-    trip.allocatedVehicles.length > 0 &&
-    trip.allocatedVehicles.every(
-      (v) => String(v?.unloading?.status || "").toLowerCase() === "completed",
-    ));
+  buildLifecycle(trip || {}).find((step) => step.key === "trip-complete")?.status ===
+  "Completed";
 const Lifecyclemodal = ({
   order,
   onClose,
@@ -2312,6 +2325,9 @@ const Lifecyclemodal = ({
     if (currentLifecycleIndex >= 7) {
       return "Trip Complete";
     }
+    if (currentLifecycleIndex >= 6) {
+      return "Invoice & Payment";
+    }
     if (currentLifecycleIndex >= 5) {
       return "Tracking";
     }
@@ -2331,7 +2347,7 @@ const Lifecyclemodal = ({
       onMouseDown={requestLifecycleClose}
     >
       <section
-        className={`kam-workflow-modal ${isCompletedTrip(order) ? "kam-trip-readonly" : ""}`}
+        className={`kam-workflow-modal ${isCompletedTrip(workingOrder || order) ? "kam-trip-readonly" : ""}`}
         role="dialog"
         aria-modal="true"
         aria-label={`Order lifecycle ${order.tripId || ""}`}
@@ -4136,7 +4152,7 @@ const Lifecyclemodal = ({
                   <div className="kam-invoice-group">
                     <div className="kam-invoice-amount-breakdown">
                       <div>
-                        <span>Base Amount</span>
+                        <span>Gross Amount</span>
                         <strong>{formatRupees(baseAmount)}</strong>
                       </div>
                       <div>
@@ -4144,7 +4160,7 @@ const Lifecyclemodal = ({
                         <strong>{formatRupees(gstAmount)}</strong>
                       </div>
                       <div className="kam-invoice-grand-total">
-                        <span>Total Including GST</span>
+                        <span>Net Amount ( Including GST )</span>
                         <strong>{formatRupees(totalPayable)}</strong>
                       </div>
                     </div>
@@ -4271,14 +4287,7 @@ const Lifecyclemodal = ({
                   <div className="kam-invoice-group">
                     <h4 className="kam-invoice-subheading">Payment Received</h4>
                     <div className="kam-payment-summary">
-                      <div>
-                        <span>Total Amount (Including GST)</span>
-                        <strong>
-                          {hasFinalRate
-                            ? formatRupees(totalPayable)
-                            : "Enter Amount & GST"}
-                        </strong>
-                      </div>
+                      
                       <div>
                         <span>Total Received</span>
                         <strong>{formatRupees(receivedTotal)}</strong>
@@ -4741,7 +4750,7 @@ const Lifecyclemodal = ({
             Current Stage: <strong>{displayCurrentStage}</strong>
           </div>
           <div className="kam-footer-action-buttons">
-            {isCompletedTrip(order) && (
+            {isCompletedTrip(workingOrder || order) && (
               <>
                 <span className="kam-completed-readonly-label">
                   ✓ Trip Completed · Read Only
@@ -4755,7 +4764,7 @@ const Lifecyclemodal = ({
                 </button>
               </>
             )}
-            {!isCompletedTrip(order) && editOpen && (
+            {!isCompletedTrip(workingOrder || order) && editOpen && (
               <>
                 <button
                   type="button"
@@ -4781,7 +4790,7 @@ const Lifecyclemodal = ({
                 </button>
               </>
             )}
-            {!isCompletedTrip(order) && !editOpen && (
+            {!isCompletedTrip(workingOrder || order) && !editOpen && (
               <>
                 {/* ENQUIRY */}
                 {activeStepIndex === 0 && (

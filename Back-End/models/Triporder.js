@@ -1328,6 +1328,9 @@ const allocatedVehicleSchema = new Schema(
   {
     allocatedAt: { type: Date, default: null },
     allocatedBy: { type: String, default: "" },
+    allocatedByManual: { type: String, trim: true, default: "" },
+    lastUpdatedBy: { type: String, trim: true, default: "" },
+    lastUpdatedAt: { type: Date, default: null },
     previousAllocationId: { type: String, default: "" },
     rootAllocationId: { type: String, default: "" },
     replacedByAllocationId: { type: String, default: "" },

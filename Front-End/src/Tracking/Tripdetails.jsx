@@ -967,7 +967,6 @@ const StandardTripdetails = ({ movementOnly = false }) => {
       .toLowerCase();
     const hasMovementEntryData = Boolean(
       currentLocation ||
-      updatedBy ||
       (movementForm.todayKm !== "" &&
         movementForm.todayKm !== null &&
         movementForm.todayKm !== undefined) ||
@@ -977,8 +976,9 @@ const StandardTripdetails = ({ movementOnly = false }) => {
       String(movementForm.loadingStatus || "")
         .trim()
         .toLowerCase() === "completed";
-    // One save action: allow operations/documents before loading is complete.
-    const shouldSaveTracking = loadingCompleted && hasMovementEntryData;
+    // A valid daily movement can be recorded while loading is still Pending.
+    // Updated By alone must not force a new movement when saving only operations.
+    const shouldSaveTracking = hasMovementEntryData;
     const loadedMaterialChanged =
       String(movementForm.loadedMaterial || "").trim() !==
       String(
@@ -1007,6 +1007,10 @@ const StandardTripdetails = ({ movementOnly = false }) => {
         Number(movementForm.loadedWeightTons) < 0)
     ) {
       setMovementError("Enter a valid weight in tons (zero or greater).");
+      return;
+    }
+    if (!updatedBy) {
+      setMovementError("Updated By is required to save vehicle changes.");
       return;
     }
     const unloadingCompleted =
@@ -1173,6 +1177,7 @@ const StandardTripdetails = ({ movementOnly = false }) => {
         vehicleNumber: String(vehicle.vehicleNumber || "")
           .trim()
           .toUpperCase(),
+        lastUpdatedBy: updatedBy,
         driver: {
           name: String(vehicle?.driver?.name || "").trim(),
           contactNumber: String(vehicle?.driver?.contactNumber || "").trim(),

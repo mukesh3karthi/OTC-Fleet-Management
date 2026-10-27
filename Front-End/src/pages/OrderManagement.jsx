@@ -166,10 +166,10 @@ const isIntercartingOrder = (trip) =>
 const getSiteLocation = (trip) =>
   getFirstValue(trip?.siteLocation, trip?.enquiryDetails?.siteLocation);
 
-const getStage = (trip) =>
+const getRawStage = (trip) =>
   getFirstValue(
-    trip?.currentStage,
     trip?.stage,
+    trip?.currentStage,
     trip?.orderStage,
     trip?.lifecycleStage,
     "Enquiry Details",
@@ -196,6 +196,45 @@ const getAllocatedVehicles = (trip) =>
     trip?.trackingInput?.allocatedVehicles,
   );
 
+const getCurrentVehicles = (trip) =>
+  getAllocatedVehicles(trip).filter(
+    (vehicle) => normalize(vehicle?.vehicleStatus) !== "replaced",
+  );
+
+const isTransportCompleted = (trip) => {
+  const vehicles = getCurrentVehicles(trip);
+  const required = Math.max(0, Math.floor(Number(trip?.totalVehicles) || 0)) ||
+    (Array.isArray(trip?.vehicleRequirements) ? trip.vehicleRequirements : [])
+      .reduce((sum, item) => sum + Math.max(0, Math.floor(Number(item?.quantity) || 0)), 0);
+  return required > 0 && vehicles.length >= required &&
+    vehicles.every((vehicle) =>
+      normalize(vehicle?.unloading?.status) === "completed" &&
+      Boolean(vehicle?.unloading?.pointOutDate));
+};
+
+const isInvoiceFullyPaid = (trip) => {
+  const invoice = trip?.invoicePayment || {};
+  const total = Number(invoice.totalAmount);
+  const payments = Array.isArray(invoice.payments) ? invoice.payments : [];
+  const receivedCents = payments.length
+    ? payments.reduce((sum, payment) => sum + Math.round(Number(payment.amount || 0) * 100), 0)
+    : Math.round(Number(invoice.receivedAmount || 0) * 100);
+  return Boolean(
+    String(invoice.invoiceNumber || "").trim() &&
+    String(invoice.invoiceDate || "").trim() &&
+    invoice.totalAmount != null && Number.isFinite(total) && total > 0 &&
+    receivedCents >= Math.round(total * 100)
+  );
+};
+
+const getStage = (trip) => {
+  if (isTransportCompleted(trip))
+    return isInvoiceFullyPaid(trip) ? "Trip Complete" : "Invoice & Payment";
+  const raw = getRawStage(trip);
+  return ["trip complete", "trip completed", "completed"].includes(normalize(raw))
+    ? "Tracking" : raw;
+};
+
 const getVehicleNumber = (trip) => {
   const allocated = getAllocatedVehicles(trip);
 
@@ -217,12 +256,12 @@ const getVehicleNumber = (trip) => {
 };
 
 const getDailyTracking = (trip) =>
-  getArray(
-    trip?.dailyTracking,
-    trip?.trackingUpdates,
-    trip?.tracking?.dailyTracking,
-    trip?.trackingInput?.dailyTracking,
-  );
+  getCurrentVehicles(trip).flatMap((vehicle) =>
+    getArray(vehicle?.dailyTracking)
+  ).concat(getArray(
+    trip?.dailyTracking, trip?.trackingUpdates,
+    trip?.tracking?.dailyTracking, trip?.trackingInput?.dailyTracking,
+  ));
 
 const getLatestTracking = (trip) => {
   const tracking = getDailyTracking(trip);
@@ -230,6 +269,17 @@ const getLatestTracking = (trip) => {
 };
 
 const getMovementStatus = (trip) => {
+  const vehicles = getCurrentVehicles(trip);
+  if (vehicles.length && vehicles.every((vehicle) =>
+    normalize(vehicle?.unloading?.status) === "completed")) return "Reached";
+  const currentStatuses = vehicles.map((vehicle) => {
+    const entries = getArray(vehicle?.dailyTracking);
+    const last = entries.at(-1);
+    return normalize(getFirstValue(last?.status, vehicle?.status));
+  });
+  for (const status of ["breakdown", "moving", "loading", "idle", "reached"]) {
+    if (currentStatuses.some((item) => item === status)) return status;
+  }
   const latest = getLatestTracking(trip);
 
   return getFirstValue(
@@ -257,32 +307,18 @@ const isHaltStatus = (status) =>
 ========================================================= */
 
 const isCompletedTrip = (trip) => {
-  const stage = normalize(getStage(trip));
-  const status = normalize(getStatus(trip));
-
-  return (
-    stage.includes("trip complete") ||
-    stage.includes("completed") ||
-    status === "completed" ||
-    status === "trip complete" ||
-    status === "reached" ||
-    status === "delivered"
-  );
+  return isTransportCompleted(trip) && isInvoiceFullyPaid(trip);
 };
 
 const isMovingTrip = (trip) => {
   if (isCompletedTrip(trip)) return false;
-
-  const status = normalize(getMovementStatus(trip));
-  const stage = normalize(getStage(trip));
-
-  return (
-    status === "moving" ||
-    status === "in transit" ||
-    status === "in-transit" ||
-    stage.includes("tracking") ||
-    stage.includes("trip started")
-  );
+  return getCurrentVehicles(trip).some((vehicle) => {
+    if (normalize(vehicle?.unloading?.status) === "completed") return false;
+    const last = getArray(vehicle?.dailyTracking).at(-1);
+    return ["moving", "in transit", "in-transit"].includes(
+      normalize(getFirstValue(last?.status, vehicle?.status))
+    );
+  });
 };
 
 const isPendingTrip = (trip) => {

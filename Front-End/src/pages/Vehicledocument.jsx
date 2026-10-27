@@ -815,41 +815,26 @@ const Vehicledocument = () => {
       let active = 0;
       let expiringSoon = 0;
       let expired = 0;
-
-      monthFilteredVehicles.forEach(
-        (vehicle) => {
-          const status =
-            getSelectedPeriodStatus(
-              vehicle,
-              monthRange
-            );
-
-          if (
-            status.type === "expired"
-          ) {
-            expired += 1;
-          } else if (
-            status.type === "warning"
-          ) {
-            expiringSoon += 1;
-          } else if (
-            status.type === "active"
-          ) {
-            active += 1;
-          }
-        }
-      );
+      // Count document records, matching the totals in the six summary cards.
+      // A vehicle may have several documents expiring in the same month.
+      const periodDocuments = documentSummaries.flatMap(({ entries }) => entries);
+      periodDocuments.forEach(({ expiryState }) => {
+        if (expiryState.type === "expired") expired += 1;
+        else if (expiryState.type === "warning" || expiryState.type === "critical")
+          expiringSoon += 1;
+        else if (expiryState.type === "active") active += 1;
+      });
 
       return {
-        total:
-          monthFilteredVehicles.length,
+        total: periodDocuments.length,
+        uniqueVehicles: monthFilteredVehicles.length,
         active,
         expiringSoon,
         expired,
       };
     }, [
       monthFilteredVehicles,
-      monthRange,
+      documentSummaries,
     ]);
 
   /* ==========================================
@@ -3123,7 +3108,7 @@ const Vehicledocument = () => {
 
           <div>
             <span>
-              Matching Vehicles
+              Matching Documents
             </span>
 
             <strong>
@@ -3131,7 +3116,7 @@ const Vehicledocument = () => {
             </strong>
 
             <small>
-              {selectedPeriodLabel}
+              {selectedPeriodLabel} · {dashboardCounts.uniqueVehicles} vehicles
             </small>
           </div>
         </article>
@@ -3318,9 +3303,7 @@ const Vehicledocument = () => {
 
                   <div className="document-summary-list">
                     {entries.length > 0 ? (
-                      entries
-                        .slice(0, 5)
-                        .map((entry) => (
+                      entries.map((entry) => (
                           <div
                             className="document-summary-row"
                             key={`${key}-${entry.vehicleId || entry.vehicleNumber}`}

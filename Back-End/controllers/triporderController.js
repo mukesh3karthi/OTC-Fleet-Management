@@ -1428,6 +1428,10 @@ const allocateVehicle = async (req, res) => {
         );
       allocationDimensions[field] = value;
     }
+    const manualAllocatedBy = cleanString(req.body.allocatedBy);
+    if (!manualAllocatedBy) {
+      return sendError(res, 400, "Allocated By person name is required.");
+    }
     const allocatedVehicle = {
       allocationId: makeId("ALLOC"),
       requirementId,
@@ -1444,10 +1448,8 @@ const allocateVehicle = async (req, res) => {
       ewayBill: { number: cleanString(req.body.ewayBill?.number) },
 
       allocatedAt: new Date(),
-      allocatedBy:
-        cleanString(
-          req.user?.username || req.user?.name || req.body.allocatedBy,
-        ) || "Tracking Team",
+      allocatedBy: manualAllocatedBy,
+      allocatedByManual: manualAllocatedBy,
       allocatedSource: "Tracking",
       vehicleStatus: "Active",
       replacementCount: 0,
@@ -2284,6 +2286,10 @@ const replaceAllocatedVehicle = async (req, res, replacementSource) => {
     if (!reason) {
       return sendError(res, 400, "Replacement reason is required.");
     }
+    const manualReplacedBy = cleanString(req.body.replacedBy);
+    if (replacementSource === "Tracking" && !manualReplacedBy) {
+      return sendError(res, 400, "Replaced By person name is required.");
+    }
     const oldDriver = {
       name: cleanString(vehicle.driver?.name),
       contactNumber: cleanString(vehicle.driver?.contactNumber),
@@ -2309,8 +2315,7 @@ const replaceAllocatedVehicle = async (req, res, replacementSource) => {
       newDriver,
       reason,
       remarks: cleanString(req.body.remarks),
-      replacedBy:
-        cleanString(req.body.replacedBy) || `${replacementSource} Team`,
+      replacedBy: manualReplacedBy || `${replacementSource} Team`,
       replacedAt: new Date(),
     };
     const now = replacement.replacedAt;
@@ -2352,6 +2357,7 @@ const replaceAllocatedVehicle = async (req, res, replacementSource) => {
       driver: newDriver,
       allocatedAt: now,
       allocatedBy: replacement.replacedBy,
+      allocatedByManual: manualReplacedBy,
       allocatedSource: replacementSource,
       vehicleStatus: "Active",
       replacementCount: history.length,
@@ -2412,6 +2418,12 @@ const updateAllocatedVehicle = async (req, res) => {
         409,
         "This vehicle was replaced. Its saved history is read-only.",
       );
+    const lastUpdatedBy = cleanString(req.body.lastUpdatedBy);
+    if (!lastUpdatedBy) {
+      return sendError(res, 400, "Last Updated By person name is required.");
+    }
+    vehicle.lastUpdatedBy = lastUpdatedBy;
+    vehicle.lastUpdatedAt = new Date();
     /* =====================================================
        VEHICLE NUMBER
        Vehicle number changes must use a replacement endpoint
@@ -2647,7 +2659,8 @@ const updateAllocatedVehicle = async (req, res) => {
       vendorFinalizationCompleted &&
       orderPlacedCompleted &&
       allRequiredVehiclesAllocated &&
-      allAllocatedVehiclesUnloaded;
+      allAllocatedVehiclesUnloaded &&
+      isInvoiceFullyPaid(trip);
     if (canCompleteTrip) {
       trip.stage = "Trip Complete";
       trip.status = "Completed";
@@ -2662,6 +2675,10 @@ const updateAllocatedVehicle = async (req, res) => {
       trip.status = "Pending";
     } else if (!orderPlacedCompleted) {
       trip.stage = "Order Placed";
+      trip.status = "Pending";
+    } else if (allRequiredVehiclesAllocated && allAllocatedVehiclesUnloaded) {
+      // Transport is complete, but the invoice is not fully settled.
+      trip.stage = "Invoice & Payment";
       trip.status = "Pending";
     } else {
       trip.stage = "Tracking";
@@ -4040,6 +4057,35 @@ const updatePaymentSummary = (trip) => {
   details.paymentStatus = total !== null && received >= cents(total)
     ? "Fully Paid" : received > 0 ? "Partially Paid" : "Pending";
 };
+// A zero balance is not sufficient without a saved, valid invoice.
+const isInvoiceFullyPaid = (trip) => {
+  const details = trip?.invoicePayment;
+  const total = getInvoiceTotal(trip);
+  return Boolean(
+    cleanString(details?.invoiceNumber) &&
+    cleanString(details?.invoiceDate) &&
+    total !== null && Number.isFinite(total) && total > 0 &&
+    getReceivedCents(details) >= cents(total)
+  );
+};
+// Reconcile trips previously completed by unloading alone, and automatically
+// finish payment-stage trips once their invoice balance becomes zero.
+const reconcileInvoiceLifecycle = (trip) => {
+  const stage = cleanString(trip.stage).toLowerCase();
+  if (!["invoice & payment", "trip complete", "trip completed", "completed"].includes(stage)) return;
+  const required = Math.max(0, Math.floor(toNumber(trip?.totalVehicles, 0))) ||
+    getRequirements(trip).reduce((sum, item) =>
+      sum + Math.max(0, Math.floor(toNumber(item?.quantity, 0))), 0);
+  const activeVehicles = getAllocatedVehicles(trip).filter(isActiveAllocation);
+  const transportComplete = required > 0 && activeVehicles.length >= required &&
+    activeVehicles.every((vehicle) =>
+      cleanString(vehicle?.unloading?.status).toLowerCase() === "completed" &&
+      trackingDateUtc(vehicle?.unloading?.pointOutDate) !== null);
+  if (!transportComplete) return;
+  const fullyPaid = isInvoiceFullyPaid(trip);
+  trip.stage = fullyPaid ? "Trip Complete" : "Invoice & Payment";
+  trip.status = fullyPaid ? "Completed" : "Pending";
+};
 const addInvoicePayment = async (req, res) => {
   try {
     if (!isValidMongoId(req.params.id))
@@ -4053,7 +4099,8 @@ const addInvoicePayment = async (req, res) => {
         trip.allocatedVehicles.every(
           (v) => cleanString(v.unloading?.status).toLowerCase() === "completed",
         ));
-    if (completed) return sendError(res, 409, "Completed trips are read-only.");
+    if (completed && isInvoiceFullyPaid(trip))
+      return sendError(res, 409, "Completed trips are read-only.");
     const total = getInvoiceTotal(trip);
     if (total === null)
       return sendError(
@@ -4113,6 +4160,7 @@ const addInvoicePayment = async (req, res) => {
     details.updatedBy = receivedBy;
     details.updatedAt = new Date();
     updatePaymentSummary(trip);
+    reconcileInvoiceLifecycle(trip);
     trip.markModified("invoicePayment");
     await trip.save();
     return sendSuccess(
@@ -4144,7 +4192,8 @@ const saveInvoicePayment = async (req, res) => {
         trip.allocatedVehicles.every(
           (v) => cleanString(v.unloading?.status).toLowerCase() === "completed",
         ));
-    if (completed) return sendError(res, 409, "Completed trips are read-only.");
+    if (completed && isInvoiceFullyPaid(trip))
+      return sendError(res, 409, "Completed trips are read-only.");
 
     const body = req.body || {};
     const previous = trip.invoicePayment?.toObject?.() || {};
@@ -4220,6 +4269,7 @@ const saveInvoicePayment = async (req, res) => {
       cleanString(req.user?.username || req.user?.name) || "Key Account";
     details.updatedAt = new Date();
     updatePaymentSummary(trip);
+    reconcileInvoiceLifecycle(trip);
     // Initial save is not a change; only record edits to existing invoice details.
     const hadExistingInvoice = Boolean(
       cleanString(previous?.invoiceNumber) ||

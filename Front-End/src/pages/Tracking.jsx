@@ -126,6 +126,11 @@ const ewayExpiring = (vehicle, today) => {
 };
 // Retain the previous tracking page's document-aware arrival status.
 const vehicleStatus = (vehicle, today) => {
+  const unloading = text(vehicle?.unloading?.status || vehicle?.unloadingStatus)
+    .trim()
+    .toLowerCase();
+  // Unloading completion is more authoritative than an older daily movement.
+  if (unloading === "completed") return "Reached";
   const status = text(
     latestTracking(vehicle)?.status || vehicle?.status || "Idle",
   )
@@ -150,7 +155,17 @@ const vehicleStatus = (vehicle, today) => {
   return unloaded && lrReady && billReady ? "Reached" : "Pending";
 };
 const tripStatus = (trip, today) => {
-  const statuses = list(trip?.allocatedVehicles).map((vehicle) =>
+  const savedStage = text(trip?.stage).trim().toLowerCase();
+  const savedStatus = text(trip?.status).trim().toLowerCase();
+  if (
+    ["trip complete", "trip completed", "completed"].includes(savedStage) ||
+    ["trip complete", "trip completed", "completed"].includes(savedStatus)
+  ) return "Reached";
+  const statuses = list(trip?.allocatedVehicles)
+    .filter((vehicle) =>
+      text(vehicle?.vehicleStatus).trim().toLowerCase() !== "replaced"
+    )
+    .map((vehicle) =>
     vehicleStatus(vehicle, today),
   );
   if (!statuses.length) return "Pending";
@@ -991,7 +1006,10 @@ const Tracking = () => {
                   filteredTrips.map((trip, index) => {
                     const id = keyOf(trip),
                       status = tripStatus(trip, today),
-                      allocated = list(trip.allocatedVehicles);
+                      allocated = list(trip.allocatedVehicles).filter(
+                        (vehicle) =>
+                          text(vehicle?.vehicleStatus).trim().toLowerCase() !== "replaced"
+                      );
                     const pending = allocated.filter(podPending).length,
                       expiring = allocated.filter((vehicle) =>
                         ewayExpiring(vehicle, today),

@@ -72,6 +72,30 @@ const getOutstandingPayment = (order) => {
   return dueCents > 0 ? dueCents / 100 : null;
 };
 
+const invoiceIsFullyPaid = (order) => {
+  const invoice = order?.invoicePayment || {};
+  const total = Number(invoice.totalAmount);
+  if (!String(invoice.invoiceNumber || "").trim() ||
+      !String(invoice.invoiceDate || "").trim() ||
+      invoice.totalAmount == null || !Number.isFinite(total) || total <= 0) {
+    return false;
+  }
+  const payments = Array.isArray(invoice.payments) ? invoice.payments : [];
+  const receivedCents = payments.length
+    ? payments.reduce((sum, payment) =>
+        sum + Math.round(Number(payment.amount || 0) * 100), 0)
+    : Math.round(Number(invoice.receivedAmount || 0) * 100);
+  return receivedCents >= Math.round(total * 100);
+};
+
+const isVehicleStillMoving = (vehicle) => {
+  if (String(vehicle?.vehicleStatus || "").trim().toLowerCase() === "replaced") return false;
+  if (String(vehicle?.unloading?.status || "").trim().toLowerCase() === "completed") return false;
+  const entries = Array.isArray(vehicle?.dailyTracking) ? vehicle.dailyTracking : [];
+  const latest = entries.at(-1);
+  return String(latest?.status || vehicle?.status || "").trim().toLowerCase() === "moving";
+};
+
 // Invoice date is stored in the invoicePayment subdocument.
 // Read the calendar part directly to avoid date shifts caused by timezone conversion.
 const getPaymentInvoiceDate = (order) => {
@@ -421,16 +445,19 @@ const getDisplayStage = (order = {}) => {
   const requiredVehicleCount =
     explicitTotalVehicles > 0 ? explicitTotalVehicles : requirementVehicleCount;
   /* ALL REQUIRED VEHICLES MUST BE ALLOCATED */
+  const activeAllocatedVehicles = allocatedVehicles.filter(
+    (vehicle) => String(vehicle?.vehicleStatus || "").trim().toLowerCase() !== "replaced"
+  );
   const allRequiredVehiclesAllocated =
     requiredVehicleCount > 0 &&
-    allocatedVehicles.length === requiredVehicleCount;
+    activeAllocatedVehicles.length >= requiredVehicleCount;
   /* EVERY ALLOCATED VEHICLE MUST COMPLETE UNLOADING */
   const allAllocatedVehiclesUnloaded =
-    allocatedVehicles.length > 0 &&
-    allocatedVehicles.every(
+    activeAllocatedVehicles.length > 0 &&
+    activeAllocatedVehicles.every(
       (vehicle) =>
         String(vehicle?.unloading?.status || "").trim().toLowerCase() ===
-        "completed"
+        "completed" && Boolean(vehicle?.unloading?.pointOutDate)
     );
   /* FINAL TRIP COMPLETE RULE */
   const tripCompleted =
@@ -439,7 +466,8 @@ const getDisplayStage = (order = {}) => {
     vendorCompleted &&
     orderPlacedCompleted &&
     allRequiredVehiclesAllocated &&
-    allAllocatedVehiclesUnloaded;
+    allAllocatedVehiclesUnloaded &&
+    invoiceIsFullyPaid(order);
   if (tripCompleted) {
     return "Trip Complete";
   }
@@ -459,6 +487,9 @@ const getDisplayStage = (order = {}) => {
   }
   if (!orderPlacedCompleted) {
     return "Order Placed";
+  }
+  if (allRequiredVehiclesAllocated && allAllocatedVehiclesUnloaded) {
+    return "Invoice & Payment";
   }
   /* Once order is placed, remain in Tracking until every required vehicle unloads. */
   if (
@@ -1924,17 +1955,10 @@ const KeyAccount = () => {
   ======================================================= */
   const stats =
     useMemo(() => {
-      const active =
-        orders.filter(
-          (order) =>
-            Array.isArray(
-              order
-                .allocatedVehicles
-            ) &&
-            order
-              .allocatedVehicles
-              .length > 0
-        ).length;
+      const active = orders.filter(
+        (order) => Array.isArray(order?.allocatedVehicles) &&
+          order.allocatedVehicles.some(isVehicleStillMoving)
+      ).length;
       const approvalPending =
         orders.filter(
           (order) =>

@@ -268,6 +268,7 @@ const createAllocationForm = (
   quotationId,
 
   vehicleNumber: "",
+  allocatedBy: "",
   vehicleType: "",
   lsp: "",
   cargo: "",
@@ -627,10 +628,16 @@ const AllocateVehicle = () => {
     }
 
     const vehicleNumber = safeText(form.vehicleNumber).trim().toUpperCase();
+    const allocatedBy = safeText(form.allocatedBy).trim();
 
     if (!vehicleNumber) {
       setError("Vehicle number is required.");
 
+      return;
+    }
+
+    if (!allocatedBy) {
+      setError("Enter the person responsible for vehicle allocation.");
       return;
     }
 
@@ -682,6 +689,7 @@ const AllocateVehicle = () => {
       quotationId: quotation.quotationId,
 
       vehicleNumber,
+      allocatedBy,
       vehicleType: safeText(form.vehicleType).trim(),
       lsp: safeText(form.lsp).trim(),
       cargo: safeText(form.cargo).trim(),
@@ -811,6 +819,11 @@ const AllocateVehicle = () => {
       return;
     }
 
+    if (!safeText(replacementForm.replacedBy).trim()) {
+      setError("Enter the name of the person replacing this vehicle.");
+      return;
+    }
+
     try {
       setSaving(true);
       setError("");
@@ -922,7 +935,15 @@ const AllocateVehicle = () => {
       return;
     }
 
+    const lastUpdatedBy = safeText(allocation.lastUpdatedBy).trim();
+    if (!lastUpdatedBy) {
+      setError("Enter the name of the person updating this vehicle.");
+      return;
+    }
+
     const payload = {
+      vehicleNumber: safeText(allocation.vehicleNumber).trim().toUpperCase(),
+      lastUpdatedBy,
       driver: {
         name: safeText(allocation?.driver?.name).trim(),
 
@@ -2036,6 +2057,18 @@ const AllocateVehicle = () => {
                                                       )
                                                     }
                                                     placeholder="Driver name"
+                                                  />
+
+                                                  <FormField
+                                                    label="Allocated By"
+                                                    required
+                                                    icon={<UserRound size={15} />}
+                                                    name="allocatedBy"
+                                                    value={allocationForm.allocatedBy || ""}
+                                                    onChange={(event) =>
+                                                      handleAllocationChange(requirementId, event)
+                                                    }
+                                                    placeholder="Person responsible for allocation"
                                                   />
 
                                                   <FormField
@@ -3316,6 +3349,22 @@ const AllocateVehicle = () => {
                                         </section>
                                       </div>
 
+                                      <div className="tracking-update-person-field">
+                                        <AllocatedField
+                                          label="Last Updated By *"
+                                          icon={<UserRound size={15} />}
+                                          value={allocation.lastUpdatedBy || ""}
+                                          onChange={(value) =>
+                                            handleAllocatedVehicleChange(
+                                              allocation.allocationId,
+                                              "root",
+                                              "lastUpdatedBy",
+                                              value,
+                                            )
+                                          }
+                                        />
+                                      </div>
+
                                       <div className="tracking-form-footer tracking-vehicle-modal-footer">
                                         <div className="tracking-vehicle-modal-footer-note">
                                           Changes are saved for this vehicle
@@ -3923,11 +3972,11 @@ const TrackingReplacementModal = ({
           </label>
 
           <label>
-            <span>Replaced By</span>
+            <span>Replaced By *</span>
             <input
               value={form.replacedBy}
               onChange={(event) => onChange("replacedBy", event.target.value)}
-              placeholder="Tracking team member"
+              placeholder="Name of person replacing the vehicle"
             />
           </label>
 
@@ -4240,18 +4289,10 @@ const VehicleAllocationHistory = (() => {
                           {timestamp(vehicle.allocatedAt)}
                         </Pair>
                         <Pair label="Allocated by">
-                          {vehicle.allocatedBy || "Not recorded"}
+                          {vehicle.allocatedByManual || "Not recorded"}
                         </Pair>
-                        <Pair label="Replaced on">
-                          {timestamp(
-                            vehicle.replacedAt || vehicle.transportReplacedAt,
-                          )}
-                        </Pair>
-                        <Pair label="Replaced by">
-                          {vehicle.replacedBy || vehicle.transportReplacedBy}
-                        </Pair>
-                        <Pair label="Reason">
-                          {vehicle.replacementReason || request?.reason}
+                        <Pair label="Last updated by">
+                          {vehicle.lastUpdatedBy || "Not recorded"}
                         </Pair>
                         <Pair label="Loading / unloading">
                           {vehicle.loading?.status || "Pending"} /{" "}
@@ -4266,7 +4307,7 @@ const VehicleAllocationHistory = (() => {
                         </Pair>
                         <Pair label="POD">{vehicle.pod?.fileName}</Pair>
                       </div>
-                      <details className="vah-tracking">
+                      <details className="vah-tracking" open>
                         <summary>
                           Movement history{" "}
                           <span>{tracking.length} update(s)</span>
