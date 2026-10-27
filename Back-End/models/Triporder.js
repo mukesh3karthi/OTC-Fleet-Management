@@ -1589,6 +1589,7 @@ const invoicePaymentSchema = new Schema(
       default: "",
     },
     invoiceNumber: { type: String, trim: true, maxlength: 100, default: "" },
+    invoiceDate: { type: String, default: "" },
     // Values entered in Invoice & Payment. Totals are calculated server-side.
     invoiceAmount: { type: Number, min: 0, default: null },
     gstPercentage: { type: Number, min: 0, max: 100, default: 0 },

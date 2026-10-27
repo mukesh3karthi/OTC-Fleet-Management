@@ -106,6 +106,9 @@ const CraneVehicles = () => {
             vehicle.ewayBill?.number,
           ),
           displayWeight: latestMovement.loadedWeightTons ?? vehicle.weight ?? null,
+          displayTripCount: savedMovements.length,
+          displayLoading: firstFilled(latestMovement.loading?.status, vehicle.loading?.status),
+          displayUnloading: firstFilled(latestMovement.unloading?.status, vehicle.unloading?.status),
           // Show what was actually loaded on the latest saved Crane journey.
           // Never fall back to the order's separate materialType field.
           displayLoadedMaterial: firstFilled(
@@ -149,6 +152,9 @@ const CraneVehicles = () => {
       vehicle.displayLrNo,
       vehicle.displayEwayNo,
       vehicle.displayWeight,
+      vehicle.displayTripCount,
+      vehicle.displayLoading,
+      vehicle.displayUnloading,
     ]
       .filter(Boolean)
       .join(" ")
@@ -198,8 +204,8 @@ const CraneVehicles = () => {
       <section className="crane-vehicles-panel">
         <div className="crane-table-toolbar">
           <div>
-            <h2>Allocated Vehicles</h2>
-            <p>Select Movement to update a vehicle’s trip progress.</p>
+            <h2>Allocated vehicles <span className="crane-allocated-count">{visible.length}</span></h2>
+            <p>Select a row to view the vehicle’s details.</p>
           </div>
           <label className="crane-search">
             <Search size={16} />
@@ -228,18 +234,17 @@ const CraneVehicles = () => {
               <thead>
                 <tr>
                   {[
-                    "Vehicle No",
+                    "Vehicle Number",
                     "Type",
-                    "TG No",
                     "LSP",
                     "Loaded Material",
+                    "TG No",
                     "Current Location",
-                    "Status",
-                    "LR No",
-                    "E-Way",
-                    "Weight",
-                    "Dimensions (L × H × W)",
-                    "Action",
+                    "Trip",
+                    "Loading",
+                    "Unloading",
+                    "Weight (Tons)",
+                    "Details",
                   ].map((heading) => (
                     <th key={heading}>{heading}</th>
                   ))}
@@ -265,43 +270,25 @@ const CraneVehicles = () => {
                           </strong>
                         </td>
                         <td>{text(vehicle.displayType)}</td>
-                        <td className="crane-mono">{text(vehicle.displayTg)}</td>
                         <td>{text(vehicle.displayLsp)}</td>
                         <td>{text(vehicle.displayLoadedMaterial)}</td>
+                        <td className="crane-mono">{text(vehicle.displayTg)}</td>
                         <td>{text(vehicle.displayLocation)}</td>
-                        <td>
-                          <span className={`crane-vehicle-status ${String(vehicle.displayStatus).toLowerCase() === "replaced" ? "replaced" : "active"}`}>
-                            {text(vehicle.displayStatus)}
-                          </span>
-                        </td>
-                        <td className="crane-mono">
-                          {text(vehicle.displayLrNo)}
-                        </td>
-                        <td className="crane-mono">
-                          {text(vehicle.displayEwayNo)}
-                        </td>
-                        <td>
-                          {vehicle.displayWeight == null || vehicle.displayWeight === ""
-                            ? "—"
-                            : `${vehicle.displayWeight} TON`}
-                        </td>
-                        <td>{dimensions(vehicle.dimensions)}</td>
+                        <td>{vehicle.displayTripCount > 0 ? vehicle.displayTripCount : "—"}</td>
+                        <td>{text(vehicle.displayLoading)}</td>
+                        <td>{text(vehicle.displayUnloading)}</td>
+                        <td>{vehicle.displayWeight == null || vehicle.displayWeight === "" ? "—" : vehicle.displayWeight}</td>
                         <td>
                           <button
                             type="button"
                             className="crane-movement-btn"
                             disabled={!allocationId || replaced}
-                            onClick={() =>
-                              navigate(
-                                `/crane-vehicles/${encodeURIComponent(trip._id || id)}/movement/${encodeURIComponent(allocationId)}`,
-                                {
-                                  state: { returnTo: location.state?.returnTo },
-                                },
-                              )
-                            }
+                            onClick={() => navigate(
+                              `/crane-vehicles/${encodeURIComponent(trip._id || id)}/movement/${encodeURIComponent(allocationId)}`,
+                              { state: { returnTo: location.state?.returnTo } },
+                            )}
                           >
-                            <Navigation size={13} />
-                            Movement
+                            View details
                           </button>
                         </td>
                       </tr>
@@ -309,7 +296,7 @@ const CraneVehicles = () => {
                   })
                 ) : (
                   <tr>
-                    <td colSpan={12} className="crane-empty">
+                    <td colSpan={11} className="crane-empty">
                       {vehicles.length
                         ? "No vehicles match your search."
                         : "No vehicles have been allocated to this Crane order."}

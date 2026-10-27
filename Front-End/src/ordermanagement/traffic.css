@@ -471,10 +471,10 @@
   height: 40px;
   padding: 0 12px;
   border-bottom: 1px solid #d9e4e7;
-  background: #f3f7f8;
-  color: #687f88;
+  background: #e2eef0;
+  color: #345a69;
   text-align: left;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.045em;
   text-transform: uppercase;
@@ -486,8 +486,8 @@
   padding: 8px 12px;
   border-bottom: 1px solid #edf1f2;
   background: #ffffff;
-  color: #46636e;
-  font-size: 11px;
+  color: #102f40;
+  font-size: 12px;
   font-weight: 700;
   vertical-align: middle;
   transition:
@@ -496,7 +496,7 @@
 }
 
 .traffic-order-table tbody tr:nth-child(even) td {
-  background: #fcfdfd;
+  background: #ffffff;
 }
 
 .traffic-order-table tbody tr:hover td {
@@ -998,8 +998,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  border-bottom: 1px solid #e3eaec;
-  background: #edf7f7;
+  border-bottom: 1px solid #afd4d1;
+  background: #c9e7e4;
 }
 
 .traffic-vehicle-card-header > div {
@@ -1043,24 +1043,24 @@
   display: grid;
   place-items: center;
   border-radius: 7px;
-  background: var(--tm-primary-soft);
-  color: var(--tm-primary);
+  background: #e8f7f5;
+  color: #087b75;
   font-size: 11px;
-  font-weight: 850;
+  font-weight: 800;
 }
 
 .traffic-vehicle-card-header h3 {
   margin: 0;
-  color: #123f50;
-  font-size: 13px;
-  font-weight: 700;
+  color: #103a49;
+  font-size: 14px;
+  font-weight: 800;
 }
 
 .traffic-vehicle-card-header p {
   margin: 2px 0 0;
-  color: #527180;
+  color: #426d78;
   font-size: 10px;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 /* =========================================================
@@ -1166,11 +1166,11 @@
   height: 36px;
   padding: 0 10px;
   border-bottom: 1px solid #d9e4e7;
-  background: #e4f2f1;
-  color: #285565;
+  background: #e2eef0;
+  color: #345a69;
   text-align: left;
-  font-size: 9px;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 800;
   letter-spacing: 0.045em;
   text-transform: uppercase;
 }
@@ -1206,15 +1206,15 @@
   padding: 6px 10px;
   border-bottom: 1px solid #edf1f2;
   background: #ffffff;
-  color: #294f60;
-  font-size: 10px;
+  color: #102f40;
+  font-size: 12px;
   vertical-align: middle;
   transition: background 0.15s ease;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .traffic-quotation-table tbody tr:nth-child(even) td {
-  background: #fcfdfd;
+  background: #f2f7f8;
 }
 
 .traffic-quotation-table tbody tr:hover td {
@@ -2587,8 +2587,9 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: #294f60;
-  font-weight: 600;
+  color: #102f40;
+  font-weight: 700;
+  font-size: 12px;
 }
 
 /* S.NO */
@@ -4228,9 +4229,9 @@
   align-items: center;
   gap: 8px;
   margin: 0;
-  color: #234b5c;
-  font-size: 12px;
-  font-weight: 700;
+  color: #103a49;
+  font-size: 13px;
+  font-weight: 800;
 }
 .trc-heading h4 > span {
   font-size: 10px;
@@ -4270,10 +4271,10 @@
 .trc-table th {
   padding: 10px 12px;
   border-bottom: 1px solid #dfebef;
-  background: #f7fafb;
-  color: #8599a3;
-  font-size: 9px;
-  font-weight: 700;
+  background: #e2eef0;
+  color: #345a69;
+  font-size: 11px;
+  font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.4px;
   white-space: nowrap;
@@ -4282,6 +4283,10 @@
   padding: 13px 12px;
   border-bottom: 1px solid #edf2f4;
   vertical-align: middle;
+  color: #102f40;
+  font-size: 12px;
+  font-weight: 700;
+  background: #ffffff;
 }
 .trc-table tbody tr:last-child td {
   border-bottom: 0;
@@ -4296,8 +4301,8 @@
   font-weight: 500;
 }
 .trc-name {
-  font-weight: 700;
-  color: #264f60;
+  font-weight: 800;
+  color: #102f40;
   font-size: 12px;
   overflow-wrap: anywhere;
 }
@@ -4477,7 +4482,7 @@
   white-space: nowrap;
 }
 .tv-navigation button.selected {
-  background: #fff;
+  background: #ffffff;
   color: #08887e;
   box-shadow: 0 2px 8px #163e5010;
 }
@@ -4505,7 +4510,7 @@
 .tv-card {
   min-width: 0;
   overflow: hidden;
-  border: 1px solid #dfe9ed;
+  border: 1px solid #d2e8e4;
   border-radius: 9px;
   background: #fff;
   box-shadow: none;
@@ -4518,12 +4523,13 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 9px 12px 0;
-}
+  padding: 10px 12px;
+
+  background: #c9e7e4;}
 .tv-card-top > span:first-child {
   font-size: 10px;
-  font-weight: 600;
-  color: #456877;
+  font-weight: 800;
+  color: #103a49;
 }
 .tv-state {
   padding: 4px 8px;
@@ -4544,7 +4550,8 @@
   gap: 14px;
   align-items: center;
   padding: 10px 12px;
-}
+
+  background: #eef8f4;}
 .tv-card-main > div {
   min-width: 0;
 }
@@ -4563,14 +4570,14 @@
 .tv-card-main h4 {
   margin: 0;
   font-size: 14px;
-  font-weight: 700;
-  color: #173f50;
+  font-weight: 800;
+  color: #102f40;
   overflow-wrap: anywhere;
 }
 .tv-card-main strong {
   font-size: 15px;
-  font-weight: 700;
-  color: #087f77;
+  font-weight: 800;
+  color: #102f40;
   white-space: nowrap;
 }
 .tv-card-bottom {
@@ -4580,7 +4587,7 @@
   gap: 10px;
   padding: 8px 12px;
   border-top: 1px solid #edf2f4;
-  background: #fbfcfd;
+  background: #ffffff;
 }
 .tv-card-bottom > span {
   font-size: 9px;
@@ -4833,19 +4840,20 @@
     100px 16px;
   align-items: center;
   gap: 16px;
-}
+
+  background: #eef8f4;}
 .hx-columns {
   padding: 10px 14px;
   border-bottom: 1px solid #e3ecef;
-  background: #e4f2f1;
-  font-size: 9px;
-  color: #285565;
+  background: #e2eef0;
+  font-size: 11px;
+  color: #345a69;
   letter-spacing: 0.2px;
-  font-weight: 700;
+  font-weight: 800;
 }
 .hx-row {
   border-bottom: 1px solid #e7eef1;
-  background: #fff;
+  background: #ffffff;
 }
 .hx-row:last-child {
   border-bottom: 0;
@@ -4867,9 +4875,9 @@
 }
 .hx-date strong {
   display: block;
-  font-size: 11px;
-  font-weight: 700;
-  color: #294f60;
+  font-size: 12px;
+  font-weight: 800;
+  color: #102f40;
 }
 .hx-date small {
   display: block;
@@ -4894,8 +4902,8 @@
   font-weight: 600;
 }
 .hx-route strong {
-  color: #173f50;
-  font-weight: 700;
+  color: #102f40;
+  font-weight: 800;
   overflow-wrap: anywhere;
 }
 .hx-route svg,
@@ -4909,9 +4917,9 @@
   font-weight: 600;
 }
 .hx-amount strong {
-  font-size: 11px;
+  font-size: 12px;
   color: #087f77;
-  font-weight: 700;
+  font-weight: 800;
 }
 .hx-status {
   justify-self: start;
@@ -4944,7 +4952,7 @@
 }
 .hx-details {
   padding: 0 16px 16px;
-  background: #fbfdfd;
+  background: #ffffff;
   border-top: 1px dashed #e4ecef;
 }
 .hx-result {
@@ -5063,24 +5071,26 @@
 
 .tv-current-requirement > .traffic-vehicle-card-header {
   padding: 11px 14px;
-}
+
+  background: #c9e7e4;
+  border-bottom: 1px solid #afd4d1;}
 .tv-current-requirement .traffic-vehicle-index {
   width: 30px;
   height: 30px;
   border-radius: 8px;
   font-size: 11px;
-  font-weight: 500;
+  font-weight: 800;
 }
 .tv-current-requirement .traffic-vehicle-header-main h3 {
-  font-size: 13px;
-  font-weight: 700;
-  color: #123f50;
+  font-size: 14px;
+  font-weight: 800;
+  color: #103a49;
 }
 .tv-current-requirement .traffic-vehicle-header-main p {
   font-size: 10px;
   margin-top: 3px;
-  font-weight: 600;
-  color: #527180;
+  font-weight: 700;
+  color: #426d78;
 }
 
 /* Single-row current transporter cards */
@@ -5099,9 +5109,9 @@
   align-items: center;
   gap: 16px;
   padding: 12px 14px;
-  border: 1px solid #dce8eb;
+  border: 1px solid #d2e8e4;
   border-radius: 8px;
-  background: #fff;
+  background: #eef8f4;
   min-width: 0;
 }
 .traffic-transport-row.pending {
@@ -5115,14 +5125,14 @@
 }
 .traffic-transport-field > span {
   font-size: 9px;
-  font-weight: 600;
-  color: #7b8d95;
+  font-weight: 800;
+  color: #345a69;
   letter-spacing: 0.25px;
 }
 .traffic-transport-field > strong {
   font-size: 12px;
-  font-weight: 650;
-  color: #264958;
+  font-weight: 800;
+  color: #102f40;
   overflow-wrap: anywhere;
 }
 .traffic-transport-field > .traffic-transport-price {

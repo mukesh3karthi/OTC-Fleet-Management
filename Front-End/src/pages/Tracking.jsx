@@ -30,6 +30,8 @@ import {
   CheckCircle2,
   FileClock,
   FileWarning,
+  Download,
+  FileSpreadsheet,
   MapPin,
   Navigation,
   RefreshCw,
@@ -39,6 +41,9 @@ import {
   X,
 } from "lucide-react";
 import "../pagescss/tracking.css";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import ExcelJS from "exceljs";
 
 const API_BASE = (
   import.meta.env.VITE_API_URL ||
@@ -228,6 +233,216 @@ const buildActivity = (trips, endDate) => {
     if (entry) entry.count += 1;
   });
   return days;
+};
+
+
+/* Tracking register: each vehicle has its own row, grouped by trip. */
+const trackingRegisterFields = [
+  "S.NO", "Customer", "Vehicle NO", "Origin", "Destination",
+  "Current Location", "Vehicle Type", "Driver NO", "Total KM",
+  "Running Kms", "Balance KM", "Current Status", "Remarks", "Description",
+];
+const registerText = (...values) => {
+  for (const v of values) {
+    if (v !== null && v !== undefined && String(v).trim()) return String(v).trim();
+  }
+  return "—";
+};
+const registerKm = (...values) => {
+  for (const raw of values) {
+    if (raw === "" || raw == null) continue;
+    const n = Number(raw);
+    if (Number.isFinite(n) && n >= 0) return n;
+  }
+  return null;
+};
+const trackingExportGroups = (selectedTrips, today) => selectedTrips.map((trip, index) => {
+  const vehicles = list(trip.allocatedVehicles).filter(
+    (vehicle) => text(vehicle?.vehicleStatus).trim().toLowerCase() !== "replaced",
+  );
+  const total = registerKm(trip.totalKm, trip.totalKM, trip.distance, trip.totalDistance);
+  const entries = (vehicles.length ? vehicles : [null]).map((vehicle) => {
+    const latest = vehicle ? latestTracking(vehicle) : null;
+    const running = registerKm(
+      latest?.runningKms, latest?.runningKm, latest?.kmCovered,
+      vehicle?.runningKms, vehicle?.runningKm, vehicle?.kmsCovered,
+    );
+    const explicitBalance = registerKm(latest?.balanceKm, latest?.remainingKm, vehicle?.balanceKm);
+    const balance = explicitBalance !== null ? explicitBalance
+      : total !== null && running !== null ? Math.max(0, total - running) : null;
+    return {
+      "S.NO": String(index + 1),
+      Customer: registerText(trip.customer),
+      "Vehicle NO": registerText(vehicle?.vehicleNumber, vehicle?.vehicleNo),
+      Origin: registerText(trip.origin, trip.siteLocation),
+      Destination: registerText(trip.destination),
+      "Current Location": registerText(latest?.currentLocation, vehicle?.currentLocation),
+      "Vehicle Type": registerText(vehicle?.vehicleType, vehicle?.type,
+        list(trip.vehicleRequirements)[0]?.vehicleType),
+      "Driver NO": registerText(vehicle?.driver?.contactNumber, vehicle?.driverContactNumber),
+      "Total KM": total === null ? "—" : String(total),
+      "Running Kms": running === null ? "—" : String(running),
+      "Balance KM": balance === null ? "—" : String(balance),
+      "Current Status": vehicle ? registerText(latest?.remarks, latest?.status, vehicleStatus(vehicle, today)) : tripStatus(trip, today),
+      Remarks: registerText(latest?.remarks, vehicle?.remarks, trip.remark, trip.remarks),
+      Description: registerText(vehicle?.description, latest?.description,
+        list(trip.vehicleRequirements)[0]?.vehicleType, trip.materialType),
+    };
+  });
+  return { trip, rows: entries };
+});
+
+const exportTrackingExcel = async (groups) => {
+  // Unlike CSV, XLSX preserves merged cells, fills, widths and borders.
+  const workbook = new ExcelJS.Workbook();
+  workbook.creator = "OTC Groups";
+  workbook.title = "Vehicle Tracking Register";
+  workbook.created = new Date();
+  const sheet = workbook.addWorksheet("Tracking Register", {
+    views: [{ state: "frozen", ySplit: 4 }],
+    pageSetup: { paperSize: 8, orientation: "landscape", fitToPage: true, fitToWidth: 1, fitToHeight: 0 },
+    properties: { defaultRowHeight: 23 },
+  });
+  const headings = trackingRegisterFields;
+  sheet.columns = [
+    { width: 8 }, { width: 29 }, { width: 23 }, { width: 25 },
+    { width: 25 }, { width: 24 }, { width: 17 }, { width: 19 },
+    { width: 15 }, { width: 15 }, { width: 15 }, { width: 38 },
+    { width: 36 }, { width: 29 },
+  ];
+  const darkBlue = "315493";
+  const darkNavy = "0D3B50";
+  const navyText = "163C52";
+  const border = { style: "thin", color: { argb: "FF9AA5B0" } };
+  const generated = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
+  const vehicleRows = groups.reduce((sum, group) => sum + group.rows.length, 0);
+
+  sheet.mergeCells("A1:N2");
+  const title = sheet.getCell("A1");
+  title.value = "OTC GROUPS  |  VEHICLE TRACKING REGISTER";
+  title.fill = { type: "pattern", pattern: "solid", fgColor: { argb: `FF${darkNavy}` } };
+  title.font = { name: "Calibri", bold: true, size: 16, color: { argb: "FFFFFFFF" } };
+  title.alignment = { vertical: "middle", horizontal: "left", indent: 1 };
+  sheet.getRow(1).height = 24;
+  sheet.getRow(2).height = 17;
+  sheet.mergeCells("A3:N3");
+  const subtitle = sheet.getCell("A3");
+  subtitle.value = `${groups.length} trip(s)  |  ${vehicleRows} vehicle row(s)  |  Generated: ${generated}`;
+  subtitle.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFEAF5F7" } };
+  subtitle.font = { name: "Calibri", size: 10, bold: true, color: { argb: "FF355C70" } };
+  subtitle.alignment = { vertical: "middle", horizontal: "left", indent: 2 };
+  sheet.getRow(3).height = 25;
+
+  const head = sheet.getRow(4);
+  headings.forEach((heading, index) => {
+    const cell = head.getCell(index + 1);
+    cell.value = heading;
+    cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: `FF${darkBlue}` } };
+    cell.font = { name: "Calibri", bold: true, size: 10, color: { argb: "FFFFFFFF" } };
+    cell.alignment = { vertical: "middle", horizontal: "center", wrapText: true };
+    cell.border = { top: border, left: border, right: border, bottom: border };
+  });
+  head.height = 34;
+  sheet.autoFilter = { from: "A4", to: "N4" };
+  const grouped = new Set([1, 2, 4, 5, 9]); // S.NO, Customer, Origin, Destination, Total KM
+  let rowNumber = 5;
+  groups.forEach(({ rows }) => {
+    const first = rowNumber;
+    rows.forEach((record) => {
+      const row = sheet.getRow(rowNumber);
+      headings.forEach((field, i) => {
+        const cell = row.getCell(i + 1);
+        const value = record[field];
+        const isKm = [9, 10, 11].includes(i + 1);
+        const number = isKm && value !== "—" ? Number(value) : NaN;
+        cell.value = isKm && Number.isFinite(number) ? number : String(value ?? "—");
+        cell.alignment = { vertical: "middle", horizontal: isKm ? "center" : "center", wrapText: true };
+        cell.font = { name: "Calibri", bold: [1, 2, 3, 12].includes(i + 1), size: 10, color: { argb: `FF${navyText}` } };
+        cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb:
+          i === 1 ? "FFFFF2CD" : i === 11 ? "FFF9CDB2" : i === 13 ? "FFCAF0D3" : "FFFFFFFF" } };
+        cell.border = { top: border, bottom: border, left: border, right: border };
+        if (isKm && Number.isFinite(number)) cell.numFmt = "#,##0.##";
+      });
+      row.height = 32;
+      rowNumber += 1;
+    });
+    const last = rowNumber - 1;
+    if (last > first) {
+      grouped.forEach((column) => {
+        sheet.mergeCells(first, column, last, column);
+        sheet.getCell(first, column).alignment = { vertical: "middle", horizontal: "center", wrapText: true };
+      });
+    }
+  });
+  sheet.printTitlesRow = "1:4";
+  sheet.pageMargins = { left: 0.2, right: 0.2, top: 0.3, bottom: 0.3, header: 0.1, footer: 0.1 };
+  const data = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([data], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = `Tracking_Register_${dateKey(new Date())}.xlsx`;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+};
+
+const exportTrackingPdf = (groups) => {
+  // Landscape A3 keeps all 14 register columns usable without tiny text.
+  const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a3" });
+  const width = doc.internal.pageSize.getWidth();
+  const generated = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
+  doc.setFillColor(13, 59, 80);
+  doc.rect(0, 0, width, 23, "F");
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(14);
+  doc.text("OTC GROUPS | VEHICLE TRACKING REGISTER", 9, 10);
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "normal");
+  doc.text(`${groups.length} trip(s)  |  ${groups.reduce((n, g) => n + g.rows.length, 0)} vehicle row(s)  |  ${generated}`, 9, 17);
+
+  const groupedColumns = new Set(["S.NO", "Customer", "Origin", "Destination", "Total KM"]);
+  // autoTable requires a column-key body for row-span cells to stay aligned.
+  const objectBody = [];
+  groups.forEach(({ rows }) => rows.forEach((row, index) => {
+    const record = {};
+    trackingRegisterFields.forEach((field) => {
+      if (groupedColumns.has(field) && index > 0) return;
+      record[field] = groupedColumns.has(field)
+        ? { content: row[field], rowSpan: rows.length }
+        : row[field];
+    });
+    objectBody.push(record);
+  }));
+  autoTable(doc, {
+    startY: 27,
+    columns: trackingRegisterFields.map((field) => ({ header: field, dataKey: field })),
+    body: objectBody,
+    theme: "grid",
+    showHead: "everyPage",
+    styles: { font: "helvetica", fontSize: 7.1, cellPadding: 2.1,
+      textColor: [19, 53, 73], lineWidth: 0.15, lineColor: [142, 156, 168],
+      valign: "middle", halign: "center", overflow: "linebreak" },
+    headStyles: { fillColor: [49, 84, 147], textColor: [255, 255, 255], fontStyle: "bold", minCellHeight: 13 },
+    columnStyles: {
+      "S.NO": { cellWidth: 10 }, Customer: { cellWidth: 36, fillColor: [255, 242, 205] },
+      "Vehicle NO": { cellWidth: 30 }, Origin: { cellWidth: 35 },
+      Destination: { cellWidth: 34 }, "Current Location": { cellWidth: 31 },
+      "Vehicle Type": { cellWidth: 20 }, "Driver NO": { cellWidth: 28 },
+      "Total KM": { cellWidth: 17 }, "Running Kms": { cellWidth: 18 },
+      "Balance KM": { cellWidth: 18 }, "Current Status": { cellWidth: 43, fillColor: [249, 205, 178] },
+      Remarks: { cellWidth: 39 }, Description: { cellWidth: 37, fillColor: [202, 240, 211] },
+    },
+    margin: { left: 6, right: 6, bottom: 13 },
+    didDrawPage: ({ pageNumber }) => {
+      doc.setFontSize(7);
+      doc.setTextColor(100, 116, 139);
+      doc.text(`Page ${pageNumber}`, width - 9, doc.internal.pageSize.getHeight() - 6, { align: "right" });
+    },
+  });
+  doc.save(`Tracking_Register_${dateKey(new Date())}.pdf`);
 };
 
 const StatusBadge = ({ status }) => (
@@ -431,6 +646,12 @@ const Tracking = () => {
   const [search, setSearch] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [exportOpen, setExportOpen] = useState(false);
+  const [exportScope, setExportScope] = useState("filtered");
+  const [exportFormat, setExportFormat] = useState("pdf");
+  const [exportSelected, setExportSelected] = useState([]);
+  const [exportQuery, setExportQuery] = useState("");
+  const [exportError, setExportError] = useState("");
   const [today, setToday] = useState(() => dateKey(new Date()));
   const [lastUpdated, setLastUpdated] = useState(null);
   const activeRequest = useRef(null);
@@ -545,6 +766,43 @@ const Tracking = () => {
         ),
     [scopedTrips, statusFilter, today],
   );
+  const openExportModal = () => {
+    setExportScope("filtered");
+    setExportFormat("pdf");
+    setExportSelected([]);
+    setExportQuery("");
+    setExportError("");
+    setExportOpen(true);
+  };
+  const exportCandidates = filteredTrips.filter((trip) => matchesSearch(trip, exportQuery));
+  const toggleExportTrip = (id) => setExportSelected((current) =>
+    current.includes(id) ? current.filter((key) => key !== id) : [...current, id],
+  );
+  const selectedForExport = exportScope === "filtered"
+    ? filteredTrips
+    : filteredTrips.filter((trip) => exportSelected.includes(keyOf(trip)));
+  const runTripExport = async () => {
+    if (!selectedForExport.length) {
+      setExportError(exportScope === "filtered" ? "No trips match the current filters." : "Select at least one trip.");
+      return;
+    }
+    try {
+      const groups = trackingExportGroups(selectedForExport, today);
+      if (exportFormat === "pdf") exportTrackingPdf(groups);
+      else await exportTrackingExcel(groups);
+      setExportOpen(false);
+    } catch (error) {
+      setExportError(error?.message || "Unable to export these trips.");
+    }
+  };
+  useEffect(() => {
+    if (!exportOpen) return undefined;
+    const onKey = (event) => {
+      if (event.key === "Escape") setExportOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [exportOpen]);
   const activity = useMemo(
     () => buildActivity(scopedTrips, selectedDate || today),
     [scopedTrips, selectedDate, today],
@@ -703,6 +961,9 @@ const Tracking = () => {
                   ))}
                 </select>
               </label>
+              <button type="button" className="td-export-btn" onClick={openExportModal} disabled={loading || !filteredTrips.length}>
+                <Download size={15} /> Download
+              </button>
               {hasFilter && (
                 <button
                   type="button"
@@ -852,6 +1113,72 @@ const Tracking = () => {
           <RecentTrackingUpdates trips={scopedTrips} />
         </aside>
       </div>
+      {exportOpen && (
+        <div className="td-export-overlay" role="presentation" onMouseDown={(event) => {
+          if (event.target === event.currentTarget) setExportOpen(false);
+        }}>
+          <section className="td-export-modal" role="dialog" aria-modal="true" aria-labelledby="td-export-title">
+            <header className="td-export-head">
+              <div>
+                <span className="td-export-kicker">TRACKING REPORT</span>
+                <h2 id="td-export-title">Download Trip Report</h2>
+                <p>Export filtered trips or choose specific trips.</p>
+              </div>
+              <button type="button" className="td-export-close" onClick={() => setExportOpen(false)} aria-label="Close download popup"><X size={18}/></button>
+            </header>
+            <div className="td-export-body">
+              <div className="td-export-choices" role="radiogroup" aria-label="Which trips to export">
+                <label className={exportScope === "filtered" ? "selected" : ""}>
+                  <input type="radio" name="tdExportScope" value="filtered" checked={exportScope === "filtered"} onChange={() => setExportScope("filtered")}/>
+                  <span><strong>Filtered Trips</strong><small>Use current search, date and status filters · {filteredTrips.length} trips</small></span>
+                </label>
+                <label className={exportScope === "selected" ? "selected" : ""}>
+                  <input type="radio" name="tdExportScope" value="selected" checked={exportScope === "selected"} onChange={() => setExportScope("selected")}/>
+                  <span><strong>Select Trips</strong><small>Choose individual trips from the filtered list</small></span>
+                </label>
+              </div>
+              {exportScope === "selected" && (
+                <div className="td-export-picker">
+                  <div className="td-export-picker-top">
+                    <label><Search size={14}/><input type="search" value={exportQuery} onChange={(event) => setExportQuery(event.target.value)} placeholder="Find trip or customer"/></label>
+                    <button type="button" onClick={() => {
+                      const ids = exportCandidates.map(keyOf).filter(Boolean);
+                      setExportSelected((current) => ids.every((id) => current.includes(id))
+                        ? current.filter((id) => !ids.includes(id))
+                        : [...new Set([...current, ...ids])]);
+                    }}>Select / Clear Visible</button>
+                  </div>
+                  <div className="td-export-trip-options">
+                    {exportCandidates.map((trip) => (
+                      <label key={keyOf(trip)}>
+                        <input type="checkbox" checked={exportSelected.includes(keyOf(trip))} onChange={() => toggleExportTrip(keyOf(trip))}/>
+                        <span><strong>{text(trip.tripId) || "Trip"}</strong><small>{text(trip.customer) || "—"} · {text(trip.origin) || "—"} → {text(trip.destination) || "—"}</small></span>
+                        <em>{tripStatus(trip, today)}</em>
+                      </label>
+                    ))}
+                    {!exportCandidates.length && <p className="td-export-noresults">No matching trips.</p>}
+                  </div>
+                </div>
+              )}
+              <div className="td-export-format-row">
+                <label htmlFor="td-export-format">Download format</label>
+                <select id="td-export-format" value={exportFormat} onChange={(event) => setExportFormat(event.target.value)}>
+                  <option value="pdf">PDF Report</option>
+                  <option value="excel">Excel (.xlsx — styled)</option>
+                </select>
+              </div>
+              {exportError && <p className="td-export-error" role="alert">{exportError}</p>}
+            </div>
+            <footer className="td-export-footer">
+              <span>{selectedForExport.length} trip(s) selected</span>
+              <div>
+                <button type="button" className="td-export-cancel" onClick={() => setExportOpen(false)}>Cancel</button>
+                <button type="button" className="td-export-submit" onClick={runTripExport} disabled={!selectedForExport.length}><Download size={15}/> Download {exportFormat === "pdf" ? "PDF" : "Excel"}</button>
+              </div>
+            </footer>
+          </section>
+        </div>
+      )}
     </main>
   );
 };

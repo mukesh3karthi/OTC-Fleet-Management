@@ -2902,7 +2902,7 @@ const Approvalmanagement = () => {
             className={activeView === "quotation" ? "active" : ""}
             onClick={() => setActiveView("quotation")}
           >
-            Quotation Approval
+            Transport Approval
             {summary.pendingQuotations > 0 && (
               <span>{summary.pendingQuotations}</span>
             )}
@@ -2912,7 +2912,7 @@ const Approvalmanagement = () => {
             className={activeView === "replacement" ? "active" : ""}
             onClick={() => setActiveView("replacement")}
           >
-            Transport Replacement
+            Replacement Approval
             {pendingTransportReplacementCount > 0 && (
               <span>{pendingTransportReplacementCount}</span>
             )}
@@ -2927,7 +2927,7 @@ const Approvalmanagement = () => {
                 : "Amount Changes"
             }
           >
-            Amount Changes
+            Hire Amount Changes
             {unreadAmountChangesCount > 0 && (
               <span className="approval-amount-unread-badge">
                 {unreadAmountChangesCount > 99

@@ -1083,6 +1083,7 @@ const Lifecyclemodal = ({
   const [activeStepIndex, setActiveStepIndex] = useState(0);
   const [invoicePaymentForm, setInvoicePaymentForm] = useState({
     invoiceNumber: "",
+    invoiceDate: "",
     amount: "",
     gstPercentage: "0",
   });
@@ -1096,6 +1097,9 @@ const Lifecyclemodal = ({
     paymentDate: "",
     remarks: "",
   });
+  // Close confirmation is only displayed when edits would be lost.
+  const [showUnsavedClose, setShowUnsavedClose] = useState(false);
+  const [invoiceFormReadyForOrder, setInvoiceFormReadyForOrder] = useState(null);
   const invoiceData = workingOrder?.invoicePayment || {};
   const finalRateString = String(
     workingOrder?.orderFinalization?.finalRate ?? workingOrder?.finalRate ?? "",
@@ -1160,14 +1164,17 @@ const Lifecyclemodal = ({
     setInvoicePaymentForm((previous) => ({
       ...previous,
       invoiceNumber: invoiceData.invoiceNumber || "",
+      invoiceDate: invoiceData.invoiceDate ? String(invoiceData.invoiceDate).slice(0, 10) : "",
       amount: String(
         invoiceData.invoiceAmount ?? invoiceData.amount ?? invoiceData.baseAmount ?? finalRateString,
       ),
       gstPercentage: String(invoiceData.gstPercentage ?? 0),
     }));
+    setInvoiceFormReadyForOrder(workingOrder?._id ?? null);
   }, [
     workingOrder?._id,
     invoiceData.invoiceNumber,
+    invoiceData.invoiceDate,
     invoiceData.invoiceAmount,
     invoiceData.totalAmount,
     invoiceData.amount,
@@ -1175,6 +1182,59 @@ const Lifecyclemodal = ({
     invoiceData.gstPercentage,
     finalRateString,
   ]);
+  // Compare against the actual persisted data, rather than marking the form
+  // dirty merely because it was opened. Reverting a value clears the warning.
+  const persistedInvoice = {
+    invoiceNumber: invoiceData.invoiceNumber || "",
+    invoiceDate: invoiceData.invoiceDate
+      ? String(invoiceData.invoiceDate).slice(0, 10)
+      : "",
+    amount: String(
+      invoiceData.invoiceAmount ??
+      invoiceData.amount ??
+      invoiceData.baseAmount ??
+      finalRateString,
+    ),
+    gstPercentage: String(invoiceData.gstPercentage ?? 0),
+  };
+  const invoiceFormDirty =
+    invoiceFormReadyForOrder === workingOrder?._id &&
+    (Object.keys(persistedInvoice).some(
+      (key) => String(invoicePaymentForm[key] ?? "") !== persistedInvoice[key],
+    ) || Boolean(invoiceDocument));
+  const unfinishedPayment =
+    paymentEntryOpen &&
+    [paymentEntry.amount, paymentEntry.paymentDate, paymentEntry.remarks].some(
+      (value) => String(value || "").trim() !== "",
+    );
+  const unsavedInlineEdits =
+    editOpen &&
+    (JSON.stringify(editForm) !== editBaselineRef.current ||
+      JSON.stringify(poForm) !== poBaselineRef.current ||
+      Boolean(poFile));
+  const hasUnsavedChanges =
+    invoiceFormDirty || unfinishedPayment || unsavedInlineEdits;
+
+  const requestLifecycleClose = () => {
+    if (invoiceSaving || paymentSaving || editSaving || poSaving) return;
+    if (hasUnsavedChanges) {
+      setShowUnsavedClose(true);
+      return;
+    }
+    onClose();
+  };
+
+  // Browsers display their own generic message for refresh/tab close.
+  useEffect(() => {
+    if (!hasUnsavedChanges) return undefined;
+    const warnBeforeUnload = (event) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    window.addEventListener("beforeunload", warnBeforeUnload);
+    return () => window.removeEventListener("beforeunload", warnBeforeUnload);
+  }, [hasUnsavedChanges]);
+
   const saveInvoiceDetails = async () => {
     if (!workingOrder?._id) return;
     if (!validAmount || !validGst || !Number.isFinite(totalPayable)) {
@@ -1193,6 +1253,7 @@ const Lifecyclemodal = ({
     try {
       const form = new FormData();
       form.append("invoiceNumber", invoicePaymentForm.invoiceNumber.trim());
+      form.append("invoiceDate", invoicePaymentForm.invoiceDate);
       if (invoiceDocument) form.append("invoiceDocument", invoiceDocument);
       form.append("amount", baseAmount.toFixed(2));
       form.append("gstPercentage", String(gstPercentage));
@@ -2267,7 +2328,7 @@ const Lifecyclemodal = ({
     <div
       className="kam-workflow-modal-overlay"
       role="presentation"
-      onMouseDown={onClose}
+      onMouseDown={requestLifecycleClose}
     >
       <section
         className={`kam-workflow-modal ${isCompletedTrip(order) ? "kam-trip-readonly" : ""}`}
@@ -2284,7 +2345,7 @@ const Lifecyclemodal = ({
             <button
               type="button"
               className="kam-back-btn"
-              onClick={onClose}
+              onClick={requestLifecycleClose}
               aria-label="Back"
             >
               ←
@@ -2302,7 +2363,7 @@ const Lifecyclemodal = ({
             <button
               type="button"
               className="kam-workflow-close"
-              onClick={onClose}
+              onClick={requestLifecycleClose}
               aria-label="Close"
             >
               ×
@@ -4073,8 +4134,22 @@ const Lifecyclemodal = ({
                 </div>
                 <div className="kam-invoice-groups">
                   <div className="kam-invoice-group">
+                    <div className="kam-invoice-amount-breakdown">
+                      <div>
+                        <span>Base Amount</span>
+                        <strong>{formatRupees(baseAmount)}</strong>
+                      </div>
+                      <div>
+                        <span>GST ({gstPercentage}%)</span>
+                        <strong>{formatRupees(gstAmount)}</strong>
+                      </div>
+                      <div className="kam-invoice-grand-total">
+                        <span>Total Including GST</span>
+                        <strong>{formatRupees(totalPayable)}</strong>
+                      </div>
+                    </div>
                     <h4 className="kam-invoice-subheading">Invoice</h4>
-                    <div className="kam-invoice-fields">
+                    <div className="kam-invoice-fields kam-invoice-four-fields">
                       <label className="kam-client-trip-field">
                         <span>Invoice Number</span>
                         <input
@@ -4089,6 +4164,18 @@ const Lifecyclemodal = ({
                               "invoiceNumber",
                               event.target.value,
                             )
+                          }
+                        />
+                      </label>
+                      <label className="kam-client-trip-field">
+                        <span>Invoice Date</span>
+                        <input
+                          className="kam-original-edit-input"
+                          type="date"
+                          name="invoiceDate"
+                          value={invoicePaymentForm.invoiceDate}
+                          onChange={(event) =>
+                            updateInvoicePaymentField("invoiceDate", event.target.value)
                           }
                         />
                       </label>
@@ -4112,14 +4199,9 @@ const Lifecyclemodal = ({
                       </label>
                       <label className="kam-client-trip-field">
                         <span>GST Percentage (%)</span>
-                        <input
-                          className="kam-original-edit-input"
-                          type="number"
+                        <select
+                          className="kam-original-edit-input kam-gst-select"
                           name="gstPercentage"
-                          min="0"
-                          max="100"
-                          step="0.01"
-                          placeholder="Enter GST %"
                           value={invoicePaymentForm.gstPercentage}
                           onChange={(event) =>
                             updateInvoicePaymentField(
@@ -4127,8 +4209,24 @@ const Lifecyclemodal = ({
                               event.target.value,
                             )
                           }
-                        />
+                        >
+                          {["0", "5", "12", "18", "28", "40"].includes(
+                            String(invoicePaymentForm.gstPercentage),
+                          ) ? null : (
+                            <option value={invoicePaymentForm.gstPercentage}>
+                              {invoicePaymentForm.gstPercentage}% (Previously saved)
+                            </option>
+                          )}
+                          <option value="0">0% — No GST</option>
+                          <option value="5">5%</option>
+                          <option value="12">12%</option>
+                          <option value="18">18%</option>
+                          <option value="28">28%</option>
+                          <option value="40">40%</option>
+                        </select>
                       </label>
+                    </div>
+                    <div className="kam-invoice-upload-row">
                       <label className="kam-client-trip-field">
                         <span>Upload Invoice (PDF / Image)</span>
                         <input
@@ -4151,20 +4249,6 @@ const Lifecyclemodal = ({
                             </small>
                           )}
                       </label>
-                    </div>
-                    <div className="kam-invoice-amount-breakdown">
-                      <div>
-                        <span>Base Amount</span>
-                        <strong>{formatRupees(baseAmount)}</strong>
-                      </div>
-                      <div>
-                        <span>GST ({gstPercentage}%)</span>
-                        <strong>{formatRupees(gstAmount)}</strong>
-                      </div>
-                      <div className="kam-invoice-grand-total">
-                        <span>Total Including GST</span>
-                        <strong>{formatRupees(totalPayable)}</strong>
-                      </div>
                     </div>
                     <div className="kam-payment-toolbar">
                       <span>
@@ -4665,7 +4749,7 @@ const Lifecyclemodal = ({
                 <button
                   type="button"
                   className="kam-footer-close-btn"
-                  onClick={onClose}
+                  onClick={requestLifecycleClose}
                 >
                   Close
                 </button>
@@ -4876,7 +4960,7 @@ const Lifecyclemodal = ({
                 <button
                   type="button"
                   className="kam-footer-close-btn"
-                  onClick={onClose}
+                  onClick={requestLifecycleClose}
                 >
                   Close
                 </button>
@@ -4885,6 +4969,48 @@ const Lifecyclemodal = ({
           </div>
         </div>
       </section>
+      {showUnsavedClose && (
+        <div
+          className="kam-unsaved-confirm-overlay"
+          role="presentation"
+          onMouseDown={(event) => event.stopPropagation()}
+        >
+          <section
+            className="kam-unsaved-confirm-dialog"
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="kam-unsaved-confirm-title"
+            aria-describedby="kam-unsaved-confirm-description"
+          >
+            <div className="kam-unsaved-confirm-icon" aria-hidden="true">!</div>
+            <h3 id="kam-unsaved-confirm-title">Unsaved Changes</h3>
+            <p id="kam-unsaved-confirm-description">
+              Your latest changes have not been saved. Do you want to close
+              this order without saving them?
+            </p>
+            <div className="kam-unsaved-confirm-actions">
+              <button
+                type="button"
+                className="kam-unsaved-confirm-stay"
+                autoFocus
+                onClick={() => setShowUnsavedClose(false)}
+              >
+                Continue Editing
+              </button>
+              <button
+                type="button"
+                className="kam-unsaved-confirm-discard"
+                onClick={() => {
+                  setShowUnsavedClose(false);
+                  onClose();
+                }}
+              >
+                Close Without Saving
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
       {/* PROFESSIONAL TOAST */}
       {toast && (
         <div

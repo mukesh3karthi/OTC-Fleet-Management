@@ -6094,3 +6094,150 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Invoice: four inputs on one desktop row and document on a second row */
+.kam-step-page-invoice-payment .kam-invoice-four-fields {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  align-items: start;
+}
+.kam-step-page-invoice-payment .kam-invoice-upload-row {
+  padding: 11px 14px;
+  border: 1px dashed #b7d7dc;
+  border-radius: 10px;
+  background: #f6fafb;
+}
+.kam-step-page-invoice-payment .kam-invoice-upload-row .kam-client-trip-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin: 0;
+  color: #254b5c;
+}
+.kam-step-page-invoice-payment .kam-invoice-upload-row .kam-client-trip-field > span {
+  font-size: 11px;
+  font-weight: 750;
+  color: #345c69;
+}
+.kam-step-page-invoice-payment .kam-invoice-upload-row input[type="file"] {
+  width: 100%;
+  max-width: 100%;
+  padding: 9px;
+  background: #fff;
+  border: 1px solid #c8dce2;
+  border-radius: 8px;
+  color: #24495b;
+  font: inherit;
+  font-size: 11px;
+}
+.kam-step-page-invoice-payment .kam-invoice-upload-row input[type="file"]::file-selector-button {
+  margin-right: 10px;
+  padding: 7px 12px;
+  border: 0;
+  border-radius: 6px;
+  background: #e5f5f2;
+  color: #08776f;
+  font-weight: 750;
+  cursor: pointer;
+}
+.kam-step-page-invoice-payment .kam-invoice-four-fields .kam-client-trip-field > span {
+  font-size: 10px;
+  font-weight: 750;
+}
+@media (max-width: 1000px) {
+  .kam-step-page-invoice-payment .kam-invoice-four-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 600px) {
+  .kam-step-page-invoice-payment .kam-invoice-four-fields { grid-template-columns: 1fr; }
+}
+
+/* GST rate dropdown — matches the four-field invoice row */
+.kam-step-page-invoice-payment .kam-gst-select {
+  width: 100%;
+  min-width: 0;
+  cursor: pointer;
+  background-color: #fff;
+  color: #173c4e;
+  font-weight: 700;
+}
+.kam-step-page-invoice-payment .kam-gst-select:focus-visible {
+  outline: 2px solid #0d9488;
+  outline-offset: 1px;
+}
+
+/* Unsaved changes confirmation: isolated from existing modal styles. */
+.kam-unsaved-confirm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200000;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(9, 35, 49, 0.5);
+}
+.kam-unsaved-confirm-dialog {
+  width: min(100%, 440px);
+  padding: 24px;
+  border: 1px solid #c9dce1;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 20px 55px rgba(6, 35, 48, 0.25);
+  color: #163d50;
+  font-family: inherit;
+}
+.kam-unsaved-confirm-icon {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 13px;
+  border: 1px solid #f1d49c;
+  border-radius: 11px;
+  background: #fff7e8;
+  color: #ad7300;
+  font-size: 21px;
+  font-weight: 900;
+}
+.kam-unsaved-confirm-dialog h3 {
+  margin: 0 0 9px;
+  font-size: 17px;
+  font-weight: 850;
+  color: #102f43;
+}
+.kam-unsaved-confirm-dialog p {
+  margin: 0;
+  color: #577484;
+  font-size: 12px;
+  line-height: 1.65;
+}
+.kam-unsaved-confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-top: 24px;
+}
+.kam-unsaved-confirm-actions button {
+  min-height: 38px;
+  padding: 0 13px;
+  border-radius: 9px;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.kam-unsaved-confirm-stay {
+  border: 1px solid #9bcfc8;
+  background: #eaf8f5;
+  color: #086c64;
+}
+.kam-unsaved-confirm-discard {
+  border: 1px solid #e6b1ad;
+  background: #fff3f2;
+  color: #ac3835;
+}
+@media (max-width: 520px) {
+  .kam-unsaved-confirm-actions { flex-direction: column; }
+  .kam-unsaved-confirm-actions button { width: 100%; }
+}

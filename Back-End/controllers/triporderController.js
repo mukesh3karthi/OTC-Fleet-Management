@@ -4159,6 +4159,20 @@ const saveInvoicePayment = async (req, res) => {
       details[key] = value;
     }
 
+    if (Object.prototype.hasOwnProperty.call(body, "invoiceDate")) {
+      const date = cleanString(body.invoiceDate);
+      if (date && !/^\d{4}-\d{2}-\d{2}$/.test(date))
+        return sendError(res, 400, "Invoice date must be YYYY-MM-DD.");
+      if (date) {
+        const parsed = new Date(`${date}T00:00:00.000Z`);
+        if (Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== date)
+          return sendError(res, 400, "Invoice date is invalid.");
+      }
+      if (cleanString(previous.invoiceDate) !== date)
+        changes.push(["invoiceDate", previous.invoiceDate, date]);
+      details.invoiceDate = date;
+    }
+
     // Accept invoiceAmount or the existing form's amount field.
     const amountInput = body.invoiceAmount ?? body.amount;
     const hasAmount = amountInput !== undefined && amountInput !== null && amountInput !== "";

@@ -32,6 +32,9 @@ import {
   FaSort,
   FaSortUp,
   FaSortDown,
+  FaBirthdayCake,
+  FaBullhorn,
+  FaUserPlus,
 } from "react-icons/fa";
 import {
   ResponsiveContainer,
@@ -49,8 +52,18 @@ import {
   Area,
 } from "recharts";
 import "../pagescss/dashcontent.css";
-import windmillTransport from "../asset/Dash-Image.png";
+// Original OTC logistics vehicle photograph (place it in src/asset).
+import windmillTransport from "../asset/OTC-Original-Transport.png";
 import windProjectTransport from "../asset/wind-project-transport.jpg";
+import otcTeamPhoto from "../asset/otc-team-celebration.jpg";
+import employeeAnnouncements from "../asset/employee-announcements.jpg";
+import joinerPhoto1 from "../asset/joiner-1.jpg";
+import joinerPhoto2 from "../asset/joiner-2.jpg";
+import joinerPhoto3 from "../asset/joiner-3.jpg";
+import joinerPhoto4 from "../asset/joiner-4.jpg";
+import employeeBirthdays from "../asset/employee-birthdays.jpg";
+import employeeMilestones from "../asset/employee-milestones.jpg";
+
 import jswLogo from "../asset/jsw.png";
 import heftLogo from "../asset/heft.png";
 import serenticaLogo from "../asset/serentica.png";
@@ -280,6 +293,14 @@ const emptyForm = {
 /* =========================================================
   DASHBOARD COMPONENT
   ========================================================= */
+// Sample onboarding portraits and names. Replace with approved employee details.
+const NEW_JOINERS = [
+  { name: "Rohit Sharma", department: "Operations", photo: joinerPhoto1 },
+  { name: "Priya Nair", department: "Accounts", photo: joinerPhoto2 },
+  { name: "Vikram S", department: "Traffic", photo: joinerPhoto3 },
+  { name: "Anjali Mehta", department: "HR", photo: joinerPhoto4 },
+];
+
 const DashContent = () => {
   const [vehicles, setVehicles] = useState([]);
   const [ownVehicles, setOwnVehicles] = useState([]);
@@ -304,6 +325,21 @@ const DashContent = () => {
   const [docsVehicle, setDocsVehicle] = useState(null);
   const clientSliderRef = useRef(null);
   const [clientSlide, setClientSlide] = useState(0);
+  // Static Employee Connect carousel: every content category is a slide.
+  const [employeeSlide, setEmployeeSlide] = useState(0);
+  const [employeePaused, setEmployeePaused] = useState(false);
+  const employeeSlideCount = 5;
+  const goToEmployeeSlide = useCallback((index) => {
+    setEmployeeSlide(((index % employeeSlideCount) + employeeSlideCount) % employeeSlideCount);
+  }, []);
+  useEffect(() => {
+    if (employeePaused) return undefined;
+    const timer = window.setInterval(() => {
+      setEmployeeSlide((current) => (current + 1) % employeeSlideCount);
+    }, 6000);
+    return () => window.clearInterval(timer);
+  }, [employeePaused]);
+
   /* =======================================================
     FETCH ALL DATA SOURCES
     ======================================================= */
@@ -716,7 +752,7 @@ const DashContent = () => {
         </div>
       )}
       {/* HERO */}
-      <section className="dashboard-hero">
+      <section className="dashboard-hero" aria-label="OTC Groups fleet overview">
         <div className="hero-content">
           <span className="hero-eyebrow">WELCOME TO OTC GROUPS</span>
           <h2>Moving Business <span>Forward</span></h2>
@@ -733,6 +769,8 @@ const DashContent = () => {
         </div>
         <div
           className="hero-visual"
+          role="img"
+          aria-label="Original OTC Groups truck transporting wind turbine components"
           style={{ backgroundImage: `url(${windmillTransport})` }}
         >
           <div className="hero-overlay"></div>
@@ -770,6 +808,124 @@ const DashContent = () => {
         </div>
       </section>
       
+      {/* EMPLOYEE CONNECT — ALL INFORMATION IS INSIDE SLIDES, NO EXTRA CARDS */}
+      <section className="dashboard-section otc-employee-section" aria-label="Employee Connect">
+        <div className="section-heading otc-employee-section-heading">
+          <div>
+            <span className="section-label">OUR PEOPLE</span>
+            <h2>Employee Connect</h2>
+          </div>
+          <p>Team stories, company announcements and celebrations.</p>
+        </div>
+        <div
+          className="otc-employee-carousel"
+          aria-roledescription="carousel"
+          aria-label="Employee updates"
+          onMouseEnter={() => setEmployeePaused(true)}
+          onMouseLeave={() => setEmployeePaused(false)}
+          onFocusCapture={() => setEmployeePaused(true)}
+          onBlurCapture={(event) => {
+            if (!event.currentTarget.contains(event.relatedTarget)) setEmployeePaused(false);
+          }}
+        >
+          <div className="otc-employee-slides" style={{ transform: `translateX(-${employeeSlide * 100}%)` }}>
+            <article className="otc-employee-slide otc-employee-slide-team" aria-hidden={employeeSlide !== 0}>
+              <div className="otc-employee-copy">
+                <span className="otc-employee-eyebrow">✦ EMPLOYEE CONNECT</span>
+                <h3>Our <em>Team</em></h3>
+                <p>A dedicated team driving success together. Collaboration, trust and commitment make us stronger.</p>
+                <span className="otc-employee-tag">Meet Our Team <FaArrowRight /></span>
+              </div>
+              <div className="otc-employee-art otc-art-team">
+                <img src={otcTeamPhoto} alt="OTC colleagues at a team celebration" />
+              </div>
+            </article>
+            <article className="otc-employee-slide otc-employee-slide-announcement" aria-hidden={employeeSlide !== 1}>
+              <div className="otc-employee-copy">
+                <span className="otc-employee-eyebrow">✦ EMPLOYEE CONNECT</span>
+                <h3>Announcements</h3>
+                <p>Stay updated with the latest company news, policies and important information.</p>
+                <span className="otc-employee-tag">Company Updates <FaArrowRight /></span>
+              </div>
+              <div className="otc-employee-art otc-art-announcements">
+                <img src={employeeAnnouncements} alt="Illustration of an internal announcements workspace" />
+                <div className="otc-announce-notices" aria-label="Types of company announcements">
+                  <div><span>🔔</span><strong>Company Updates</strong><small>News and important information</small></div>
+                  <div><span>📄</span><strong>Policy Notices</strong><small>Employee communications</small></div>
+                  <div><span>👥</span><strong>Team Meetings</strong><small>Internal events and discussions</small></div>
+                </div>
+              </div>
+            </article>
+            <article className="otc-employee-slide otc-employee-slide-joiners" aria-hidden={employeeSlide !== 2}>
+              <div className="otc-employee-copy">
+                <span className="otc-employee-eyebrow">✦ EMPLOYEE CONNECT</span>
+                <h3>New <em>Joiners</em></h3>
+                <p>A warm welcome to our new team members. Your skills and energy help us move forward together.</p>
+                <span className="otc-employee-tag">Meet Our New Joiners <FaArrowRight /></span>
+              </div>
+              <div className="otc-employee-art otc-art-joiners">
+                <div className="otc-joiner-visual">
+                  <header className="otc-joiner-welcome" aria-label="Welcome to the team">
+                    <span className="otc-joiner-confetti" aria-hidden="true">✦</span>
+                    <span className="otc-joiner-script">Welcome</span>
+                    <span className="otc-joiner-subtitle">TO THE TEAM</span>
+                  </header>
+                  <div className="otc-joiner-people">
+                    {NEW_JOINERS.map((person) => (
+                      <div className="otc-joiner-person" key={person.name}>
+                        <div className="otc-joiner-portrait">
+                          <img src={person.photo} alt={`${person.name}, ${person.department}`} loading="lazy" />
+                        </div>
+                        <strong>{person.name}</strong>
+                        <span>{person.department}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </article>
+            <article className="otc-employee-slide otc-employee-slide-birthdays" aria-hidden={employeeSlide !== 3}>
+              <div className="otc-employee-copy">
+                <span className="otc-employee-eyebrow">✦ EMPLOYEE CONNECT</span>
+                <h3>Birthdays</h3>
+                <p>Wishing all our team members a very Happy Birthday. Thank you for being a valued part of OTC Groups.</p>
+                <span className="otc-employee-tag">Best Wishes <FaArrowRight /></span>
+              </div>
+              <div className="otc-employee-art otc-art-birthdays">
+                <img src={employeeBirthdays} alt="Illustrative office birthday celebration" />
+                <span className="otc-birthday-label">✦ Happy Birthday ✦</span>
+              </div>
+            </article>
+            <article className="otc-employee-slide otc-employee-slide-milestones" aria-hidden={employeeSlide !== 4}>
+              <div className="otc-employee-copy">
+                <span className="otc-employee-eyebrow">✦ EMPLOYEE CONNECT</span>
+                <h3>Milestones</h3>
+                <p>Recognising achievements, dedication and the incredible journey of our team members.</p>
+                <span className="otc-employee-tag">Celebrate Achievements <FaArrowRight /></span>
+              </div>
+              <div className="otc-employee-art otc-art-milestones">
+                <img src={employeeMilestones} alt="Illustration of employee recognition and achievements" />
+                <div className="otc-milestone-highlights" aria-label="What we celebrate">
+                  <div><FaUsers /><strong>Teamwork</strong></div>
+                  <div><FaTrophy /><strong>Achievements</strong></div>
+                  <div><FaChartLine /><strong>Growth</strong></div>
+                </div>
+              </div>
+            </article>
+          </div>
+          <button className="otc-employee-arrow otc-employee-arrow-prev" type="button" onClick={() => goToEmployeeSlide(employeeSlide - 1)} aria-label="Previous employee slide"><FaChevronLeft /></button>
+          <button className="otc-employee-arrow otc-employee-arrow-next" type="button" onClick={() => goToEmployeeSlide(employeeSlide + 1)} aria-label="Next employee slide"><FaChevronRight /></button>
+          <div className="otc-employee-bottom-controls">
+            <div className="otc-employee-dots" role="group" aria-label="Select a slide">
+              {["Team", "Announcements", "Onboarding", "Birthdays", "Milestones"].map((title, index) => (
+                <button key={title} className={employeeSlide === index ? "active" : ""} type="button" aria-label={`Show ${title} slide`} aria-current={employeeSlide === index ? "true" : undefined} onClick={() => goToEmployeeSlide(index)} />
+              ))}
+            </div>
+            <span className="otc-employee-slide-count">{String(employeeSlide + 1).padStart(2, "0")} / 05</span>
+          </div>
+        </div>
+      </section>
+
       <section className="dashboard-section otc-network-section professional-network-section">
         <div className="professional-network-head">
           <div>

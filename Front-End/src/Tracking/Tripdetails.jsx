@@ -1651,20 +1651,10 @@ const StandardTripdetails = ({ movementOnly = false }) => {
                                 handleCraneVehicles(event, trip);
                               else handleMovementTrip(trip);
                             }}
-                            title={
-                              isCraneTrip(trip)
-                                ? "View Crane Vehicles"
-                                : "Update Movement"
-                            }
+                            title="Open Movement"
                           >
-                            {isCraneTrip(trip) ? (
-                              <Truck size={13} />
-                            ) : (
-                              <Navigation size={13} />
-                            )}
-                            <span>
-                              {isCraneTrip(trip) ? "Vehicles" : "Movement"}
-                            </span>
+                            <Navigation size={13} />
+                            <span>Movement</span>
                           </button>
                         </div>
                       </div>

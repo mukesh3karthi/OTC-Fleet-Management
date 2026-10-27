@@ -9923,3 +9923,168 @@
   font-weight: 800 !important;
   color: var(--ap-primary);
 }
+
+/* ==============================================================
+   APPROVAL MANAGEMENT — CLEAR TAB AND SECTION HIERARCHY
+   Scoped, final presentation rules; business logic unchanged.
+   ============================================================== */
+#approval-management-root .approval-toolbar {
+  background: #ffffff;
+  border-color: #d3e3e6;
+}
+#approval-management-root .approval-tabs {
+  height: 42px;
+  gap: 24px;
+  align-items: stretch;
+}
+#approval-management-root .approval-tabs > button,
+#approval-management-root .approval-tabs > button:nth-child(1),
+#approval-management-root .approval-tabs > button:nth-child(2),
+#approval-management-root .approval-tabs > button:nth-child(3),
+#approval-management-root .approval-tabs > button:nth-child(4) {
+  position: relative;
+  min-width: 0;
+  min-height: 42px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #425b69;
+  font-size: 13px;
+  font-weight: 800 !important;
+  transition: color 0.15s ease;
+}
+#approval-management-root .approval-tabs > button.active,
+#approval-management-root .approval-tabs > button:nth-child(1).active,
+#approval-management-root .approval-tabs > button:nth-child(2).active,
+#approval-management-root .approval-tabs > button:nth-child(3).active,
+#approval-management-root .approval-tabs > button:nth-child(4).active {
+  background: transparent;
+  border: 0;
+  color: #102f43;
+  font-weight: 900 !important;
+}
+#approval-management-root .approval-tabs > button:hover {
+  background: transparent;
+  color: #0f766e;
+}
+#approval-management-root .approval-tabs > button::after {
+  display: block;
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 0;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+  background: transparent;
+}
+#approval-management-root .approval-tabs > button.active::after {
+  background: #0f766e;
+}
+#approval-management-root .approval-tabs > button:focus-visible {
+  outline: 2px solid #0d9488;
+  outline-offset: 2px;
+}
+/* Requirement cards: clearly distinct title, column headings, data */
+#approval-management-root
+  .approval-quotation-modal-body
+  .approval-qv-requirement-head,
+#approval-management-root
+  .approval-quotation-modal-body
+  .approval-quotation-requirement-head {
+  background: #c9e7e4;
+  border-bottom: 1px solid #a9d4d0;
+}
+#approval-management-root
+  .approval-quotation-modal-body
+  .approval-qv-requirement-title,
+#approval-management-root
+  .approval-quotation-modal-body
+  .approval-qv-requirement-title
+  strong,
+#approval-management-root
+  .approval-quotation-modal-body
+  .approval-quotation-requirement-head
+  strong {
+  color: #123e4d;
+  font-weight: 850;
+}
+#approval-management-root
+  .approval-quotation-modal-body
+  .approval-qv-requirement-card {
+  border-color: #c9dfe1;
+  background: #ffffff;
+}
+/* Quotation column headings and values: white data rows, no alternating fill */
+#approval-management-root
+  .approval-quotation-modal-body
+  .approval-quotation-table
+  th,
+#approval-management-root .approval-quotation-modal-body .approval-qv-table th {
+  background: #e2eef0;
+  color: #345767;
+  font-weight: 850;
+}
+#approval-management-root
+  .approval-quotation-modal-body
+  .approval-quotation-table
+  td,
+#approval-management-root .approval-quotation-modal-body .approval-qv-table td {
+  background: #ffffff;
+  color: #16394a;
+  font-weight: 700;
+}
+/* Transport replacement: pale teal requirement bar distinct from content */
+#approval-management-root .approval-replacement-popup-vehicle-head {
+  background: #c9e7e4;
+  border-bottom-color: #add5d1;
+}
+#approval-management-root .approval-replacement-popup-vehicle {
+  background: #ffffff;
+  border-color: #cbdfe2;
+}
+/* Order approval: shaded requirement heading and white body */
+#approval-management-root .approval-request-card-head {
+  background: #c9e7e4;
+  border-bottom-color: #add5d1;
+}
+#approval-management-root .approval-request-card-head strong {
+  color: #123e4d;
+  font-weight: 850;
+}
+#approval-management-root .approval-request-details,
+#approval-management-root .approval-quotation-requirement-card {
+  background: #ffffff;
+}
+/* Across modal tables: softly shaded labels, clear legible values */
+#approval-management-root .approval-quotation-modal-body .approval-table th,
+#approval-management-root
+  .approval-replacement-detail-modal
+  .approval-replacement-order-table
+  th {
+  background: #e2eef0;
+  color: #345767;
+  font-weight: 850;
+}
+#approval-management-root .approval-quotation-modal-body .approval-table td,
+#approval-management-root
+  .approval-replacement-detail-modal
+  .approval-replacement-order-table
+  td {
+  background: #ffffff;
+  color: #173e50;
+  font-weight: 700;
+}
+@media (max-width: 760px) {
+  #approval-management-root .approval-tabs {
+    flex-wrap: wrap;
+    gap: 6px;
+    height: auto;
+  }
+  #approval-management-root .approval-tabs > button {
+    min-height: 34px;
+    padding: 0 10px;
+    font-size: 11px;
+  }
+}

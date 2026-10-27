@@ -5041,3 +5041,183 @@
   .key-account-page .kam-payment-alert-item-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
   .key-account-page .kam-payment-alert-item-grid > svg { display: none; }
 }
+
+/* =========================================================
+   PAYMENT ALERTS MODAL — OPTION 1 / TEAL + SOFT AQUA
+   Keep existing page styles above this section unchanged.
+========================================================= */
+.key-account-page .kam-payment-alerts { padding:0 12px 0 3px; z-index:auto; }
+.key-account-page .kam-payment-alert-button {
+  width:auto; min-width:130px; height:38px; padding:0 12px;
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  border:1px solid #cbe5e1; border-radius:999px;
+  background:#eff8f6; color:#087e75;
+  font-size:11px; font-weight:800; white-space:nowrap; cursor:pointer;
+}
+.key-account-page .kam-payment-alert-button:hover,
+.key-account-page .kam-payment-alert-button.is-open { background:#dcf3ef; border-color:#88c9c0; }
+.key-account-page .kam-payment-alert-count {
+  position:static; border:0; min-width:19px; height:19px;
+  border-radius:50%; background:#db4552; color:#fff;
+  display:inline-flex; align-items:center; justify-content:center;
+}
+.kam-payment-modal-backdrop {
+  position:fixed; inset:0; z-index:99990; padding:22px;
+  display:flex; align-items:center; justify-content:center;
+  background:rgba(8,29,43,.57); backdrop-filter:blur(4px);
+}
+.kam-payment-modal {
+  width:min(1480px,100%); max-height:calc(100vh - 44px);
+  display:flex; flex-direction:column; overflow:hidden;
+  border:1px solid #bbd8da; border-radius:18px; background:#fff;
+  box-shadow:0 25px 70px rgba(6,36,49,.25);
+  color:#15394c; font-family:Inter,Arial,sans-serif;
+}
+.kam-payment-modal-head {
+  flex-shrink:0; min-height:94px; padding:17px 24px;
+  display:flex; align-items:center; justify-content:space-between; gap:15px;
+  background:linear-gradient(110deg,#0b4652 0%,#0a6366 65%,#0d9488 100%);
+  color:#fff;
+}
+.kam-payment-modal-head small {color:#8ee4d9;font-size:10px;letter-spacing:.09em;font-weight:900;}
+.kam-payment-modal-head h2 {margin:4px 0 3px;color:#fff;font-size:20px;font-weight:850;}
+.kam-payment-modal-head p {margin:0;color:#cfebeb;font-size:11px;}
+.kam-payment-modal-close {
+  display:grid;place-items:center; flex-shrink:0; width:37px;height:37px;
+  border:1px solid rgba(255,255,255,.26); border-radius:9px;
+  background:rgba(255,255,255,.11);color:#fff;cursor:pointer;
+}
+.kam-payment-modal-close:hover {background:rgba(255,255,255,.21);}
+.kam-payment-modal-summary {
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:12px;padding:14px 19px;background:#fff;border-bottom:1px solid #dcecef;
+}
+.kam-payment-modal-summary > div {
+  min-width:0; padding:14px 16px;display:grid;gap:6px;
+  border:1px solid #d9e9eb;border-radius:11px;background:#f0f9f8;
+}
+.kam-payment-modal-summary > div:last-child {background:#e8f7f5;border-color:#b8e2dd;}
+.kam-payment-modal-summary small {color:#607f8b;font-size:10px;font-weight:800;letter-spacing:.025em;}
+.kam-payment-modal-summary strong {color:#123e50;font-size:19px;font-weight:850;overflow-wrap:anywhere;}
+.kam-payment-modal-summary > div:last-child strong {color:#00877e;}
+/* Desktop: all six filters on one row */
+.kam-payment-modal-filters {
+  padding:15px 19px;display:grid;
+  grid-template-columns:minmax(170px,1.55fr) minmax(115px,1fr) minmax(115px,1fr) minmax(130px,1fr) minmax(130px,1fr) minmax(115px,1fr);
+  gap:10px;align-items:end;background:#f3fafb;border-bottom:1px solid #d8e9ec;
+}
+.kam-payment-modal-filters label {
+  display:grid;gap:7px;min-width:0;color:#466979;font-size:10px;font-weight:800;
+}
+.kam-payment-modal-filters select,
+.kam-payment-modal-filters input {
+  width:100%;min-width:0;height:39px;padding:0 10px;
+  border:1px solid #cbdfe4;border-radius:9px;outline:none;background:#fff;
+  color:#16394b;font-size:11px;font-weight:650;
+}
+.kam-payment-modal-filters :is(select,input):focus-visible,
+.kam-payment-search-wrap:focus-within {
+  border-color:#0d9488;box-shadow:0 0 0 3px rgba(13,148,136,.1);
+}
+.kam-payment-search-wrap {
+  display:flex;align-items:center;gap:7px;padding-left:10px;
+  border:1px solid #cbdfe4;border-radius:9px;background:#fff;
+}
+.kam-payment-search-wrap svg {flex-shrink:0;color:#587f8d;}
+.kam-payment-modal-filters .kam-payment-search-wrap input {
+  height:37px;padding-left:0;border:0;box-shadow:none;min-width:0;
+}
+.kam-payment-modal-filters input[type="date"] {min-width:0;width:100%;color:#16394b;}
+.kam-payment-modal-actions {
+  padding:11px 19px;display:flex;align-items:center;justify-content:space-between;
+  gap:12px;border-bottom:1px solid #e1e9ec;background:#fff;
+  color:#617e8b;font-size:11px;
+}
+.kam-payment-modal-actions>div {display:flex;align-items:center;gap:8px;}
+.kam-payment-modal-actions select {
+  height:35px;padding:0 11px;border:1px solid #cbdfe4;
+  border-radius:8px;background:#fff;color:#24495a;font-size:11px;
+}
+.kam-payment-clear,.kam-payment-download {
+  min-height:35px;padding:0 13px;display:inline-flex;gap:7px;
+  align-items:center;justify-content:center;border-radius:8px;
+  font-size:11px;font-weight:800;cursor:pointer;
+}
+.kam-payment-clear {border:1px solid #cbdfe4;background:#fff;color:#51717f;}
+.kam-payment-clear:hover {background:#eff8f6;border-color:#9dd5ce;color:#087e75;}
+.kam-payment-download {border:1px solid #0b8f84;background:#0d9488;color:#fff;}
+.kam-payment-download:hover:not(:disabled) {background:#0b7c73;}
+.kam-payment-download:disabled {opacity:.5;cursor:not-allowed;}
+.kam-payment-modal-list {
+  padding:13px 19px 16px;min-height:100px;overflow:auto;flex:1;
+  background:#fff;
+}
+.kam-payment-modal-columns,
+.kam-payment-modal-list .kam-payment-alert-item-grid {
+  display:grid;
+  grid-template-columns:minmax(75px,.75fr) minmax(100px,1fr) minmax(85px,.85fr) minmax(100px,.95fr) minmax(105px,1fr) minmax(92px,.85fr) minmax(135px,1.25fr) 18px;
+  align-items:center;gap:10px;
+}
+.kam-payment-modal-list .kam-invoice-days {
+  display:inline-flex;width:fit-content;align-items:center;justify-content:center;
+  padding:5px 9px;border-radius:6px;font-size:11px;font-weight:800;white-space:nowrap;
+}
+.kam-payment-modal-list .kam-invoice-days.normal {color:#087f65;background:#e8f7f1;}
+.kam-payment-modal-list .kam-invoice-days.warning {color:#ad6800;background:#fff4da;}
+.kam-payment-modal-list .kam-invoice-days.danger {color:#d32f2f;background:#ffebee;}
+.kam-payment-modal-list .kam-invoice-days.unknown {color:#64748b;background:#f1f5f9;}
+.kam-payment-modal-columns {
+  padding:14px;background:#e2eff0;color:#426a78;
+  border:1px solid #d9e8eb;border-radius:9px 9px 0 0;
+  font-weight:900;font-size:9.5px;
+}
+.kam-payment-modal-list .kam-payment-alert-item {
+  width:100%;margin:0;padding:15px 14px;border:1px solid #e1eaec;
+  border-top:0;border-radius:0;background:#fff;text-align:left;cursor:pointer;
+}
+.kam-payment-modal-list .kam-payment-alert-item:last-child {border-radius:0 0 9px 9px;}
+.kam-payment-modal-list .kam-payment-alert-item:hover {background:#f5fbfa;border-color:#b4dcd7;}
+.kam-payment-modal-list .kam-payment-alert-item-grid small {display:none;}
+.kam-payment-modal-list .kam-payment-alert-item-grid b {color:#15394c;font-size:12px;font-weight:800;}
+.kam-payment-modal-list .kam-payment-alert-item-grid .kam-payment-alert-due {color:#dc3545;}
+.kam-payment-modal-list .kam-payment-alert-item-grid>svg {color:#638794;}
+.kam-payment-modal-footer {
+  flex-shrink:0;padding:13px 19px;display:flex;align-items:center;
+  justify-content:space-between;gap:10px;border-top:1px solid #dce9ec;
+  background:#f4fbfa;color:#67828c;font-size:11px;
+}
+.kam-payment-modal-footer button {
+  min-width:95px;height:36px;border:0;border-radius:8px;
+  background:#0d9488;color:white;font-weight:800;cursor:pointer;
+}
+.kam-payment-modal-footer button:hover {background:#0b7c73;}
+@media (max-width:1180px) {
+  .kam-payment-modal-filters {grid-template-columns:repeat(3,minmax(0,1fr));}
+}
+@media (max-width:850px) {
+  .kam-payment-modal-backdrop {padding:12px;}
+  .kam-payment-modal {max-height:calc(100vh - 24px);}
+  .kam-payment-modal-summary {gap:7px;padding:10px;}
+  .kam-payment-modal-summary>div {padding:11px;}
+  .kam-payment-modal-summary strong {font-size:14px;}
+  .kam-payment-modal-filters {grid-template-columns:repeat(2,minmax(0,1fr));padding:12px;}
+  .kam-payment-modal-columns,.kam-payment-modal-list .kam-payment-alert-item-grid {gap:8px;}
+  .kam-payment-modal-columns {display:none;}
+  .kam-payment-modal-list .kam-payment-alert-item-grid {grid-template-columns:repeat(2,minmax(0,1fr));}
+  .kam-payment-modal-list .kam-payment-alert-item-grid small {display:block;}
+  .kam-payment-modal-list .kam-payment-alert-item-grid>svg {display:none;}
+}
+@media (max-width:600px) {
+  .kam-payment-modal-head {padding:14px;}
+  .kam-payment-modal-summary strong {font-size:12px;}
+  .kam-payment-modal-summary small {font-size:8px;}
+  .kam-payment-modal-filters {gap:9px;padding:10px;}
+  .kam-payment-modal-actions {padding:10px;flex-wrap:wrap;}
+  .kam-payment-modal-actions>div {flex-wrap:wrap;}
+  .kam-payment-modal-list {padding:10px;}
+  .kam-payment-modal-columns {display:none;}
+  .kam-payment-modal-list .kam-payment-alert-item-grid {grid-template-columns:repeat(2,minmax(0,1fr));}
+  .kam-payment-modal-list .kam-payment-alert-item-grid small {display:block;}
+  .kam-payment-modal-list .kam-payment-alert-item-grid>svg {display:none;}
+  .key-account-page .kam-payment-alert-button {min-width:auto;padding:0 9px;font-size:10px;}
+}

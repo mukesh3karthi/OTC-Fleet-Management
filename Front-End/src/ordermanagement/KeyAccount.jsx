@@ -6,7 +6,10 @@ import React, {
   useState,
 } from "react";
 import {
-  Bell,
+  Wallet,
+  Download,
+  X,
+  Search,
   ChevronDown,
   ChevronRight,
   FileText,
@@ -67,6 +70,37 @@ const getOutstandingPayment = (order) => {
   );
   const dueCents = Math.max(0, Math.round(payable * 100) - receivedCents);
   return dueCents > 0 ? dueCents / 100 : null;
+};
+
+// Invoice date is stored in the invoicePayment subdocument.
+// Read the calendar part directly to avoid date shifts caused by timezone conversion.
+const getPaymentInvoiceDate = (order) => {
+  const raw = order?.invoicePayment?.invoiceDate;
+  if (!raw) return "";
+  const value = typeof raw === "object" && raw.$date ? raw.$date : raw;
+  const dateText = String(value).slice(0, 10);
+  return /^\d{4}-\d{2}-\d{2}$/.test(dateText) ? dateText : "";
+};
+const displayPaymentInvoiceDate = (order) => {
+  const value = getPaymentInvoiceDate(order);
+  if (!value) return "—";
+  const [year, month, day] = value.split("-");
+  const monthName = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][Number(month) - 1];
+  return monthName ? `${day} ${monthName} ${year}` : "—";
+};
+
+const getPaymentInvoiceNumber = (order) =>
+  String(order?.invoicePayment?.invoiceNumber || order?.invoicePayment?.invoiceNo || "—");
+
+const getInvoicePendingDays = (order, now = new Date()) => {
+  const invoiceDate = getPaymentInvoiceDate(order);
+  if (!invoiceDate) return null;
+  const [year, month, day] = invoiceDate.split("-").map(Number);
+  const invoiceUTC = Date.UTC(year, month - 1, day);
+  if (!Number.isFinite(invoiceUTC) ||
+      new Date(invoiceUTC).toISOString().slice(0, 10) !== invoiceDate) return null;
+  const todayUTC = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+  return Math.max(0, Math.floor((todayUTC - invoiceUTC) / 86400000));
 };
 
 const formatPendingRupees = (value) =>
@@ -1561,9 +1595,14 @@ const KeyAccount = () => {
   ] = useState(null);
   const [lifecycleEditOrderId, setLifecycleEditOrderId] = useState(null);
   const [paymentAlertsOpen, setPaymentAlertsOpen] = useState(false);
-  const [showAllPaymentAlerts, setShowAllPaymentAlerts] = useState(false);
+  const [paymentSearch, setPaymentSearch] = useState("");
+  const [paymentCustomerFilter, setPaymentCustomerFilter] = useState("All");
+  const [paymentDueFilter, setPaymentDueFilter] = useState("All");
+  const [paymentInvoiceFrom, setPaymentInvoiceFrom] = useState("");
+  const [paymentInvoiceTo, setPaymentInvoiceTo] = useState("");
+  const [paymentSort, setPaymentSort] = useState("high");
+  const [paymentExportFormat, setPaymentExportFormat] = useState("pdf");
   const [openPaymentStep, setOpenPaymentStep] = useState(false);
-  const paymentAlertsRef = useRef(null);
   const pendingPaymentOrders = useMemo(
     () => orders.map((order) => ({ order, due: getOutstandingPayment(order) }))
       .filter((entry) => entry.due !== null)
@@ -1574,27 +1613,65 @@ const KeyAccount = () => {
     () => pendingPaymentOrders.reduce((sum, item) => sum + item.due, 0),
     [pendingPaymentOrders],
   );
+  const paymentCustomers = useMemo(() =>
+    [...new Set(pendingPaymentOrders.map(({ order }) => String(order.customer || "—")))].sort((a,b)=>a.localeCompare(b)),
+    [pendingPaymentOrders]
+  );
+  const filteredPaymentOrders = useMemo(() => {
+    const query = paymentSearch.trim().toLowerCase();
+    const filtered = pendingPaymentOrders.filter(({ order, due }) => {
+      const matchesText = !query || [order.tripId, order.id, order.customer, order.poDocument?.poNumber, getPaymentInvoiceNumber(order)]
+        .some(value => String(value || "").toLowerCase().includes(query));
+      const matchesCustomer = paymentCustomerFilter === "All" || String(order.customer || "—") === paymentCustomerFilter;
+      const matchesDue = paymentDueFilter === "All" ||
+        (paymentDueFilter === "under1" && due < 100000) ||
+        (paymentDueFilter === "1to5" && due >= 100000 && due <= 500000) ||
+        (paymentDueFilter === "over5" && due > 500000);
+      const invoiceDate = getPaymentInvoiceDate(order);
+      const matchesInvoiceDate = (!paymentInvoiceFrom || (invoiceDate && invoiceDate >= paymentInvoiceFrom)) &&
+        (!paymentInvoiceTo || (invoiceDate && invoiceDate <= paymentInvoiceTo));
+      return matchesText && matchesCustomer && matchesDue && matchesInvoiceDate;
+    });
+    return filtered.sort((a,b) => paymentSort === "low" ? a.due-b.due : paymentSort === "customer"
+      ? String(a.order.customer || "").localeCompare(String(b.order.customer || "")) : b.due-a.due);
+  }, [pendingPaymentOrders, paymentSearch, paymentCustomerFilter, paymentDueFilter, paymentSort, paymentInvoiceFrom, paymentInvoiceTo]);
+  const filteredPaymentTotal = useMemo(() => filteredPaymentOrders.reduce((sum,item) => sum+item.due,0), [filteredPaymentOrders]);
+  const downloadPaymentAlerts = () => {
+    const rows = filteredPaymentOrders.map(({order,due}) => [
+      String(order.tripId || order.id || "—"),
+      String(order.customer || "—"),
+      String(order.poDocument?.poNumber || "—"),
+      getPaymentInvoiceNumber(order),
+      displayPaymentInvoiceDate(order),
+      (() => { const days = getInvoicePendingDays(order); return days === null ? "—" : `${days} Days`; })(),
+      Number(due).toFixed(2),
+    ]);
+    const headers = ["Order No.", "Customer", "PO Number", "Invoice Number", "Invoice Date", "Days Pending", "Amount Due (INR)"];
+    if (paymentExportFormat === "pdf") {
+      const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+      doc.setFillColor(10, 55, 72);
+      doc.rect(0, 0, 297, 30, "F");
+      doc.setFont("helvetica", "bold"); doc.setFontSize(16); doc.setTextColor(255,255,255);
+      doc.text("PENDING PAYMENTS",14,16);
+      doc.setFontSize(9); doc.text(`${rows.length} orders  |  Total: INR ${filteredPaymentTotal.toLocaleString("en-IN",{minimumFractionDigits:2})}`,14,24);
+      autoTable(doc,{startY:36,head:[headers],body:rows,styles:{fontSize:9,cellPadding:4},headStyles:{fillColor:[207,231,230],textColor:[18,59,75]},alternateRowStyles:{fillColor:[250,252,253]},margin:{left:14,right:14}});
+      doc.save("pending-payments-filtered.pdf");
+      return;
+    }
+    const safeCell = value => `"${String(value ?? "").replace(/^[=+@-]/, "'$&").replace(/"/g,'""')}"`;
+    const csv = "\uFEFF" + [headers,...rows].map(row => row.map(safeCell).join(",")).join("\r\n");
+    const url=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));
+    const link=document.createElement("a");link.href=url;link.download="pending-payments-filtered.csv";
+    document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  };
   useEffect(() => {
     if (!paymentAlertsOpen) return undefined;
-    const closeOnOutsideClick = (event) => {
-      if (!paymentAlertsRef.current?.contains(event.target)) {
-        setPaymentAlertsOpen(false);
-        setShowAllPaymentAlerts(false);
-      }
-    };
-    const closeOnEscape = (event) => {
-      if (event.key === "Escape") {
-        setPaymentAlertsOpen(false);
-        setShowAllPaymentAlerts(false);
-      }
-    };
-    document.addEventListener("pointerdown", closeOnOutsideClick);
-    document.addEventListener("keydown", closeOnEscape);
-    return () => {
-      document.removeEventListener("pointerdown", closeOnOutsideClick);
-      document.removeEventListener("keydown", closeOnEscape);
-    };
-  }, [paymentAlertsOpen]);
+    const onKeyDown = event => { if (event.key === "Escape") setPaymentAlertsOpen(false); };
+    const previousOverflow=document.body.style.overflow;
+    document.body.style.overflow="hidden";
+    document.addEventListener("keydown",onKeyDown);
+    return () => {document.body.style.overflow=previousOverflow;document.removeEventListener("keydown",onKeyDown);};
+  },[paymentAlertsOpen]);
   const [
     isSaving,
     setIsSaving,
@@ -2811,6 +2888,58 @@ const KeyAccount = () => {
         {/* =================================================
               HEADER
           ================================================= */}
+        {paymentAlertsOpen && (
+          <div className="kam-payment-modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) setPaymentAlertsOpen(false); }}>
+            <div className="kam-payment-modal" id="kam-pending-payments-dialog" role="dialog" aria-modal="true" aria-labelledby="kam-payment-modal-title">
+              <div className="kam-payment-modal-head">
+                <div><small>PAYMENT FOLLOW-UP</small><h2 id="kam-payment-modal-title">Payment Alerts</h2><p>{pendingPaymentOrders.length} orders need follow-up</p></div>
+                <button className="kam-payment-modal-close" type="button" onClick={() => setPaymentAlertsOpen(false)} aria-label="Close payment alerts"><X size={20}/></button>
+              </div>
+              <div className="kam-payment-modal-summary">
+                <div><small>TOTAL PENDING ORDERS</small><strong>{pendingPaymentOrders.length}</strong></div>
+                <div><small>OUTSTANDING AMOUNT</small><strong>{formatPendingRupees(pendingPaymentTotal)}</strong></div>
+                <div><small>FILTERED AMOUNT</small><strong>{formatPendingRupees(filteredPaymentTotal)}</strong></div>
+              </div>
+              <div className="kam-payment-modal-filters">
+                <label className="kam-payment-search-label"><span>Search</span><span className="kam-payment-search-wrap"><Search size={15}/><input value={paymentSearch} onChange={e=>setPaymentSearch(e.target.value)} placeholder="Order, customer or PO number"/></span></label>
+                <label><span>Customer</span><select value={paymentCustomerFilter} onChange={e=>setPaymentCustomerFilter(e.target.value)}><option value="All">All Customers</option>{paymentCustomers.map(customer=><option key={customer} value={customer}>{customer}</option>)}</select></label>
+                <label><span>Due Amount</span><select value={paymentDueFilter} onChange={e=>setPaymentDueFilter(e.target.value)}><option value="All">All Amounts</option><option value="under1">Below ₹1 lakh</option><option value="1to5">₹1–5 lakh</option><option value="over5">Above ₹5 lakh</option></select></label>
+                <label><span>Invoice From</span><input type="date" value={paymentInvoiceFrom} onChange={e=>setPaymentInvoiceFrom(e.target.value)} /></label>
+                <label><span>Invoice To</span><input type="date" min={paymentInvoiceFrom || undefined} value={paymentInvoiceTo} onChange={e=>setPaymentInvoiceTo(e.target.value)} /></label>
+                <label><span>Sort By</span><select value={paymentSort} onChange={e=>setPaymentSort(e.target.value)}><option value="high">Highest Due</option><option value="low">Lowest Due</option><option value="customer">Customer A–Z</option></select></label>
+              </div>
+              <div className="kam-payment-modal-actions">
+                <span>Showing <b>{filteredPaymentOrders.length}</b> of {pendingPaymentOrders.length} orders</span>
+                <div>
+                  <button className="kam-payment-clear" type="button" onClick={()=>{setPaymentSearch("");setPaymentCustomerFilter("All");setPaymentDueFilter("All");setPaymentInvoiceFrom("");setPaymentInvoiceTo("");setPaymentSort("high");}}>Clear Filters</button>
+                  <select aria-label="Download format" value={paymentExportFormat} onChange={e=>setPaymentExportFormat(e.target.value)}><option value="pdf">PDF</option><option value="csv">Excel (CSV)</option></select>
+                  <button type="button" className="kam-payment-download" onClick={downloadPaymentAlerts} disabled={!filteredPaymentOrders.length}><Download size={15}/> Download</button>
+                </div>
+              </div>
+              <div className="kam-payment-modal-list">
+                <div className="kam-payment-modal-columns"><span>ORDER NO.</span><span>CUSTOMER</span><span>PO NUMBER</span><span>INVOICE NO.</span><span>INVOICE DATE</span><span>DAYS PENDING</span><span>AMOUNT</span><span></span></div>
+                {filteredPaymentOrders.length === 0 ? <div className="kam-payment-alert-empty">No pending payments match these filters.</div> :
+                  filteredPaymentOrders.map(({order,due})=>(
+                    <button className="kam-payment-alert-item" type="button" key={getOrderKey(order)} onClick={()=>{
+                      setOpenPaymentStep(true);setLifecycleEditOrderId(null);setSelectedOrderId(getOrderKey(order));setPaymentAlertsOpen(false);
+                    }}>
+                      <span className="kam-payment-alert-item-grid">
+                        <span><small>Order No.</small><b>{order.tripId || order.id || "—"}</b></span>
+                        <span><small>Customer</small><b>{order.customer || "—"}</b></span>
+                        <span><small>PO Number</small><b>{order.poDocument?.poNumber || "—"}</b></span>
+                        <span><small>Invoice Number</small><b>{getPaymentInvoiceNumber(order)}</b></span>
+                        <span><small>Invoice Date</small><b>{displayPaymentInvoiceDate(order)}</b></span>
+                        <span><small>Days Pending</small><b className={`kam-invoice-days ${getInvoicePendingDays(order) === null ? "unknown" : getInvoicePendingDays(order) > 30 ? "danger" : getInvoicePendingDays(order) > 15 ? "warning" : "normal"}`}>{getInvoicePendingDays(order) === null ? "—" : `${getInvoicePendingDays(order)} Days`}</b></span>
+                        <span><small>Amount</small><b className="kam-payment-alert-due">{formatPendingRupees(due)} Due</b></span>
+                        <ChevronRight size={16} aria-hidden="true" />
+                      </span>
+                    </button>
+                  ))}
+              </div>
+              <div className="kam-payment-modal-footer"><span>Select an order to open Invoice & Payment.</span><button type="button" onClick={()=>setPaymentAlertsOpen(false)}>Close</button></div>
+            </div>
+          </div>
+        )}
         <section className="kam-page-heading">
           <div>
             <h1>
@@ -2825,73 +2954,14 @@ const KeyAccount = () => {
             </p>
           </div>
           <div className="kam-heading-actions kam-unified-toolbar">
-            <div className="kam-payment-alerts" ref={paymentAlertsRef}>
-              <button
-                type="button"
-                className={`kam-payment-alert-button ${paymentAlertsOpen ? "is-open" : ""}`}
-                aria-expanded={paymentAlertsOpen}
-                aria-controls="kam-pending-payments-popover"
-                aria-label={`Pending payments: ${pendingPaymentOrders.length} orders`}
-                title="Payment Alerts"
-                onClick={() => setPaymentAlertsOpen((open) => !open)}
-              >
-                <span className="kam-payment-alert-icon">
-                  <Bell size={20} strokeWidth={1.9} aria-hidden="true" />
-                  {pendingPaymentOrders.length > 0 && (
-                    <span className="kam-payment-alert-count">{pendingPaymentOrders.length > 99 ? "99+" : pendingPaymentOrders.length}</span>
-                  )}
-                </span>
+            <div className="kam-payment-alerts">
+              <button type="button" className={`kam-payment-alert-button ${paymentAlertsOpen ? "is-open" : ""}`}
+                aria-expanded={paymentAlertsOpen} aria-haspopup="dialog" aria-controls="kam-pending-payments-dialog"
+                onClick={() => setPaymentAlertsOpen(true)}>
+                <Wallet size={17} strokeWidth={2} aria-hidden="true" />
+                <span>Payment Alerts</span>
+                {pendingPaymentOrders.length > 0 && <span className="kam-payment-alert-count">{pendingPaymentOrders.length > 99 ? "99+" : pendingPaymentOrders.length}</span>}
               </button>
-              {paymentAlertsOpen && (
-                <div
-                  id="kam-pending-payments-popover"
-                  className="kam-payment-alert-popover"
-                  role="region"
-                  aria-label="Pending payments"
-                >
-                  <div className="kam-payment-alert-popover-heading">
-                    <div>
-                      <strong>Pending Payments</strong>
-                      <span>{pendingPaymentOrders.length} orders need follow-up</span>
-                    </div>
-                    <span className="kam-payment-alert-total">{formatPendingRupees(pendingPaymentTotal)}</span>
-                  </div>
-                  <div className="kam-payment-alert-list">
-                    {pendingPaymentOrders.length === 0 ? (
-                      <div className="kam-payment-alert-empty">No pending payments found.</div>
-                    ) : (
-                      (showAllPaymentAlerts ? pendingPaymentOrders : pendingPaymentOrders.slice(0, 4))
-                        .map(({ order, due }) => (
-                          <button
-                            type="button"
-                            className="kam-payment-alert-item"
-                            key={getOrderKey(order)}
-                            onClick={() => {
-                              setOpenPaymentStep(true);
-                              setLifecycleEditOrderId(null);
-                              setSelectedOrderId(getOrderKey(order));
-                              setPaymentAlertsOpen(false);
-                              setShowAllPaymentAlerts(false);
-                            }}
-                          >
-                            <span className="kam-payment-alert-item-grid">
-                              <span><small>Order No.</small><b>{order.tripId || order.id || "—"}</b></span>
-                              <span><small>Customer</small><b>{order.customer || "—"}</b></span>
-                              <span><small>PO Number</small><b>{order.poDocument?.poNumber || "—"}</b></span>
-                              <span><small>Amount</small><b className="kam-payment-alert-due">{formatPendingRupees(due)} Due</b></span>
-                              <ChevronRight size={16} aria-hidden="true" />
-                            </span>
-                          </button>
-                        ))
-                    )}
-                  </div>
-                  {pendingPaymentOrders.length > 4 && !showAllPaymentAlerts && (
-                    <button type="button" className="kam-payment-alert-view-all" onClick={() => setShowAllPaymentAlerts(true)}>
-                      View All Pending <ChevronRight size={14} />
-                    </button>
-                  )}
-                </div>
-              )}
             </div>
             {loggedInName && (
               <div className="kam-user-profile">

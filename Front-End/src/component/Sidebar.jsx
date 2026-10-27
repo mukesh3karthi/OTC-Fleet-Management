@@ -357,7 +357,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
 
     {
       key: "approval",
-      title: "Approval Management",
+      title: "Management Approval",
       icon: <FaFileAlt />,
       path: "/trip-dashboard/approval-management",
     },

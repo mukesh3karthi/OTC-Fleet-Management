@@ -1,25 +1,24 @@
+/* CRANE ALLOCATED VEHICLES — same compact light table as reference */
 .crane-vehicles-page {
   width: 100%;
-  max-width: 100%;
   min-width: 0;
-  padding: 16px;
-  overflow-x: hidden;
-  background: #f4f7fa;
   min-height: 100%;
-  color: #173b4b;
-  font-family: inherit;
+  padding: 10px 12px;
+  background: #f4f7fa;
+  color: #153d50;
+  font-family: Inter, "Segoe UI", Arial, sans-serif;
 }
 .crane-vehicles-header,
 .crane-vehicles-heading,
 .crane-header-actions {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
 }
 .crane-vehicles-header {
   justify-content: space-between;
   flex-wrap: wrap;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 .crane-back,
 .crane-refresh {
@@ -27,255 +26,256 @@
   align-items: center;
   justify-content: center;
   gap: 7px;
-  border: 1px solid #d0e0e6;
-  border-radius: 9px;
+  min-height: 33px;
+  padding: 6px 10px;
+  border: 1px solid #cfdee5;
+  border-radius: 8px;
   background: #fff;
   color: #205566;
-  padding: 8px 11px;
   cursor: pointer;
+  font-weight: 700;
+  font-size: 11px;
+}
+.crane-back:hover,
+.crane-refresh:hover {
+  background: #eaf8f7;
+  border-color: #a9d9d5;
 }
 .crane-eyebrow {
   font-size: 9px;
   font-weight: 800;
-  letter-spacing: 1.3px;
+  letter-spacing: 1px;
   color: #078982;
 }
 .crane-vehicles-heading h1 {
-  margin: 3px 0 4px;
-  font-size: 21px;
-  font-weight: 750;
+  margin: 2px 0;
+  font-size: 20px;
+  font-weight: 800;
 }
 .crane-vehicles-heading p {
   margin: 0;
+  color: #698497;
   font-size: 11px;
-  color: #6a8290;
 }
 .crane-vehicles-heading p span {
-  padding: 0 6px;
+  padding: 0 5px;
 }
 .crane-count {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 12px;
-  font-weight: 700;
+  gap: 7px;
   color: #087f79;
+  font-size: 12px;
+  font-weight: 800;
 }
 .crane-count small {
-  color: #748b97;
+  font-weight: 600;
   font-size: 10px;
-  font-weight: 500;
+  color: #748b97;
 }
 .crane-vehicles-panel {
   width: 100%;
   min-width: 0;
-  border: 1px solid #d6e2e8;
-  background: #fff;
-  border-radius: 14px;
   overflow: hidden;
-  box-shadow: 0 6px 22px #153f5007;
+  border: 1px solid #d2e3ec;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 4px 16px #123b4b08;
 }
 .crane-table-toolbar {
+  min-height: 88px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 16px;
+  justify-content: space-between;
+  gap: 14px;
   flex-wrap: wrap;
-  padding: 13px 16px;
+  padding: 14px 19px;
+  border-bottom: 1px solid #d8e8ee;
+  background: #fff;
 }
 .crane-table-toolbar h2 {
-  margin: 0 0 3px;
-  font-size: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 6px;
+  font-size: 17px;
+  font-weight: 850;
+  color: #102f43;
+}
+.crane-allocated-count {
+  min-width: 24px;
+  padding: 3px 7px;
+  border-radius: 5px;
+  background: #e6f6f3;
+  color: #008c81;
+  font-size: 11px;
+  font-weight: 850;
+  text-align: center;
 }
 .crane-table-toolbar p {
   margin: 0;
-  color: #7b8e9a;
-  font-size: 11px;
+  color: #718da1;
+  font-size: 12px;
 }
 .crane-search {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 11px;
-  border: 1px solid #dbe5eb;
-  border-radius: 8px;
-  color: #7b929e;
+  gap: 9px;
+  width: min(320px, 100%);
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid #d0e1e8;
+  border-radius: 9px;
+  background: #fff;
+  color: #728a98;
 }
 .crane-search input {
+  min-width: 0;
+  width: 100%;
+  height: 40px;
   border: 0;
   outline: 0;
   background: transparent;
-  font-family: inherit;
-  font-size: 11px;
-  width: 230px;
-  color: #254a5c;
+  color: #24485b;
+  font: inherit;
+  font-size: 12px;
+}
+.crane-search:focus-within {
+  border-color: #0d9488;
+  box-shadow: 0 0 0 3px #0d948814;
 }
 .crane-vehicles-table-wrap {
   width: 100%;
   max-height: 62vh;
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: auto;
+  background: #fff;
   scrollbar-width: thin;
-  scrollbar-color: #466372 #0b1721;
-  background: #0b1721;
+  scrollbar-color: #bbd1da transparent;
 }
 .crane-vehicles-table {
   width: 100%;
-  min-width: 0;
+  min-width: 1160px;
   table-layout: fixed;
   border-collapse: collapse;
-  color: #dce8f1;
-  font-size: 11.5px;
+  background: #fff;
+  color: #284f62;
   text-align: left;
-  white-space: normal;
+  font-size: 12px;
 }
 .crane-vehicles-table th {
   position: sticky;
   top: 0;
   z-index: 2;
-  padding: 12px 7px;
-  background: #08131d;
-  color: #809bb3;
-  font-size: 9.5px;
-  font-weight: 750;
-  letter-spacing: 0.15px;
-  line-height: 1.35;
-  white-space: normal;
-  overflow-wrap: anywhere;
-  text-transform: uppercase;
-  border-bottom: 1px solid #1c2d3a;
-}
-.crane-vehicles-table td {
-  padding: 8px 7px;
-  line-height: 1.35;
-  overflow-wrap: anywhere;
-  vertical-align: middle;
-  border-bottom: 1px solid #172735;
-}
-.crane-vehicles-table tr:last-child td {
-  border-bottom: 0;
-}
-.crane-vehicles-table tbody tr:nth-child(even) {
-  background: #0d1b27;
-}
-.crane-vehicles-table tbody tr:hover {
-  background: #132939;
-}
-.crane-vehicles-table tbody tr {
   height: 46px;
-}
-.crane-vehicles-table th,
-.crane-vehicles-table td {
+  padding: 10px 13px;
+  border-bottom: 1px solid #d7e8ed;
+  background: #eaf3f6;
+  color: #3d6880;
+  font-size: 10.5px;
+  font-weight: 850;
+  text-transform: uppercase;
+  white-space: nowrap;
   text-align: left;
 }
-.crane-vehicles-table th:nth-child(7),
-.crane-vehicles-table td:nth-child(7),
-.crane-vehicles-table th:nth-child(12),
-.crane-vehicles-table td:nth-child(12) {
-  text-align: center;
+.crane-vehicles-table td {
+  height: 60px;
+  padding: 10px 13px;
+  border-bottom: 1px solid #e5eef2;
+  background: #fff;
+  vertical-align: middle;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  font-weight: 600;
+}
+.crane-vehicles-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+.crane-vehicles-table tbody tr:hover td {
+  background: #eaf8f6;
 }
 .crane-vehicles-table th:nth-child(1) {
-  width: 9%;
+  width: 12%;
 }
 .crane-vehicles-table th:nth-child(2) {
   width: 7%;
 }
 .crane-vehicles-table th:nth-child(3) {
-  width: 7%;
+  width: 11%;
 }
 .crane-vehicles-table th:nth-child(4) {
-  width: 7%;
+  width: 12%;
 }
 .crane-vehicles-table th:nth-child(5) {
-  width: 11%;
+  width: 7%;
 }
 .crane-vehicles-table th:nth-child(6) {
-  width: 10%;
+  width: 13%;
 }
 .crane-vehicles-table th:nth-child(7) {
-  width: 7%;
+  width: 6%;
 }
 .crane-vehicles-table th:nth-child(8) {
-  width: 7%;
+  width: 8%;
 }
 .crane-vehicles-table th:nth-child(9) {
-  width: 7%;
+  width: 8%;
 }
 .crane-vehicles-table th:nth-child(10) {
-  width: 7%;
+  width: 9%;
 }
 .crane-vehicles-table th:nth-child(11) {
-  width: 11%;
-}
-.crane-vehicles-table th:nth-child(12) {
-  width: 10%;
+  width: 9%;
 }
 .crane-vehicle-number {
-  font-family: ui-monospace, monospace;
-  color: #f3f8ff;
-  font-size: 11px;
-  overflow-wrap: anywhere;
-  font-weight: 750;
+  color: #0a4056;
+  font-size: 12px;
+  font-weight: 900;
 }
 .crane-mono {
-  font-family: ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
 }
 .crane-movement-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  max-width: 100%;
-  padding: 7px 8px;
-  border: 1px solid #258d89;
-  border-radius: 7px;
-  background: #123b41;
-  color: #9ce1dc;
-  font-family: inherit;
-  font-size: 10px;
-  white-space: normal;
-  font-weight: 700;
+  justify-content: center;
+  padding: 8px 12px;
+  border: 1px solid #b3ddd8;
+  border-radius: 8px;
+  background: #eff9f7;
+  color: #007b76;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
   cursor: pointer;
 }
 .crane-movement-btn:hover {
-  background: #165359;
+  background: #dbf2ef;
+  border-color: #82cbc4;
 }
-.crane-movement-btn svg {
-  width: 12px;
-  height: 12px;
-  flex-shrink: 0;
-}
-.crane-vehicle-status {
-  display: inline-flex;
-  align-items: center;
-  padding: 5px 8px;
-  border-radius: 6px;
-  font-size: 10px;
-  white-space: normal;
-  font-weight: 700;
-}
-.crane-vehicle-status.active {
-  background: #12372f;
-  color: #a0d8be;
-}
-.crane-vehicle-status.replaced {
-  background: #34303b;
-  color: #d4bed6;
+.crane-movement-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 .crane-empty,
 .crane-page-message {
-  padding: 36px !important;
+  padding: 28px !important;
   text-align: center;
-  font-size: 13px;
-  color: #8da5b6;
+  color: #708b98;
+  font-size: 12px;
 }
 .crane-page-message button {
-  margin: 12px;
-  padding: 8px 12px;
+  margin: 10px;
+  padding: 7px 12px;
+  border: 1px solid #bddad9;
+  border-radius: 8px;
+  background: #fff;
   cursor: pointer;
 }
-.crane-vehicles-page button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+.crane-vehicles-page button:focus-visible {
+  outline: 2px solid #0d9488;
+  outline-offset: 2px;
 }
 .crane-movement-page .trip-movement-overlay {
   position: static;
@@ -296,22 +296,18 @@
   max-height: none;
   overflow: visible;
 }
-@media (max-width: 700px) {
+@media (max-width: 750px) {
   .crane-vehicles-page {
-    padding: 14px;
+    padding: 10px;
   }
-  .crane-vehicles-heading h1 {
-    font-size: 20px;
-  }
-  .crane-header-actions {
-    width: 100%;
-    justify-content: space-between;
+  .crane-table-toolbar {
+    padding: 12px;
   }
   .crane-search {
     width: 100%;
   }
-  .crane-search input {
-    width: 100%;
+  .crane-vehicles-heading h1 {
+    font-size: 18px;
   }
 }
 
