@@ -17,6 +17,7 @@ import {
   CircleCheckBig,
   MessageSquareText,
   ClipboardList,
+  RefreshCw,
 } from "lucide-react";
 import "../ordermanagement/keyaccount.css";
 import jsPDF from "jspdf";
@@ -1573,6 +1574,7 @@ const downloadOrderPdf = (order = {}) => {
   MAIN COMPONENT
 ========================================================= */
 const KeyAccount = () => {
+  const [refreshing, setRefreshing] = useState(false);
   const [loggedInName] = useState(() => {
     try {
       const user = JSON.parse(sessionStorage.getItem("kamUser") || "{}") || {};
@@ -1724,10 +1726,10 @@ const KeyAccount = () => {
   ======================================================= */
   const loadOrders =
     useCallback(
-      async () => {
-        setIsLoadingOrders(
-          true
-        );
+      async (isRefresh = false) => {
+        const manualRefresh = isRefresh === true;
+        if (manualRefresh) setRefreshing(true);
+        else setIsLoadingOrders(true);
         try {
           const data =
             await apiRequest(
@@ -1747,15 +1749,14 @@ const KeyAccount = () => {
             "Load trip orders error:",
             error
           );
-          setOrders([]);
+          if (!manualRefresh) setOrders([]);
           setToast(
             error.message ||
             "Unable to load orders."
           );
         } finally {
-          setIsLoadingOrders(
-            false
-          );
+          setIsLoadingOrders(false);
+          setRefreshing(false);
         }
       },
       []
@@ -2978,14 +2979,23 @@ const KeyAccount = () => {
             </p>
           </div>
           <div className="kam-heading-actions kam-unified-toolbar">
-            <div className="kam-payment-alerts">
-              <button type="button" className={`kam-payment-alert-button ${paymentAlertsOpen ? "is-open" : ""}`}
-                aria-expanded={paymentAlertsOpen} aria-haspopup="dialog" aria-controls="kam-pending-payments-dialog"
-                onClick={() => setPaymentAlertsOpen(true)}>
-                <Wallet size={17} strokeWidth={2} aria-hidden="true" />
-                <span>Payment Alerts</span>
-                {pendingPaymentOrders.length > 0 && <span className="kam-payment-alert-count">{pendingPaymentOrders.length > 99 ? "99+" : pendingPaymentOrders.length}</span>}
+            <div className="kam-segmented-actions">
+              <button type="button" className="dashboard-refresh-btn"
+                onClick={() => loadOrders(true)} disabled={refreshing}
+                aria-label="Refresh key account orders">
+                <RefreshCw size={16} className={refreshing ? "refresh-spinning" : ""} />
+                <span>{refreshing ? "Refreshing..." : "Refresh"}</span>
               </button>
+              <span className="kam-actions-divider" aria-hidden="true" />
+              <div className="kam-payment-alerts">
+                <button type="button" className={`kam-payment-alert-button ${paymentAlertsOpen ? "is-open" : ""}`}
+                  aria-expanded={paymentAlertsOpen} aria-haspopup="dialog" aria-controls="kam-pending-payments-dialog"
+                  onClick={() => setPaymentAlertsOpen(true)}>
+                  <Wallet size={17} strokeWidth={2} aria-hidden="true" />
+                  <span>Payment Alerts</span>
+                  {pendingPaymentOrders.length > 0 && <span className="kam-payment-alert-count">{pendingPaymentOrders.length > 99 ? "99+" : pendingPaymentOrders.length}</span>}
+                </button>
+              </div>
             </div>
             {loggedInName && (
               <div className="kam-user-profile">

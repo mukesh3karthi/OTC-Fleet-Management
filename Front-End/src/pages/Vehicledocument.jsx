@@ -50,6 +50,8 @@ const BACKEND_URL = API_BASE_URL;
 const CURRENT_YEAR =
   new Date().getFullYear();
 
+const DOCUMENTS_PER_PAGE = 10;
+
 const MONTH_OPTIONS = [
   { value: "01", label: "January" },
   { value: "02", label: "February" },
@@ -519,6 +521,8 @@ const Vehicledocument = () => {
     setSearchText,
   ] = useState("");
 
+  const [documentPage, setDocumentPage] = useState(1);
+
   const [
     exportPopup,
     setExportPopup,
@@ -739,6 +743,24 @@ const Vehicledocument = () => {
       vehicles,
       searchText,
     ]);
+
+  /* Pagination changes only the displayed rows.
+     Exports continue to use ALL filteredVehicles. */
+  const documentTotalPages = Math.max(
+    1,
+    Math.ceil(filteredVehicles.length / DOCUMENTS_PER_PAGE)
+  );
+  const paginatedVehicles = useMemo(
+    () => filteredVehicles.slice(
+      (documentPage - 1) * DOCUMENTS_PER_PAGE,
+      documentPage * DOCUMENTS_PER_PAGE
+    ),
+    [filteredVehicles, documentPage]
+  );
+
+  useEffect(() => {
+    setDocumentPage((page) => Math.min(page, documentTotalPages));
+  }, [documentTotalPages]);
 
   /* ==========================================
      Expiry summary for selected month/year
@@ -1077,7 +1099,7 @@ const Vehicledocument = () => {
      Download uploaded document
   ========================================== */
 
-  const downloadDocument = (
+  const downloadDocument = async (
     vehicle,
     documentKey
   ) => {
@@ -1094,7 +1116,38 @@ const Vehicledocument = () => {
       return;
     }
 
-    window.location.assign(downloadUrl);
+    try {
+      const response = await fetch(downloadUrl, {
+        method: "GET",
+        cache: "no-store",
+      });
+
+      if (!response.ok) {
+        throw new Error(`Unable to download document (HTTP ${response.status}).`);
+      }
+
+      const blob = await response.blob();
+      const documentData = getDocumentData(vehicle, documentKey);
+      const fileName = String(
+        documentData?.originalName ||
+        documentData?.fileName ||
+        documentData?.filename ||
+        `${documentKey}-document.pdf`
+      ).split(/[\\/]/).pop();
+
+      const objectUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = objectUrl;
+      link.download = fileName;
+      link.style.display = "none";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(objectUrl), 10000);
+    } catch (error) {
+      console.error("Individual document download failed:", error);
+      window.alert(error.message || "Unable to download the selected document.");
+    }
   };
 
   const getDocumentDownloadUrl = (
@@ -3484,11 +3537,10 @@ const Vehicledocument = () => {
                 type="search"
                 placeholder="Search vehicle, owner or type"
                 value={searchText}
-                onChange={(event) =>
-                  setSearchText(
-                    event.target.value
-                  )
-                }
+                onChange={(event) => {
+                  setSearchText(event.target.value);
+                  setDocumentPage(1);
+                }}
               />
             </label>
 
@@ -3582,7 +3634,7 @@ const Vehicledocument = () => {
                   </td>
                 </tr>
               ) : (
-                filteredVehicles.map(
+                paginatedVehicles.map(
                   (
                     vehicle,
                     index
@@ -3773,6 +3825,69 @@ const Vehicledocument = () => {
           </table>
         </div>
       </section>
+
+      {!loading && filteredVehicles.length > 0 && (
+        <nav
+          aria-label="Vehicle documents pagination"
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            flexWrap: "wrap",
+            gap: 12,
+            padding: "14px 18px",
+            marginTop: 10,
+            background: "#fff",
+            border: "1px solid #d9e6e9",
+            borderRadius: 10,
+          }}
+        >
+          <span style={{ color: "#58778a", fontSize: 12 }}>
+            Showing {(documentPage - 1) * DOCUMENTS_PER_PAGE + 1}–
+            {Math.min(documentPage * DOCUMENTS_PER_PAGE, filteredVehicles.length)}
+            {" "}of {filteredVehicles.length} vehicles
+          </span>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+            <button type="button" aria-label="Previous page"
+              disabled={documentPage === 1}
+              onClick={() => setDocumentPage((page) => Math.max(1, page - 1))}
+              style={{
+                border: "1px solid #c9dce2", borderRadius: 8,
+                background: "#fff", color: "#174c60",
+                padding: "7px 11px", cursor: documentPage === 1 ? "not-allowed" : "pointer",
+                opacity: documentPage === 1 ? 0.45 : 1,
+              }}>
+              Previous
+            </button>
+            {Array.from({ length: documentTotalPages }, (_, index) => index + 1).map((page) => (
+              <button key={page} type="button" aria-label={`Page ${page}`}
+                aria-current={documentPage === page ? "page" : undefined}
+                onClick={() => setDocumentPage(page)}
+                style={{
+                  minWidth: 34, padding: "7px 10px",
+                  border: "1px solid #c9dce2", borderRadius: 8,
+                  background: documentPage === page ? "#009b91" : "#fff",
+                  color: documentPage === page ? "#fff" : "#174c60",
+                  fontWeight: 700, cursor: "pointer",
+                }}>
+                {page}
+              </button>
+            ))}
+            <button type="button" aria-label="Next page"
+              disabled={documentPage === documentTotalPages}
+              onClick={() => setDocumentPage((page) => Math.min(documentTotalPages, page + 1))}
+              style={{
+                border: "1px solid #c9dce2", borderRadius: 8,
+                background: "#fff", color: "#174c60",
+                padding: "7px 11px",
+                cursor: documentPage === documentTotalPages ? "not-allowed" : "pointer",
+                opacity: documentPage === documentTotalPages ? 0.45 : 1,
+              }}>
+              Next
+            </button>
+          </div>
+        </nav>
+      )}
 
       {exportPopup.open && (
         <div

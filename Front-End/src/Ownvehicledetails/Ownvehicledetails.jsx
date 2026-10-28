@@ -53,6 +53,21 @@ const getVehicleId = (vehicle) =>
   vehicle?.ownVehicleId ??
   null;
 
+const VEHICLE_COLUMNS = [
+  { key: "serial", label: "S.No", width: "4%" },
+  { key: "vehicleNo", label: "Vehicle No.", width: "9%" },
+  { key: "type", label: "Vehicle Type", width: "7%" },
+  { key: "vehicleMake", label: "Vehicle Make", width: "10%" },
+  { key: "manufacturingYear", label: "Manufacturing Year", width: "9%" },
+  { key: "registrationDate", label: "Registration Date", width: "9%" },
+  { key: "transportOwner", label: "Transport Owner", width: "11%" },
+  { key: "engineNo", label: "Engine No.", width: "9%" },
+  { key: "chassisNo", label: "Chassis No.", width: "9%" },
+  { key: "purchaseYear", label: "Purchase Year", width: "7%" },
+  { key: "documents", label: "Documents", width: "9%" },
+  { key: "actions", label: "Actions", width: "7%" },
+];
+
 const Ownvehicledetails = () => {
   const [vehicles, setVehicles] =
     useState([]);
@@ -760,7 +775,7 @@ const Ownvehicledetails = () => {
   };
 
   return (
-    <section className="ownvehicle-page">
+    <section className="ownvehicle-page" data-ownvehicle-build="12-column-actions-v2">
       <div className="ownvehicle-page-header">
         <div>
           <span className="ownvehicle-page-eyebrow">Fleet Management</span>
@@ -864,184 +879,94 @@ const Ownvehicledetails = () => {
         </div>
       </div>
 
-      {/* Vehicle table */}
-
+      {/* All 12 headings and cells use the SAME column definition. */}
       <div className="table-container">
-        <table className="vehicle-table">
+        <table className="vehicle-table" data-column-count={VEHICLE_COLUMNS.length}>
+          <colgroup>
+            {VEHICLE_COLUMNS.map((column) => (
+              <col key={column.key} style={{ width: column.width }} />
+            ))}
+          </colgroup>
           <thead>
             <tr>
-              <th>S.No</th>
-              <th>Vehicle No.</th>
-              <th>Vehicle Type</th>
-              <th>Vehicle Make</th>
-              <th>Manufacturing Year</th>
-              <th>Registration Date</th>
-              <th>Transport Owner</th>
-              <th>Engine No.</th>
-              <th>Chassis No.</th>
-              <th>Purchase Year</th>
-              <th>Documents</th>
-              <th>Actions</th>
+              {VEHICLE_COLUMNS.map((column) => (
+                <th key={column.key} scope="col">
+                  {column.label}
+                </th>
+              ))}
             </tr>
           </thead>
-
           <tbody>
-            {loading ? (
+            {loading || currentVehicles.length === 0 ? (
               <tr>
-                <td
-                  colSpan="12"
-                  className="no-data"
-                >
-                  Loading vehicle
-                  records...
-                </td>
-              </tr>
-            ) : currentVehicles.length ===
-              0 ? (
-              <tr>
-                <td
-                  colSpan="12"
-                  className="no-data"
-                >
-                  No vehicles found.
+                <td colSpan={VEHICLE_COLUMNS.length} className="no-data">
+                  {loading ? "Loading vehicle records..." : "No vehicles found."}
                 </td>
               </tr>
             ) : (
-              currentVehicles.map(
-                (vehicle, index) => (
-                  <tr key={getVehicleId(vehicle) ?? index}>
-                    <td>
-                      {(currentPage - 1) *
-                        RECORDS_PER_PAGE +
-                        index +
-                        1}
-                    </td>
-
-                    <td>
-                      <span className="vehicle-number">
-                        {vehicle.vehicleNo ||
-                          "-"}
-                      </span>
-                    </td>
-
-                    <td>
-                      {vehicle.type || "-"}
-                    </td>
-
-                    <td>
-                      {vehicle.vehicleMake ||
-                        "-"}
-                    </td>
-
-                    <td>
-                      {vehicle.manufacturingYear ||
-                        "-"}
-                    </td>
-
-                    <td>
-                      {formatDate(
-                        vehicle.registrationDate
-                      )}
-                    </td>
-
-                    <td>
-                      {vehicle.transportOwner ||
-                        "-"}
-                    </td>
-
-                    <td>
-                      {vehicle.engineNo || "-"}
-                    </td>
-
-                    <td>
-                      {vehicle.chassisNo || "-"}
-                    </td>
-
-              
-
-                    <td>
-                      {vehicle.purchaseYear ||
-                        "-"}
-                    </td>
-
-
-                    <td>
-                      <button
-                        type="button"
-                        className="upload-btn"
-                        onClick={() =>
-                          openDocumentModal(vehicle)
-                        }
-                      >
-                        <FolderOpen size={15} />
-
-                        <span>Open</span>
-                      </button>
-                    </td>
-
-                    <td>
-                      <div className="vehicle-action-menu">
-                        <button
-                          type="button"
-                          className="action-btn"
-                          aria-label="Open vehicle actions"
-                          aria-haspopup="menu"
-                          aria-expanded={
-                            activeActionMenu === getVehicleId(vehicle)
-                          }
-                          onMouseDown={(event) => event.stopPropagation()}
-                          onClick={(event) =>
-                            toggleActionMenu(event, getVehicleId(vehicle))
-                          }
-                        >
-                          <MoreVertical size={19} />
-                        </button>
-
-                        {activeActionMenu === getVehicleId(vehicle) &&
-                          createPortal(
-                            <div
-                              className="action-dropdown action-dropdown-portal"
-                              role="menu"
-                              style={{
-                                top: actionMenuPosition.top,
-                                left: actionMenuPosition.left,
-                              }}
-                              onMouseDown={(event) =>
-                                event.stopPropagation()
-                              }
+              currentVehicles.map((vehicle, index) => {
+                const vehicleId = getVehicleId(vehicle);
+                return (
+                  <tr key={vehicleId ?? index}>
+                    {VEHICLE_COLUMNS.map((column) => (
+                      <td key={column.key}>
+                        {column.key === "serial" ? (
+                          (currentPage - 1) * RECORDS_PER_PAGE + index + 1
+                        ) : column.key === "vehicleNo" ? (
+                          <span className="vehicle-number">{vehicle.vehicleNo || "-"}</span>
+                        ) : column.key === "registrationDate" ? (
+                          formatDate(vehicle.registrationDate)
+                        ) : column.key === "documents" ? (
+                          <button type="button" className="upload-btn"
+                            onClick={() => openDocumentModal(vehicle)}>
+                            <FolderOpen size={15} /><span>Open</span>
+                          </button>
+                        ) : column.key === "actions" ? (
+                          <div className="vehicle-action-menu">
+                            <button
+                              type="button"
+                              className="action-btn"
+                              title="Edit or delete vehicle"
+                              aria-label={`Actions for ${vehicle.vehicleNo || "vehicle"}`}
+                              aria-haspopup="menu"
+                              aria-expanded={activeActionMenu === vehicleId}
+                              onMouseDown={(event) => event.stopPropagation()}
+                              onClick={(event) => toggleActionMenu(event, vehicleId)}
                             >
-                              <button
-                                type="button"
-                                role="menuitem"
-                                onClick={() =>
-                                  openEditVehicleModal(vehicle)
-                                }
+                              <MoreVertical size={20} />
+                            </button>
+                            {activeActionMenu === vehicleId && createPortal(
+                              <div
+                                className="action-dropdown action-dropdown-portal"
+                                role="menu"
+                                style={{
+                                  top: actionMenuPosition.top,
+                                  left: actionMenuPosition.left,
+                                }}
+                                onMouseDown={(event) => event.stopPropagation()}
                               >
-                                <Pencil size={16} />
-                                <span>Edit Vehicle</span>
-                              </button>
-
-                              <div className="action-menu-divider" />
-
-                              <button
-                                type="button"
-                                role="menuitem"
-                                className="delete-action"
-                                onClick={() =>
-                                  openDeleteConfirmation(vehicle)
-                                }
-                              >
-                                <Trash2 size={16} />
-                                <span>Delete Vehicle</span>
-                              </button>
-                            </div>,
-                            document.body
-                          )}
-                      </div>
-                    </td>
+                                <button type="button" role="menuitem"
+                                  onClick={() => openEditVehicleModal(vehicle)}>
+                                  <Pencil size={16} /><span>Edit Vehicle</span>
+                                </button>
+                                <div className="action-menu-divider" />
+                                <button type="button" role="menuitem"
+                                  className="delete-action"
+                                  onClick={() => openDeleteConfirmation(vehicle)}>
+                                  <Trash2 size={16} /><span>Delete Vehicle</span>
+                                </button>
+                              </div>,
+                              document.body
+                            )}
+                          </div>
+                        ) : (
+                          vehicle[column.key] || "-"
+                        )}
+                      </td>
+                    ))}
                   </tr>
-                )
-              )
+                );
+              })
             )}
           </tbody>
         </table>

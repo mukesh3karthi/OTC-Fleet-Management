@@ -27,6 +27,8 @@ const createInitialForm = () => ({
   vehicleNo: "",
   type: "",
   vehicleMake: "",
+  vehicleModel: "",
+  horsepower: "",
   manufacturingYear: "",
   registrationDate: "",
   transportOwner: "",
@@ -91,6 +93,12 @@ const getVehicleFormData = (
 
     vehicleMake:
       vehicle.vehicleMake || "",
+
+    vehicleModel:
+      vehicle.vehicleModel || "",
+
+    horsepower:
+      vehicle.horsepower ?? "",
 
     manufacturingYear:
       vehicle.manufacturingYear || "",
@@ -319,6 +327,14 @@ const Ownvehiclemodal = ({
             "Vehicle Make",
         },
         {
+          name: "vehicleModel",
+          label: "Vehicle Model",
+        },
+        {
+          name: "horsepower",
+          label: "Horsepower (HP)",
+        },
+        {
           name:
             "manufacturingYear",
           label:
@@ -379,6 +395,14 @@ const Ownvehiclemodal = ({
           `Please enter ${emptyField.label}.`
         );
 
+        return false;
+      }
+
+      if (
+        !/^\d+(\.\d{1,2})?$/.test(String(formData.horsepower)) ||
+        Number(formData.horsepower) <= 0
+      ) {
+        setFormError("Please enter a valid horsepower (HP) greater than zero.");
         return false;
       }
 
@@ -521,6 +545,12 @@ const Ownvehiclemodal = ({
 
           vehicleMake:
             formData.vehicleMake.trim(),
+
+          vehicleModel:
+            formData.vehicleModel.trim(),
+
+          horsepower:
+            Number(formData.horsepower),
 
           manufacturingYear:
             formData.manufacturingYear,
@@ -758,6 +788,29 @@ const Ownvehiclemodal = ({
                 required
               />
 
+
+              <FormInput
+                label="Vehicle Model"
+                name="vehicleModel"
+                value={formData.vehicleModel}
+                onChange={handleChange}
+                placeholder="Ex: Pro 3015"
+                icon={<Car size={17} />}
+                maxLength={80}
+                required
+              />
+
+              <FormInput
+                label="Horsepower (HP)"
+                name="horsepower"
+                value={formData.horsepower}
+                onChange={handleChange}
+                placeholder="Ex: 160"
+                icon={<Gauge size={17} />}
+                inputMode="decimal"
+                maxLength={7}
+                required
+              />
 
               <FormInput
                 label="Manufacturing Year"

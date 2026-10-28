@@ -142,6 +142,15 @@ const getDocumentUrl = (documentData) => {
     ? storedPath
     : `/${storedPath}`;
 
+  // Own-vehicle documents use the backend's dedicated download endpoint.
+  // Keep all other stored URLs and document types unchanged.
+  if (normalizedPath.startsWith("/uploads/ownvehicles/")) {
+    const fileName = normalizedPath.slice("/uploads/ownvehicles/".length);
+    if (fileName && !fileName.includes("/")) {
+      return `${BACKEND_URL}/api/ownvehicles/download/${encodeURIComponent(fileName)}`;
+    }
+  }
+
   return `${BACKEND_URL}${normalizedPath}`;
 };
 

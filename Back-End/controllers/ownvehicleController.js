@@ -501,6 +501,16 @@ const validateVehicle = (
     ],
 
     [
+      "vehicleModel",
+      "Vehicle Model",
+    ],
+
+    [
+      "horsepower",
+      "Horsepower (HP)",
+    ],
+
+    [
       "manufacturingYear",
       "Manufacturing Year",
     ],
@@ -569,6 +579,19 @@ const validateVehicle = (
     cleanText(
       body.manufacturingYear
     );
+
+  const horsepower =
+    cleanText(body.horsepower);
+
+  if (
+    !/^\d+(\.\d{1,2})?$/.test(horsepower) ||
+    Number(horsepower) <= 0
+  ) {
+    return {
+      valid: false,
+      message: "Please enter a valid Horsepower (HP).",
+    };
+  }
 
 
   const purchaseYear =
@@ -1811,6 +1834,12 @@ const addOwnVehicle =
                 .vehicleMake
             ),
 
+          vehicleModel:
+            cleanText(req.body.vehicleModel),
+
+          horsepower:
+            Number(req.body.horsepower),
+
 
           manufacturingYear:
             cleanText(
@@ -2027,6 +2056,14 @@ const updateOwnVehicle =
           req.body.vehicleMake ??
           existingVehicle
             .vehicleMake,
+
+        vehicleModel:
+          req.body.vehicleModel ??
+          existingVehicle.vehicleModel,
+
+        horsepower:
+          req.body.horsepower ??
+          existingVehicle.horsepower,
 
 
         manufacturingYear:
@@ -2253,6 +2290,12 @@ const updateOwnVehicle =
           mergedBody
             .vehicleMake
         );
+
+      existingVehicle.vehicleModel =
+        cleanText(mergedBody.vehicleModel);
+
+      existingVehicle.horsepower =
+        Number(mergedBody.horsepower);
 
 
       existingVehicle

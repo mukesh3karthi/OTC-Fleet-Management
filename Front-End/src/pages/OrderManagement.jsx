@@ -14,6 +14,7 @@ import {
   FaTruck,
   FaUserTie,
   FaChevronDown,
+  FaSyncAlt,
 } from "react-icons/fa";
 import "../pagescss/ordermanagement.css";
 
@@ -417,6 +418,7 @@ const KpiCard = ({ variant, icon, title, subtitle, value }) => (
 const OrderManagement = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
 
   const [kamFilter, setKamFilter] = useState("all");
@@ -428,9 +430,11 @@ const OrderManagement = () => {
      FETCH ORDERS
   ------------------------------------------------------- */
 
-  const fetchOrders = async () => {
+  const fetchOrders = async (isRefresh = false) => {
+    const manualRefresh = isRefresh === true;
     try {
-      setLoading(true);
+      if (manualRefresh) setRefreshing(true);
+      else setLoading(true);
       setError("");
 
       const response = await axios.get(TRIP_API, {
@@ -454,8 +458,9 @@ const OrderManagement = () => {
           "Unable to load dashboard data.",
       );
 
-      setOrders([]);
+      if (!manualRefresh) setOrders([]);
     } finally {
+      setRefreshing(false);
       setLoading(false);
     }
   };
@@ -833,6 +838,12 @@ const OrderManagement = () => {
         </div>
 
         <div className="control-header-right">
+          <button type="button" className="dashboard-refresh-btn"
+            onClick={() => fetchOrders(true)} disabled={refreshing}
+            aria-label="Refresh order dashboard">
+            <FaSyncAlt className={refreshing ? "refresh-spinning" : ""} />
+            <span>{refreshing ? "Refreshing..." : "Refresh"}</span>
+          </button>
           <div className="kam-compact-filter">
             <FaUserTie className="kam-compact-filter__icon" />
 

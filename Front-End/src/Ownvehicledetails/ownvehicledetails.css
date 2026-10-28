@@ -3,7 +3,7 @@
    Compact Dashboard-Matched Design
 \========================================================= */
 .ownvehicle-page,
-.ownvehicle-page \* {
+.ownvehicle-page * {
   box-sizing: border-box;
 }
 
@@ -363,185 +363,83 @@
   box-shadow: 0 0 0 3px rgba(7, 155, 145, 0.1);
 }
 
-/* =========================================================
-   TABLE CONTAINER
-\========================================================= */
+/* ================================
+   VEHICLE TABLE — CLEAN LAYOUT
+   Every column stays in the DOM.
+   Actions stays pinned to the right.
+================================ */
 .ownvehicle-page .table-container {
   position: relative;
   width: 100%;
-  overflow: visible;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
   border: 1px solid #d9e6e9;
   border-radius: 0 0 11px 11px;
-  background: #ffffff;
+  background: #fff;
   box-shadow: 0 5px 14px rgba(15, 23, 42, 0.035);
   scrollbar-width: thin;
   scrollbar-color: #9fc8c8 #f3f8f9;
 }
-
-.ownvehicle-page .table-container::-webkit-scrollbar {
-  height: 6px;
-}
-
-.ownvehicle-page .table-container::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.ownvehicle-page .table-container::-webkit-scrollbar-thumb {
-  border-radius: 10px;
-  background: #b9ced3;
-}
-
-.ownvehicle-page .table-container::-webkit-scrollbar-thumb:hover {
-  background: #78909a;
-}
-
-/* =========================================================
-   TABLE
-\========================================================= */
+.ownvehicle-page .table-container::-webkit-scrollbar { height: 9px; }
+.ownvehicle-page .table-container::-webkit-scrollbar-track { background: #f3f8f9; }
+.ownvehicle-page .table-container::-webkit-scrollbar-thumb { background: #9fc8c8; border-radius: 10px; }
 .ownvehicle-page .vehicle-table {
-  display: table;
   width: 100%;
-  min-width: 0;
+  min-width: 1580px;
   table-layout: fixed;
-  border-collapse: collapse;
+  border-spacing: 0;
+  border-collapse: separate;
 }
-
-/* Explicit tracks prevent a long value from widening the entire table. */
-.ownvehicle-page .vehicle-table thead,
-.ownvehicle-page .vehicle-table tbody {
-  display: table-row-group;
-  width: 100%;
-}
-
-.ownvehicle-page .vehicle-table thead {
-  display: table-header-group;
-}
-
-.ownvehicle-page .vehicle-table thead tr,
-.ownvehicle-page .vehicle-table tbody tr {
-  display: table-row;
-  width: 100%;
-}
-
-.ownvehicle-page .vehicle-table thead {
-  background: #eef7f7;
-}
-
+.ownvehicle-page .vehicle-table thead { display: table-header-group; background: #f4f8fa; }
+.ownvehicle-page .vehicle-table tbody { display: table-row-group; }
+.ownvehicle-page .vehicle-table tr { display: table-row; }
 .ownvehicle-page .vehicle-table th,
 .ownvehicle-page .vehicle-table td {
   display: table-cell;
-  min-width: 0;
-  width: auto;
-  padding: 10px 6px;
-  border-bottom: 1px solid #e5edef;
+  box-sizing: border-box;
+  padding: 14px 16px;
+  border-bottom: 1px solid #e2eaed;
   text-align: left;
   vertical-align: middle;
   white-space: normal;
   overflow-wrap: anywhere;
-  word-break: normal;
 }
-
-.ownvehicle-page .vehicle-table td.no-data {
-  text-align: center;
-}
-
-/* TABLE HEADER */
 .ownvehicle-page .vehicle-table th {
-  color: #24506a;
-  font-size: 10.5px;
+  background: #f4f8fa;
+  color: #063b5c;
+  font-size: 10px;
   font-weight: 700;
-  line-height: 1.35;
-  letter-spacing: 0.01em;
+  line-height: 1.4;
   text-transform: uppercase;
-  hyphens: none;
 }
-
-/* TABLE DATA */
 .ownvehicle-page .vehicle-table td {
-  color: #213b50;
-  font-size: 12px;
+  color: #123650;
+  font-size: 11px;
   font-weight: 550;
-  line-height: 1.45;
+  line-height: 1.5;
 }
-
-.ownvehicle-page .vehicle-table tbody tr {
-  transition: background-color 0.18s ease;
-}
-
-.ownvehicle-page .vehicle-table tbody tr:nth-child(even) {
-  background: #f8fbfc;
-}
-
-.ownvehicle-page .vehicle-table tbody tr:hover {
-  background: #eaf7f5;
-}
-
-.ownvehicle-page .vehicle-table tbody tr:last-child td {
-  border-bottom: none;
-}
-
-.ownvehicle-page .vehicle-table th:first-child,
-.ownvehicle-page .vehicle-table td:first-child {
-  padding-left: 10px;
-}
-
-.ownvehicle-page .vehicle-table th:last-child,
-.ownvehicle-page .vehicle-table td:last-child {
-  padding-right: 6px;
-  text-align: center;
-}
-
+.ownvehicle-page .vehicle-table tbody tr td { background: #fff; }
+.ownvehicle-page .vehicle-table tbody tr:nth-child(even) td { background: #fff; }
+.ownvehicle-page .vehicle-table tbody tr:hover td { background: #f0faf9; }
+.ownvehicle-page .vehicle-table tbody tr:last-child td { border-bottom: 0; }
 .ownvehicle-page .vehicle-table th:nth-child(11),
-.ownvehicle-page .vehicle-table td:nth-child(11) {
+.ownvehicle-page .vehicle-table td:nth-child(11) { text-align: center; }
+/* Actions is a normal table column, aligned with every other cell. */
+.ownvehicle-page .vehicle-table th:nth-child(12),
+.ownvehicle-page .vehicle-table td:nth-child(12) {
+  position: static;
   text-align: center;
+  box-shadow: none;
 }
-
-/* All 12 columns share the available width without an internal scrollbar. */
-.ownvehicle-page .vehicle-table th:nth-child(1) {
-  width: 4%;
-}
-.ownvehicle-page .vehicle-table th:nth-child(2) {
-  width: 10%;
-}
-.ownvehicle-page .vehicle-table th:nth-child(3) {
-  width: 9%;
-}
-.ownvehicle-page .vehicle-table th:nth-child(4) {
-  width: 10%;
-}
-.ownvehicle-page .vehicle-table th:nth-child(5) {
-  width: 11%;
-}
-.ownvehicle-page .vehicle-table th:nth-child(6) {
-  width: 10%;
-}
-.ownvehicle-page .vehicle-table th:nth-child(7) {
-  width: 10%;
-}
-.ownvehicle-page .vehicle-table th:nth-child(8) {
-  width: 10%;
-}
-.ownvehicle-page .vehicle-table th:nth-child(9) {
-  width: 10%;
-}
-.ownvehicle-page .vehicle-table th:nth-child(10) {
-  width: 7%;
-}
-.ownvehicle-page .vehicle-table th:nth-child(11) {
-  width: 6%;
-}
-.ownvehicle-page .vehicle-table th:nth-child(12) {
-  width: 3%;
-}
-
+.ownvehicle-page .vehicle-table th:nth-child(12) { background: #f4f8fa; }
+.ownvehicle-page .vehicle-table td:nth-child(12) { background: #fff; }
+.ownvehicle-page .vehicle-table tbody tr:nth-child(even) td:nth-child(12) { background: #fff; }
+.ownvehicle-page .vehicle-table tbody tr:hover td:nth-child(12) { background: #f0faf9; }
+.ownvehicle-page .vehicle-table td.no-data { text-align: center; background: #fff; }
 @media (max-width: 1100px) {
-  .ownvehicle-page .table-container {
-    overflow-x: auto;
-  }
-
-  .ownvehicle-page .vehicle-table {
-    min-width: 1100px;
-  }
+  .ownvehicle-page .table-container { overflow-x: auto; }
+  .ownvehicle-page .vehicle-table { min-width: 1580px; }
 }
 
 /* =========================================================
@@ -717,28 +615,34 @@
   justify-content: center;
 }
 
-.action-btn {
-  width: 31px;
-  height: 31px;
-  padding: 0;
-  border: 0;
-  border-radius: 7px;
-  background: transparent;
-  color: #607984;
-  display: inline-flex;
-  align-items: center;
+/* Reference-style blue outlined three-dot button */
+.ownvehicle-page .vehicle-table .action-btn {
+  display: inline-flex !important;
   justify-content: center;
+  align-items: center;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  padding: 0;
+  border: 1px solid #009b91 !important;
+  border-radius: 9px;
+  background: #fff !important;
+  color: #009b91 !important;
   cursor: pointer;
-  transition:
-    background-color 0.2s ease,
-    color 0.2s ease;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
 }
-
-.action-btn:hover,
-.action-btn:focus-visible {
-  background: #eaf7f6;
-  color: #079b91;
-  outline: none;
+.ownvehicle-page .vehicle-table .action-btn svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2.5;
+  color: #009b91 !important;
+  stroke: #009b91 !important;
+}
+.ownvehicle-page .vehicle-table .action-btn:hover,
+.ownvehicle-page .vehicle-table .action-btn:focus-visible {
+  background: #eaf7f5 !important;
+  border-color: #007f77 !important;
+  outline: 2px solid transparent;
 }
 
 /* =========================================================
@@ -1122,4 +1026,45 @@ body.ownvehicle-modal-open {
   color: #607984;
   font-size: 10.5px;
   line-height: 1.4;
+}
+
+/* FIX: Restore all 12 vehicle table columns */
+
+.ownvehicle-page .vehicle-table th,
+.ownvehicle-page .vehicle-table td {
+  display: table-cell !important;
+  visibility: visible !important;
+}
+
+/* Keep Actions visible as the LAST NORMAL COLUMN, not a floating panel */
+.ownvehicle-page .vehicle-table th:last-child,
+.ownvehicle-page .vehicle-table td:last-child {
+  display: table-cell !important;
+  position: static !important;
+  min-width: 0;
+  text-align: center;
+  visibility: visible !important;
+  box-shadow: none !important;
+}
+
+.ownvehicle-page .vehicle-table th:last-child {
+  background: #f4f8fa;
+}
+
+.ownvehicle-page .vehicle-table td:last-child {
+  background: inherit;
+}
+
+/* Ensure three-dot button is visible */
+.ownvehicle-page .vehicle-action-menu {
+  display: flex !important;
+  justify-content: center;
+  align-items: center;
+}
+
+.ownvehicle-page .action-btn {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  visibility: visible !important;
 }

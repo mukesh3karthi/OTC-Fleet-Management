@@ -549,6 +549,23 @@ const Lifecyclemodal = ({
   const autoEditOpenedRef = useRef(false);
   const editBaselineRef = useRef("");
   const poBaselineRef = useRef("");
+  // Initialize PO state before unsaved-change calculations use it.
+  const [poForm, setPoForm] = useState({
+    poNumber: order?.poDocument?.poNumber || "",
+    poValidityPeriod: order?.poDocument?.poValidityPeriod || "",
+    billingGstin: order?.poDocument?.billingGstin || "",
+    status: order?.poDocument?.status || "Pending",
+    documentName:
+      order?.poDocument?.fileName || order?.poDocument?.documentName || "",
+    uploadedBy:
+      order?.poDocument?.uploadedBy ||
+      sessionStorage.getItem("kamUsername") ||
+      "",
+  });
+  const [poFile, setPoFile] = useState(null);
+  const [poSaving, setPoSaving] = useState(false);
+  const [poMessage, setPoMessage] = useState("");
+  const [poError, setPoError] = useState("");
   const workingOrder = latestOrderLoading ? null : localOrder || order;
   const openLifecycleEditor = () => {
     const o = workingOrder || order;
@@ -1369,22 +1386,6 @@ const Lifecyclemodal = ({
   const [finalizationSaving, setFinalizationSaving] = useState(false);
   const [finalizationMessage, setFinalizationMessage] = useState("");
   const [finalizationError, setFinalizationError] = useState("");
-  const [poForm, setPoForm] = useState({
-    poNumber: order?.poDocument?.poNumber || "",
-    poValidityPeriod: order?.poDocument?.poValidityPeriod || "",
-    billingGstin: order?.poDocument?.billingGstin || "",
-    status: order?.poDocument?.status || "Pending",
-    documentName:
-      order?.poDocument?.fileName || order?.poDocument?.documentName || "",
-    uploadedBy:
-      order?.poDocument?.uploadedBy ||
-      sessionStorage.getItem("kamUsername") ||
-      "",
-  });
-  const [poFile, setPoFile] = useState(null);
-  const [poSaving, setPoSaving] = useState(false);
-  const [poMessage, setPoMessage] = useState("");
-  const [poError, setPoError] = useState("");
   const [placeOrderSaving, setPlaceOrderSaving] = useState(false);
   const [placeOrderMessage, setPlaceOrderMessage] = useState("");
   const [placeOrderError, setPlaceOrderError] = useState("");
@@ -3021,7 +3022,10 @@ const Lifecyclemodal = ({
                     />
                   </div>
                   {/* CLIENT CONFIRMATION */}
-                  <div className="kam-client-trip-field">
+                  <div
+                    className="kam-client-trip-field"
+                    style={orderApprovalApproved ? { gridColumn: "auto" } : undefined}
+                  >
                     <span>Client Confirmation Notes</span>
                     <textarea
                       name="clientConfirmationNotes"
@@ -3045,6 +3049,18 @@ const Lifecyclemodal = ({
                       disabled={editOpen ? false : finalizationLocked}
                     />
                   </div>
+                  {/* APPROVAL REMARKS — READ ONLY, AFTER CLIENT CONFIRMATION */}
+                  {orderApprovalApproved && (
+                    <div className="kam-client-trip-field" style={{ gridColumn: "auto" }}>
+                      <span>Approval Remarks</span>
+                      <textarea
+                        value={order?.orderApproval?.remarks || "No approval remarks provided."}
+                        rows={3}
+                        readOnly
+                        disabled
+                      />
+                    </div>
+                  )}
                 </div>
                 <div className="kam-finalization-actions">
                   <div className="kam-finalization-feedback">

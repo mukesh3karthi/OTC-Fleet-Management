@@ -1467,3 +1467,51 @@
     width: 100%;
   }
 }
+
+/* Refresh button */
+.dashboard-refresh-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-shrink: 0;
+  height: 36px;
+  padding: 0 14px;
+  border: 1px solid #cbdde5;
+  border-radius: 8px;
+  background: #fff;
+  color: #28546a;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background 0.2s,
+    border-color 0.2s,
+    color 0.2s;
+}
+.dashboard-refresh-btn:hover:not(:disabled) {
+  background: #f0faf8;
+  border-color: #0d9488;
+  color: #087f76;
+}
+.dashboard-refresh-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+.dashboard-refresh-btn svg {
+  width: 15px;
+  height: 15px;
+}
+.refresh-spinning {
+  animation: dashboardRefreshSpin 0.8s linear infinite;
+}
+@keyframes dashboardRefreshSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.key-account-page .kam-unified-toolbar > .dashboard-refresh-btn {
+  margin-right: 8px;
+}

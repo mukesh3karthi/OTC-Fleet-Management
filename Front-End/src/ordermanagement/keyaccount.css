@@ -5221,3 +5221,244 @@
   .kam-payment-modal-list .kam-payment-alert-item-grid>svg {display:none;}
   .key-account-page .kam-payment-alert-button {min-width:auto;padding:0 9px;font-size:10px;}
 }
+
+/* Refresh button */
+.dashboard-refresh-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  flex-shrink: 0; height: 36px; padding: 0 14px;
+  border: 1px solid #cbdde5; border-radius: 8px; background: #fff; color: #28546a;
+  font-family: inherit; font-size: 12px; font-weight: 650;
+  cursor: pointer; white-space: nowrap; transition: background .2s, border-color .2s, color .2s;
+}
+.dashboard-refresh-btn:hover:not(:disabled) { background: #f0faf8; border-color: #0d9488; color: #087f76; }
+.dashboard-refresh-btn:disabled { opacity: .65; cursor: not-allowed; }
+.dashboard-refresh-btn svg { width: 15px; height: 15px; }
+.refresh-spinning { animation: dashboardRefreshSpin .8s linear infinite; }
+@keyframes dashboardRefreshSpin { to { transform: rotate(360deg); } }
+.key-account-page .kam-unified-toolbar > .dashboard-refresh-btn { margin-right: 8px; }
+
+/* =========================================================
+   KEY ACCOUNT TOOLBAR — DESIGN 4: SEGMENTED ACTION BAR
+   Scoped to the toolbar; other page components remain intact.
+========================================================= */
+.key-account-page .kam-heading-actions.kam-unified-toolbar {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+  width: auto;
+  max-width: 100%;
+  min-height: 50px;
+  padding: 5px;
+  border: 1px solid #dfe9eb;
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow: 0 4px 14px rgba(15, 47, 67, 0.055);
+}
+
+.key-account-page .kam-segmented-actions {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: 4px;
+  height: 38px;
+  padding: 3px 6px;
+  border-radius: 999px;
+  background: #f0f5f7;
+}
+
+.key-account-page .kam-segmented-actions .dashboard-refresh-btn {
+  height: 32px;
+  padding: 0 11px;
+  gap: 7px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  box-shadow: none;
+  color: #34586b;
+  font-size: 11px;
+  font-weight: 700;
+}
+.key-account-page .kam-segmented-actions .dashboard-refresh-btn svg { color: #496a7b; }
+.key-account-page .kam-segmented-actions .dashboard-refresh-btn:hover:not(:disabled) {
+  background: #e0ebee;
+  color: #087f76;
+  transform: none;
+  box-shadow: none;
+}
+.key-account-page .kam-actions-divider {
+  display: block;
+  flex: 0 0 1px;
+  width: 1px;
+  height: 20px;
+  background: #d7e3e8;
+}
+
+.key-account-page .kam-segmented-actions .kam-payment-alerts {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: transparent;
+}
+.key-account-page .kam-segmented-actions .kam-payment-alert-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: 32px;
+  min-width: 0;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  box-shadow: none;
+  color: #34586b;
+  font-size: 11px;
+  font-weight: 700;
+}
+.key-account-page .kam-segmented-actions .kam-payment-alert-button > svg { color: #087f76; }
+.key-account-page .kam-segmented-actions .kam-payment-alert-button:hover,
+.key-account-page .kam-segmented-actions .kam-payment-alert-button.is-open {
+  background: #dff0ec;
+  border-color: transparent;
+}
+.key-account-page .kam-segmented-actions .kam-payment-alert-count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 999px;
+}
+
+.key-account-page .kam-unified-toolbar .kam-user-profile {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: 8px;
+  min-height: 38px;
+  margin: 0;
+  padding: 4px 11px 4px 5px;
+  border: 0;
+  border-radius: 999px;
+  background: #edf7f5;
+  box-shadow: none;
+}
+.key-account-page .kam-unified-toolbar .kam-user-avatar {
+  flex: 0 0 30px;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 50%;
+  background: #d3ebe8;
+  color: #075e5e;
+  font-size: 11px;
+}
+.key-account-page .kam-unified-toolbar .kam-user-info strong {
+  max-width: 112px;
+  font-size: 11px;
+  font-weight: 750;
+}
+.key-account-page .kam-unified-toolbar .kam-user-info span { display: none; }
+.key-account-page .kam-unified-toolbar .kam-profile-chevron { margin-left: 1px; }
+
+.key-account-page .kam-unified-toolbar .new-trip-button {
+  flex: 0 0 auto;
+  min-width: 105px;
+  height: 38px;
+  min-height: 38px;
+  padding: 0 13px;
+  margin: 0;
+  border: 0;
+  border-radius: 999px;
+  background: #087f76;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 750;
+  box-shadow: none;
+}
+.key-account-page .kam-unified-toolbar .new-trip-button:hover { background: #076b64; }
+
+@media (max-width: 650px) {
+  .key-account-page .kam-heading-actions.kam-unified-toolbar {
+    width: 100%;
+    border-radius: 18px;
+    justify-content: space-between;
+    gap: 6px;
+  }
+  .key-account-page .kam-segmented-actions { flex: 1 1 auto; justify-content: center; }
+  .key-account-page .kam-unified-toolbar .kam-user-profile { padding-right: 7px; }
+  .key-account-page .kam-unified-toolbar .kam-user-info { display: none; }
+  .key-account-page .kam-unified-toolbar .new-trip-button { min-width: 90px; padding: 0 10px; }
+}
+
+/* Profile treatment from reference image: avatar, two-line name and dividers. */
+.key-account-page .kam-unified-toolbar .kam-user-profile {
+  height: 54px;
+  min-height: 54px;
+  margin: 0;
+  padding: 0 16px;
+  gap: 11px;
+  border: 0;
+  border-left: 1px solid #dce6ed;
+  border-right: 1px solid #dce6ed;
+  border-radius: 0;
+  background: #fff;
+  box-shadow: none;
+}
+.key-account-page .kam-unified-toolbar .kam-user-avatar {
+  width: 46px;
+  height: 46px;
+  flex: 0 0 46px;
+  border: 0;
+  border-radius: 50%;
+  background: #e0f7f5;
+  color: #003c54;
+  font-size: 17px;
+  font-weight: 750;
+}
+.key-account-page .kam-unified-toolbar .kam-user-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+}
+.key-account-page .kam-unified-toolbar .kam-user-info strong {
+  max-width: 145px;
+  color: #002d46;
+  font-size: 14px;
+  font-weight: 750;
+  line-height: 1.15;
+}
+.key-account-page .kam-unified-toolbar .kam-user-info span {
+  display: block;
+  color: #829ab0;
+  font-size: 12px;
+  font-weight: 450;
+  line-height: 1.2;
+}
+.key-account-page .kam-unified-toolbar .kam-profile-chevron {
+  display: block;
+  margin-left: 9px;
+  color: #25485e;
+}
+@media (max-width: 650px) {
+  .key-account-page .kam-unified-toolbar .kam-user-profile {
+    min-height: 48px;
+    height: 48px;
+    padding: 0 9px;
+    gap: 7px;
+  }
+  .key-account-page .kam-unified-toolbar .kam-user-avatar {
+    width: 36px;
+    height: 36px;
+    flex-basis: 36px;
+    font-size: 14px;
+  }
+  .key-account-page .kam-unified-toolbar .kam-user-info strong { font-size: 12px; }
+  .key-account-page .kam-unified-toolbar .kam-user-info span { font-size: 10px; }
+}
