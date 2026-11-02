@@ -35,6 +35,7 @@ const {
   correctLifecycleDetails,
 
   saveOrderFinalization,
+  saveEnquiryAmounts,
 
   savePoDocument,
 
@@ -381,6 +382,8 @@ router.put(
    FIRST APPROVAL
 
 ========================================================= */
+
+router.put("/:id/enquiry-amounts", saveEnquiryAmounts);
 
 router.put(
   "/:id/order-approval",

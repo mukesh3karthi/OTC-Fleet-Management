@@ -157,7 +157,7 @@ const findApprovedConfirmation = (trip, requirementId) => {
   }
   return null;
 };
-const normalizeRequirement = (requirement, index) => ({
+const normalizeRequirement = (requirement, index, isWtgMovement = false) => ({
   requirementId:
     cleanString(requirement?.requirementId) || makeId(`REQ${index + 1}`),
   vehicleType: cleanString(requirement?.vehicleType),
@@ -165,6 +165,12 @@ const normalizeRequirement = (requirement, index) => ({
   classification: cleanString(requirement?.classification),
   quantity: Math.max(1, toNumber(requirement?.quantity, 1)),
   weight: Math.max(0, toNumber(requirement?.weight, 0)),
+  ...(isWtgMovement && {
+    materialType: cleanString(requirement?.materialType),
+    origin: cleanString(requirement?.origin),
+    destination: cleanString(requirement?.destination),
+    placementDate: toDateOrNull(requirement?.placementDate),
+  }),
   dimensions: {
     length: toNullableNumber(requirement?.dimensions?.length),
     height: toNullableNumber(requirement?.dimensions?.height),
@@ -194,7 +200,13 @@ const buildTripData = (body = {}) => ({
   period: cleanString(body.period),
   dieselScope: cleanString(body.dieselScope),
   vehicleRequirements: Array.isArray(body.vehicleRequirements)
-    ? body.vehicleRequirements.map(normalizeRequirement)
+    ? body.vehicleRequirements.map((requirement, index) =>
+        normalizeRequirement(
+          requirement,
+          index,
+          cleanString(body.movementType).toLowerCase() === "wtg movement"
+        )
+      )
     : [],
 });
 const getTripDocument = async (id) => {
@@ -604,13 +616,15 @@ const saveOrderFinalization = async (req, res) => {
     }
     const quotedRateRaw = req.body.quotedRate;
     const finalRateRaw = req.body.finalRate;
-    const quotedRate =
+    const isWtg = cleanString(trip.movementType).toLowerCase() === "wtg movement";
+    const incomingVehicleAmounts = req.body.vehicleFinalAmounts;
+    let quotedRate =
       quotedRateRaw === "" ||
       quotedRateRaw === null ||
       quotedRateRaw === undefined
         ? null
         : Number(quotedRateRaw);
-    const finalRate =
+    let finalRate =
       finalRateRaw === "" || finalRateRaw === null || finalRateRaw === undefined
         ? null
         : Number(finalRateRaw);
@@ -626,6 +640,50 @@ const saveOrderFinalization = async (req, res) => {
     }
     if (finalRate !== null && (!Number.isFinite(finalRate) || finalRate < 0)) {
       return sendError(res, 400, "Final Rate must be a valid positive number.");
+    }
+    if (isWtg) {
+      if (cleanString(trip.enquiryApproval?.status).toLowerCase() !== "sent") {
+        return sendError(res, 409, "Management must send all vehicle quoted amounts first.");
+      }
+      const requirements = trip.vehicleRequirements || [];
+      const managementTotal = Number(trip.enquiryApproval?.totalAmount);
+      if (!Number.isFinite(managementTotal) || managementTotal <= 0 ||
+          !requirements.every((vehicle) => Number.isFinite(Number(vehicle.approvalAmount)) &&
+            Number(vehicle.approvalAmount) > 0) ||
+          Math.abs(requirements.reduce((sum, vehicle) => sum + Number(vehicle.approvalAmount), 0) - managementTotal) > 0.01) {
+        return sendError(res, 409, "Management vehicle quoted amounts are incomplete.");
+      }
+      quotedRate = managementTotal;
+      if (!requirements.length || !Array.isArray(incomingVehicleAmounts) ||
+          incomingVehicleAmounts.length !== requirements.length) {
+        return sendError(res, 400, "Provide a customer final amount for every vehicle.");
+      }
+      const supplied = new Map();
+      for (const item of incomingVehicleAmounts) {
+        const key = cleanString(item?.requirementId);
+        const amount = Number(item?.amount);
+        if (!key || supplied.has(key) || item?.amount === "" || item?.amount == null ||
+            !Number.isFinite(amount) || amount < 0 || Math.abs(Math.round(amount * 100) - amount * 100) > 0.000001) {
+          return sendError(res, 400, "Every vehicle needs a valid customer final amount (up to two decimals).");
+        }
+        supplied.set(key, amount);
+      }
+      let totalPaise = 0;
+      for (const vehicle of requirements) {
+        const key = cleanString(vehicle.requirementId);
+        if (!key || !supplied.has(key)) {
+          return sendError(res, 400, "Customer final amount is missing for a vehicle requirement.");
+        }
+        totalPaise += Math.round(supplied.get(key) * 100);
+      }
+      if (totalPaise <= 0) {
+        return sendError(res, 400, "Total Customer Final Amount must be greater than zero.");
+      }
+      finalRate = totalPaise / 100;
+      requirements.forEach((vehicle) => {
+        vehicle.finalAmount = supplied.get(cleanString(vehicle.requirementId));
+      });
+      trip.markModified("vehicleRequirements");
     }
     const commercialTerms = cleanString(req.body.commercialTerms);
     const deliveryCommitments = cleanString(req.body.deliveryCommitments);
@@ -4323,7 +4381,52 @@ const downloadInvoicePaymentDocument = async (req, res) => {
   }
 };
 
+
+/* Approval Management: replace the current enquiry amounts, no history. */
+const saveEnquiryAmounts = async (req, res) => {
+  try {
+    const result = await getTripDocument(req.params.id);
+    if (result.error) return sendError(res, result.status, result.error);
+    const trip = result.trip;
+    const incoming = req.body?.amounts;
+    const requirements = Array.isArray(trip.vehicleRequirements) ? trip.vehicleRequirements : [];
+    if (!requirements.length || !Array.isArray(incoming) || incoming.length !== requirements.length) {
+      return sendError(res, 400, "Provide an amount for every vehicle requirement.");
+    }
+    const byId = new Map();
+    for (const item of incoming) {
+      const id = cleanString(item?.requirementId);
+      const amount = Number(item?.amount);
+      if (!id || byId.has(id) || item?.amount === "" || item?.amount == null ||
+          !Number.isFinite(amount) || amount <= 0) {
+        return sendError(res, 400, "Each vehicle needs a unique, positive amount.");
+      }
+      byId.set(id, Math.round(amount * 100) / 100);
+    }
+    let totalCents = 0;
+    for (const requirement of requirements) {
+      const id = cleanString(requirement.requirementId);
+      if (!byId.has(id)) return sendError(res, 400, "Unknown or missing vehicle requirement.");
+      const amount = byId.get(id);
+      requirement.approvalAmount = amount;
+      totalCents += Math.round(amount * 100);
+    }
+    trip.enquiryApproval = {
+      status: "Sent",
+      totalAmount: totalCents / 100,
+      updatedAt: new Date(),
+    };
+    trip.markModified("vehicleRequirements");
+    await trip.save();
+    return sendSuccess(res, 200, "Enquiry amounts saved for Key Account.", trip);
+  } catch (error) {
+    console.error("Save Enquiry Amounts Error:", error);
+    return sendError(res, 500, "Unable to save enquiry amounts.", error);
+  }
+};
+
 module.exports = {
+  saveEnquiryAmounts,
   saveInvoicePayment,
   addInvoicePayment,
   downloadInvoicePaymentDocument,

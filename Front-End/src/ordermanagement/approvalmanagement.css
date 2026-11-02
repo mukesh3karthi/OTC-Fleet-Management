@@ -1,7 +1,3 @@
-/* =========================================================
-   APPROVAL MANAGEMENT
-   Matching stylesheet for the current Approvalmanagement.jsx
-========================================================= */
 :root {
   --ap-primary: #0f766e;
   --ap-primary-dark: #0b5f59;
@@ -42,7 +38,6 @@
     sans-serif;
 }
 
-/* HEADER */
 .approval-page-header {
   display: flex;
   align-items: center;
@@ -106,7 +101,6 @@
   cursor: not-allowed;
 }
 
-/* ALERTS */
 .approval-alert {
   min-height: 42px;
   margin-bottom: 12px;
@@ -145,7 +139,6 @@
   color: #0d7456;
 }
 
-/* SUMMARY */
 .approval-summary-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -291,7 +284,6 @@
   border-color: #b9e3e0;
 }
 
-/* TOOLBAR */
 .approval-toolbar {
   min-height: 58px;
   margin-bottom: 0;
@@ -405,7 +397,6 @@
   font-size: 15px;
 }
 
-/* TABLE CARD */
 .approval-table-card {
   overflow: hidden;
   border: 1px solid var(--ap-border);
@@ -566,7 +557,6 @@
   color: var(--ap-primary);
 }
 
-/* EXPANDED ORDER */
 .approval-row-expanded td {
   background: #f7fafb;
 }
@@ -613,7 +603,6 @@
   overflow-wrap: anywhere;
 }
 
-/* VEHICLE REQUIREMENT CARDS */
 .approval-request-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -679,7 +668,6 @@
   min-width: 0;
 }
 
-/* REVIEW / DECISION */
 .approval-review-box {
   padding: 11px;
   border: 1px solid #dbe5e9;
@@ -788,7 +776,6 @@
   font-weight: 700;
 }
 
-/* QUOTATION APPROVAL */
 .approval-quotation-orders {
   display: grid;
   gap: 12px;
@@ -904,7 +891,6 @@
   background: #f8fafb;
 }
 
-/* EMPTY / LOADING */
 .approval-empty {
   min-height: 130px;
   padding: 30px;
@@ -943,7 +929,6 @@
   }
 }
 
-/* RESPONSIVE */
 @media (max-width: 1100px) {
   .approval-summary-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -998,9 +983,6 @@
   }
 }
 
-/* =========================================================
-   MD ORDER APPROVAL TABLE - REFERENCE IMAGE STYLE
-========================================================= */
 .approval-table.approval-md-table {
   min-width: 1280px;
 }
@@ -1386,10 +1368,6 @@
   }
 }
 
-/* =========================================================
-   FINAL VEHICLE DETAILS - CLEAN HORIZONTAL READ-ONLY ROW
-   This replaces the old vehicle card/column appearance.
-========================================================= */
 .approval-vehicle-readonly-list {
   border: 1px solid #dfe8eb;
   border-radius: 8px;
@@ -1503,8 +1481,6 @@
   text-align: center;
 }
 
-/* Hide any old vehicle-card structures if they remain elsewhere
-   inside the expanded vehicle section. */
 .approval-md-expand-section
   .approval-request-grid:has(.approval-vehicle-readonly-list),
 .approval-md-expand-section
@@ -1572,7 +1548,6 @@
   }
 }
 
-/* MD ACTION ICONS + DECISION MODAL */
 .approval-md-icon-actions {
   justify-content: center;
   align-items: center;
@@ -1824,9 +1799,6 @@
   }
 }
 
-/* =========================================================
-   ORDER APPROVAL - FINAL CLEAN LAYOUT
-========================================================= */
 .approval-table-wrap {
   overflow-x: hidden;
 }
@@ -1835,7 +1807,6 @@
   min-width: 0;
 }
 
-/* 10-column viewport layout */
 .approval-md-table th:nth-child(1),
 .approval-md-table td:nth-child(1) {
   min-width: 105px;
@@ -1894,7 +1865,6 @@
   overflow-wrap: anywhere;
 }
 
-/* Main order row */
 .approval-md-main-row {
   transition: background 0.16s ease;
 }
@@ -1906,7 +1876,6 @@
   background: #ffffff;
 }
 
-/* Expanded row: light background + bold teal vertical line */
 .approval-md-main-row.approval-row-expanded > td {
   background: #eef7f8;
 }
@@ -1984,7 +1953,6 @@
   font-size: 8.5px;
 }
 
-/* Expanded area */
 .approval-md-table .approval-expand-row > td {
   width: 100%;
   height: auto;
@@ -1993,7 +1961,6 @@
   background: #f6f9fa;
 }
 
-/* No vertical line around the complete expanded area */
 .approval-expand-row > td::before {
   display: none;
 }
@@ -2004,7 +1971,6 @@
   background: #f6f9fa;
 }
 
-/* Compact order data */
 .approval-md-expand-section {
   width: 100%;
   margin: 0 0 6px;
@@ -2065,7 +2031,6 @@
   min-height: 40px;
 }
 
-/* Vehicle Details heading */
 .approval-md-section-head {
   min-height: 35px;
   padding: 6px 10px;
@@ -2092,7 +2057,6 @@
   line-height: 1.1;
 }
 
-/* Vehicle table: bold vertical line INSIDE table only */
 .approval-vehicle-readonly-list {
   position: relative;
   width: 100%;
@@ -2179,7 +2143,6 @@
   font-weight: 700;
 }
 
-/* Old expanded rejection textarea is not used */
 .approval-md-rejection-box {
   display: none;
 }
@@ -2217,9 +2180,6 @@
   }
 }
 
-/* =========================================================
-   QUOTATION APPROVAL - COMPACT ORDER TABLE + EXPANDED REVIEW
-========================================================= */
 .approval-quotation-main-table {
   width: 100%;
   min-width: 1180px;
@@ -2834,7 +2794,6 @@
   font-weight: 850;
 }
 
-/* QUOTATION ACTION MODAL */
 .approval-qaction-overlay {
   position: fixed;
   inset: 0;
@@ -3099,9 +3058,6 @@
   }
 }
 
-/* =========================================================
-   QUOTATION APPROVAL - MAIN ROW EXTRA DATA
-========================================================= */
 .approval-quotation-row-value {
   display: block;
   overflow: hidden;
@@ -3113,11 +3069,6 @@
   white-space: nowrap;
 }
 
-/* =========================================================
-   TRANSPORTER QUOTATION DETAILS - MODAL EXPAND
-   Keeps the existing quotation logic, but presents expanded
-   vehicle requirements in a viewport-friendly modal.
-========================================================= */
 #approval-management-root .approval-quotation-expand-row > td {
   height: 0;
   padding: 0;
@@ -3353,9 +3304,6 @@
   }
 }
 
-/* =========================================================
-   COMPACT APPROVAL TOAST - BOTTOM RIGHT
-========================================================= */
 .approval-toast {
   position: fixed;
   right: 16px;
@@ -3481,16 +3429,10 @@
   }
 }
 
-/* =========================================================
-   USER-FRIENDLY QUOTATION REVIEW - FINAL PROFESSIONAL UI
-   Visual redesign only: content, APIs and actions stay intact.
-========================================================= */
-/* Modal / expanded review shell */
 #approval-management-root .approval-quotation-expand-panel {
   background: #f5f8f9;
 }
 
-/* Requirements container */
 #approval-management-root .approval-qv-list,
 #approval-management-root .approval-quotation-requirements {
   padding: 14px 16px 18px;
@@ -3498,7 +3440,6 @@
   background: #f5f8f9;
 }
 
-/* Individual vehicle card */
 .approval-qv-requirement-card {
   position: relative;
   overflow: hidden;
@@ -3523,7 +3464,6 @@
   z-index: 3;
 }
 
-/* Vehicle heading: compact and left aligned */
 #approval-management-root .approval-qv-requirement-head {
   min-height: 62px;
   padding: 9px 14px 9px 16px;
@@ -3597,7 +3537,6 @@
   font-size: 7.5px;
 }
 
-/* Table: compact, readable, no oversized empty rows */
 #approval-management-root .approval-qv-table-wrap {
   width: 100%;
   overflow-x: auto;
@@ -3633,7 +3572,6 @@
   vertical-align: middle;
 }
 
-/* sensible column widths */
 #approval-management-root .approval-qv-table th:nth-child(1),
 #approval-management-root .approval-qv-table td:nth-child(1) {
   width: 58px;
@@ -3674,7 +3612,6 @@
   background: #f9fbfb;
 }
 
-/* Selected / confirmed quotation is the visual focus */
 #approval-management-root
   .approval-qv-table
   tbody
@@ -3721,7 +3658,6 @@
   font-weight: 900;
 }
 
-/* Status pills */
 #approval-management-root .approval-qv-table .approval-status {
   min-width: 64px;
   min-height: 23px;
@@ -3731,13 +3667,10 @@
   font-weight: 850;
 }
 
-/* The confirmed summary repeats the same transporter data.
-   Keep it in DOM/data flow but remove the duplicated visual block. */
 #approval-management-root .approval-qv-confirmed-bar {
   display: none;
 }
 
-/* For unapproved requirement: one compact decision footer */
 #approval-management-root .approval-qv-actionbar {
   min-height: 48px;
   padding: 7px 11px;
@@ -3813,7 +3746,6 @@
   font-size: 8px;
 }
 
-/* Make modal feel less overwhelming on desktop */
 @media (min-width: 1100px) {
   #approval-management-root .approval-quotation-expand-panel {
     max-height: calc(100vh - 92px);
@@ -3851,10 +3783,6 @@
   }
 }
 
-/* =========================================================
-   QUOTATION APPROVAL MODAL
-   Single-row professional header
-========================================================= */
 .approval-quotation-expand-panel {
   width: min(1360px, calc(100vw - 64px));
   height: min(760px, calc(100vh - 64px));
@@ -3927,7 +3855,6 @@
   letter-spacing: -0.025em;
 }
 
-/* Important order information is now inside the same teal header */
 .approval-quotation-head-details {
   min-width: 0;
   display: grid;
@@ -3993,7 +3920,6 @@
   background: rgba(255, 255, 255, 0.14);
 }
 
-/* The old second information row is intentionally removed. */
 .approval-quotation-modal-info,
 .approval-quotation-modal-summary {
   display: none;
@@ -4064,9 +3990,6 @@
   }
 }
 
-/* =========================================================
-   TAB FILTERS
-========================================================= */
 .approval-tab-filters {
   margin-left: auto;
   display: flex;
@@ -4132,9 +4055,6 @@
   color: var(--ap-primary);
 }
 
-/* =========================================================
-   MOVEMENT TYPE COLORS
-========================================================= */
 .approval-md-movement,
 .approval-quotation-movement {
   min-width: 70px;
@@ -4204,9 +4124,6 @@
   }
 }
 
-/* =========================================================
-   FILTERS INSIDE EACH TAB SECTION HEADER
-========================================================= */
 .approval-section-head-actions {
   margin-left: auto;
   display: flex;
@@ -4274,11 +4191,6 @@
   }
 }
 
-/* =========================================================
-   OTC MODAL COLOR THEME OVERRIDE
-   Color-only update to match the Order Lifecycle reference.
-   No layout, sizing, spacing, or JSX behavior is changed.
-========================================================= */
 :root {
   --otc-modal-navy: #0b3447;
   --otc-modal-navy-2: #0b4f59;
@@ -4295,15 +4207,11 @@
   --otc-modal-muted: #668697;
 }
 
-/* Shared dark modal backdrop */
 .approval-action-modal-overlay,
 .approval-qaction-overlay {
   background: rgba(4, 30, 42, 0.48);
 }
 
-/* ---------------------------------------------------------
-   ORDER APPROVE / REJECT MODAL
---------------------------------------------------------- */
 .approval-action-modal {
   border-color: var(--otc-modal-border);
   background: var(--otc-modal-card);
@@ -4363,9 +4271,6 @@
   color: #ffffff;
 }
 
-/* ---------------------------------------------------------
-   QUOTATION APPROVE / REJECT ACTION MODAL
---------------------------------------------------------- */
 .approval-qaction-modal {
   border-color: var(--otc-modal-border);
   background: var(--otc-modal-card);
@@ -4402,7 +4307,6 @@
   border-color: rgba(255, 255, 255, 0.2);
 }
 
-/* Generic qaction content controls */
 .approval-qaction-modal input,
 .approval-qaction-modal textarea,
 .approval-qaction-modal select {
@@ -4418,9 +4322,6 @@
   box-shadow: 0 0 0 3px rgba(13, 143, 135, 0.1);
 }
 
-/* ---------------------------------------------------------
-   TRANSPORTER QUOTATION DETAILS MODAL
---------------------------------------------------------- */
 .approval-quotation-expand-panel {
   border-color: var(--otc-modal-border);
   background: var(--otc-modal-bg);
@@ -4504,7 +4405,6 @@
   background: #9dbfc4;
 }
 
-/* Cards and controls inside quotation modal */
 .approval-quotation-modal-body .approval-qv-card,
 .approval-quotation-modal-body .approval-qv-requirement-card,
 .approval-quotation-modal-body .approval-quotation-requirement-card,
@@ -4541,10 +4441,6 @@
   accent-color: var(--otc-modal-teal);
 }
 
-/* =========================================================
-   QUOTATION APPROVAL - QUANTITY
-   Keeps the existing Approval Management design unchanged.
-========================================================= */
 .approval-qv-quantity {
   min-width: 52px;
   min-height: 25px;
@@ -4557,11 +4453,6 @@
   font-weight: 850;
 }
 
-/* =========================================================
-   QUOTATION APPROVAL - VEHICLE REQUIREMENT HEADER V2
-   Professional left-aligned layout + slightly larger fonts.
-   This final block intentionally overrides only this header.
-========================================================= */
 #approval-management-root .approval-qv-requirement-head {
   min-height: 84px;
   padding: 13px 16px;
@@ -4659,7 +4550,6 @@
   white-space: nowrap;
 }
 
-/* Slight font increase inside quotation approval */
 #approval-management-root .approval-qv-table th {
   font-size: 9.5px;
 }
@@ -4692,9 +4582,6 @@
   }
 }
 
-/* =========================================================
-   MULTI TRANSPORTER QUANTITY APPROVAL
-========================================================= */
 .approval-qv-radio input[type="checkbox"] {
   position: absolute;
   opacity: 0;
@@ -4810,10 +4697,6 @@
   font-weight: 900;
 }
 
-/* =========================================================
-   ORDER APPROVAL - ROW CLICK DETAILS MODAL
-   Inline Order Approval expansion removed.
-========================================================= */
 .approval-md-clickable-row {
   cursor: pointer;
 }
@@ -5100,9 +4983,6 @@
   }
 }
 
-/* =========================================================
-   ORDER APPROVAL TABLE - FINAL PROFESSIONAL ALIGNMENT
-========================================================= */
 .approval-md-table th,
 .approval-md-table td {
   box-sizing: border-box;
@@ -5254,9 +5134,6 @@
   gap: 7px;
 }
 
-/* =========================================================
-   MOVEMENT TYPE - DIFFERENT COLOR FOR EACH MOVEMENT
-========================================================= */
 .approval-md-movement {
   min-height: 30px;
   padding: 0 11px;
@@ -5321,9 +5198,6 @@
   color: #536c78;
 }
 
-/* =========================================================
-   ROUTE - PROFESSIONAL HIGHLIGHT
-========================================================= */
 .approval-md-route {
   min-height: 32px;
   padding: 5px 9px;
@@ -5368,10 +5242,6 @@
   }
 }
 
-/* =========================================================
-   ORDER APPROVAL - FINAL 9 COLUMN FIX
-   Keeps MD ACTION visible as the last column
-========================================================= */
 .approval-table-wrap {
   width: 100%;
   max-width: 100%;
@@ -5492,9 +5362,6 @@
   }
 }
 
-/* =========================================================
-   TRANSPORT REPLACEMENT APPROVAL
-========================================================= */
 .approval-replacement-table-card {
   overflow: hidden;
 }
@@ -5818,9 +5685,6 @@
   }
 }
 
-/* =========================================================
-   TRANSPORT REPLACEMENT APPROVAL POPUP
-========================================================= */
 .approval-transport-popup-tab {
   white-space: nowrap;
 }
@@ -5941,9 +5805,6 @@
   }
 }
 
-/* =========================================================
-   TRANSPORT REPLACEMENT - CLICK ROW / DETAILS POPUP
-========================================================= */
 .approval-replacement-click-table {
   min-width: 1180px;
 }
@@ -6374,11 +6235,6 @@
   }
 }
 
-/* =========================================================
-   ORDER APPROVAL - OUTER COLUMN SPACING
-   Keeps Order ID away from the left edge and MD Action
-   away from the right edge without changing table functions.
-========================================================= */
 #approval-management-root .approval-md-table th:first-child,
 #approval-management-root .approval-md-table td:first-child {
   padding-left: 26px;
@@ -6389,10 +6245,6 @@
   padding-right: 26px;
 }
 
-/* =========================================================
-   ORDER DETAILS MODAL - PROFESSIONAL OTC WEBSITE THEME
-   Visual changes only. Existing data and API logic unchanged.
-========================================================= */
 .approval-order-details-head {
   min-height: 92px;
   padding: 18px 22px;
@@ -6658,10 +6510,6 @@
   }
 }
 
-/* =========================================================
-   ORDER APPROVAL DETAILS MODAL - COMPACT PROFESSIONAL TYPOGRAPHY
-   Keeps the existing layout, colors, data and functions.
-========================================================= */
 .approval-order-details-modal {
   font-size: 10px;
 }
@@ -6820,11 +6668,6 @@
   font-size: 11px;
 }
 
-/* =========================================================
-   FINAL PROFESSIONAL QUOTATION APPROVAL DESIGN
-   Vehicle Requirement + Transporter Quotation Table
-   Added 03 Oct 2026
-========================================================= */
 .approval-qv-card {
   width: 100%;
   margin: 0 0 14px;
@@ -6848,7 +6691,6 @@
     0 10px 26px rgba(16, 47, 67, 0.045);
 }
 
-/* Vehicle Requirement Header */
 .approval-qv-header {
   min-height: 100px;
   padding: 15px 18px;
@@ -6952,7 +6794,6 @@
   border: 1px solid #edc1bd;
 }
 
-/* Quotation Table */
 .approval-qv-table-wrap {
   width: 100%;
   overflow-x: auto;
@@ -7095,7 +6936,6 @@
   background: #12a095;
 }
 
-/* Pick checkbox */
 .approval-qv-radio {
   width: 30px;
   height: 30px;
@@ -7149,7 +6989,6 @@
   background: #f5f8f9;
 }
 
-/* Transporter */
 .approval-qv-transporter {
   min-width: 0;
 }
@@ -7179,7 +7018,6 @@
   white-space: nowrap;
 }
 
-/* Quantity */
 .approval-qv-quantity {
   min-width: 58px;
   min-height: 29px;
@@ -7197,7 +7035,6 @@
   white-space: nowrap;
 }
 
-/* Amount / Allocated By / Date */
 .approval-qv-amount {
   color: #0d3447;
   font-size: 11px;
@@ -7221,7 +7058,6 @@
   text-align: center;
 }
 
-/* Existing plain table values get the same professional treatment */
 .approval-qv-table td:nth-child(4) {
   color: #0d3447;
   font-size: 11px;
@@ -7276,7 +7112,6 @@
   color: #ba4039;
 }
 
-/* Support the current JSX status element if it uses approval-status */
 .approval-qv-table td:last-child .approval-status {
   min-width: 72px;
   min-height: 28px;
@@ -7285,7 +7120,6 @@
   font-size: 8px;
 }
 
-/* Responsive */
 @media (max-width: 1100px) {
   .approval-qv-header {
     grid-template-columns: 44px minmax(0, 1fr) auto;
@@ -7353,10 +7187,6 @@
   }
 }
 
-/* =========================================================
-   FINAL VEHICLE REQUIREMENT HEADER
-   Compact professional row with subtle data separators
-========================================================= */
 .approval-qv-header {
   width: 100%;
   min-height: 72px;
@@ -7627,12 +7457,6 @@
   }
 }
 
-/* =========================================================
-   APPROVAL MANAGEMENT — UNIFIED PROFESSIONAL TYPOGRAPHY
-   Same hierarchy across page tables and all approval popups.
-   Font sizing only; layout, colors and functionality unchanged.
-========================================================= */
-/* Base content size */
 .approval-management-page,
 .approval-order-details-modal,
 .approval-quotation-modal,
@@ -7641,7 +7465,6 @@
   font-size: 11px;
 }
 
-/* Standard table body/value text */
 .approval-management-page table td,
 .approval-management-page table td strong,
 .approval-management-page table td span,
@@ -7691,7 +7514,6 @@
   letter-spacing: normal;
 }
 
-/* Emphasize only primary fields, IDs, totals and changed amounts. */
 #approval-management-root
   :is(
     .approval-table,
@@ -7706,7 +7528,6 @@
   font-weight: 700 !important;
 }
 
-/* Unified visible row typography across all four approval tabs. */
 #approval-management-root
   :is(.approval-md-trip, .approval-replacement-order-id) {
   font-size: 12px !important;
@@ -7798,7 +7619,6 @@
   font-size: 12px !important;
 }
 
-/* Standard table headings */
 .approval-management-page table th,
 .approval-order-details-modal table th,
 .approval-quotation-modal table th {
@@ -7819,7 +7639,6 @@
   font-size: 10px !important;
 }
 
-/* Standard field labels in popup cards */
 .approval-order-details-grid span,
 .approval-order-details-sla-grid span,
 .approval-order-details-decision > div > span,
@@ -7841,7 +7660,6 @@
   font-size: 10px;
 }
 
-/* Standard field values in popup cards */
 .approval-order-details-grid strong,
 .approval-order-details-sla-grid strong,
 .approval-order-details-decision > div > strong,
@@ -7869,7 +7687,6 @@
   font-size: 11px;
 }
 
-/* Section eyebrow / small uppercase headings */
 .approval-page-eyebrow,
 .approval-order-details-eyebrow,
 .approval-order-details-section-head span,
@@ -7886,7 +7703,6 @@
   font-size: 10px;
 }
 
-/* Section titles */
 .approval-table-head h3,
 .approval-order-details-section-head h4,
 .approval-qv-title h4,
@@ -7903,13 +7719,11 @@
   font-size: 14px;
 }
 
-/* Main popup/order title — intentionally larger for hierarchy */
 #approval-management-root .approval-order-details-head h3 {
   font-size: 24px;
   line-height: 1.1;
 }
 
-/* Header supporting text */
 .approval-order-details-head p,
 .approval-page-header p {
   line-height: 1.35;
@@ -7920,7 +7734,6 @@
   font-size: 11px;
 }
 
-/* Status badges */
 .approval-status,
 .approval-md-status,
 .approval-table-count,
@@ -7939,7 +7752,6 @@
   font-size: 9px;
 }
 
-/* Buttons */
 #approval-management-root button,
 #approval-management-root .approval-order-details-modal button,
 #approval-management-root .approval-quotation-modal button,
@@ -7948,7 +7760,6 @@
   font-size: 10px;
 }
 
-/* Inputs */
 #approval-management-root input,
 #approval-management-root textarea,
 #approval-management-root select,
@@ -7964,7 +7775,6 @@
   font-size: 11px;
 }
 
-/* Vehicle/read-only headers inside popups */
 #approval-management-root
   .approval-order-details-section
   .approval-vehicle-readonly-header
@@ -7975,9 +7785,6 @@
   font-size: 10px;
 }
 
-/* =========================================================
-   POPUP CLOSE BUTTON
-========================================================= */
 .approval-order-details-close,
 .approval-quotation-modal-close,
 .approval-replacement-modal-close {
@@ -8001,9 +7808,6 @@
   border-radius: 11px;
 }
 
-/* =========================================================
-   TRANSPORT REPLACEMENT - SINGLE ORDER GROUP
-========================================================= */
 .approval-replacement-group-list {
   padding: 12px;
   display: grid;
@@ -8174,9 +7978,6 @@
   }
 }
 
-/* =========================================================
-   TRANSPORT REPLACEMENT DETAILS - MATCH ORDER DETAILS HEADER
-========================================================= */
 #approval-management-root .approval-replacement-detail-head {
   min-height: 92px;
   padding: 18px 22px;
@@ -8272,9 +8073,6 @@
   max-height: calc(92vh - 92px);
 }
 
-/* =========================================================
-   TRANSPORT REPLACEMENT - ORDER ROW + ALL VEHICLES POPUP
-========================================================= */
 .approval-replacement-order-table td {
   vertical-align: middle;
 }
@@ -8406,9 +8204,6 @@
   }
 }
 
-/* =========================================================
-   TRANSPORT REPLACEMENT - FULL ORDER ROW CLICK
-========================================================= */
 .approval-replacement-order-table tbody .approval-replacement-click-row {
   cursor: pointer;
   transition:
@@ -8431,9 +8226,6 @@
   cursor: pointer;
 }
 
-/* =========================================================
-   TRANSPORT REPLACEMENT POPUP - HIGHLIGHT EACH VEHICLE
-========================================================= */
 #approval-management-root .approval-replacement-popup-list {
   gap: 12px;
 }
@@ -8480,27 +8272,21 @@
   color: #082f43;
 }
 
-/* Approved vehicle */
 #approval-management-root
   .approval-replacement-popup-vehicle:has(.approval-status.approved) {
   border-left-color: #16a085;
 }
 
-/* Rejected vehicle */
 #approval-management-root
   .approval-replacement-popup-vehicle:has(.approval-status.rejected) {
   border-left-color: #d65a5a;
 }
 
-/* Pending vehicle */
 #approval-management-root
   .approval-replacement-popup-vehicle:has(.approval-status.pending) {
   border-left-color: #d99a20;
 }
 
-/* =========================================================
-   REPLACEMENT VEHICLE HEADER - HIGHLIGHT
-========================================================= */
 .approval-replacement-popup-vehicle-head {
   position: relative;
 }
@@ -8552,9 +8338,6 @@
   background: #159b90;
 }
 
-/* =========================================================
-   REPLACEMENT POPUP - SMOOTH SCROLL / PERFORMANCE
-========================================================= */
 #approval-management-root .approval-replacement-detail-modal {
   overflow: hidden;
 }
@@ -8598,7 +8381,6 @@
   background-clip: padding-box;
 }
 
-/* Remove expensive movement/shadow effects from long vehicle list */
 #approval-management-root .approval-replacement-popup-vehicle {
   transform: none;
   transition:
@@ -8615,9 +8397,6 @@
   contain: layout;
 }
 
-/* =========================================================
-   REPLACEMENT VEHICLE HEADER - CLEAN LIGHT/DARK COMBINATION
-========================================================= */
 #approval-management-root .approval-replacement-popup-vehicle {
   border-left: 1px solid #c8dce2;
 }
@@ -8628,13 +8407,11 @@
   background: linear-gradient(90deg, #dcefee 0%, #e8f4f3 48%, #f1f7f7 100%);
 }
 
-/* Remove the vertical colored line from the vehicle header */
 #approval-management-root .approval-replacement-popup-vehicle-head::before {
   display: none;
   content: none;
 }
 
-/* Remove status-based header line colors */
 #approval-management-root
   .approval-replacement-popup-vehicle:has(.approval-status.pending)
   .approval-replacement-popup-vehicle-head::before,
@@ -8656,9 +8433,6 @@
   color: #07374a;
 }
 
-/* =========================================================
-   COMPACT PROFESSIONAL TABLE SIZE
-========================================================= */
 #approval-management-root .approval-table-head {
   min-height: 58px;
   padding: 9px 16px;
@@ -8724,7 +8498,6 @@
   font-size: 8.5px;
 }
 
-/* TRANSPORT REPLACEMENT TABLE */
 #approval-management-root .approval-replacement-order-table {
   width: 100%;
   min-width: 1120px;
@@ -8843,7 +8616,6 @@
   gap: 5px;
 }
 
-/* QUOTATION APPROVAL */
 #approval-management-root .approval-quotation-order-head {
   padding: 9px 12px;
 }
@@ -8873,7 +8645,6 @@
   font-size: 8px;
 }
 
-/* Smaller Movement Type + Route values */
 #approval-management-root .approval-md-table .approval-movement-badge {
   min-height: 25px;
   padding: 0 9px;
@@ -8890,9 +8661,6 @@
   line-height: 1;
 }
 
-/* =========================================================
-   ORDER TABLE - SMALLER MOVEMENT + ROUTE
-========================================================= */
 #approval-management-root .approval-md-table .approval-md-movement {
   padding: 3px 8px;
   min-height: 24px;
@@ -8914,10 +8682,6 @@
   font-size: 8px;
 }
 
-/* =========================================================
-   QUOTATION APPROVAL - VEHICLE REQUIREMENTS COUNT
-   Keep all requirement counts in one line
-========================================================= */
 #approval-management-root .approval-quotation-requirement-count {
   width: auto;
   min-width: 96px;
@@ -8940,7 +8704,6 @@
   overflow-wrap: normal;
 }
 
-/* Amount changes: isolated styles, no existing approval styles changed */
 .approval-amount-history {
   background: #fff;
   border: 1px solid #dce6ea;
@@ -9012,7 +8775,6 @@
 }
 
 .approval-tabs {
-  /* overflow-x: auto; */
   max-width: 100%;
 }
 
@@ -9020,7 +8782,6 @@
   white-space: nowrap;
 }
 
-/* AMOUNT CHANGES — unread notification and audit-history polish */
 .approval-tabs > button .approval-amount-unread-badge {
   min-width: 19px;
   height: 19px;
@@ -9093,7 +8854,6 @@
   font-weight: 850;
 }
 
-/* New Amount: compact highlight matching movement-type badges. */
 #approval-management-root
   .approval-amount-table
   tbody
@@ -9139,7 +8899,6 @@
   }
 }
 
-/* Per-order amount-change identification: unread rows stay highlighted until individually viewed. */
 .approval-amount-table tbody tr.approval-amount-row-unread td {
   background: #fff8ed;
 }
@@ -9217,7 +8976,6 @@
   background: #e3f6ed;
 }
 
-/* Shared navy and teal popup theme */
 #approval-management-root .approval-action-modal,
 #approval-management-root .approval-qaction-modal,
 #approval-management-root .approval-order-details-modal,
@@ -9447,7 +9205,7 @@
   > button:focus-visible {
   outline-color: #a5eee4;
 }
-/* Compact transport replacement review dialog */
+
 .ar-overlay {
   position: fixed;
   inset: 0;
@@ -9912,22 +9670,16 @@
   }
 }
 
-/* Bold all Approval Management tabs */
 #approval-management-root .approval-tabs > button {
   font-size: 12px;
   font-weight: 700 !important;
 }
 
-/* Active tab - bold with existing highlight */
 #approval-management-root .approval-tabs > button.active {
   font-weight: 800 !important;
   color: var(--ap-primary);
 }
 
-/* ==============================================================
-   APPROVAL MANAGEMENT — CLEAR TAB AND SECTION HIERARCHY
-   Scoped, final presentation rules; business logic unchanged.
-   ============================================================== */
 #approval-management-root .approval-toolbar {
   background: #ffffff;
   border-color: #d3e3e6;
@@ -9986,7 +9738,7 @@
   outline: 2px solid #0d9488;
   outline-offset: 2px;
 }
-/* Requirement cards: clearly distinct title, column headings, data */
+
 #approval-management-root
   .approval-quotation-modal-body
   .approval-qv-requirement-head,
@@ -10016,7 +9768,7 @@
   border-color: #c9dfe1;
   background: #ffffff;
 }
-/* Quotation column headings and values: white data rows, no alternating fill */
+
 #approval-management-root
   .approval-quotation-modal-body
   .approval-quotation-table
@@ -10035,7 +9787,7 @@
   color: #16394a;
   font-weight: 700;
 }
-/* Transport replacement: pale teal requirement bar distinct from content */
+
 #approval-management-root .approval-replacement-popup-vehicle-head {
   background: #c9e7e4;
   border-bottom-color: #add5d1;
@@ -10044,7 +9796,7 @@
   background: #ffffff;
   border-color: #cbdfe2;
 }
-/* Order approval: shaded requirement heading and white body */
+
 #approval-management-root .approval-request-card-head {
   background: #c9e7e4;
   border-bottom-color: #add5d1;
@@ -10057,7 +9809,7 @@
 #approval-management-root .approval-quotation-requirement-card {
   background: #ffffff;
 }
-/* Across modal tables: softly shaded labels, clear legible values */
+
 #approval-management-root .approval-quotation-modal-body .approval-table th,
 #approval-management-root
   .approval-replacement-detail-modal
@@ -10087,4 +9839,2428 @@
     padding: 0 10px;
     font-size: 11px;
   }
+}
+
+.ae-enquiry {
+  overflow: hidden;
+}
+.ae-list {
+  padding: 12px;
+  display: grid;
+  gap: 10px;
+}
+.ae-order {
+  border: 1px solid #d9e6eb;
+  border-radius: 11px;
+  overflow: hidden;
+  background: #fff;
+}
+.ae-order-summary {
+  display: grid;
+  grid-template-columns: 0.8fr 1fr 1fr 0.8fr 1fr 1fr;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+  padding: 14px 16px;
+  border: 0;
+  background: #fff;
+  color: #183e50;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.ae-order-summary:hover {
+  background: #f6fbfa;
+}
+.ae-order-summary b,
+.ae-trip-id {
+  color: #087e78;
+}
+.ae-sent,
+.ae-pending {
+  font-size: 12px;
+  font-weight: 700;
+}
+.ae-sent {
+  color: #0b977b;
+}
+.ae-pending {
+  color: #b67b11;
+}
+
+.ae-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  background: rgba(5, 24, 35, 0.7);
+}
+.ae-modal-overlay .ae-detail {
+  display: flex;
+  flex-direction: column;
+  width: min(1250px, 100%);
+  max-height: 90vh;
+  min-height: 0;
+  overflow: hidden;
+  gap: 0;
+  padding: 0;
+  border: 1px solid #d6e4e9;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.28);
+}
+.ae-modal-top {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 18px;
+  border-bottom: 1px solid #dce7ec;
+  color: #143b4e;
+}
+.ae-modal-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.ae-modal-brand small {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #0a9288;
+}
+.ae-modal-brand strong {
+  font-size: 17px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ae-modal-brand span {
+  font-size: 11px;
+  color: #698895;
+}
+.ae-modal-top button {
+  flex: 0 0 auto;
+  border: 1px solid #d8e5eb;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 9px;
+  font-size: 23px;
+  line-height: 1;
+  color: #355568;
+  cursor: pointer;
+  width: 36px;
+  height: 36px;
+}
+.ae-modal-body {
+  overflow: auto;
+  min-height: 0;
+  padding: 14px 18px;
+  display: grid;
+  gap: 13px;
+}
+.ae-section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border-bottom: 1px solid #dce8eb;
+  padding-bottom: 10px;
+}
+.ae-section-title h4 {
+  margin: 0 0 3px;
+  font-size: 15px;
+  color: #173e50;
+}
+.ae-section-title p {
+  margin: 0;
+  font-size: 12px;
+  color: #77919e;
+}
+.ae-section-title > span {
+  color: #087c76;
+  background: #edf8f6;
+  border: 1px solid #bce1dc;
+  border-radius: 9px;
+  padding: 7px 11px;
+  font-size: 11px;
+}
+.ae-section-title > span strong {
+  display: block;
+  font-size: 13px;
+}
+.ae-info-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+.ae-field {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 5px;
+}
+.ae-field > span {
+  font-size: 10px;
+  font-weight: 800;
+  color: #365b70;
+  letter-spacing: 0.02em;
+}
+.ae-readonly,
+.ae-field input {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 38px;
+  border: 1px solid #d3e3e9;
+  border-radius: 8px;
+  background: #f8fbfc;
+  padding: 9px;
+  color: #173d51;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+}
+.ae-readonly {
+  overflow-wrap: anywhere;
+}
+.ae-field input {
+  background: #fff;
+}
+.ae-field input:focus,
+.ae-wtg-table input:focus {
+  outline: 2px solid #b5e7df;
+  border-color: #078d83;
+}
+.ae-amount > span {
+  color: #078d83;
+}
+.ae-vehicle {
+  padding: 10px;
+  background: #f9fbfc;
+  border: 1px solid #dae6eb;
+  border-radius: 10px;
+}
+.ae-vehicle-header {
+  color: #078780;
+  font-size: 12px;
+  font-weight: 800;
+  margin-bottom: 9px;
+}
+.ae-vehicle-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 9px;
+}
+.ae-remarks .ae-readonly {
+  min-height: 48px;
+  white-space: pre-wrap;
+}
+.ae-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px;
+  border: 1px solid #bde1dc;
+  border-radius: 10px;
+  background: #edf9f5;
+}
+.ae-footer > div:first-child {
+  display: grid;
+  gap: 2px;
+}
+.ae-footer small {
+  color: #577e7b;
+  font-size: 11px;
+}
+.ae-footer strong {
+  color: #087f79;
+  font-size: 21px;
+}
+.ae-footer button {
+  border: 0;
+  border-radius: 9px;
+  padding: 11px 15px;
+  background: #087f79;
+  color: white;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.ae-footer button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+.ae-footer-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ae-footer .ae-cancel {
+  background: #fff;
+  color: #176a68;
+  border: 1px solid #9ecdc7;
+}
+.ae-amount input:disabled,
+.ae-wtg-table input:disabled {
+  background: #edf4f5;
+  color: #174a4b;
+  cursor: default;
+}
+
+.ae-modal-overlay .ae-wtg-modal {
+  width: min(1840px, calc(100vw - 44px));
+  max-height: calc(100vh - 48px);
+  height: calc(100vh - 48px);
+}
+.ae-wtg-modal .ae-modal-top {
+  min-height: 78px;
+  padding: 14px 24px;
+  color: #fff;
+  background: linear-gradient(110deg, #092f43, #075267 56%, #087d74);
+  border-bottom: 0;
+}
+.ae-wtg-modal .ae-modal-brand small {
+  color: #6ee1d6;
+}
+.ae-wtg-modal .ae-modal-brand strong {
+  color: #fff;
+  font-size: 20px;
+}
+.ae-wtg-modal .ae-modal-brand span {
+  color: #c1e4e5;
+}
+.ae-wtg-modal .ae-modal-top button {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.25);
+}
+.ae-wtg-modal .ae-modal-body {
+  padding: 15px 20px;
+  gap: 14px;
+}
+.ae-wtg-modal .ae-wtg-info-grid {
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 8px;
+}
+.ae-wtg-modal .ae-wtg-info-grid .ae-readonly {
+  padding: 7px 7px;
+  min-height: 30px;
+}
+.ae-wtg-modal .ae-wtg-info-grid .ae-field > span {
+  font-size: 9px;
+  white-space: nowrap;
+}
+.ae-wtg-table-wrap {
+  width: 100%;
+  border: 1px solid #d9e7ec;
+  border-radius: 12px;
+  overflow-x: auto;
+}
+.ae-wtg-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 11px;
+  color: #234659;
+}
+.ae-wtg-table th {
+  background: #f4f8fa;
+  border-bottom: 1px solid #dce8eb;
+  padding: 12px 5px;
+  text-align: left;
+  color: #648090;
+  font-size: 9px;
+  font-weight: 800;
+  white-space: normal;
+}
+.ae-wtg-table td {
+  padding: 11px 5px;
+  font-weight: 600;
+  vertical-align: middle;
+  border-bottom: 1px solid #e3ebef;
+  overflow-wrap: anywhere;
+}
+.ae-wtg-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+.ae-wtg-table th:first-child,
+.ae-wtg-table td:first-child {
+  width: 40px;
+  padding-left: 12px;
+}
+.ae-wtg-table th:nth-child(2),
+.ae-wtg-table td:nth-child(2) {
+  width: 13%;
+}
+.ae-wtg-table th:nth-child(3),
+.ae-wtg-table td:nth-child(3) {
+  width: 10%;
+}
+.ae-wtg-table th:nth-child(10),
+.ae-wtg-table td:nth-child(10) {
+  width: 11%;
+}
+.ae-wtg-table th:last-child,
+.ae-wtg-table td:last-child {
+  width: 12%;
+}
+.ae-wtg-number {
+  display: inline-grid;
+  place-items: center;
+  min-width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  color: #078b83;
+  background: #eaf6f3;
+}
+.ae-wtg-table input {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  padding: 9px 7px;
+  border: 1px solid #bdd9e0;
+  border-radius: 8px;
+  background: white;
+  color: #123e4e;
+  font: inherit;
+  font-size: 11px;
+}
+.ae-wtg-modal .ae-footer {
+  margin: 0;
+  padding: 14px 17px;
+  background: #eaf7f3;
+}
+@media (max-width: 1300px) {
+  .ae-wtg-modal .ae-wtg-info-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .ae-wtg-table {
+    min-width: 1150px;
+  }
+}
+@media (max-width: 800px) {
+  .ae-info-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .ae-vehicle-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .ae-order-summary {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .ae-modal-overlay {
+    padding: 8px;
+  }
+  .ae-wtg-modal .ae-wtg-info-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 520px) {
+  .ae-order-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .ae-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
+
+#approval-management-root .ae-enquiry .ae-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  background: #fff;
+}
+#approval-management-root .ae-enquiry-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: auto;
+  background: #fff;
+}
+#approval-management-root .ae-enquiry-table th {
+  padding: 15px 12px;
+  background: #f2f6f7;
+  border-bottom: 1px solid #dbe6ea;
+  color: #4b6c7e;
+  font-size: 10.5px;
+  font-weight: 650;
+  letter-spacing: 0.03em;
+  text-align: left;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+#approval-management-root .ae-enquiry-table td {
+  padding: 14px 12px;
+  background: #fff;
+  border-bottom: 1px solid #e5ecef;
+  color: #2b4858;
+  font-size: 12px;
+  font-weight: 450;
+  vertical-align: middle;
+}
+#approval-management-root .ae-enquiry-table tbody tr:hover > td {
+  background: #f8fbfb;
+}
+#approval-management-root .ae-enquiry-table tbody tr:last-child > td {
+  border-bottom: 0;
+}
+#approval-management-root .ae-enquiry-table .ae-id {
+  color: #18465c;
+  font-weight: 550;
+  white-space: nowrap;
+}
+#approval-management-root .ae-enquiry-table .ae-client {
+  color: #183c50;
+  font-weight: 600;
+}
+#approval-management-root .ae-enquiry-table .ae-total-amount {
+  color: #173e55;
+  font-weight: 650;
+  white-space: nowrap;
+}
+#approval-management-root .ae-movement-badge {
+  display: inline-flex;
+  padding: 5px 10px;
+  border: 1px solid #b4e2db;
+  border-radius: 20px;
+  background: #e8f8f5;
+  color: #087e78;
+  font-size: 10.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+#approval-management-root .ae-status-badge {
+  display: inline-flex;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 10.5px;
+  font-weight: 650;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+#approval-management-root .ae-status-badge.pending {
+  background: #fff7e9;
+  border: 1px solid #f0d69d;
+  color: #ad7410;
+}
+#approval-management-root .ae-status-badge.sent {
+  background: #eaf8f2;
+  border: 1px solid #afe1c8;
+  color: #14815c;
+}
+#approval-management-root .ae-view-btn {
+  padding: 7px 12px;
+  border: 1px solid #a7d9d4;
+  border-radius: 7px;
+  background: #fff;
+  color: #087e78;
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+#approval-management-root .ae-view-btn:hover {
+  background: #087e78;
+  border-color: #087e78;
+  color: white;
+}
+#approval-management-root .ae-enquiry-table .ae-action-cell {
+  white-space: nowrap;
+}
+@media (max-width: 1100px) {
+  #approval-management-root .ae-enquiry-table th,
+  #approval-management-root .ae-enquiry-table td {
+    padding: 11px 8px;
+    font-size: 10.5px;
+  }
+}
+
+#approval-management-root .ae-wtg-modal .ae-wtg-table-wrap {
+  width: 100%;
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+  border: 1px solid #d9e7ec;
+  border-radius: 10px;
+}
+
+#approval-management-root .ae-wtg-modal .ae-wtg-table th {
+  padding: 10px 5px;
+  font-size: 9px;
+  font-weight: 650;
+  white-space: normal;
+}
+
+#approval-management-root .ae-wtg-modal .ae-wtg-table td {
+  padding: 10px 5px;
+  font-size: 10.5px;
+  font-weight: 500;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+  vertical-align: middle;
+}
+
+#approval-management-root .ae-wtg-modal .ae-wtg-table input {
+  width: 100%;
+  min-width: 0;
+  padding: 8px 6px;
+  font-size: 10.5px;
+  box-sizing: border-box;
+}
+
+#approval-management-root .ae-wtg-modal .ae-wtg-table tbody {
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+@media (max-width: 1300px) {
+  #approval-management-root .ae-wtg-modal .ae-wtg-table {
+    min-width: 0 !important;
+  }
+}
+
+#approval-management-root
+  .approval-order-details-modal
+  .approval-order-details-grid {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 7px;
+}
+#approval-management-root
+  .approval-order-details-modal
+  .approval-order-details-grid
+  > div {
+  min-width: 0;
+  padding: 9px 7px;
+}
+#approval-management-root
+  .approval-order-details-modal
+  .approval-order-details-grid
+  span {
+  font-size: 9px;
+}
+#approval-management-root
+  .approval-order-details-modal
+  .approval-order-details-grid
+  strong {
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+
+#approval-management-root
+  .approval-order-details-modal
+  .approval-vehicle-readonly-header,
+#approval-management-root
+  .approval-order-details-modal
+  .approval-vehicle-readonly-row {
+  display: grid;
+  grid-template-columns:
+    36px minmax(0, 1.35fr) minmax(0, 0.85fr) minmax(0, 1fr)
+    55px 65px minmax(0, 1fr) minmax(0, 0.9fr)
+    minmax(0, 1.05fr) minmax(0, 0.85fr);
+  width: 100%;
+  min-width: 0;
+}
+#approval-management-root
+  .approval-order-details-modal
+  .approval-vehicle-readonly-list {
+  overflow-x: hidden;
+}
+#approval-management-root
+  .approval-order-details-modal
+  .approval-vehicle-readonly-header
+  > div,
+#approval-management-root
+  .approval-order-details-modal
+  .approval-vehicle-readonly-field {
+  min-width: 0;
+  padding: 7px 5px;
+}
+#approval-management-root
+  .approval-order-details-modal
+  .approval-vehicle-readonly-header
+  > div {
+  font-size: 8px;
+  overflow-wrap: anywhere;
+}
+#approval-management-root
+  .approval-order-details-modal
+  .approval-vehicle-readonly-field
+  > strong {
+  font-size: 10px;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 850px) {
+  #approval-management-root
+    .approval-order-details-modal
+    .approval-order-details-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+#approval-management-root .ae-wtg-modal .ae-wtg-table-wrap {
+  width: 100%;
+  border: 1px solid #d6e3e8;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+#approval-management-root .ae-wtg-modal .ae-wtg-table {
+  width: 100%;
+  min-width: 0;
+  border-collapse: collapse;
+  table-layout: fixed;
+  background: #ffffff;
+}
+
+#approval-management-root .ae-wtg-modal .ae-wtg-table thead th {
+  background: #f2f6f7;
+  color: #426b82;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.25px;
+  text-align: left;
+  padding: 11px 7px;
+  border-right: 1px solid #dce7eb;
+  border-bottom: 1px solid #dce7eb;
+  vertical-align: middle;
+}
+
+#approval-management-root .ae-wtg-modal .ae-wtg-table tbody td {
+  background: #ffffff !important;
+  color: #123f50;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 12px 7px;
+  line-height: 1.4;
+  border-right: 1px solid #e1e9ec;
+  border-bottom: 1px solid #e1e9ec;
+  vertical-align: middle;
+  overflow-wrap: anywhere;
+}
+
+#approval-management-root .ae-wtg-modal .ae-wtg-table tbody tr,
+#approval-management-root .ae-wtg-modal .ae-wtg-table tbody tr:nth-child(even),
+#approval-management-root .ae-wtg-modal .ae-wtg-table tbody tr:nth-child(odd),
+#approval-management-root
+  .ae-wtg-modal
+  .ae-wtg-table
+  tbody
+  tr:nth-child(even)
+  td,
+#approval-management-root
+  .ae-wtg-modal
+  .ae-wtg-table
+  tbody
+  tr:nth-child(odd)
+  td {
+  background: #ffffff !important;
+}
+
+#approval-management-root .ae-wtg-modal .ae-wtg-table th:last-child,
+#approval-management-root .ae-wtg-modal .ae-wtg-table td:last-child {
+  border-right: none;
+}
+
+#approval-management-root .ae-wtg-modal .ae-wtg-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+#approval-management-root .ae-wtg-modal .ae-wtg-number {
+  background: transparent;
+  color: #174c61;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 0;
+}
+
+#approval-management-root .ae-wtg-modal .ae-wtg-table input {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 8px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid #d4e3e8;
+  border-radius: 6px;
+  background: #ffffff;
+}
+
+#approval-management-root .approval-vehicle-readonly-row,
+#approval-management-root .approval-vehicle-readonly-row:nth-child(even),
+#approval-management-root .approval-vehicle-readonly-row:nth-child(odd) {
+  background: #ffffff !important;
+}
+
+#approval-management-root .approval-order-details-modal {
+  width: min(1840px, calc(100vw - 44px));
+  max-width: none;
+  height: calc(100vh - 48px);
+  max-height: calc(100vh - 48px);
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 16px;
+}
+#approval-management-root .approval-order-details-head {
+  flex: 0 0 auto;
+}
+#approval-management-root .approval-order-details-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+#approval-management-root .ae-modal-header-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+  min-width: 0;
+}
+#approval-management-root .ae-modal-trip-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  color: #c1e4e5;
+  font-size: 12px;
+  font-weight: 600;
+}
+#approval-management-root .ae-modal-trip-info strong {
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+#approval-management-root .ae-modal-header-right button {
+  flex-shrink: 0;
+}
+
+#approval-management-root .ae-wtg-modal .ae-footer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: auto;
+  min-height: 86px;
+  padding: 12px 18px;
+  margin: 0;
+  gap: 16px;
+  border-radius: 10px;
+  background: #edf8f5;
+  border: 1px solid #bde1dc;
+  box-sizing: border-box;
+  overflow: visible;
+}
+#approval-management-root .ae-wtg-modal .ae-footer > div:first-child {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  min-width: 0;
+  gap: 3px;
+}
+#approval-management-root .ae-wtg-modal .ae-footer small {
+  display: block;
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.3;
+}
+#approval-management-root .ae-wtg-modal .ae-footer strong {
+  display: block;
+  margin: 0;
+  font-size: 23px;
+  font-weight: 750;
+  line-height: 1.15;
+}
+#approval-management-root .ae-wtg-modal .ae-footer button {
+  flex-shrink: 0;
+  min-height: 36px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 11px;
+}
+#approval-management-root .ae-wtg-modal .ae-footer-actions {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 8px;
+}
+
+#approval-management-root .ae-enquiry-table,
+#approval-management-root .approval-md-table {
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+#approval-management-root .ae-enquiry-table thead th,
+#approval-management-root .approval-md-table thead th {
+  height: 42px;
+  padding: 9px 12px;
+  box-sizing: border-box;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: 0.025em;
+  vertical-align: middle;
+}
+
+#approval-management-root .ae-enquiry-table tbody tr > td,
+#approval-management-root
+  .approval-md-table
+  tbody
+  tr.approval-md-main-row
+  > td {
+  height: 66px;
+  min-height: 66px;
+  padding: 11px 12px;
+  box-sizing: border-box;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.35;
+  vertical-align: middle;
+  background: #ffffff;
+}
+
+#approval-management-root .ae-enquiry-table .ae-id,
+#approval-management-root .ae-enquiry-table .ae-client,
+#approval-management-root .approval-md-table .approval-trip-link {
+  font-size: 12px;
+  font-weight: 650;
+}
+
+#approval-management-root .ae-enquiry-table .ae-total-amount,
+#approval-management-root .approval-md-table .approval-md-amount {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+#approval-management-root
+  .approval-md-table
+  tbody
+  .approval-md-main-row
+  td
+  small,
+#approval-management-root
+  .approval-md-table
+  tbody
+  .approval-md-main-row
+  td
+  span {
+  line-height: 1.3;
+}
+
+@media (max-width: 1100px) {
+  #approval-management-root .ae-enquiry-table tbody tr > td,
+  #approval-management-root
+    .approval-md-table
+    tbody
+    tr.approval-md-main-row
+    > td {
+    padding: 9px 8px;
+    font-size: 11px;
+  }
+}
+
+#approval-management-root .approval-md-table {
+  width: 100%;
+  table-layout: fixed;
+}
+#approval-management-root .approval-md-table thead th,
+#approval-management-root
+  .approval-md-table
+  tbody
+  tr.approval-md-main-row
+  > td {
+  width: auto;
+  min-width: 0;
+  max-width: none;
+  padding-left: 10px;
+  padding-right: 10px;
+  text-align: left;
+}
+#approval-management-root .approval-md-table th:nth-child(1),
+#approval-management-root .approval-md-table td:nth-child(1) {
+  width: 9%;
+}
+#approval-management-root .approval-md-table th:nth-child(2),
+#approval-management-root .approval-md-table td:nth-child(2) {
+  width: 12%;
+}
+#approval-management-root .approval-md-table th:nth-child(3),
+#approval-management-root .approval-md-table td:nth-child(3) {
+  width: 13%;
+}
+#approval-management-root .approval-md-table th:nth-child(4),
+#approval-management-root .approval-md-table td:nth-child(4) {
+  width: 12%;
+}
+#approval-management-root .approval-md-table th:nth-child(5),
+#approval-management-root .approval-md-table td:nth-child(5) {
+  width: 11%;
+}
+#approval-management-root .approval-md-table th:nth-child(6),
+#approval-management-root .approval-md-table td:nth-child(6) {
+  width: 22%;
+}
+#approval-management-root .approval-md-table th:nth-child(7),
+#approval-management-root .approval-md-table td:nth-child(7) {
+  width: 11%;
+}
+#approval-management-root .approval-md-table th:nth-child(8),
+#approval-management-root .approval-md-table td:nth-child(8) {
+  width: 10%;
+}
+
+#approval-management-root .approval-md-kam {
+  display: block;
+  font-size: 11px;
+  font-weight: 650;
+  color: #173e50;
+  overflow-wrap: anywhere;
+}
+
+#approval-management-root
+  .approval-order-details-modal
+  .approval-order-details-grid {
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+}
+#approval-management-root
+  .approval-order-details-modal
+  .approval-order-details-grid-eight {
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+}
+#approval-management-root
+  .approval-order-details-modal
+  .approval-order-details-grid
+  > div {
+  padding: 10px 9px;
+}
+#approval-management-root
+  .approval-order-details-modal
+  .approval-order-details-head
+  p {
+  margin: 4px 0 0;
+  line-height: 1.3;
+}
+#approval-management-root
+  .approval-order-details-modal
+  .approval-order-details-section {
+  margin-bottom: 10px;
+}
+#approval-management-root
+  .approval-order-details-modal
+  .approval-order-details-body {
+  padding: 12px 16px;
+}
+@media (max-width: 1000px) {
+  #approval-management-root
+    .approval-order-details-modal
+    .approval-order-details-grid,
+  #approval-management-root
+    .approval-order-details-modal
+    .approval-order-details-grid-eight {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+#approval-management-root .ae-enquiry .ae-table-wrap,
+#approval-management-root .approval-table-card > .approval-table-wrap {
+  width: 100%;
+  padding-left: 0;
+  padding-right: 0;
+  box-sizing: border-box;
+}
+#approval-management-root .ae-enquiry-table,
+#approval-management-root .approval-table.approval-md-table {
+  width: 100%;
+  min-width: 0;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+#approval-management-root .ae-enquiry-table th,
+#approval-management-root .ae-enquiry-table td,
+#approval-management-root .approval-md-table th,
+#approval-management-root .approval-md-table td {
+  min-width: 0;
+  box-sizing: border-box;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+#approval-management-root .ae-enquiry-table :is(th, td):nth-child(1),
+#approval-management-root .approval-md-table :is(th, td):nth-child(1) {
+  width: 9%;
+}
+#approval-management-root .ae-enquiry-table :is(th, td):nth-child(2),
+#approval-management-root .approval-md-table :is(th, td):nth-child(2) {
+  width: 12%;
+}
+#approval-management-root .ae-enquiry-table :is(th, td):nth-child(3),
+#approval-management-root .approval-md-table :is(th, td):nth-child(3) {
+  width: 15%;
+}
+#approval-management-root .ae-enquiry-table :is(th, td):nth-child(4),
+#approval-management-root .approval-md-table :is(th, td):nth-child(4) {
+  width: 13%;
+}
+#approval-management-root .ae-enquiry-table :is(th, td):nth-child(5),
+#approval-management-root .approval-md-table :is(th, td):nth-child(5) {
+  width: 12%;
+}
+#approval-management-root .ae-enquiry-table :is(th, td):nth-child(6),
+#approval-management-root .approval-md-table :is(th, td):nth-child(6) {
+  width: 17%;
+}
+#approval-management-root .ae-enquiry-table :is(th, td):nth-child(7),
+#approval-management-root .approval-md-table :is(th, td):nth-child(7) {
+  width: 11%;
+}
+#approval-management-root .ae-enquiry-table :is(th, td):nth-child(8),
+#approval-management-root .approval-md-table :is(th, td):nth-child(8) {
+  width: 11%;
+}
+
+#approval-management-root .ae-enquiry-table tbody tr > td,
+#approval-management-root
+  .approval-md-table
+  tbody
+  tr.approval-md-main-row
+  > td {
+  height: 50px;
+  min-height: 50px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+  font-size: 11px;
+  line-height: 1.25;
+  vertical-align: middle;
+}
+#approval-management-root .ae-enquiry-table thead th,
+#approval-management-root .approval-md-table thead th {
+  height: 36px;
+  padding-top: 7px;
+  padding-bottom: 7px;
+  font-size: 10px;
+  line-height: 1.2;
+}
+
+#approval-management-root .ae-wtg-modal .ae-wtg-table td input[type="number"] {
+  height: 36px;
+  min-height: 36px;
+  padding: 6px;
+}
+
+#approval-management-root .ae-enquiry .ae-table-wrap,
+#approval-management-root .approval-table-card > .approval-table-wrap {
+  min-height: 420px;
+  box-sizing: border-box;
+}
+
+#approval-management-root
+  .approval-order-details-modal
+  .approval-vehicle-readonly-header,
+#approval-management-root
+  .approval-order-details-modal
+  .approval-vehicle-readonly-row {
+  display: grid !important;
+
+  grid-template-columns:
+    45px
+    minmax(0, 1.4fr)
+    minmax(0, 0.95fr)
+    minmax(0, 1fr)
+    100px
+    105px
+    minmax(0, 1fr)
+    minmax(0, 1fr)
+    minmax(0, 1.1fr)
+    minmax(0, 0.9fr) !important;
+
+  width: 100%;
+  min-width: 0;
+}
+
+#approval-management-root
+  .approval-order-details-modal
+  .approval-vehicle-readonly-header
+  > div:nth-child(5),
+#approval-management-root
+  .approval-order-details-modal
+  .approval-vehicle-readonly-header
+  > div:nth-child(6) {
+  white-space: nowrap !important;
+  overflow-wrap: normal !important;
+  word-break: normal !important;
+  font-size: 9px;
+}
+
+#approval-management-root
+  .approval-order-details-modal
+  .approval-vehicle-readonly-row
+  > div:nth-child(5),
+#approval-management-root
+  .approval-order-details-modal
+  .approval-vehicle-readonly-row
+  > div:nth-child(6) {
+  text-align: center;
+  align-items: center;
+}
+
+#approval-management-root .ae-enquiry-table tbody tr.ae-clickable-enquiry-row {
+  cursor: pointer;
+}
+#approval-management-root
+  .ae-enquiry-table
+  tbody
+  tr.ae-clickable-enquiry-row:hover
+  > td {
+  background: #f4fbfa;
+}
+#approval-management-root
+  .ae-enquiry-table
+  tbody
+  tr.ae-clickable-enquiry-row:focus-visible {
+  outline: 2px solid #0b948a;
+  outline-offset: -2px;
+}
+
+#approval-management-root .ae-wtg-modal .ae-wtg-table th:nth-child(7),
+#approval-management-root .ae-wtg-modal .ae-wtg-table td:nth-child(7) {
+  width: 15%;
+  overflow-wrap: anywhere;
+}
+#approval-management-root .ae-wtg-modal .ae-wtg-table th:nth-child(10),
+#approval-management-root .ae-wtg-modal .ae-wtg-table td:nth-child(10) {
+  width: 12%;
+}
+
+#approval-management-root .ae-wtg-modal .ae-wtg-table-wrap {
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid #d9e5e9;
+  border-radius: 10px;
+}
+#approval-management-root .ae-wtg-modal .ae-wtg-table {
+  width: 100%;
+  min-width: 0 !important;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+#approval-management-root .ae-wtg-modal .ae-wtg-table :is(th, td) {
+  min-width: 0 !important;
+  max-width: none !important;
+  box-sizing: border-box;
+}
+#approval-management-root .ae-wtg-modal .ae-wtg-table :is(th, td):nth-child(2) {
+  width: 16% !important;
+}
+#approval-management-root .ae-wtg-modal .ae-wtg-table :is(th, td):nth-child(3) {
+  width: 11% !important;
+}
+#approval-management-root .ae-wtg-modal .ae-wtg-table :is(th, td):nth-child(4) {
+  width: 9% !important;
+}
+#approval-management-root .ae-wtg-modal .ae-wtg-table :is(th, td):nth-child(6) {
+  width: 7% !important;
+}
+#approval-management-root .ae-wtg-modal .ae-wtg-table :is(th, td):nth-child(7) {
+  width: 13% !important;
+}
+#approval-management-root .ae-wtg-modal .ae-wtg-table :is(th, td):nth-child(8) {
+  width: 11% !important;
+}
+#approval-management-root .ae-wtg-modal .ae-wtg-table :is(th, td):nth-child(9) {
+  width: 14% !important;
+}
+#approval-management-root
+  .ae-wtg-modal
+  .ae-wtg-table
+  :is(th, td):nth-child(10) {
+  width: 10% !important;
+}
+
+#approval-management-root .ae-wtg-modal .ae-wtg-table thead th {
+  height: 36px;
+  padding: 7px 6px;
+  background: #f2f6f7;
+  color: #426b82;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1.3;
+  text-align: left;
+  vertical-align: middle;
+  border-right: 1px solid #dce7eb;
+  border-bottom: 1px solid #dce7eb;
+  white-space: normal;
+  overflow-wrap: normal;
+  word-break: normal;
+}
+#approval-management-root .ae-wtg-modal .ae-wtg-table tbody td {
+  height: 52px;
+  padding: 8px 6px;
+  background: #ffffff !important;
+  color: #123f50;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.35;
+  vertical-align: middle;
+  border-right: 1px solid #e1e9ec;
+  border-bottom: 1px solid #e1e9ec;
+  overflow-wrap: anywhere;
+}
+#approval-management-root
+  .ae-wtg-modal
+  .ae-wtg-table
+  tbody
+  tr:nth-child(even)
+  td,
+#approval-management-root
+  .ae-wtg-modal
+  .ae-wtg-table
+  tbody
+  tr:nth-child(odd)
+  td {
+  background: #ffffff !important;
+}
+#approval-management-root .ae-wtg-modal .ae-wtg-table :is(th, td):last-child {
+  border-right: none;
+}
+#approval-management-root .ae-wtg-modal .ae-wtg-table td input[type="number"] {
+  width: 100%;
+  height: 30px;
+  min-height: 30px;
+  padding: 4px 7px;
+  background: #eaf8f5;
+  border: 1px solid #4db6ac;
+  border-radius: 6px;
+  color: #007c74;
+  font-size: 12px;
+  font-weight: 700;
+  box-sizing: border-box;
+}
+
+#approval-management-root
+  .approval-order-details-modal
+  .approval-vehicle-readonly-header,
+#approval-management-root
+  .approval-order-details-modal
+  .approval-vehicle-readonly-row {
+  grid-template-columns:
+    38px minmax(0, 1.3fr) minmax(0, 0.85fr)
+    minmax(0, 0.9fr) 65px minmax(0, 1fr) minmax(0, 0.85fr)
+    minmax(0, 1fr) minmax(0, 1.03fr) minmax(0, 1.13fr) !important;
+}
+#approval-management-root .ae-wtg-modal .ae-wtg-table th:nth-child(6),
+#approval-management-root .ae-wtg-modal .ae-wtg-table td:nth-child(6) {
+  width: 13%;
+}
+#approval-management-root .ae-wtg-modal .ae-wtg-table th:nth-child(9),
+#approval-management-root .ae-wtg-modal .ae-wtg-table td:nth-child(9) {
+  width: 12%;
+}
+#approval-management-root .ae-wtg-modal .ae-wtg-table th:nth-child(10),
+#approval-management-root .ae-wtg-modal .ae-wtg-table td:nth-child(10) {
+  width: 13%;
+}
+
+#approval-management-root .ae-wtg-modal .ae-wtg-table {
+  table-layout: fixed !important;
+  width: 100% !important;
+}
+#approval-management-root .ae-wtg-modal .ae-wtg-table :is(th, td):nth-child(1) {
+  width: 3% !important;
+}
+#approval-management-root .ae-wtg-modal .ae-wtg-table :is(th, td):nth-child(2) {
+  width: 15% !important;
+}
+#approval-management-root .ae-wtg-modal .ae-wtg-table :is(th, td):nth-child(3) {
+  width: 10% !important;
+}
+#approval-management-root .ae-wtg-modal .ae-wtg-table :is(th, td):nth-child(4) {
+  width: 8% !important;
+}
+#approval-management-root .ae-wtg-modal .ae-wtg-table :is(th, td):nth-child(5) {
+  width: 6% !important;
+}
+#approval-management-root .ae-wtg-modal .ae-wtg-table :is(th, td):nth-child(6) {
+  width: 15% !important;
+}
+#approval-management-root .ae-wtg-modal .ae-wtg-table :is(th, td):nth-child(7) {
+  width: 10% !important;
+}
+#approval-management-root .ae-wtg-modal .ae-wtg-table :is(th, td):nth-child(8) {
+  width: 10% !important;
+}
+#approval-management-root .ae-wtg-modal .ae-wtg-table :is(th, td):nth-child(9) {
+  width: 12% !important;
+}
+#approval-management-root
+  .ae-wtg-modal
+  .ae-wtg-table
+  :is(th, td):nth-child(10) {
+  width: 11% !important;
+}
+
+#approval-management-root .ae-wtg-modal .ae-wtg-table :is(th, td) {
+  min-width: 0 !important;
+  box-sizing: border-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: normal;
+  vertical-align: middle;
+}
+#approval-management-root .ae-wtg-modal .ae-wtg-table tbody td:nth-child(6),
+#approval-management-root .ae-wtg-modal .ae-wtg-table tbody td:nth-child(7) {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.4;
+}
+
+#approval-management-root
+  .approval-order-details-modal
+  .approval-vehicle-readonly-field
+  .approval-vehicle-route-value {
+  display: block;
+  color: #426a79;
+  font-weight: 500;
+  font-size: 11px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  word-break: normal;
+  text-align: left;
+}
+#approval-management-root
+  .approval-order-details-modal
+  .approval-vehicle-final-amount-field {
+  background: #f1faf8;
+  align-items: center;
+}
+#approval-management-root
+  .approval-order-details-modal
+  .approval-vehicle-final-amount-field
+  > strong {
+  color: #087f77;
+}
+#approval-management-root
+  .approval-order-details-modal
+  .approval-vehicle-amount-difference {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  max-width: 100%;
+  margin: 4px auto 0;
+  padding: 3px 7px;
+  border-radius: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.25;
+  white-space: normal;
+  text-align: center;
+}
+#approval-management-root
+  .approval-order-details-modal
+  .approval-vehicle-amount-difference.is-lower {
+  background: #fff0e7;
+  color: #b34e17;
+}
+#approval-management-root
+  .approval-order-details-modal
+  .approval-vehicle-amount-difference.is-higher {
+  background: #e6f6ed;
+  color: #167543;
+}
+#approval-management-root
+  .approval-order-details-modal
+  .approval-vehicle-amount-difference.is-equal {
+  background: #edf2f5;
+  color: #5d7180;
+}
+
+#approval-management-root
+  .approval-order-details-modal
+  .approval-vehicle-readonly-header,
+#approval-management-root
+  .approval-order-details-modal
+  .approval-vehicle-readonly-row {
+  display: grid;
+  grid-template-columns:
+    38px minmax(0, 1.2fr) minmax(0, 0.8fr)
+    minmax(0, 0.78fr) 66px minmax(0, 1.85fr)
+    minmax(0, 0.86fr) minmax(0, 0.85fr)
+    minmax(0, 0.85fr) minmax(0, 0.95fr)
+    minmax(0, 0.95fr) !important;
+}
+#approval-management-root
+  .approval-order-details-modal
+  .approval-vehicle-readonly-field {
+  min-width: 0;
+  box-sizing: border-box;
+}
+#approval-management-root
+  .approval-order-details-modal
+  .approval-vehicle-readonly-field
+  .approval-vehicle-route-value {
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  font-size: 11px;
+  line-height: 1.45;
+}
+#approval-management-root
+  .approval-order-details-modal
+  .approval-vehicle-difference-field {
+  background: #f8fbfb;
+  align-items: center;
+}
+#approval-management-root
+  .approval-order-details-modal
+  .approval-vehicle-difference-field
+  .approval-vehicle-amount-difference {
+  margin: 0;
+}
+
+/* Enquiry vehicle table: long Route on one line at desktop widths. */
+#approval-management-root .ae-wtg-modal .ae-wtg-table :is(th, td):nth-child(1) {
+  width: 3% !important;
+}
+#approval-management-root .ae-wtg-modal .ae-wtg-table :is(th, td):nth-child(2) {
+  width: 13% !important;
+}
+#approval-management-root .ae-wtg-modal .ae-wtg-table :is(th, td):nth-child(3) {
+  width: 9% !important;
+}
+#approval-management-root .ae-wtg-modal .ae-wtg-table :is(th, td):nth-child(4) {
+  width: 7% !important;
+}
+#approval-management-root .ae-wtg-modal .ae-wtg-table :is(th, td):nth-child(5) {
+  width: 6% !important;
+}
+#approval-management-root .ae-wtg-modal .ae-wtg-table :is(th, td):nth-child(6) {
+  width: 22% !important;
+}
+#approval-management-root .ae-wtg-modal .ae-wtg-table :is(th, td):nth-child(7) {
+  width: 9% !important;
+}
+#approval-management-root .ae-wtg-modal .ae-wtg-table :is(th, td):nth-child(8) {
+  width: 8% !important;
+}
+#approval-management-root .ae-wtg-modal .ae-wtg-table :is(th, td):nth-child(9) {
+  width: 12% !important;
+}
+#approval-management-root
+  .ae-wtg-modal
+  .ae-wtg-table
+  :is(th, td):nth-child(10) {
+  width: 11% !important;
+}
+#approval-management-root .ae-wtg-modal .ae-wtg-table tbody td:nth-child(6) {
+  white-space: nowrap;
+  text-align: left;
+  font-size: 10.5px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+@media (max-width: 1100px) {
+  #approval-management-root .ae-wtg-modal .ae-wtg-table tbody td:nth-child(6) {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+}
+
+/* Quotation approval popup: match Traffic Management without affecting other modals. */
+#approval-management-root .approval-quotation-expand-panel {
+  width: min(96vw, 1720px);
+  max-width: 1720px;
+  height: 94vh;
+  max-height: 94vh;
+}
+#approval-management-root
+  .approval-quotation-modal-head.approval-quotation-modal-head-single {
+  min-height: 110px;
+  padding: 16px 78px 16px 26px;
+  grid-template-columns: minmax(250px, 1.25fr) minmax(440px, 2fr);
+  gap: 24px;
+}
+#approval-management-root .approval-quotation-head-details {
+  grid-template-columns: minmax(100px, 0.85fr) minmax(160px, 1.45fr) minmax(
+      100px,
+      0.8fr
+    );
+}
+#approval-management-root .approval-quotation-modal-body {
+  padding: 8px 10px;
+}
+#approval-management-root .approval-quotation-vehicle-list {
+  gap: 8px;
+}
+#approval-management-root .approval-qv-card {
+  margin-bottom: 8px;
+  border-radius: 10px;
+}
+#approval-management-root .approval-qv-header {
+  min-height: 62px;
+  padding: 8px 12px;
+  gap: 10px;
+  background: #cce9e6;
+}
+#approval-management-root .approval-qv-header:hover,
+#approval-management-root .approval-qv-card.is-approved .approval-qv-header {
+  background: #c6e6e2;
+}
+#approval-management-root .approval-qv-content {
+  gap: 2px;
+}
+#approval-management-root .approval-qv-data-row {
+  flex-wrap: wrap;
+  gap: 3px 0;
+  white-space: normal;
+}
+#approval-management-root .approval-qv-data-item {
+  min-height: 20px;
+  padding: 0 8px;
+}
+#approval-management-root .approval-qv-route {
+  max-width: 38vw;
+  overflow-wrap: anywhere;
+  font-weight: 600;
+}
+#approval-management-root .approval-qv-placement {
+  white-space: nowrap;
+}
+#approval-management-root .approval-qv-actionbar {
+  padding: 6px 11px !important;
+}
+#approval-management-root .approval-qv-table-wrap {
+  overflow-x: auto;
+}
+#approval-management-root .approval-qv-table {
+  width: 100%;
+  min-width: 1130px;
+  table-layout: fixed;
+}
+#approval-management-root .approval-qv-table th,
+#approval-management-root .approval-qv-table td {
+  padding: 8px 7px;
+  box-sizing: border-box;
+}
+#approval-management-root .approval-qv-table th:nth-child(1) {
+  width: 5%;
+}
+#approval-management-root .approval-qv-table th:nth-child(2) {
+  width: 17%;
+}
+#approval-management-root .approval-qv-table th:nth-child(3) {
+  width: 11%;
+}
+#approval-management-root .approval-qv-table th:nth-child(4) {
+  width: 12%;
+}
+#approval-management-root .approval-qv-table th:nth-child(5) {
+  width: 12%;
+}
+#approval-management-root .approval-qv-table th:nth-child(6) {
+  width: 12%;
+}
+#approval-management-root .approval-qv-table th:nth-child(7) {
+  width: 13%;
+}
+#approval-management-root .approval-qv-table th:nth-child(8) {
+  width: 10%;
+}
+#approval-management-root .approval-qv-table th:nth-child(9) {
+  width: 8%;
+}
+#approval-management-root .approval-qv-table td:nth-child(n) {
+  width: auto;
+}
+#approval-management-root .approval-qv-rate-diff {
+  display: inline-flex;
+  padding: 5px 8px;
+  border-radius: 6px;
+  font-weight: 850;
+  white-space: nowrap;
+}
+#approval-management-root .approval-qv-rate-diff.higher {
+  background: #fff0ed;
+  color: #c24130;
+}
+#approval-management-root .approval-qv-rate-diff.lower {
+  background: #e5f7f0;
+  color: #087b59;
+}
+#approval-management-root .approval-qv-rate-diff.equal {
+  background: #f0f3f5;
+  color: #526976;
+}
+
+/* Clear, alternating vehicle sections for quotation approval. */
+#approval-management-root .approval-quotation-vehicle-list > .approval-qv-card:nth-child(odd) .approval-qv-header,
+#approval-management-root .approval-quotation-vehicle-list > .approval-qv-card:nth-child(odd).is-approved .approval-qv-header {
+  background: #e5edf7;
+  color: #284d73;
+}
+#approval-management-root .approval-quotation-vehicle-list > .approval-qv-card:nth-child(even) .approval-qv-header,
+#approval-management-root .approval-quotation-vehicle-list > .approval-qv-card:nth-child(even).is-approved .approval-qv-header {
+  background: #e8e7f5;
+  color: #514777;
+}
+#approval-management-root .approval-quotation-vehicle-list > .approval-qv-card:nth-child(odd) .approval-qv-number {
+  background: #c9dff7;
+  color: #284d73;
+}
+#approval-management-root .approval-quotation-vehicle-list > .approval-qv-card:nth-child(even) .approval-qv-number {
+  background: #d9d3fa;
+  color: #514777;
+}
+#approval-management-root .approval-qv-card .approval-qv-header .approval-qv-metric > span {
+  color: #607a8f;
+}
+#approval-management-root .approval-qv-card .approval-qv-header .approval-qv-metric > strong {
+  color: #173b55;
+}
+#approval-management-root .approval-qv-table thead th {
+  background: #f1f5f9;
+  color: #49647c;
+}
+#approval-management-root .approval-qv-table tbody td {
+  background: #ffffff;
+  border-right: 1px solid #edf1f4;
+}
+#approval-management-root .approval-qv-table tbody td:last-child {
+  border-right: 0;
+}
+#approval-management-root .approval-qv-rate-diff.lower {
+  color: #087f5b;
+  background: #e5f7ef;
+}
+#approval-management-root .approval-qv-rate-diff.higher {
+  color: #c24132;
+  background: #fff0ed;
+}
+
+/* Compact quotation-approval popup header. */
+#approval-management-root
+  .approval-quotation-modal-head.approval-quotation-modal-head-single {
+  min-height: 66px;
+  padding: 8px 52px 8px 16px;
+  grid-template-columns: minmax(190px, 1fr) minmax(390px, 2fr);
+  gap: 12px;
+}
+#approval-management-root .approval-quotation-modal-title-single {
+  gap: 2px;
+}
+#approval-management-root .approval-quotation-modal-title-single > span {
+  font-size: 10px;
+  line-height: 13px;
+}
+#approval-management-root .approval-quotation-modal-title-single h3 {
+  font-size: 16px;
+  line-height: 21px;
+  margin: 0;
+}
+#approval-management-root .approval-quotation-head-details {
+  gap: 8px;
+}
+#approval-management-root .approval-quotation-head-item {
+  gap: 2px;
+}
+#approval-management-root .approval-qv-rate-diff {
+  font-size: 10px;
+  font-weight: 600;
+  white-space: normal;
+  line-height: 1.35;
+}
+#approval-management-root .approval-qv-table th:nth-child(4) { width: 13%; }
+#approval-management-root .approval-qv-table th:nth-child(5) { width: 12%; }
+#approval-management-root .approval-qv-table th:nth-child(6) { width: 13%; }
+
+/* One common approval action bar for all vehicle requirements. */
+#approval-management-root .approval-qv-common-footer {
+  position: sticky;
+  bottom: -8px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 8px;
+  padding: 11px 14px;
+  border: 1px solid #c7dfe0;
+  border-radius: 9px;
+  background: #f8fbfb;
+  box-shadow: 0 -5px 15px rgba(6, 48, 60, 0.06);
+}
+#approval-management-root .approval-qv-common-selected {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+#approval-management-root .approval-qv-common-selected span {
+  color: #7c95a1;
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: 0.045em;
+}
+#approval-management-root .approval-qv-common-selected strong {
+  color: #123d4d;
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+#approval-management-root .approval-qv-common-footer .approval-qv-actions {
+  flex: 0 0 auto;
+}
+#approval-management-root .approval-qv-bulk-list {
+  max-height: 180px;
+  overflow-y: auto;
+  margin: 8px 0 14px;
+  border: 1px solid #d9e6ec;
+  border-radius: 8px;
+}
+#approval-management-root .approval-qv-bulk-list > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 12px;
+  border-bottom: 1px solid #e5ecee;
+  font-size: 11px;
+}
+#approval-management-root .approval-qv-bulk-list > div:last-child {
+  border-bottom: 0;
+}
+#approval-management-root .approval-qv-bulk-list span {
+  color: #53727e;
+}
+@media (max-width: 760px) {
+  #approval-management-root .approval-qv-common-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
+
+/* Vehicle header: label above value with vertical dividers. */
+#approval-management-root .approval-qv-header .approval-qv-content {
+  width: 100%;
+}
+#approval-management-root .approval-qv-header .approval-qv-data-row {
+  display: grid;
+  grid-template-columns: 1.35fr 1fr 0.75fr 1.05fr 2fr 1.1fr;
+  align-items: stretch;
+  gap: 0;
+  width: 100%;
+}
+#approval-management-root .approval-qv-header .approval-qv-metric {
+  min-width: 0;
+  min-height: 43px;
+  padding: 4px 12px;
+  border-left: 1px solid rgba(25, 119, 119, 0.23);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  text-align: center;
+}
+#approval-management-root .approval-qv-header .approval-qv-metric:first-child {
+  border-left: 0;
+}
+#approval-management-root .approval-qv-header .approval-qv-metric > span {
+  color: #557985;
+  font-size: 9px;
+  font-weight: 850;
+  line-height: 1.1;
+  letter-spacing: 0.035em;
+}
+#approval-management-root .approval-qv-header .approval-qv-metric > strong {
+  color: #123d4d;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+#approval-management-root
+  .approval-qv-header
+  .approval-qv-metric-route
+  > strong {
+  font-weight: 700;
+}
+@media (max-width: 1050px) {
+  #approval-management-root .approval-qv-header .approval-qv-data-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  #approval-management-root
+    .approval-qv-header
+    .approval-qv-metric:nth-child(4) {
+    border-left: 0;
+  }
+}
+@media (max-width: 760px) {
+  #approval-management-root
+    .approval-quotation-modal-head.approval-quotation-modal-head-single {
+    grid-template-columns: 1fr;
+    gap: 9px;
+    padding: 14px 54px 14px 14px;
+  }
+  #approval-management-root .approval-quotation-head-details {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  #approval-management-root .approval-quotation-head-item {
+    padding: 4px 8px;
+  }
+  #approval-management-root .approval-qv-route {
+    max-width: 65vw;
+  }
+}
+
+/* Updated seven-column Transport Approval table */
+#approval-management-root .approval-quotation-main-table {
+  width: 100%;
+  min-width: 0;
+  table-layout: fixed;
+}
+#approval-management-root .approval-quotation-main-table th:nth-child(1),
+#approval-management-root .approval-quotation-main-table td:nth-child(1) {
+  width: 6%;
+}
+#approval-management-root .approval-quotation-main-table th:nth-child(2),
+#approval-management-root .approval-quotation-main-table td:nth-child(2) {
+  width: 13%;
+}
+#approval-management-root .approval-quotation-main-table th:nth-child(3),
+#approval-management-root .approval-quotation-main-table td:nth-child(3) {
+  width: 17%;
+}
+#approval-management-root .approval-quotation-main-table th:nth-child(4),
+#approval-management-root .approval-quotation-main-table td:nth-child(4) {
+  width: 18%;
+}
+#approval-management-root .approval-quotation-main-table th:nth-child(5),
+#approval-management-root .approval-quotation-main-table td:nth-child(5) {
+  width: 20%;
+  text-align: left;
+}
+#approval-management-root .approval-quotation-main-table th:nth-child(6),
+#approval-management-root .approval-quotation-main-table td:nth-child(6) {
+  width: 11%;
+  text-align: left;
+}
+#approval-management-root .approval-quotation-main-table th:nth-child(7),
+#approval-management-root .approval-quotation-main-table td:nth-child(7) {
+  width: 15%;
+  text-align: left;
+}
+
+/* Updated seven-column Replacement Approval table */
+#approval-management-root .approval-replacement-order-table {
+  width: 100%;
+  min-width: 0;
+  table-layout: fixed;
+}
+#approval-management-root .approval-replacement-order-table th:nth-child(1),
+#approval-management-root .approval-replacement-order-table td:nth-child(1) {
+  width: 6%;
+}
+#approval-management-root .approval-replacement-order-table th:nth-child(2),
+#approval-management-root .approval-replacement-order-table td:nth-child(2) {
+  width: 13%;
+}
+#approval-management-root .approval-replacement-order-table th:nth-child(3),
+#approval-management-root .approval-replacement-order-table td:nth-child(3) {
+  width: 19%;
+}
+#approval-management-root .approval-replacement-order-table th:nth-child(4),
+#approval-management-root .approval-replacement-order-table td:nth-child(4) {
+  width: 17%;
+}
+#approval-management-root .approval-replacement-order-table th:nth-child(5),
+#approval-management-root .approval-replacement-order-table td:nth-child(5) {
+  width: 19%;
+}
+#approval-management-root .approval-replacement-order-table th:nth-child(6),
+#approval-management-root .approval-replacement-order-table td:nth-child(6) {
+  width: 11%;
+}
+#approval-management-root .approval-replacement-order-table th:nth-child(7),
+#approval-management-root .approval-replacement-order-table td:nth-child(7) {
+  width: 15%;
+}
+
+/* Transport Changes popup: stronger, legible typography */
+#approval-management-root .ar-modal {
+  color: #193e50;
+}
+#approval-management-root .ar-head small {
+  font-size: 11px;
+  font-weight: 800;
+}
+#approval-management-root .ar-head h3 {
+  font-size: 24px;
+  font-weight: 800;
+}
+#approval-management-root .ar-head h3 span {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+}
+#approval-management-root .ar-head p {
+  font-size: 12px;
+  font-weight: 650;
+  color: #e9f8f8;
+}
+#approval-management-root .ar-columns {
+  font-size: 11px;
+  font-weight: 800;
+  color: #385d70;
+}
+#approval-management-root .ar-vehicle strong {
+  font-size: 13px;
+  font-weight: 800;
+  color: #173e51;
+}
+#approval-management-root .ar-vehicle small {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #557384;
+}
+#approval-management-root .ar-change,
+#approval-management-root .ar-money {
+  font-size: 13px;
+  font-weight: 650;
+}
+#approval-management-root .ar-change > span,
+#approval-management-root .ar-money > span {
+  color: #4c6878;
+}
+#approval-management-root .ar-change strong {
+  font-size: 13px;
+  font-weight: 800;
+  color: #173f54;
+}
+#approval-management-root .ar-money strong {
+  font-size: 13px;
+  font-weight: 800;
+  color: #007e75;
+}
+#approval-management-root .ar-status {
+  font-size: 10.5px;
+  font-weight: 800;
+}
+#approval-management-root .ar-filters button {
+  font-size: 11px;
+  font-weight: 700;
+  color: #466579;
+}
+#approval-management-root .ar-filters b {
+  font-size: 10px;
+  font-weight: 750;
+}
+#approval-management-root .ar-toolbar > small {
+  font-size: 11px;
+  font-weight: 650;
+  color: #597989;
+}
+#approval-management-root .ar-details dt {
+  font-size: 10.5px;
+  font-weight: 750;
+  color: #547182;
+}
+#approval-management-root .ar-details dd {
+  font-size: 12px;
+  font-weight: 700;
+  color: #23495e;
+}
+
+/* Portal dialogs are mounted under document.body, outside the page root. */
+.ar-modal {
+  color: #193e50;
+}
+.ar-head small {
+  font-size: 11px;
+  font-weight: 800;
+}
+.ar-head h3 {
+  font-size: 24px;
+  font-weight: 800;
+}
+.ar-head h3 span {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+}
+.ar-head p {
+  font-size: 12px;
+  font-weight: 650;
+  color: #e9f8f8;
+}
+.ar-columns {
+  font-size: 11px;
+  font-weight: 800;
+  color: #385d70;
+}
+.ar-vehicle strong {
+  font-size: 13px;
+  font-weight: 800;
+  color: #173e51;
+}
+.ar-vehicle small {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #557384;
+}
+.ar-change,
+.ar-money {
+  font-size: 13px;
+  font-weight: 650;
+}
+.ar-change > span,
+.ar-money > span {
+  color: #4c6878;
+}
+.ar-change strong {
+  font-size: 13px;
+  font-weight: 800;
+  color: #173f54;
+}
+.ar-money strong {
+  font-size: 13px;
+  font-weight: 800;
+  color: #007e75;
+}
+.ar-status {
+  font-size: 10.5px;
+  font-weight: 800;
+}
+.ar-filters button {
+  font-size: 11px;
+  font-weight: 700;
+  color: #466579;
+}
+.ar-filters b {
+  font-size: 10px;
+  font-weight: 750;
+}
+.ar-toolbar > small {
+  font-size: 11px;
+  font-weight: 650;
+  color: #597989;
+}
+.ar-details dt {
+  font-size: 10.5px;
+  font-weight: 750;
+  color: #547182;
+}
+.ar-details dd {
+  font-size: 12px;
+  font-weight: 700;
+  color: #23495e;
+}
+
+/* ==========================================
+   TRAFFIC APPROVAL - SINGLE ROW VALUES
+========================================== */
+
+#approval-management-root
+.approval-qv-table td:nth-child(6),
+
+#approval-management-root
+.approval-qv-table td:nth-child(7),
+
+#approval-management-root
+.approval-qv-table td:nth-child(8) {
+  white-space: nowrap !important;
+}
+
+/* Rate Margin */
+#approval-management-root .approval-qv-rate-diff {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap !important;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 6px 9px;
+  width: max-content;
+  max-width: none;
+}
+
+/* Allocated By */
+#approval-management-root
+.approval-qv-table td:nth-child(7) {
+  white-space: nowrap;
+}
+
+/* Quoted At */
+#approval-management-root
+.approval-qv-table td:nth-child(8) {
+  white-space: nowrap;
+  font-size: 11px;
+}
+
+/* Give more space to Rate Margin and Date */
+#approval-management-root
+.approval-qv-table th:nth-child(6) {
+  width: 16%;
+}
+
+#approval-management-root
+.approval-qv-table th:nth-child(8) {
+  width: 13%;
+}
+
+/* =============================================
+   TRANSPORT APPROVAL - FIX COLUMN ALIGNMENT
+============================================= */
+
+#approval-management-root .approval-qv-table {
+  width: 100%;
+  min-width: 1200px;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+
+/* Equal vertical alignment */
+#approval-management-root .approval-qv-table th,
+#approval-management-root .approval-qv-table td {
+  box-sizing: border-box;
+  padding: 10px 8px;
+  vertical-align: middle;
+}
+
+/* =============================================
+   EXACT COLUMN WIDTHS - TOTAL 100%
+============================================= */
+
+#approval-management-root .approval-qv-table th:nth-child(1) {
+  width: 5%;
+}
+
+#approval-management-root .approval-qv-table th:nth-child(2) {
+  width: 13%;
+}
+
+#approval-management-root .approval-qv-table th:nth-child(3) {
+  width: 9%;
+}
+
+#approval-management-root .approval-qv-table th:nth-child(4) {
+  width: 12%;
+}
+
+#approval-management-root .approval-qv-table th:nth-child(5) {
+  width: 12%;
+}
+
+#approval-management-root .approval-qv-table th:nth-child(6) {
+  width: 17%;
+}
+
+#approval-management-root .approval-qv-table th:nth-child(7) {
+  width: 10%;
+}
+
+#approval-management-root .approval-qv-table th:nth-child(8) {
+  width: 13%;
+}
+
+#approval-management-root .approval-qv-table th:nth-child(9) {
+  width: 9%;
+}
+
+/* =============================================
+   RATE MARGIN - SINGLE LINE
+============================================= */
+
+#approval-management-root .approval-qv-rate-diff {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+
+  max-width: 100%;
+  width: auto;
+
+  padding: 6px 9px;
+  border-radius: 6px;
+
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.3;
+
+  white-space: nowrap !important;
+}
+
+/* =============================================
+   ALLOCATED BY - SINGLE LINE
+============================================= */
+
+#approval-management-root
+.approval-qv-table td:nth-child(7) {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* =============================================
+   QUOTED AT - SINGLE LINE
+============================================= */
+
+#approval-management-root
+.approval-qv-table td:nth-child(8) {
+  white-space: nowrap !important;
+  font-size: 11px;
+}
+
+/* =============================================
+   CONFIRMED STATUS - NO WORD BREAK
+============================================= */
+
+#approval-management-root
+.approval-qv-table td:nth-child(9) {
+  white-space: nowrap !important;
+  text-align: center;
+}
+
+#approval-management-root
+.approval-qv-table td:nth-child(9) .approval-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: max-content;
+  max-width: none;
+  min-width: 85px;
+
+  padding: 6px 10px;
+  white-space: nowrap !important;
+  overflow-wrap: normal !important;
+  word-break: normal !important;
+
+  font-size: 11px;
+}
+
+/* ==========================================
+   SAME BACKGROUND FOR ALL VEHICLE HEADERS
+========================================== */
+
+#approval-management-root
+.approval-quotation-vehicle-list
+.approval-qv-card .approval-qv-header,
+
+#approval-management-root
+.approval-quotation-vehicle-list
+.approval-qv-card.is-approved .approval-qv-header,
+
+#approval-management-root
+.approval-quotation-vehicle-list
+.approval-qv-card .approval-qv-header:hover {
+  background: #e8e7f5 !important;
+}
+
+/* Same number badge for Vehicle 01, 02, 03... */
+
+#approval-management-root
+.approval-quotation-vehicle-list
+.approval-qv-card .approval-qv-number {
+  background: #d9d3fa !important;
+  color: #514777 !important;
+}
+
+/* ==========================================
+   COMPACT CLOSE ICON
+========================================== */
+
+#approval-management-root
+.approval-quotation-modal-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 8px;
+
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+
+  font-size: 21px;
+  font-weight: 400;
+  line-height: 1;
+
+  cursor: pointer;
+}
+
+#approval-management-root
+.approval-quotation-modal-close:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+/* ==========================================
+   QUOTATION APPROVAL - CLOSE ICON FIX
+========================================== */
+
+/* Header positioning */
+#approval-management-root
+.approval-quotation-modal-head {
+  position: relative !important;
+}
+
+/* Close button */
+#approval-management-root
+.approval-quotation-modal-close {
+  position: absolute !important;
+
+  top: 12px !important;
+  right: 12px !important;
+
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  min-height: 32px !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  background: rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 7px;
+
+  color: #ffffff;
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 1;
+
+  cursor: pointer;
+  z-index: 20;
+  transition: background 0.2s ease;
+}
+
+/* Hover */
+#approval-management-root
+.approval-quotation-modal-close:hover {
+  background: rgba(255, 255, 255, 0.22);
 }

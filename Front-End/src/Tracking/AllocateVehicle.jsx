@@ -155,6 +155,25 @@ const getRequirement = (order, requirementId) =>
     (requirement) => requirement.requirementId === requirementId,
   ) || null;
 
+// Values created for a particular vehicle requirement. Never substitute the
+// order-level route/material/date, because different vehicles can differ.
+const getCreatedVehicleValue = (requirement, field) => {
+  const aliases = {
+    origin: ["origin", "from", "fromLocation", "loadingPoint"],
+    destination: ["destination", "to", "toLocation", "unloadingPoint"],
+    materialType: ["materialType", "material", "cargo"],
+    placementDate: ["placementDate", "placement", "vehiclePlacementDate"],
+  };
+  const sources = [requirement, requirement?.vehicleDetails, requirement?.route];
+  for (const source of sources) {
+    for (const key of aliases[field] || [field]) {
+      const value = source?.[key];
+      if (value !== undefined && value !== null && value !== "") return value;
+    }
+  }
+  return "";
+};
+
 const getConfirmation = (order, confirmationId) =>
   safeArray(order?.vehicleConfirmations).find(
     (confirmation) => confirmation.confirmationId === confirmationId,
@@ -1417,27 +1436,6 @@ const AllocateVehicle = () => {
                     />
 
                     <FormField
-                      label="Material Type"
-                      icon={<Package size={15} />}
-                      readOnly
-                      value={selectedOrder.materialType}
-                    />
-
-                    <FormField
-                      label="Origin"
-                      icon={<MapPin size={15} />}
-                      readOnly
-                      value={selectedOrder.origin}
-                    />
-
-                    <FormField
-                      label="Destination"
-                      icon={<MapPin size={15} />}
-                      readOnly
-                      value={selectedOrder.destination}
-                    />
-
-                    <FormField
                       label="Distance"
                       icon={<Gauge size={15} />}
                       readOnly
@@ -1447,13 +1445,6 @@ const AllocateVehicle = () => {
                           ? `${selectedOrder.distance} KM`
                           : ""
                       }
-                    />
-
-                    <FormField
-                      label="Placement Date"
-                      icon={<CalendarDays size={15} />}
-                      readOnly
-                      value={formatDateForInput(selectedOrder.placementDate)}
                     />
 
                     <FormField
@@ -1579,14 +1570,19 @@ const AllocateVehicle = () => {
                           {!isCraneOrder(selectedOrder) && (
                             <>
                               <th>Configuration</th>
-                              <th>Classification</th>
-                              <th>Required Qty</th>
+                            </>
+                          )}
+                          <th>Origin</th>
+                          <th>Destination</th>
+                          <th>Material Type</th>
+                          <th>Placement Date</th>
+                          {!isCraneOrder(selectedOrder) && (
+                            <>
                               <th>Weight</th>
                               <th>L × H × W</th>
                             </>
                           )}
                           <th>Confirmed Transporter</th>
-                          <th>Allocated</th>
                           <th>Action</th>
                         </tr>
                       </thead>
@@ -1645,17 +1641,14 @@ const AllocateVehicle = () => {
                                       <td>
                                         {requirement.configuration || "—"}
                                       </td>
-
-                                      <td>
-                                        {requirement.classification || "—"}
-                                      </td>
-
-                                      <td>
-                                        {isCraneOrder(selectedOrder)
-                                          ? "Multiple"
-                                          : approvedQuantity}
-                                      </td>
-
+                                    </>
+                                  )}
+                                  <td><input className="tracking-created-vehicle-value" aria-label="Origin" readOnly value={getCreatedVehicleValue(requirement, "origin")} placeholder="—" /></td>
+                                  <td><input className="tracking-created-vehicle-value" aria-label="Destination" readOnly value={getCreatedVehicleValue(requirement, "destination")} placeholder="—" /></td>
+                                  <td><input className="tracking-created-vehicle-value" aria-label="Material Type" readOnly value={getCreatedVehicleValue(requirement, "materialType")} placeholder="—" /></td>
+                                  <td><input className="tracking-created-vehicle-value tracking-created-vehicle-date" aria-label="Placement Date" readOnly value={formatDateForInput(getCreatedVehicleValue(requirement, "placementDate"))} placeholder="—" /></td>
+                                  {!isCraneOrder(selectedOrder) && (
+                                    <>
                                       <td>
                                         {requirement.weight !== null &&
                                         requirement.weight !== undefined
@@ -1677,20 +1670,6 @@ const AllocateVehicle = () => {
                                         {quotation.transporter || "—"}
                                       </span>
                                     </div>
-                                  </td>
-
-                                  <td>
-                                    <span
-                                      className={
-                                        fullyAllocated
-                                          ? "tracking-required-allocation complete"
-                                          : "tracking-required-allocation"
-                                      }
-                                    >
-                                      {isCraneOrder(selectedOrder)
-                                        ? `${displayAllocatedCount} Allocated · No limit`
-                                        : `${displayAllocatedCount} / ${approvedQuantity}`}
-                                    </span>
                                   </td>
 
                                   <td>
@@ -1728,7 +1707,7 @@ const AllocateVehicle = () => {
                                   <tr className="tracking-required-form-row">
                                     <td
                                       colSpan={
-                                        isCraneOrder(selectedOrder) ? 5 : 10
+                                        isCraneOrder(selectedOrder) ? 8 : 11
                                       }
                                       className="tracking-allocation-modal-cell"
                                     >

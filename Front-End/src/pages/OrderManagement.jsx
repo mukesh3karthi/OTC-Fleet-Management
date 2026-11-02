@@ -343,46 +343,14 @@ const isPendingTrip = (trip) => {
 ========================================================= */
 
 const PIPELINE_CONFIG = [
-  {
-    label: "Enquiry",
-    icon: <FaClipboardCheck />,
-    keywords: ["enquiry"],
-  },
-  {
-    label: "Approval",
-    icon: <FaCheckCircle />,
-    keywords: ["first approval", "approval management"],
-  },
-  {
-    label: "Quotation",
-    icon: <FaFileInvoice />,
-    keywords: ["traffic quotation", "second approval", "quotation approval"],
-  },
-  {
-    label: "Vendor Finalization",
-    icon: <FaBoxOpen />,
-    keywords: ["vendor finalization"],
-  },
-  {
-    label: "PO Document",
-    icon: <FaFileInvoice />,
-    keywords: ["po document", "order placed"],
-  },
-  {
-    label: "Tracking",
-    icon: <FaMapMarkerAlt />,
-    keywords: ["tracking", "tracking input"],
-  },
-  {
-    label: "Invoice & Payment",
-    icon: <FaFileInvoice />,
-    keywords: ["invoice", "payment"],
-  },
-  {
-    label: "Completed",
-    icon: <FaCheckCircle />,
-    keywords: [],
-  },
+  { label: "Enquiry Details", icon: <FaClipboardCheck />, keywords: ["enquiry"] },
+  { label: "Order Finalization", icon: <FaCheckCircle />, keywords: ["order finalization", "order finalisation"] },
+  { label: "PO Document", icon: <FaFileInvoice />, keywords: ["po document"] },
+  { label: "Vendor Finalization", icon: <FaBoxOpen />, keywords: ["vendor finalization"] },
+  { label: "Order Placed", icon: <FaShippingFast />, keywords: ["order placed"] },
+  { label: "Tracking", icon: <FaMapMarkerAlt />, keywords: ["tracking"] },
+  { label: "Invoice & Payment", icon: <FaFileInvoice />, keywords: ["invoice", "payment"] },
+  { label: "Trip Complete", icon: <FaCheckCircle />, keywords: [] },
 ];
 
 /* =========================================================
@@ -533,7 +501,7 @@ const OrderManagement = () => {
       total,
       value: kamOrders.filter((trip) => {
         const completed = isCompletedTrip(trip);
-        if (config.label === "Completed") return completed;
+        if (config.label === "Trip Complete") return completed;
         if (completed) return false;
 
         const stage = normalize(getStage(trip));
@@ -1269,9 +1237,7 @@ const OrderManagement = () => {
                 <th>ORDER</th>
                 <th>CUSTOMER</th>
                 <th>MOVEMENT</th>
-                <th>ROUTE / SITE</th>
                 <th>STAGE</th>
-                <th>STATUS</th>
                 <th>CREATED BY</th>
               </tr>
             </thead>
@@ -1279,7 +1245,7 @@ const OrderManagement = () => {
             <tbody>
               {filteredOrders.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="dashboard-empty">
+                  <td colSpan={5} className="dashboard-empty">
                     {error
                       ? "Unable to load orders."
                       : "No orders found for the selected filters."}
@@ -1291,17 +1257,9 @@ const OrderManagement = () => {
                   const customer = getCustomer(trip);
                   const material = getMaterial(trip);
                   const movement = getMovement(trip);
-                  const origin = getOrigin(trip);
-                  const destination = getDestination(trip);
                   const stage = getStage(trip);
-                  const status = getMovementStatus(trip) || getStatus(trip);
 
                   const movementClass = normalize(movement).replace(
-                    /[^a-z0-9]+/g,
-                    "-",
-                  );
-
-                  const statusClass = normalize(status).replace(
                     /[^a-z0-9]+/g,
                     "-",
                   );
@@ -1328,28 +1286,7 @@ const OrderManagement = () => {
                       </td>
 
                       <td>
-                        <div className="dashboard-route">
-                          {isIntercartingOrder(trip) ? (
-                            <span>{getSiteLocation(trip) || "—"}</span>
-                          ) : (
-                            <>
-                              <span>{origin || "-"}</span>
-                              <FaArrowRight />
-                              <span>{destination || "-"}</span>
-                            </>
-                          )}
-                        </div>
-                      </td>
-
-                      <td>
                         <span className="dashboard-stage">{stage || "-"}</span>
-                      </td>
-
-                      <td>
-                        <span className={`dashboard-status ${statusClass}`}>
-                          <i />
-                          {status || "-"}
-                        </span>
                       </td>
 
                       <td>

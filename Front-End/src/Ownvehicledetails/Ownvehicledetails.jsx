@@ -16,6 +16,7 @@ import {
   MoreVertical,
   Pencil,
   Plus,
+  Search,
   Trash2,
   Wrench,
 } from "lucide-react";
@@ -58,6 +59,8 @@ const VEHICLE_COLUMNS = [
   { key: "vehicleNo", label: "Vehicle No.", width: "9%" },
   { key: "type", label: "Vehicle Type", width: "7%" },
   { key: "vehicleMake", label: "Vehicle Make", width: "10%" },
+  { key: "vehicleModel", label: "Vehicle Model", width: "8%" },
+  { key: "horsepower", label: "Horsepower (HP)", width: "7%" },
   { key: "manufacturingYear", label: "Manufacturing Year", width: "9%" },
   { key: "registrationDate", label: "Registration Date", width: "9%" },
   { key: "transportOwner", label: "Transport Owner", width: "11%" },
@@ -150,6 +153,7 @@ const Ownvehicledetails = () => {
 
   const [currentPage, setCurrentPage] =
     useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
 
   /* ==========================================
      Fetch own vehicles
@@ -296,10 +300,23 @@ const Ownvehicledetails = () => {
      Pagination calculations
   ========================================== */
 
+  const filteredVehicles = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return vehicles;
+    return vehicles.filter((vehicle) =>
+      [vehicle.vehicleNo, vehicle.type, vehicle.vehicleMake,
+        vehicle.vehicleModel, vehicle.horsepower, vehicle.transportOwner,
+        vehicle.engineNo, vehicle.chassisNo, vehicle.manufacturingYear,
+        vehicle.purchaseYear].some((value) =>
+        String(value ?? "").toLowerCase().includes(query)
+      )
+    );
+  }, [vehicles, searchQuery]);
+
   const totalPages = Math.max(
     1,
     Math.ceil(
-      vehicles.length / RECORDS_PER_PAGE
+      filteredVehicles.length / RECORDS_PER_PAGE
     )
   );
 
@@ -310,14 +327,14 @@ const Ownvehicledetails = () => {
     const firstIndex =
       lastIndex - RECORDS_PER_PAGE;
 
-    return vehicles.slice(
+    return filteredVehicles.slice(
       firstIndex,
       lastIndex
     );
-  }, [vehicles, currentPage]);
+  }, [filteredVehicles, currentPage]);
 
   const firstRecord =
-    vehicles.length === 0
+    filteredVehicles.length === 0
       ? 0
       : (currentPage - 1) *
       RECORDS_PER_PAGE +
@@ -325,7 +342,7 @@ const Ownvehicledetails = () => {
 
   const lastRecord = Math.min(
     currentPage * RECORDS_PER_PAGE,
-    vehicles.length
+    filteredVehicles.length
   );
 
   useEffect(() => {
@@ -782,6 +799,9 @@ const Ownvehicledetails = () => {
           <h1>Own Vehicle Management</h1>
           <p>Manage company-owned vehicles, fleet status, documents, purchase details and vehicle records.</p>
         </div>
+        <button type="button" className="btn-success ownvehicle-add-top" onClick={openAddVehicleModal}>
+          <Plus size={17} /> Add Vehicle
+        </button>
       </div>
 {/* API error */}
 
@@ -868,18 +888,20 @@ const Ownvehicledetails = () => {
         </div>
 
         <div className="toolbar-right">
-          <button
-            type="button"
-            className="btn-success"
-            onClick={openAddVehicleModal}
-          >
-            <Plus size={17} />
-            Add Vehicle
-          </button>
+          <div className="vehicle-search-box">
+            <Search size={16} aria-hidden="true" />
+            <input type="search" value={searchQuery}
+              onChange={(event) => {
+                setSearchQuery(event.target.value);
+                setCurrentPage(1);
+              }}
+              placeholder="Search vehicle records..."
+              aria-label="Search vehicle records" />
+          </div>
         </div>
       </div>
 
-      {/* All 12 headings and cells use the SAME column definition. */}
+      {/* Headings and cells use the same column definition. */}
       <div className="table-container">
         <table className="vehicle-table" data-column-count={VEHICLE_COLUMNS.length}>
           <colgroup>
@@ -900,7 +922,7 @@ const Ownvehicledetails = () => {
             {loading || currentVehicles.length === 0 ? (
               <tr>
                 <td colSpan={VEHICLE_COLUMNS.length} className="no-data">
-                  {loading ? "Loading vehicle records..." : "No vehicles found."}
+                  {loading ? "Loading vehicle records..." : searchQuery.trim() ? "No matching vehicles found." : "No vehicles found."}
                 </td>
               </tr>
             ) : (
@@ -916,6 +938,10 @@ const Ownvehicledetails = () => {
                           <span className="vehicle-number">{vehicle.vehicleNo || "-"}</span>
                         ) : column.key === "registrationDate" ? (
                           formatDate(vehicle.registrationDate)
+                        ) : column.key === "horsepower" ? (
+                          vehicle.horsepower !== null && vehicle.horsepower !== undefined && vehicle.horsepower !== ""
+                            ? `${vehicle.horsepower} HP`
+                            : "-"
                         ) : column.key === "documents" ? (
                           <button type="button" className="upload-btn"
                             onClick={() => openDocumentModal(vehicle)}>
@@ -975,12 +1001,12 @@ const Ownvehicledetails = () => {
       {/* Pagination */}
 
       {!loading &&
-        vehicles.length > 0 && (
+        filteredVehicles.length > 0 && (
           <div className="pagination">
             <p className="pagination-info">
               Showing {firstRecord}–
               {lastRecord} of{" "}
-              {vehicles.length} vehicles
+              {filteredVehicles.length} vehicles
             </p>
 
             <div className="pagination-buttons">

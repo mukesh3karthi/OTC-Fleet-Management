@@ -453,7 +453,13 @@ const Approvalmanagement = () => {
   const [orderStatusFilter, setOrderStatusFilter] = useState("All");
   const [quotationMovementFilter, setQuotationMovementFilter] = useState("All");
   const [quotationStatusFilter, setQuotationStatusFilter] = useState("All");
-  const [activeView, setActiveView] = useState("order");
+  const [enquiryExpandedId, setEnquiryExpandedId] = useState("");
+  const [enquiryAmounts, setEnquiryAmounts] = useState({});
+  const [enquirySavingId, setEnquirySavingId] = useState("");
+  const [enquiryEditingId, setEnquiryEditingId] = useState("");
+  const [enquiryMovementFilter, setEnquiryMovementFilter] = useState("All");
+  const [enquiryStatusFilter, setEnquiryStatusFilter] = useState("All");
+  const [activeView, setActiveView] = useState("enquiry");
   const [selectedTransportReplacement, setSelectedTransportReplacement] =
     useState(null);
   const [replacementDetailFilter, setReplacementDetailFilter] = useState("All");
@@ -516,6 +522,90 @@ const Approvalmanagement = () => {
   const [replacementRemarks, setReplacementRemarks] = useState({});
   const [quotationActionModal, setQuotationActionModal] = useState(null);
   const [quotationActionRemark, setQuotationActionRemark] = useState("");
+  const [bulkQuotationAction, setBulkQuotationAction] = useState(null);
+  const [bulkQuotationBusy, setBulkQuotationBusy] = useState(false);
+  const getSelectedOrderQuotations = (order) => safeArray(order?.vehicleRequirements)
+    .map((requirement) => {
+      const rowKey = getRowKey(order._id, requirement.requirementId);
+      const raw = quotationSelections[rowKey];
+      const ids = Array.isArray(raw) ? raw : raw ? [raw] : [];
+      const quotations = getQuotationsForRequirement(order, requirement.requirementId)
+        .filter((item) => ids.includes(item.quotationId));
+      const quantity = quotations.reduce((sum, item) => sum + getApprovalQuantity(order, item), 0);
+      const required = Math.max(1, Number(requirement.quantity) || 1);
+      const pending = Math.max(0, required - getApprovedQuantityForRequirement(order, requirement.requirementId));
+      return { requirement, rowKey, quotations, quantity, pending };
+    })
+    .filter((item) => item.quotations.length);
+
+  const openBulkQuotationAction = (order, action) => {
+    if (quotationUpdatingKey || bulkQuotationBusy) return;
+    const entries = getSelectedOrderQuotations(order);
+    if (!entries.length) {
+      showToast("Select at least one transporter quotation.", "warning");
+      return;
+    }
+    if (action === "Approved" && entries.some((item) => item.quantity > item.pending || item.quantity <= 0)) {
+      showToast("Selected quotation quantities exceed the pending vehicle requirement.", "warning");
+      return;
+    }
+    setQuotationActionRemark("");
+    setBulkQuotationAction({ order, action, entries });
+  };
+
+  const submitBulkQuotationAction = async () => {
+    if (!bulkQuotationAction || bulkQuotationBusy) return;
+    const { order, action, entries } = bulkQuotationAction;
+    const remarks = quotationActionRemark.trim();
+    if (action === "Rejected" && !remarks) {
+      showToast("Enter a rejection reason.", "warning");
+      return;
+    }
+    setBulkQuotationBusy(true);
+    let completed = 0;
+    try {
+      for (const entry of entries) {
+        const ids = entry.quotations.map((item) => item.quotationId);
+        const response = await fetch(`${TRIP_API_URL}/${order._id}/confirm-quotation`, {
+          method: "PUT",
+          headers: { ...getAdminAuthHeaders(), "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify({
+            requirementId: entry.requirement.requirementId,
+            quotationId: ids[0], quotationIds: ids, selectedQuantity: entry.quantity,
+            status: action, confirmedBy: "Approval Management", remarks,
+            rejectionReason: action === "Rejected" ? remarks : "",
+          }),
+        });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(payload?.message || `Unable to update vehicle ${completed + 1}.`);
+        completed += 1;
+        const updatedOrder = payload?.data || payload?.trip || payload?.order || payload;
+        if (updatedOrder?._id) {
+          setOrders((previous) => previous.map((item) => item._id === updatedOrder._id ? updatedOrder : item));
+        }
+      }
+      setBulkQuotationAction(null);
+      setQuotationActionRemark("");
+      setExpandedOrderId(null);
+      showToast(`${completed} vehicle requirement(s) ${action.toLowerCase()} successfully.`, "success");
+    } catch (error) {
+      showToast(`${completed} of ${entries.length} completed. ${error.message || "Please retry the remaining quotations."}`, "error");
+      setBulkQuotationAction(null);
+    } finally {
+      if (completed > 0) {
+        setQuotationSelections((previous) => {
+          const next = { ...previous };
+          entries.slice(0, completed).forEach(({ rowKey }) => {
+            delete next[rowKey];
+            delete next[`${rowKey}__quantities`];
+          });
+          return next;
+        });
+      }
+      try { await fetchApprovals(true); } catch (_) { /* Keep the modal open if refresh fails. */ }
+      setBulkQuotationBusy(false);
+    }
+  };
   const openQuotationActionModal = (order, requirement, action) => {
     if (quotationUpdatingKey) return;
     const rowKey = getRowKey(order._id, requirement.requirementId);
@@ -1157,10 +1247,14 @@ const Approvalmanagement = () => {
           <div>No.</div>
           <div>Vehicle Type</div>
           <div>Configuration Model</div>
-          <div>Movement Classification</div>
-          <div>Quantity</div>
+          <div>Material</div>
           <div>Weight</div>
+          <div>Route</div>
+          <div>Placement Date</div>
           <div>Dimensions (L × H × W)</div>
+          <div>Quoted Amount</div>
+          <div>Customer Final Amount</div>
+          <div>Amount Difference</div>
         </div>
         {requirements.map((vehicle, index) => {
           const requirementId =
@@ -1174,10 +1268,16 @@ const Approvalmanagement = () => {
             vehicle?.configuration ||
             vehicle?.model ||
             "—";
-          const classification =
-            vehicle?.movementClassification || vehicle?.classification || "—";
-          const quantity = vehicle?.quantity ?? "—";
+          const material = vehicle?.material || vehicle?.materialType || "—";
+          const vehicleOrigin = String(vehicle?.origin || order?.origin || "").trim();
+          const vehicleDestination = String(vehicle?.destination || order?.destination || "").trim();
+          const route = vehicleOrigin && vehicleDestination
+            ? `${vehicleOrigin} → ${vehicleDestination}`
+            : vehicle?.route || vehicleOrigin || vehicleDestination || "—";
+          const placementDate = vehicle?.placementDate || "";
+          const amount = enquiryAmountFor(order, vehicle, index);
           const weight = vehicle?.weight ?? "—";
+          const customerFinalAmount = vehicle?.finalAmount ?? safeArray(order?.orderFinalization?.vehicleFinalAmounts).find((item) => String(item?.requirementId) === String(vehicle?.requirementId))?.amount;
           return (
             <div
               className="approval-vehicle-readonly-row"
@@ -1200,15 +1300,8 @@ const Approvalmanagement = () => {
                 <strong>{configuration}</strong>
               </div>
               <div className="approval-vehicle-readonly-field">
-                <span>Movement Classification</span>
-                <strong>{classification}</strong>
-              </div>
-              <div className="approval-vehicle-readonly-field approval-vehicle-center-field">
-                <span>Quantity</span>
-                <strong>
-                  {quantity}
-                  {quantity !== "—" ? <small> NOS</small> : null}
-                </strong>
+                <span>Material</span>
+                <strong>{material}</strong>
               </div>
               <div className="approval-vehicle-readonly-field approval-vehicle-center-field">
                 <span>Weight</span>
@@ -1217,9 +1310,39 @@ const Approvalmanagement = () => {
                   {weight !== "—" ? <small> TON</small> : null}
                 </strong>
               </div>
+              <div className="approval-vehicle-readonly-field">
+                <span>Route</span>
+                <strong className="approval-vehicle-route-value">{route}</strong>
+              </div>
+              <div className="approval-vehicle-readonly-field">
+                <span>Placement Date</span>
+                <strong>{placementDate ? formatDate(placementDate) : "—"}</strong>
+              </div>
               <div className="approval-vehicle-readonly-field approval-vehicle-dimension-field">
                 <span>Dimensions (L × H × W)</span>
                 <strong>{getVehicleDimension(vehicle)}</strong>
+              </div>
+              <div className="approval-vehicle-readonly-field approval-vehicle-center-field">
+                <span>Quoted Amount</span>
+                <strong>{amount !== "" && amount != null ? formatAmount(amount) : "—"}</strong>
+              </div>
+              <div className="approval-vehicle-readonly-field approval-vehicle-center-field approval-vehicle-final-amount-field">
+                <span>Customer Final Amount</span>
+                <strong>{customerFinalAmount !== "" && customerFinalAmount != null ? formatAmount(customerFinalAmount) : "—"}</strong>
+              </div>
+              <div className="approval-vehicle-readonly-field approval-vehicle-center-field approval-vehicle-difference-field">
+                <span>Amount Difference</span>
+                {(() => {
+                  const quoted = Number(String(amount ?? "").replace(/[^0-9.-]/g, ""));
+                  const finalValue = Number(String(customerFinalAmount ?? "").replace(/[^0-9.-]/g, ""));
+                  if (amount === "" || amount == null || customerFinalAmount === "" || customerFinalAmount == null || !Number.isFinite(quoted) || !Number.isFinite(finalValue)) return null;
+                  const difference = finalValue - quoted;
+                  return (
+                    <small className={`approval-vehicle-amount-difference ${difference < 0 ? "is-lower" : difference > 0 ? "is-higher" : "is-equal"}`}>
+                      {difference === 0 ? "No difference" : `${formatAmount(Math.abs(difference))} ${difference < 0 ? "Lower" : "Higher"}`}
+                    </small>
+                  );
+                })()}
               </div>
             </div>
           );
@@ -1549,9 +1672,8 @@ const Approvalmanagement = () => {
                 <tr>
                   <th>S.No</th>
                   <th>Order ID</th>
-                  <th>Customer / Route</th>
+                  <th>Customer</th>
                   <th>Movement Type</th>
-                  <th>Placement Date</th>
                   <th>Replacement Vehicles</th>
                   <th>Total Qty</th>
                   <th>Status</th>
@@ -1600,17 +1722,11 @@ const Approvalmanagement = () => {
                       <td>
                         <div className="approval-replacement-order">
                           <strong>{order.customer || "—"}</strong>
-                          <span>{getOrderRouteOrSite(order)}</span>
                         </div>
                       </td>
                       <td>
                         <span className="approval-replacement-movement">
                           {order.movementType || "—"}
-                        </span>
-                      </td>
-                      <td>
-                        <span className="approval-replacement-placement">
-                          {formatDate(order.placementDate)}
                         </span>
                       </td>
                       <td>
@@ -1653,6 +1769,337 @@ const Approvalmanagement = () => {
       </div>
     );
   };
+
+  /* ENQUIRY: All Key Account orders, including drafts not yet sent for approval. */
+  const enquiryOrders = useMemo(() => filteredOrders.filter((order) => {
+    const movement = String(order.movementType || "").toLowerCase();
+    const status = order.enquiryApproval?.status || "Pending";
+    const movementMatch = enquiryMovementFilter === "All" ||
+      movement.includes(enquiryMovementFilter.toLowerCase());
+    return movementMatch &&
+      (enquiryStatusFilter === "All" || status === enquiryStatusFilter);
+  }), [filteredOrders, enquiryMovementFilter, enquiryStatusFilter]);
+
+  const enquiryAmountFor = (order, requirement, index) => {
+    const requirementId = String(requirement.requirementId || index);
+    const key = `${order._id}:${requirementId}`;
+    return enquiryAmounts[key] ??
+      String(requirement.approvalAmount ?? order.enquiryApproval?.amounts?.[requirementId] ?? "");
+  };
+
+  const saveEnquiryAmounts = async (order) => {
+    if (!order?._id || enquirySavingId) return;
+    if (getOrderApprovalStatus(order) === "Approved") {
+      showToast("This order is MD-approved. Enquiry amounts are locked.", "warning");
+      setEnquiryEditingId("");
+      return;
+    }
+    const requirements = safeArray(order.vehicleRequirements);
+    if (!requirements.length) {
+      showToast("This order has no vehicle requirements.", "warning");
+      return;
+    }
+    const amounts = requirements.map((requirement, index) => ({
+      requirementId: String(requirement.requirementId || index),
+      amount: Number(enquiryAmountFor(order, requirement, index)),
+    }));
+    if (amounts.some((item) => !Number.isFinite(item.amount) || item.amount <= 0)) {
+      showToast("Enter a valid amount greater than zero for every vehicle.", "warning");
+      return;
+    }
+    try {
+      setEnquirySavingId(order._id);
+      setError("");
+      const response = await fetch(`${TRIP_API_URL}/${order._id}/enquiry-amounts`, {
+        method: "PUT",
+        headers: {
+          ...getAdminAuthHeaders(),
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({ amounts }),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(payload?.message || "Unable to save enquiry amounts.");
+      }
+      await fetchApprovals(true);
+      setEnquiryAmounts((previous) => {
+        const next = { ...previous };
+        requirements.forEach((r, i) => delete next[`${order._id}:${String(r.requirementId || i)}`]);
+        return next;
+      });
+      setEnquiryEditingId("");
+      setEnquiryExpandedId("");
+      showToast("Amounts saved and sent to Key Account.", "success");
+    } catch (saveError) {
+      setError(saveError.message || "Unable to send enquiry amounts.");
+      showToast(saveError.message || "Unable to send enquiry amounts.", "error");
+    } finally {
+      setEnquirySavingId("");
+    }
+  };
+
+  const renderEnquiry = () => (
+    <section className="approval-table-card ae-enquiry">
+      <div className="approval-table-head">
+        <div>
+          <h3>Enquiry</h3>
+          <p>Review orders created by Key Account and enter each vehicle's approval amount.</p>
+        </div>
+        <div className="approval-section-head-actions">
+          <div className="approval-section-filters">
+            <label className="approval-filter-field">
+              <select value={enquiryMovementFilter} onChange={(e) => setEnquiryMovementFilter(e.target.value)}>
+                <option value="All">All Movement</option>
+                <option value="WTG">WTG</option>
+                <option value="Crane">Crane</option>
+                <option value="Intercarting">Intercarting</option>
+              </select>
+            </label>
+            <label className="approval-filter-field">
+              <select value={enquiryStatusFilter} onChange={(e) => setEnquiryStatusFilter(e.target.value)}>
+                <option value="All">All Status</option>
+                <option value="Pending">Pending</option>
+                <option value="Sent">Sent</option>
+              </select>
+            </label>
+            <button type="button" className="approval-filter-clear" onClick={() => {
+              setEnquiryMovementFilter("All"); setEnquiryStatusFilter("All");
+            }}>Clear</button>
+          </div>
+          <span className="approval-table-count">{enquiryOrders.length} Orders</span>
+        </div>
+      </div>
+      {enquiryOrders.length === 0 ? (
+        <div className="approval-empty">No Key Account enquiries found.</div>
+      ) : (
+        <div className="ae-table-wrap">
+          <table className="ae-enquiry-table">
+            <thead><tr>
+              <th>Order ID</th><th>Client Name</th><th>Movement Type</th>
+              <th>Total Vehicles</th><th>Enquiry Date</th><th>Total Amount</th>
+              <th>Status</th><th>Action</th>
+            </tr></thead><tbody>
+          {enquiryOrders.map((order) => {
+            const expanded = enquiryExpandedId === order._id;
+            const sentForEdit = order.enquiryApproval?.status === "Sent";
+            const mdApproved = getOrderApprovalStatus(order) === "Approved";
+            const editable = !mdApproved && (!sentForEdit || enquiryEditingId === order._id);
+            const requirements = safeArray(order.vehicleRequirements);
+            const values = requirements.map((r, i) => Number(enquiryAmountFor(order, r, i)) || 0);
+            const total = values.reduce((sum, amount) => sum + amount, 0);
+            const allValid = requirements.length > 0 && requirements.every((r, i) => {
+              const raw = enquiryAmountFor(order, r, i);
+              return String(raw).trim() !== "" && Number.isFinite(Number(raw)) && Number(raw) > 0;
+            });
+            const sent = order.enquiryApproval?.status === "Sent";
+            const isWtgEnquiry = String(order.movementType || "").trim().toLowerCase() === "wtg movement";
+            return (
+              <tr
+                key={order._id}
+                className="ae-clickable-enquiry-row"
+                tabIndex={0}
+                aria-label={`View enquiry ${order.tripId || ""}`}
+                onClick={(event) => {
+                  if (event.target.closest("button, input, select, textarea, .ae-modal-overlay")) return;
+                  setEnquiryExpandedId(order._id);
+                }}
+                onKeyDown={(event) => {
+                  if (event.target !== event.currentTarget) return;
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    setEnquiryExpandedId(order._id);
+                  }
+                }}
+              >
+                <td className="ae-id">{order.tripId || "—"}</td>
+                <td className="ae-client">{order.customer || "—"}</td>
+                <td><span className="ae-movement-badge">{order.movementType || "—"}</span></td>
+                <td>{order.totalVehicles ?? requirements.reduce((sum, r) => sum + (Number(r.quantity) || 0), 0)} Nos</td>
+                <td>{formatDate(order.enquiryDate)}</td>
+                <td className="ae-total-amount">{formatAmount(total)}</td>
+                <td><span className={`ae-status-badge ${sent ? "sent" : "pending"}`}>{sent ? "Sent" : "Pending"}</span></td>
+                <td className="ae-action-cell">
+                  <button type="button" className="ae-view-btn"
+                    onClick={() => setEnquiryExpandedId(order._id)}
+                    aria-expanded={expanded}>View Enquiry</button>
+                {expanded && (
+                  <div className="ae-modal-overlay" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget && !enquirySavingId) setEnquiryExpandedId(""); }}>
+                  <div className={`ae-detail ${isWtgEnquiry ? "ae-wtg-modal" : ""}`} role="dialog" aria-modal="true" aria-label={`Enquiry details ${order.tripId || ""}`} onMouseDown={(event) => event.stopPropagation()}>
+                    <div className="ae-modal-top">
+                      <div className="ae-modal-brand">
+                        <small>APPROVAL MANAGEMENT · ENQUIRY</small>
+                        <strong>{order.customer || "Enquiry Details"}</strong>
+                      </div>
+                      <div className="ae-modal-header-right">
+                        <div className="ae-modal-trip-info">
+                          <span>{order.movementType || "—"}</span>
+                          <strong>{order.tripId || "—"}</strong>
+                        </div>
+                        <button type="button" onClick={() => setEnquiryExpandedId("")} aria-label="Close enquiry popup">×</button>
+                      </div>
+                    </div>
+                    <div className="ae-modal-body">
+                    <header className="ae-section-title">
+                      <div><h4>{isCraneOrder(order) ? "Crane" : "WTG"} Trip Information</h4>
+                      <p>Customer and enquiry details • Read-only</p></div>
+                      <span>TRIP ID <strong>{order.tripId || "—"}</strong></span>
+                    </header>
+                    <div className={`ae-info-grid ${isWtgEnquiry ? "ae-wtg-info-grid" : ""}`}>
+                      {[
+                        ["CUSTOMER", order.customer],
+                        ["CONTACT PERSON", order.contactPerson],
+                        ["CONTACT NUMBER", order.contactNumber],
+                        ["EMAIL", order.email],
+                        ["ENQUIRY DATE", formatDate(order.enquiryDate)],
+                        ["ASSIGNED KAM", order.assignedKam],
+                        ["TOTAL VEHICLES", `${order.totalVehicles ?? requirements.reduce((sum,r)=>sum+(Number(r.quantity)||0),0)} NOS`],
+                        ["MOVEMENT", order.movementType],
+                      ].map(([label, value]) => (
+                        <label key={label} className="ae-field">
+                          <span>{label}</span><div className="ae-readonly">{value || "—"}</div>
+                        </label>
+                      ))}
+                    </div>
+                    <header className="ae-section-title ae-vehicle-heading">
+                      <div><h4>Vehicle & Dimensions</h4>
+                      <p>{isWtgEnquiry ? "Vehicle requirements • One row per vehicle; only Amount can be edited." : "Two compact rows per vehicle. Only Amount can be edited."}</p></div>
+                      <span>{requirements.length} Requirements</span>
+                    </header>
+                    {isWtgEnquiry ? (
+                      <div className="ae-wtg-table-wrap">
+                        <table className="ae-wtg-table">
+                          <thead><tr>
+                            {["#", "VEHICLE TYPE", "CONFIGURATION", "MATERIAL", "WEIGHT", "ROUTE", "PLACEMENT", "L × H × W", "QUOTED AMOUNT (₹)", "CUSTOMER FINAL AMOUNT (₹)"].map((heading) => (
+                              <th key={heading}>{heading}</th>
+                            ))}
+                          </tr></thead>
+                          <tbody>
+                            {requirements.map((requirement, index) => {
+                              const requirementId = String(requirement.requirementId || index);
+                              const key = `${order._id}:${requirementId}`;
+                              return (
+                                <tr key={requirementId}>
+                                  <td><span className="ae-wtg-number">{index + 1}</span></td>
+                                  <td>{requirement.vehicleType || "—"}</td>
+                                  <td>{requirement.configuration || "—"}</td>
+                                  <td>{requirement.materialType || order.materialType || "—"}</td>
+                                  <td>{requirement.weight ?? 0} TON</td>
+                                  <td>{(() => {
+                                    const origin = String(requirement.origin || order.origin || "").trim();
+                                    const destination = String(requirement.destination || order.destination || "").trim();
+                                    return origin && destination ? `${origin} → ${destination}` : requirement.route || origin || destination || "—";
+                                  })()}</td>
+                                  <td>{formatDate(requirement.placementDate || order.placementDate)}</td>
+                                  <td>{formatDimension(requirement.dimensions)} FT</td>
+                                  <td><input aria-label={`Vehicle ${index + 1} amount in rupees`} type="number" min="0.01" step="0.01"
+                                    disabled={!editable} value={enquiryAmountFor(order, requirement, index)}
+                                    placeholder="Amount"
+                                    onChange={(event) => setEnquiryAmounts((previous) => ({
+                                      ...previous, [key]: event.target.value,
+                                    }))}/></td>
+                                  <td>{(() => { const finalAmount = requirement.finalAmount ?? safeArray(order?.orderFinalization?.vehicleFinalAmounts).find((item) => String(item?.requirementId) === String(requirement?.requirementId))?.amount; return finalAmount !== "" && finalAmount != null ? formatAmount(finalAmount) : "—"; })()}</td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <>
+                    {requirements.map((requirement, index) => {
+                      const requirementId = String(requirement.requirementId || index);
+                      const key = `${order._id}:${requirementId}`;
+                      return (
+                        <div className="ae-vehicle" key={requirementId}>
+                          <div className="ae-vehicle-header">Vehicle {index + 1}</div>
+                          <div className="ae-vehicle-grid">
+                            {[
+                              ["VEHICLE TYPE", requirement.vehicleType],
+                              ["CONFIGURATION MODEL", requirement.configuration],
+                              ["MATERIAL TYPE", requirement.materialType || order.materialType],
+                              ["WEIGHT", `${requirement.weight ?? 0} TON`],
+                              ["ROUTE", (() => {
+                                const origin = String(requirement.origin || order.origin || "").trim();
+                                const destination = String(requirement.destination || order.destination || "").trim();
+                                return origin && destination ? `${origin} → ${destination}` : requirement.route || origin || destination || "—";
+                              })()],
+                              ["PLACEMENT DATE", formatDate(requirement.placementDate || order.placementDate)],
+                              ["DIMENSIONS (L × H × W)", `${formatDimension(requirement.dimensions)} FT`],
+                            ].map(([label, value]) => (
+                              <label key={label} className="ae-field">
+                                <span>{label}</span>
+                                <div className="ae-readonly" title={String(value || "—")}>{value || "—"}</div>
+                              </label>
+                            ))}
+                            <label className="ae-field ae-amount">
+                              <span>QUOTED AMOUNT (₹)</span>
+                              <input type="number" min="0.01" step="0.01" disabled={!editable}
+                                value={enquiryAmountFor(order, requirement, index)}
+                                placeholder="Enter amount"
+                                onChange={(event) => setEnquiryAmounts((previous) => ({
+                                  ...previous, [key]: event.target.value,
+                                }))}
+                              />
+                            </label>
+                            <label className="ae-field ae-amount">
+                              <span>CUSTOMER FINAL AMOUNT (₹)</span>
+                              <div className="ae-readonly">{(() => { const finalAmount = requirement.finalAmount ?? safeArray(order?.orderFinalization?.vehicleFinalAmounts).find((item) => String(item?.requirementId) === String(requirement?.requirementId))?.amount; return finalAmount !== "" && finalAmount != null ? formatAmount(finalAmount) : "—"; })()}</div>
+                            </label>
+                          </div>
+                        </div>
+                      );
+                    })}
+                      </>
+                    )}
+                    <label className="ae-field ae-remarks">
+                      <span>REMARKS</span>
+                      <div className="ae-readonly">{order.remark || "—"}</div>
+                    </label>
+                    <footer className="ae-footer">
+                      <div><small>Total Approval Amount</small>
+                        <strong>{formatAmount(total)}</strong>
+                        <small>Auto-calculated from all vehicle amounts</small>
+                      </div>
+                      {mdApproved ? (
+                        <span className="ae-amount-locked" role="status">
+                          ✓ MD Approved — Amount Locked
+                        </span>
+                      ) : sent && !editable ? (
+                        <button type="button" onClick={() => setEnquiryEditingId(order._id)}>Edit Amount</button>
+                      ) : (
+                        <div className="ae-footer-actions">
+                          {sent && <button type="button" className="ae-cancel" onClick={() => {
+                            setEnquiryAmounts((previous) => {
+                              const next = { ...previous };
+                              requirements.forEach((r, i) => delete next[`${order._id}:${String(r.requirementId || i)}`]);
+                              return next;
+                            });
+                            setEnquiryEditingId("");
+                          }}>Cancel</button>}
+                          <button type="button" disabled={!allValid || Boolean(enquirySavingId)}
+                            onClick={() => saveEnquiryAmounts(order)}>
+                            {enquirySavingId === order._id ? "Saving..." : sent ? "Update & Send" : "Save & Send to Key Account"}
+                          </button>
+                        </div>
+                      )}
+                    </footer>
+                    </div>
+                  </div>
+                  </div>
+                )}
+                </td>
+              </tr>
+            );
+          })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </section>
+  );
+
   const renderOrderApproval = () => (
     <div className="approval-table-card">
       <div className="approval-table-head">
@@ -1711,8 +2158,7 @@ const Approvalmanagement = () => {
                 <th>Order ID</th>
                 <th>Client Name</th>
                 <th>Movement Type</th>
-                <th>Route / Site</th>
-                <th>Placement Date</th>
+                <th>Assigned KAM</th>
                 <th>Agreed Rate</th>
                 <th>Commercial Terms &amp; SLAs</th>
                 <th>MD Status</th>
@@ -1774,21 +2220,8 @@ const Approvalmanagement = () => {
                         </span>
                       </td>
                       <td>
-                        <div className="approval-md-route">
-                          {isIntercartingOrder(order) ? (
-                            <strong>{order.siteLocation || "—"}</strong>
-                          ) : (
-                            <>
-                              <strong>{order.origin || "—"}</strong>
-                              <span>→</span>
-                              <strong>{order.destination || "—"}</strong>
-                            </>
-                          )}
-                        </div>
-                      </td>
-                      <td>
-                        <span className="approval-md-placement">
-                          {formatDate(order.placementDate)}
+                        <span className="approval-md-kam">
+                          {order.assignedKam || "—"}
                         </span>
                       </td>
                       <td>
@@ -1930,8 +2363,6 @@ const Approvalmanagement = () => {
                 <th>Order ID</th>
                 <th>Customer</th>
                 <th>Movement</th>
-                <th>Route / Site</th>
-                <th>Placement</th>
                 <th>Vehicle Requirements</th>
                 <th>Confirmed</th>
                 <th>Status</th>
@@ -2005,24 +2436,6 @@ const Approvalmanagement = () => {
                         </span>
                       </td>
                       <td>
-                        <div className="approval-quotation-route">
-                          {isIntercartingOrder(order) ? (
-                            <strong>{order.siteLocation || "—"}</strong>
-                          ) : (
-                            <>
-                              <span>{order.origin || "—"}</span>
-                              <b>→</b>
-                              <span>{order.destination || "—"}</span>
-                            </>
-                          )}
-                        </div>
-                      </td>
-                      <td>
-                        <strong className="approval-quotation-row-value">
-                          {formatDate(order.placementDate)}
-                        </strong>
-                      </td>
-                      <td>
                         <span className="approval-quotation-requirement-count">
                           {totalRequirements} Requirement
                           {totalRequirements === 1 ? "" : "s"}
@@ -2047,7 +2460,7 @@ const Approvalmanagement = () => {
                     </tr>
                     {isExpanded && (
                       <tr className="approval-quotation-expand-row">
-                        <td colSpan="9">
+                        <td colSpan="7">
                           <div
                             className="approval-quotation-expand-panel"
                             role="dialog"
@@ -2064,15 +2477,9 @@ const Approvalmanagement = () => {
                                   <span>ORDER ID</span>
                                   <strong>{order.tripId || "—"}</strong>
                                 </div>
-                                <div className="approval-quotation-head-item approval-quotation-head-route">
-                                  <span>ROUTE</span>
-                                  <strong>{getOrderRouteOrSite(order)}</strong>
-                                </div>
                                 <div className="approval-quotation-head-item">
-                                  <span>PLACEMENT</span>
-                                  <strong>
-                                    {formatDate(order.placementDate)}
-                                  </strong>
+                                  <span>CUSTOMER</span>
+                                  <strong>{order.customer || "—"}</strong>
                                 </div>
                                 <div className="approval-quotation-head-item">
                                   <span>VEHICLES</span>
@@ -2140,8 +2547,6 @@ const Approvalmanagement = () => {
                                         quotation.quotationId,
                                       ),
                                   );
-                                  const selectedQuotation =
-                                    selectedQuotations[0] || null;
                                   const requiredQuantity = Math.max(
                                     1,
                                     Number(requirement.quantity) || 1,
@@ -2165,37 +2570,6 @@ const Approvalmanagement = () => {
                                     0,
                                     requiredQuantity - approvedQuantity,
                                   );
-                                  const selectedQuantity =
-                                    selectedQuotations.reduce(
-                                      (total, quotation) =>
-                                        total +
-                                        getApprovalQuantity(order, quotation),
-                                      0,
-                                    );
-                                  const selectableQuotations =
-                                    getBulkQuotationCandidates(
-                                      order,
-                                      requirement.requirementId,
-                                    );
-                                  const selectableQuantity =
-                                    selectableQuotations.reduce(
-                                      (sum, item) =>
-                                        sum + getApprovalQuantity(order, item),
-                                      0,
-                                    );
-                                  const allSelectablePicked =
-                                    selectableQuotations.length > 0 &&
-                                    selectableQuotations.every((item) =>
-                                      selectedQuotationIds.includes(
-                                        item.quotationId,
-                                      ),
-                                    );
-                                  const selectedAmount =
-                                    selectedQuotations.reduce(
-                                      (sum, item) =>
-                                        sum + (Number(item.amount) || 0),
-                                      0,
-                                    );
                                   const retiredQuotationIds =
                                     getConfirmationsForRequirement(
                                       order,
@@ -2205,13 +2579,15 @@ const Approvalmanagement = () => {
                                         (item) => item.status === "Replaced",
                                       )
                                       .map((item) => item.quotationId);
-                                  const remainingQuantity = Math.max(
-                                    0,
-                                    pendingQuantity - selectedQuantity,
-                                  );
-                                  const selectionCanApprove =
-                                    selectedQuantity > 0 &&
-                                    selectedQuantity <= pendingQuantity;
+                                  const vehicleFinalAmount = requirement.finalAmount ??
+                                    safeArray(order?.orderFinalization?.vehicleFinalAmounts)
+                                      .find((item) => String(item?.requirementId) === String(requirement?.requirementId))?.amount;
+                                  const finalRateValue = vehicleFinalAmount === "" || vehicleFinalAmount == null
+                                    ? null : Number(String(vehicleFinalAmount).replace(/[^0-9.-]/g, ""));
+                                  const vehicleRoute = [requirement.origin || order.origin, requirement.destination || order.destination]
+                                    .filter(Boolean).join(" → ") || requirement.route || getOrderRouteOrSite(order);
+                                  const placementValue = requirement.placementDate || order.placementDate;
+                                  const materialValue = requirement.materialType || requirement.material || order.materialType || order.material || "—";
                                   return (
                                     <section
                                       className={`approval-qv-card ${
@@ -2226,42 +2602,31 @@ const Approvalmanagement = () => {
                                           {String(index + 1).padStart(2, "0")}
                                         </div>
                                         <div className="approval-qv-content">
-                                          <span className="approval-qv-label">
-                                            VEHICLE REQUIREMENT
-                                          </span>
                                           <div className="approval-qv-data-row">
-                                            <h4 className="approval-qv-vehicle-type">
-                                              {requirement.vehicleType ||
-                                                "Vehicle"}
-                                            </h4>
-                                            <span
-                                              className="approval-qv-divider"
-                                              aria-hidden="true"
-                                            />
-                                            <span className="approval-qv-data-item">
-                                              {requirement.configuration || "—"}
-                                            </span>
-                                            <span className="approval-qv-data-item">
-                                              {requirement.classification ||
-                                                "—"}
-                                            </span>
-                                            <span className="approval-qv-data-item">
-                                              Qty {requirement.quantity || 0}
-                                            </span>
-                                            <span className="approval-qv-data-item">
-                                              {requirement.weight ?? "—"}
-                                              {requirement.weight !== null &&
-                                              requirement.weight !==
-                                                undefined &&
-                                              requirement.weight !== ""
-                                                ? " Ton"
-                                                : ""}
-                                            </span>
-                                            <span className="approval-qv-data-item">
-                                              {formatDimension(
-                                                requirement.dimensions,
-                                              )}
-                                            </span>
+                                            <div className="approval-qv-metric">
+                                              <span>VEHICLE TYPE</span>
+                                              <strong>{requirement.vehicleType || "Vehicle"}</strong>
+                                            </div>
+                                            <div className="approval-qv-metric">
+                                              <span>CONFIGURATION</span>
+                                              <strong>{requirement.configuration || "—"}</strong>
+                                            </div>
+                                            <div className="approval-qv-metric">
+                                              <span>WEIGHT</span>
+                                              <strong>{requirement.weight ?? "—"}{requirement.weight !== null && requirement.weight !== undefined && requirement.weight !== "" ? " Ton" : ""}</strong>
+                                            </div>
+                                            <div className="approval-qv-metric">
+                                              <span>DIMENSIONS</span>
+                                              <strong>{formatDimension(requirement.dimensions)}</strong>
+                                            </div>
+                                            <div className="approval-qv-metric approval-qv-metric-route" title={vehicleRoute}>
+                                              <span>ROUTE</span>
+                                              <strong>{vehicleRoute}</strong>
+                                            </div>
+                                            <div className="approval-qv-metric">
+                                              <span>PLACEMENT</span>
+                                              <strong>{placementValue ? formatDate(placementValue) : "—"}</strong>
+                                            </div>
                                           </div>
                                         </div>
                                         <span
@@ -2272,86 +2637,16 @@ const Approvalmanagement = () => {
                                           {status}
                                         </span>
                                       </div>
-                                      {pendingQuantity > 0 && (
-                                        <div
-                                          className="approval-qv-actionbar"
-                                          style={{ padding: "12px 16px" }}
-                                        >
-                                          <div className="approval-qv-selected-summary">
-                                            <strong>
-                                              {selectedQuotations.length} row(s)
-                                              · {selectedQuantity} vehicle(s) ·{" "}
-                                              {formatAmount(selectedAmount)}
-                                            </strong>
-                                            <small>
-                                              {selectableQuantity >
-                                              pendingQuantity
-                                                ? `Choose up to ${pendingQuantity} NOS; quotations exceed the remaining requirement.`
-                                                : "Select the rows, then approve them together."}
-                                            </small>
-                                          </div>
-                                          <div className="approval-qv-actions">
-                                            <label
-                                              style={{
-                                                display: "inline-flex",
-                                                alignItems: "center",
-                                                gap: 8,
-                                                fontSize: 12,
-                                              }}
-                                            >
-                                              <input
-                                                type="checkbox"
-                                                style={{
-                                                  width: 16,
-                                                  height: 16,
-                                                }}
-                                                checked={allSelectablePicked}
-                                                disabled={
-                                                  updating ||
-                                                  !!quotationUpdatingKey ||
-                                                  !selectableQuotations.length ||
-                                                  (!allSelectablePicked &&
-                                                    selectableQuantity >
-                                                      pendingQuantity)
-                                                }
-                                                onChange={() =>
-                                                  handleSelectAllQuotations(
-                                                    order,
-                                                    requirement,
-                                                    allSelectablePicked,
-                                                  )
-                                                }
-                                              />
-                                              Select All
-                                            </label>
-                                            <button
-                                              type="button"
-                                              className="approval-qv-reject-btn"
-                                              disabled={
-                                                updating ||
-                                                !selectedQuotationIds.length
-                                              }
-                                              onClick={() =>
-                                                handleSelectAllQuotations(
-                                                  order,
-                                                  requirement,
-                                                  true,
-                                                )
-                                              }
-                                            >
-                                              Clear
-                                            </button>
-                                          </div>
-                                        </div>
-                                      )}
                                       <div className="approval-qv-table-wrap">
                                         <table className="approval-qv-table">
                                           <thead>
                                             <tr>
                                               <th>Pick</th>
                                               <th>Transporter</th>
-                                              <th>Quantity</th>
-                                              <th>Amount</th>
+                                              <th>Material</th>
+                                              <th>Customer Final Rate</th>
+                                              <th>Traffic Quoted Rate</th>
+                                              <th>Rate Margin</th>
                                               <th>Allocated By</th>
                                               <th>Quoted At</th>
                                               <th>Status</th>
@@ -2445,13 +2740,8 @@ const Approvalmanagement = () => {
                                                       </small>
                                                     </div>
                                                   </td>
-                                                  <td>
-                                                    <strong className="approval-qv-quantity">
-                                                      {isCraneOrder(order)
-                                                        ? "Multiple"
-                                                        : `${getApprovalQuantity(order, quotation)} NOS`}
-                                                    </strong>
-                                                  </td>
+                                                  <td>{materialValue}</td>
+                                                  <td>{Number.isFinite(finalRateValue) && finalRateValue !== null ? <strong className="approval-qv-amount">{formatAmount(finalRateValue)}</strong> : "—"}</td>
                                                   <td>
                                                     <strong className="approval-qv-amount">
                                                       {formatAmount(
@@ -2459,6 +2749,14 @@ const Approvalmanagement = () => {
                                                       )}
                                                     </strong>
                                                   </td>
+                                                  <td>{(() => {
+                                                    const quoted = Number(String(quotation.amount ?? "").replace(/[^0-9.-]/g, ""));
+                                                    if (quotation.amount === "" || quotation.amount == null || !Number.isFinite(quoted) || finalRateValue === null || !Number.isFinite(finalRateValue)) return "—";
+                                                    const difference = finalRateValue - quoted;
+                                                    return <span className={`approval-qv-rate-diff ${difference < 0 ? "higher" : difference > 0 ? "lower" : "equal"}`}>
+                                                      {difference > 0 ? `${formatAmount(difference)} margin` : difference < 0 ? `${formatAmount(Math.abs(difference))} above customer rate` : "Equal rates"}
+                                                    </span>;
+                                                  })()}</td>
                                                   <td>
                                                     <span className="approval-qv-allocator">
                                                       {quotation.quotedBy ||
@@ -2547,122 +2845,6 @@ const Approvalmanagement = () => {
                                           </div>
                                         </div>
                                       )}
-                                      {pendingQuantity > 0 && (
-                                        <div className="approval-qv-actionbar">
-                                          <div className="approval-qv-selected-summary">
-                                            {selectedQuotations.length ? (
-                                              <>
-                                                <span>
-                                                  VEHICLE QUANTITY SELECTION
-                                                </span>
-                                                <div className="approval-qv-selection-progress">
-                                                  <strong>
-                                                    {selectedQuantity}
-                                                    <small>
-                                                      {" / "}
-                                                      {pendingQuantity} PENDING
-                                                      NOS
-                                                    </small>
-                                                  </strong>
-                                                  <div className="approval-qv-selection-track">
-                                                    <span
-                                                      style={{
-                                                        width: `${Math.min(
-                                                          100,
-                                                          (selectedQuantity /
-                                                            Math.max(
-                                                              1,
-                                                              pendingQuantity,
-                                                            )) *
-                                                            100,
-                                                        )}%`,
-                                                      }}
-                                                    />
-                                                  </div>
-                                                  <em
-                                                    className={
-                                                      selectionCanApprove
-                                                        ? "is-complete"
-                                                        : ""
-                                                    }
-                                                  >
-                                                    {selectionCanApprove
-                                                      ? `${selectedQuantity} NOS ready to approve`
-                                                      : `${remainingQuantity} NOS remaining`}
-                                                  </em>
-                                                </div>
-                                                <div className="approval-qv-selected-list">
-                                                  {selectedQuotations.map(
-                                                    (quotation) => (
-                                                      <span
-                                                        key={
-                                                          quotation.quotationId
-                                                        }
-                                                      >
-                                                        {quotation.transporter ||
-                                                          "—"}
-                                                        <b>
-                                                          {isCraneOrder(order)
-                                                            ? "Multiple"
-                                                            : `${getApprovalQuantity(order, quotation)} NOS`}
-                                                        </b>
-                                                      </span>
-                                                    ),
-                                                  )}
-                                                </div>
-                                              </>
-                                            ) : (
-                                              <>
-                                                <span>
-                                                  VEHICLE QUANTITY SELECTION
-                                                </span>
-                                                <strong>
-                                                  Required {requiredQuantity}{" "}
-                                                  NOS • Approved{" "}
-                                                  {approvedQuantity} NOS •
-                                                  Pending {pendingQuantity} NOS.
-                                                </strong>
-                                              </>
-                                            )}
-                                          </div>
-                                          <div className="approval-qv-actions">
-                                            <button
-                                              type="button"
-                                              className="approval-qv-reject-btn"
-                                              disabled={
-                                                updating ||
-                                                selectedQuotationIds.length ===
-                                                  0
-                                              }
-                                              onClick={() =>
-                                                openQuotationActionModal(
-                                                  order,
-                                                  requirement,
-                                                  "Rejected",
-                                                )
-                                              }
-                                            >
-                                              Reject Selected
-                                            </button>
-                                            <button
-                                              type="button"
-                                              className="approval-qv-approve-btn"
-                                              disabled={
-                                                updating || !selectionCanApprove
-                                              }
-                                              onClick={() =>
-                                                openQuotationActionModal(
-                                                  order,
-                                                  requirement,
-                                                  "Approved",
-                                                )
-                                              }
-                                            >
-                                              Approve Selected
-                                            </button>
-                                          </div>
-                                        </div>
-                                      )}
                                       {!approvedConfirmation &&
                                         latestConfirmation?.status ===
                                           "Rejected" && (
@@ -2680,6 +2862,26 @@ const Approvalmanagement = () => {
                                     </section>
                                   );
                                 })}
+                              </div>
+                              <div className="approval-qv-common-footer">
+                                <div className="approval-qv-common-selected">
+                                  <span>SELECTED TRANSPORT</span>
+                                  <strong>
+                                    {getSelectedOrderQuotations(order).length
+                                      ? getSelectedOrderQuotations(order)
+                                          .flatMap(({ quotations }) => quotations.map((item) => item.transporter || "—"))
+                                          .join(", ")
+                                      : "No transporter selected"}
+                                  </strong>
+                                </div>
+                                <div className="approval-qv-actions">
+                                  <button type="button" className="approval-qv-reject-btn"
+                                    disabled={Boolean(quotationUpdatingKey) || bulkQuotationBusy || !getSelectedOrderQuotations(order).length}
+                                    onClick={() => openBulkQuotationAction(order, "Rejected")}>Reject Selected</button>
+                                  <button type="button" className="approval-qv-approve-btn"
+                                    disabled={Boolean(quotationUpdatingKey) || bulkQuotationBusy || !getSelectedOrderQuotations(order).length}
+                                    onClick={() => openBulkQuotationAction(order, "Approved")}>Approve Selected</button>
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -2889,6 +3091,8 @@ const Approvalmanagement = () => {
       =================================================== */}
       <div className="approval-toolbar">
         <div className="approval-tabs">
+          <button type="button" className={activeView === "enquiry" ? "active" : ""}
+            onClick={() => setActiveView("enquiry")}>Enquiry</button>
           <button
             type="button"
             className={activeView === "order" ? "active" : ""}
@@ -2960,6 +3164,8 @@ const Approvalmanagement = () => {
           <div className="approval-loading-spinner" />
           <strong>Loading approval data...</strong>
         </div>
+      ) : activeView === "enquiry" ? (
+        renderEnquiry()
       ) : activeView === "order" ? (
         renderOrderApproval()
       ) : activeView === "quotation" ? (
@@ -3324,7 +3530,7 @@ const Approvalmanagement = () => {
                       {order.tripId || "Order Details"}
                     </h3>
                     <p>
-                      {order.customer || "—"} · {getOrderRouteOrSite(order)}
+                      {order.customer || "—"} · {order.movementType || "—"}
                     </p>
                   </div>
                   <div className="approval-order-details-head-right">
@@ -3353,7 +3559,7 @@ const Approvalmanagement = () => {
                         <h4>Order Information</h4>
                       </div>
                     </div>
-                    <div className="approval-order-details-grid">
+                    <div className={`approval-order-details-grid ${isIntercartingOrder(order) ? "approval-order-details-grid-eight" : ""}`}>
                       <div>
                         <span>Client Name</span>
                         <strong>{order.customer || "—"}</strong>
@@ -3362,12 +3568,6 @@ const Approvalmanagement = () => {
                         <span>Movement Type</span>
                         <strong>{order.movementType || "—"}</strong>
                       </div>
-                      {!isIntercartingOrder(order) && (
-                        <div>
-                          <span>Material Type</span>
-                          <strong>{order.materialType || "—"}</strong>
-                        </div>
-                      )}
                       {isIntercartingOrder(order) && (
                         <div>
                           <span>Site Location</span>
@@ -3385,35 +3585,6 @@ const Approvalmanagement = () => {
                             ? `${order.weight ?? "—"} TON`
                             : `${getTotalRequiredVehicles(order)} NOS`}
                         </strong>
-                      </div>
-                      {!isIntercartingOrder(order) && (
-                        <div>
-                          <span>Origin</span>
-                          <strong>{order.origin || "—"}</strong>
-                        </div>
-                      )}
-                      {!isIntercartingOrder(order) && (
-                        <div>
-                          <span>Destination</span>
-                          <strong>{order.destination || "—"}</strong>
-                        </div>
-                      )}
-                      {!isIntercartingOrder(order) && (
-                        <div>
-                          <span>Distance</span>
-                          <strong>
-                            {order.distance ?? "—"}
-                            {order.distance !== null &&
-                            order.distance !== undefined &&
-                            order.distance !== ""
-                              ? " KM"
-                              : ""}
-                          </strong>
-                        </div>
-                      )}
-                      <div>
-                        <span>Placement Date</span>
-                        <strong>{formatDate(order.placementDate)}</strong>
                       </div>
                       <div>
                         <span>Enquiry Date</span>
@@ -3592,6 +3763,55 @@ const Approvalmanagement = () => {
             </div>
           );
         })()}
+      {bulkQuotationAction && (
+        <div className="approval-qaction-overlay" onMouseDown={(event) => {
+          if (event.target === event.currentTarget && !bulkQuotationBusy) setBulkQuotationAction(null);
+        }}>
+          <div className={`approval-qaction-modal ${bulkQuotationAction.action === "Approved" ? "is-approve" : "is-reject"}`}
+            role="dialog" aria-modal="true" aria-labelledby="approval-bulk-title"
+            onMouseDown={(event) => event.stopPropagation()}>
+            <div className="approval-qaction-head">
+              <div className="approval-qaction-heading">
+                <div className="approval-qaction-icon">{bulkQuotationAction.action === "Approved" ? "✓" : "×"}</div>
+                <div><span>QUOTATION DECISION</span>
+                  <h3 id="approval-bulk-title">{bulkQuotationAction.action === "Approved" ? "Approve Selected Vehicles" : "Reject Selected Quotations"}</h3>
+                </div>
+              </div>
+              <button type="button" className="approval-qaction-close" disabled={bulkQuotationBusy}
+                onClick={() => setBulkQuotationAction(null)} aria-label="Close confirmation">×</button>
+            </div>
+            <div className="approval-qaction-summary">
+              <div><span>Order ID</span><strong>{bulkQuotationAction.order.tripId || "—"}</strong></div>
+              <div><span>Vehicle Requirements</span><strong>{bulkQuotationAction.entries.length}</strong></div>
+              <div><span>Selected Quotations</span><strong>{bulkQuotationAction.entries.reduce((sum, item) => sum + item.quotations.length, 0)}</strong></div>
+              <div><span>Total Quoted Amount</span><strong>{formatAmount(bulkQuotationAction.entries.reduce((sum, entry) => sum + entry.quotations.reduce((total, item) => total + (Number(item.amount) || 0), 0), 0))}</strong></div>
+            </div>
+            <div className="approval-qv-bulk-list">
+              {bulkQuotationAction.entries.map(({ requirement, quotations }) => (
+                <div key={requirement.requirementId}>
+                  <strong>{requirement.vehicleType || "Vehicle"}</strong>
+                  <span>{quotations.map((item) => item.transporter || "—").join(", ")}</span>
+                </div>
+              ))}
+            </div>
+            <label className="approval-qaction-label">
+              {bulkQuotationAction.action === "Approved" ? "Approval Remarks" : "Rejection Reason (required)"}
+            </label>
+            <textarea className="approval-qaction-textarea" rows="3"
+              value={quotationActionRemark} onChange={(event) => setQuotationActionRemark(event.target.value)}
+              disabled={bulkQuotationBusy} placeholder="Enter remarks..." />
+            <div className="approval-qaction-footer">
+              <button type="button" className="approval-qaction-cancel" disabled={bulkQuotationBusy}
+                onClick={() => setBulkQuotationAction(null)}>Cancel</button>
+              <button type="button" className={`approval-qaction-confirm ${bulkQuotationAction.action === "Approved" ? "approve" : "reject"}`}
+                disabled={bulkQuotationBusy || (bulkQuotationAction.action === "Rejected" && !quotationActionRemark.trim())}
+                onClick={submitBulkQuotationAction}>
+                {bulkQuotationBusy ? "Processing..." : bulkQuotationAction.action === "Approved" ? "Confirm Approval" : "Confirm Rejection"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {quotationActionModal && (
         <div
           className="approval-qaction-overlay"

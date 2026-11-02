@@ -357,32 +357,49 @@ const Ownvehicledash = () => {
     );
     return result;
   }, [vehicles]);
-  /* =========================================
-     FLEET GROWTH
-  ========================================= */
-  const currentYear =
-    new Date().getFullYear();
-  const activityChartData = useMemo(() => {
-    const years = Array.from(
-      { length: 6 },
-      (_, index) =>
-        currentYear - 5 + index
+
+/* =========================================
+   FLEET GROWTH — ALL PURCHASE YEARS
+========================================= */
+
+const currentYear = new Date().getFullYear();
+
+const activityChartData = useMemo(() => {
+  // Read valid purchase years from existing records
+  const purchaseYears = vehicles
+    .map((vehicle) => Number(vehicle.purchaseYear))
+    .filter(
+      (year) =>
+        Number.isInteger(year) &&
+        year >= 1900 &&
+        year <= currentYear
     );
-    const result = years.map((year) => ({
-      year: String(year),
-      vehicles: vehicles.filter(
-        (vehicle) =>
-          Number(
-            vehicle.purchaseYear
-          ) === year
-      ).length,
-    }));
-    console.log(
-      "FLEET GROWTH:",
-      result
-    );
-    return result;
-  }, [vehicles, currentYear]);
+
+  // Start from the earliest recorded purchase year
+  const startingYear =
+    purchaseYears.length > 0
+      ? Math.min(...purchaseYears)
+      : currentYear;
+
+  // Include every year up to the current year
+  const years = Array.from(
+    { length: currentYear - startingYear + 1 },
+    (_, index) => startingYear + index
+  );
+
+  // Count vehicles purchased in each year
+  const counts = new Map();
+
+  purchaseYears.forEach((year) => {
+    counts.set(year, (counts.get(year) || 0) + 1);
+  });
+
+  return years.map((year) => ({
+    year: String(year),
+    vehicles: counts.get(year) || 0,
+  }));
+}, [vehicles, currentYear]);
+
   /* =========================================
      MAKE BAR CHART
   ========================================= */

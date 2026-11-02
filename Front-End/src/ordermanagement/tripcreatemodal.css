@@ -2196,3 +2196,209 @@
     font-size: 9px !important;
   }
 }
+
+/* =========================================================
+   UPDATED WTG ROWS: identical fields and labels for every row
+   This block intentionally overrides older WTG grid/media rules.
+   Intercarting and Crane layouts are unaffected.
+========================================================= */
+.wtg-vehicle-rows {
+  width: 100%;
+  min-width: 0;
+  gap: 6px;
+  overflow-x: hidden;
+}
+
+.wtg-vehicle-row,
+.wtg-vehicle-row-compact {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  display: grid;
+  grid-template-columns:
+    22px
+    minmax(0, 1.2fr)
+    minmax(0, 1.2fr)
+    minmax(0, 1.2fr)
+    minmax(0, .85fr)
+    minmax(0, .9fr)
+    minmax(0, .9fr)
+    minmax(0, 1.05fr)
+    minmax(0, 1.4fr)
+    24px !important;
+  gap: 7px !important;
+  align-items: end;
+  padding: 7px 0 !important;
+  border-bottom: 1px solid #edf2f4;
+}
+
+.wtg-vehicle-row .trip-field-group,
+.wtg-vehicle-row .wtg-suggest-input,
+.wtg-vehicle-row .wtg-dimensions-control {
+  width: 100%;
+  min-width: 0;
+}
+
+.wtg-vehicle-row .trip-field-group > label,
+.wtg-vehicle-row-compact .trip-field-group > label {
+  display: flex !important;
+  align-items: end;
+  min-height: 25px;
+  margin-bottom: 4px;
+  white-space: normal;
+  font-size: 8px;
+  line-height: 1.2;
+}
+
+.wtg-vehicle-row .trip-field-group > input,
+.wtg-vehicle-row .wtg-suggest-input input,
+.wtg-vehicle-row .wtg-quantity-control,
+.wtg-vehicle-row .wtg-weight-control,
+.wtg-vehicle-row .wtg-dimensions-control {
+  width: 100%;
+  min-width: 0;
+  height: 42px;
+}
+
+.wtg-vehicle-row .trip-field-group > input,
+.wtg-vehicle-row .wtg-suggest-input input {
+  padding-left: 7px;
+  padding-right: 7px;
+  font-size: 10.5px;
+}
+
+.wtg-vehicle-row .wtg-quantity-control > span,
+.wtg-vehicle-row .wtg-weight-control > span {
+  min-width: 30px;
+  padding: 0 3px;
+  font-size: 7px;
+}
+
+.wtg-vehicle-row .wtg-dimension-separator { flex-basis: 11px; }
+.wtg-vehicle-row .wtg-dimensions-unit { min-width: 36px; }
+.wtg-vehicle-row .wtg-vehicle-index,
+.wtg-vehicle-row .wtg-remove-vehicle-btn {
+  width: 22px;
+  height: 42px;
+  align-self: end;
+}
+
+/* Preserve one row at desktop widths. On smaller screens, wrap within
+   the same vehicle item instead of causing a horizontal scrollbar. */
+@media (max-width: 1250px) {
+  .wtg-vehicle-row,
+  .wtg-vehicle-row-compact {
+    grid-template-columns: 22px repeat(6, minmax(0, 1fr)) 24px !important;
+  }
+  .wtg-vehicle-row .wtg-field-vehicle-type { grid-column: 2 / span 2; }
+  .wtg-vehicle-row .wtg-field-configuration { grid-column: 4 / span 2; }
+  .wtg-vehicle-row .wtg-field-material { grid-column: 6 / span 2; }
+  .wtg-vehicle-row .wtg-field-weight { grid-column: 2; }
+  .wtg-vehicle-row .wtg-field-origin { grid-column: 3 / span 2; }
+  .wtg-vehicle-row .wtg-field-destination { grid-column: 5 / span 2; }
+  .wtg-vehicle-row .wtg-field-placement { grid-column: 2 / span 2; }
+  .wtg-vehicle-row .wtg-field-dimensions { grid-column: 4 / span 3; }
+  .wtg-vehicle-row .wtg-remove-vehicle-btn { grid-column: 8; grid-row: 1; }
+}
+
+@media (max-width: 600px) {
+  .wtg-vehicle-row,
+  .wtg-vehicle-row-compact {
+    grid-template-columns: 20px repeat(2, minmax(0, 1fr)) 22px !important;
+  }
+  .wtg-vehicle-row .trip-field-group { grid-column: 2 / span 2 !important; }
+  .wtg-vehicle-row .wtg-field-weight { grid-column: auto !important; }
+  .wtg-vehicle-row .wtg-remove-vehicle-btn { grid-column: 4; grid-row: 1; }
+}
+
+/* =========================================================
+   VEHICLE ENTRY — COMPACT TABLE PRESENTATION
+   Retains the existing editable form fields and handlers.
+========================================================= */
+.wtg-vehicle-rows,
+.intercarting-vehicle-rows {
+  gap: 0 !important;
+  border: 1px solid #d8e4e9;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+}
+.trip-vehicle-table-header {
+  display: grid;
+  align-items: center;
+  background: #f1f6f8;
+  border-bottom: 1px solid #d8e4e9;
+  color: #426b82;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .025em;
+  text-transform: uppercase;
+}
+.trip-vehicle-table-header > span {
+  min-width: 0;
+  padding: 10px 7px;
+  border-right: 1px solid #dce7eb;
+}
+.trip-vehicle-table-header > span:last-child { border-right: 0; }
+@media (min-width: 1251px) {
+  .trip-vehicle-table-header-wtg,
+  .wtg-vehicle-rows > .wtg-vehicle-row {
+    grid-template-columns: 38px minmax(0,1.2fr) minmax(0,1.2fr)
+      minmax(0,1.2fr) minmax(0,.85fr) minmax(0,.9fr)
+      minmax(0,.9fr) minmax(0,1.05fr) minmax(0,1.4fr) 36px !important;
+  }
+  .trip-vehicle-table-header-intercarting,
+  .intercarting-vehicle-rows > .intercarting-vehicle-row {
+    grid-template-columns: 38px minmax(0,1.3fr) minmax(0,1.3fr)
+      minmax(0,1.35fr) minmax(0,.85fr) minmax(0,1.6fr) 36px !important;
+  }
+  .wtg-vehicle-rows > .wtg-vehicle-row,
+  .intercarting-vehicle-rows > .intercarting-vehicle-row {
+    gap: 0 !important;
+    min-height: 55px !important;
+    padding: 0 !important;
+    align-items: stretch !important;
+    border-bottom: 1px solid #e1e9ec !important;
+  }
+  .wtg-vehicle-rows > .wtg-vehicle-row:last-child,
+  .intercarting-vehicle-rows > .intercarting-vehicle-row:last-child {
+    border-bottom: 0 !important;
+  }
+  .wtg-vehicle-row > .trip-field-group,
+  .intercarting-vehicle-row > .trip-field-group {
+    min-width: 0;
+    padding: 6px !important;
+    border-right: 1px solid #e1e9ec;
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .wtg-vehicle-row > .trip-field-group > label,
+  .intercarting-vehicle-row > .trip-field-group > label {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0,0,0,0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+  }
+  .wtg-vehicle-row .wtg-vehicle-index,
+  .intercarting-vehicle-row .intercarting-vehicle-index,
+  .wtg-vehicle-row .wtg-remove-vehicle-btn,
+  .intercarting-vehicle-row .wtg-remove-vehicle-btn {
+    align-self: center !important;
+    justify-self: center !important;
+  }
+  .wtg-vehicle-row input,
+  .intercarting-vehicle-row input,
+  .intercarting-vehicle-row select {
+    font-size: 11px !important;
+  }
+}
+@media (max-width: 1250px) {
+  .trip-vehicle-table-header { display: none; }
+}

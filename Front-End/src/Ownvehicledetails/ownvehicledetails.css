@@ -1068,3 +1068,74 @@ body.ownvehicle-modal-open {
   justify-content: center;
   visibility: visible !important;
 }
+/* Vehicle Records: top-right create action and searchable table */
+.ownvehicle-page .ownvehicle-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.ownvehicle-page .ownvehicle-add-top {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 38px;
+  padding: 0 16px;
+  background: #079b91;
+  color: #fff;
+  border: 0;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ownvehicle-page .vehicle-search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 290px;
+  max-width: 100%;
+  padding: 0 11px;
+  height: 36px;
+  border: 1px solid #c5dde1;
+  border-radius: 8px;
+  background: #fff;
+  color: #079b91;
+}
+
+.ownvehicle-page .vehicle-search-box:focus-within {
+  border-color: #079b91;
+  box-shadow: 0 0 0 2px rgba(7,155,145,.12);
+}
+
+.ownvehicle-page .vehicle-search-box input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #073f50;
+  font: inherit;
+  font-size: 12px;
+}
+
+.ownvehicle-page .vehicle-table {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.ownvehicle-page .vehicle-table th,
+.ownvehicle-page .vehicle-table td {
+  overflow-wrap: anywhere;
+  vertical-align: middle;
+}
+
+@media (max-width: 768px) {
+  .ownvehicle-page .ownvehicle-page-header { flex-wrap: wrap; }
+  .ownvehicle-page .vehicle-search-box { width: 100%; }
+  .ownvehicle-page .toolbar-right { flex: 1 1 100%; }
+}

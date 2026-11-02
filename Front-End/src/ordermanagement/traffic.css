@@ -897,7 +897,7 @@
   min-height: 60px;
   padding: 10px 20px;
   display: grid;
-  grid-template-columns: 1.05fr 1.2fr 1.8fr 1.1fr 1fr;
+  grid-template-columns: 1fr 1.4fr 1fr;
   align-items: center;
   gap: 0;
   border-bottom: 1px solid #dce5e7;
@@ -5172,4 +5172,145 @@
   .traffic-transport-rows {
     padding: 10px;
   }
+}
+
+/* Compact per-vehicle quotation review: route, customer final and margin. */
+.traffic-modal {
+  width: min(96vw, 1720px);
+  max-width: 1720px;
+  height: 94vh;
+  max-height: 94vh;
+}
+.traffic-vehicle-card-header {
+  padding: 8px 11px;
+  gap: 8px;
+}
+.traffic-vehicle-card-header > div {
+  gap: 8px;
+}
+.traffic-vehicle-compact-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 3px 9px;
+  min-width: 0;
+}
+.traffic-vehicle-compact-meta > span:first-child {
+  font-weight: 600;
+}
+.traffic-vehicle-meta-route {
+  font-weight: 500;
+  color: #315f68;
+  overflow-wrap: anywhere;
+  line-height: 1.35;
+}
+.traffic-vehicle-meta-placement {
+  color: #315f68;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Keep the Add Vehicle Row label and icon readable on hover. */
+.traffic-add-btn.traffic-add-btn-header:hover:not(:disabled) {
+  background: #078f88;
+  border-color: #078f88;
+  color: #ffffff;
+  opacity: 1;
+}
+
+.traffic-add-btn.traffic-add-btn-header:hover:not(:disabled) svg {
+  color: currentColor;
+  stroke: currentColor;
+}
+.traffic-quotation-table-wrap {
+  overflow-x: hidden;
+}
+.traffic-quotation-table {
+  width: 100%;
+  table-layout: fixed;
+}
+.traffic-quotation-table th,
+.traffic-quotation-table td {
+  padding: 8px 6px;
+  box-sizing: border-box;
+}
+.traffic-quotation-table th:nth-child(1),
+.traffic-quotation-table td:nth-child(1) { width: 5%; text-align: center; }
+.traffic-quotation-table th:nth-child(2),
+.traffic-quotation-table td:nth-child(2) { width: 23%; }
+.traffic-quotation-table th:nth-child(3),
+.traffic-quotation-table td:nth-child(3) { width: 18%; }
+.traffic-quotation-table th:nth-child(4),
+.traffic-quotation-table td:nth-child(4) { width: 18%; }
+.traffic-quotation-table th:nth-child(5),
+.traffic-quotation-table td:nth-child(5) { width: 20%; }
+.traffic-quotation-table th:nth-child(6),
+.traffic-quotation-table td:nth-child(6) { width: 10%; text-align: center; }
+.traffic-quotation-table th:nth-child(7),
+.traffic-quotation-table td:nth-child(7) { width: 6%; text-align: center; }
+.traffic-quotation-table.is-approved th:nth-child(2),
+.traffic-quotation-table.is-approved td:nth-child(2) { width: 26%; }
+.traffic-quotation-table.is-approved th:nth-child(3),
+.traffic-quotation-table.is-approved td:nth-child(3) { width: 20%; }
+.traffic-quotation-table.is-approved th:nth-child(4),
+.traffic-quotation-table.is-approved td:nth-child(4) { width: 20%; }
+.traffic-quotation-table.is-approved th:nth-child(5),
+.traffic-quotation-table.is-approved td:nth-child(5) { width: 17%; }
+.traffic-quotation-table.is-approved th:nth-child(6),
+.traffic-quotation-table.is-approved td:nth-child(6) { width: 12%; }
+.traffic-quotation-material {
+  color: #426a76;
+  font-size: 11px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+@media (max-width: 800px) {
+  .traffic-vehicle-card-header { flex-wrap: wrap; }
+  .traffic-vehicle-header-actions { flex-wrap: wrap; justify-content: flex-start; }
+  .traffic-quotation-table th,
+  .traffic-quotation-table td { font-size: 10px; padding: 6px 4px; }
+}
+
+/* Compact vertical rhythm for orders with many vehicle requirements. */
+.tv-navigation {
+  padding: 7px 12px;
+  gap: 8px;
+}
+.traffic-modal-body {
+  padding: 8px 10px;
+}
+.traffic-modal-body .traffic-vehicle-card {
+  margin-bottom: 6px;
+  border-radius: 9px;
+}
+.traffic-modal-body .traffic-vehicle-card-header {
+  min-height: 45px;
+  padding: 6px 10px;
+}
+.traffic-modal-body .tv-quotes {
+  padding: 3px 0 6px;
+}
+.traffic-modal-body .traffic-quotation-section {
+  margin: 2px 8px 7px;
+  border-radius: 7px;
+}
+.traffic-modal-body .traffic-quotation-table th {
+  height: 30px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+.traffic-modal-body .traffic-quotation-table td {
+  height: 40px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+.traffic-modal-body .traffic-quotation-table input,
+.traffic-modal-body .traffic-amount-input {
+  min-height: 33px;
+  height: 33px;
+}
+.traffic-modal-body .traffic-quotation-table .traffic-delete-option {
+  min-height: 30px;
 }

@@ -1331,9 +1331,7 @@ const Traffic = () => {
                 <th>Order ID</th>
                 <th>Customer</th>
                 <th>Movement</th>
-                <th>Route / Site</th>
                 <th>Vehicles</th>
-                <th>Placement Date</th>
                 <th>Quotation Status</th>
                 <th>Action</th>
               </tr>
@@ -1341,20 +1339,20 @@ const Traffic = () => {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan="9" className="traffic-empty-row">
+                  <td colSpan="7" className="traffic-empty-row">
                     <RefreshCw size={19} className="traffic-spin" />
                     Loading orders...
                   </td>
                 </tr>
               ) : error ? (
                 <tr>
-                  <td colSpan="9" className="traffic-empty-row error">
+                  <td colSpan="7" className="traffic-empty-row error">
                     {error}
                   </td>
                 </tr>
               ) : filteredOrders.length === 0 ? (
                 <tr>
-                  <td colSpan="9" className="traffic-empty-row">
+                  <td colSpan="7" className="traffic-empty-row">
                     No vehicle requirement orders found.
                   </td>
                 </tr>
@@ -1392,17 +1390,11 @@ const Traffic = () => {
                         </span>
                       </td>
                       <td>
-                        <span className="traffic-route">
-                          {getRouteText(order)}
-                        </span>
-                      </td>
-                      <td>
                         <span className="traffic-vehicle-count">
                           <Truck size={12} />
                           {getTotalVehicleQuantity(order)} NOS
                         </span>
                       </td>
-                      <td>{formatDate(order.placementDate)}</td>
                       <td>
                         <span
                           className={`traffic-status ${getStatusClass(status)}`}
@@ -1487,14 +1479,6 @@ const Traffic = () => {
               <div>
                 <span>Customer</span>
                 <strong>{selectedOrder.customer || "—"}</strong>
-              </div>
-              <div>
-                <span>Route / Site</span>
-                <strong>{getRouteText(selectedOrder)}</strong>
-              </div>
-              <div>
-                <span>Placement</span>
-                <strong>{formatDate(selectedOrder.placementDate)}</strong>
               </div>
               <div>
                 <span>Vehicle Qty</span>
@@ -1594,6 +1578,13 @@ const Traffic = () => {
                 const replacementHistory = getTransportReplacementRequests(selectedOrder).filter(item=>item.requirementId===requirement.requirementId).slice().sort((a,b)=>new Date(b.requestedAt)-new Date(a.requestedAt));
                 const requirementKey =
                   requirement.requirementId || requirementIndex;
+                const requirementRoute = (() => {
+                  const origin = String(requirement.origin || selectedOrder?.origin || "").trim();
+                  const destination = String(requirement.destination || selectedOrder?.destination || "").trim();
+                  return origin && destination ? `${origin} → ${destination}` : requirement.route || origin || destination || "—";
+                })();
+                const requirementMaterial = requirement.materialType || requirement.material || selectedOrder?.materialType || selectedOrder?.material || "—";
+                const requirementPlacement = requirement.placementDate || selectedOrder?.placementDate;
                 return (
                   <section
                     className={`traffic-vehicle-card ${transportView === "current" ? "tv-current-requirement" : ""} ${
@@ -1613,12 +1604,10 @@ const Traffic = () => {
                         </span>
                         <div>
                           <h3>{requirement.vehicleType || "Vehicle"}</h3>
-                          <p>
-                            {requirement.quantity || 0} NOS
-                            {" • "}
-                            {requirement.configuration || "No Configuration"}
-                            {" • "}
-                            {requirement.classification || "No Classification"}
+                          <p className="traffic-vehicle-compact-meta">
+                            <span>{requirement.configuration || "—"}</span>
+                            <span className="traffic-vehicle-meta-route" title={requirementRoute}>{requirementRoute}</span>
+                            <span className="traffic-vehicle-meta-placement">Placement: {requirementPlacement ? formatDate(requirementPlacement) : "—"}</span>
                           </p>
                         </div>
                       </div>
@@ -1673,12 +1662,12 @@ const Traffic = () => {
                     {transportView==="quotes" && <section className="tv-quotes">
                     <div className="traffic-quotation-section">
                       <div className="traffic-quotation-table-wrap">
-                        <table className="traffic-quotation-table">
+                        <table className={`traffic-quotation-table ${isApproved ? "is-approved" : ""}`}>
                           <thead>
                             <tr>
                               <th>S.No</th>
                               <th>Transport Name</th>
-                              <th>Quantity</th>
+                              <th>Material</th>
                               <th>{isCraneMovement(selectedOrder) ? "Quoted Amount" : "Amount / Vehicle"}</th>
                               <th>Allocated By</th>
                               <th>Status</th>
@@ -1754,42 +1743,7 @@ const Traffic = () => {
                                           />
                                         )}
                                       </td>
-                                      {/* QUANTITY */}
-                                      <td>
-                                        {isExisting ? (
-                                          <strong className="traffic-quantity-value">
-                                            {isCraneMovement(selectedOrder)
-                                              ? "Multiple"
-                                              : `${Math.max(1, Number(quotation.quantity) || 1)} NOS`}
-                                          </strong>
-                                        ) : isCraneMovement(selectedOrder) ? (
-                                          <div className="traffic-quantity-input">
-                                            <select
-                                              aria-label="Quantity"
-                                              value="Multiple"
-                                              disabled={saving}
-                                              style={{
-                                                width: "100%",
-                                                minHeight: 42,
-                                                padding: "0 10px",
-                                                border: "1px solid #c7dce2",
-                                                borderRadius: 6,
-                                                background: "#fff",
-                                                color: "#244f60",
-                                              }}
-                                            >
-                                              <option value="Multiple">
-                                                Multiple
-                                              </option>
-                                            </select>
-                                          </div>
-                                        ) : (
-                                          <div className="traffic-quantity-input">
-                                            <input type="number" value={1} readOnly aria-label="One vehicle per transport quotation" title="Each row is one vehicle. Add another row for the next vehicle." />
-                                            <span>NOS</span>
-                                          </div>
-                                        )}
-                                      </td>
+                                      <td className="traffic-quotation-material" title={String(requirementMaterial)}>{requirementMaterial}</td>
                                       {/* AMOUNT */}
                                       <td>
                                         {isExisting ? (
@@ -1901,7 +1855,7 @@ const Traffic = () => {
                             ) : (
                               <tr>
                                 <td
-                                  colSpan={isApproved ? 5 : 6}
+                                  colSpan={isApproved ? 6 : 7}
                                   className="traffic-no-options"
                                 >
                                   No transport quotations.

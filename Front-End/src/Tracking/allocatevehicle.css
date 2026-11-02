@@ -1481,6 +1481,24 @@
   white-space: nowrap;
 }
 
+/* Create Trip values shown per vehicle; intentionally read-only. */
+.tracking-created-vehicle-value {
+  display: block;
+  width: 100%;
+  min-width: 92px;
+  max-width: 160px;
+  height: 32px;
+  padding: 0 9px;
+  background: #f8fbfc;
+  border: 1px solid var(--tracking-line);
+  border-radius: 7px;
+  color: var(--tracking-text);
+  font: inherit;
+  cursor: default;
+}
+
+.tracking-created-vehicle-date { min-width: 108px; }
+
 .tracking-required-vehicle-table th:last-child,
 .tracking-required-vehicle-table td:last-child {
   border-right: 0;

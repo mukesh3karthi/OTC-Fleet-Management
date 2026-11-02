@@ -5462,3 +5462,33 @@
   .key-account-page .kam-unified-toolbar .kam-user-info strong { font-size: 12px; }
   .key-account-page .kam-unified-toolbar .kam-user-info span { font-size: 10px; }
 }
+
+/* Latest Approval Management enquiry amount (no history) */
+.kam-enquiry-amount { display:block; margin-top:4px; font-size:11px; font-weight:700; color:#087f79; }
+
+/* Compact vehicle quantity, matching the Traffic table */
+.key-account-page .kam-vehicle-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #16485c;
+  white-space: nowrap;
+  line-height: 1.25;
+}
+.key-account-page .kam-vehicle-count svg {
+  flex: 0 0 auto;
+  color: #285b6d;
+}
+.key-account-page .kam-vehicle-count strong {
+  font-size: 11.5px;
+  font-weight: 750;
+  letter-spacing: 0;
+}
+
+/* Compact action menu with only the Lifecycle edit action. */
+.kam-action-dropdown.kam-action-dropdown-fixed {
+  width: 150px;
+}
+.kam-action-dropdown.kam-action-dropdown-fixed .kam-action-item-text strong {
+  white-space: nowrap;
+}

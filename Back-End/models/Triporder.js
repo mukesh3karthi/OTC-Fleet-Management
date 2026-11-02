@@ -92,6 +92,16 @@ const vehicleRequirementSchema = new Schema(
       default: 0,
     },
 
+    // WTG-specific details saved per vehicle (other movements remain unchanged).
+    materialType: { type: String, trim: true, default: "" },
+    origin: { type: String, trim: true, default: "" },
+    destination: { type: String, trim: true, default: "" },
+    placementDate: { type: Date, default: null },
+
+    approvalAmount: { type: Number, min: 0, default: null },
+    // Customer's final agreed price for this vehicle, separate from Management's quote.
+    finalAmount: { type: Number, min: 0, default: null },
+
     dimensions: {
       type: dimensionsSchema,
 
@@ -1861,6 +1871,12 @@ const tripOrderSchema = new Schema(
       type: [vehicleRequirementSchema],
 
       default: [],
+    },
+
+    enquiryApproval: {
+      status: { type: String, enum: ["Pending", "Sent"], default: "Pending" },
+      totalAmount: { type: Number, default: 0, min: 0 },
+      updatedAt: { type: Date, default: null },
     },
 
     /* =====================================================
