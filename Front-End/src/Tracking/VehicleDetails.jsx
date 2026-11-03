@@ -987,7 +987,7 @@ const VehicleDetails = () => {
       entry.missing ? "—" : display(entry.updatedBy),
       entry.missing ? "No update recorded" : display(entry.remarks),
     ]);
-  const safeHistoryFilename = `${String(trip.tripId || "Trip").replace(/[^a-z0-9_-]/gi, "_")}_${String(vehicle.vehicleNumber || "Vehicle").replace(/[^a-z0-9_-]/gi, "_")}_movement_history`;
+  const safeHistoryFilename = `${String(trip?.tripId || "Trip").replace(/[^a-z0-9_-]/gi, "_")}_${String(vehicle?.vehicleNumber || vehicle?.vehicleNo || "Vehicle").replace(/[^a-z0-9_-]/gi, "_")}_movement_history`;
   const downloadMovementHistoryExcel = async () => {
     if (!history.length) return;
     const workbook = new ExcelJS.Workbook();

@@ -4851,26 +4851,27 @@ const Lifecyclemodal = ({
                   <div className="kam-client-trip-grid">
                     <ReadOnlyField label="Order ID" value={order.tripId} />
                     <ReadOnlyField label="Customer" value={order.customer} />
-                    {!isIntercartingEdit && (
+                    {!isIntercartingEdit &&
+                      String(order.materialType || "").trim() && (
                       <ReadOnlyField
                         label="Material Type"
                         value={order.materialType}
                       />
                     )}
-                    {!isIntercartingEdit && (
+                    {!isIntercartingEdit &&
+                      (String(order.origin || "").trim() ||
+                        String(order.destination || "").trim()) && (
+                        <ReadOnlyField
+                          label="Route"
+                          value={`${order.origin || "—"} → ${order.destination || "—"}`}
+                        />
+                      )}
+                    {String(order.placementDate || "").trim() && (
                       <ReadOnlyField
-                        label="Route"
-                        value={
-                          order.origin || order.destination
-                            ? `${order.origin || "—"} → ${order.destination || "—"}`
-                            : "—"
-                        }
+                        label="Placement Date"
+                        value={formatDate(order.placementDate)}
                       />
                     )}
-                    <ReadOnlyField
-                      label="Placement Date"
-                      value={formatDate(order.placementDate)}
-                    />
                     <ReadOnlyField
                       label="Total Vehicles"
                       value={
