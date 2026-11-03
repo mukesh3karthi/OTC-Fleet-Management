@@ -39,7 +39,7 @@
 
 .tracking-input-page-header {
   width: 100%;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -204,7 +204,7 @@
   gap: 14px 15px;
 }
 
-/* Order Snapshot: 10 fields in exactly 2 rows on desktop */
+/* Order Snapshot: five fields in one row on desktop */
 .tracking-order-snapshot-grid {
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 10px 12px;
@@ -6010,6 +6010,72 @@
   font-weight: 650 !important;
 }
 
+/* Balanced two-column layout for the four primary allocation fields. */
+.tracking-allocation-modal-body .tracking-driver-data-grid {
+  width: calc(100% - 28px) !important;
+  margin: 14px !important;
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+  overflow: visible !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+
+.tracking-allocation-modal-body
+  .tracking-driver-data-grid
+  > .tracking-form-field {
+  min-width: 0;
+  border: 0 !important;
+}
+
+.tracking-allocation-modal-body
+  .tracking-driver-data-grid
+  > .tracking-form-field
+  > label {
+  min-height: 0 !important;
+  height: auto !important;
+  margin: 0 0 6px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  color: #536d7e !important;
+  background: transparent !important;
+  font-size: 9px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+.tracking-allocation-modal-body
+  .tracking-driver-data-grid
+  .tracking-form-control {
+  height: 42px !important;
+  min-height: 42px !important;
+  padding: 0 11px !important;
+  border: 1px solid #d5e2e7 !important;
+  border-radius: 8px !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
+}
+
+.tracking-allocation-modal-body
+  .tracking-driver-data-grid
+  .tracking-form-control:focus-within {
+  border-color: #07988d !important;
+  background: #ffffff !important;
+  box-shadow: 0 0 0 3px rgba(7, 152, 141, 0.1) !important;
+}
+
+/* Tighten the gap below the Live Vehicle Operations header. */
+.tracking-live-operations-card > .tracking-form-card-body {
+  padding-top: 8px;
+}
+
+.tracking-live-operations-card .vah {
+  margin-top: 4px;
+}
+
 /* Compact professional footer */
 .tracking-allocation-modal-body .tracking-form-footer {
   position: sticky !important;
@@ -8260,5 +8326,67 @@
   }
   .crane-bulk .crane-bulk-size {
     grid-column: 1 / -1;
+  }
+}
+
+/* Compact, clearer transporter summaries in Live Vehicle Operations. */
+.tracking-live-operations-card .vah-current-grid {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 7px;
+  padding: 8px 10px 10px;
+}
+
+.tracking-live-operations-card .vah-current {
+  display: block;
+  overflow: hidden;
+  padding: 0;
+  border: 1px solid #d8e5e8;
+  border-radius: 9px;
+  background: #ffffff;
+}
+
+.tracking-live-operations-card .vah-current-head {
+  min-height: 34px;
+  padding: 8px 11px;
+  border-bottom: 1px solid #e4ecee;
+  background: #f4f8f8;
+}
+
+.tracking-live-operations-card .vah-current-head > strong {
+  color: #17475a;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.tracking-live-operations-card .vah-current-body {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(115px, 1fr));
+  gap: 7px;
+  padding: 8px 10px;
+}
+
+.tracking-live-operations-card .vah-current-body > .vah-pair {
+  min-width: 0;
+  padding: 6px 8px;
+  border: 1px solid #edf1f2;
+  border-radius: 6px;
+  background: #fbfcfc;
+}
+
+.tracking-live-operations-card .vah-current-body .vah-pair > span {
+  color: #718692;
+  font-size: 8px;
+  font-weight: 700;
+}
+
+.tracking-live-operations-card .vah-current-body .vah-pair > strong {
+  color: #163f50;
+  font-size: 10px;
+  font-weight: 650;
+}
+
+@media (max-width: 600px) {
+  .tracking-live-operations-card .vah-current-body {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

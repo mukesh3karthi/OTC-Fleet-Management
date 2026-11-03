@@ -545,6 +545,35 @@
   font-size: 10px;
   white-space: nowrap;
 }
+.vdt-history-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.vdt-history-download {
+  min-height: 27px;
+  padding: 0 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border: 1px solid #c8e1e3;
+  border-radius: 6px;
+  color: #087d82;
+  background: #f1f9f9;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.vdt-history-download:hover:not(:disabled) {
+  border-color: #8fc7ca;
+  background: #e5f4f4;
+}
+.vdt-history-download:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
 .vdt-table-wrap {
   width: 100%;
   overflow-x: auto;

@@ -53,6 +53,7 @@ const CURRENT_YEAR =
 const DOCUMENTS_PER_PAGE = 10;
 
 const MONTH_OPTIONS = [
+  { value: "ALL", label: "ALL" },
   { value: "01", label: "January" },
   { value: "02", label: "February" },
   { value: "03", label: "March" },
@@ -72,6 +73,7 @@ const YEAR_OPTIONS = Array.from(
   (_, index) =>
     CURRENT_YEAR - 10 + index
 );
+YEAR_OPTIONS.unshift("ALL");
 
 const DOCUMENT_TYPES = [
   {
@@ -538,26 +540,15 @@ const Vehicledocument = () => {
     setDownloadingDocumentsId,
   ] = useState(null);
 
-  const currentDate =
-    new Date();
-
   const [
     selectedMonth,
     setSelectedMonth,
-  ] = useState(
-    String(
-      currentDate.getMonth() + 1
-    ).padStart(2, "0")
-  );
+  ] = useState("ALL");
 
   const [
     selectedYear,
     setSelectedYear,
-  ] = useState(
-    String(
-      currentDate.getFullYear()
-    )
-  );
+  ] = useState("ALL");
 
   /* ==========================================
      Fetch vehicles automatically
@@ -619,6 +610,18 @@ const Vehicledocument = () => {
 
   const selectedPeriodLabel =
     useMemo(() => {
+      if (selectedMonth === "ALL") {
+        if (selectedYear !== "ALL") {
+          return `all expirations in ${selectedYear}`;
+        }
+
+        return "all past expirations and this month";
+      }
+
+      if (selectedYear === "ALL") {
+        return `${new Date(2000, Number(selectedMonth) - 1, 1).toLocaleDateString("en-IN", { month: "long" })} across all years`;
+      }
+
       return new Date(
         Number(selectedYear),
         Number(selectedMonth) - 1,
@@ -637,6 +640,29 @@ const Vehicledocument = () => {
 
   const monthRange =
     useMemo(() => {
+      if (selectedMonth === "ALL") {
+        const today = new Date();
+        return {
+          start: new Date(-8640000000000000),
+          end: new Date(
+            today.getFullYear(),
+            today.getMonth() + 1,
+            0,
+            23,
+            59,
+            59,
+            999
+          ),
+        };
+      }
+
+      if (selectedYear === "ALL") {
+        return {
+          start: new Date(-8640000000000000),
+          end: new Date(8640000000000000),
+        };
+      }
+
       const year =
         Number(selectedYear);
 
@@ -669,6 +695,31 @@ const Vehicledocument = () => {
       selectedYear,
     ]);
 
+  const matchesSelectedPeriod = useCallback((dateValue) => {
+    const date = dateValue instanceof Date
+      ? dateValue
+      : parseDate(dateValue);
+    if (!date) return false;
+
+    if (selectedMonth === "ALL") {
+      if (selectedYear !== "ALL") {
+        return date.getFullYear() === Number(selectedYear);
+      }
+
+      const today = new Date();
+      const endOfCurrentMonth = new Date(
+        today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59, 999
+      );
+      return date <= endOfCurrentMonth;
+    }
+
+    if (selectedYear === "ALL") {
+      return date.getMonth() + 1 === Number(selectedMonth);
+    }
+
+    return date >= monthRange.start && date <= monthRange.end;
+  }, [selectedMonth, selectedYear, monthRange]);
+
   /* ==========================================
      Vehicles matching month/year
 
@@ -687,17 +738,13 @@ const Vehicledocument = () => {
                   key
                 );
 
-              return isDateInsideRange(
-                documentData?.expiryDate,
-                monthRange.start,
-                monthRange.end
-              );
+              return matchesSelectedPeriod(documentData?.expiryDate);
             }
           )
       );
     }, [
       vehicles,
-      monthRange,
+      matchesSelectedPeriod,
     ]);
 
   /* ==========================================
@@ -806,10 +853,7 @@ const Vehicledocument = () => {
               .filter(
                 (entry) =>
                   entry.expiryDate &&
-                  entry.expiryDate >=
-                  monthRange.start &&
-                  entry.expiryDate <=
-                  monthRange.end
+                  matchesSelectedPeriod(entry.expiryDate)
               )
               .sort(
                 (first, second) =>
@@ -825,7 +869,7 @@ const Vehicledocument = () => {
       );
     }, [
       vehicles,
-      monthRange,
+      matchesSelectedPeriod,
     ]);
 
   /* ==========================================
@@ -864,19 +908,9 @@ const Vehicledocument = () => {
   ========================================== */
 
   const resetFilters = () => {
-    const today = new Date();
+    setSelectedMonth("ALL");
 
-    setSelectedMonth(
-      String(
-        today.getMonth() + 1
-      ).padStart(2, "0")
-    );
-
-    setSelectedYear(
-      String(
-        today.getFullYear()
-      )
-    );
+    setSelectedYear("ALL");
 
     setSearchText("");
   };
@@ -3403,7 +3437,7 @@ const Vehicledocument = () => {
                       key={year}
                       value={String(year)}
                     >
-                      {year}
+                      {year === "ALL" ? "ALL" : year}
                     </option>
                   )
                 )}

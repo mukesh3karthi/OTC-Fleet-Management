@@ -103,7 +103,15 @@ const display = (value, fallback = "—") =>
     : typeof value === "object"
       ? idText(value.$oid || value.name || "") || fallback
       : String(value);
-const number = (value) => (Number.isFinite(Number(value)) ? Number(value) : 0);
+const number = (value) => {
+  const numericValue = Number(value);
+  if (Number.isFinite(numericValue)) return numericValue;
+  if (typeof value === "string") {
+    const parsedValue = Number.parseFloat(value.replace(/,/g, ""));
+    if (Number.isFinite(parsedValue)) return parsedValue;
+  }
+  return 0;
+};
 const km = (value) =>
   value == null || value === ""
     ? "—"
@@ -270,17 +278,41 @@ const billStatus = (doc, today) => {
   return days === 0 ? "Expires Today" : days <= 7 ? "Expiring Soon" : "Active";
 };
 const getVehicleStatus = (vehicle, today) => {
-  const raw = display(latestEntry(vehicle)?.status || vehicle?.status, "Idle");
-  if (raw.toLowerCase() !== "reached") return raw;
-  const unloaded =
-    display(vehicle?.unloading?.status, "").toLowerCase() === "completed";
-  const lr = Boolean(
-    vehicle?.lr?.number || vehicle?.lr?.date || hasFile(vehicle?.pod),
+  const operationCompleted = (operation, operationDateField) => {
+    const operationDate = dateKey(operation?.[operationDateField]);
+    if (!operationDate) return false;
+    const pointOutDate = dateKey(operation?.pointOutDate);
+    if (pointOutDate) return pointOutDate >= operationDate;
+    return today > operationDate;
+  };
+  const loadingCompleted = operationCompleted(vehicle?.loading, "loadingDate");
+  const unloadingCompleted = operationCompleted(
+    vehicle?.unloading,
+    "unloadingDate",
   );
-  const bill = billStatus(vehicle?.ewayBill, today).toLowerCase();
-  return unloaded && lr && !["pending", "expired"].includes(bill)
-    ? "Reached"
-    : "Pending";
+  const lr = vehicle?.lr || {};
+  const lrCompleted = Boolean(lr.number || hasFile(lr));
+  const ewayBill = vehicle?.ewayBill || {};
+  const ewayStatus = billStatus(ewayBill, today).toLowerCase();
+  const ewayCompleted =
+    Boolean(
+      (ewayBill.number || hasFile(ewayBill)) &&
+        dateKey(ewayBill.validUpto),
+    ) &&
+    !["pending", "expired"].includes(ewayStatus);
+  const podCompleted = hasFile(vehicle?.pod);
+  if (
+    loadingCompleted &&
+    unloadingCompleted &&
+    lrCompleted &&
+    ewayCompleted &&
+    podCompleted
+  ) {
+    return "Reached";
+  }
+
+  const raw = display(latestEntry(vehicle)?.status || vehicle?.status, "Idle");
+  return raw.toLowerCase() === "reached" ? "Pending" : raw;
 };
 const tripEndpoint = (id) =>
   /^[a-f0-9]{24}$/i.test(idText(id).trim())
@@ -294,7 +326,16 @@ const authFetch = (url, options = {}) => {
   headers.set("Authorization", `Bearer ${token}`);
   return fetch(url, { ...options, headers });
 };
-const routePoints = (trip) => {
+const routePoints = (trip, requirement = {}, vehicle = {}) => {
+  const routeRequirement =
+    requirement && Object.keys(requirement).length
+      ? requirement
+      : array(trip?.vehicleRequirements).find(
+          (item) => item.requirementId === vehicle?.requirementId,
+        ) ||
+        (array(trip?.vehicleRequirements).length === 1
+          ? array(trip?.vehicleRequirements)[0]
+          : {});
   let raw = trip?.routeLocations;
   if (typeof raw === "string") {
     try {
@@ -310,7 +351,58 @@ const routePoints = (trip) => {
         : point?.location || point?.name || point?.locationName,
     )
     .filter(Boolean);
-  const points = [trip?.origin, ...names, trip?.destination]
+  const origin =
+    trip?.origin ||
+    trip?.orderFinalization?.origin ||
+    trip?.enquiryDetails?.origin ||
+    routeRequirement?.origin ||
+    vehicle?.origin;
+  const destination =
+    trip?.destination ||
+    trip?.orderFinalization?.destination ||
+    trip?.enquiryDetails?.destination ||
+    routeRequirement?.destination ||
+    vehicle?.destination;
+  const endpointKeys = new Set(
+    [origin, destination]
+      .filter(Boolean)
+      .map((point) => String(point).trim().toLowerCase()),
+  );
+  const historyStops = trackingEntries(vehicle)
+    .flatMap((entry) => [
+      String(entry?.yesterdayLocation || "").trim(),
+      String(entry?.currentLocation || "").trim(),
+    ])
+    .filter(Boolean);
+  const uniqueStops = (values) => {
+    const seen = new Set(endpointKeys);
+    return values.filter((point) => {
+      const key = String(point).trim().toLowerCase();
+      if (!key || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  };
+  const historyPoints = uniqueStops(historyStops).slice(-5);
+  const configuredPoints = uniqueStops(names).filter(
+    (point) =>
+      !historyPoints.some(
+        (historyPoint) =>
+          historyPoint.toLowerCase() === String(point).trim().toLowerCase(),
+      ),
+  );
+  let middleStops =
+    historyPoints.length >= 5
+      ? historyPoints
+      : [
+          ...configuredPoints.slice(0, 5 - historyPoints.length),
+          ...historyPoints,
+        ];
+  const currentLocation = String(vehicle?.currentLocation || "").trim();
+  if (!middleStops.length && currentLocation) {
+    middleStops = uniqueStops([currentLocation]);
+  }
+  const points = [origin, ...middleStops, destination]
     .filter(Boolean)
     .map((point) => String(point).trim())
     .filter(Boolean);
@@ -804,13 +896,44 @@ const VehicleDetails = () => {
       (item) =>
         item.quotationId === (vehicle?.quotationId || confirmation.quotationId),
     ) || {};
-  const totalKm = number(trip?.totalKm ?? trip?.distance ?? trip?.totalKM);
+  const dimensionValues = [
+    vehicle?.dimensions?.length ??
+      vehicle?.length ??
+      quotation.dimensions?.length ??
+      requirement.dimensions?.length ??
+      requirement.length,
+    vehicle?.dimensions?.height ??
+      vehicle?.height ??
+      quotation.dimensions?.height ??
+      requirement.dimensions?.height ??
+      requirement.height,
+    vehicle?.dimensions?.width ??
+      vehicle?.width ??
+      quotation.dimensions?.width ??
+      requirement.dimensions?.width ??
+      requirement.width,
+  ];
   const coveredKm = vehicle?._craneJourneyId
     ? vehicle._craneCoveredKm
     : array(vehicle?.dailyTracking).reduce(
         (sum, entry) => sum + Math.max(0, number(entry.runningKm)),
         0,
       );
+  const configuredTotalKm = [
+    trip?.totalKm,
+    trip?.distance,
+    trip?.totalKM,
+    trip?.totalDistanceKm,
+    trip?.routeDistance,
+    trip?.distanceKm,
+    trip?.orderFinalization?.distance,
+    trip?.enquiryDetails?.distance,
+    requirement?.distance,
+    vehicle?.totalKm,
+  ]
+    .map(number)
+    .find((value) => value > 0);
+  const totalKm = configuredTotalKm ?? coveredKm;
   // Match Current Day to the latest saved movement shown in the history.
   const currentDay = (() => {
     const recordedDay = Number(latest?.day);
@@ -824,7 +947,7 @@ const VehicleDetails = () => {
     return daysBetween(first?.date || first?.updatedAt, end, true);
   })();
   const status = getVehicleStatus(vehicle, today);
-  const points = routePoints(trip);
+  const points = routePoints(trip, requirement, vehicle);
   const currentPosition = display(
     latest?.currentLocation || vehicle?.currentLocation,
     "",
@@ -836,6 +959,130 @@ const VehicleDetails = () => {
   const currentIndex =
     routeReached && points.length ? points.length - 1 : matchedRouteIndex;
   const replacements = array(vehicle?.replacementHistory);
+  const movementHistoryHeaders = [
+      "Date",
+      "Day",
+      "Location",
+      "Loaded Material",
+      "Weight (tons)",
+      ...(isCraneVehicleTrip(trip) ? ["TG No"] : []),
+      "Running KM",
+      "Status",
+      "Updated By",
+      "Remarks",
+    ];
+  const movementHistoryRows = history.map((entry) => [
+      dateText(entry.date),
+      entry.day == null ? "—" : `Day ${entry.day}`,
+      entry.missing ? "—" : display(entry.currentLocation),
+      entry.missing ? "—" : display(entry.loadedMaterial),
+      entry.missing || entry.loadedWeightTons == null
+        ? "—"
+        : `${entry.loadedWeightTons} TON`,
+      ...(isCraneVehicleTrip(trip)
+        ? [entry.missing ? "—" : display(entry.tgNo)]
+        : []),
+      entry.missing ? "—" : km(entry.runningKm),
+      entry.missing ? "No update" : display(entry.status, "Idle"),
+      entry.missing ? "—" : display(entry.updatedBy),
+      entry.missing ? "No update recorded" : display(entry.remarks),
+    ]);
+  const safeHistoryFilename = `${String(trip.tripId || "Trip").replace(/[^a-z0-9_-]/gi, "_")}_${String(vehicle.vehicleNumber || "Vehicle").replace(/[^a-z0-9_-]/gi, "_")}_movement_history`;
+  const downloadMovementHistoryExcel = async () => {
+    if (!history.length) return;
+    const workbook = new ExcelJS.Workbook();
+    workbook.creator = "OTC Groups";
+    workbook.created = new Date();
+    const sheet = workbook.addWorksheet("Movement History", {
+      pageSetup: { orientation: "landscape", paperSize: 8, fitToPage: true, fitToWidth: 1, fitToHeight: 0 },
+      views: [{ state: "frozen", ySplit: 4 }],
+    });
+    const widths = [16, 12, 22, 22, 17, ...(isCraneVehicleTrip(trip) ? [14] : []), 15, 18, 20, 30];
+    widths.forEach((width, index) => { sheet.getColumn(index + 1).width = width; });
+    sheet.mergeCells(1, 1, 1, movementHistoryHeaders.length);
+    const title = sheet.getCell("A1");
+    title.value = "DAILY MOVEMENT HISTORY";
+    title.font = { name: "Aptos", size: 16, bold: true, color: { argb: "FFFFFFFF" } };
+    title.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF0B3A4A" } };
+    title.alignment = { horizontal: "center", vertical: "middle" };
+    sheet.getRow(1).height = 32;
+    sheet.mergeCells(2, 1, 2, movementHistoryHeaders.length);
+    const details = sheet.getCell("A2");
+    details.value = `Trip: ${display(trip.tripId)}    |    Vehicle: ${display(vehicle.vehicleNumber || vehicle.vehicleNo)}    |    Route: ${display(trip.origin)} to ${display(trip.destination)}    |    Exported: ${reportDate(new Date())}`;
+    details.font = { name: "Aptos", size: 10, color: { argb: "FF345266" } };
+    details.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFEAF3F5" } };
+    details.alignment = { horizontal: "left", vertical: "middle", wrapText: true };
+    sheet.getRow(2).height = 24;
+    sheet.addRow([]);
+    const headerRow = sheet.addRow(movementHistoryHeaders);
+    headerRow.height = 30;
+    const border = {
+      top: { style: "thin", color: { argb: "FFD5E1E8" } },
+      bottom: { style: "thin", color: { argb: "FFD5E1E8" } },
+      left: { style: "thin", color: { argb: "FFD5E1E8" } },
+      right: { style: "thin", color: { argb: "FFD5E1E8" } },
+    };
+    headerRow.eachCell((cell) => {
+      cell.font = { name: "Aptos", size: 10, bold: true, color: { argb: "FFFFFFFF" } };
+      cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF087D82" } };
+      cell.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
+      cell.border = border;
+    });
+    movementHistoryRows.forEach((values, index) => {
+      const row = sheet.addRow(values);
+      row.height = 25;
+      row.eachCell({ includeEmpty: true }, (cell) => {
+        cell.font = { name: "Aptos", size: 10, color: { argb: "FF18364A" } };
+        cell.alignment = { vertical: "middle", wrapText: true };
+        cell.border = border;
+        if (index % 2 === 1) cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFF2F7F9" } };
+      });
+    });
+    sheet.autoFilter = { from: { row: 4, column: 1 }, to: { row: 4, column: movementHistoryHeaders.length } };
+    sheet.pageSetup.printTitlesRow = "1:4";
+    sheet.pageSetup.horizontalCentered = true;
+    const bytes = await workbook.xlsx.writeBuffer();
+    const url = URL.createObjectURL(new Blob([bytes], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${safeHistoryFilename}.xlsx`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 30000);
+  };
+  const downloadMovementHistoryPdf = () => {
+    if (!history.length) return;
+    const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a3" });
+    const pageWidth = doc.internal.pageSize.getWidth();
+    doc.setFillColor(11, 58, 74);
+    doc.roundedRect(10, 9, pageWidth - 20, 20, 2, 2, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(15);
+    doc.setTextColor(255, 255, 255);
+    doc.text("DAILY MOVEMENT HISTORY", 16, 17);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.text(`Trip ${display(trip.tripId)}  |  Vehicle ${display(vehicle.vehicleNumber || vehicle.vehicleNo)}  |  ${display(trip.origin)} to ${display(trip.destination)}  |  Exported ${reportDate(new Date())}`, 16, 24);
+    autoTable(doc, {
+      startY: 34,
+      head: [movementHistoryHeaders],
+      body: movementHistoryRows.map((row) => row.map((value) => String(value ?? ""))),
+      theme: "grid",
+      showHead: "everyPage",
+      margin: { top: 15, left: 10, right: 10, bottom: 15 },
+      styles: { font: "helvetica", fontSize: 8, cellPadding: 3, lineColor: [213, 225, 232], lineWidth: 0.15, valign: "middle", overflow: "linebreak" },
+      headStyles: { fillColor: [8, 125, 130], textColor: [255, 255, 255], fontStyle: "bold" },
+      alternateRowStyles: { fillColor: [242, 247, 249] },
+      didDrawPage: () => {
+        const page = doc.internal.getCurrentPageInfo().pageNumber;
+        doc.setFontSize(8);
+        doc.setTextColor(100, 116, 128);
+        doc.text(`Page ${page}`, pageWidth - 12, doc.internal.pageSize.getHeight() - 7, { align: "right" });
+      },
+    });
+    doc.save(`${safeHistoryFilename}.pdf`);
+  };
 
   const activateTab = (index) => {
     setActiveTab(TABS[index].id);
@@ -990,7 +1237,7 @@ const VehicleDetails = () => {
           </h1>
           <p>
             {trip
-              ? `${display(trip.tripId)} · ${display(trip.origin)} → ${display(trip.destination)}`
+              ? display(trip.tripId)
               : "Trip vehicle information"}
           </p>
         </div>
@@ -1419,13 +1666,11 @@ const VehicleDetails = () => {
                               </span>
                               <strong>{point}</strong>
                               <small>
-                                {index === currentIndex
-                                  ? "Current"
-                                  : index === 0
-                                    ? "Origin"
-                                    : index === points.length - 1
-                                      ? "Destination"
-                                      : ""}
+                                {index === 0
+                                  ? "Origin"
+                                  : index === points.length - 1
+                                    ? "Destination"
+                                    : ""}
                               </small>
                             </li>
                           ))}
@@ -1512,13 +1757,6 @@ const VehicleDetails = () => {
                                 ),
                               ],
                               [
-                                "Classification",
-                                display(
-                                  requirement.classification ||
-                                    vehicle.classification,
-                                ),
-                              ],
-                              [
                                 "Vehicle Number",
                                 display(
                                   vehicle.vehicleNumber || vehicle.vehicleNo,
@@ -1532,19 +1770,10 @@ const VehicleDetails = () => {
                                     trip.lsp,
                                 ),
                               ],
-                              [
-                                "LSP",
-                                display(
-                                  vehicle.lsp ||
-                                    quotation.lsp ||
-                                    requirement.lsp ||
-                                    trip.lsp,
-                                ),
-                              ],
                               ["Dimensions (L × H × W)",
-                                [vehicle.dimensions?.length, vehicle.dimensions?.height, vehicle.dimensions?.width]
+                                dimensionValues
                                   .some((value) => value != null && value !== "")
-                                  ? [vehicle.dimensions?.length, vehicle.dimensions?.height, vehicle.dimensions?.width]
+                                  ? dimensionValues
                                       .map(display).join(" × ") + " FT"
                                   : "—",
                               ],
@@ -1736,14 +1965,22 @@ const VehicleDetails = () => {
                         }
                         icon={History}
                         right={
-                          <span className="vdt-count">
-                            {
-                              new Set(
-                                history.map((entry) => dateKey(entry.date)),
-                              ).size
-                            }{" "}
-                            Days · {array(vehicle.dailyTracking).length} Updates
-                          </span>
+                          <div className="vdt-history-actions">
+                            <span className="vdt-count">
+                              {
+                                new Set(
+                                  history.map((entry) => dateKey(entry.date)),
+                                ).size
+                              }{" "}
+                              Days · {array(vehicle.dailyTracking).length} Updates
+                            </span>
+                            <button type="button" className="vdt-history-download" onClick={downloadMovementHistoryExcel} disabled={!history.length}>
+                              <Download size={13} /><span>Excel</span>
+                            </button>
+                            <button type="button" className="vdt-history-download" onClick={downloadMovementHistoryPdf} disabled={!history.length}>
+                              <Download size={13} /><span>PDF</span>
+                            </button>
+                          </div>
                         }
                       >
                         <div className="vdt-table-wrap">
@@ -1911,10 +2148,39 @@ const VehicleDetails = () => {
                               ["Customer", display(trip.customer)],
                               [
                                 "Material",
-                                display(trip.materialType || trip.materialName),
+                                display(
+                                  trip.materialType ||
+                                    trip.materialName ||
+                                    trip.material ||
+                                    trip.orderFinalization?.materialType ||
+                                    trip.enquiryDetails?.materialType ||
+                                    requirement.materialType ||
+                                    requirement.material ||
+                                    latest?.loadedMaterial ||
+                                    latest?.movementMaterial ||
+                                    vehicle.loadedMaterial,
+                                ),
                               ],
-                              ["Origin", display(trip.origin)],
-                              ["Destination", display(trip.destination)],
+                              [
+                                "Origin",
+                                display(
+                                  trip.origin ||
+                                    trip.orderFinalization?.origin ||
+                                    trip.enquiryDetails?.origin ||
+                                    requirement.origin ||
+                                    vehicle.origin,
+                                ),
+                              ],
+                              [
+                                "Destination",
+                                display(
+                                  trip.destination ||
+                                    trip.orderFinalization?.destination ||
+                                    trip.enquiryDetails?.destination ||
+                                    requirement.destination ||
+                                    vehicle.destination,
+                                ),
+                              ],
                               ["Total KM", km(totalKm)],
                               [
                                 "Required Vehicles",
@@ -1948,12 +2214,11 @@ const VehicleDetails = () => {
                               ],
                               ["Email", display(trip.email)],
                               [
-                                "LSP",
+                                "Transporter",
                                 display(
-                                  vehicle.lsp ||
-                                    quotation.lsp ||
-                                    requirement.lsp ||
-                                    trip.lsp,
+                                  quotation.transporter ||
+                                    vehicle.transporter ||
+                                    trip.transporter,
                                 ),
                               ],
                               [

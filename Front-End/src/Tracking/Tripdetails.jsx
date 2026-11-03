@@ -133,32 +133,61 @@ const getLatestTracking = (vehicle) => {
   }
   return tracking[tracking.length - 1];
 };
+const getTripKeyAccountName = (trip) =>
+  safeText(
+    trip?.assignedKam ||
+      trip?.keyAccountName ||
+      trip?.orderPlaced?.placedBy ||
+      trip?.createdBy,
+  );
 /* =========================================
    TRIP STATUS
 ========================================= */
 const getVehicleDisplayStatus = (vehicle) => {
   const latest = getLatestTracking(vehicle);
   const rawStatus = safeText(latest?.status, "Idle");
-  if (rawStatus.trim().toLowerCase() !== "reached") {
-    return rawStatus;
-  }
+  const loadingCompleted =
+    getOperationStatus(
+      vehicle?.loading?.loadingDate,
+      vehicle?.loading?.pointOutDate,
+    ) === "Completed";
   const unloadingCompleted =
-    String(vehicle?.unloading?.status || "")
-      .trim()
-      .toLowerCase() === "completed";
+    getOperationStatus(
+      vehicle?.unloading?.unloadingDate,
+      vehicle?.unloading?.pointOutDate,
+    ) === "Completed";
+  const lr = vehicle?.lr || {};
   const lrCompleted = Boolean(
-    vehicle?.lr?.number || vehicle?.lr?.date || vehicle?.pod?.fileName,
+    lr.number ||
+      lr.fileName ||
+      lr.originalName ||
+      lr.filePath ||
+      lr.fileUrl,
   );
-  const ewayStatus = String(vehicle?.ewayBill?.status || "")
-    .trim()
-    .toLowerCase();
-  const ewayCompleted = Boolean(
-    (vehicle?.ewayBill?.number || vehicle?.ewayBill?.fileName) &&
-    ewayStatus !== "pending",
+  const ewayBill = vehicle?.ewayBill || {};
+  const ewayStatus = getEwayBillStatus(
+    ewayBill.number,
+    ewayBill.validUpto,
+  ).toLowerCase();
+  const ewayCompleted =
+    Boolean(ewayBill.number || ewayBill.fileName || ewayBill.filePath || ewayBill.fileUrl) &&
+    !["pending", "expired"].includes(ewayStatus);
+  const pod = vehicle?.pod || {};
+  const podCompleted = Boolean(
+    pod.fileName || pod.originalName || pod.filePath || pod.fileUrl,
   );
-  return unloadingCompleted && lrCompleted && ewayCompleted
-    ? "Reached"
-    : "Pending";
+  if (
+    loadingCompleted &&
+    unloadingCompleted &&
+    lrCompleted &&
+    ewayCompleted &&
+    podCompleted
+  ) {
+    return "Reached";
+  }
+  if (rawStatus.trim().toLowerCase() === "reached") return "Pending";
+
+  return rawStatus;
 };
 const getTripStatus = (trip) => {
   const vehicles = getCurrentVehicles(trip);
@@ -269,6 +298,23 @@ const getLocalYmd = (date = new Date()) => {
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
+};
+const getOperationStatus = (
+  operationDate,
+  pointOutDate,
+  today = getLocalYmd(),
+) => {
+  const operationDateKey = String(operationDate || "").slice(0, 10);
+  if (!operationDateKey) return "Pending";
+
+  const pointOutDateKey = String(pointOutDate || "").slice(0, 10);
+  if (pointOutDateKey) {
+    return pointOutDateKey >= operationDateKey
+      ? "Completed"
+      : "In Progress";
+  }
+
+  return today > operationDateKey ? "Completed" : "In Progress";
 };
 const getEwayBillStatus = (number, validUpto, today = getLocalYmd()) => {
   if (!String(number || "").trim() || !validUpto) return "Pending";
@@ -647,6 +693,10 @@ const StandardTripdetails = ({ movementOnly = false }) => {
   const buildMovementForm = (vehicle) => {
     const history = safeArray(vehicle?.dailyTracking);
     const latest = history.length ? history[history.length - 1] : null;
+    const unloadingStatus = getOperationStatus(
+      vehicle?.unloading?.unloadingDate,
+      vehicle?.unloading?.pointOutDate,
+    );
     const today = new Date();
     const date = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
     const previousTodayKm =
@@ -674,10 +724,13 @@ const StandardTripdetails = ({ movementOnly = false }) => {
         vehicle?.loadedMaterial ||
         "",
       loadedWeightTons: latest?.loadedWeightTons ?? "",
-      status: "Idle",
+      status: latest?.status || "Idle",
       remarks: "",
       updatedBy: "",
-      loadingStatus: vehicle?.loading?.status || "Pending",
+      loadingStatus: getOperationStatus(
+        vehicle?.loading?.loadingDate,
+        vehicle?.loading?.pointOutDate,
+      ),
       loadingPointInDate: vehicle?.loading?.pointInDate
         ? String(vehicle.loading.pointInDate).slice(0, 10)
         : "",
@@ -692,7 +745,10 @@ const StandardTripdetails = ({ movementOnly = false }) => {
         vehicle?.loading?.pointOutDate,
       ),
       loadingRemarks: vehicle?.loading?.remarks || "",
-      unloadingStatus: vehicle?.unloading?.status || "Pending",
+      unloadingStatus: getOperationStatus(
+        vehicle?.unloading?.unloadingDate,
+        vehicle?.unloading?.pointOutDate,
+      ),
       unloadingPointInDate: vehicle?.unloading?.pointInDate
         ? String(vehicle.unloading.pointInDate).slice(0, 10)
         : "",
@@ -769,6 +825,18 @@ const StandardTripdetails = ({ movementOnly = false }) => {
     setMovementSuccess("");
     setMovementForm((previous) => {
       const next = { ...previous, [name]: value };
+      if (name === "loadingDate" || name === "loadingPointOutDate") {
+        next.loadingStatus = getOperationStatus(
+          next.loadingDate,
+          next.loadingPointOutDate,
+        );
+      }
+      if (name === "unloadingDate" || name === "unloadingPointOutDate") {
+        next.unloadingStatus = getOperationStatus(
+          next.unloadingDate,
+          next.unloadingPointOutDate,
+        );
+      }
       if (name === "ewayBillNumber" || name === "ewayBillValidUpto") {
         next.ewayBillStatus = getEwayBillStatus(
           next.ewayBillNumber,
@@ -972,10 +1040,12 @@ const StandardTripdetails = ({ movementOnly = false }) => {
         movementForm.todayKm !== undefined) ||
       String(movementForm.remarks || "").trim(),
     );
-    const loadingCompleted =
-      String(movementForm.loadingStatus || "")
-        .trim()
-        .toLowerCase() === "completed";
+    const loadingStatus = getOperationStatus(
+      movementForm.loadingDate,
+      movementForm.loadingPointOutDate,
+      getLocalYmd(),
+    );
+    const loadingCompleted = loadingStatus === "Completed";
     // A valid daily movement can be recorded while loading is still Pending.
     // Updated By alone must not force a new movement when saving only operations.
     const shouldSaveTracking = hasMovementEntryData;
@@ -1009,14 +1079,16 @@ const StandardTripdetails = ({ movementOnly = false }) => {
       setMovementError("Enter a valid weight in tons (zero or greater).");
       return;
     }
-    if (!updatedBy) {
+    if (shouldSaveTracking && !updatedBy) {
       setMovementError("Updated By is required to save vehicle changes.");
       return;
     }
-    const unloadingCompleted =
-      String(movementForm.unloadingStatus || "")
-        .trim()
-        .toLowerCase() === "completed";
+    const unloadingStatus = getOperationStatus(
+      movementForm.unloadingDate,
+      movementForm.unloadingPointOutDate,
+      getLocalYmd(),
+    );
+    const unloadingCompleted = unloadingStatus === "Completed";
     const validateDateOrder = (label, values) => {
       const dates = values.filter(Boolean);
       for (let index = 1; index < dates.length; index += 1) {
@@ -1056,24 +1128,6 @@ const StandardTripdetails = ({ movementOnly = false }) => {
     ]);
     if (unloadingDateError) {
       setMovementError(unloadingDateError);
-      return;
-    }
-    if (
-      movementForm.loadingStatus === "Completed" &&
-      !movementForm.loadingPointOutDate
-    ) {
-      setMovementError(
-        "Loading Point Out Date is required when loading is completed.",
-      );
-      return;
-    }
-    if (
-      movementForm.unloadingStatus === "Completed" &&
-      !movementForm.unloadingPointOutDate
-    ) {
-      setMovementError(
-        "Unloading Point Out Date is required when unloading is completed.",
-      );
       return;
     }
     if (movementForm.podFile && !unloadingCompleted) {
@@ -1177,7 +1231,7 @@ const StandardTripdetails = ({ movementOnly = false }) => {
         vehicleNumber: String(vehicle.vehicleNumber || "")
           .trim()
           .toUpperCase(),
-        lastUpdatedBy: updatedBy,
+        lastUpdatedBy: updatedBy || vehicle?.lastUpdatedBy || "Tracking",
         driver: {
           name: String(vehicle?.driver?.name || "").trim(),
           contactNumber: String(vehicle?.driver?.contactNumber || "").trim(),
@@ -1196,7 +1250,11 @@ const StandardTripdetails = ({ movementOnly = false }) => {
           ).trim(),
         },
         loading: {
-          status: movementForm.loadingStatus || "Pending",
+          status: getOperationStatus(
+            movementForm.loadingDate,
+            movementForm.loadingPointOutDate,
+            getLocalYmd(),
+          ),
           pointInDate: movementForm.loadingPointInDate || null,
           loadingDate: movementForm.loadingDate || null,
           pointOutDate: movementForm.loadingPointOutDate || null,
@@ -1207,7 +1265,11 @@ const StandardTripdetails = ({ movementOnly = false }) => {
           remarks: String(movementForm.loadingRemarks || "").trim(),
         },
         unloading: {
-          status: movementForm.unloadingStatus || "Pending",
+          status: getOperationStatus(
+            movementForm.unloadingDate,
+            movementForm.unloadingPointOutDate,
+            getLocalYmd(),
+          ),
           pointInDate: movementForm.unloadingPointInDate || null,
           unloadingDate: movementForm.unloadingDate || null,
           pointOutDate: movementForm.unloadingPointOutDate || null,
@@ -1475,10 +1537,9 @@ const StandardTripdetails = ({ movementOnly = false }) => {
             <div className="trip-list-column-head">
               <span>Trip</span>
               <span>Customer</span>
-              <span>Material</span>
               <span>Movement</span>
-              <span>Route</span>
               <span>Vehicles</span>
+              <span>Key Account</span>
               <span>Status</span>
               <span>Created</span>
               <span className="trip-action-heading">Action</span>
@@ -1515,6 +1576,7 @@ const StandardTripdetails = ({ movementOnly = false }) => {
                     0,
                   );
                   const tripStatus = getTripStatus(trip);
+                  const keyAccountName = getTripKeyAccountName(trip);
                   const statusClass = getStatusClass(tripStatus);
                   const movementType = getMovementType(trip);
                   const movementClass = getMovementClass(movementType);
@@ -1545,16 +1607,7 @@ const StandardTripdetails = ({ movementOnly = false }) => {
                           <strong>{safeText(trip.customer)}</strong>
                         </div>
                       </div>
-                      {/* =====================
-                        MATERIAL
-                    ===================== */}
-                      <div className="trip-row-cell">
-                        <span className="trip-mobile-label">Material</span>
-                        <div className="trip-cell-with-icon">
-                          <Package size={14} />
-                          <span>{safeText(trip.materialType)}</span>
-                        </div>
-                      </div>
+                      
                       {/* =====================
                         MOVEMENT
                     ===================== */}
@@ -1568,18 +1621,7 @@ const StandardTripdetails = ({ movementOnly = false }) => {
                           <span>{movementType}</span>
                         </span>
                       </div>
-                      {/* =====================
-                        ROUTE
-                    ===================== */}
-                      <div className="trip-row-cell trip-route-cell">
-                        <span className="trip-mobile-label">Route</span>
-                        <div className="trip-row-route">
-                          <MapPin size={14} />
-                          <span>{safeText(trip.origin)}</span>
-                          <ChevronRight size={13} />
-                          <span>{safeText(trip.destination)}</span>
-                        </div>
-                      </div>
+                      
                       {/* =====================
                         VEHICLES
                     ===================== */}
@@ -1612,6 +1654,13 @@ const StandardTripdetails = ({ movementOnly = false }) => {
                             {pendingVehicleCount} Pending
                           </small>
                         )}
+                      </div>
+                      {/* =====================
+                        KEY ACCOUNT
+                    ===================== */}
+                      <div className="trip-row-cell trip-key-account-cell">
+                        <span className="trip-mobile-label">Key Account</span>
+                        <strong title={keyAccountName}>{keyAccountName}</strong>
                       </div>
                       {/* =====================
                         STATUS
@@ -1750,7 +1799,12 @@ const StandardTripdetails = ({ movementOnly = false }) => {
                               )}
                             </strong>
 
-                            <small>{getVehicleDisplayStatus(vehicle)}</small>
+                            <small>
+                              {safeText(
+                                latest?.loadedMaterial || vehicle?.loadedMaterial,
+                                "No loaded material",
+                              )}
+                            </small>
                           </span>
                         </button>
                       );
@@ -1763,21 +1817,18 @@ const StandardTripdetails = ({ movementOnly = false }) => {
                     );
                     if (!vehicle || !movementForm) return null;
                     const latest = getLatestTracking(vehicle);
-                    const unloadingEnabled =
-                      String(latest?.status || "")
-                        .trim()
-                        .toLowerCase() === "reached" ||
-                      String(movementForm.status || "")
-                        .trim()
-                        .toLowerCase() === "reached";
+                    const loadingStatus = getOperationStatus(
+                      movementForm.loadingDate,
+                      movementForm.loadingPointOutDate,
+                      ewayToday,
+                    );
+                    const unloadingStatus = getOperationStatus(
+                      movementForm.unloadingDate,
+                      movementForm.unloadingPointOutDate,
+                      ewayToday,
+                    );
                     const unloadingCompleted =
-                      String(
-                        movementForm.unloadingStatus ||
-                          vehicle?.unloading?.status ||
-                          "",
-                      )
-                        .trim()
-                        .toLowerCase() === "completed";
+                      unloadingStatus === "Completed";
                     const history = buildEveryDayHistory(
                       vehicle.dailyTracking,
                       movementForm.loadingPointInDate,
@@ -1958,7 +2009,12 @@ const StandardTripdetails = ({ movementOnly = false }) => {
                             <label>
                               <span>Status</span>
                               <select
-                                value={movementForm.status}
+                                value={
+                                  unloadingCompleted
+                                    ? "Reached"
+                                    : movementForm.status
+                                }
+                                disabled={unloadingCompleted}
                                 onChange={(e) =>
                                   updateMovementField("status", e.target.value)
                                 }
@@ -2002,25 +2058,9 @@ const StandardTripdetails = ({ movementOnly = false }) => {
                                 <small>VEHICLE OPERATION</small>
                                 <h3>Loading Details</h3>
                               </div>
-                              <span>{movementForm.loadingStatus}</span>
+                              <span>{loadingStatus}</span>
                             </div>
                             <div className="trip-movement-operation-fields">
-                              <label>
-                                <span>Status</span>
-                                <select
-                                  value={movementForm.loadingStatus}
-                                  onChange={(e) =>
-                                    updateMovementField(
-                                      "loadingStatus",
-                                      e.target.value,
-                                    )
-                                  }
-                                >
-                                  <option>Pending</option>
-                                  <option>In Progress</option>
-                                  <option>Completed</option>
-                                </select>
-                              </label>
                               <label>
                                 <span>Point In Date</span>
                                 <input
@@ -2035,7 +2075,7 @@ const StandardTripdetails = ({ movementOnly = false }) => {
                                 />
                               </label>
                               <label>
-                                <span>Loading Date</span>
+                                <span>Loaded Date</span>
                                 <input
                                   type="date"
                                   value={movementForm.loadingDate}
@@ -2058,6 +2098,13 @@ const StandardTripdetails = ({ movementOnly = false }) => {
                                       e.target.value,
                                     )
                                   }
+                                />
+                              </label>
+                              <label>
+                                <span>Status</span>
+                                <input
+                                  value={loadingStatus}
+                                  readOnly
                                 />
                               </label>
                               <label>
@@ -2090,37 +2137,14 @@ const StandardTripdetails = ({ movementOnly = false }) => {
                                 <small>VEHICLE OPERATION</small>
                                 <h3>Unloading Details</h3>
                               </div>
-                              <span>{movementForm.unloadingStatus}</span>
+                              <span>{unloadingStatus}</span>
                             </div>
-                            {!unloadingEnabled && (
-                              <div className="trip-unloading-lock">
-                                Unloading will be available after the vehicle
-                                reaches the final destination.
-                              </div>
-                            )}
                             <div className="trip-movement-operation-fields">
-                              <label>
-                                <span>Status</span>
-                                <select
-                                  value={movementForm.unloadingStatus}
-                                  disabled={!unloadingEnabled}
-                                  onChange={(e) =>
-                                    updateMovementField(
-                                      "unloadingStatus",
-                                      e.target.value,
-                                    )
-                                  }
-                                >
-                                  <option>Pending</option>
-                                  <option>In Progress</option>
-                                  <option>Completed</option>
-                                </select>
-                              </label>
                               <label>
                                 <span>Point In Date</span>
                                 <input
                                   type="date"
-                                  disabled={!unloadingEnabled}
+                                  disabled={unloadingCompleted}
                                   value={movementForm.unloadingPointInDate}
                                   onChange={(e) =>
                                     updateMovementField(
@@ -2134,7 +2158,7 @@ const StandardTripdetails = ({ movementOnly = false }) => {
                                 <span>Unloading Date</span>
                                 <input
                                   type="date"
-                                  disabled={!unloadingEnabled}
+                                  disabled={unloadingCompleted}
                                   value={movementForm.unloadingDate}
                                   onChange={(e) =>
                                     updateMovementField(
@@ -2148,7 +2172,7 @@ const StandardTripdetails = ({ movementOnly = false }) => {
                                 <span>Point Out Date</span>
                                 <input
                                   type="date"
-                                  disabled={!unloadingEnabled}
+                                  disabled={unloadingCompleted}
                                   value={movementForm.unloadingPointOutDate}
                                   onChange={(e) =>
                                     updateMovementField(
@@ -2159,11 +2183,14 @@ const StandardTripdetails = ({ movementOnly = false }) => {
                                 />
                               </label>
                               <label>
+                                <span>Status</span>
+                                <input value={unloadingStatus} readOnly />
+                              </label>
+                              <label>
                                 <span>Halting Days</span>
                                 <input
                                   type="number"
                                   min="0"
-                                  disabled={!unloadingEnabled}
                                   value={movementForm.unloadingHaltingDays}
                                   readOnly
                                 />
@@ -2171,7 +2198,7 @@ const StandardTripdetails = ({ movementOnly = false }) => {
                               <label className="remarks">
                                 <span>Remarks</span>
                                 <input
-                                  disabled={!unloadingEnabled}
+                                  readOnly={unloadingCompleted}
                                   value={movementForm.unloadingRemarks}
                                   onChange={(e) =>
                                     updateMovementField(

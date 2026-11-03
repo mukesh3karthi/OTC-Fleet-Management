@@ -1394,17 +1394,6 @@ const AllocateVehicle = () => {
               ========================================= */}
 
               <section className="tracking-form-card tracking-trip-information-card">
-                <CardHeader
-                  icon={<Route size={18} />}
-                  iconClass="blue"
-                  title="Order Snapshot"
-                  subtitle="Essential trip information for the operations team."
-                >
-                  <span className="tracking-trip-id-badge">
-                    {selectedOrder.tripId}
-                  </span>
-                </CardHeader>
-
                 <div className="tracking-form-card-body">
                   <div className="tracking-form-grid tracking-order-snapshot-grid">
                     <FormField
@@ -1436,18 +1425,6 @@ const AllocateVehicle = () => {
                     />
 
                     <FormField
-                      label="Distance"
-                      icon={<Gauge size={15} />}
-                      readOnly
-                      value={
-                        selectedOrder.distance !== null &&
-                        selectedOrder.distance !== undefined
-                          ? `${selectedOrder.distance} KM`
-                          : ""
-                      }
-                    />
-
-                    <FormField
                       label="Assigned KAM"
                       icon={<UserRound size={15} />}
                       readOnly
@@ -1455,92 +1432,6 @@ const AllocateVehicle = () => {
                     />
                   </div>
 
-                  {/* ROUTE */}
-
-                  <div className="tracking-route-locations tracking-trip-route-locations">
-                    <div className="tracking-route-locations-header">
-                      <div>
-                        <strong>Trip Route</strong>
-                        <span>
-                          Add intermediate locations between origin and
-                          destination.
-                        </span>
-                      </div>
-
-                      <div className="tracking-route-actions">
-                        <button
-                          type="button"
-                          className="tracking-add-location-btn"
-                          disabled={saving}
-                          onClick={handleAddRouteLocation}
-                        >
-                          <Plus size={13} />
-                          Add Location
-                        </button>
-
-                        <button
-                          type="button"
-                          className="tracking-save-route-btn"
-                          disabled={saving}
-                          onClick={handleSaveRoute}
-                        >
-                          <Save size={13} />
-                          {saving ? "Saving..." : "Save Route"}
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="tracking-route-location-flow">
-                      <span className="tracking-route-fixed-point origin">
-                        <MapPin size={12} />
-                        {selectedOrder.origin || "Origin"}
-                      </span>
-
-                      {routeLocations.map((routeLocation, index) => (
-                        <React.Fragment key={`route-${index}`}>
-                          <ChevronRight
-                            size={13}
-                            className="tracking-route-flow-arrow"
-                          />
-
-                          <div className="tracking-route-edit-item">
-                            <input
-                              type="text"
-                              value={routeLocation}
-                              placeholder={`Location ${index + 1}`}
-                              disabled={saving}
-                              onChange={(event) =>
-                                handleRouteLocationChange(
-                                  index,
-                                  event.target.value,
-                                )
-                              }
-                            />
-
-                            <button
-                              type="button"
-                              className="tracking-remove-location-btn"
-                              disabled={saving}
-                              onClick={() => handleRemoveRouteLocation(index)}
-                              aria-label={`Remove location ${index + 1}`}
-                            >
-                              ×
-                            </button>
-                          </div>
-                        </React.Fragment>
-                      ))}
-
-                      <ChevronRight
-                        size={13}
-                        className="tracking-route-flow-arrow"
-                      />
-
-                      <span className="tracking-route-fixed-point destination">
-                        <MapPin size={12} />
-                        {selectedOrder.destination || "Destination"}
-                      </span>
-                    </div>
-                  </div>
                 </div>
               </section>
 
@@ -1643,10 +1534,10 @@ const AllocateVehicle = () => {
                                       </td>
                                     </>
                                   )}
-                                  <td><input className="tracking-created-vehicle-value" aria-label="Origin" readOnly value={getCreatedVehicleValue(requirement, "origin")} placeholder="—" /></td>
-                                  <td><input className="tracking-created-vehicle-value" aria-label="Destination" readOnly value={getCreatedVehicleValue(requirement, "destination")} placeholder="—" /></td>
-                                  <td><input className="tracking-created-vehicle-value" aria-label="Material Type" readOnly value={getCreatedVehicleValue(requirement, "materialType")} placeholder="—" /></td>
-                                  <td><input className="tracking-created-vehicle-value tracking-created-vehicle-date" aria-label="Placement Date" readOnly value={formatDateForInput(getCreatedVehicleValue(requirement, "placementDate"))} placeholder="—" /></td>
+                                  <td>{getCreatedVehicleValue(requirement, "origin") || "—"}</td>
+                                  <td>{getCreatedVehicleValue(requirement, "destination") || "—"}</td>
+                                  <td>{getCreatedVehicleValue(requirement, "materialType") || "—"}</td>
+                                  <td>{formatDateForInput(getCreatedVehicleValue(requirement, "placementDate")) || "—"}</td>
                                   {!isCraneOrder(selectedOrder) && (
                                     <>
                                       <td>
@@ -2021,6 +1912,18 @@ const AllocateVehicle = () => {
                                                   />
 
                                                   <FormField
+                                                    label="Allocated By"
+                                                    required
+                                                    icon={<UserRound size={15} />}
+                                                    name="allocatedBy"
+                                                    value={allocationForm.allocatedBy || ""}
+                                                    onChange={(event) =>
+                                                      handleAllocationChange(requirementId, event)
+                                                    }
+                                                    placeholder="Person responsible for allocation"
+                                                  />
+
+                                                  <FormField
                                                     label="Driver Name"
                                                     icon={
                                                       <UserRound size={15} />
@@ -2038,17 +1941,7 @@ const AllocateVehicle = () => {
                                                     placeholder="Driver name"
                                                   />
 
-                                                  <FormField
-                                                    label="Allocated By"
-                                                    required
-                                                    icon={<UserRound size={15} />}
-                                                    name="allocatedBy"
-                                                    value={allocationForm.allocatedBy || ""}
-                                                    onChange={(event) =>
-                                                      handleAllocationChange(requirementId, event)
-                                                    }
-                                                    placeholder="Person responsible for allocation"
-                                                  />
+                                                  
 
                                                   <FormField
                                                     label="Driver Contact Number"

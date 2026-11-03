@@ -268,7 +268,7 @@
   padding: 0 14px;
   display: grid;
   grid-template-columns:
-    0.75fr 1.05fr 0.95fr 0.95fr 1.55fr 0.60fr 0.72fr 0.85fr 1.30fr;
+    0.85fr 1.05fr 1.05fr 0.85fr 1.20fr 0.80fr 0.90fr 1.35fr;
   align-items: center;
   gap: 10px;
   border-bottom: 1px solid #e7edf4;
@@ -299,7 +299,7 @@
   padding: 11px 14px;
   display: grid;
   grid-template-columns:
-    0.75fr 1.05fr 0.95fr 0.95fr 1.55fr 0.60fr 0.72fr 0.85fr 1.30fr;
+    0.85fr 1.05fr 1.05fr 0.85fr 1.20fr 0.80fr 0.90fr 1.35fr;
   align-items: center;
   gap: 10px;
   border-bottom: 1px solid #e7edf4;
@@ -374,7 +374,7 @@
   margin-top: 2px;
   color: #95a1b2;
   font-size: 8px;
-  font-weight: 500;
+  font-weight: 550;
 }
 
 /* =========================================
@@ -3246,7 +3246,7 @@
 .trip-list-column-head {
   min-height: 46px;
   padding: 0 16px;
-  grid-template-columns: 0.75fr 1.05fr 0.95fr 0.95fr 1.55fr 0.65fr 0.72fr 0.9fr 1.35fr;
+  grid-template-columns: 0.85fr 1.05fr 1.05fr 0.85fr 1.20fr 0.80fr 0.90fr 1.35fr;
   gap: 10px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.10);
   background: #082b3d;
@@ -3260,11 +3260,23 @@
   color: inherit;
 }
 
+.trip-key-account-cell {
+  min-width: 0;
+}
+
+.trip-key-account-cell strong {
+  font-size: 12px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .trip-full-row {
   position: relative;
   min-height: 78px;
   padding: 11px 16px;
-  grid-template-columns: 0.75fr 1.05fr 0.95fr 0.95fr 1.55fr 0.65fr 0.72fr 0.9fr 1.35fr;
+  grid-template-columns: 0.85fr 1.05fr 1.05fr 0.85fr 1.20fr 0.80fr 0.90fr 1.35fr;
   gap: 10px;
   border-bottom: 1px solid #e1eaee;
   background: #ffffff;

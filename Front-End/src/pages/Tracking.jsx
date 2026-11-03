@@ -997,8 +997,8 @@ const Tracking = () => {
                 <tr>
                   <th scope="col">Trip</th>
                   <th scope="col">Customer</th>
-                  <th scope="col">Route</th>
                   <th scope="col">Status</th>
+                  <th scope="col">Vehicle Progress</th>
                 </tr>
               </thead>
               <tbody>
@@ -1014,6 +1014,9 @@ const Tracking = () => {
                       expiring = allocated.filter((vehicle) =>
                         ewayExpiring(vehicle, today),
                       ).length;
+                    const reachedVehicles = allocated.filter(
+                      (vehicle) => vehicleStatus(vehicle, today) === "Reached",
+                    ).length;
                     return (
                       <tr
                         key={id || `missing-${index}`}
@@ -1052,36 +1055,20 @@ const Tracking = () => {
                         <td>
                           <strong className="td-customer">
                             {text(trip.customer) || "—"}
-                          </strong>
-                          <small>
-                            {text(trip.materialType || trip.materialName) ||
-                              "—"}
-                          </small>
+                          </strong>  
                         </td>
-                        <td>
-                          <span className="td-route-text">
-                            <MapPin size={12} />
-                            <span>
-                              {text(trip.origin) || "—"}
-                              <span className="td-route-arrow"> → </span>
-                              {text(trip.destination) || "—"}
-                            </span>
-                          </span>
-                          {(pending > 0 || expiring > 0) && (
-                            <small className="td-document-note">
-                              {[
-                                pending > 0 ? `POD pending ${pending}` : "",
-                                expiring > 0
-                                  ? `E-Way expiring ${expiring}`
-                                  : "",
-                              ]
-                                .filter(Boolean)
-                                .join(" · ")}
-                            </small>
-                          )}
-                        </td>
+                        
                         <td>
                           <StatusBadge status={status} />
+                        </td>
+                        <td>
+                          {allocated.length > 0 && (
+                            <small className="td-vehicle-status-count">
+                              {reachedVehicles}/{allocated.length} reached
+                              {reachedVehicles < allocated.length &&
+                                ` · ${allocated.length - reachedVehicles} pending`}
+                            </small>
+                          )}
                         </td>
                       </tr>
                     );
