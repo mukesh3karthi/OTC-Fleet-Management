@@ -397,6 +397,7 @@ const Vehicletable = ({
               <th scope="col">Vendor Email</th>
               <th scope="col">Manufacturing Year</th>
               <th scope="col">Hire Amount</th>
+              <th scope="col">Remarks</th>
               <th scope="col">Status</th>
               <th scope="col" className="action-header">
                 Actions
@@ -407,7 +408,7 @@ const Vehicletable = ({
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={12} className="no-data">
+                <td colSpan={18} className="no-data">
                   <span className="table-loading">Loading vehicles...</span>
                 </td>
               </tr>
@@ -450,6 +451,10 @@ const Vehicletable = ({
 
                     <td>{formatCurrency(vehicle.hireAmount)}</td>
 
+                    <td className="vehicle-remarks-cell" title={vehicle.remarks || ""}>
+                      {vehicle.remarks || "-"}
+                    </td>
+
                     <td>
                       <span
                         className={`vehicle-status-badge ${getStatusClassName(
@@ -484,7 +489,7 @@ const Vehicletable = ({
               })
             ) : (
               <tr>
-                <td colSpan={12} className="no-data">
+                <td colSpan={18} className="no-data">
                   No vehicles found
                 </td>
               </tr>

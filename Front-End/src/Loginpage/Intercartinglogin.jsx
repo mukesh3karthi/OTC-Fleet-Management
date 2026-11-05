@@ -24,8 +24,8 @@ import "./intercartinglogin.css";
    Move username/password validation to backend API.
 ========================================================= */
 
-const VALID_USERNAME = "admin";
-const VALID_PASSWORD = "admin@2026";
+const VALID_USERNAME = "RSV008";
+const VALID_PASSWORD = "Durai@8489";
 
 
 const Intercartinglogin = ({

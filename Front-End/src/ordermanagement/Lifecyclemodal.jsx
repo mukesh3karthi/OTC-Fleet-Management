@@ -210,9 +210,21 @@ const hasPendingTransportReplacement = (order) =>
 const getLatestTracking = (allocation) => {
   const history = safeArray(allocation?.dailyTracking);
   if (!history.length) {
-    return null;
+    return allocation?.latestTracking || null;
   }
-  return history[history.length - 1];
+  // Tracking entries can arrive out of order. Vehicle Details sorts them by
+  // their recorded date before choosing the current status, so do the same
+  // here to keep the lifecycle table in sync.
+  const dateValue = (entry) => {
+    const raw = entry?.date || entry?.updatedAt;
+    const value = raw && typeof raw === "object" ? raw.$date : raw;
+    const time = value ? new Date(value).getTime() : 0;
+    return Number.isFinite(time) ? time : 0;
+  };
+  return history
+    .slice()
+    .sort((a, b) => dateValue(a) - dateValue(b))
+    .at(-1);
 };
 const isPoDocumentComplete = (order) => {
   const po = order?.poDocument || {};
@@ -4319,8 +4331,16 @@ const Lifecyclemodal = ({
                             allocation.quotationId || confirmation?.quotationId,
                           );
                           const latest = getLatestTracking(allocation);
-                          const vehicleStatus =
-                            latest?.status || allocation?.status || "Idle";
+                          const unloadingCompleted =
+                            String(allocation?.unloading?.status || "")
+                              .trim()
+                              .toLowerCase() === "completed";
+                          const vehicleStatus = unloadingCompleted
+                            ? "Reached"
+                            : latest?.status ||
+                              allocation?.latestTracking?.status ||
+                              allocation?.status ||
+                              "Idle";
                           return (
                             <tr key={allocation.allocationId || index}>
                               <td>

@@ -427,7 +427,7 @@ const Intercartingdash = () => {
               vehicle
                 ?.vehicleType,
               vehicle
-                ?.transportProvider,
+                ?.vendorName,
               vehicle
                 ?.dieselScope,
             ];
@@ -1576,7 +1576,7 @@ const Intercartingdash = () => {
                   Vehicle Type
                 </th>
                 <th>
-                  Transport Provider
+                  Vendor Name
                 </th>
                 <th>
                   Diesel Scope
@@ -1664,7 +1664,7 @@ const Intercartingdash = () => {
                         <td>
                           {
                             vehicle
-                              ?.transportProvider ||
+                              ?.vendorName ||
                             "-"
                           }
                         </td>

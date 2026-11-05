@@ -5155,7 +5155,7 @@
 .kam-payment-modal-columns,
 .kam-payment-modal-list .kam-payment-alert-item-grid {
   display:grid;
-  grid-template-columns:minmax(75px,.75fr) minmax(100px,1fr) minmax(85px,.85fr) minmax(100px,.95fr) minmax(105px,1fr) minmax(92px,.85fr) minmax(135px,1.25fr) 18px;
+  grid-template-columns:24px minmax(75px,.75fr) minmax(100px,1fr) minmax(85px,.85fr) minmax(100px,.95fr) minmax(105px,1fr) minmax(92px,.85fr) minmax(135px,1.25fr) 18px;
   align-items:center;gap:10px;
 }
 .kam-payment-modal-list .kam-invoice-days {
@@ -5175,6 +5175,9 @@
   width:100%;margin:0;padding:15px 14px;border:1px solid #e1eaec;
   border-top:0;border-radius:0;background:#fff;text-align:left;cursor:pointer;
 }
+.kam-payment-order-select {display:flex!important;align-items:center;justify-content:center;}
+.kam-payment-order-select input,
+.kam-payment-modal-columns input {width:15px;height:15px;accent-color:#0d9488;cursor:pointer;}
 .kam-payment-modal-list .kam-payment-alert-item:last-child {border-radius:0 0 9px 9px;}
 .kam-payment-modal-list .kam-payment-alert-item:hover {background:#f5fbfa;border-color:#b4dcd7;}
 .kam-payment-modal-list .kam-payment-alert-item-grid small {display:none;}

@@ -1899,6 +1899,7 @@ const StandardTripdetails = ({ movementOnly = false }) => {
                               <span>Date</span>
                               <input
                                 type="date"
+                                max={getLocalYmd()}
                                 value={movementForm.date}
                                 onChange={(e) =>
                                   updateMovementField("date", e.target.value)
@@ -2065,6 +2066,7 @@ const StandardTripdetails = ({ movementOnly = false }) => {
                                 <span>Point In Date</span>
                                 <input
                                   type="date"
+                                  max={getLocalYmd()}
                                   value={movementForm.loadingPointInDate}
                                   onChange={(e) =>
                                     updateMovementField(
@@ -2078,6 +2080,7 @@ const StandardTripdetails = ({ movementOnly = false }) => {
                                 <span>Loaded Date</span>
                                 <input
                                   type="date"
+                                  max={getLocalYmd()}
                                   value={movementForm.loadingDate}
                                   onChange={(e) =>
                                     updateMovementField(
@@ -2091,6 +2094,7 @@ const StandardTripdetails = ({ movementOnly = false }) => {
                                 <span>Point Out Date</span>
                                 <input
                                   type="date"
+                                  max={getLocalYmd()}
                                   value={movementForm.loadingPointOutDate}
                                   onChange={(e) =>
                                     updateMovementField(
@@ -2144,6 +2148,7 @@ const StandardTripdetails = ({ movementOnly = false }) => {
                                 <span>Point In Date</span>
                                 <input
                                   type="date"
+                                  max={getLocalYmd()}
                                   disabled={unloadingCompleted}
                                   value={movementForm.unloadingPointInDate}
                                   onChange={(e) =>
@@ -2158,6 +2163,7 @@ const StandardTripdetails = ({ movementOnly = false }) => {
                                 <span>Unloading Date</span>
                                 <input
                                   type="date"
+                                  max={getLocalYmd()}
                                   disabled={unloadingCompleted}
                                   value={movementForm.unloadingDate}
                                   onChange={(e) =>
@@ -2172,6 +2178,7 @@ const StandardTripdetails = ({ movementOnly = false }) => {
                                 <span>Point Out Date</span>
                                 <input
                                   type="date"
+                                  max={getLocalYmd()}
                                   disabled={unloadingCompleted}
                                   value={movementForm.unloadingPointOutDate}
                                   onChange={(e) =>
@@ -2258,6 +2265,7 @@ const StandardTripdetails = ({ movementOnly = false }) => {
                                   <span>LR Date</span>
                                   <input
                                     type="date"
+                                    max={getLocalYmd()}
                                     value={movementForm.lrDate}
                                     onChange={(e) =>
                                       updateMovementField(

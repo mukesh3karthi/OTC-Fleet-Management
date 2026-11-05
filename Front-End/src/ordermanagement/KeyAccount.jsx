@@ -1308,6 +1308,7 @@ const KeyAccount = () => {
   const [paymentInvoiceTo, setPaymentInvoiceTo] = useState("");
   const [paymentSort, setPaymentSort] = useState("high");
   const [paymentExportFormat, setPaymentExportFormat] = useState("pdf");
+  const [selectedPaymentOrderIds, setSelectedPaymentOrderIds] = useState([]);
   const [openPaymentStep, setOpenPaymentStep] = useState(false);
   const pendingPaymentOrders = useMemo(
     () =>
@@ -1385,17 +1386,61 @@ const KeyAccount = () => {
     () => filteredPaymentOrders.reduce((sum, item) => sum + item.due, 0),
     [filteredPaymentOrders],
   );
+  const selectedVisiblePaymentIds = filteredPaymentOrders
+    .map(({ order }) => getOrderKey(order))
+    .filter((id) => selectedPaymentOrderIds.includes(id));
+  const allVisiblePaymentsSelected =
+    filteredPaymentOrders.length > 0 &&
+    selectedVisiblePaymentIds.length === filteredPaymentOrders.length;
   const downloadPaymentAlerts = () => {
-    const rows = filteredPaymentOrders.map(({ order, due }) => [
+    const exportOrders = selectedPaymentOrderIds.length
+      ? pendingPaymentOrders.filter(({ order }) =>
+          selectedPaymentOrderIds.includes(getOrderKey(order)),
+        )
+      : filteredPaymentOrders;
+    const exportDetails = exportOrders.map(({ order, due }) => {
+      const invoice = order?.invoicePayment || {};
+      const payments = Array.isArray(invoice.payments) && invoice.payments.length
+        ? invoice.payments
+        : Number(invoice.receivedAmount) > 0 && invoice.paymentDate
+          ? [{
+              amount: invoice.receivedAmount,
+              paymentDate: invoice.paymentDate,
+              remarks: invoice.paymentRemarks || "",
+              receivedBy: invoice.updatedBy || "",
+            }]
+          : [];
+      const received = payments.reduce(
+        (sum, payment) => sum + Math.round(Number(payment.amount || 0) * 100),
+        0,
+      ) / 100;
+      const explicitTotal = Number(invoice.totalAmount);
+      const base = Number(invoice.invoiceAmount ?? invoice.amount ?? invoice.baseAmount);
+      const gst = Number(invoice.gstPercentage || 0);
+      const total = Number.isFinite(explicitTotal) && explicitTotal > 0
+        ? explicitTotal
+        : Number.isFinite(base) && base > 0
+          ? Math.round(base * (100 + gst)) / 100
+          : received + due;
+      const days = getInvoicePendingDays(order);
+      return {
+        order,
+        due,
+        total,
+        received,
+        days: days === null ? "—" : `${days} Days`,
+        payments,
+      };
+    });
+    const rows = exportDetails.map(({ order, due, total, received, days }) => [
       String(order.tripId || order.id || "—"),
       String(order.customer || "—"),
       String(order.poDocument?.poNumber || "—"),
       getPaymentInvoiceNumber(order),
       displayPaymentInvoiceDate(order),
-      (() => {
-        const days = getInvoicePendingDays(order);
-        return days === null ? "—" : `${days} Days`;
-      })(),
+      days,
+      total.toFixed(2),
+      received.toFixed(2),
       Number(due).toFixed(2),
     ]);
     const headers = [
@@ -1405,6 +1450,8 @@ const KeyAccount = () => {
       "Invoice Number",
       "Invoice Date",
       "Days Pending",
+      "Invoice Total (INR)",
+      "Received (INR)",
       "Amount Due (INR)",
     ];
     if (paymentExportFormat === "pdf") {
@@ -1413,43 +1460,100 @@ const KeyAccount = () => {
         unit: "mm",
         format: "a4",
       });
-      doc.setFillColor(10, 55, 72);
-      doc.rect(0, 0, 297, 30, "F");
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(16);
-      doc.setTextColor(255, 255, 255);
-      doc.text("PENDING PAYMENTS", 14, 16);
-      doc.setFontSize(9);
-      doc.text(
-        `${rows.length} orders  |  Total: INR ${filteredPaymentTotal.toLocaleString("en-IN", { minimumFractionDigits: 2 })}`,
-        14,
-        24,
-      );
-      autoTable(doc, {
-        startY: 36,
-        head: [headers],
-        body: rows,
-        styles: { fontSize: 9, cellPadding: 4 },
-        headStyles: { fillColor: [207, 231, 230], textColor: [18, 59, 75] },
-        alternateRowStyles: { fillColor: [250, 252, 253] },
-        margin: { left: 14, right: 14 },
+      exportDetails.forEach((detail, index) => {
+        if (index > 0) doc.addPage();
+        const orderNumber = String(
+          detail.order.tripId || detail.order.id || "—",
+        );
+        doc.setFillColor(10, 55, 72);
+        doc.rect(0, 0, 297, 30, "F");
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(16);
+        doc.setTextColor(255, 255, 255);
+        doc.text(`PAYMENT DETAILS — ORDER ${orderNumber}`, 14, 16);
+        doc.setFontSize(9);
+        doc.text(
+          `${index + 1} of ${exportDetails.length} orders  |  Customer: ${String(detail.order.customer || "—")}`,
+          14,
+          24,
+        );
+        autoTable(doc, {
+          startY: 36,
+          head: [headers],
+          body: [rows[index]],
+          styles: { fontSize: 9, cellPadding: 4 },
+          headStyles: { fillColor: [207, 231, 230], textColor: [18, 59, 75] },
+          alternateRowStyles: { fillColor: [250, 252, 253] },
+          margin: { left: 14, right: 14 },
+        });
+        const historyRows = detail.payments.length
+          ? detail.payments.map((payment, paymentIndex) => [
+              String(paymentIndex + 1),
+              String(payment.paymentDate || "—"),
+              Number(payment.amount || 0).toFixed(2),
+              String(payment.remarks || "—"),
+              String(payment.receivedBy || "—"),
+            ])
+          : [["—", "—", "0.00", "No payments recorded", "—"]];
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(11);
+        doc.setTextColor(18, 59, 75);
+        doc.text("RECEIVED PAYMENT HISTORY", 14, doc.lastAutoTable.finalY + 10);
+        autoTable(doc, {
+          startY: doc.lastAutoTable.finalY + 13,
+          head: [["#", "Received Date", "Amount (INR)", "Remarks", "Received By"]],
+          body: historyRows,
+          styles: { fontSize: 8, cellPadding: 3 },
+          headStyles: { fillColor: [207, 231, 230], textColor: [18, 59, 75] },
+          alternateRowStyles: { fillColor: [250, 252, 253] },
+          margin: { left: 14, right: 14 },
+        });
       });
-      doc.save("pending-payments-filtered.pdf");
+      doc.save("pending-payments.pdf");
       return;
     }
     const safeCell = (value) =>
       `"${String(value ?? "")
         .replace(/^[=+@-]/, "'$&")
         .replace(/"/g, '""')}"`;
+    const csvHeaders = [
+      ...headers,
+      "Receipt Date",
+      "Receipt Amount (INR)",
+      "Receipt Remarks",
+      "Received By",
+    ];
+    const csvRows = exportDetails.flatMap(({ order, due, total, received, days, payments }) => {
+      const base = [
+        String(order.tripId || order.id || "—"),
+        String(order.customer || "—"),
+        String(order.poDocument?.poNumber || "—"),
+        getPaymentInvoiceNumber(order),
+        displayPaymentInvoiceDate(order),
+        days,
+        total.toFixed(2),
+        received.toFixed(2),
+        Number(due).toFixed(2),
+      ];
+      return payments.length
+        ? payments.map((payment) => [
+            ...base,
+            payment.paymentDate || "—",
+            Number(payment.amount || 0).toFixed(2),
+            payment.remarks || "—",
+            payment.receivedBy || "—",
+          ])
+        : [[...base, "—", "—", "No payments recorded", "—"]];
+    });
     const csv =
       "\uFEFF" +
-      [headers, ...rows].map((row) => row.map(safeCell).join(",")).join("\r\n");
+      [csvHeaders, ...csvRows].map((row) => row.map(safeCell).join(",")).join("\r\n");
     const url = URL.createObjectURL(
       new Blob([csv], { type: "text/csv;charset=utf-8" }),
     );
     const link = document.createElement("a");
     link.href = url;
-    link.download = "pending-payments-filtered.csv";
+    link.download = "pending-payments.csv";
     document.body.appendChild(link);
     link.click();
     link.remove();
@@ -2281,14 +2385,36 @@ const KeyAccount = () => {
                     type="button"
                     className="kam-payment-download"
                     onClick={downloadPaymentAlerts}
-                    disabled={!filteredPaymentOrders.length}
+                    disabled={
+                      !filteredPaymentOrders.length &&
+                      !selectedPaymentOrderIds.length
+                    }
                   >
                     <Download size={15} /> Download
+                    {selectedPaymentOrderIds.length > 0 &&
+                      ` (${selectedPaymentOrderIds.length})`}
                   </button>
                 </div>
               </div>
               <div className="kam-payment-modal-list">
                 <div className="kam-payment-modal-columns">
+                  <span>
+                    <input
+                      type="checkbox"
+                      aria-label="Select all visible orders"
+                      checked={allVisiblePaymentsSelected}
+                      onChange={(event) => {
+                        const visibleIds = filteredPaymentOrders.map(
+                          ({ order }) => getOrderKey(order),
+                        );
+                        setSelectedPaymentOrderIds((current) =>
+                          event.target.checked
+                            ? [...new Set([...current, ...visibleIds])]
+                            : current.filter((id) => !visibleIds.includes(id)),
+                        );
+                      }}
+                    />
+                  </span>
                   <span>ORDER NO.</span>
                   <span>CUSTOMER</span>
                   <span>PO NUMBER</span>
@@ -2304,18 +2430,45 @@ const KeyAccount = () => {
                   </div>
                 ) : (
                   filteredPaymentOrders.map(({ order, due }) => (
-                    <button
+                    <div
                       className="kam-payment-alert-item"
                       type="button"
                       key={getOrderKey(order)}
+                      role="button"
+                      tabIndex={0}
                       onClick={() => {
                         setOpenPaymentStep(true);
                         setLifecycleEditOrderId(null);
                         setSelectedOrderId(getOrderKey(order));
                         setPaymentAlertsOpen(false);
                       }}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          event.currentTarget.click();
+                        }
+                      }}
                     >
                       <span className="kam-payment-alert-item-grid">
+                        <span className="kam-payment-order-select">
+                          <input
+                            type="checkbox"
+                            aria-label={`Select order ${order.tripId || order.id || ""}`}
+                            checked={selectedPaymentOrderIds.includes(
+                              getOrderKey(order),
+                            )}
+                            onClick={(event) => event.stopPropagation()}
+                            onKeyDown={(event) => event.stopPropagation()}
+                            onChange={(event) => {
+                              const id = getOrderKey(order);
+                              setSelectedPaymentOrderIds((current) =>
+                                event.target.checked
+                                  ? [...new Set([...current, id])]
+                                  : current.filter((item) => item !== id),
+                              );
+                            }}
+                          />
+                        </span>
                         <span>
                           <small>Order No.</small>
                           <b>{order.tripId || order.id || "—"}</b>
@@ -2354,12 +2507,16 @@ const KeyAccount = () => {
                         </span>
                         <ChevronRight size={16} aria-hidden="true" />
                       </span>
-                    </button>
+                    </div>
                   ))
                 )}
               </div>
               <div className="kam-payment-modal-footer">
-                <span>Select an order to open Invoice & Payment.</span>
+                <span>
+                  {selectedPaymentOrderIds.length
+                    ? `${selectedPaymentOrderIds.length} order${selectedPaymentOrderIds.length === 1 ? "" : "s"} selected for download. Click an order row to open Invoice & Payment.`
+                    : "Select orders to download, or click an order row to open Invoice & Payment."}
+                </span>
                 <button
                   type="button"
                   onClick={() => setPaymentAlertsOpen(false)}
