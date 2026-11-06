@@ -21,6 +21,52 @@ const lifecycleApiFetch = (url, options = {}) => {
   headers.set("Authorization", `Bearer ${token}`);
   return fetch(url, { ...options, headers });
 };
+const CraneDocumentActions = ({ order }) => {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const document = order?.craneDocument;
+  if (!document?.fileName || !order?._id) {
+    return <small>No Crane supporting document is available.</small>;
+  }
+  const openDocument = async (download) => {
+    const preview = download ? null : window.open("about:blank", "_blank");
+    if (preview) preview.opener = null;
+    setBusy(true);
+    setError("");
+    try {
+      if (!download && !preview) throw new Error("Allow popups to view this document.");
+      const url = `${TRIP_API_URL}/${encodeURIComponent(order._id)}/crane-document/file?disposition=${download ? "attachment" : "inline"}`;
+      const response = await lifecycleApiFetch(url);
+      if (!response.ok) throw new Error("Unable to open the Crane supporting document.");
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      if (download) {
+        const link = window.document.createElement("a");
+        link.href = blobUrl;
+        link.download = document.fileName;
+        window.document.body.appendChild(link);
+        link.click();
+        link.remove();
+      } else {
+        preview.location.replace(blobUrl);
+      }
+      window.setTimeout(() => URL.revokeObjectURL(blobUrl), 300000);
+    } catch (requestError) {
+      if (preview) preview.close();
+      setError(requestError.message || "Unable to open the Crane supporting document.");
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <div className="kam-crane-document-actions">
+      <strong>{document.fileName}</strong>
+      <button type="button" disabled={busy} onClick={() => openDocument(false)}>View</button>
+      <button type="button" disabled={busy} onClick={() => openDocument(true)}>Download</button>
+      {error && <small role="alert">{error}</small>}
+    </div>
+  );
+};
 const safeArray = (value) => (Array.isArray(value) ? value : []);
 const isCurrentTrackingAllocation = (allocation) =>
   String(allocation?.vehicleStatus || "")
@@ -141,6 +187,26 @@ const getWtgApprovalQuotedRate = (trip) => {
   const total = Number(trip?.enquiryApproval?.totalAmount);
   return Number.isFinite(total) && total > 0 ? String(total) : null;
 };
+const getCraneApprovalQuotedRate = (trip) => {
+  const movement = String(trip?.movementType || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[\s_-]+/g, "");
+  if (!(["crane", "cranemovement"].includes(movement))) return null;
+  if (String(trip?.enquiryApproval?.status || "").trim().toLowerCase() !== "sent")
+    return null;
+  const requirements = safeArray(trip?.vehicleRequirements);
+  if (!requirements.length) return null;
+  const amounts = requirements.map((requirement) => Number(requirement?.approvalAmount));
+  if (!amounts.every((amount) => Number.isFinite(amount) && amount > 0)) return null;
+  const total = Number(trip?.enquiryApproval?.totalAmount);
+  if (!Number.isFinite(total) || total <= 0) return null;
+  if (Math.abs(amounts.reduce((sum, amount) => sum + amount, 0) - total) >= 0.01)
+    return null;
+  return String(total);
+};
+const getManagementQuotedRate = (trip) =>
+  getWtgApprovalQuotedRate(trip) ?? getCraneApprovalQuotedRate(trip);
 const formatNumber = (value, suffix = "") => {
   if (value === "" || value === null || value === undefined) {
     return "—";
@@ -480,10 +546,12 @@ const ReadOnlyField = ({
           type={
             ["enquiryDate", "placementDate"].includes(fieldKey)
               ? "date"
-              : ["distance", "totalVehicles"].includes(fieldKey)
+            : ["distance", "totalVehicles", "weight"].includes(fieldKey)
                 ? "number"
                 : "text"
           }
+          min={fieldKey === "weight" ? "0" : undefined}
+          step={fieldKey === "weight" ? "0.01" : undefined}
           value={inputValue ?? ""}
           onChange={(event) => onEdit(fieldKey, event.target.value)}
         />
@@ -612,8 +680,6 @@ const Lifecyclemodal = ({
   const [editOpen, setEditOpen] = useState(false);
   const [editSaving, setEditSaving] = useState(false);
   const [editError, setEditError] = useState("");
-  const [confirmSaveOpen, setConfirmSaveOpen] = useState(false);
-  const [updatedByName, setUpdatedByName] = useState("");
   const [editForm, setEditForm] = useState({});
   const autoEditOpenedRef = useRef(false);
   const editBaselineRef = useRef("");
@@ -645,6 +711,10 @@ const Lifecyclemodal = ({
       origin: o.origin || "",
       destination: o.destination || "",
       materialType: o.materialType || "",
+      weight:
+        o.weight ??
+        safeArray(o.vehicleRequirements).find((requirement) => Number(requirement?.weight) > 0)?.weight ??
+        "",
       remark: o.remark || "",
       siteLocation: o.siteLocation || "",
       period: o.period || "",
@@ -656,7 +726,7 @@ const Lifecyclemodal = ({
         ? String(o.placementDate).slice(0, 10)
         : "",
       orderFinalization: {
-        quotedRate: getWtgApprovalQuotedRate(o) ?? o.orderFinalization?.quotedRate ?? "",
+        quotedRate: getManagementQuotedRate(o) ?? o.orderFinalization?.quotedRate ?? "",
         finalRate: o.orderFinalization?.finalRate ?? "",
         commercialTerms: o.orderFinalization?.commercialTerms || "",
         deliveryCommitments: o.orderFinalization?.deliveryCommitments || "",
@@ -705,6 +775,11 @@ const Lifecyclemodal = ({
     setEditOpen(true);
   };
   const isWtgOrder = String((workingOrder || order)?.movementType || "").trim().toLowerCase() === "wtg movement";
+  const craneMovementKey = String((workingOrder || order)?.movementType || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[\s_-]+/g, "");
+  const isCraneOrder = ["crane", "cranemovement"].includes(craneMovementKey);
   const isIntercartingEdit = String((workingOrder || order)?.movementType || "")
     .toLowerCase()
     .includes("intercart");
@@ -980,6 +1055,7 @@ const Lifecyclemodal = ({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             ...editForm,
+            weight: isCraneOrder ? editForm.weight : undefined,
             ...(isIntercartingEdit
               ? {
                   materialType: undefined,
@@ -1017,15 +1093,22 @@ const Lifecyclemodal = ({
   };
   // One footer action saves all modified sections, regardless of the selected stage.
   // Each section retains its existing API contract; only one user click is required.
-  const saveAllLifecycleEdits = async (confirmedName) => {
+  const saveAllLifecycleEdits = async () => {
     if (editSaving || poSaving || isCompletedTrip(workingOrder || order))
       return;
     const trip = workingOrder || order;
-    const updatedBy = String(confirmedName || "").trim();
-    if (!updatedBy) {
-      setEditError("Updated By name is required.");
-      return;
+    let kamUser = {};
+    try {
+      kamUser = JSON.parse(sessionStorage.getItem("kamUser") || "{}");
+    } catch {
+      kamUser = {};
     }
+    const updatedBy = String(
+      kamUser.name ||
+        kamUser.username ||
+        sessionStorage.getItem("kamUsername") ||
+        "Key Account",
+    ).trim();
     const correctionsChanged =
       JSON.stringify(editForm) !== editBaselineRef.current;
     const poChanged =
@@ -1058,6 +1141,7 @@ const Lifecyclemodal = ({
       if (correctionsChanged) {
         const corrections = {
           ...editForm,
+          weight: isCraneOrder ? editForm.weight : undefined,
           updatedBy,
           ...(isIntercartingEdit
             ? {
@@ -1141,8 +1225,6 @@ const Lifecyclemodal = ({
       setLocalOrder(latest);
       if (typeof onOrderUpdated === "function") onOrderUpdated(latest);
       setEditOpen(false);
-      setConfirmSaveOpen(false);
-      setUpdatedByName("");
       showToast("All changes saved successfully.");
     } catch (error) {
       if (correctionsSaved) {
@@ -1525,7 +1607,7 @@ const Lifecyclemodal = ({
      ORDER FINALIZATION INPUT DATA
   ========================================================= */
   const [finalizationForm, setFinalizationForm] = useState({
-    quotedRate: getWtgApprovalQuotedRate(order) ?? order?.orderFinalization?.quotedRate ?? order?.quotedRate ?? "",
+    quotedRate: getManagementQuotedRate(order) ?? order?.orderFinalization?.quotedRate ?? order?.quotedRate ?? "",
     finalRate: order?.orderFinalization?.finalRate ?? order?.finalRate ?? "",
     commercialTerms:
       order?.orderFinalization?.commercialTerms ?? order?.commercialTerms ?? "",
@@ -1585,7 +1667,7 @@ const Lifecyclemodal = ({
   useEffect(() => {
     setFinalizationForm({
       quotedRate:
-        getWtgApprovalQuotedRate(workingOrder) ??
+        getManagementQuotedRate(workingOrder) ??
         workingOrder?.orderFinalization?.quotedRate ??
         workingOrder?.quotedRate ??
         "",
@@ -2072,7 +2154,7 @@ const Lifecyclemodal = ({
     }
     if (requestApproval) {
       const quotedRate = String(
-        getWtgApprovalQuotedRate(workingOrder) ?? finalizationForm.quotedRate ?? ""
+        getManagementQuotedRate(workingOrder) ?? finalizationForm.quotedRate ?? ""
       ).trim();
       const finalRate = String(effectiveFinalRate ?? "").trim();
       const commercialTerms = String(
@@ -2106,7 +2188,7 @@ const Lifecyclemodal = ({
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            quotedRate: getWtgApprovalQuotedRate(workingOrder) ?? finalizationForm.quotedRate,
+            quotedRate: getManagementQuotedRate(workingOrder) ?? finalizationForm.quotedRate,
             finalRate: effectiveFinalRate,
             commercialTerms: finalizationForm.commercialTerms,
             deliveryCommitments: finalizationForm.deliveryCommitments,
@@ -2195,6 +2277,9 @@ const Lifecyclemodal = ({
   const requirements = editOpen && !editRequirementsLocked
     ? safeArray(editForm.vehicleRequirements)
     : safeArray(order?.vehicleRequirements);
+  const craneRequestWeight =
+    order?.weight ??
+    requirements.find((requirement) => Number(requirement?.weight) > 0)?.weight;
   // Keep ALL confirmations because Vendor Finalization needs to match
   // every quotation with its Approved / Rejected / Pending confirmation.
   const confirmations = safeArray(order?.vehicleConfirmations);
@@ -2829,25 +2914,40 @@ const Lifecyclemodal = ({
                       value={order.materialType}
                     />
                   )}
-                  <ReadOnlyField
-                    label="Total Vehicles"
-                    editing={false}
-                    fieldKey="totalVehicles"
-                    inputValue={editForm.totalVehicles}
-                    onEdit={(key, value) =>
-                      setEditForm((prev) => ({ ...prev, [key]: value }))
-                    }
-                    value={editOpen && !editRequirementsLocked
-                      ? editForm.totalVehicles
-                      : order.totalVehicles}
-                    suffix={
-                      order.totalVehicles !== "" &&
-                      order.totalVehicles !== null &&
-                      order.totalVehicles !== undefined
-                        ? " NOS"
-                        : ""
-                    }
-                  />
+                  {!isCraneOrder && (
+                    <ReadOnlyField
+                      label="Total Vehicles"
+                      editing={false}
+                      fieldKey="totalVehicles"
+                      inputValue={editForm.totalVehicles}
+                      onEdit={(key, value) =>
+                        setEditForm((prev) => ({ ...prev, [key]: value }))
+                      }
+                      value={editOpen && !editRequirementsLocked
+                        ? editForm.totalVehicles
+                        : order.totalVehicles}
+                      suffix={
+                        order.totalVehicles !== "" &&
+                        order.totalVehicles !== null &&
+                        order.totalVehicles !== undefined
+                          ? " NOS"
+                          : ""
+                      }
+                    />
+                  )}
+                  {isCraneOrder && (
+                    <ReadOnlyField
+                      label="Weight in Tons"
+                      editing={editOpen}
+                      fieldKey="weight"
+                      inputValue={editForm.weight}
+                      onEdit={(key, value) =>
+                        setEditForm((prev) => ({ ...prev, [key]: value }))
+                      }
+                      value={craneRequestWeight}
+                      suffix={craneRequestWeight != null ? " TON" : ""}
+                    />
+                  )}
                   {!isIntercartingEdit && (
                     <ReadOnlyField
                       label="Origin"
@@ -2911,16 +3011,16 @@ const Lifecyclemodal = ({
                     }
                     value={formatDate(order.placementDate)}
                   />
-                  {order.siteLocation && (
+                  {!isCraneOrder && order.siteLocation && (
                     <ReadOnlyField
                       label="Site Location"
                       value={order.siteLocation}
                     />
                   )}
-                  {order.period && (
+                  {!isCraneOrder && order.period && (
                     <ReadOnlyField label="Period" value={order.period} />
                   )}
-                  {order.dieselScope && (
+                  {!isCraneOrder && order.dieselScope && (
                     <ReadOnlyField
                       label="Diesel Scope"
                       value={order.dieselScope}
@@ -2974,6 +3074,58 @@ const Lifecyclemodal = ({
                     </div>
                   </div>
                 )}
+                {isCraneOrder && (
+                  <div className="kam-crane-document-card">
+                    <span>SUPPORTING DOCUMENT</span>
+                    <CraneDocumentActions order={order} />
+                  </div>
+                )}
+                {isCraneOrder && (
+                  <div className="kam-crane-enquiry-amounts">
+                    <div className="kam-crane-enquiry-amounts-head">
+                      <div>
+                        <span>APPROVAL MANAGEMENT &amp; KEY ACCOUNT</span>
+                        <strong>Quoted &amp; Final Amounts</strong>
+                      </div>
+                      <b className={order.enquiryApproval?.status === "Sent" ? "sent" : "pending"}>
+                        {order.enquiryApproval?.status === "Sent" ? "Received" : "Awaiting Amount"}
+                      </b>
+                    </div>
+                    {order.enquiryApproval?.status === "Sent" ? (
+                      <>
+                        <div className="kam-crane-enquiry-amount-list">
+                          {requirements.map((requirement, index) => (
+                            <div className="kam-crane-enquiry-amount-row" key={requirement.requirementId || index}>
+                              <span>Crane requirement {index + 1}</span>
+                              <div>
+                                <small>Quoted</small>
+                                <strong>{formatAmount(requirement.approvalAmount)}</strong>
+                                <small>Final</small>
+                                <strong>{(() => {
+                                  const finalAmount = requirement.finalAmount ??
+                                    safeArray(order?.orderFinalization?.vehicleFinalAmounts).find((item) => String(item?.requirementId) === String(requirement?.requirementId))?.amount ??
+                                    (requirements.length === 1 ? order?.orderFinalization?.finalRate : null);
+                                  return formatAmount(finalAmount);
+                                })()}</strong>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                        {requirements.length > 1 && (
+                          <div className="kam-crane-enquiry-amount-total">
+                            <span>Total amounts</span>
+                            <div>
+                              <span>Quoted <strong>{formatAmount(order.enquiryApproval.totalAmount)}</strong></span>
+                              <span>Final <strong>{formatAmount(order?.orderFinalization?.finalRate)}</strong></span>
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <p>Approval Management will enter and send the quote here.</p>
+                    )}
+                  </div>
+                )}
               </section>
             </div>
           )}
@@ -2981,7 +3133,7 @@ const Lifecyclemodal = ({
               VEHICLE REQUIREMENTS
               ENQUIRY READ ONLY
           ================================================= */}
-          {activeStepIndex === 0 && (
+          {activeStepIndex === 0 && !isCraneOrder && (
             <div className="kam-step-page kam-step-page-vehicle-requirements">
               <section className="kam-client-vehicle-section">
                 <SectionHeading
@@ -3299,7 +3451,7 @@ const Lifecyclemodal = ({
                       name="quotedRate"
                       value={
                         !wtgAmountsReady ? "" : (
-                          getWtgApprovalQuotedRate(workingOrder) ??
+                          getManagementQuotedRate(workingOrder) ??
                           (editOpen
                             ? editForm.orderFinalization?.quotedRate
                             : finalizationForm.quotedRate)
@@ -3315,12 +3467,20 @@ const Lifecyclemodal = ({
                               )
                           : handleFinalizationChange
                       }
-                      placeholder={!wtgAmountsReady ? "Pending Management vehicle amounts" : "Enter quoted rate"}
-                      readOnly={getWtgApprovalQuotedRate(workingOrder) !== null}
-                      title={getWtgApprovalQuotedRate(workingOrder) !== null
-                        ? "Automatically calculated from Approval Management vehicle amounts"
+                      placeholder={!wtgAmountsReady
+                        ? "Pending Management vehicle amounts"
+                        : isCraneOrder && getCraneApprovalQuotedRate(workingOrder) === null
+                          ? "Pending Approval Management quoted amount"
+                          : "Enter quoted rate"}
+                      readOnly={getManagementQuotedRate(workingOrder) !== null}
+                      title={getManagementQuotedRate(workingOrder) !== null
+                        ? "Automatically fetched from Approval Management enquiry amounts"
                         : ""}
-                      disabled={!wtgAmountsReady || (!editOpen && finalizationLocked)}
+                      disabled={
+                        !wtgAmountsReady ||
+                        (isCraneOrder && getCraneApprovalQuotedRate(workingOrder) === null) ||
+                        (!editOpen && finalizationLocked)
+                      }
                     />
                   </div>
                   {/* FINAL RATE */}
@@ -5212,10 +5372,7 @@ const Lifecyclemodal = ({
                   type="button"
                   className="kam-request-approval-btn"
                   disabled={editSaving || poSaving}
-                  onClick={() => {
-                    setEditError("");
-                    setConfirmSaveOpen(true);
-                  }}
+                  onClick={() => saveAllLifecycleEdits()}
                 >
                   {editSaving || poSaving ? "Saving..." : "Save Changes"}
                 </button>
@@ -5488,55 +5645,6 @@ const Lifecyclemodal = ({
           >
             ×
           </button>
-        </div>
-      )}
-      {confirmSaveOpen && (
-        <div className="kam-save-confirm-overlay">
-          <div
-            className="kam-save-confirm-dialog"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="kam-confirm-save-title"
-          >
-            <h3 id="kam-confirm-save-title">Confirm Changes</h3>
-            <p>
-              Enter your name to save changes and record them in Change History.
-            </p>
-            <label>
-              Updated By (Name) *
-              <input
-                autoFocus
-                maxLength={100}
-                value={updatedByName}
-                onChange={(e) => setUpdatedByName(e.target.value)}
-                placeholder="Enter your full name"
-              />
-            </label>
-            {editError && (
-              <p role="alert" className="kam-inline-edit-error">
-                {editError}
-              </p>
-            )}
-            <div className="kam-save-confirm-actions">
-              <button
-                type="button"
-                disabled={editSaving}
-                onClick={() => {
-                  setConfirmSaveOpen(false);
-                  setEditError("");
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                disabled={editSaving || !updatedByName.trim()}
-                onClick={() => saveAllLifecycleEdits(updatedByName)}
-              >
-                {editSaving ? "Saving..." : "Confirm & Save"}
-              </button>
-            </div>
-          </div>
         </div>
       )}
     </div>

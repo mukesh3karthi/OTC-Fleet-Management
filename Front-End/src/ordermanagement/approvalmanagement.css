@@ -10158,6 +10158,93 @@
   font-size: 9px;
   white-space: nowrap;
 }
+
+/* Keep Crane enquiry branding consistent with the WTG movement modal. */
+.ae-crane-modal .ae-modal-top {
+  min-height: 78px;
+  padding: 14px 24px;
+  color: #fff;
+  background: linear-gradient(110deg, #092f43, #075267 56%, #087d74);
+  border-bottom: 0;
+}
+.ae-crane-modal .ae-modal-brand small {
+  color: #6ee1d6;
+}
+.ae-crane-modal .ae-modal-brand strong {
+  color: #fff;
+  font-size: 20px;
+}
+.ae-crane-modal .ae-modal-brand span {
+  color: #c1e4e5;
+}
+.ae-crane-modal .ae-modal-top button {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.25);
+}
+.ae-crane-request-details {
+  display: grid;
+  gap: 12px;
+}
+.ae-crane-request-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 9px 12px;
+}
+.ae-crane-approval-amounts,
+.ae-crane-document-section {
+  padding: 12px 14px;
+  border: 1px solid #d5e6e9;
+  border-radius: 12px;
+  background: #f7fbfb;
+}
+.ae-crane-approval-amounts h5,
+.ae-crane-document-section h5 {
+  margin: 0 0 10px;
+  color: #0b817a;
+  font-size: 12px;
+}
+.ae-crane-document-section {
+  padding: 8px 11px;
+}
+.ae-crane-document-section h5 {
+  margin: 0 0 5px;
+}
+.ae-crane-document-section > .approval-order-details-remark {
+  padding: 0;
+}
+.ae-crane-document-section > .approval-order-details-remark > div {
+  justify-content: flex-start !important;
+  gap: 9px !important;
+  padding: 0 !important;
+}
+.ae-crane-document-section > .approval-order-details-remark > div > strong {
+  flex: 1 1 auto !important;
+  font-size: 11px;
+}
+.ae-crane-document-section .approval-order-details-done,
+.ae-crane-document-section .approval-order-details-approve {
+  min-height: 32px;
+  padding: 0 12px;
+}
+.ae-crane-document-section > .approval-order-details-remark > p {
+  margin: 0;
+}
+.ae-crane-approval-amount-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+@media (max-width: 800px) {
+  .ae-crane-request-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 520px) {
+  .ae-crane-request-grid,
+  .ae-crane-approval-amount-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
 .ae-wtg-table-wrap {
   width: 100%;
   border: 1px solid #d9e7ec;
@@ -11668,6 +11755,9 @@
   align-items: stretch;
   gap: 0;
   width: 100%;
+}
+#approval-management-root .approval-qv-header .approval-qv-data-row.is-crane {
+  grid-template-columns: 1.1fr 1.25fr 0.75fr 2fr 1.1fr;
 }
 #approval-management-root .approval-qv-header .approval-qv-metric {
   min-width: 0;

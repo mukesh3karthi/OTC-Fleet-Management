@@ -8158,6 +8158,46 @@
   border-color: #bcd8c6;
 }
 
+/* Match the compact white-and-blue input styling from the reference form. */
+.crane-compact-modal .crane-bulk {
+  border-color: #d6e4e9;
+  background: #fff;
+  color: #173e50;
+}
+.crane-compact-modal .crane-bulk-toolbar {
+  background: #fff;
+}
+.crane-compact-modal .crane-bulk-columns {
+  background: #e8f1f3;
+  color: #31586b;
+}
+.crane-compact-modal .crane-bulk-record,
+.crane-compact-modal .crane-bulk-record:nth-child(odd) {
+  background: #fff;
+}
+.crane-compact-modal .crane-bulk input {
+  border-color: #cbdfe8;
+  border-radius: 9px;
+  background: #fff;
+  color: #173e50;
+}
+.crane-compact-modal .crane-bulk .crane-bulk-specifications {
+  background: #f8fbfc;
+  border-top-color: #e1eaee;
+}
+.crane-compact-modal .crane-bulk .crane-bulk-measurements label > input {
+  border-color: #cbdfe8;
+  border-radius: 9px;
+}
+.crane-compact-modal .crane-bulk .crane-bulk-size-inputs {
+  border-color: #cbdfe8;
+  border-radius: 10px;
+}
+.crane-compact-modal .crane-bulk .crane-bulk-size-inputs .crane-bulk-size-unit {
+  border-left-color: #dbe7ec;
+  background: #f7fafc;
+}
+
 /* LSP, Cargo, Weight and Dimensions in one compact row. */
 .crane-bulk .crane-bulk-details-heading {
   margin-bottom: 8px;
@@ -8389,4 +8429,72 @@
   .tracking-live-operations-card .vah-current-body {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+}
+
+/* Crane allocation: keep all vehicle-entry fields on one horizontal row. */
+.crane-compact-modal.tracking-allocation-modal {
+  width: min(1760px, 94vw) !important;
+  height: auto;
+  max-height: calc(100vh - 36px) !important;
+}
+.crane-compact-modal .tracking-allocation-modal-body {
+  padding: 12px;
+}
+.crane-compact-modal .crane-bulk-scroll {
+  max-height: none;
+  overflow: visible;
+}
+.crane-compact-modal .crane-bulk-table {
+  width: 100%;
+  min-width: 0;
+}
+.crane-compact-modal .crane-bulk-columns,
+.crane-compact-modal .crane-bulk-line {
+  grid-template-columns: 24px minmax(0, 1.12fr) minmax(0, .82fr) minmax(0, .9fr) minmax(0, .9fr) minmax(0, .65fr) minmax(0, .7fr) minmax(0, 1.5fr) minmax(66px, .45fr) 18px;
+  gap: 5px;
+  padding: 8px 7px;
+}
+.crane-compact-modal .crane-bulk-columns > *,
+.crane-compact-modal .crane-bulk-line > * {
+  min-width: 0;
+}
+.crane-compact-modal .crane-bulk-columns > * {
+  overflow-wrap: anywhere;
+}
+.crane-compact-modal .crane-bulk-line > input {
+  padding-right: 6px;
+  padding-left: 6px;
+  font-size: 11px;
+}
+.crane-compact-modal .crane-bulk-size-inputs {
+  grid-template-columns: minmax(0, 1fr) 8px minmax(0, 1fr) 8px minmax(0, 1fr) 36px;
+  min-width: 0;
+}
+.crane-compact-modal .crane-bulk-size-inputs > input {
+  min-width: 0;
+  padding: 6px 2px;
+  font-size: 11px;
+}
+.crane-compact-modal .crane-bulk-inline-field {
+  display: block;
+  min-width: 0;
+  margin: 0;
+}
+.crane-compact-modal .crane-bulk-inline-field > span {
+  display: none;
+}
+.crane-compact-modal .crane-bulk-inline-size {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.crane-compact-modal .crane-bulk-inline-size legend {
+  display: none;
+}
+.crane-compact-modal .crane-bulk-inline-size .crane-bulk-size-inputs {
+  min-width: 0;
+}
+.crane-compact-modal .crane-bulk-row-actions {
+  min-width: 0;
 }

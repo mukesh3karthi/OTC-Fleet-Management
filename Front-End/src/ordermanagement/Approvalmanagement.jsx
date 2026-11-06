@@ -1895,6 +1895,9 @@ const Approvalmanagement = () => {
             });
             const sent = order.enquiryApproval?.status === "Sent";
             const isWtgEnquiry = String(order.movementType || "").trim().toLowerCase() === "wtg movement";
+            const craneWeight =
+              order.weight ??
+              requirements.find((requirement) => Number(requirement.weight) > 0)?.weight;
             return (
               <tr
                 key={order._id}
@@ -1926,7 +1929,7 @@ const Approvalmanagement = () => {
                     aria-expanded={expanded}>View Enquiry</button>
                 {expanded && (
                   <div className="ae-modal-overlay" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget && !enquirySavingId) setEnquiryExpandedId(""); }}>
-                  <div className={`ae-detail ${isWtgEnquiry ? "ae-wtg-modal" : ""}`} role="dialog" aria-modal="true" aria-label={`Enquiry details ${order.tripId || ""}`} onMouseDown={(event) => event.stopPropagation()}>
+                  <div className={`ae-detail ${isWtgEnquiry ? "ae-wtg-modal" : isCraneOrder(order) ? "ae-crane-modal" : ""}`} role="dialog" aria-modal="true" aria-label={`Enquiry details ${order.tripId || ""}`} onMouseDown={(event) => event.stopPropagation()}>
                     <div className="ae-modal-top">
                       <div className="ae-modal-brand">
                         <small>APPROVAL MANAGEMENT · ENQUIRY</small>
@@ -1954,14 +1957,75 @@ const Approvalmanagement = () => {
                         ["EMAIL", order.email],
                         ["ENQUIRY DATE", formatDate(order.enquiryDate)],
                         ["ASSIGNED KAM", order.assignedKam],
-                        ["TOTAL VEHICLES", `${order.totalVehicles ?? requirements.reduce((sum,r)=>sum+(Number(r.quantity)||0),0)} NOS`],
-                        ["MOVEMENT", order.movementType],
+                        ...(!isCraneOrder(order)
+                          ? [
+                              ["TOTAL VEHICLES", `${order.totalVehicles ?? requirements.reduce((sum,r)=>sum+(Number(r.quantity)||0),0)} NOS`],
+                              ["MOVEMENT", order.movementType],
+                            ]
+                          : []),
                       ].map(([label, value]) => (
                         <label key={label} className="ae-field">
                           <span>{label}</span><div className="ae-readonly">{value || "—"}</div>
                         </label>
                       ))}
                     </div>
+                    {isCraneOrder(order) ? (
+                      <section className="ae-crane-request-details">
+                        <header className="ae-section-title">
+                          <div>
+                            <h4>Crane Movement Details</h4>
+                            <p>Request information from the trip creation form. Vehicle allocation is managed by Tracking.</p>
+                          </div>
+                        </header>
+                        <div className="ae-crane-request-grid">
+                          {[
+                            ["MATERIAL / CRANE TYPE", order.materialType],
+                            ["WEIGHT", craneWeight != null ? `${craneWeight} TON` : "—"],
+                            ["ORIGIN", order.origin],
+                            ["DESTINATION", order.destination],
+                            ["DISTANCE", order.distance != null ? `${order.distance} KM` : "—"],
+                            ["PLACEMENT DATE", formatDate(order.placementDate)],
+                          ].map(([label, value]) => (
+                            <label key={label} className="ae-field">
+                              <span>{label}</span>
+                              <div className="ae-readonly">{value || "—"}</div>
+                            </label>
+                          ))}
+                        </div>
+                        {requirements.length > 0 && (
+                          <div className="ae-crane-approval-amounts">
+                            <h5>Approval Amount</h5>
+                            {requirements.map((requirement, index) => {
+                              const key = `${order._id}:${String(requirement.requirementId || index)}`;
+                              const finalAmount = requirement.finalAmount ?? safeArray(order?.orderFinalization?.vehicleFinalAmounts).find((item) => String(item?.requirementId) === String(requirement?.requirementId))?.amount ?? (isCraneOrder(order) ? order?.orderFinalization?.finalRate : undefined);
+                              return (
+                                <div className="ae-crane-approval-amount-row" key={key}>
+                                  <label className="ae-field ae-amount">
+                                    <span>QUOTED AMOUNT (₹)</span>
+                                    <input type="number" min="0.01" step="0.01" disabled={!editable}
+                                      value={enquiryAmountFor(order, requirement, index)}
+                                      placeholder="Enter amount"
+                                      onChange={(event) => setEnquiryAmounts((previous) => ({
+                                        ...previous, [key]: event.target.value,
+                                      }))}
+                                    />
+                                  </label>
+                                  <label className="ae-field">
+                                    <span>CUSTOMER FINAL AMOUNT (₹)</span>
+                                    <div className="ae-readonly">{finalAmount !== "" && finalAmount != null ? formatAmount(finalAmount) : "—"}</div>
+                                  </label>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                        <div className="ae-crane-document-section">
+                          <h5>Supporting Document</h5>
+                          <CraneDocuments order={order} />
+                        </div>
+                      </section>
+                    ) : (
+                      <>
                     <header className="ae-section-title ae-vehicle-heading">
                       <div><h4>Vehicle & Dimensions</h4>
                       <p>{isWtgEnquiry ? "Vehicle requirements • One row per vehicle; only Amount can be edited." : "Two compact rows per vehicle. Only Amount can be edited."}</p></div>
@@ -2051,6 +2115,8 @@ const Approvalmanagement = () => {
                         </div>
                       );
                     })}
+                      </>
+                    )}
                       </>
                     )}
                     <label className="ae-field ae-remarks">
@@ -2581,13 +2647,18 @@ const Approvalmanagement = () => {
                                       .map((item) => item.quotationId);
                                   const vehicleFinalAmount = requirement.finalAmount ??
                                     safeArray(order?.orderFinalization?.vehicleFinalAmounts)
-                                      .find((item) => String(item?.requirementId) === String(requirement?.requirementId))?.amount;
+                                      .find((item) => String(item?.requirementId) === String(requirement?.requirementId))?.amount ??
+                                    (isCraneOrder(order) ? order?.orderFinalization?.finalRate : undefined);
                                   const finalRateValue = vehicleFinalAmount === "" || vehicleFinalAmount == null
                                     ? null : Number(String(vehicleFinalAmount).replace(/[^0-9.-]/g, ""));
                                   const vehicleRoute = [requirement.origin || order.origin, requirement.destination || order.destination]
                                     .filter(Boolean).join(" → ") || requirement.route || getOrderRouteOrSite(order);
                                   const placementValue = requirement.placementDate || order.placementDate;
                                   const materialValue = requirement.materialType || requirement.material || order.materialType || order.material || "—";
+                                  const vehicleWeight =
+                                    isCraneOrder(order) && Number(order.weight) > 0
+                                      ? order.weight
+                                      : requirement.weight;
                                   return (
                                     <section
                                       className={`approval-qv-card ${
@@ -2602,7 +2673,7 @@ const Approvalmanagement = () => {
                                           {String(index + 1).padStart(2, "0")}
                                         </div>
                                         <div className="approval-qv-content">
-                                          <div className="approval-qv-data-row">
+                                          <div className={`approval-qv-data-row${isCraneOrder(order) ? " is-crane" : ""}`}>
                                             <div className="approval-qv-metric">
                                               <span>VEHICLE TYPE</span>
                                               <strong>{requirement.vehicleType || "Vehicle"}</strong>
@@ -2613,12 +2684,14 @@ const Approvalmanagement = () => {
                                             </div>
                                             <div className="approval-qv-metric">
                                               <span>WEIGHT</span>
-                                              <strong>{requirement.weight ?? "—"}{requirement.weight !== null && requirement.weight !== undefined && requirement.weight !== "" ? " Ton" : ""}</strong>
+                                              <strong>{vehicleWeight ?? "—"}{vehicleWeight !== null && vehicleWeight !== undefined && vehicleWeight !== "" ? " Ton" : ""}</strong>
                                             </div>
-                                            <div className="approval-qv-metric">
-                                              <span>DIMENSIONS</span>
-                                              <strong>{formatDimension(requirement.dimensions)}</strong>
-                                            </div>
+                                            {!isCraneOrder(order) && (
+                                              <div className="approval-qv-metric">
+                                                <span>DIMENSIONS</span>
+                                                <strong>{formatDimension(requirement.dimensions)}</strong>
+                                              </div>
+                                            )}
                                             <div className="approval-qv-metric approval-qv-metric-route" title={vehicleRoute}>
                                               <span>ROUTE</span>
                                               <strong>{vehicleRoute}</strong>

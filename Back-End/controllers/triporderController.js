@@ -195,6 +195,10 @@ const buildTripData = (body = {}) => ({
     ? body.routeLocations.map(cleanString).filter(Boolean)
     : [],
   materialType: cleanString(body.materialType),
+  weight:
+    body.weight == null || body.weight === ""
+      ? null
+      : Math.max(0, toNumber(body.weight, 0)),
   remark: cleanString(body.remark),
   siteLocation: cleanString(body.siteLocation),
   period: cleanString(body.period),
@@ -337,7 +341,7 @@ const createCraneTrip = async (req, res) => {
       configuration: "As per uploaded Crane vehicle requirement document",
       classification: "Crane Movement",
       quantity: Math.max(1, data.totalVehicles || 1),
-      weight: 0,
+      weight: Math.max(0, toNumber(data.weight, 0)),
       dimensions: {
         length: null,
         height: null,
@@ -539,6 +543,7 @@ const updateTrip = async (req, res) => {
     trip.totalVehicles = data.totalVehicles;
     trip.routeLocations = data.routeLocations;
     trip.materialType = data.materialType;
+    if (data.movementType === "Crane") trip.weight = data.weight;
     trip.remark = data.remark;
     trip.siteLocation = data.siteLocation;
     trip.period = data.period;
@@ -1486,7 +1491,11 @@ const allocateVehicle = async (req, res) => {
         );
       allocationDimensions[field] = value;
     }
-    const manualAllocatedBy = cleanString(req.body.allocatedBy);
+    const manualAllocatedBy =
+      cleanString(req.body.allocatedBy) ||
+      (isCraneAllocationOrder(trip, requirement)
+        ? cleanString(req.user?.name || req.user?.username)
+        : "");
     if (!manualAllocatedBy) {
       return sendError(res, 400, "Allocated By person name is required.");
     }
@@ -3321,7 +3330,9 @@ const recordLifecycleChanges = (trip, previous, section, fields, updatedBy) => {
   return records.length;
 };
 const requireLifecycleName = (req, res) => {
-  const updatedBy = cleanString(req.body?.updatedBy);
+  const updatedBy = cleanString(
+    req.user?.name || req.user?.username || req.user?.email || req.body?.updatedBy,
+  );
   if (!updatedBy || updatedBy.length > 100) {
     sendError(
       res,
@@ -3385,6 +3396,14 @@ const correctLifecycleDetails = async (req, res) => {
       if (!Number.isFinite(distance) || distance < 0)
         return sendError(res, 400, "Invalid distance.");
       trip.distance = distance;
+    }
+    if (body.weight !== undefined) {
+      const weight = body.weight === "" || body.weight === null
+        ? null
+        : Number(body.weight);
+      if (weight !== null && (!Number.isFinite(weight) || weight < 0))
+        return sendError(res, 400, "Invalid weight.");
+      trip.weight = weight;
     }
     if (body.orderFinalization && typeof body.orderFinalization === "object") {
       const existing =
@@ -3492,6 +3511,7 @@ const correctLifecycleDetails = async (req, res) => {
       "enquiryDate",
       "placementDate",
       "distance",
+      "weight",
       "totalVehicles",
     ];
     for (const field of directFields) {

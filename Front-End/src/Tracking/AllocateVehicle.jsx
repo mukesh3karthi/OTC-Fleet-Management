@@ -1443,7 +1443,7 @@ const AllocateVehicle = () => {
                 <CardHeader
                   icon={<Building2 size={18} />}
                   iconClass="indigo"
-                  title="Vehicle Allocation Plan"
+                  title={isCraneOrder(selectedOrder) ? "Crane Allocation Plan" : "Vehicle Allocation Plan"}
                   subtitle="Review each approved requirement and allocate actual vehicles."
                 />
 
@@ -1455,7 +1455,7 @@ const AllocateVehicle = () => {
                           <th>#</th>
                           <th>
                             {isCraneOrder(selectedOrder)
-                              ? "Material Type"
+                              ? "Crane / Material Type"
                               : "Vehicle Type"}
                           </th>
                           {!isCraneOrder(selectedOrder) && (
@@ -1465,9 +1465,14 @@ const AllocateVehicle = () => {
                           )}
                           <th>Origin</th>
                           <th>Destination</th>
-                          <th>Material Type</th>
+                          {!isCraneOrder(selectedOrder) && <th>Material Type</th>}
                           <th>Placement Date</th>
-                          {!isCraneOrder(selectedOrder) && (
+                          {isCraneOrder(selectedOrder) ? (
+                            <>
+                              <th>Weight</th>
+                              <th>Vehicle Count</th>
+                            </>
+                          ) : (
                             <>
                               <th>Weight</th>
                               <th>L × H × W</th>
@@ -1492,6 +1497,16 @@ const AllocateVehicle = () => {
                               requirementId,
                               quotation?.quotationId,
                             );
+                            const allocatedVehicleNumbers = allocations
+                              .filter(
+                                (allocation) =>
+                                  String(allocation?.vehicleStatus || "").toLowerCase() !== "replaced" &&
+                                  String(allocation?.requirementId || "") === String(requirementId || "") &&
+                                  (!quotation?.quotationId ||
+                                    String(allocation?.quotationId || "") === String(quotation.quotationId)),
+                              )
+                              .map((allocation) => safeText(allocation?.vehicleNumber).trim())
+                              .filter(Boolean);
 
                             const displayAllocatedCount = isCraneOrder(
                               selectedOrder,
@@ -1509,6 +1524,11 @@ const AllocateVehicle = () => {
                               quotation.quotationId
                                 ? allocationForms[requirementId]
                                 : null;
+                            const createdValue = (field) =>
+                              getCreatedVehicleValue(requirement, field) ||
+                              (isCraneOrder(selectedOrder)
+                                ? selectedOrder[field]
+                                : "");
 
                             return (
                               <React.Fragment key={confirmation.confirmationId}>
@@ -1534,11 +1554,23 @@ const AllocateVehicle = () => {
                                       </td>
                                     </>
                                   )}
-                                  <td>{getCreatedVehicleValue(requirement, "origin") || "—"}</td>
-                                  <td>{getCreatedVehicleValue(requirement, "destination") || "—"}</td>
-                                  <td>{getCreatedVehicleValue(requirement, "materialType") || "—"}</td>
-                                  <td>{formatDateForInput(getCreatedVehicleValue(requirement, "placementDate")) || "—"}</td>
+                                  <td>{createdValue("origin") || "—"}</td>
+                                  <td>{createdValue("destination") || "—"}</td>
                                   {!isCraneOrder(selectedOrder) && (
+                                    <td>{createdValue("materialType") || "—"}</td>
+                                  )}
+                                  <td>{formatDateForInput(createdValue("placementDate")) || "—"}</td>
+                                  {isCraneOrder(selectedOrder) ? (
+                                    <>
+                                      <td>
+                                        {(Number(selectedOrder.weight) > 0
+                                          ? selectedOrder.weight
+                                          : requirement.weight) ?? "—"}
+                                        {(Number(selectedOrder.weight) > 0 || requirement.weight != null) && " TON"}
+                                      </td>
+                                      <td>{allocatedVehicleNumbers.length}</td>
+                                    </>
+                                  ) : (
                                     <>
                                       <td>
                                         {requirement.weight !== null &&
@@ -4314,13 +4346,12 @@ function CraneBulkAllocation({
     const validated = rows.map((row) => {
       if (row.state === "saved") return row;
       const key = normalizeCraneNumber(row.vehicleNumber);
-      let error = !key
-        ? "Enter a vehicle number or remove this row."
-        : counts.get(key) > 1
-          ? "Duplicate vehicle number in this list."
-          : existing.has(key)
-            ? "This vehicle is already allocated."
-            : "";
+      let error = "";
+      if (!key) error = "Enter a vehicle number or remove this row.";
+      else if (!safeText(row.vehicleType).trim()) error = "Enter a vehicle type.";
+      else if (!safeText(row.lsp).trim()) error = "Enter an LSP.";
+      else if (counts.get(key) > 1) error = "Duplicate vehicle number in this list.";
+      else if (existing.has(key)) error = "This vehicle is already allocated.";
       if (!error && craneMeasurementFields.some((field) =>
         row[field] !== "" && (!Number.isFinite(Number(row[field])) || Number(row[field]) < 0)
       )) error = "Capacity and dimensions must be valid non-negative numbers.";
@@ -4399,9 +4430,12 @@ function CraneBulkAllocation({
           <div className="crane-bulk-columns" aria-hidden="true">
             <span>#</span>
             <span>Vehicle number *</span>
-            <span>Vehicle type</span>
+            <span>Vehicle type *</span>
             <span>Driver name</span>
             <span>Driver contact</span>
+          <span>LSP *</span>
+          <span>Capacity</span>
+          <span>Dimensions (L × H × W)</span>
             <span>Details / status</span>
             <span />
           </div>
@@ -4413,9 +4447,26 @@ function CraneBulkAllocation({
               <div className="crane-bulk-line">
                 <span className="crane-bulk-index">{index + 1}</span>
                 {input(row, "vehicleNumber", "Vehicle number", true)}
-                {input(row, "vehicleType", "e.g. Trailer")}
+                {input(row, "vehicleType", "e.g. Trailer", true)}
                 {input(row, "driverName", "Driver name")}
                 {input(row, "driverContactNumber", "Driver contact")}
+                <label className="crane-bulk-inline-field">
+                  <span>LSP *</span>{input(row, "lsp", "LSP", true)}
+                </label>
+                <label className="crane-bulk-inline-field">
+                  <span>Capacity (tons)</span>{input(row, "capacity", "Capacity")}
+                </label>
+                <fieldset className="crane-bulk-size crane-bulk-inline-size">
+                  <legend>Dimensions (L × H × W)</legend>
+                  <div className="crane-bulk-size-inputs">
+                    {input(row, "length", "L")}
+                    <span aria-hidden="true">×</span>
+                    {input(row, "height", "H")}
+                    <span aria-hidden="true">×</span>
+                    {input(row, "width", "W")}
+                    <span className="crane-bulk-size-unit" aria-hidden="true">FT</span>
+                  </div>
+                </fieldset>
                 <div className="crane-bulk-row-actions">
                   <button
                     type="button"
@@ -4456,23 +4507,6 @@ function CraneBulkAllocation({
                 >
                   ×
                 </button>
-              </div>
-              <div className="crane-bulk-specifications">
-                <div className="crane-bulk-measurements">
-                  <label><span>LSP</span>{input(row, "lsp", "LSP")}</label>
-                  <label><span>Capacity (tons)</span>{input(row, "capacity", "Capacity")}</label>
-                  <fieldset className="crane-bulk-size">
-                    <legend>DIMENSIONS (L × H × W)</legend>
-                    <div className="crane-bulk-size-inputs">
-                      {input(row, "length", "L")}
-                      <span aria-hidden="true">×</span>
-                      {input(row, "height", "H")}
-                      <span aria-hidden="true">×</span>
-                      {input(row, "width", "W")}
-                      <span className="crane-bulk-size-unit" aria-hidden="true">FT</span>
-                    </div>
-                  </fieldset>
-                </div>
               </div>
               {expanded[row.id] && (
                 <div

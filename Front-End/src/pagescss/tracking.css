@@ -344,19 +344,23 @@
 }
 
 .td-table th:first-child {
-  width: 21%;
+  width: 18%;
 }
 
 .td-table th:nth-child(2) {
-  width: 23%;
+  width: 22%;
 }
 
 .td-table th:nth-child(3) {
-  width: 24%;
+  width: 16%;
+}
+
+.td-table th:nth-child(4) {
+  width: 16%;
 }
 
 .td-table th:last-child {
-  width: 32%;
+  width: 28%;
 }
 
 .td-table td {
@@ -386,6 +390,25 @@
 
 .td-customer {
   font-weight: 500;
+}
+
+.td-movement-badge {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  padding: 4px 8px;
+  border: 1px solid #cce4e4;
+  border-radius: 6px;
+  color: #087e88;
+  background: #eff8f7;
+  font-size: 10px;
+  font-weight: 650;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.td-movement-empty {
+  color: #82939d;
 }
 
 .td-trip-link {
@@ -1118,20 +1141,12 @@
     font-size: 10px;
   }
 
-  .td-table th:first-child {
-    width: 22%;
+  .td-table {
+    min-width: 570px;
   }
 
-  .td-table th:nth-child(2) {
-    width: 23%;
-  }
-
-  .td-table th:nth-child(3) {
-    width: 24%;
-  }
-
-  .td-table th:last-child {
-    width: 31%;
+  .td-trip-list {
+    overflow-x: auto;
   }
 
   .td-list-heading {

@@ -2052,6 +2052,9 @@ const KeyAccount = () => {
           .filter(Boolean)
       : [],
     materialType: tripForm.materialType.trim(),
+    ...(tripForm.movementType === "Crane" && {
+      weight: Number(tripForm.weight || 0),
+    }),
     remark: tripForm.remark.trim(),
     siteLocation: tripForm.siteLocation.trim(),
     period: tripForm.period.trim(),

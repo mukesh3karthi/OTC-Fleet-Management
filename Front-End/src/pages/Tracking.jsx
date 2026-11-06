@@ -997,6 +997,7 @@ const Tracking = () => {
                 <tr>
                   <th scope="col">Trip</th>
                   <th scope="col">Customer</th>
+                  <th scope="col">Movement</th>
                   <th scope="col">Status</th>
                   <th scope="col">Vehicle Progress</th>
                 </tr>
@@ -1006,6 +1007,13 @@ const Tracking = () => {
                   filteredTrips.map((trip, index) => {
                     const id = keyOf(trip),
                       status = tripStatus(trip, today),
+                      movement =
+                        trip.movementType ||
+                        trip.movement ||
+                        trip.movementName ||
+                        trip.movementCategory ||
+                        trip.orderFinalization?.movementType ||
+                        trip.enquiryDetails?.movementType,
                       allocated = list(trip.allocatedVehicles).filter(
                         (vehicle) =>
                           text(vehicle?.vehicleStatus).trim().toLowerCase() !== "replaced"
@@ -1057,7 +1065,13 @@ const Tracking = () => {
                             {text(trip.customer) || "—"}
                           </strong>  
                         </td>
-                        
+                        <td>
+                          {movement ? (
+                            <span className="td-movement-badge">{text(movement)}</span>
+                          ) : (
+                            <span className="td-movement-empty">—</span>
+                          )}
+                        </td>
                         <td>
                           <StatusBadge status={status} />
                         </td>

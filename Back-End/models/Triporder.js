@@ -1799,6 +1799,15 @@ const tripOrderSchema = new Schema(
       default: "",
     },
 
+    // Requested Crane load weight, captured before Tracking allocates a vehicle.
+    weight: {
+      type: Number,
+
+      min: 0,
+
+      default: null,
+    },
+
     remark: {
       type: String,
 

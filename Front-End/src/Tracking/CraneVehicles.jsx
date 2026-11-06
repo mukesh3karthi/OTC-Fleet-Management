@@ -478,10 +478,12 @@ const cjformatTime = (value) =>
 const cjoperation = (raw = {}) => ({
   status: raw.status || "Pending",
   pointInAt: cjlocalTime(raw.pointInAt),
-  completedAt: cjlocalTime(raw.completedAt),
+  completedAt: cjlocalTime(raw.completedAt).slice(0, 10),
   pointOutAt: cjlocalTime(raw.pointOutAt),
   remarks: raw.remarks || "",
 });
+const cjoperationStatus = (operation) =>
+  operation.pointOutAt ? "Completed" : operation.pointInAt ? "In Progress" : "Pending";
 const cjformFor = (record, trip, vehicle) => ({
   journeyId: record?.journeyId || cjnewId(),
   revision: record?.revision,
@@ -539,11 +541,6 @@ const cjstatuses = [
   "Stopped",
   "Breakdown",
   "Reached",
-  "Planned",
-  "Loading",
-  "In Transit",
-  "Unloading",
-  "Completed",
 ];
 
 const CraneJourneyPopup = () => {
@@ -743,10 +740,13 @@ const CraneJourneyPopup = () => {
     try {
       const convertOperation = (raw) => ({
         ...raw,
+        status: cjoperationStatus(raw),
         ...Object.fromEntries(
           ["pointInAt", "completedAt", "pointOutAt"].map((key) => [
             key,
-            raw[key] ? new Date(raw[key]).toISOString() : null,
+            raw[key]
+              ? new Date(key === "completedAt" ? `${raw[key]}T00:00:00` : raw[key]).toISOString()
+              : null,
           ]),
         ),
       });
@@ -1077,30 +1077,14 @@ const CraneJourneyPopup = () => {
                               Details
                             </h3>
                           </div>
-                          <span>{form[section].status}</span>
                         </div>
                         <div className="trip-movement-operation-fields">
-                          <label>
-                            <span>Status</span>
-                            <select
-                              value={form[section].status}
-                              onChange={(e) =>
-                                setOperation(section, "status", e.target.value)
-                              }
-                            >
-                              {["Pending", "In Progress", "Completed"].map(
-                                (status) => (
-                                  <option key={status}>{status}</option>
-                                ),
-                              )}
-                            </select>
-                          </label>
                           {[
                             ["Point In", "pointInAt"],
                             [
                               section === "loading"
-                                ? "Loading Time"
-                                : "Unloading Time",
+                                ? "Loaded Date"
+                                : "Unloaded Date",
                               "completedAt",
                             ],
                             ["Point Out", "pointOutAt"],
@@ -1108,7 +1092,7 @@ const CraneJourneyPopup = () => {
                             <label key={name}>
                               <span>{label}</span>
                               <input
-                                type="datetime-local"
+                                type="date"
                                 value={form[section][name]}
                                 onChange={(e) =>
                                   setOperation(section, name, e.target.value)
@@ -1116,6 +1100,13 @@ const CraneJourneyPopup = () => {
                               />
                             </label>
                           ))}
+                          <label className="trip-movement-operation-status">
+                            <span>Status</span>
+                            <input
+                              value={cjoperationStatus(form[section])}
+                              readOnly
+                            />
+                          </label>
                           <label>
                             <span>Halting Days</span>
                             <input
@@ -1331,8 +1322,19 @@ const CraneJourneyPopup = () => {
                     </div>
                   </div>
                 </section>
-                <section className="trip-movement-section cj-total-history" aria-label="Full vehicle movement history">
-                  <div className="trip-movement-section-head"><div><small>ALL TRIPS · SAVED UPDATES</small><h3>Total Movement History</h3></div><span>{totalHistory.length} updates · {journeys.length} trips</span></div>
+                <section
+                  className="trip-movement-section cj-total-history"
+                  aria-label="Full vehicle movement history"
+                >
+                  <div className="trip-movement-section-head">
+                    <div>
+                      <small>ALL TRIPS · SAVED UPDATES</small>
+                      <h3>Total Movement History</h3>
+                    </div>
+                    <span>
+                      {totalHistory.length} updates · {journeys.length} trips
+                    </span>
+                  </div>
                   <div style={{ overflowX: "auto", maxHeight: "380px" }}><table style={{ width: "100%", minWidth: "1100px", borderCollapse: "collapse", fontSize: "11px", textAlign: "left" }}><thead><tr>{["Trip", "Date", "From", "To", "Location", "Start KM", "Today KM", "Running KM", "Status", "Updated by", "Saved at", "Remarks"].map(label => <th key={label} scope="col" style={{ padding: "11px 12px", background: "#edf6f8", color: "#42677b", position: "sticky", top: 0 }}>{label}</th>)}</tr></thead><tbody>
                     {totalHistory.map(entry => <tr key={entry.rowKey}>{[
                       `Trip ${entry.tripNumber}`, entry.date, entry.origin, entry.destination, entry.currentLocation, entry.startKm, entry.endKm,
