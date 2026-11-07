@@ -2472,6 +2472,23 @@
 .traffic-crane-quotation-card {
   margin-top: 0;
 }
+.traffic-crane-option-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 12px;
+  border-bottom: 1px solid #e5edef;
+  background: #f8fbfc;
+}
+.traffic-crane-option-toolbar > span {
+  color: #6e8793;
+  font-size: 10px;
+  font-weight: 650;
+}
+.traffic-crane-option-toolbar .traffic-add-btn {
+  flex: 0 0 auto;
+}
 
 @media (max-width: 640px) {
   .traffic-crane-compact-main {

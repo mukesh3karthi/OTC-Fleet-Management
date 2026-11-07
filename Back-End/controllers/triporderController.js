@@ -621,7 +621,12 @@ const saveOrderFinalization = async (req, res) => {
     }
     const quotedRateRaw = req.body.quotedRate;
     const finalRateRaw = req.body.finalRate;
-    const isWtg = cleanString(trip.movementType).toLowerCase() === "wtg movement";
+    const movementKey = cleanString(trip.movementType)
+      .toLowerCase()
+      .replace(/[\s_-]+/g, "");
+    const isWtg = movementKey === "wtgmovement";
+    const isIntercarting = movementKey === "intercarting";
+    const usesVehicleAmounts = isWtg || isIntercarting;
     const incomingVehicleAmounts = req.body.vehicleFinalAmounts;
     let quotedRate =
       quotedRateRaw === "" ||
@@ -646,7 +651,7 @@ const saveOrderFinalization = async (req, res) => {
     if (finalRate !== null && (!Number.isFinite(finalRate) || finalRate < 0)) {
       return sendError(res, 400, "Final Rate must be a valid positive number.");
     }
-    if (isWtg) {
+    if (usesVehicleAmounts) {
       if (cleanString(trip.enquiryApproval?.status).toLowerCase() !== "sent") {
         return sendError(res, 409, "Management must send all vehicle quoted amounts first.");
       }

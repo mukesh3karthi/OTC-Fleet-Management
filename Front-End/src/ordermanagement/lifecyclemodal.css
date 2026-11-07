@@ -6506,6 +6506,416 @@
   outline-offset: 1px;
 }
 
+/* Invoice & Payment: clearer hierarchy and more comfortable touch targets. */
+.kam-step-page-invoice-payment .kam-invoice-common-section {
+  border-color: #c9dfe6;
+  border-radius: 14px;
+  box-shadow: 0 8px 24px rgba(18, 67, 84, 0.06);
+}
+.kam-step-page-invoice-payment .kam-invoice-common-heading {
+  padding: 14px 18px;
+  background: linear-gradient(110deg, #edf8f9, #f6fbfc);
+}
+.kam-step-page-invoice-payment .kam-invoice-common-heading h3 {
+  font-size: 16px;
+}
+.kam-step-page-invoice-payment .kam-invoice-groups {
+  gap: 0;
+  padding: 4px 18px 12px;
+}
+.kam-step-page-invoice-payment .kam-invoice-group {
+  gap: 12px;
+  padding: 16px 0;
+}
+.kam-step-page-invoice-payment .kam-invoice-group + .kam-invoice-group {
+  border-top: 1px solid #e1edf0;
+}
+.kam-step-page-invoice-payment .kam-invoice-subheading {
+  font-size: 14px;
+  color: #105c66;
+}
+.kam-step-page-invoice-payment .kam-invoice-amount-breakdown {
+  gap: 12px;
+  margin: 2px 0 4px;
+}
+.kam-step-page-invoice-payment .kam-invoice-amount-breakdown > div {
+  min-height: 64px;
+  justify-content: center;
+  padding: 12px 15px;
+  border-color: #d8e7ec;
+  border-radius: 11px;
+  background: #f7fafb;
+}
+.kam-step-page-invoice-payment .kam-invoice-amount-breakdown span,
+.kam-step-page-invoice-payment .kam-payment-summary span {
+  font-size: 11px;
+}
+.kam-step-page-invoice-payment .kam-invoice-amount-breakdown strong,
+.kam-step-page-invoice-payment .kam-payment-summary strong {
+  font-size: 19px;
+}
+.kam-step-page-invoice-payment .kam-invoice-amount-breakdown .kam-invoice-grand-total {
+  background: #eaf7f6;
+  border-color: #b9dfdb;
+}
+.kam-step-page-invoice-payment .kam-invoice-four-fields {
+  column-gap: 14px;
+  row-gap: 10px;
+}
+.kam-step-page-invoice-payment .kam-invoice-four-fields .kam-client-trip-field > span,
+.kam-step-page-invoice-payment .kam-payment-entry .kam-client-trip-field > span {
+  font-size: 11px;
+  color: #486878;
+  text-transform: none;
+}
+.kam-step-page-invoice-payment .kam-invoice-fields .kam-original-edit-input {
+  height: 40px;
+  min-height: 40px;
+  padding: 9px 11px;
+  font-size: 13px;
+  border-radius: 9px;
+}
+.kam-step-page-invoice-payment .kam-invoice-upload-row {
+  padding: 13px 15px;
+  border-style: solid;
+  background: #f7fbfc;
+}
+.kam-step-page-invoice-payment .kam-payment-summary {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  max-width: 780px;
+  gap: 12px;
+  margin: 0;
+}
+.kam-step-page-invoice-payment .kam-payment-summary > div {
+  min-height: 68px;
+  justify-content: center;
+  padding: 12px 15px;
+  border-radius: 11px;
+}
+.kam-step-page-invoice-payment .kam-payment-toolbar {
+  margin: 4px 0;
+}
+.kam-step-page-invoice-payment .kam-payment-pill {
+  padding: 6px 11px;
+  font-size: 11px;
+}
+.kam-step-page-invoice-payment .kam-payment-entry {
+  gap: 12px;
+  padding: 14px;
+  border-radius: 11px;
+  background: #f7fbfc;
+}
+.kam-step-page-invoice-payment .kam-payment-entry .kam-original-edit-input {
+  height: 40px;
+  min-height: 40px;
+  font-size: 13px;
+}
+.kam-step-page-invoice-payment .kam-payment-entry textarea {
+  height: 40px;
+}
+.kam-step-page-invoice-payment .kam-payment-entry button,
+.kam-step-page-invoice-payment .kam-payment-toolbar .kam-request-approval-btn {
+  height: 38px;
+  min-height: 38px;
+  font-size: 12px;
+}
+.kam-step-page-invoice-payment .kam-payment-history {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e1edf0;
+}
+.kam-step-page-invoice-payment .kam-payment-history h4 {
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+.kam-step-page-invoice-payment .kam-payment-history .kam-history-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid #e0eaee;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.kam-step-page-invoice-payment .kam-payment-history .kam-history-table th {
+  padding: 10px 12px;
+  background: #f1f7f8;
+  color: #446477;
+  font-size: 11px;
+}
+.kam-step-page-invoice-payment .kam-payment-history .kam-history-table td {
+  padding: 10px 12px;
+  border-top: 1px solid #edf2f4;
+  font-size: 12px;
+}
+@media (max-width: 650px) {
+  .kam-step-page-invoice-payment .kam-invoice-groups {
+    padding-right: 12px;
+    padding-left: 12px;
+  }
+  .kam-step-page-invoice-payment .kam-payment-summary {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Invoice and payment workspace: bold actions and clearly separated stages. */
+.kam-step-page-invoice-payment .kam-invoice-common-section {
+  border: 1px solid #bfd8df;
+  border-radius: 16px;
+  background: #f4f8f9;
+  box-shadow: 0 12px 30px rgba(17, 54, 68, 0.1);
+}
+.kam-step-page-invoice-payment .kam-invoice-common-heading {
+  min-height: 58px;
+  padding: 14px 20px;
+  color: #fff;
+  background: linear-gradient(112deg, #123f54 0%, #087d78 100%);
+  border-bottom: 0;
+}
+.kam-step-page-invoice-payment .kam-invoice-common-heading h3,
+.kam-step-page-invoice-payment .kam-invoice-common-heading > span,
+.kam-step-page-invoice-payment .kam-invoice-common-heading strong {
+  color: #fff;
+}
+.kam-step-page-invoice-payment .kam-invoice-common-heading h3 {
+  font-size: 17px;
+  letter-spacing: 0.01em;
+}
+.kam-step-page-invoice-payment .kam-invoice-groups {
+  gap: 14px;
+  padding: 16px;
+  background: #f4f8f9;
+}
+.kam-step-page-invoice-payment .kam-invoice-group {
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid #d5e4e8;
+  border-radius: 13px;
+  background: #fff;
+  box-shadow: 0 3px 12px rgba(18, 67, 84, 0.045);
+}
+.kam-step-page-invoice-payment .kam-invoice-group + .kam-invoice-group {
+  border-top: 1px solid #d5e4e8;
+}
+.kam-step-page-invoice-payment .kam-invoice-subheading {
+  font-size: 15px;
+  color: #124c5d;
+}
+.kam-step-page-invoice-payment .kam-invoice-amount-breakdown > div {
+  min-height: 72px;
+  border-radius: 12px;
+  background: #f3f7f9;
+}
+.kam-step-page-invoice-payment .kam-invoice-amount-breakdown .kam-invoice-grand-total {
+  background: #e7f6f2;
+  border-color: #9ed4c7;
+}
+.kam-step-page-invoice-payment .kam-invoice-upload-row {
+  border: 1px dashed #9fc6ce;
+  background: #f4fafb;
+}
+.kam-step-page-invoice-payment .kam-payment-summary {
+  max-width: none;
+}
+.kam-step-page-invoice-payment .kam-payment-summary > div {
+  min-height: 74px;
+  border-radius: 12px;
+  background: #f3f7f9;
+}
+.kam-step-page-invoice-payment .kam-payment-toolbar {
+  min-height: 42px;
+  margin: 2px 0 0;
+}
+.kam-step-page-invoice-payment .kam-payment-toolbar .kam-request-approval-btn,
+.kam-step-page-invoice-payment .kam-payment-entry .kam-request-approval-btn {
+  width: auto;
+  min-width: 148px;
+  max-width: none;
+  height: 42px;
+  min-height: 42px;
+  padding: 0 20px;
+  border: 1px solid #087c74;
+  border-radius: 9px;
+  background: linear-gradient(110deg, #087f78, #0b9484);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 750;
+  box-shadow: 0 5px 13px rgba(8, 127, 120, 0.22);
+}
+.kam-step-page-invoice-payment .kam-payment-toolbar .kam-request-approval-btn:hover:not(:disabled),
+.kam-step-page-invoice-payment .kam-payment-entry .kam-request-approval-btn:hover:not(:disabled) {
+  background: linear-gradient(110deg, #066b67, #087f78);
+  box-shadow: 0 7px 17px rgba(8, 127, 120, 0.28);
+}
+.kam-step-page-invoice-payment .kam-payment-toolbar .kam-request-approval-btn:disabled,
+.kam-step-page-invoice-payment .kam-payment-entry .kam-request-approval-btn:disabled {
+  border-color: #cbd9dc;
+  background: #e8eef0;
+  color: #73858b;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+.kam-step-page-invoice-payment .kam-payment-entry {
+  grid-template-columns: minmax(150px, 0.9fr) minmax(150px, 0.9fr) minmax(220px, 1.5fr) auto;
+  gap: 14px;
+  padding: 16px;
+  border-color: #b9d8de;
+  border-radius: 12px;
+  background: #f4fafb;
+}
+.kam-step-page-invoice-payment .kam-payment-entry-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  grid-column: 1 / -1;
+  gap: 9px;
+  align-self: end;
+}
+.kam-step-page-invoice-payment .kam-payment-entry-actions .kam-payment-cancel-button {
+  min-width: 94px;
+  border-color: #c7d8dd;
+  background: #fff;
+  color: #496773;
+  box-shadow: none;
+}
+.kam-step-page-invoice-payment .kam-payment-entry-actions .kam-payment-cancel-button:hover:not(:disabled) {
+  background: #edf4f5;
+}
+.kam-step-page-invoice-payment .kam-payment-entry-actions .kam-payment-save-button {
+  min-width: 148px;
+}
+.kam-step-page-invoice-payment .kam-payment-history {
+  padding-top: 14px;
+  border-top-color: #d7e5e9;
+}
+.kam-step-page-invoice-payment .kam-payment-history .kam-history-table th {
+  padding: 11px 13px;
+  background: #eaf3f5;
+}
+.kam-step-page-invoice-payment .kam-payment-history .kam-history-table td {
+  padding: 12px 13px;
+  background: #fff;
+}
+@media (max-width: 700px) {
+  .kam-step-page-invoice-payment .kam-invoice-groups {
+    padding: 10px;
+  }
+  .kam-step-page-invoice-payment .kam-invoice-group {
+    padding: 13px;
+  }
+  .kam-step-page-invoice-payment .kam-payment-entry {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .kam-step-page-invoice-payment .kam-payment-entry .kam-payment-remarks {
+    grid-column: 1 / -1;
+  }
+  .kam-step-page-invoice-payment .kam-payment-entry-actions {
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+  }
+}
+@media (max-width: 480px) {
+  .kam-step-page-invoice-payment .kam-payment-entry {
+    grid-template-columns: 1fr;
+  }
+  .kam-step-page-invoice-payment .kam-payment-entry .kam-payment-remarks {
+    grid-column: auto;
+  }
+  .kam-step-page-invoice-payment .kam-payment-entry-actions {
+    grid-column: 1 / -1;
+  }
+  .kam-step-page-invoice-payment .kam-payment-entry-actions .kam-request-approval-btn {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+/* Compact pass: keep the updated hierarchy without expanding the page. */
+.kam-step-page-invoice-payment .kam-invoice-common-heading {
+  min-height: 48px;
+  padding: 10px 16px;
+}
+.kam-step-page-invoice-payment .kam-invoice-common-heading h3 {
+  font-size: 15px;
+}
+.kam-step-page-invoice-payment .kam-invoice-groups {
+  gap: 10px;
+  padding: 10px;
+}
+.kam-step-page-invoice-payment .kam-invoice-group {
+  gap: 9px;
+  padding: 12px;
+  border-radius: 10px;
+}
+.kam-step-page-invoice-payment .kam-invoice-subheading {
+  font-size: 13px;
+}
+.kam-step-page-invoice-payment .kam-invoice-amount-breakdown {
+  gap: 8px;
+  margin: 0;
+}
+.kam-step-page-invoice-payment .kam-invoice-amount-breakdown > div {
+  min-height: 56px;
+  padding: 8px 11px;
+  border-radius: 9px;
+}
+.kam-step-page-invoice-payment .kam-invoice-amount-breakdown strong,
+.kam-step-page-invoice-payment .kam-payment-summary strong {
+  font-size: 17px;
+}
+.kam-step-page-invoice-payment .kam-invoice-four-fields {
+  column-gap: 10px;
+  row-gap: 8px;
+}
+.kam-step-page-invoice-payment .kam-invoice-fields .kam-original-edit-input {
+  height: 36px;
+  min-height: 36px;
+  padding: 7px 10px;
+  font-size: 12px;
+}
+.kam-step-page-invoice-payment .kam-invoice-upload-row {
+  padding: 9px 11px;
+}
+.kam-step-page-invoice-payment .kam-payment-summary {
+  gap: 8px;
+}
+.kam-step-page-invoice-payment .kam-payment-summary > div {
+  min-height: 58px;
+  padding: 8px 11px;
+  border-radius: 9px;
+}
+.kam-step-page-invoice-payment .kam-payment-toolbar {
+  min-height: 34px;
+}
+.kam-step-page-invoice-payment .kam-payment-entry {
+  gap: 9px;
+  padding: 10px;
+  border-radius: 10px;
+}
+.kam-step-page-invoice-payment .kam-payment-entry .kam-original-edit-input,
+.kam-step-page-invoice-payment .kam-payment-entry textarea {
+  height: 36px;
+  min-height: 36px;
+  font-size: 12px;
+}
+.kam-step-page-invoice-payment .kam-payment-toolbar .kam-request-approval-btn,
+.kam-step-page-invoice-payment .kam-payment-entry .kam-request-approval-btn {
+  height: 36px;
+  min-height: 36px;
+  padding: 0 15px;
+  font-size: 12px;
+}
+.kam-step-page-invoice-payment .kam-payment-history {
+  margin-top: 8px;
+  padding-top: 9px;
+}
+.kam-step-page-invoice-payment .kam-payment-history h4 {
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+.kam-step-page-invoice-payment .kam-payment-history .kam-history-table th,
+.kam-step-page-invoice-payment .kam-payment-history .kam-history-table td {
+  padding: 8px 10px;
+}
+
 /* Unsaved changes confirmation: isolated from existing modal styles. */
 .kam-unsaved-confirm-overlay {
   position: fixed;
@@ -6960,6 +7370,15 @@
 .kam-step-page-first-approval .kam-wtg-finalization-grid > .kam-client-trip-field:last-child:not(.kam-wtg-final-note) {
   order: 3;
 }
+
+/* Intercarting finalization has no Approval Amount column. */
+.kam-wtg-final-vehicle-table.kam-intercarting-final-vehicle-table th:nth-child(1) { width: 3%; }
+.kam-wtg-final-vehicle-table.kam-intercarting-final-vehicle-table th:nth-child(2) { width: 18%; }
+.kam-wtg-final-vehicle-table.kam-intercarting-final-vehicle-table th:nth-child(3) { width: 15%; }
+.kam-wtg-final-vehicle-table.kam-intercarting-final-vehicle-table th:nth-child(4) { width: 14%; }
+.kam-wtg-final-vehicle-table.kam-intercarting-final-vehicle-table th:nth-child(5) { width: 9%; }
+.kam-wtg-final-vehicle-table.kam-intercarting-final-vehicle-table th:nth-child(6) { width: 16%; }
+.kam-wtg-final-vehicle-table.kam-intercarting-final-vehicle-table th:nth-child(7) { width: 25%; }
 
 /* Lifecycle Enquiry edit only: mirror WTG Create Trip vehicle-row styling. */
 .kam-workflow-content .kam-wtg-create-style-wrap {

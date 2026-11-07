@@ -1254,7 +1254,7 @@ const Approvalmanagement = () => {
           <div>Dimensions (L × H × W)</div>
           <div>Quoted Amount</div>
           <div>Customer Final Amount</div>
-          <div>Amount Difference</div>
+          <div>Margin</div>
         </div>
         {requirements.map((vehicle, index) => {
           const requirementId =
@@ -1331,15 +1331,15 @@ const Approvalmanagement = () => {
                 <strong>{customerFinalAmount !== "" && customerFinalAmount != null ? formatAmount(customerFinalAmount) : "—"}</strong>
               </div>
               <div className="approval-vehicle-readonly-field approval-vehicle-center-field approval-vehicle-difference-field">
-                <span>Amount Difference</span>
+                <span>Margin</span>
                 {(() => {
                   const quoted = Number(String(amount ?? "").replace(/[^0-9.-]/g, ""));
                   const finalValue = Number(String(customerFinalAmount ?? "").replace(/[^0-9.-]/g, ""));
                   if (amount === "" || amount == null || customerFinalAmount === "" || customerFinalAmount == null || !Number.isFinite(quoted) || !Number.isFinite(finalValue)) return null;
                   const difference = finalValue - quoted;
                   return (
-                    <small className={`approval-vehicle-amount-difference ${difference < 0 ? "is-lower" : difference > 0 ? "is-higher" : "is-equal"}`}>
-                      {difference === 0 ? "No difference" : `${formatAmount(Math.abs(difference))} ${difference < 0 ? "Lower" : "Higher"}`}
+                    <small className={`approval-vehicle-amount-difference ${difference < 0 ? "is-danger" : difference > 0 ? "is-higher" : "is-equal"}`}>
+                      {difference === 0 ? "No margin" : `${difference > 0 ? "+" : "-"}${formatAmount(Math.abs(difference))} ${difference > 0 ? "Profit" : "Loss"}`}
                     </small>
                   );
                 })()}
@@ -1895,6 +1895,7 @@ const Approvalmanagement = () => {
             });
             const sent = order.enquiryApproval?.status === "Sent";
             const isWtgEnquiry = String(order.movementType || "").trim().toLowerCase() === "wtg movement";
+            const isIntercartingEnquiry = isIntercartingOrder(order);
             const craneWeight =
               order.weight ??
               requirements.find((requirement) => Number(requirement.weight) > 0)?.weight;
@@ -1929,7 +1930,7 @@ const Approvalmanagement = () => {
                     aria-expanded={expanded}>View Enquiry</button>
                 {expanded && (
                   <div className="ae-modal-overlay" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget && !enquirySavingId) setEnquiryExpandedId(""); }}>
-                  <div className={`ae-detail ${isWtgEnquiry ? "ae-wtg-modal" : isCraneOrder(order) ? "ae-crane-modal" : ""}`} role="dialog" aria-modal="true" aria-label={`Enquiry details ${order.tripId || ""}`} onMouseDown={(event) => event.stopPropagation()}>
+                  <div className={`ae-detail ${isWtgEnquiry || isIntercartingEnquiry ? "ae-wtg-modal" : isCraneOrder(order) ? "ae-crane-modal" : ""} ${isIntercartingEnquiry ? "ae-intercarting-modal" : ""}`} role="dialog" aria-modal="true" aria-label={`Enquiry details ${order.tripId || ""}`} onMouseDown={(event) => event.stopPropagation()}>
                     <div className="ae-modal-top">
                       <div className="ae-modal-brand">
                         <small>APPROVAL MANAGEMENT · ENQUIRY</small>
@@ -1949,7 +1950,7 @@ const Approvalmanagement = () => {
                       <p>Customer and enquiry details • Read-only</p></div>
                       <span>TRIP ID <strong>{order.tripId || "—"}</strong></span>
                     </header>
-                    <div className={`ae-info-grid ${isWtgEnquiry ? "ae-wtg-info-grid" : ""}`}>
+                    <div className={`ae-info-grid ${isWtgEnquiry || isIntercartingEnquiry || isCraneOrder(order) ? "ae-wtg-info-grid" : ""}`}>
                       {[
                         ["CUSTOMER", order.customer],
                         ["CONTACT PERSON", order.contactPerson],
@@ -1957,12 +1958,8 @@ const Approvalmanagement = () => {
                         ["EMAIL", order.email],
                         ["ENQUIRY DATE", formatDate(order.enquiryDate)],
                         ["ASSIGNED KAM", order.assignedKam],
-                        ...(!isCraneOrder(order)
-                          ? [
-                              ["TOTAL VEHICLES", `${order.totalVehicles ?? requirements.reduce((sum,r)=>sum+(Number(r.quantity)||0),0)} NOS`],
-                              ["MOVEMENT", order.movementType],
-                            ]
-                          : []),
+                        ["TOTAL VEHICLES", `${order.totalVehicles ?? requirements.reduce((sum,r)=>sum+(Number(r.quantity)||0),0)} NOS`],
+                        ["MOVEMENT", order.movementType],
                       ].map(([label, value]) => (
                         <label key={label} className="ae-field">
                           <span>{label}</span><div className="ae-readonly">{value || "—"}</div>
@@ -1994,29 +1991,53 @@ const Approvalmanagement = () => {
                         </div>
                         {requirements.length > 0 && (
                           <div className="ae-crane-approval-amounts">
-                            <h5>Approval Amount</h5>
-                            {requirements.map((requirement, index) => {
-                              const key = `${order._id}:${String(requirement.requirementId || index)}`;
-                              const finalAmount = requirement.finalAmount ?? safeArray(order?.orderFinalization?.vehicleFinalAmounts).find((item) => String(item?.requirementId) === String(requirement?.requirementId))?.amount ?? (isCraneOrder(order) ? order?.orderFinalization?.finalRate : undefined);
-                              return (
-                                <div className="ae-crane-approval-amount-row" key={key}>
-                                  <label className="ae-field ae-amount">
-                                    <span>QUOTED AMOUNT (₹)</span>
-                                    <input type="number" min="0.01" step="0.01" disabled={!editable}
-                                      value={enquiryAmountFor(order, requirement, index)}
-                                      placeholder="Enter amount"
-                                      onChange={(event) => setEnquiryAmounts((previous) => ({
-                                        ...previous, [key]: event.target.value,
-                                      }))}
-                                    />
-                                  </label>
-                                  <label className="ae-field">
-                                    <span>CUSTOMER FINAL AMOUNT (₹)</span>
-                                    <div className="ae-readonly">{finalAmount !== "" && finalAmount != null ? formatAmount(finalAmount) : "—"}</div>
-                                  </label>
-                                </div>
-                              );
-                            })}
+                            <header className="ae-section-title ae-vehicle-heading">
+                              <div>
+                                <h4>Vehicle &amp; Dimensions</h4>
+                                <p>Crane requirements · Quoted Amount can be edited.</p>
+                              </div>
+                              <span>{requirements.length} Requirements</span>
+                            </header>
+                            <div className="ae-wtg-table-wrap">
+                              <table className="ae-wtg-table">
+                                <thead>
+                                  <tr>
+                                    {["#", "CRANE REQUIREMENT", "QUANTITY", "WEIGHT", "L × H × W", "QUOTED AMOUNT (₹)"].map((heading) => (
+                                      <th key={heading}>{heading}</th>
+                                    ))}
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {requirements.map((requirement, index) => {
+                                    const key = `${order._id}:${String(requirement.requirementId || index)}`;
+                                    return (
+                                      <tr key={key}>
+                                        <td><span className="ae-wtg-number">{index + 1}</span></td>
+                                        <td>{requirement.classification || "Crane Movement"}</td>
+                                        <td>{requirement.quantity ?? order.totalVehicles ?? 1} Nos</td>
+                                        <td>{requirement.weight ?? order.weight ?? 0} TON</td>
+                                        <td>—</td>
+                                        <td>
+                                          <input
+                                            aria-label={`Crane quoted amount ${index + 1} in rupees`}
+                                            type="number"
+                                            min="0.01"
+                                            step="0.01"
+                                            disabled={!editable}
+                                            value={enquiryAmountFor(order, requirement, index)}
+                                            placeholder="Enter amount"
+                                            onChange={(event) => setEnquiryAmounts((previous) => ({
+                                              ...previous,
+                                              [key]: event.target.value,
+                                            }))}
+                                          />
+                                        </td>
+                                      </tr>
+                                    );
+                                  })}
+                                </tbody>
+                              </table>
+                            </div>
                           </div>
                         )}
                         <div className="ae-crane-document-section">
@@ -2028,14 +2049,17 @@ const Approvalmanagement = () => {
                       <>
                     <header className="ae-section-title ae-vehicle-heading">
                       <div><h4>Vehicle & Dimensions</h4>
-                      <p>{isWtgEnquiry ? "Vehicle requirements • One row per vehicle; only Amount can be edited." : "Two compact rows per vehicle. Only Amount can be edited."}</p></div>
+                      <p>{isWtgEnquiry || isIntercartingEnquiry ? "Vehicle requirements • One row per vehicle; only Amount can be edited." : "Two compact rows per vehicle. Only Amount can be edited."}</p></div>
                       <span>{requirements.length} Requirements</span>
                     </header>
-                    {isWtgEnquiry ? (
+                    {isWtgEnquiry || isIntercartingEnquiry ? (
                       <div className="ae-wtg-table-wrap">
                         <table className="ae-wtg-table">
                           <thead><tr>
-                            {["#", "VEHICLE TYPE", "CONFIGURATION", "MATERIAL", "WEIGHT", "ROUTE", "PLACEMENT", "L × H × W", "QUOTED AMOUNT (₹)", "CUSTOMER FINAL AMOUNT (₹)"].map((heading) => (
+                            {(isIntercartingEnquiry
+                              ? ["#", "VEHICLE TYPE", "CONFIGURATION", "CLASSIFICATION", "WEIGHT", "DIMENSIONS", "QUOTED AMOUNT (₹)"]
+                              : ["#", "VEHICLE TYPE", "CONFIGURATION", "MATERIAL", "WEIGHT", "ROUTE", "PLACEMENT", "L × H × W", "QUOTED AMOUNT (₹)"]
+                            ).map((heading) => (
                               <th key={heading}>{heading}</th>
                             ))}
                           </tr></thead>
@@ -2048,22 +2072,31 @@ const Approvalmanagement = () => {
                                   <td><span className="ae-wtg-number">{index + 1}</span></td>
                                   <td>{requirement.vehicleType || "—"}</td>
                                   <td>{requirement.configuration || "—"}</td>
-                                  <td>{requirement.materialType || order.materialType || "—"}</td>
-                                  <td>{requirement.weight ?? 0} TON</td>
-                                  <td>{(() => {
-                                    const origin = String(requirement.origin || order.origin || "").trim();
-                                    const destination = String(requirement.destination || order.destination || "").trim();
-                                    return origin && destination ? `${origin} → ${destination}` : requirement.route || origin || destination || "—";
-                                  })()}</td>
-                                  <td>{formatDate(requirement.placementDate || order.placementDate)}</td>
-                                  <td>{formatDimension(requirement.dimensions)} FT</td>
+                                  {isIntercartingEnquiry ? (
+                                    <>
+                                      <td>{requirement.classification || "—"}</td>
+                                      <td>{requirement.weight ?? 0} TON</td>
+                                      <td>{formatDimension(requirement.dimensions)} FT</td>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <td>{requirement.materialType || order.materialType || "—"}</td>
+                                      <td>{requirement.weight ?? 0} TON</td>
+                                      <td>{(() => {
+                                        const origin = String(requirement.origin || order.origin || "").trim();
+                                        const destination = String(requirement.destination || order.destination || "").trim();
+                                        return origin && destination ? `${origin} → ${destination}` : requirement.route || origin || destination || "—";
+                                      })()}</td>
+                                      <td>{formatDate(requirement.placementDate || order.placementDate)}</td>
+                                      <td>{formatDimension(requirement.dimensions)} FT</td>
+                                    </>
+                                  )}
                                   <td><input aria-label={`Vehicle ${index + 1} amount in rupees`} type="number" min="0.01" step="0.01"
                                     disabled={!editable} value={enquiryAmountFor(order, requirement, index)}
                                     placeholder="Amount"
                                     onChange={(event) => setEnquiryAmounts((previous) => ({
                                       ...previous, [key]: event.target.value,
                                     }))}/></td>
-                                  <td>{(() => { const finalAmount = requirement.finalAmount ?? safeArray(order?.orderFinalization?.vehicleFinalAmounts).find((item) => String(item?.requirementId) === String(requirement?.requirementId))?.amount; return finalAmount !== "" && finalAmount != null ? formatAmount(finalAmount) : "—"; })()}</td>
                                 </tr>
                               );
                             })}
@@ -2106,10 +2139,6 @@ const Approvalmanagement = () => {
                                   ...previous, [key]: event.target.value,
                                 }))}
                               />
-                            </label>
-                            <label className="ae-field ae-amount">
-                              <span>CUSTOMER FINAL AMOUNT (₹)</span>
-                              <div className="ae-readonly">{(() => { const finalAmount = requirement.finalAmount ?? safeArray(order?.orderFinalization?.vehicleFinalAmounts).find((item) => String(item?.requirementId) === String(requirement?.requirementId))?.amount; return finalAmount !== "" && finalAmount != null ? formatAmount(finalAmount) : "—"; })()}</div>
                             </label>
                           </div>
                         </div>
@@ -2827,7 +2856,7 @@ const Approvalmanagement = () => {
                                                     if (quotation.amount === "" || quotation.amount == null || !Number.isFinite(quoted) || finalRateValue === null || !Number.isFinite(finalRateValue)) return "—";
                                                     const difference = finalRateValue - quoted;
                                                     return <span className={`approval-qv-rate-diff ${difference < 0 ? "higher" : difference > 0 ? "lower" : "equal"}`}>
-                                                      {difference > 0 ? `${formatAmount(difference)} margin` : difference < 0 ? `${formatAmount(Math.abs(difference))} above customer rate` : "Equal rates"}
+                                                      {difference > 0 ? `+${formatAmount(difference)} profit` : difference < 0 ? `-${formatAmount(Math.abs(difference))} loss` : "No margin"}
                                                     </span>;
                                                   })()}</td>
                                                   <td>
@@ -3557,6 +3586,9 @@ const Approvalmanagement = () => {
         (() => {
           const order = orderDetailsModal;
           const status = getOrderApprovalStatus(order);
+          const isWtgOrder = String(order.movementType || "").trim().toLowerCase() === "wtg movement";
+          const isIntercarting = isIntercartingOrder(order);
+          const showRateSummary = isWtgOrder || isIntercarting || isCraneOrder(order);
           const finalization =
             order.orderFinalization || order.finalization || {};
           const agreedRate =
@@ -3565,6 +3597,21 @@ const Approvalmanagement = () => {
             order.finalRate ??
             order.agreedRate ??
             null;
+          const quotedRate =
+            order.enquiryApproval?.totalAmount ??
+            finalization.quotedRate ??
+            order.quotedRate ??
+            null;
+          const quotedRateNumber =
+            quotedRate === "" || quotedRate == null
+              ? null
+              : Number(quotedRate);
+          const finalRateNumber =
+            agreedRate === "" || agreedRate == null ? null : Number(agreedRate);
+          const rateMargin =
+            Number.isFinite(quotedRateNumber) && Number.isFinite(finalRateNumber)
+              ? finalRateNumber - quotedRateNumber
+              : null;
           const commercialTerms =
             finalization.commercialTerms ||
             finalization.paymentTerms ||
@@ -3632,7 +3679,7 @@ const Approvalmanagement = () => {
                         <h4>Order Information</h4>
                       </div>
                     </div>
-                    <div className={`approval-order-details-grid ${isIntercartingOrder(order) ? "approval-order-details-grid-eight" : ""}`}>
+                    <div className={`approval-order-details-grid ${isIntercarting ? "approval-order-details-grid-intercarting" : ""} ${isWtgOrder || isCraneOrder(order) ? "approval-order-details-grid-six" : ""}`}>
                       <div>
                         <span>Client Name</span>
                         <strong>{order.customer || "—"}</strong>
@@ -3667,16 +3714,18 @@ const Approvalmanagement = () => {
                         <span>Assigned KAM</span>
                         <strong>{order.assignedKam || "—"}</strong>
                       </div>
-                      <div>
-                        <span>Agreed Rate</span>
-                        <strong>
-                          {agreedRate !== null &&
-                          agreedRate !== undefined &&
-                          agreedRate !== ""
-                            ? formatAmount(agreedRate)
-                            : "—"}
-                        </strong>
-                      </div>
+                      {!showRateSummary && (
+                        <div>
+                          <span>Agreed Rate</span>
+                          <strong>
+                            {agreedRate !== null &&
+                            agreedRate !== undefined &&
+                            agreedRate !== ""
+                              ? formatAmount(agreedRate)
+                              : "—"}
+                          </strong>
+                        </div>
+                      )}
                       <div>
                         <span>MD Status</span>
                         <strong>{status}</strong>
@@ -3690,6 +3739,22 @@ const Approvalmanagement = () => {
                         <h4>Terms &amp; Service Commitments</h4>
                       </div>
                     </div>
+                    {showRateSummary && (
+                      <div className="approval-order-details-rate-summary">
+                        <div>
+                          <span>QUOTED RATE</span>
+                          <strong>{quotedRate == null || quotedRate === "" ? "—" : formatAmount(quotedRate)}</strong>
+                        </div>
+                        <div>
+                          <span>CUSTOMER FINAL AMOUNT</span>
+                          <strong>{agreedRate == null || agreedRate === "" ? "—" : formatAmount(agreedRate)}</strong>
+                        </div>
+                        <div className={rateMargin > 0 ? "is-profitable" : rateMargin < 0 ? "is-danger" : rateMargin === 0 ? "is-neutral" : ""}>
+                          <span>MARGIN (FINAL − QUOTED)</span>
+                          <strong>{rateMargin == null ? "—" : `${rateMargin > 0 ? "+" : ""}${formatAmount(rateMargin)}`}</strong>
+                        </div>
+                      </div>
+                    )}
                     <div className="approval-order-details-sla-grid">
                       <div>
                         <span>Commercial Terms &amp; Payment SLAs</span>

@@ -10147,7 +10147,7 @@
   gap: 14px;
 }
 .ae-wtg-modal .ae-wtg-info-grid {
-  grid-template-columns: repeat(8, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
 }
 .ae-wtg-modal .ae-wtg-info-grid .ae-readonly {
@@ -10160,6 +10160,27 @@
 }
 
 /* Keep Crane enquiry branding consistent with the WTG movement modal. */
+.ae-modal-overlay .ae-crane-modal {
+  width: min(1840px, calc(100vw - 44px));
+  max-height: calc(100vh - 48px);
+  height: calc(100vh - 48px);
+}
+.ae-crane-modal .ae-modal-body {
+  padding: 15px 20px;
+  gap: 14px;
+}
+.ae-crane-modal .ae-wtg-info-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+.ae-crane-modal .ae-wtg-info-grid .ae-readonly {
+  min-height: 30px;
+  padding: 7px;
+}
+.ae-crane-modal .ae-wtg-info-grid .ae-field > span {
+  font-size: 9px;
+  white-space: nowrap;
+}
 .ae-crane-modal .ae-modal-top {
   min-height: 78px;
   padding: 14px 24px;
@@ -10196,6 +10217,17 @@
   border: 1px solid #d5e6e9;
   border-radius: 12px;
   background: #f7fbfb;
+}
+.ae-crane-approval-amounts {
+  display: grid;
+  gap: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.ae-crane-modal .ae-crane-approval-amounts .ae-wtg-table {
+  min-width: 760px;
 }
 .ae-crane-approval-amounts h5,
 .ae-crane-document-section h5 {
@@ -10236,6 +10268,16 @@
 }
 @media (max-width: 800px) {
   .ae-crane-request-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 1300px) {
+  .ae-crane-modal .ae-wtg-info-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+@media (max-width: 800px) {
+  .ae-crane-modal .ae-wtg-info-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -10320,7 +10362,8 @@
   font: inherit;
   font-size: 11px;
 }
-.ae-wtg-modal .ae-footer {
+.ae-wtg-modal .ae-footer,
+.ae-crane-modal .ae-footer {
   margin: 0;
   padding: 14px 17px;
   background: #eaf7f3;
@@ -10737,7 +10780,8 @@
   flex-shrink: 0;
 }
 
-#approval-management-root .ae-wtg-modal .ae-footer {
+#approval-management-root .ae-wtg-modal .ae-footer,
+#approval-management-root .ae-crane-modal .ae-footer {
   position: relative;
   display: flex;
   align-items: center;
@@ -10754,7 +10798,8 @@
   box-sizing: border-box;
   overflow: visible;
 }
-#approval-management-root .ae-wtg-modal .ae-footer > div:first-child {
+#approval-management-root .ae-wtg-modal .ae-footer > div:first-child,
+#approval-management-root .ae-crane-modal .ae-footer > div:first-child {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -10762,27 +10807,31 @@
   min-width: 0;
   gap: 3px;
 }
-#approval-management-root .ae-wtg-modal .ae-footer small {
+#approval-management-root .ae-wtg-modal .ae-footer small,
+#approval-management-root .ae-crane-modal .ae-footer small {
   display: block;
   margin: 0;
   font-size: 11px;
   line-height: 1.3;
 }
-#approval-management-root .ae-wtg-modal .ae-footer strong {
+#approval-management-root .ae-wtg-modal .ae-footer strong,
+#approval-management-root .ae-crane-modal .ae-footer strong {
   display: block;
   margin: 0;
   font-size: 23px;
   font-weight: 750;
   line-height: 1.15;
 }
-#approval-management-root .ae-wtg-modal .ae-footer button {
+#approval-management-root .ae-wtg-modal .ae-footer button,
+#approval-management-root .ae-crane-modal .ae-footer button {
   flex-shrink: 0;
   min-height: 36px;
   padding: 8px 12px;
   border-radius: 8px;
   font-size: 11px;
 }
-#approval-management-root .ae-wtg-modal .ae-footer-actions {
+#approval-management-root .ae-wtg-modal .ae-footer-actions,
+#approval-management-root .ae-crane-modal .ae-footer-actions {
   display: flex;
   align-items: center;
   flex-shrink: 0;
@@ -10930,8 +10979,13 @@
 }
 #approval-management-root
   .approval-order-details-modal
-  .approval-order-details-grid-eight {
-  grid-template-columns: repeat(8, minmax(0, 1fr));
+  .approval-order-details-grid-six {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+#approval-management-root
+  .approval-order-details-modal
+  .approval-order-details-grid-intercarting {
+  grid-template-columns: repeat(7, minmax(0, 1fr));
 }
 #approval-management-root
   .approval-order-details-modal
@@ -10962,7 +11016,12 @@
     .approval-order-details-grid,
   #approval-management-root
     .approval-order-details-modal
-    .approval-order-details-grid-eight {
+    .approval-order-details-grid-intercarting {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  #approval-management-root
+    .approval-order-details-modal
+    .approval-order-details-grid-six {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
@@ -11366,8 +11425,8 @@
 #approval-management-root
   .approval-order-details-modal
   .approval-vehicle-amount-difference.is-lower {
-  background: #fff0e7;
-  color: #b34e17;
+  background: #e6f6ed;
+  color: #167543;
 }
 #approval-management-root
   .approval-order-details-modal
@@ -12353,4 +12412,104 @@
 #approval-management-root
 .approval-quotation-modal-close:hover {
   background: rgba(255, 255, 255, 0.22);
+}
+
+/* Intercarting uses the WTG enquiry popup styling with a seven-column table. */
+#approval-management-root .ae-intercarting-modal .ae-wtg-table-wrap {
+  overflow-x: auto;
+}
+#approval-management-root .ae-intercarting-modal .ae-wtg-table {
+  min-width: 900px !important;
+}
+#approval-management-root .ae-intercarting-modal .ae-wtg-table :is(th, td):nth-child(1) {
+  width: 4% !important;
+}
+#approval-management-root .ae-intercarting-modal .ae-wtg-table :is(th, td):nth-child(2) {
+  width: 20% !important;
+}
+#approval-management-root .ae-intercarting-modal .ae-wtg-table :is(th, td):nth-child(3) {
+  width: 15% !important;
+}
+#approval-management-root .ae-intercarting-modal .ae-wtg-table :is(th, td):nth-child(4) {
+  width: 17% !important;
+}
+#approval-management-root .ae-intercarting-modal .ae-wtg-table :is(th, td):nth-child(5) {
+  width: 10% !important;
+}
+#approval-management-root .ae-intercarting-modal .ae-wtg-table :is(th, td):nth-child(6) {
+  width: 18% !important;
+}
+#approval-management-root .ae-intercarting-modal .ae-wtg-table :is(th, td):nth-child(7) {
+  width: 16% !important;
+}
+
+#approval-management-root .approval-order-details-rate-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  padding: 12px 14px 0;
+}
+#approval-management-root .approval-order-details-rate-summary > div {
+  display: flex;
+  min-width: 0;
+  min-height: 68px;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  padding: 10px 14px;
+  border: 1px solid #a8dbd4;
+  border-radius: 10px;
+  background: linear-gradient(110deg, #e8f8f4, #f5fbfa);
+}
+#approval-management-root .approval-order-details-rate-summary > div:last-child {
+  border-color: #75c9bd;
+  background: linear-gradient(110deg, #dcf5ef, #eaf9f5);
+}
+#approval-management-root .approval-order-details-rate-summary span {
+  color: #087f78;
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: 0.055em;
+}
+#approval-management-root .approval-order-details-rate-summary strong {
+  color: #075f60;
+  font-size: 20px;
+  font-weight: 850;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+#approval-management-root .approval-order-details-rate-summary > .is-danger {
+  border-color: #f1c9b4;
+  background: #fff5ee;
+}
+#approval-management-root .approval-order-details-rate-summary > .is-danger span,
+#approval-management-root .approval-order-details-rate-summary > .is-danger strong {
+  color: #b54708;
+}
+#approval-management-root .approval-order-details-rate-summary > .is-profitable {
+  border-color: #87d0a2;
+  background: #e8f7ed;
+}
+#approval-management-root .approval-order-details-rate-summary > .is-profitable span,
+#approval-management-root .approval-order-details-rate-summary > .is-profitable strong {
+  color: #167543;
+}
+#approval-management-root .approval-order-details-rate-summary > .is-neutral {
+  border-color: #d4e0e5;
+  background: #f1f5f7;
+}
+#approval-management-root .approval-order-details-rate-summary > .is-neutral span,
+#approval-management-root .approval-order-details-rate-summary > .is-neutral strong {
+  color: #5d7180;
+}
+@media (max-width: 620px) {
+  #approval-management-root .approval-order-details-rate-summary {
+    grid-template-columns: 1fr;
+  }
+}
+#approval-management-root
+  .approval-order-details-modal
+  .approval-vehicle-amount-difference.is-danger {
+  background: #fff0ed;
+  color: #c24130;
 }

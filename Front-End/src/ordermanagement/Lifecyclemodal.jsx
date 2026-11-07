@@ -164,7 +164,11 @@ const formatAmount = (value) => {
 // WTG rates are available only after Management has entered a valid amount
 // for EVERY vehicle requirement and sent the complete enquiry allocation.
 const hasCompleteWtgApprovalAmounts = (trip) => {
-  if (String(trip?.movementType || "").trim().toLowerCase() !== "wtg movement") return true;
+  const movement = String(trip?.movementType || "").trim().toLowerCase();
+  const usesVehicleAmounts =
+    movement === "wtg movement" ||
+    isIntercartingMovement(trip);
+  if (!usesVehicleAmounts) return true;
   if (String(trip?.enquiryApproval?.status || "").trim().toLowerCase() !== "sent") return false;
   const vehicles = safeArray(trip?.vehicleRequirements);
   if (!vehicles.length) return false;
@@ -205,8 +209,15 @@ const getCraneApprovalQuotedRate = (trip) => {
     return null;
   return String(total);
 };
+const getIntercartingApprovalQuotedRate = (trip) => {
+  if (!isIntercartingMovement(trip) || !hasCompleteWtgApprovalAmounts(trip)) return null;
+  const total = Number(trip?.enquiryApproval?.totalAmount);
+  return Number.isFinite(total) && total > 0 ? String(total) : null;
+};
 const getManagementQuotedRate = (trip) =>
-  getWtgApprovalQuotedRate(trip) ?? getCraneApprovalQuotedRate(trip);
+  getWtgApprovalQuotedRate(trip) ??
+  getCraneApprovalQuotedRate(trip) ??
+  getIntercartingApprovalQuotedRate(trip);
 const formatNumber = (value, suffix = "") => {
   if (value === "" || value === null || value === undefined) {
     return "—";
@@ -775,11 +786,13 @@ const Lifecyclemodal = ({
     setEditOpen(true);
   };
   const isWtgOrder = String((workingOrder || order)?.movementType || "").trim().toLowerCase() === "wtg movement";
+  const isIntercartingOrder = isIntercartingMovement(workingOrder || order);
   const craneMovementKey = String((workingOrder || order)?.movementType || "")
     .trim()
     .toLowerCase()
     .replace(/[\s_-]+/g, "");
   const isCraneOrder = ["crane", "cranemovement"].includes(craneMovementKey);
+  const isPerVehicleAmountOrder = isWtgOrder || isIntercartingOrder;
   const isIntercartingEdit = String((workingOrder || order)?.movementType || "")
     .toLowerCase()
     .includes("intercart");
@@ -1748,8 +1761,7 @@ const Lifecyclemodal = ({
   // Pending/Approved orders are read-only. Rejected orders reopen for editing.
   const finalizationLocked =
     !editOpen && (orderApprovalApproved || orderApprovalPending);
-  const wtgQuotedAmount = getWtgApprovalQuotedRate(workingOrder);
-  const wtgAmountsReady = !isWtgOrder || hasCompleteWtgApprovalAmounts(workingOrder);
+  const wtgAmountsReady = !isPerVehicleAmountOrder || hasCompleteWtgApprovalAmounts(workingOrder);
   const wtgFinalRateRaw = editOpen
     ? editForm.orderFinalization?.finalRate
     : finalizationForm.finalRate;
@@ -1765,7 +1777,7 @@ const Lifecyclemodal = ({
     const raw = wtgFinalVehicleAmounts[vehicle.requirementId || String(index)];
     return raw !== "" && raw != null && Number.isFinite(Number(raw)) && Number(raw) >= 0;
     });
-  const effectiveFinalRate = isWtgOrder && wtgAmountsReady
+  const effectiveFinalRate = isPerVehicleAmountOrder && wtgAmountsReady
     ? String(Math.round(wtgVehicleFinalTotal * 100) / 100)
     : finalizationForm.finalRate;
   const poLocked =
@@ -2138,13 +2150,13 @@ const Lifecyclemodal = ({
       showToast(message, "error");
       return;
     }
-    if (isWtgOrder && !wtgAmountsReady) {
+    if (isPerVehicleAmountOrder && !wtgAmountsReady) {
       const message = "Wait for Approval Management to enter and send an amount for every vehicle before entering rates or requesting approval.";
       setFinalizationError(message);
       showToast(message, "warning");
       return;
     }
-    if (isWtgOrder) {
+    if (isPerVehicleAmountOrder) {
       if (!wtgVehicleAmountsComplete || wtgVehicleFinalTotal <= 0) {
         const message = "Enter a valid amount for every vehicle. Final Rate is calculated automatically.";
         setFinalizationError(message);
@@ -2193,7 +2205,7 @@ const Lifecyclemodal = ({
             commercialTerms: finalizationForm.commercialTerms,
             deliveryCommitments: finalizationForm.deliveryCommitments,
             clientConfirmationNotes: finalizationForm.clientConfirmationNotes,
-            ...(isWtgOrder && wtgQuotedAmount !== null ? {
+            ...(isPerVehicleAmountOrder && getManagementQuotedRate(workingOrder) !== null ? {
               vehicleFinalAmounts: requirements.map((vehicle, index) => ({
                 requirementId: vehicle.requirementId,
                 amount: Number(wtgFinalVehicleAmounts[vehicle.requirementId || String(index)]),
@@ -3085,7 +3097,7 @@ const Lifecyclemodal = ({
                     <div className="kam-crane-enquiry-amounts-head">
                       <div>
                         <span>APPROVAL MANAGEMENT &amp; KEY ACCOUNT</span>
-                        <strong>Quoted &amp; Final Amounts</strong>
+                        <strong>Quoted Amounts</strong>
                       </div>
                       <b className={order.enquiryApproval?.status === "Sent" ? "sent" : "pending"}>
                         {order.enquiryApproval?.status === "Sent" ? "Received" : "Awaiting Amount"}
@@ -3100,13 +3112,6 @@ const Lifecyclemodal = ({
                               <div>
                                 <small>Quoted</small>
                                 <strong>{formatAmount(requirement.approvalAmount)}</strong>
-                                <small>Final</small>
-                                <strong>{(() => {
-                                  const finalAmount = requirement.finalAmount ??
-                                    safeArray(order?.orderFinalization?.vehicleFinalAmounts).find((item) => String(item?.requirementId) === String(requirement?.requirementId))?.amount ??
-                                    (requirements.length === 1 ? order?.orderFinalization?.finalRate : null);
-                                  return formatAmount(finalAmount);
-                                })()}</strong>
                               </div>
                             </div>
                           ))}
@@ -3116,7 +3121,6 @@ const Lifecyclemodal = ({
                             <span>Total amounts</span>
                             <div>
                               <span>Quoted <strong>{formatAmount(order.enquiryApproval.totalAmount)}</strong></span>
-                              <span>Final <strong>{formatAmount(order?.orderFinalization?.finalRate)}</strong></span>
                             </div>
                           </div>
                         )}
@@ -3301,6 +3305,7 @@ const Lifecyclemodal = ({
                           <th>Classification</th>
                           <th>Weight</th>
                           <th>L × H × W</th>
+                          {isIntercartingOrder && <th>Approval Amount</th>}
                         </tr>
                       </thead>
                       <tbody>
@@ -3379,6 +3384,13 @@ const Lifecyclemodal = ({
                                 formatDimensions(requirement.dimensions)
                               )}
                             </td>
+                            {isIntercartingOrder && (
+                              <td>
+                                {order.enquiryApproval?.status === "Sent"
+                                  ? formatAmount(requirement.approvalAmount)
+                                  : "Pending Amount"}
+                              </td>
+                            )}
                           </tr>
                         ))}
                       </tbody>
@@ -3396,6 +3408,13 @@ const Lifecyclemodal = ({
                             <strong>{requirements.length} NOS</strong>
                           </td>
                           <td colSpan="2" />
+                          {isIntercartingOrder && (
+                            <td>
+                              {order.enquiryApproval?.status === "Sent"
+                                ? formatAmount(order.enquiryApproval.totalAmount)
+                                : "Pending Amount"}
+                            </td>
+                          )}
                         </tr>
                       </tfoot>
                     </table>
@@ -3442,7 +3461,7 @@ const Lifecyclemodal = ({
                     </span>
                   </div>
                 )}
-                <div className={`kam-client-trip-grid${isWtgOrder ? " kam-wtg-finalization-grid" : ""}`}>
+                <div className={`kam-client-trip-grid${isPerVehicleAmountOrder ? " kam-wtg-finalization-grid" : ""}`}>
                   {/* QUOTED RATE */}
                   <div className="kam-client-trip-field">
                     <span>Quoted Rate *</span>
@@ -3471,7 +3490,9 @@ const Lifecyclemodal = ({
                         ? "Pending Management vehicle amounts"
                         : isCraneOrder && getCraneApprovalQuotedRate(workingOrder) === null
                           ? "Pending Approval Management quoted amount"
-                          : "Enter quoted rate"}
+                          : isIntercartingOrder && getIntercartingApprovalQuotedRate(workingOrder) === null
+                            ? "Pending Approval Management vehicle amounts"
+                            : "Enter quoted rate"}
                       readOnly={getManagementQuotedRate(workingOrder) !== null}
                       title={getManagementQuotedRate(workingOrder) !== null
                         ? "Automatically fetched from Approval Management enquiry amounts"
@@ -3479,6 +3500,7 @@ const Lifecyclemodal = ({
                       disabled={
                         !wtgAmountsReady ||
                         (isCraneOrder && getCraneApprovalQuotedRate(workingOrder) === null) ||
+                        (isIntercartingOrder && getIntercartingApprovalQuotedRate(workingOrder) === null) ||
                         (!editOpen && finalizationLocked)
                       }
                     />
@@ -3489,7 +3511,7 @@ const Lifecyclemodal = ({
                     <input
                       type="number"
                       name="finalRate"
-                      value={!wtgAmountsReady ? "" : (isWtgOrder ? effectiveFinalRate :
+                      value={!wtgAmountsReady ? "" : (isPerVehicleAmountOrder ? effectiveFinalRate :
                         (editOpen ? editForm.orderFinalization?.finalRate : finalizationForm.finalRate))}
                       onChange={
                         editOpen
@@ -3502,20 +3524,23 @@ const Lifecyclemodal = ({
                           : handleFinalizationChange
                       }
                       placeholder={!wtgAmountsReady ? "Pending Management vehicle amounts" : "Enter final rate"}
-                      readOnly={isWtgOrder}
+                      readOnly={isPerVehicleAmountOrder}
                       disabled={!wtgAmountsReady || (!editOpen && finalizationLocked)}
                     />
                   </div>
-                  {isWtgOrder && (
+                  {isPerVehicleAmountOrder && (
                     <div className="kam-wtg-final-vehicle-panel">
                       <div className="kam-wtg-final-vehicle-heading">
                         <strong>Vehicle Requirements &amp; Amounts</strong>
                         <span>{wtgAmountsReady ? "Enter each vehicle amount; Final Rate updates automatically" : "Waiting for Management vehicle amounts"}</span>
                       </div>
                       <div className="kam-wtg-final-vehicle-wrap">
-                        <table className="kam-wtg-final-vehicle-table">
+                        <table className={`kam-wtg-final-vehicle-table${isIntercartingOrder ? " kam-intercarting-final-vehicle-table" : ""}`}>
                           <thead><tr>
-                            {["#", "Vehicle Type", "Configuration", "Material", "Weight", "Origin", "Destination", "Placement", "L × H × W", "Customer Final Amount (₹)"].map((heading) => <th key={heading}>{heading}</th>)}
+                            {(isIntercartingOrder
+                              ? ["#", "Vehicle Type", "Configuration", "Classification", "Weight", "Dimensions (L × H × W)", "Customer Final Amount (₹)"]
+                              : ["#", "Vehicle Type", "Configuration", "Material", "Weight", "Origin", "Destination", "Placement", "L × H × W", "Customer Final Amount (₹)"]
+                            ).map((heading) => <th key={heading}>{heading}</th>)}
                           </tr></thead>
                           <tbody>
                             {requirements.map((vehicle, index) => {
@@ -3525,12 +3550,22 @@ const Lifecyclemodal = ({
                                   <td>{index + 1}</td>
                                   <td>{vehicle.vehicleType || "—"}</td>
                                   <td>{vehicle.configuration || "—"}</td>
-                                  <td>{vehicle.materialType || "—"}</td>
-                                  <td>{formatNumber(vehicle.weight, " TON")}</td>
-                                  <td>{vehicle.origin || "—"}</td>
-                                  <td>{vehicle.destination || "—"}</td>
-                                  <td>{formatDate(vehicle.placementDate)}</td>
-                                  <td>{formatDimensions(vehicle.dimensions)}</td>
+                                  {isIntercartingOrder ? (
+                                    <>
+                                      <td>{vehicle.classification || "—"}</td>
+                                      <td>{formatNumber(vehicle.weight, " TON")}</td>
+                                      <td>{formatDimensions(vehicle.dimensions)}</td>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <td>{vehicle.materialType || "—"}</td>
+                                      <td>{formatNumber(vehicle.weight, " TON")}</td>
+                                      <td>{vehicle.origin || "—"}</td>
+                                      <td>{vehicle.destination || "—"}</td>
+                                      <td>{formatDate(vehicle.placementDate)}</td>
+                                      <td>{formatDimensions(vehicle.dimensions)}</td>
+                                    </>
+                                  )}
                                   <td>
                                     {wtgAmountsReady ? (
                                       <input
@@ -3562,7 +3597,7 @@ const Lifecyclemodal = ({
                     </div>
                   )}
                   {/* COMMERCIAL TERMS */}
-                  <div className={`kam-client-trip-field${isWtgOrder ? " kam-wtg-final-note" : ""}`}>
+                  <div className={`kam-client-trip-field${isPerVehicleAmountOrder ? " kam-wtg-final-note" : ""}`}>
                     <span>Commercial Terms & Payment SLAs *</span>
                     <textarea
                       name="commercialTerms"
@@ -3587,7 +3622,7 @@ const Lifecyclemodal = ({
                     />
                   </div>
                   {/* DELIVERY COMMITMENTS */}
-                  <div className={`kam-client-trip-field${isWtgOrder ? " kam-wtg-final-note" : ""}`}>
+                  <div className={`kam-client-trip-field${isPerVehicleAmountOrder ? " kam-wtg-final-note" : ""}`}>
                     <span>Delivery Commitments & Transit SLAs *</span>
                     <textarea
                       name="deliveryCommitments"
@@ -3613,7 +3648,7 @@ const Lifecyclemodal = ({
                   </div>
                   {/* CLIENT CONFIRMATION */}
                   <div
-                    className={`kam-client-trip-field${isWtgOrder ? " kam-wtg-final-note" : ""}`}
+                    className={`kam-client-trip-field${isPerVehicleAmountOrder ? " kam-wtg-final-note" : ""}`}
                     style={orderApprovalApproved && !isWtgOrder ? { gridColumn: "auto" } : undefined}
                   >
                     <span>Client Confirmation Notes</span>
@@ -4864,7 +4899,7 @@ const Lifecyclemodal = ({
                       </span>
                       <button
                         type="button"
-                        className="kam-request-approval-btn"
+                        className="kam-request-approval-btn kam-invoice-save-button"
                         onClick={saveInvoiceDetails}
                         disabled={
                           invoiceSaving || isCompletedTrip(workingOrder)
@@ -4897,20 +4932,22 @@ const Lifecyclemodal = ({
                             ? "Partially Paid"
                             : "Pending"}
                       </span>
-                      <button
-                        type="button"
-                        className="kam-request-approval-btn"
-                        disabled={
-                          !hasFinalRate ||
-                          hasUnsavedInvoiceAmount ||
-                          dueBalance <= 0 ||
-                          paymentSaving ||
-                          isCompletedTrip(workingOrder)
-                        }
-                        onClick={() => setPaymentEntryOpen((open) => !open)}
-                      >
-                        {paymentEntryOpen ? "Cancel" : "+ Add Amount"}
-                      </button>
+                      {!paymentEntryOpen && (
+                        <button
+                          type="button"
+                          className="kam-request-approval-btn"
+                          disabled={
+                            !hasFinalRate ||
+                            hasUnsavedInvoiceAmount ||
+                            dueBalance <= 0 ||
+                            paymentSaving ||
+                            isCompletedTrip(workingOrder)
+                          }
+                          onClick={() => setPaymentEntryOpen(true)}
+                        >
+                          + Add Amount
+                        </button>
+                      )}
                     </div>
                     {paymentEntryOpen && (
                       <div className="kam-invoice-fields kam-payment-entry">
@@ -4961,14 +4998,23 @@ const Lifecyclemodal = ({
                             }
                           />
                         </label>
-                        <button
-                          type="button"
-                          className="kam-request-approval-btn"
-                          disabled={paymentSaving}
-                          onClick={savePaymentInstallment}
-                        >
-                          {paymentSaving ? "Saving..." : "Save Payment"}
-                        </button>
+                        <div className="kam-payment-entry-actions">
+                          <button
+                            type="button"
+                            className="kam-request-approval-btn kam-payment-cancel-button"
+                            onClick={() => setPaymentEntryOpen(false)}
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            type="button"
+                            className="kam-request-approval-btn kam-payment-save-button"
+                            disabled={paymentSaving}
+                            onClick={savePaymentInstallment}
+                          >
+                            {paymentSaving ? "Saving..." : "Save Payment"}
+                          </button>
+                        </div>
                       </div>
                     )}
                     <div className="kam-payment-history">

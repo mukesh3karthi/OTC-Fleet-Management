@@ -903,6 +903,7 @@ const Traffic = () => {
      ADD QUOTATION FORM
   ========================================================= */
   const handleAddTransport = (requirementIndex) => {
+    const isCrane = isCraneMovement(selectedOrder);
     setRequirementForms((previous) =>
       previous.map((requirement, index) =>
         index === requirementIndex
@@ -910,7 +911,10 @@ const Traffic = () => {
               ...requirement,
               quotations: [
                 ...(requirement.quotations || []),
-                createQuotationForm(),
+                {
+                  ...createQuotationForm(),
+                  ...(isCrane ? { transporter: "Multiple", quantity: "Multiple" } : {}),
+                },
               ],
             }
           : requirement,
@@ -936,7 +940,8 @@ const Traffic = () => {
             : [
                 {
                   ...createQuotationForm(),
-                  quantity: 1,
+                  quantity: isCraneMovement(selectedOrder) ? "Multiple" : 1,
+                  transporter: isCraneMovement(selectedOrder) ? "Multiple" : "",
                 },
               ],
         };
@@ -1625,7 +1630,7 @@ const Traffic = () => {
                             onClick={() => handleAddTransport(requirementIndex)}
                           >
                             <Plus size={13} />
-                            Add Vehicle Row
+                            {isCraneMovement(selectedOrder) ? "Add Option" : "Add Vehicle Row"}
                           </button>
                         )}
                       </div>
@@ -1661,6 +1666,20 @@ const Traffic = () => {
                     </div>:<div className="tv-empty"><Truck size={23}/><strong>No approved transporters yet</strong><span>Add quotations and send them for approval.</span><button type="button" onClick={()=>setTransportView("quotes")}>Open quotations <ChevronRight size={13}/></button></div>)}
                     {transportView==="quotes" && <section className="tv-quotes">
                     <div className="traffic-quotation-section">
+                      {isCraneMovement(selectedOrder) && !isApproved && (
+                        <div className="traffic-crane-option-toolbar">
+                          <span>Add another transporter quotation</span>
+                          <button
+                            type="button"
+                            className="traffic-add-btn traffic-add-btn-header"
+                            onClick={() => handleAddTransport(requirementIndex)}
+                            disabled={saving}
+                          >
+                            <Plus size={13} />
+                            Add Option
+                          </button>
+                        </div>
+                      )}
                       <div className="traffic-quotation-table-wrap">
                         <table className={`traffic-quotation-table ${isApproved ? "is-approved" : ""}`}>
                           <thead>
