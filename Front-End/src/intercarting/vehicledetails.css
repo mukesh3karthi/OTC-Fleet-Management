@@ -1094,3 +1094,220 @@ body.modal-open {
         font-size: 10px;
     }
 }
+
+.vehicle-stat-card.clickable { cursor: pointer; }
+.vehicle-stat-card.clickable:hover { box-shadow: 0 4px 14px rgba(0,0,0,.12); }
+.released-panel { background:#fff; border-radius:12px; padding:20px; max-width:900px; width:100%; }
+.released-panel-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+.released-panel-header button { border:0; background:none; font-size:24px; cursor:pointer; }
+
+/* Size the modal to the Released popup */
+.vehicle-modal-container:has(.released-panel) {
+  width: min(900px, 94vw);
+  max-width: none;
+  background: #fff;
+  border-radius: 12px;
+}
+
+.released-panel {
+  width: 100%;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.released-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.released-panel-header button {
+  border: 0;
+  background: none;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+/* Override the 18-column min-width so the table fits the popup */
+.released-table-wrapper {
+  overflow-x: auto;
+  max-height: 60vh;
+}
+
+.released-table {
+  width: 100%;
+  min-width: 0 !important;
+  table-layout: auto;
+}
+
+.released-table th,
+.released-table td {
+  white-space: nowrap;
+}
+
+/* In & Out register */
+.inout-open-btn,
+.inout-refresh-btn {
+    min-width: 92px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 0 12px;
+    color: #087f78;
+    background: #ffffff;
+    border: 1px solid #0aa39a;
+    border-radius: 9px;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color .2s ease, color .2s ease, border-color .2s ease;
+}
+
+.inout-open-btn:hover,
+.inout-refresh-btn:hover:not(:disabled) {
+    color: #ffffff;
+    background: #078c85;
+    border-color: #078c85;
+}
+
+.inout-refresh-btn:disabled {
+    opacity: .6;
+    cursor: not-allowed;
+}
+
+.inout-page {
+    min-height: 100%;
+}
+
+.inout-page-header {
+    margin-bottom: 14px;
+}
+
+.inout-summary-row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.inout-summary-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 15px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+}
+
+.inout-summary-card span {
+    color: #667085;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.inout-summary-card strong {
+    color: #07364a;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.inout-site-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.inout-site-card {
+    overflow: hidden;
+    background: #ffffff;
+    border: 1px solid #b8b8b8;
+    border-radius: 2px;
+}
+
+.inout-site-card h2 {
+    margin: 0;
+    padding: 7px 10px;
+    color: #a34b00;
+    background: #e9e9e9;
+    border-bottom: 1px solid #111111;
+    font-size: 14px;
+    font-weight: 700;
+    text-align: center;
+}
+
+.inout-table-wrapper {
+    overflow-x: auto;
+    border: 0;
+}
+
+.inout-table {
+    width: 100%;
+    min-width: 760px;
+    border-collapse: collapse;
+    background: #ffffff;
+    table-layout: auto;
+}
+
+.inout-table th,
+.inout-table td {
+    padding: 6px 9px;
+    color: #111827;
+    border: 1px solid #111111;
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.inout-table th {
+    background: #e9e9e9;
+    font-weight: 700;
+}
+
+.inout-table td {
+    background: #ffffff;
+    font-weight: 400;
+}
+
+.inout-table tbody tr:hover td {
+    background: #f1fbfa;
+}
+
+.inout-table .inout-vehicle-number {
+    color: #075985;
+    font-weight: 600;
+    text-align: left;
+}
+
+.inout-empty-state {
+    padding: 36px 16px;
+    color: #667085;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 13px;
+    text-align: center;
+}
+
+@media (max-width: 900px) {
+    .inout-summary-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .vehicle-header-actions {
+        flex-wrap: wrap;
+    }
+
+    .inout-open-btn,
+    .inout-refresh-btn {
+        flex: 1;
+    }
+}

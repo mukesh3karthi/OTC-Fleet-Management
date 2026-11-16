@@ -11,7 +11,7 @@ import {
   ChevronLeft,
   ChevronRight,
   CircleCheck,
-  Files,
+  LogOut,
   Plus,
   Search,
   Truck,
@@ -37,37 +37,34 @@ const API_OPTIONS = {
     "Content-Type": "application/json",
   },
 };
-// Count a vehicle only when there is evidence of an uploaded document.
-const hasVehicleDocuments = (vehicle) => {
-  const fileFields = [
-    "filePath",
-    "fileName",
-    "originalName",
-    "url",
-    "path",
-    "documentUrl",
-  ];
-  const hasFile = (entry) => {
-    if (!entry) return false;
-    if (typeof entry === "string") return Boolean(entry.trim());
-    if (Array.isArray(entry)) return entry.some(hasFile);
-    if (typeof entry === "object") {
-      if (
-        fileFields.some(
-          (key) => typeof entry[key] === "string" && entry[key].trim(),
-        )
-      )
-        return true;
-      return Object.values(entry).some(
-        (value) => value && typeof value === "object" && hasFile(value),
-      );
-    }
-    return false;
-  };
-  return hasFile(vehicle?.documents) || hasFile(vehicle?.documentFiles);
+
+const RECORDS_PER_PAGE = 15;
+
+// Release date used for the monthly Released card.
+// Change the field names here if your backend stores it differently.
+const getReleaseDate = (vehicle) => {
+  const raw =
+    vehicle?.vehicleOutDate || vehicle?.releasedAt || vehicle?.updatedAt;
+
+  if (!raw) return null;
+
+  const date = new Date(`${String(raw).slice(0, 10)}T00:00:00`);
+
+  return Number.isNaN(date.getTime()) ? null : date;
 };
 
-const RECORDS_PER_PAGE = 10;
+// True only when the date falls in the current calendar month.
+// The Released count therefore resets automatically every month.
+const isInCurrentMonth = (date) => {
+  if (!date) return false;
+
+  const now = new Date();
+
+  return (
+    date.getFullYear() === now.getFullYear() &&
+    date.getMonth() === now.getMonth()
+  );
+};
 
 const getVehicleId = (vehicle) => {
   const rawId = vehicle?.id ?? vehicle?.vehicleId ?? null;
@@ -178,18 +175,6 @@ const Vehicletable = ({
   const indexOfFirst = indexOfLast - safeRecordsPerPage;
 
   const currentVehicles = vehicles.slice(indexOfFirst, indexOfLast);
-
-  const getVehicleId = (vehicle) => {
-    const rawId = vehicle?.id ?? vehicle?.vehicleId ?? null;
-
-    if (rawId === null || rawId === undefined || rawId === "") {
-      return null;
-    }
-
-    const numericId = Number(rawId);
-
-    return Number.isInteger(numericId) && numericId > 0 ? numericId : null;
-  };
 
   const getVehicleKey = (vehicle, index) => {
     return String(
@@ -451,7 +436,10 @@ const Vehicletable = ({
 
                     <td>{formatCurrency(vehicle.hireAmount)}</td>
 
-                    <td className="vehicle-remarks-cell" title={vehicle.remarks || ""}>
+                    <td
+                      className="vehicle-remarks-cell"
+                      title={vehicle.remarks || ""}
+                    >
                       {vehicle.remarks || "-"}
                     </td>
 
@@ -536,6 +524,7 @@ const Vehicletable = ({
     </>
   );
 };
+
 const Vehicledetails = () => {
   const navigate = useNavigate();
 
@@ -550,6 +539,10 @@ const Vehicledetails = () => {
   const [selectedVehicle, setSelectedVehicle] = useState(null);
 
   const [openModal, setOpenModal] = useState(false);
+
+  const [showReleased, setShowReleased] = useState(false);
+  const [showInOutPage, setShowInOutPage] = useState(false);
+  const [inOutSearch, setInOutSearch] = useState("");
 
   const [loading, setLoading] = useState(false);
 
@@ -598,7 +591,9 @@ const Vehicledetails = () => {
   }, []);
 
   useEffect(() => {
-    if (!openModal) {
+    const anyModalOpen = openModal || showReleased;
+
+    if (!anyModalOpen) {
       document.body.classList.remove("modal-open");
 
       document.documentElement.classList.remove("modal-open");
@@ -614,6 +609,7 @@ const Vehicledetails = () => {
       if (event.key === "Escape" && !savingVehicle) {
         setOpenModal(false);
         setSelectedVehicle(null);
+        setShowReleased(false);
       }
     };
 
@@ -626,7 +622,7 @@ const Vehicledetails = () => {
 
       document.removeEventListener("keydown", handleEscape);
     };
-  }, [openModal, savingVehicle]);
+  }, [openModal, showReleased, savingVehicle]);
 
   const openAddVehicleModal = () => {
     setPageError("");
@@ -769,6 +765,70 @@ const Vehicledetails = () => {
     });
   }, [vehicles, normalizedSearch, status]);
 
+  // Vehicles released in the current calendar month only.
+  // Count resets automatically when the month changes.
+  const releasedThisMonth = useMemo(
+    () =>
+      vehicles.filter(
+        (vehicle) =>
+          getVehicleStatus(vehicle) === "Released" &&
+          isInCurrentMonth(getReleaseDate(vehicle)),
+      ),
+    [vehicles],
+  );
+
+  const currentMonthLabel = new Date().toLocaleString("en-IN", {
+    month: "long",
+    year: "numeric",
+  });
+
+  const formatInOutDate = (value) => {
+    if (!value) return "-";
+    const normalized = String(value).slice(0, 10);
+    const parsed = new Date(`${normalized}T00:00:00`);
+    if (Number.isNaN(parsed.getTime())) return String(value);
+    return parsed.toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  };
+
+  // Include every inventory record here, including released vehicles.
+  // The existing vehicleOutDate / releasedAt fields supply the release date.
+  const inOutSiteGroups = useMemo(() => {
+    const query = inOutSearch.trim().toLowerCase();
+    const matchingVehicles = vehicles.filter((vehicle) => {
+      const values = [
+        vehicle.siteName,
+        vehicle.vehicleNumber,
+        vehicle.transportProvider,
+        vehicle.vendorName,
+        vehicle.vehicleType,
+        vehicle.vehicleInDate,
+        vehicle.vehicleOutDate,
+        vehicle.releasedAt,
+      ];
+      return (
+        !query ||
+        values.some((value) =>
+          String(value ?? "").toLowerCase().includes(query),
+        )
+      );
+    });
+
+    const grouped = new Map();
+    matchingVehicles.forEach((vehicle) => {
+      const site = String(vehicle.siteName || "Unassigned Site").trim();
+      if (!grouped.has(site)) grouped.set(site, []);
+      grouped.get(site).push(vehicle);
+    });
+
+    return Array.from(grouped.entries()).sort(([a], [b]) =>
+      a.localeCompare(b),
+    );
+  }, [vehicles, inOutSearch]);
+
   useEffect(() => {
     setCurrentPage(1);
   }, [search, status]);
@@ -819,16 +879,155 @@ const Vehicledetails = () => {
         className: "orange",
       },
       {
-        title: "Documents",
-        value: vehicles.filter((vehicle) => hasVehicleDocuments(vehicle))
-          .length,
-        subtitle: "Vehicles with Documents",
-        icon: <Files size={24} />,
+        title: "Released",
+        value: releasedThisMonth.length,
+        subtitle: `Released in ${currentMonthLabel}`,
+        icon: <LogOut size={24} />,
         className: "blue",
+        onClick: () => setShowReleased(true),
       },
     ],
-    [vehicles],
+    [vehicles, releasedThisMonth, currentMonthLabel],
   );
+
+  if (showInOutPage) {
+    return (
+      <main className="vehicle-page inout-page">
+        <div className="vehicle-breadcrumb">
+          Fleet Management <span>/</span> Intercarting <span>/</span> In &amp; Out
+        </div>
+
+        <header className="vehicle-header inout-page-header">
+          <div className="vehicle-title-section">
+            <button
+              type="button"
+              className="vehicle-back-button"
+              onClick={() => setShowInOutPage(false)}
+              aria-label="Back to inventory"
+            >
+              <ArrowLeft size={20} />
+            </button>
+            <div>
+              <h1>Vehicle In &amp; Out Register</h1>
+              <p className="vehicle-header-subtitle">
+                Site-wise vehicle arrival and release details.
+              </p>
+            </div>
+          </div>
+
+          <div className="vehicle-header-actions">
+            <label className="vehicle-search-box">
+              <Search size={18} />
+              <input
+                type="search"
+                placeholder="Search site, vehicle or provider..."
+                value={inOutSearch}
+                onChange={(event) => setInOutSearch(event.target.value)}
+              />
+            </label>
+            <button
+              type="button"
+              className="inout-refresh-btn"
+              onClick={fetchVehicles}
+              disabled={loading}
+            >
+              <span>{loading ? "Refreshing..." : "Refresh"}</span>
+            </button>
+          </div>
+        </header>
+
+        {pageError && (
+          <div className="vehicle-page-error" role="alert">
+            <span>{pageError}</span>
+            <button type="button" onClick={() => setPageError("")}>×</button>
+          </div>
+        )}
+
+        <section className="inout-summary-row">
+          <div className="inout-summary-card">
+            <span>Total Vehicles</span>
+            <strong>{vehicles.length}</strong>
+          </div>
+          <div className="inout-summary-card">
+            <span>Released Vehicles</span>
+            <strong>
+              {vehicles.filter((vehicle) => getVehicleStatus(vehicle) === "Released").length}
+            </strong>
+          </div>
+          <div className="inout-summary-card">
+            <span>Currently On Site</span>
+            <strong>
+              {vehicles.filter((vehicle) => getVehicleStatus(vehicle) !== "Released").length}
+            </strong>
+          </div>
+        </section>
+
+        {loading ? (
+          <div className="inout-empty-state">Loading vehicle records...</div>
+        ) : inOutSiteGroups.length > 0 ? (
+          <div className="inout-site-list">
+            {inOutSiteGroups.map(([siteName, siteVehicles]) => (
+              <section className="inout-site-card" key={siteName}>
+                <h2>{siteName}</h2>
+                <div className="table-wrapper inout-table-wrapper">
+                  <table className="inout-table">
+                    <thead>
+                      <tr>
+                        <th>S.NO</th>
+                        <th>Vehicle no</th>
+                        <th>Logistics Service provider</th>
+                        <th>Type of vehicle</th>
+                        <th>Veh reached Date</th>
+                        <th>Release Date</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {siteVehicles.map((vehicle, index) => {
+                        const releaseDate =
+                          vehicle.vehicleOutDate || vehicle.releasedAt || "";
+                        const released = getVehicleStatus(vehicle) === "Released";
+                        return (
+                          <tr
+                            key={
+                              vehicle._id ??
+                              vehicle.id ??
+                              vehicle.vehicleId ??
+                              `${siteName}-${vehicle.vehicleNumber}-${index}`
+                            }
+                          >
+                            <td>{index + 1}</td>
+                            <td className="inout-vehicle-number">
+                              {vehicle.vehicleNumber || "-"}
+                            </td>
+                            <td>
+                              {vehicle.transportProvider || vehicle.vendorName || "-"}
+                            </td>
+                            <td>{vehicle.vehicleType || "-"}</td>
+                            <td>{formatInOutDate(vehicle.vehicleInDate)}</td>
+                            <td>
+                              {released || releaseDate
+                                ? formatInOutDate(releaseDate)
+                                : "-"}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+            ))}
+          </div>
+        ) : (
+          <div className="inout-empty-state">
+            {inOutSearch
+              ? "No vehicle records match your search."
+              : "No vehicle records available."}
+          </div>
+        )}
+      </main>
+    );
+  }
 
   return (
     <main className="vehicle-page">
@@ -880,12 +1079,35 @@ const Vehicledetails = () => {
 
             <span>Add Intercarting Vehicle</span>
           </button>
+          <button
+            type="button"
+            className="inout-open-btn"
+            onClick={() => {
+              setInOutSearch("");
+              setShowInOutPage(true);
+            }}
+          >
+            <LogOut size={17} />
+            <span>In &amp; Out</span>
+          </button>
         </div>
       </header>
 
       <section className="vehicle-stats-grid">
         {statistics.map((item) => (
-          <article className="vehicle-stat-card" key={item.title}>
+          <article
+            className={`vehicle-stat-card ${item.onClick ? "clickable" : ""}`}
+            key={item.title}
+            onClick={item.onClick}
+            role={item.onClick ? "button" : undefined}
+            tabIndex={item.onClick ? 0 : undefined}
+            onKeyDown={(event) => {
+              if (item.onClick && (event.key === "Enter" || event.key === " ")) {
+                event.preventDefault();
+                item.onClick();
+              }
+            }}
+          >
             <div className="vehicle-stat-content">
               <div>
                 <p className="vehicle-stat-title">{item.title}</p>
@@ -999,6 +1221,83 @@ const Vehicledetails = () => {
             closeModal={closeVehicleModal}
             saving={savingVehicle}
           />
+        </VehicleModal>
+      )}
+
+      {showReleased && (
+        <VehicleModal onClose={() => setShowReleased(false)}>
+          <div className="released-panel">
+            <div className="released-panel-header">
+              <h2>Released Vehicles – {currentMonthLabel}</h2>
+
+              <button
+                type="button"
+                aria-label="Close"
+                onClick={() => setShowReleased(false)}
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="table-wrapper">
+              <table className="vehicle-table">
+                <thead>
+                  <tr>
+                    <th scope="col">S.No</th>
+                    <th scope="col">Vehicle No</th>
+                    <th scope="col">Site Name</th>
+                    <th scope="col">Driver Name</th>
+                    <th scope="col">Vendor Name</th>
+                    <th scope="col">Vehicle In Date</th>
+                    <th scope="col">Released On</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {releasedThisMonth.length > 0 ? (
+                    releasedThisMonth.map((vehicle, index) => (
+                      <tr key={vehicle._id ?? vehicle.id ?? vehicle.vehicleId ?? index}>
+                        <td>{index + 1}</td>
+
+                        <td className="vehicle-number-cell">
+                          {vehicle.vehicleNumber || "-"}
+                        </td>
+
+                        <td>{vehicle.siteName || "-"}</td>
+
+                        <td>{vehicle.driverName || "-"}</td>
+
+                        <td>{vehicle.vendorName || "-"}</td>
+
+                        <td>
+                          {vehicle.vehicleInDate
+                            ? String(vehicle.vehicleInDate).slice(0, 10)
+                            : "-"}
+                        </td>
+
+                        <td>
+                          {getReleaseDate(vehicle)?.toLocaleDateString(
+                            "en-IN",
+                            {
+                              day: "2-digit",
+                              month: "short",
+                              year: "numeric",
+                            },
+                          ) || "-"}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={7} className="no-data">
+                        No vehicles released this month
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </VehicleModal>
       )}
     </main>
