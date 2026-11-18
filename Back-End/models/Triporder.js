@@ -92,7 +92,7 @@ const vehicleRequirementSchema = new Schema(
       default: 0,
     },
 
-    // WTG-specific details saved per vehicle (other movements remain unchanged).
+    // Material Type is stored per vehicle for Line Movement and Project Movement. Line Movement also stores its route and placement date.
     materialType: { type: String, trim: true, default: "" },
     origin: { type: String, trim: true, default: "" },
     destination: { type: String, trim: true, default: "" },
@@ -273,6 +273,24 @@ const craneDocumentSchema = new Schema(
 
   { _id: false },
 );
+
+/* =========================================================
+
+   CRANE SUPPORTING FILES (multiple per order)
+
+   Each file keeps its own _id for view / download / remove.
+
+\========================================================= */
+
+const craneFileSchema = new Schema({
+  documentName: { type: String, trim: true, default: "" },
+  fileName: { type: String, trim: true, default: "" },
+  mimeType: { type: String, trim: true, default: "" },
+  fileSize: { type: Number, min: 0, default: 0 },
+  fileData: { type: Buffer, select: false, default: null },
+  uploadedBy: { type: String, trim: true, default: "" },
+  uploadedAt: { type: Date, default: Date.now },
+});
 
 /* =========================================================
 
@@ -1585,6 +1603,34 @@ const invoiceFileSchema = new Schema(
 );
 const invoicePaymentSchema = new Schema(
   {
+    // Intercarting orders can have several independent invoices, each with
+    // its own balance and payment history. The legacy fields below remain for
+    // existing non-Intercarting orders and older records.
+    invoices: {
+      type: [new Schema({
+        invoiceNumber: { type: String, trim: true, maxlength: 100, default: "" },
+        invoiceDate: { type: String, default: "" },
+        remarks: { type: String, trim: true, maxlength: 2000, default: "" },
+        invoiceAmount: { type: Number, min: 0, default: null },
+        gstPercentage: { type: Number, min: 0, max: 100, default: 0 },
+        gstAmount: { type: Number, min: 0, default: 0 },
+        totalAmount: { type: Number, min: 0, default: null },
+        payments: { type: [new Schema({
+          amount: { type: Number, required: true, min: 0.01 },
+          paymentDate: { type: String, required: true },
+          remarks: { type: String, trim: true, maxlength: 2000, default: "" },
+          receivedBy: { type: String, default: "" },
+          createdAt: { type: Date, default: Date.now },
+        })], default: [] },
+        totalReceived: { type: Number, min: 0, default: 0 },
+        remainingBalance: { type: Number, min: 0, default: null },
+        paymentStatus: { type: String, enum: ["Pending", "Partially Paid", "Fully Paid"], default: "Pending" },
+        invoiceDocument: { type: invoiceFileSchema, default: () => ({}) },
+        updatedBy: { type: String, default: "" },
+        updatedAt: { type: Date, default: null },
+      })],
+      default: [],
+    },
     payments: {
       type: [new Schema({
         amount: { type: Number, required: true, min: 0.01 },
@@ -1921,6 +1967,13 @@ const tripOrderSchema = new Schema(
 
       default: () => ({}),
     },
+
+    // Multiple Crane supporting files (view / download per file).
+    craneDocuments: { type: [craneFileSchema], default: [] },
+
+    originPincode: { type: String, trim: true, default: "" },
+
+    destinationPincode: { type: String, trim: true, default: "" },
 
     orderFinalization: {
       type: orderFinalizationSchema,

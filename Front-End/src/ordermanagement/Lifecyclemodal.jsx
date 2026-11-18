@@ -22,47 +22,124 @@ const lifecycleApiFetch = (url, options = {}) => {
   return fetch(url, { ...options, headers });
 };
 const CraneDocumentActions = ({ order }) => {
-  const [busy, setBusy] = useState(false);
+  const [busy, setBusy] = useState("");
   const [error, setError] = useState("");
-  const document = order?.craneDocument;
-  if (!document?.fileName || !order?._id) {
-    return <small>No Crane supporting document is available.</small>;
-  }
-  const openDocument = async (download) => {
+
+  // Multiple Crane documents are stored in order.craneDocuments.
+  const multipleDocuments = Array.isArray(order?.craneDocuments)
+    ? order.craneDocuments
+    : [];
+
+  // Keep support for older orders that stored one file in craneDocument.
+  const legacyDocument = order?.craneDocument;
+  const documents = [
+    ...multipleDocuments.map((file) => ({ ...file, legacy: false })),
+    ...(legacyDocument?.fileName &&
+    !multipleDocuments.some(
+      (file) => file?.fileName === legacyDocument.fileName,
+    )
+      ? [{ ...legacyDocument, legacy: true }]
+      : []),
+  ].filter((file) => file?.fileName);
+
+  const openDocument = async (file, download) => {
+    if (!order?._id || !file?.fileName) return;
+
     const preview = download ? null : window.open("about:blank", "_blank");
     if (preview) preview.opener = null;
-    setBusy(true);
+
+    const fileKey = String(file._id || file.fileName);
+    setBusy(fileKey);
     setError("");
+
     try {
-      if (!download && !preview) throw new Error("Allow popups to view this document.");
-      const url = `${TRIP_API_URL}/${encodeURIComponent(order._id)}/crane-document/file?disposition=${download ? "attachment" : "inline"}`;
+      if (!download && !preview) {
+        throw new Error("Allow popups to view this document.");
+      }
+
+      const disposition = download ? "attachment" : "inline";
+      const url = file.legacy
+        ? `${TRIP_API_URL}/${encodeURIComponent(order._id)}/crane-document/file?disposition=${disposition}`
+        : `${TRIP_API_URL}/${encodeURIComponent(order._id)}/crane-documents/${encodeURIComponent(file._id)}/file?disposition=${disposition}`;
+
+      if (!file.legacy && !file._id) {
+        throw new Error(`Document ID is missing for ${file.fileName}.`);
+      }
+
       const response = await lifecycleApiFetch(url);
-      if (!response.ok) throw new Error("Unable to open the Crane supporting document.");
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(
+          payload.message || `Unable to ${download ? "download" : "view"} ${file.fileName}.`,
+        );
+      }
+
       const blob = await response.blob();
       const blobUrl = URL.createObjectURL(blob);
+
       if (download) {
         const link = window.document.createElement("a");
         link.href = blobUrl;
-        link.download = document.fileName;
+        link.download = file.fileName;
         window.document.body.appendChild(link);
         link.click();
         link.remove();
       } else {
         preview.location.replace(blobUrl);
       }
+
       window.setTimeout(() => URL.revokeObjectURL(blobUrl), 300000);
     } catch (requestError) {
       if (preview) preview.close();
-      setError(requestError.message || "Unable to open the Crane supporting document.");
+      setError(
+        requestError.message || "Unable to open the Crane supporting document.",
+      );
     } finally {
-      setBusy(false);
+      setBusy("");
     }
   };
+
+  if (!documents.length) {
+    return <small>No Crane supporting document is available.</small>;
+  }
+
   return (
-    <div className="kam-crane-document-actions">
-      <strong>{document.fileName}</strong>
-      <button type="button" disabled={busy} onClick={() => openDocument(false)}>View</button>
-      <button type="button" disabled={busy} onClick={() => openDocument(true)}>Download</button>
+    <div className="kam-crane-document-list">
+      <small className="kam-crane-document-count">
+        {documents.length} document{documents.length === 1 ? "" : "s"} uploaded
+      </small>
+
+      {documents.map((file, index) => {
+        const fileKey = String(file._id || file.fileName || index);
+        return (
+          <div className="kam-crane-document-actions" key={fileKey}>
+            <div className="kam-crane-document-info">
+              <strong>{file.documentName || file.fileName}</strong>
+              {file.fileSize ? (
+                <small>{(Number(file.fileSize) / 1024).toFixed(1)} KB</small>
+              ) : null}
+            </div>
+
+            <div className="kam-crane-document-buttons">
+              <button
+                type="button"
+                disabled={Boolean(busy)}
+                onClick={() => openDocument(file, false)}
+              >
+                {busy === fileKey ? "Loading..." : "View"}
+              </button>
+              <button
+                type="button"
+                disabled={Boolean(busy)}
+                onClick={() => openDocument(file, true)}
+              >
+                Download
+              </button>
+            </div>
+          </div>
+        );
+      })}
+
       {error && <small role="alert">{error}</small>}
     </div>
   );
@@ -324,6 +401,19 @@ const isIntercartingMovement = (order) =>
 
 const invoiceIsFullyPaid = (order) => {
   const invoice = order?.invoicePayment || {};
+  if (isIntercartingMovement(order)) {
+    const invoices = safeArray(invoice.invoices);
+    return invoices.length > 0 && invoices.every((item) => {
+      const total = Number(item.totalAmount);
+      const received = safeArray(item.payments).reduce(
+        (sum, payment) => sum + Math.round(Number(payment.amount || 0) * 100), 0,
+      );
+      return String(item.invoiceNumber || "").trim() &&
+        String(item.invoiceDate || "").trim() &&
+        item.totalAmount != null && Number.isFinite(total) && total > 0 &&
+        received >= Math.round(total * 100);
+    });
+  }
   const total = Number(invoice.totalAmount);
   const payments = safeArray(invoice.payments);
   const received = payments.length
@@ -623,6 +713,7 @@ const CommonStepDetails = ({ order, totalRequiredVehicles, editing = false, edit
   const isIntercarting = String(order?.movementType || "")
     .toLowerCase()
     .includes("intercart");
+  const isCrane = String(order?.movementType || "").trim().toLowerCase() === "crane";
   const storedTotalVehicles = Number(order?.totalVehicles) || 0;
   const displayTotalVehicles =
     storedTotalVehicles > 0 ? storedTotalVehicles : totalRequiredVehicles;
@@ -1317,6 +1408,9 @@ const Lifecyclemodal = ({
   });
   const [invoiceDocument, setInvoiceDocument] = useState(null);
   const invoiceDocumentInputRef = useRef(null);
+  // Intercarting-only invoice entry popup and invoice-level remarks.
+  const [intercartingInvoiceModalOpen, setIntercartingInvoiceModalOpen] = useState(false);
+  const [intercartingInvoiceRemarks, setIntercartingInvoiceRemarks] = useState("");
   const [invoiceSaving, setInvoiceSaving] = useState(false);
   const [paymentSaving, setPaymentSaving] = useState(false);
   const [paymentEntryOpen, setPaymentEntryOpen] = useState(false);
@@ -1325,10 +1419,50 @@ const Lifecyclemodal = ({
     paymentDate: "",
     remarks: "",
   });
+  const [selectedIntercartingInvoiceId, setSelectedIntercartingInvoiceId] = useState("");
   // Close confirmation is only displayed when edits would be lost.
   const [showUnsavedClose, setShowUnsavedClose] = useState(false);
   const [invoiceFormReadyForOrder, setInvoiceFormReadyForOrder] = useState(null);
   const invoiceData = workingOrder?.invoicePayment || {};
+  const storedIntercartingInvoices = safeArray(invoiceData.invoices);
+  const intercartingInvoices = storedIntercartingInvoices.length
+    ? storedIntercartingInvoices
+    : String(invoiceData.invoiceNumber || "").trim()
+      ? [{
+          _id: "legacy",
+          invoiceNumber: invoiceData.invoiceNumber,
+          invoiceDate: invoiceData.invoiceDate,
+          invoiceAmount: invoiceData.invoiceAmount ?? invoiceData.amount ?? invoiceData.baseAmount,
+          gstPercentage: invoiceData.gstPercentage ?? 0,
+          gstAmount: invoiceData.gstAmount ?? 0,
+          totalAmount: invoiceData.totalAmount,
+          invoiceDocument: invoiceData.invoiceDocument,
+          payments: safeArray(invoiceData.payments).length
+            ? invoiceData.payments
+            : Number(invoiceData.receivedAmount) > 0 && invoiceData.paymentDate
+              ? [{ amount: invoiceData.receivedAmount, paymentDate: invoiceData.paymentDate, remarks: invoiceData.paymentRemarks, receivedBy: invoiceData.updatedBy }]
+              : [],
+        }]
+      : [];
+  const selectedIntercartingInvoice = intercartingInvoices.find(
+    (item) => String(item._id) === String(selectedIntercartingInvoiceId),
+  );
+  const intercartingTotals = intercartingInvoices.reduce((totals, item) => ({
+    gross: totals.gross + Number(item.invoiceAmount || 0),
+    gst: totals.gst + Number(item.gstAmount || 0),
+    net: totals.net + Number(item.totalAmount || 0),
+    received: totals.received + safeArray(item.payments).reduce(
+      (sum, payment) => sum + Number(payment.amount || 0), 0,
+    ),
+  }), { gross: 0, gst: 0, net: 0, received: 0 });
+  const intercartingInvoiceReceived = selectedIntercartingInvoice
+    ? safeArray(selectedIntercartingInvoice.payments).reduce(
+        (sum, item) => sum + Math.round(Number(item.amount || 0) * 100), 0,
+      ) / 100
+    : 0;
+  const intercartingInvoiceDue = selectedIntercartingInvoice
+    ? Math.max(0, Math.round(Number(selectedIntercartingInvoice.totalAmount || 0) * 100 - intercartingInvoiceReceived * 100) / 100)
+    : 0;
   const finalRateString = String(
     workingOrder?.orderFinalization?.finalRate ?? workingOrder?.finalRate ?? "",
   ).replace(/[₹,\s]/g, "");
@@ -1389,6 +1523,11 @@ const Lifecyclemodal = ({
       maximumFractionDigits: 2,
     })}`;
   useEffect(() => {
+    if (isIntercartingMovement(workingOrder)) {
+      setInvoicePaymentForm({ invoiceNumber: "", invoiceDate: "", amount: "", gstPercentage: "0" });
+      setInvoiceFormReadyForOrder(workingOrder?._id ?? null);
+      return;
+    }
     setInvoicePaymentForm((previous) => ({
       ...previous,
       invoiceNumber: invoiceData.invoiceNumber || "",
@@ -1401,6 +1540,7 @@ const Lifecyclemodal = ({
     setInvoiceFormReadyForOrder(workingOrder?._id ?? null);
   }, [
     workingOrder?._id,
+    workingOrder?.movementType,
     invoiceData.invoiceNumber,
     invoiceData.invoiceDate,
     invoiceData.invoiceAmount,
@@ -1417,7 +1557,7 @@ const Lifecyclemodal = ({
     invoiceDate: invoiceData.invoiceDate
       ? String(invoiceData.invoiceDate).slice(0, 10)
       : "",
-    amount: String(
+    amount: isIntercartingOrder ? "" : String(
       invoiceData.invoiceAmount ??
       invoiceData.amount ??
       invoiceData.baseAmount ??
@@ -1429,7 +1569,8 @@ const Lifecyclemodal = ({
     invoiceFormReadyForOrder === workingOrder?._id &&
     (Object.keys(persistedInvoice).some(
       (key) => String(invoicePaymentForm[key] ?? "") !== persistedInvoice[key],
-    ) || Boolean(invoiceDocument));
+    ) || Boolean(invoiceDocument) ||
+      (isIntercartingOrder && Boolean(intercartingInvoiceRemarks.trim())));
   const unfinishedPayment =
     paymentEntryOpen &&
     [paymentEntry.amount, paymentEntry.paymentDate, paymentEntry.remarks].some(
@@ -1471,7 +1612,7 @@ const Lifecyclemodal = ({
         "error",
       );
     }
-    if (totalPayable + 0.005 < receivedTotal) {
+    if (!isIntercartingMovement(workingOrder) && totalPayable + 0.005 < receivedTotal) {
       return showToast(
         "Total amount cannot be less than payments already received.",
         "error",
@@ -1483,6 +1624,7 @@ const Lifecyclemodal = ({
       form.append("invoiceNumber", invoicePaymentForm.invoiceNumber.trim());
       form.append("invoiceDate", invoicePaymentForm.invoiceDate);
       if (invoiceDocument) form.append("invoiceDocument", invoiceDocument);
+      if (isIntercartingOrder) form.append("remarks", intercartingInvoiceRemarks.trim());
       form.append("amount", baseAmount.toFixed(2));
       form.append("gstPercentage", String(gstPercentage));
       form.append("gstAmount", gstAmount.toFixed(2));
@@ -1502,6 +1644,13 @@ const Lifecyclemodal = ({
       setLocalOrder(updated);
       if (typeof onOrderUpdated === "function") onOrderUpdated(updated);
       setInvoiceDocument(null);
+      if (isIntercartingMovement(workingOrder)) {
+        setInvoicePaymentForm({ invoiceNumber: "", invoiceDate: "", amount: "", gstPercentage: "0" });
+        setIntercartingInvoiceRemarks("");
+        setIntercartingInvoiceModalOpen(false);
+        const updatedInvoices = safeArray(updated.invoicePayment?.invoices);
+        setSelectedIntercartingInvoiceId(String(updatedInvoices.at(-1)?._id || ""));
+      }
       if (invoiceDocumentInputRef.current)
         invoiceDocumentInputRef.current.value = "";
       showToast("Invoice details saved successfully.");
@@ -1511,14 +1660,54 @@ const Lifecyclemodal = ({
       setInvoiceSaving(false);
     }
   };
+  const openIntercartingInvoiceDocument = async (invoice, download = false) => {
+    if (!workingOrder?._id || !invoice?._id) return;
+    const preview = download ? null : window.open("about:blank", "_blank");
+    if (preview) preview.opener = null;
+    try {
+      if (!download && !preview) throw new Error("Please allow popups to view the invoice.");
+      const query = new URLSearchParams({
+        invoiceId: String(invoice._id),
+        disposition: download ? "attachment" : "inline",
+      });
+      const response = await lifecycleApiFetch(
+        `${TRIP_API_URL}/${encodeURIComponent(workingOrder._id)}/invoice-payment/invoiceDocument/file?${query.toString()}`,
+      );
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload.message || "Unable to open invoice document.");
+      }
+      const blobUrl = URL.createObjectURL(await response.blob());
+      if (download) {
+        const link = window.document.createElement("a");
+        link.href = blobUrl;
+        link.download = invoice.invoiceDocument?.fileName || `invoice-${invoice.invoiceNumber}`;
+        window.document.body.appendChild(link);
+        link.click();
+        link.remove();
+      } else {
+        preview.location.replace(blobUrl);
+      }
+      window.setTimeout(() => URL.revokeObjectURL(blobUrl), 300000);
+    } catch (error) {
+      if (preview) preview.close();
+      showToast(error.message || "Unable to open invoice document.", "error");
+    }
+  };
+
   const savePaymentInstallment = async () => {
     const amount = Number(paymentEntry.amount);
-    if (!hasFinalRate)
+    const isIntercartingInvoice = isIntercartingMovement(workingOrder);
+    const paymentDue = isIntercartingInvoice ? intercartingInvoiceDue : dueBalance;
+    if (isIntercartingInvoice && !selectedIntercartingInvoice)
+      return showToast("Choose an invoice before recording payment.", "error");
+    if ((!isIntercartingInvoice && !hasFinalRate) ||
+        (isIntercartingInvoice && !(Number(selectedIntercartingInvoice?.totalAmount) > 0)))
       return showToast(
         "Enter the invoice amount and valid GST percentage first.",
         "error",
       );
-    if (hasUnsavedInvoiceAmount)
+    if (!isIntercartingInvoice && hasUnsavedInvoiceAmount)
       return showToast(
         "Save the updated invoice amount and GST before recording payment.",
         "error",
@@ -1533,7 +1722,7 @@ const Lifecyclemodal = ({
         "Enter a positive amount with up to two decimals.",
         "error",
       );
-    if (Math.round(amount * 100) > Math.round(dueBalance * 100))
+    if (Math.round(amount * 100) > Math.round(paymentDue * 100))
       return showToast("Payment exceeds the remaining balance.", "error");
     if (!paymentEntry.paymentDate)
       return showToast("Select a payment date.", "error");
@@ -1544,7 +1733,10 @@ const Lifecyclemodal = ({
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(paymentEntry),
+          body: JSON.stringify({
+            ...paymentEntry,
+            ...(isIntercartingInvoice ? { invoiceId: selectedIntercartingInvoice._id } : {}),
+          }),
         },
       );
       const payload = await response.json().catch(() => ({}));
@@ -1570,6 +1762,8 @@ const Lifecyclemodal = ({
       gstPercentage: "0",
     });
     setInvoiceDocument(null);
+    setIntercartingInvoiceRemarks("");
+    setIntercartingInvoiceModalOpen(false);
     if (invoiceDocumentInputRef.current)
       invoiceDocumentInputRef.current.value = "";
   }, [order?._id, order?.tripId]);
@@ -2972,6 +3166,12 @@ const Lifecyclemodal = ({
                       value={order.origin}
                     />
                   )}
+                  {isCraneOrder && (
+                    <ReadOnlyField
+                      label="Origin Pincode"
+                      value={order.originPincode || "—"}
+                    />
+                  )}
                   {!isIntercartingEdit && (
                     <ReadOnlyField
                       label="Destination"
@@ -2982,6 +3182,12 @@ const Lifecyclemodal = ({
                         setEditForm((prev) => ({ ...prev, [key]: value }))
                       }
                       value={order.destination}
+                    />
+                  )}
+                  {isCraneOrder && (
+                    <ReadOnlyField
+                      label="Destination Pincode"
+                      value={order.destinationPincode || "—"}
                     />
                   )}
                   {!isIntercartingEdit && (
@@ -4774,6 +4980,139 @@ const Lifecyclemodal = ({
                   </span>
                 </div>
                 <div className="kam-invoice-groups">
+                  {isIntercartingOrder ? (
+                    <>
+                      <div className="kam-invoice-group">
+                        <div className="kam-invoice-amount-breakdown">
+                          <div><span>Total Invoiced</span><strong>{formatRupees(intercartingTotals.gross)}</strong></div>
+                          <div><span>Total GST</span><strong>{formatRupees(intercartingTotals.gst)}</strong></div>
+                          <div className="kam-invoice-grand-total"><span>Invoice Total</span><strong>{formatRupees(intercartingTotals.net)}</strong></div>
+                        </div>
+                        <div className="kam-intercarting-add-invoice-toolbar">
+                          <div>
+                            <h4 className="kam-invoice-subheading">Invoices</h4>
+                            <p>Add a new invoice and keep its payment history separately.</p>
+                          </div>
+                          <button
+                            type="button"
+                            className="kam-request-approval-btn kam-intercarting-open-invoice"
+                            onClick={() => setIntercartingInvoiceModalOpen(true)}
+                            disabled={isCompletedTrip(workingOrder)}
+                          >
+                            + Add Invoice
+                          </button>
+                        </div>
+                        {intercartingInvoiceModalOpen && (
+                          <div
+                            className="kam-intercarting-invoice-modal-overlay"
+                            onMouseDown={(event) => {
+                              if (event.target === event.currentTarget && !invoiceSaving)
+                                setIntercartingInvoiceModalOpen(false);
+                            }}
+                          >
+                            <section
+                              className="kam-intercarting-invoice-modal"
+                              role="dialog"
+                              aria-modal="true"
+                              aria-labelledby="kam-intercarting-invoice-modal-title"
+                            >
+                              <header className="kam-intercarting-invoice-modal-head">
+                                <div>
+                                  <span>INTERCARTING · INVOICE ENTRY</span>
+                                  <h3 id="kam-intercarting-invoice-modal-title">Add New Invoice</h3>
+                                  <p>Enter invoice details, attach the document and add remarks.</p>
+                                </div>
+                                <button
+                                  type="button"
+                                  aria-label="Close invoice popup"
+                                  onClick={() => setIntercartingInvoiceModalOpen(false)}
+                                  disabled={invoiceSaving}
+                                >×</button>
+                              </header>
+                              <div className="kam-intercarting-invoice-modal-body">
+                                <div className="kam-invoice-fields kam-invoice-four-fields">
+                                  <label className="kam-client-trip-field">
+                                    <span>Invoice Number</span>
+                                    <input className="kam-original-edit-input" type="text" maxLength={100} placeholder="Enter invoice number" value={invoicePaymentForm.invoiceNumber} onChange={(event) => updateInvoicePaymentField("invoiceNumber", event.target.value)} />
+                                  </label>
+                                  <label className="kam-client-trip-field">
+                                    <span>Invoice Date</span>
+                                    <input className="kam-original-edit-input" type="date" value={invoicePaymentForm.invoiceDate} onChange={(event) => updateInvoicePaymentField("invoiceDate", event.target.value)} />
+                                  </label>
+                                  <label className="kam-client-trip-field">
+                                    <span>Amount (₹)</span>
+                                    <input className="kam-original-edit-input" type="number" min="0.01" step="0.01" placeholder="Enter amount" value={invoicePaymentForm.amount} onChange={(event) => updateInvoicePaymentField("amount", event.target.value)} />
+                                  </label>
+                                  <label className="kam-client-trip-field">
+                                    <span>GST Percentage (%)</span>
+                                    <select className="kam-original-edit-input kam-gst-select" value={invoicePaymentForm.gstPercentage} onChange={(event) => updateInvoicePaymentField("gstPercentage", event.target.value)}>
+                                      <option value="0">0% — No GST</option><option value="5">5%</option><option value="12">12%</option><option value="18">18%</option><option value="28">28%</option><option value="40">40%</option>
+                                    </select>
+                                  </label>
+                                </div>
+                                <div className="kam-invoice-upload-row">
+                                  <label className="kam-client-trip-field">
+                                    <span>Upload Invoice (PDF / Image)</span>
+                                    <input ref={invoiceDocumentInputRef} className="kam-original-edit-input" type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={(event) => setInvoiceDocument(event.target.files?.[0] || null)} />
+                                    {invoiceDocument && <strong>{invoiceDocument.name}</strong>}
+                                  </label>
+                                </div>
+                                <label className="kam-client-trip-field kam-intercarting-invoice-remarks">
+                                  <span>Remarks</span>
+                                  <textarea className="kam-original-edit-input" rows={3} maxLength={2000} placeholder="Enter invoice remarks (optional)" value={intercartingInvoiceRemarks} onChange={(event) => setIntercartingInvoiceRemarks(event.target.value)} />
+                                </label>
+                                <div className="kam-intercarting-invoice-total-preview">
+                                  <span>Invoice Total (including GST)</span>
+                                  <strong>{formatRupees(totalPayable)}</strong>
+                                </div>
+                              </div>
+                              <footer className="kam-intercarting-invoice-modal-foot">
+                                <span>{!invoicePaymentForm.invoiceNumber.trim() || !invoicePaymentForm.invoiceDate ? "Invoice number and date are required." : "Check the details before saving."}</span>
+                                <div>
+                                  <button type="button" className="kam-request-approval-btn kam-payment-cancel-button" onClick={() => setIntercartingInvoiceModalOpen(false)} disabled={invoiceSaving}>Cancel</button>
+                                  <button type="button" className="kam-request-approval-btn kam-invoice-save-button" onClick={saveInvoiceDetails} disabled={invoiceSaving || isCompletedTrip(workingOrder)}>{invoiceSaving ? "Saving..." : "Save Invoice"}</button>
+                                </div>
+                              </footer>
+                            </section>
+                          </div>
+                        )}
+                      </div>
+                      <div className="kam-invoice-group">
+                        <h4 className="kam-invoice-subheading">Saved Invoices ({intercartingInvoices.length})</h4>
+                        {intercartingInvoices.length ? (
+                          <div className="kam-intercarting-invoice-list">
+                            {intercartingInvoices.map((invoice, index) => {
+                              const invoicePayments = safeArray(invoice.payments);
+                              const invoiceReceived = invoicePayments.reduce((sum, item) => sum + Number(item.amount || 0), 0);
+                              const invoiceDue = Math.max(0, Number(invoice.totalAmount || 0) - invoiceReceived);
+                              return (
+                                <article className="kam-intercarting-invoice-card" key={invoice._id || index}>
+                                  <div className="kam-intercarting-invoice-card-head"><div><span>Invoice {index + 1}</span><strong>{invoice.invoiceNumber}</strong><small>{invoice.invoiceDate}</small></div><span className={`kam-payment-pill${invoiceDue === 0 ? " is-paid" : ""}`}>{invoiceDue === 0 ? "Fully Paid" : invoiceReceived > 0 ? "Partially Paid" : "Pending"}</span></div>
+                                  <div className="kam-intercarting-invoice-values"><div><span>Invoice Total</span><strong>{formatRupees(invoice.totalAmount)}</strong></div><div><span>Received</span><strong>{formatRupees(invoiceReceived)}</strong></div><div><span>Balance</span><strong>{formatRupees(invoiceDue)}</strong></div></div>
+                                  {invoice.remarks && <div className="kam-intercarting-saved-invoice-remarks"><span>Remarks</span><p>{invoice.remarks}</p></div>}
+                                  <div className="kam-payment-toolbar">
+                                    <div className="kam-intercarting-invoice-document-actions">
+                                      <span>{invoice.invoiceDocument?.fileName ? `Document: ${invoice.invoiceDocument.fileName}` : "No invoice document attached"}</span>
+                                      {invoice.invoiceDocument?.fileName && <>
+                                        <button type="button" className="kam-intercarting-document-action" onClick={() => openIntercartingInvoiceDocument(invoice, false)}>View</button>
+                                        <button type="button" className="kam-intercarting-document-action" onClick={() => openIntercartingInvoiceDocument(invoice, true)}>Download</button>
+                                      </>}
+                                    </div>
+                                    <button type="button" className="kam-request-approval-btn" disabled={invoiceDue <= 0 || paymentSaving || isCompletedTrip(workingOrder)} onClick={() => { setSelectedIntercartingInvoiceId(String(invoice._id)); setPaymentEntryOpen(true); setPaymentEntry({ amount: "", paymentDate: "", remarks: "" }); }}>+ Add Payment</button>
+                                  </div>
+                                  <div className="kam-payment-history"><h4>Payment History ({invoicePayments.length})</h4>{invoicePayments.length ? <table className="kam-history-table"><thead><tr><th>#</th><th>Date</th><th>Amount</th><th>Remarks</th><th>Received By</th></tr></thead><tbody>{invoicePayments.map((payment, paymentIndex) => <tr key={payment._id || paymentIndex}><td>{paymentIndex + 1}</td><td>{payment.paymentDate || "—"}</td><td><strong>{formatRupees(payment.amount)}</strong></td><td>{payment.remarks || "—"}</td><td>{payment.receivedBy || "—"}</td></tr>)}</tbody></table> : <p>No payments recorded for this invoice.</p>}</div>
+                                  {paymentEntryOpen && String(selectedIntercartingInvoiceId) === String(invoice._id) && (
+                                    <div className="kam-intercarting-payment-panel"><h4>Record Payment <span>Balance: {formatRupees(invoiceDue)}</span></h4><div className="kam-invoice-fields kam-payment-entry"><label className="kam-client-trip-field"><span>Received Amount (₹)</span><input className="kam-original-edit-input" type="number" min="0.01" max={invoiceDue} step="0.01" value={paymentEntry.amount} placeholder="Enter installment amount" onChange={(event) => setPaymentEntry((previous) => ({ ...previous, amount: event.target.value }))} /></label><label className="kam-client-trip-field"><span>Payment Date</span><input className="kam-original-edit-input" type="date" value={paymentEntry.paymentDate} onChange={(event) => setPaymentEntry((previous) => ({ ...previous, paymentDate: event.target.value }))} /></label><label className="kam-client-trip-field kam-payment-remarks"><span>Remarks</span><textarea className="kam-original-edit-input" rows={2} maxLength={2000} value={paymentEntry.remarks} onChange={(event) => setPaymentEntry((previous) => ({ ...previous, remarks: event.target.value }))} /></label><div className="kam-payment-entry-actions"><button type="button" className="kam-request-approval-btn kam-payment-cancel-button" onClick={() => setPaymentEntryOpen(false)}>Cancel</button><button type="button" className="kam-request-approval-btn kam-payment-save-button" disabled={paymentSaving} onClick={savePaymentInstallment}>{paymentSaving ? "Saving..." : "Save Payment"}</button></div></div></div>
+                                  )}
+                                </article>
+                              );
+                            })}
+                          </div>
+                        ) : <p className="kam-intercarting-empty">No invoices added yet. Add and save an invoice above to start recording payments.</p>}
+                      </div>
+                    </>
+                  ) : (
+                    <>
                   <div className="kam-invoice-group">
                     <div className="kam-invoice-amount-breakdown">
                       <div>
@@ -5051,6 +5390,8 @@ const Lifecyclemodal = ({
                       )}
                     </div>
                   </div>
+                    </>
+                  )}
                 </div>
               </section>
             </div>

@@ -370,7 +370,7 @@ const Dailylog = () => {
   const [selectedSite, setSelectedSite] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const rowsPerPage = 10;
+  const rowsPerPage = 20;
   const [selectedDate, setSelectedDate] = useState(getCurrentDate());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");

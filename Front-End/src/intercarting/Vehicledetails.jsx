@@ -38,7 +38,7 @@ const API_OPTIONS = {
   },
 };
 
-const RECORDS_PER_PAGE = 15;
+const RECORDS_PER_PAGE = 20;
 
 // Release date used for the monthly Released card.
 // Change the field names here if your backend stores it differently.
@@ -550,6 +550,8 @@ const Vehicledetails = () => {
 
   const [deletingVehicleId, setDeletingVehicleId] = useState(null);
 
+  const [restoringVehicleId, setRestoringVehicleId] = useState(null);
+
   const [pageError, setPageError] = useState("");
 
   const fetchVehicles = async () => {
@@ -727,6 +729,52 @@ const Vehicledetails = () => {
       );
     } finally {
       setDeletingVehicleId(null);
+    }
+  };
+
+  const handleRestoreVehicle = async (vehicle) => {
+    const vehicleId = getVehicleId(vehicle);
+
+    if (vehicleId === null) {
+      setPageError("Vehicle ID is missing. Unable to restore this vehicle.");
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Are you sure you want to restore ${vehicle.vehicleNumber || "this vehicle"}?\n\nThe vehicle status will change from Released to Active.`,
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setRestoringVehicleId(vehicleId);
+      setPageError("");
+
+      await axios.put(
+        `${API_URL}/${vehicleId}`,
+        {
+          status: "Active",
+          activeStatus: true,
+          vehicleOutDate: "",
+        },
+        API_OPTIONS,
+      );
+
+      await fetchVehicles();
+      window.alert(`${vehicle.vehicleNumber || "Vehicle"} has been restored to Active status.`);
+    } catch (error) {
+      console.error(
+        "Restore vehicle error:",
+        error.response?.data || error.message,
+      );
+
+      setPageError(
+        error.response?.data?.message ||
+          error.message ||
+          "Unable to restore vehicle.",
+      );
+    } finally {
+      setRestoringVehicleId(null);
     }
   };
 
@@ -1250,6 +1298,7 @@ const Vehicledetails = () => {
                     <th scope="col">Vendor Name</th>
                     <th scope="col">Vehicle In Date</th>
                     <th scope="col">Released On</th>
+                    <th scope="col">Actions</th>
                   </tr>
                 </thead>
 
@@ -1285,11 +1334,24 @@ const Vehicledetails = () => {
                             },
                           ) || "-"}
                         </td>
+
+                        <td>
+                          <button
+                            type="button"
+                            className="released-restore-btn"
+                            onClick={() => handleRestoreVehicle(vehicle)}
+                            disabled={restoringVehicleId === getVehicleId(vehicle)}
+                          >
+                            {restoringVehicleId === getVehicleId(vehicle)
+                              ? "Restoring..."
+                              : "Restore"}
+                          </button>
+                        </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={7} className="no-data">
+                      <td colSpan={8} className="no-data">
                         No vehicles released this month
                       </td>
                     </tr>

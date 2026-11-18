@@ -1311,3 +1311,28 @@ body.modal-open {
         flex: 1;
     }
 }
+
+.released-restore-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 15px;
+  border: 1px solid #078982;
+  border-radius: 6px;
+  background: #e8f7f5;
+  color: #078982;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.released-restore-btn:hover:not(:disabled) {
+  background: #078982;
+  color: #ffffff;
+}
+
+.released-restore-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

@@ -2402,3 +2402,113 @@
 @media (max-width: 1250px) {
   .trip-vehicle-table-header { display: none; }
 }
+
+
+/* ===== Crane supporting files list ===== */
+.trip-selected-files {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.trip-selected-file {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #ffffff;
+  border: 1px solid #d5e3e1;
+  border-radius: 10px;
+}
+
+.trip-selected-file:hover {
+  border-color: #0f9488;
+  background: #f4faf9;
+}
+
+.trip-selected-file-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1e3a46;
+}
+
+.trip-selected-file-name small {
+  margin-left: 6px;
+  font-weight: 500;
+  color: #6b8290;
+}
+
+/* View / Download buttons */
+.trip-selected-file button {
+  flex-shrink: 0;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #0f766e;
+  background: #ffffff;
+  border: 1px solid #0f9488;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.trip-selected-file button:hover:not(:disabled) {
+  background: #0f9488;
+  color: #ffffff;
+}
+
+/* Remove (x) button */
+.trip-selected-file button.trip-selected-file-remove {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  line-height: 1;
+  color: #b91c1c;
+  border-color: #f0c4c4;
+  border-radius: 50%;
+}
+
+.trip-selected-file button.trip-selected-file-remove:hover:not(:disabled) {
+  background: #b91c1c;
+  border-color: #b91c1c;
+  color: #ffffff;
+}
+
+.trip-selected-file button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Upload box keyboard focus + hover */
+.trip-file-upload:hover {
+  border-color: #0f9488;
+}
+
+.trip-file-upload:focus-visible {
+  outline: 2px solid #0f9488;
+  outline-offset: 2px;
+}
+
+/* Stop the upload text from being highlighted when clicked */
+.trip-file-upload {
+  user-select: none;
+}
+
+@media (max-width: 600px) {
+  .trip-selected-file {
+    flex-wrap: wrap;
+  }
+  .trip-selected-file-name {
+    flex-basis: 100%;
+  }
+}

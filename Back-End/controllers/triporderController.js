@@ -24,7 +24,8 @@ const isCraneAllocationOrder = (trip, requirement) => {
   return (
     type === "crane" ||
     type === "cranemovement" ||
-    Boolean(trip?.craneDocument?.fileName)
+    Boolean(trip?.craneDocument?.fileName) ||
+    Boolean(trip?.craneDocuments?.length)
   );
 };
 const trackingDateUtc = (value) => {
@@ -157,16 +158,18 @@ const findApprovedConfirmation = (trip, requirementId) => {
   }
   return null;
 };
-const normalizeRequirement = (requirement, index, isWtgMovement = false) => ({
+const normalizeRequirement = (requirement, index, isLineMovement = false, isProjectMovement = false) => ({
   requirementId:
     cleanString(requirement?.requirementId) || makeId(`REQ${index + 1}`),
   vehicleType: cleanString(requirement?.vehicleType),
   configuration: cleanString(requirement?.configuration),
   classification: cleanString(requirement?.classification),
-  quantity: Math.max(1, toNumber(requirement?.quantity, 1)),
+  quantity: Math.max(1, Math.floor(toNumber(requirement?.quantity, 1))),
   weight: Math.max(0, toNumber(requirement?.weight, 0)),
-  ...(isWtgMovement && {
+  ...((isLineMovement || isProjectMovement) && {
     materialType: cleanString(requirement?.materialType),
+  }),
+  ...(isLineMovement && {
     origin: cleanString(requirement?.origin),
     destination: cleanString(requirement?.destination),
     placementDate: toDateOrNull(requirement?.placementDate),
@@ -177,38 +180,73 @@ const normalizeRequirement = (requirement, index, isWtgMovement = false) => ({
     width: toNullableNumber(requirement?.dimensions?.width),
   },
 });
+const normalizeMovementType = (value) => {
+  const movement = cleanString(value);
+  const normalized = movement.toLowerCase();
+  if (normalized === "wtg movement") return "Line Movement";
+  if (normalized === "other") return "Project Movement";
+  return movement;
+};
+
 const buildTripData = (body = {}) => ({
   tripId: cleanUpperString(body.tripId),
-  movementType: cleanString(body.movementType),
+  movementType: normalizeMovementType(body.movementType),
   customer: cleanString(body.customer),
   contactPerson: cleanString(body.contactPerson),
   contactNumber: cleanString(body.contactNumber),
   email: cleanString(body.email).toLowerCase(),
   assignedKam: cleanString(body.assignedKam),
   enquiryDate: toDateOrNull(body.enquiryDate),
-  placementDate: toDateOrNull(body.placementDate),
+  placementDate: ["project movement", "other"].includes(
+    cleanString(body.movementType).toLowerCase(),
+  )
+    ? null
+    : toDateOrNull(body.placementDate),
   origin: cleanString(body.origin),
   destination: cleanString(body.destination),
+  originPincode: cleanString(body.originPincode),
+  destinationPincode: cleanString(body.destinationPincode),
   distance: Math.max(0, toNumber(body.distance, 0)),
   totalVehicles: Math.max(0, Math.floor(toNumber(body.totalVehicles, 0))),
   routeLocations: Array.isArray(body.routeLocations)
     ? body.routeLocations.map(cleanString).filter(Boolean)
     : [],
-  materialType: cleanString(body.materialType),
+  materialType: ["project movement", "other"].includes(
+    cleanString(body.movementType).toLowerCase(),
+  )
+    ? ""
+    : cleanString(body.materialType),
   weight:
     body.weight == null || body.weight === ""
       ? null
       : Math.max(0, toNumber(body.weight, 0)),
   remark: cleanString(body.remark),
-  siteLocation: cleanString(body.siteLocation),
-  period: cleanString(body.period),
-  dieselScope: cleanString(body.dieselScope),
+  siteLocation: ["project movement", "other"].includes(
+    cleanString(body.movementType).toLowerCase(),
+  )
+    ? ""
+    : cleanString(body.siteLocation),
+  period: ["project movement", "other"].includes(
+    cleanString(body.movementType).toLowerCase(),
+  )
+    ? ""
+    : cleanString(body.period),
+  dieselScope: ["project movement", "other"].includes(
+    cleanString(body.movementType).toLowerCase(),
+  )
+    ? ""
+    : cleanString(body.dieselScope),
   vehicleRequirements: Array.isArray(body.vehicleRequirements)
     ? body.vehicleRequirements.map((requirement, index) =>
         normalizeRequirement(
           requirement,
           index,
-          cleanString(body.movementType).toLowerCase() === "wtg movement"
+          ["line movement", "wtg movement"].includes(
+            cleanString(body.movementType).toLowerCase(),
+          ),
+          ["project movement", "other"].includes(
+            cleanString(body.movementType).toLowerCase(),
+          ),
         )
       )
     : [],
@@ -289,6 +327,37 @@ const createTrip = async (req, res) => {
   }
 };
 /* =========================================================
+   CRANE MULTI-FILE HELPERS
+========================================================= */
+const MAX_CRANE_FILES = 10;
+// Files are stored inside the order document; stay under Mongo's 16 MB limit.
+const MAX_CRANE_TOTAL_BYTES = 12 * 1024 * 1024;
+const PINCODE_RE = /^\d{6}$/;
+const craneFilesFromRequest = (req) => [
+  ...(req.files?.documents || []),
+  ...(req.files?.document || []),
+  ...(Array.isArray(req.files) ? req.files : []),
+];
+const toCraneFileRecord = (file, uploadedBy) => ({
+  documentName: file.originalname,
+  fileName: file.originalname,
+  mimeType: file.mimetype,
+  fileSize: file.size,
+  fileData: file.buffer,
+  uploadedBy,
+  uploadedAt: new Date(),
+});
+// Returns an error message, or "" if the files are acceptable.
+const validateCraneFiles = (files, existingCount = 0, existingBytes = 0) => {
+  if (!files.length) return "Upload at least one Crane document.";
+  if (existingCount + files.length > MAX_CRANE_FILES)
+    return `Maximum ${MAX_CRANE_FILES} documents allowed per order.`;
+  const total = existingBytes + files.reduce((s, f) => s + f.size, 0);
+  if (total > MAX_CRANE_TOTAL_BYTES)
+    return "Total size of Crane documents must be 12 MB or less.";
+  return "";
+};
+/* =========================================================
    CREATE CRANE MOVEMENT
    Separate flow so the existing createTrip function is untouched.
    Expects multipart/form-data:
@@ -317,12 +386,14 @@ const createCraneTrip = async (req, res) => {
     if (cleanString(data.movementType).toLowerCase() !== "crane") {
       return sendError(res, 400, "This endpoint is only for Crane movement.");
     }
-    if (!req.file) {
-      return sendError(
-        res,
-        400,
-        "Crane vehicle requirement document is required.",
-      );
+    const craneFiles = craneFilesFromRequest(req);
+    const fileProblem = validateCraneFiles(craneFiles);
+    if (fileProblem) return sendError(res, 400, fileProblem);
+    if (
+      (data.originPincode && !PINCODE_RE.test(data.originPincode)) ||
+      (data.destinationPincode && !PINCODE_RE.test(data.destinationPincode))
+    ) {
+      return sendError(res, 400, "Pincodes must be 6 digits.");
     }
     const duplicateTrip = await TripOrder.findOne({
       tripId: data.tripId,
@@ -330,15 +401,18 @@ const createCraneTrip = async (req, res) => {
     if (duplicateTrip) {
       return sendError(res, 409, `Trip ID ${data.tripId} already exists.`);
     }
+    const uploadedBy =
+      cleanString(body.uploadedBy) ||
+      cleanString(body.assignedKam) ||
+      "Key Account";
     /*
      * Keep the existing quotation / approval / tracking functions working.
-     * Crane gets one parent requirement linked to the uploaded vehicle list.
-     * No old function is replaced.
+     * Crane gets one parent requirement linked to the uploaded documents.
      */
     const craneRequirement = {
       requirementId: `${data.tripId}-CRANE-REQ-1`,
       vehicleType: "Crane",
-      configuration: "As per uploaded Crane vehicle requirement document",
+      configuration: "As per uploaded Crane vehicle requirement documents",
       classification: "Crane Movement",
       quantity: Math.max(1, data.totalVehicles || 1),
       weight: Math.max(0, toNumber(data.weight, 0)),
@@ -353,19 +427,7 @@ const createCraneTrip = async (req, res) => {
       createdBy: req.user._id,
       movementType: "Crane",
       vehicleRequirements: [craneRequirement],
-      craneDocument: {
-        documentName:
-          cleanString(body.craneDocumentName) || "Crane Vehicle Requirement",
-        fileName: req.file.originalname,
-        mimeType: req.file.mimetype,
-        fileSize: req.file.size,
-        fileData: req.file.buffer,
-        uploadedBy:
-          cleanString(body.uploadedBy) ||
-          cleanString(body.assignedKam) ||
-          "Key Account",
-        uploadedAt: new Date(),
-      },
+      craneDocuments: craneFiles.map((f) => toCraneFileRecord(f, uploadedBy)),
       status: "Draft",
       stage: "Order Finalization",
       orderApproval: {
@@ -543,7 +605,16 @@ const updateTrip = async (req, res) => {
     trip.totalVehicles = data.totalVehicles;
     trip.routeLocations = data.routeLocations;
     trip.materialType = data.materialType;
-    if (data.movementType === "Crane") trip.weight = data.weight;
+    if (data.movementType === "Crane") {
+      trip.weight = data.weight;
+      if (
+        (data.originPincode && !PINCODE_RE.test(data.originPincode)) ||
+        (data.destinationPincode && !PINCODE_RE.test(data.destinationPincode))
+      )
+        return sendError(res, 400, "Pincodes must be 6 digits.");
+      trip.originPincode = data.originPincode;
+      trip.destinationPincode = data.destinationPincode;
+    }
     trip.remark = data.remark;
     trip.siteLocation = data.siteLocation;
     trip.period = data.period;
@@ -3457,7 +3528,12 @@ const correctLifecycleDetails = async (req, res) => {
       for (const reqItem of body.vehicleRequirements) {
         const target = original.get(reqItem.requirementId);
         if (!target) return sendError(res, 400, "Unknown vehicle requirement.");
-        for (const key of ["vehicleType", "configuration", "classification"]) {
+        for (const key of [
+          "vehicleType",
+          "configuration",
+          "classification",
+          "materialType",
+        ]) {
           if (reqItem[key] !== undefined)
             target[key] = cleanString(reqItem[key]);
         }
@@ -4114,8 +4190,61 @@ const invoiceTripFilter = (req) => ({
   $and: [{ _id: req.params.id }, req.tripAccessFilter || {}],
 });
 const cents = (value) => Math.round(Number(value || 0) * 100);
+const isIntercartingInvoiceOrder = (trip) =>
+  cleanString(trip?.movementType).toLowerCase().replace(/[\s-]+/g, "") === "intercarting";
+const getInvoiceRecordTotal = (invoice) => {
+  if (invoice?.totalAmount != null && Number.isFinite(Number(invoice.totalAmount)))
+    return Number(invoice.totalAmount);
+  if (invoice?.invoiceAmount != null && Number.isFinite(Number(invoice.invoiceAmount))) {
+    const base = cents(invoice.invoiceAmount);
+    return (base + Math.round(base * Number(invoice.gstPercentage || 0) / 100)) / 100;
+  }
+  return null;
+};
+const getInvoiceRecordReceivedCents = (invoice) =>
+  Array.isArray(invoice?.payments)
+    ? invoice.payments.reduce((sum, payment) => sum + cents(payment.amount), 0)
+    : 0;
+const updateInvoiceRecordSummary = (invoice) => {
+  const total = getInvoiceRecordTotal(invoice);
+  const received = getInvoiceRecordReceivedCents(invoice);
+  invoice.totalReceived = received / 100;
+  invoice.remainingBalance = total === null ? null : Math.max(0, cents(total) - received) / 100;
+  invoice.paymentStatus = total !== null && received >= cents(total)
+    ? "Fully Paid" : received > 0 ? "Partially Paid" : "Pending";
+};
+const migrateLegacyIntercartingInvoice = (trip) => {
+  const details = trip.invoicePayment || (trip.invoicePayment = {});
+  if (!Array.isArray(details.invoices)) details.invoices = [];
+  if (details.invoices.length || !cleanString(details.invoiceNumber)) return;
+  const legacyPayments = Array.isArray(details.payments) && details.payments.length
+    ? details.payments.map((payment) => ({
+        amount: payment.amount, paymentDate: payment.paymentDate,
+        remarks: payment.remarks || "", receivedBy: payment.receivedBy || "",
+        createdAt: payment.createdAt,
+      }))
+    : Number(details.receivedAmount) > 0 && details.paymentDate
+      ? [{ amount: details.receivedAmount, paymentDate: details.paymentDate,
+          remarks: details.paymentRemarks || "", receivedBy: details.updatedBy || "Previous Payment" }]
+      : [];
+  details.invoices.push({
+    invoiceNumber: details.invoiceNumber,
+    invoiceDate: details.invoiceDate,
+    invoiceAmount: details.invoiceAmount ?? details.amount ?? details.baseAmount,
+    gstPercentage: details.gstPercentage ?? 0,
+    gstAmount: details.gstAmount ?? 0,
+    totalAmount: details.totalAmount,
+    payments: legacyPayments,
+    invoiceDocument: details.invoiceDocument?.toObject?.() || details.invoiceDocument || {},
+    updatedBy: details.updatedBy || "",
+    updatedAt: details.updatedAt || null,
+  });
+  updateInvoiceRecordSummary(details.invoices[0]);
+};
 const getInvoiceTotal = (trip) => {
   const invoice = trip?.invoicePayment;
+  if (isIntercartingInvoiceOrder(trip) && Array.isArray(invoice?.invoices))
+    return invoice.invoices.reduce((sum, item) => sum + (getInvoiceRecordTotal(item) ?? 0), 0);
   if (invoice?.totalAmount != null && Number.isFinite(Number(invoice.totalAmount))) {
     return Number(invoice.totalAmount);
   }
@@ -4132,6 +4261,18 @@ const getReceivedCents = (details) => {
 };
 const updatePaymentSummary = (trip) => {
   const details = trip.invoicePayment;
+  if (isIntercartingInvoiceOrder(trip) && Array.isArray(details.invoices)) {
+    details.invoices.forEach(updateInvoiceRecordSummary);
+    const received = details.invoices.reduce((sum, item) => sum + getInvoiceRecordReceivedCents(item), 0);
+    const total = details.invoices.reduce((sum, item) => sum + (getInvoiceRecordTotal(item) === null ? 0 : cents(getInvoiceRecordTotal(item))), 0);
+    details.totalReceived = received / 100;
+    details.receivedAmount = received / 100;
+    details.remainingBalance = details.invoices.length
+      ? Math.max(0, total - received) / 100 : null;
+    details.paymentStatus = total > 0 && received >= total
+      ? "Fully Paid" : received > 0 ? "Partially Paid" : "Pending";
+    return;
+  }
   const received = getReceivedCents(details);
   const total = getInvoiceTotal(trip);
   details.totalReceived = received / 100;
@@ -4143,6 +4284,14 @@ const updatePaymentSummary = (trip) => {
 // A zero balance is not sufficient without a saved, valid invoice.
 const isInvoiceFullyPaid = (trip) => {
   const details = trip?.invoicePayment;
+  if (isIntercartingInvoiceOrder(trip)) {
+    return Array.isArray(details?.invoices) && details.invoices.length > 0 &&
+      details.invoices.every((invoice) => {
+        const total = getInvoiceRecordTotal(invoice);
+        return cleanString(invoice?.invoiceNumber) && cleanString(invoice?.invoiceDate) &&
+          total !== null && total > 0 && getInvoiceRecordReceivedCents(invoice) >= cents(total);
+      });
+  }
   const total = getInvoiceTotal(trip);
   return Boolean(
     cleanString(details?.invoiceNumber) &&
@@ -4212,6 +4361,30 @@ const addInvoicePayment = async (req, res) => {
     const remarks = cleanString(req.body?.remarks);
     if (remarks.length > 2000)
       return sendError(res, 400, "Remarks exceed 2000 characters.");
+    if (isIntercartingInvoiceOrder(trip)) {
+      migrateLegacyIntercartingInvoice(trip);
+      const invoiceId = cleanString(req.body?.invoiceId);
+      const invoice = invoiceId === "legacy"
+        ? trip.invoicePayment?.invoices?.[0]
+        : trip.invoicePayment?.invoices?.id(invoiceId);
+      if (!invoice) return sendError(res, 404, "Invoice not found.");
+      const invoiceTotal = getInvoiceRecordTotal(invoice);
+      if (invoiceTotal === null || invoiceTotal <= 0)
+        return sendError(res, 400, "Save a valid invoice amount before recording payment.");
+      if (getInvoiceRecordReceivedCents(invoice) + cents(amount) > cents(invoiceTotal))
+        return sendError(res, 400, "Payment exceeds this invoice's outstanding balance.");
+      const receivedBy = cleanString(req.user?.username || req.user?.name) || "Key Account";
+      invoice.payments.push({ amount, paymentDate, remarks, receivedBy });
+      invoice.updatedBy = receivedBy;
+      invoice.updatedAt = new Date();
+      updateInvoiceRecordSummary(invoice);
+      updatePaymentSummary(trip);
+      reconcileInvoiceLifecycle(trip);
+      trip.markModified("invoicePayment");
+      await trip.save();
+      return sendSuccess(res, 200, "Payment added successfully.",
+        await TripOrder.findOne(invoiceTripFilter(req)).lean());
+    }
     if (!trip.invoicePayment) trip.invoicePayment = {};
     const details = trip.invoicePayment;
     if (!Array.isArray(details.payments)) details.payments = [];
@@ -4279,6 +4452,64 @@ const saveInvoicePayment = async (req, res) => {
       return sendError(res, 409, "Completed trips are read-only.");
 
     const body = req.body || {};
+    if (isIntercartingInvoiceOrder(trip)) {
+      migrateLegacyIntercartingInvoice(trip);
+      const details = trip.invoicePayment || (trip.invoicePayment = {});
+      if (!Array.isArray(details.invoices)) details.invoices = [];
+      const invoiceId = cleanString(body.invoiceId);
+      let invoice = invoiceId ? details.invoices.id(invoiceId) : null;
+      if (invoiceId && !invoice) return sendError(res, 404, "Invoice not found.");
+      const isNewInvoice = !invoice;
+      if (!invoice) {
+        invoice = {};
+        details.invoices.push(invoice);
+        invoice = details.invoices[details.invoices.length - 1];
+      }
+      const invoiceNumber = cleanString(body.invoiceNumber);
+      const invoiceDate = cleanString(body.invoiceDate);
+      if (!invoiceNumber || invoiceNumber.length > 100)
+        return sendError(res, 400, "Enter an invoice number up to 100 characters.");
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(invoiceDate) ||
+          Number.isNaN(Date.parse(`${invoiceDate}T00:00:00.000Z`)) ||
+          new Date(`${invoiceDate}T00:00:00.000Z`).toISOString().slice(0, 10) !== invoiceDate)
+        return sendError(res, 400, "Enter a valid invoice date.");
+      const amountInput = body.invoiceAmount ?? body.amount;
+      const amount = Number(amountInput);
+      const gst = Number(body.gstPercentage ?? 0);
+      if (!Number.isFinite(amount) || amount <= 0 ||
+          Math.abs(amount * 100 - Math.round(amount * 100)) > 0.000001 ||
+          !Number.isFinite(gst) || gst < 0 || gst > 100)
+        return sendError(res, 400, "Amount or GST percentage is invalid.");
+      const baseCents = cents(amount);
+      const gstCents = Math.round(baseCents * gst / 100);
+      const totalCents = baseCents + gstCents;
+      if (getInvoiceRecordReceivedCents(invoice) > totalCents)
+        return sendError(res, 400, "Invoice total cannot be less than payments already received.");
+      const invoiceRemarks = cleanString(body.remarks);
+      if (invoiceRemarks.length > 2000)
+        return sendError(res, 400, "Invoice remarks exceed 2000 characters.");
+      invoice.invoiceNumber = invoiceNumber;
+      invoice.invoiceDate = invoiceDate;
+      invoice.remarks = invoiceRemarks;
+      invoice.invoiceAmount = baseCents / 100;
+      invoice.gstPercentage = gst;
+      invoice.gstAmount = gstCents / 100;
+      invoice.totalAmount = totalCents / 100;
+      const file = req.files?.invoiceDocument?.[0];
+      if (file) invoice.invoiceDocument = {
+        fileName: file.originalname, mimeType: file.mimetype,
+        fileSize: file.size, fileData: file.buffer,
+      };
+      invoice.updatedBy = cleanString(req.user?.username || req.user?.name) || "Key Account";
+      invoice.updatedAt = new Date();
+      updateInvoiceRecordSummary(invoice);
+      updatePaymentSummary(trip);
+      reconcileInvoiceLifecycle(trip);
+      trip.markModified("invoicePayment");
+      await trip.save();
+      return sendSuccess(res, 200, isNewInvoice ? "Invoice added successfully." : "Invoice updated successfully.",
+        await TripOrder.findOne(invoiceTripFilter(req)).lean());
+    }
     const previous = trip.invoicePayment?.toObject?.() || {};
     if (!trip.invoicePayment) trip.invoicePayment = {};
     const details = trip.invoicePayment;
@@ -4384,20 +4615,25 @@ const downloadInvoicePaymentDocument = async (req, res) => {
     const field = req.params.documentType;
     if (!["proFormaDocument", "invoiceDocument"].includes(field))
       return sendError(res, 400, "Invalid document type.");
-    const trip = await TripOrder.findOne(invoiceTripFilter(req)).select(
-      `+invoicePayment.${field}.fileData`,
-    );
+    const invoiceId = cleanString(req.query?.invoiceId);
+    const selectFields = invoiceId && field === "invoiceDocument"
+      ? "+invoicePayment.invoices.invoiceDocument.fileData"
+      : `+invoicePayment.${field}.fileData`;
+    const trip = await TripOrder.findOne(invoiceTripFilter(req)).select(selectFields);
     if (!trip) return sendError(res, 404, "Order not found.");
-    const file = trip.invoicePayment?.[field];
+    const file = invoiceId && field === "invoiceDocument"
+      ? trip.invoicePayment?.invoices?.id(invoiceId)?.invoiceDocument
+      : trip.invoicePayment?.[field];
     if (!file?.fileData) return sendError(res, 404, "Document not found.");
     const filename = String(file.fileName || "invoice-document").replace(
       /[\r\n"\\]/g,
       "_",
     );
+    const disposition = req.query?.disposition === "inline" ? "inline" : "attachment";
     res.setHeader("Content-Type", file.mimeType || "application/octet-stream");
     res.setHeader(
       "Content-Disposition",
-      `attachment; filename="invoice-document"; filename*=UTF-8''${encodeURIComponent(filename)}`,
+      `${disposition}; filename="invoice-document"; filename*=UTF-8''${encodeURIComponent(filename)}`,
     );
     res.setHeader("X-Content-Type-Options", "nosniff");
     return res.send(file.fileData);
@@ -4450,7 +4686,127 @@ const saveEnquiryAmounts = async (req, res) => {
   }
 };
 
+
+/* =========================================================
+   CRANE SUPPORTING FILES - ADD / VIEW / DOWNLOAD / REMOVE
+========================================================= */
+const addCraneDocuments = async (req, res) => {
+  try {
+    if (!isValidMongoId(req.params.id))
+      return sendError(res, 400, "Invalid order database ID.");
+    const files = craneFilesFromRequest(req);
+    if (!files.length)
+      return sendError(res, 400, "Choose at least one document.");
+    const trip = await TripOrder.findOne(invoiceTripFilter(req)).select(
+      "movementType stage status craneDocuments.fileSize",
+    );
+    if (!trip) return sendError(res, 404, "Order not found.");
+    if (cleanString(trip.movementType).toLowerCase() !== "crane")
+      return sendError(res, 400, "Crane orders only.");
+    if (isClosedReplacementOrder(trip))
+      return sendError(
+        res,
+        409,
+        "Completed or cancelled orders cannot be changed.",
+      );
+    const existing = trip.craneDocuments || [];
+    const problem = validateCraneFiles(
+      files,
+      existing.length,
+      existing.reduce((s, f) => s + (f.fileSize || 0), 0),
+    );
+    if (problem) return sendError(res, 400, problem);
+    const uploadedBy =
+      cleanString(req.body?.uploadedBy) ||
+      cleanString(req.user?.name || req.user?.username) ||
+      "Key Account";
+    await TripOrder.updateOne(
+      { _id: trip._id },
+      {
+        $push: {
+          craneDocuments: {
+            $each: files.map((f) => toCraneFileRecord(f, uploadedBy)),
+          },
+        },
+      },
+    );
+    return sendSuccess(
+      res,
+      201,
+      "Crane documents uploaded.",
+      await TripOrder.findById(trip._id).lean(),
+    );
+  } catch (error) {
+    console.error("Add Crane Documents Error:", error);
+    return sendError(res, 500, "Unable to upload Crane documents.", error);
+  }
+};
+const downloadCraneDocumentFile = async (req, res) => {
+  try {
+    if (!isValidMongoId(req.params.id) || !isValidMongoId(req.params.fileId))
+      return sendError(res, 400, "Invalid ID.");
+    const trip = await TripOrder.findOne(invoiceTripFilter(req)).select(
+      "+craneDocuments.fileData",
+    );
+    const file = trip?.craneDocuments?.id(req.params.fileId);
+    if (!file?.fileData || !file.fileName)
+      return sendError(res, 404, "Document not found.");
+    const disposition =
+      String(req.query.disposition || "").toLowerCase() === "inline"
+        ? "inline"
+        : "attachment";
+    res.setHeader("Content-Type", file.mimeType || "application/octet-stream");
+    res.setHeader("Content-Length", file.fileData.length);
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    res.setHeader(
+      "Content-Disposition",
+      `${disposition}; filename*=UTF-8''${encodeURIComponent(file.fileName)}`,
+    );
+    return res.send(file.fileData);
+  } catch (error) {
+    console.error("Download Crane Document Error:", error);
+    return sendError(res, 500, "Unable to load Crane document.", error);
+  }
+};
+const deleteCraneDocument = async (req, res) => {
+  try {
+    if (!isValidMongoId(req.params.id) || !isValidMongoId(req.params.fileId))
+      return sendError(res, 400, "Invalid ID.");
+    const trip = await TripOrder.findOne(invoiceTripFilter(req)).select(
+      "stage status orderApproval craneDocuments.fileName",
+    );
+    if (!trip) return sendError(res, 404, "Order not found.");
+    if (trip.orderApproval?.status === "Approved")
+      return sendError(
+        res,
+        409,
+        "Approved orders cannot be edited from Key Account.",
+      );
+    if (!trip.craneDocuments?.id(req.params.fileId))
+      return sendError(res, 404, "Document not found.");
+    if (trip.craneDocuments.length <= 1)
+      return sendError(res, 409, "At least one Crane document must remain.");
+    await TripOrder.updateOne(
+      { _id: trip._id },
+      { $pull: { craneDocuments: { _id: req.params.fileId } } },
+    );
+    return sendSuccess(
+      res,
+      200,
+      "Document removed.",
+      await TripOrder.findById(trip._id).lean(),
+    );
+  } catch (error) {
+    console.error("Delete Crane Document Error:", error);
+    return sendError(res, 500, "Unable to remove document.", error);
+  }
+};
+
 module.exports = {
+  MAX_CRANE_FILES,
+  addCraneDocuments,
+  downloadCraneDocumentFile,
+  deleteCraneDocument,
   saveEnquiryAmounts,
   saveInvoicePayment,
   addInvoicePayment,

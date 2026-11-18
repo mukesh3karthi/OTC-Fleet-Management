@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import "./tripcreatemodal.css";
 
 /* =========================================================
@@ -45,6 +45,8 @@ const TripField = ({
   unit = "",
   min,
   step,
+  maxLength,
+  inputMode,
   disabled = false,
   readOnly = false,
 }) => (
@@ -61,6 +63,8 @@ const TripField = ({
           type={type}
           min={min}
           step={step}
+          maxLength={maxLength}
+          inputMode={inputMode}
           placeholder={placeholder}
           value={value ?? ""}
           onChange={onChange}
@@ -75,6 +79,8 @@ const TripField = ({
         type={type}
         min={min}
         step={step}
+        maxLength={maxLength}
+        inputMode={inputMode}
         placeholder={placeholder}
         value={value ?? ""}
         onChange={onChange}
@@ -210,21 +216,33 @@ const VehicleRequirementRow = ({
 
       {isWtg ? (
         <div className="trip-field-group wtg-field-material">
-          <label htmlFor={`${prefix}-material-${index}`}>Material Type<span className="trip-required">*</span></label>
-          <input id={`${prefix}-material-${index}`} type="text"
-            value={requirement.materialType || ""} placeholder="Material"
-            onChange={handleWtgVehicleFieldChange(index, "materialType")} />
+          <label htmlFor={`${prefix}-material-${index}`}>
+            Material Type<span className="trip-required">*</span>
+          </label>
+          <input
+            id={`${prefix}-material-${index}`}
+            type="text"
+            value={requirement.materialType || ""}
+            placeholder="Material"
+            onChange={handleWtgVehicleFieldChange(index, "materialType")}
+          />
         </div>
       ) : (
         <div className="trip-field-group intercarting-field-classification">
-          <label htmlFor={`${prefix}-classification-${index}`}>Movement Classification<span className="trip-required">*</span></label>
+          <label htmlFor={`${prefix}-classification-${index}`}>
+            Movement Classification<span className="trip-required">*</span>
+          </label>
           <div className="trip-select-wrap">
-            <select id={`${prefix}-classification-${index}`}
+            <select
+              id={`${prefix}-classification-${index}`}
               value={requirement.classification || ""}
-              onChange={handleWtgVehicleFieldChange(index, "classification")}>
+              onChange={handleWtgVehicleFieldChange(index, "classification")}
+            >
               <option value="">Select type</option>
               {CLASSIFICATION_OPTIONS.map((classification) => (
-                <option key={classification} value={classification}>{classification}</option>
+                <option key={classification} value={classification}>
+                  {classification}
+                </option>
               ))}
             </select>
             <span className="trip-select-arrow">⌄</span>
@@ -267,22 +285,39 @@ const VehicleRequirementRow = ({
       {isWtg && (
         <>
           <div className="trip-field-group wtg-field-origin">
-            <label htmlFor={`${prefix}-origin-${index}`}>Origin<span className="trip-required">*</span></label>
-            <input id={`${prefix}-origin-${index}`} type="text" placeholder="Origin"
+            <label htmlFor={`${prefix}-origin-${index}`}>
+              Origin<span className="trip-required">*</span>
+            </label>
+            <input
+              id={`${prefix}-origin-${index}`}
+              type="text"
+              placeholder="Origin"
               value={requirement.origin || ""}
-              onChange={handleWtgVehicleFieldChange(index, "origin")} />
+              onChange={handleWtgVehicleFieldChange(index, "origin")}
+            />
           </div>
           <div className="trip-field-group wtg-field-destination">
-            <label htmlFor={`${prefix}-destination-${index}`}>Destination<span className="trip-required">*</span></label>
-            <input id={`${prefix}-destination-${index}`} type="text" placeholder="Destination"
+            <label htmlFor={`${prefix}-destination-${index}`}>
+              Destination<span className="trip-required">*</span>
+            </label>
+            <input
+              id={`${prefix}-destination-${index}`}
+              type="text"
+              placeholder="Destination"
               value={requirement.destination || ""}
-              onChange={handleWtgVehicleFieldChange(index, "destination")} />
+              onChange={handleWtgVehicleFieldChange(index, "destination")}
+            />
           </div>
           <div className="trip-field-group wtg-field-placement">
-            <label htmlFor={`${prefix}-placement-${index}`}>Placement Date</label>
-            <input id={`${prefix}-placement-${index}`} type="date"
+            <label htmlFor={`${prefix}-placement-${index}`}>
+              Placement Date
+            </label>
+            <input
+              id={`${prefix}-placement-${index}`}
+              type="date"
               value={requirement.placementDate || ""}
-              onChange={handleWtgVehicleFieldChange(index, "placementDate")} />
+              onChange={handleWtgVehicleFieldChange(index, "placementDate")}
+            />
           </div>
         </>
       )}
@@ -390,6 +425,258 @@ const formatKamName = (value) =>
 const getTotalVehicles = (requirements) =>
   Array.isArray(requirements) ? requirements.length : 0;
 
+/* =========================================================
+   CRANE SUPPORTING FILES (multiple upload, view / download each)
+========================================================= */
+
+const MAX_FILES = 10;
+const MAX_TOTAL_BYTES = 12 * 1024 * 1024;
+
+const formatSize = (bytes = 0) =>
+  bytes >= 1024 * 1024
+    ? `${(bytes / 1024 / 1024).toFixed(1)} MB`
+    : `${Math.max(1, Math.round(bytes / 1024))} KB`;
+
+const getToken = () => {
+  try {
+    return sessionStorage.getItem("kamToken") || "";
+  } catch {
+    return "";
+  }
+};
+
+/**
+ * Props
+ *  apiBase          e.g. import.meta.env.VITE_API_URL
+ *  selectedFiles    File[]  new files not yet saved (create mode)
+ *  onAddFiles       (File[]) => void   append to your tripUpload state
+ *  onRemoveSelected (index) => void
+ *  orderId          Mongo _id of the order (edit mode only)
+ *  existingFiles    trip.craneDocuments (edit mode only)
+ *  onTripUpdated    (updatedTrip) => void   called after upload/remove in edit mode
+ */
+const CraneFilesSection = ({
+  apiBase = "",
+  selectedFiles = [],
+  onAddFiles,
+  onPickEvent,
+  onRemoveSelected,
+  orderId = "",
+  existingFiles = [],
+  onTripUpdated,
+}) => {
+  const inputRef = useRef(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  const authHeaders = { Authorization: `Bearer ${getToken()}` };
+  const fileUrl = (file, disposition) =>
+    `${apiBase}/api/triporders/${orderId}/crane-documents/${file._id}/file?disposition=${disposition}`;
+
+  const savedBytes = existingFiles.reduce((s, f) => s + (f.fileSize || 0), 0);
+  const pendingBytes = selectedFiles.reduce((s, f) => s + f.size, 0);
+
+  const validate = (incoming) => {
+    const count = existingFiles.length + selectedFiles.length + incoming.length;
+    if (count > MAX_FILES) return `You can attach up to ${MAX_FILES} documents.`;
+    const total = savedBytes + pendingBytes + incoming.reduce((s, f) => s + f.size, 0);
+    if (total > MAX_TOTAL_BYTES) return "Total size of all documents must be 12 MB or less.";
+    return "";
+  };
+
+  const uploadToOrder = async (files) => {
+    setBusy(true);
+    try {
+      const form = new FormData();
+      files.forEach((f) => form.append("documents", f));
+      const res = await fetch(`${apiBase}/api/triporders/${orderId}/crane-documents`, {
+        method: "POST",
+        headers: authHeaders,
+        body: form,
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json.message || "Upload failed.");
+      onTripUpdated?.(json.data);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handlePick = async (event) => {
+    const input = event.target;
+    const incoming = Array.from(input.files || []);
+    if (!incoming.length) return;
+    const problem = validate(incoming);
+    if (problem) {
+      input.value = "";
+      return setError(problem);
+    }
+    setError("");
+    if (orderId) {
+      // Edit mode: upload straight to the saved order.
+      await uploadToOrder(incoming);
+      input.value = "";
+    } else if (onAddFiles) {
+      onAddFiles(incoming);
+      input.value = "";
+    } else {
+      // Create mode: hand the original change event to the parent's existing
+      // handler, exactly as the old input did (value is left untouched).
+      onPickEvent?.(event);
+    }
+  };
+
+  const viewLocal = (file) => {
+    const url = URL.createObjectURL(file);
+    window.open(url, "_blank", "noopener");
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+  };
+
+  const fetchSaved = async (file, download) => {
+    try {
+      const res = await fetch(fileUrl(file, download ? "attachment" : "inline"), {
+        headers: authHeaders,
+      });
+      if (!res.ok) throw new Error("Unable to load document.");
+      const url = URL.createObjectURL(await res.blob());
+      if (download) {
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = file.fileName;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      } else {
+        window.open(url, "_blank", "noopener");
+        setTimeout(() => URL.revokeObjectURL(url), 60000);
+      }
+    } catch (e) {
+      setError(e.message);
+    }
+  };
+
+  const removeSaved = async (file) => {
+    if (!window.confirm(`Remove ${file.fileName}?`)) return;
+    setBusy(true);
+    try {
+      const res = await fetch(
+        `${apiBase}/api/triporders/${orderId}/crane-documents/${file._id}`,
+        { method: "DELETE", headers: authHeaders },
+      );
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json.message || "Unable to remove document.");
+      onTripUpdated?.(json.data);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const total = existingFiles.length + selectedFiles.length;
+
+  return (
+    <div className="trip-field-group trip-field-full">
+      <label>Upload Supporting Files</label>
+
+      <div
+        className="trip-file-upload"
+        role="button"
+        tabIndex={0}
+        aria-disabled={busy}
+        style={{ position: "relative", cursor: busy ? "wait" : "pointer" }}
+        onClick={() => {
+          if (!busy) inputRef.current?.click();
+        }}
+        onKeyDown={(event) => {
+          if (!busy && (event.key === "Enter" || event.key === " ")) {
+            event.preventDefault();
+            inputRef.current?.click();
+          }
+        }}
+      >
+        <input
+          ref={inputRef}
+          type="file"
+          multiple
+          hidden
+          disabled={busy}
+          onClick={(event) => event.stopPropagation()}
+          onChange={handlePick}
+          accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.jpg,.jpeg,.png"
+          aria-label="Choose multiple supporting files"
+        />
+        <span className="trip-file-icon">↑</span>
+        <span className="trip-file-content">
+          <strong>
+            {total ? `${total} of ${MAX_FILES} file(s) attached` : "Choose supporting documents"}
+          </strong>
+          <small>PDF, Word, Excel, CSV, JPG or PNG. Up to {MAX_FILES} files, 12 MB total.</small>
+        </span>
+        <span className="trip-file-action">{busy ? "Working..." : "Browse"}</span>
+      </div>
+
+      {error && (
+        <p role="alert" style={{ color: "#b91c1c", fontSize: 13, margin: "6px 0 0" }}>
+          {error}
+        </p>
+      )}
+
+      {existingFiles.length > 0 && (
+        <div className="trip-selected-files">
+          {existingFiles.map((file) => (
+            <div className="trip-selected-file" key={file._id}>
+              <span className="trip-selected-file-name">
+                {file.fileName} <small>({formatSize(file.fileSize)})</small>
+              </span>
+              <button type="button" onClick={() => fetchSaved(file, false)}>View</button>
+              <button type="button" onClick={() => fetchSaved(file, true)}>Download</button>
+              {existingFiles.length > 1 && (
+                <button
+                  type="button"
+                  className="trip-selected-file-remove"
+                  disabled={busy}
+                  onClick={() => removeSaved(file)}
+                  aria-label={`Remove ${file.fileName}`}
+                >
+                  ×
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {selectedFiles.length > 0 && (
+        <div className="trip-selected-files">
+          {selectedFiles.map((file, index) => (
+            <div
+              className="trip-selected-file"
+              key={`${file.name}-${file.lastModified || index}-${index}`}
+            >
+              <span className="trip-selected-file-name">
+                {file.name} <small>({formatSize(file.size)})</small>
+              </span>
+              <button type="button" onClick={() => viewLocal(file)}>View</button>
+              <button
+                type="button"
+                className="trip-selected-file-remove"
+                onClick={() => onRemoveSelected?.(index)}
+                aria-label={`Remove ${file.name}`}
+              >
+                ×
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const Tripcreatemodal = ({
   showTripModal,
   tripForm,
@@ -403,10 +690,17 @@ const Tripcreatemodal = ({
   handleWtgVehicleFieldChange,
   handleRemoveWtgVehicle,
   handleTripFileChange,
+  removeTripFile,
   handleCreateTrip,
   isEditing = false,
   isSaving = false,
+  handleAddTripFiles, // (File[]) => void  (append to tripUpload)
+  apiBase = "",
+  orderDbId = "",
+  existingCraneFiles = [],
+  onCraneTripUpdated,
 }) => {
+  const selectedTripFiles = Array.isArray(tripUpload) ? tripUpload : [];
   const loggedInKamUsername = getLoggedInKamUsername();
   const loggedInKamName = formatKamName(loggedInKamUsername);
   const totalVehicles = getTotalVehicles(tripForm.vehicleRequirements);
@@ -458,13 +752,23 @@ const Tripcreatemodal = ({
   // payload consistent with the one-row-per-vehicle rule used by the backend.
   useEffect(() => {
     if (!showTripModal || tripForm.movementType === "Crane") return;
-    (Array.isArray(tripForm.vehicleRequirements) ? tripForm.vehicleRequirements : [])
-      .forEach((requirement, index) => {
-        if (Number(requirement.quantity) !== 1) {
-          handleWtgVehicleFieldChange(index, "quantity")({ target: { value: "1" } });
-        }
-      });
-  }, [showTripModal, tripForm.vehicleRequirements, tripForm.movementType, handleWtgVehicleFieldChange]);
+    (Array.isArray(tripForm.vehicleRequirements)
+      ? tripForm.vehicleRequirements
+      : []
+    ).forEach((requirement, index) => {
+      if (Number(requirement.quantity) !== 1) {
+        handleWtgVehicleFieldChange(
+          index,
+          "quantity",
+        )({ target: { value: "1" } });
+      }
+    });
+  }, [
+    showTripModal,
+    tripForm.vehicleRequirements,
+    tripForm.movementType,
+    handleWtgVehicleFieldChange,
+  ]);
 
   const totalVehiclesReady =
     tripForm.movementType === "Crane" ||
@@ -515,7 +819,7 @@ const Tripcreatemodal = ({
             <div className="trip-modal-title-row">
               <div className="trip-modal-title-copy">
                 <h2 id="new-trip-title">
-                  {isEditing ? "Edit Trip" : "New Trip Creation"}
+                  {isEditing ? "Edit Order" : "New Order Creation"}
                 </h2>
 
                 <p>
@@ -542,13 +846,13 @@ const Tripcreatemodal = ({
                   >
                     <option value="">Select Movement...</option>
 
-                    <option value="WTG Movement">WTG Movement</option>
+                    <option value="WTG Movement">Line Movement</option>
 
                     <option value="Intercarting">Intercarting</option>
 
                     <option value="Crane">Crane</option>
 
-                    <option value="Other">Other</option>
+                    <option value="Other">Project Movement</option>
                   </select>
 
                   <span className="trip-header-select-arrow">⌄</span>
@@ -584,7 +888,7 @@ const Tripcreatemodal = ({
               <strong>Select a movement type</strong>
 
               <p>
-                WTG, Intercarting, Crane and Other movements use different
+                Line, Intercarting, Crane and Project movements use different
                 operational details.
               </p>
             </div>
@@ -602,14 +906,14 @@ const Tripcreatemodal = ({
                 <div className="trip-section-heading">
                   <div>
                     <div>
-                      <strong>WTG Trip Information</strong>
+                      <strong>WTG Order Information</strong>
 
                       <small>Customer and enquiry details.</small>
                     </div>
                   </div>
 
                   <div className="trip-heading-trip-id">
-                    <small>TRIP ID</small>
+                    <small>ORDER ID</small>
 
                     <strong>{tripForm.tripId}</strong>
                   </div>
@@ -672,7 +976,6 @@ const Tripcreatemodal = ({
                     unit="NOS"
                     readOnly
                   />
-
                 </div>
               </section>
 
@@ -712,8 +1015,24 @@ const Tripcreatemodal = ({
                 </div>
 
                 <div className="wtg-vehicle-rows">
-                  <div className="trip-vehicle-table-header trip-vehicle-table-header-wtg" aria-hidden="true">
-                    {["No.", "Vehicle Type", "Configuration Model", "Material Type", "Weight", "Origin", "Destination", "Placement Date", "Dimensions (L × H × W)", ""].map((heading, i) => <span key={`${heading}-${i}`}>{heading}</span>)}
+                  <div
+                    className="trip-vehicle-table-header trip-vehicle-table-header-wtg"
+                    aria-hidden="true"
+                  >
+                    {[
+                      "No.",
+                      "Vehicle Type",
+                      "Configuration Model",
+                      "Material Type",
+                      "Weight",
+                      "Origin",
+                      "Destination",
+                      "Placement Date",
+                      "Dimensions (L × H × W)",
+                      "",
+                    ].map((heading, i) => (
+                      <span key={`${heading}-${i}`}>{heading}</span>
+                    ))}
                   </div>
                   {requirements.map((requirement, index) => (
                     <VehicleRequirementRow
@@ -758,7 +1077,7 @@ const Tripcreatemodal = ({
                       <strong>
                         {tripForm.movementType === "Intercarting"
                           ? "Intercarting Details"
-                          : "Other Movement Details"}
+                          : "Project Movement Details"}
                       </strong>
 
                       <small>
@@ -769,7 +1088,7 @@ const Tripcreatemodal = ({
                   </div>
 
                   <div className="trip-heading-trip-id">
-                    <small>TRIP ID</small>
+                    <small>ORDER ID</small>
 
                     <strong>{tripForm.tripId}</strong>
                   </div>
@@ -934,7 +1253,7 @@ const Tripcreatemodal = ({
                       <strong>
                         {tripForm.movementType === "Intercarting"
                           ? "Intercarting Vehicle Details"
-                          : "Other Vehicle Details"}
+                          : "Project Vehicle Details"}
                       </strong>
 
                       <small>
@@ -963,8 +1282,21 @@ const Tripcreatemodal = ({
                 </div>
 
                 <div className="intercarting-vehicle-rows">
-                  <div className="trip-vehicle-table-header trip-vehicle-table-header-intercarting" aria-hidden="true">
-                    {["No.", "Vehicle Type", "Configuration Model", "Classification", "Weight", "Dimensions (L × H × W)", ""].map((heading, i) => <span key={`${heading}-${i}`}>{heading}</span>)}
+                  <div
+                    className="trip-vehicle-table-header trip-vehicle-table-header-intercarting"
+                    aria-hidden="true"
+                  >
+                    {[
+                      "No.",
+                      "Vehicle Type",
+                      "Configuration Model",
+                      "Classification",
+                      "Weight",
+                      "Dimensions (L × H × W)",
+                      "",
+                    ].map((heading, i) => (
+                      <span key={`${heading}-${i}`}>{heading}</span>
+                    ))}
                   </div>
                   {requirements.map((requirement, index) => (
                     <VehicleRequirementRow
@@ -1009,7 +1341,7 @@ const Tripcreatemodal = ({
                 <div className="trip-section-heading">
                   <div>
                     <div>
-                      <strong>Crane Trip Details</strong>
+                      <strong>Crane Order Details</strong>
 
                       <small>
                         Customer, material, enquiry, placement and route
@@ -1019,7 +1351,7 @@ const Tripcreatemodal = ({
                   </div>
 
                   <div className="trip-heading-trip-id">
-                    <small>TRIP ID</small>
+                    <small>ORDER ID</small>
 
                     <strong>{tripForm.tripId}</strong>
                   </div>
@@ -1092,17 +1424,6 @@ const Tripcreatemodal = ({
                   />
 
                   <TripField
-                    label="Weight in Tons"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={tripForm.weight}
-                    placeholder="Enter weight"
-                    unit="TON"
-                    onChange={handleTripFieldChange("weight")}
-                  />
-
-                  <TripField
                     label="Origin"
                     required
                     value={tripForm.origin}
@@ -1111,11 +1432,42 @@ const Tripcreatemodal = ({
                   />
 
                   <TripField
+                    label="Origin Pincode"
+                    type="text"
+                    value={tripForm.originPincode}
+                    placeholder="Enter 6-digit pincode"
+                    maxLength={6}
+                    inputMode="numeric"
+                    onChange={handleTripFieldChange("originPincode")}
+                  />
+
+                  <TripField
                     label="Destination"
                     required
                     value={tripForm.destination}
                     placeholder="Enter destination"
                     onChange={handleTripFieldChange("destination")}
+                  />
+
+                  <TripField
+                    label="Destination Pincode"
+                    type="text"
+                    value={tripForm.destinationPincode}
+                    placeholder="Enter 6-digit pincode"
+                    maxLength={6}
+                    inputMode="numeric"
+                    onChange={handleTripFieldChange("destinationPincode")}
+                  />
+
+                  <TripField
+                    label="Weight in Tons"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={tripForm.weight}
+                    placeholder="Enter weight"
+                    unit="TON"
+                    onChange={handleTripFieldChange("weight")}
                   />
 
                   <TripField
@@ -1132,34 +1484,19 @@ const Tripcreatemodal = ({
               </section>
 
               <section className="trip-form-section">
-                {/* SUPPORTING DOCUMENT */}
+                {/* SUPPORTING DOCUMENTS (multiple, view / download each) */}
 
                 <div className="trip-form-grid">
-                  <div className="trip-field-group trip-field-full">
-                    <label>Upload File</label>
-
-                    <label className="trip-file-upload">
-                      <input
-                        type="file"
-                        onChange={handleTripFileChange}
-                        accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
-                      />
-
-                      <span className="trip-file-icon">↑</span>
-
-                      <span className="trip-file-content">
-                        <strong>
-                          {tripUpload
-                            ? tripUpload.name
-                            : "Choose supporting document"}
-                        </strong>
-
-                        <small>PDF, Word, Excel, JPG or PNG</small>
-                      </span>
-
-                      <span className="trip-file-action">Browse</span>
-                    </label>
-                  </div>
+                  <CraneFilesSection
+                    apiBase={apiBase || import.meta.env?.VITE_API_URL || ""}
+                    selectedFiles={selectedTripFiles}
+                    onAddFiles={handleAddTripFiles}
+                    onPickEvent={handleTripFileChange}
+                    onRemoveSelected={removeTripFile}
+                    orderId={isEditing ? orderDbId : ""}
+                    existingFiles={existingCraneFiles}
+                    onTripUpdated={onCraneTripUpdated}
+                  />
                 </div>
 
                 <div className="trip-field-group trip-field-full crane-remark-field">
@@ -1184,7 +1521,7 @@ const Tripcreatemodal = ({
 
         {!isEditing && !loggedInKamUsername && (
           <p className="trip-login-error" role="alert">
-            Please sign in with your Key Account credentials to create a trip.
+            Please sign in with your Key Account credentials to create an order.
           </p>
         )}
 
@@ -1215,10 +1552,10 @@ const Tripcreatemodal = ({
             {isSaving
               ? isEditing
                 ? "Saving Changes..."
-                : "Creating Trip..."
+                : "Creating Order..."
               : isEditing
                 ? "Save Changes"
-                : "Create Trip"}
+                : "Create Order"}
           </button>
         </div>
       </div>

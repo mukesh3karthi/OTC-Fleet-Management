@@ -31,32 +31,81 @@ const isCraneOrder = (order) =>
   );
 
 // Read uploaded file metadata returned by the API; never invent a download URL.
+
 const getCraneDocuments = (order) => {
-  const candidates = [
-    order?.craneDocument?.fileName && order?._id
-      ? {
-          ...order.craneDocument,
-          url: `${TRIP_API_URL}/${order._id}/crane-document/file?disposition=inline`,
-        }
-      : order?.craneDocument,
-    order?.supportingDocument,
-    order?.uploadedFile,
-    order?.uploadFile,
-    order?.tripUpload,
-    order?.attachment,
-    order?.file,
-    order?.document,
-    order?.documents,
-    order?.attachments,
-    order?.supportingDocuments,
-  ];
-  if (order?.filePath || order?.fileUrl || order?.documentUrl)
-    candidates.push(order);
+  if (!order) return [];
+
   const files = [];
   const seen = new Set();
+
+  // 1. Read the new multiple-document structure.
+  const craneDocuments = Array.isArray(order.craneDocuments)
+    ? order.craneDocuments
+    : [];
+
+  craneDocuments.forEach((document) => {
+    if (!document?._id || !order._id) return;
+
+    const url = `${TRIP_API_URL}/${order._id}/crane-documents/${document._id}/file?disposition=inline`;
+
+    if (seen.has(url)) return;
+    seen.add(url);
+
+    files.push({
+      _id: document._id,
+      url,
+      name:
+        document.documentName ||
+        document.fileName ||
+        "Crane Supporting Document",
+      mimeType: document.mimeType || "",
+      fileSize: document.fileSize || 0,
+      uploadedAt: document.uploadedAt || null,
+    });
+  });
+
+  // 2. Maintain backward compatibility with old single-file orders.
+  const legacyDocument = order.craneDocument;
+
+  if (legacyDocument?.fileName && order._id) {
+    const url = `${TRIP_API_URL}/${order._id}/crane-document/file?disposition=inline`;
+
+    if (!seen.has(url)) {
+      seen.add(url);
+
+      files.push({
+        url,
+        name:
+          legacyDocument.documentName ||
+          legacyDocument.fileName,
+        mimeType: legacyDocument.mimeType || "",
+        fileSize: legacyDocument.fileSize || 0,
+      });
+    }
+  }
+
+  // 3. Keep compatibility with previously supported document URLs.
+  const candidates = [
+    order.supportingDocument,
+    order.uploadedFile,
+    order.uploadFile,
+    order.tripUpload,
+    order.attachment,
+    order.file,
+    order.document,
+    order.documents,
+    order.attachments,
+    order.supportingDocuments,
+  ];
+
   const visit = (entry) => {
     if (!entry) return;
-    if (Array.isArray(entry)) return entry.forEach(visit);
+
+    if (Array.isArray(entry)) {
+      entry.forEach(visit);
+      return;
+    }
+
     const raw =
       typeof entry === "string"
         ? entry
@@ -65,19 +114,33 @@ const getCraneDocuments = (order) => {
           entry.documentUrl ||
           entry.filePath ||
           entry.path;
+
     if (!raw && typeof entry === "object") {
       Object.values(entry)
-        .filter((value) => value && typeof value === "object")
+        .filter(
+          (value) => value && typeof value === "object"
+        )
         .forEach(visit);
       return;
     }
+
     if (typeof raw !== "string" || !raw.trim()) return;
+
     try {
-      const path = raw.trim().replace(/\\/g, "/");
-      const url = new URL(path, `${API_BASE_URL}/`);
-      if (!["http:", "https:"].includes(url.protocol) || seen.has(url.href))
+      const url = new URL(
+        raw.trim().replace(/\\/g, "/"),
+        `${API_BASE_URL}/`
+      );
+
+      if (
+        !["http:", "https:"].includes(url.protocol) ||
+        seen.has(url.href)
+      ) {
         return;
+      }
+
       seen.add(url.href);
+
       files.push({
         url: url.href,
         name:
@@ -86,16 +149,20 @@ const getCraneDocuments = (order) => {
           entry.fileName ||
           entry.filename ||
           decodeURIComponent(
-            url.pathname.split("/").pop() || "Supporting document",
+            url.pathname.split("/").pop() ||
+              "Supporting Document"
           ),
       });
     } catch {
-      /* Missing or invalid metadata is shown as an empty document state. */
+      // Ignore invalid document URLs.
     }
   };
+
   candidates.forEach(visit);
+
   return files;
 };
+
 
 const CraneDocuments = ({ order }) => {
   const [busy, setBusy] = useState("");

@@ -22,6 +22,14 @@ const {
 
   createCraneTrip,
 
+  MAX_CRANE_FILES,
+
+  addCraneDocuments,
+
+  downloadCraneDocumentFile,
+
+  deleteCraneDocument,
+
   downloadCraneDocument,
 
   getAllTrips,
@@ -242,7 +250,7 @@ const craneUpload = multer({
   limits: {
     fileSize: 15 * 1024 * 1024,
 
-    files: 1,
+    files: MAX_CRANE_FILES,
   },
 
   fileFilter: (req, file, callback) => {
@@ -258,17 +266,24 @@ const craneUpload = multer({
   },
 });
 
+const craneUploadFields = craneUpload.fields([
+  { name: "documents", maxCount: MAX_CRANE_FILES },
+  { name: "document", maxCount: MAX_CRANE_FILES },
+]);
+
 const uploadCraneDocument = (req, res, next) => {
-  craneUpload.single("document")(req, res, (error) => {
+  craneUploadFields(req, res, (error) => {
     if (!error) {
       return next();
     }
 
     const message =
       error.code === "LIMIT_FILE_SIZE"
-        ? "Crane vehicle requirement document must be 15 MB or smaller."
-        : error.message ||
-          "Unable to upload Crane vehicle requirement document.";
+        ? "Each Crane document must be 15 MB or smaller."
+        : error.code === "LIMIT_UNEXPECTED_FILE" ||
+            error.code === "LIMIT_FILE_COUNT"
+          ? `You can upload up to ${MAX_CRANE_FILES} Crane documents.`
+          : error.message || "Unable to upload Crane documents.";
 
     return res.status(400).json({
       success: false,
@@ -472,6 +487,14 @@ router.get(
 
   downloadCraneDocument,
 );
+
+/* Multiple Crane supporting files */
+
+router.post("/:id/crane-documents", uploadCraneDocument, addCraneDocuments);
+
+router.get("/:id/crane-documents/:fileId/file", downloadCraneDocumentFile);
+
+router.delete("/:id/crane-documents/:fileId", deleteCraneDocument);
 
 /* =========================================================
 

@@ -225,6 +225,9 @@ const createEmptyTripForm = (tripId = "") => ({
   placementDate: "",
   origin: "",
   destination: "",
+  originPincode: "",
+  destinationPincode: "",
+  weight: "",
   distance: "",
   totalVehicles: "",
   materialType: "",
@@ -1297,7 +1300,7 @@ const KeyAccount = () => {
   const [showTripModal, setShowTripModal] = useState(false);
   const [tripForm, setTripForm] = useState(() => createEmptyTripForm());
   const [toast, setToast] = useState("");
-  const [tripUpload, setTripUpload] = useState(null);
+  const [tripUpload, setTripUpload] = useState([]);
   const [editingOrderId, setEditingOrderId] = useState(null);
   const [lifecycleEditOrderId, setLifecycleEditOrderId] = useState(null);
   const [paymentAlertsOpen, setPaymentAlertsOpen] = useState(false);
@@ -1771,7 +1774,7 @@ const KeyAccount = () => {
   const handleOpenTripModal = () => {
     setEditingOrderId(null);
     setTripForm(createEmptyTripForm(getNextTripId(orders)));
-    setTripUpload(null);
+    setTripUpload([]);
     setShowTripModal(true);
   };
   /* =======================================================
@@ -1801,7 +1804,7 @@ const KeyAccount = () => {
           }))
         : [createEmptyVehicleRequirement()],
     });
-    setTripUpload(null);
+    setTripUpload([]);
     setEditingOrderId(getMongoId(order._id));
     setShowTripModal(true);
   };
@@ -1828,7 +1831,7 @@ const KeyAccount = () => {
     setShowTripModal(false);
     setEditingOrderId(null);
     setTripForm(createEmptyTripForm());
-    setTripUpload(null);
+    setTripUpload([]);
   };
   const handleTripOverlayClick = (event) => {
     if (event.target === event.currentTarget) {
@@ -1850,10 +1853,40 @@ const KeyAccount = () => {
       ...previous,
       movementType,
     }));
-    setTripUpload(null);
+    setTripUpload([]);
+  };
+  // Crane supporting files: several files, appended one pick at a time.
+  const handleAddTripFiles = (files) => {
+    const incoming = Array.from(files || []);
+    if (!incoming.length) return;
+    setTripUpload((previous) => [
+      ...(Array.isArray(previous) ? previous : []),
+      ...incoming,
+    ]);
   };
   const handleTripFileChange = (event) => {
-    setTripUpload(event.target.files?.[0] || null);
+    const files = Array.from(event.target.files || []);
+    event.target.value = "";
+    handleAddTripFiles(files);
+  };
+  const removeTripFile = (index) => {
+    setTripUpload((previous) =>
+      (Array.isArray(previous) ? previous : []).filter((_, i) => i !== index),
+    );
+  };
+  // Edit mode: files already saved on the order (metadata only).
+  const editingCraneFiles = editingOrderId
+    ? orders.find((order) => getMongoId(order._id) === editingOrderId)
+        ?.craneDocuments || []
+    : [];
+  const handleCraneTripUpdated = (updatedTrip) => {
+    if (!updatedTrip) return;
+    const mapped = mapDbTripToOrder(updatedTrip);
+    setOrders((previous) =>
+      previous.map((order) =>
+        getMongoId(order._id) === getMongoId(mapped._id) ? mapped : order,
+      ),
+    );
   };
   /* =======================================================
     REQUIREMENT FIELD
@@ -1942,8 +1975,15 @@ const KeyAccount = () => {
      * Existing WTG / Intercarting / Other validation stays unchanged.
      */
     if (tripForm.movementType === "Crane") {
-      if (!editingOrderId && !tripUpload) {
-        return "Upload the Crane Vehicle Requirement document.";
+      if (!editingOrderId && (!Array.isArray(tripUpload) || !tripUpload.length)) {
+        return "Upload at least one Crane supporting document.";
+      }
+      if (
+        [tripForm.originPincode, tripForm.destinationPincode].some(
+          (pin) => String(pin || "").trim() && !/^\d{6}$/.test(String(pin).trim()),
+        )
+      ) {
+        return "Pincodes must be exactly 6 digits.";
       }
       return "";
     }
@@ -2054,6 +2094,8 @@ const KeyAccount = () => {
     materialType: tripForm.materialType.trim(),
     ...(tripForm.movementType === "Crane" && {
       weight: Number(tripForm.weight || 0),
+      originPincode: String(tripForm.originPincode || "").trim(),
+      destinationPincode: String(tripForm.destinationPincode || "").trim(),
     }),
     remark: tripForm.remark.trim(),
     siteLocation: tripForm.siteLocation.trim(),
@@ -2103,7 +2145,9 @@ const KeyAccount = () => {
          */
         const formData = new FormData();
         formData.append("data", JSON.stringify(payload));
-        formData.append("document", tripUpload);
+        (Array.isArray(tripUpload) ? tripUpload : []).forEach((file) =>
+          formData.append("documents", file),
+        );
         const response = await kamFetch(`${TRIP_API_URL}/crane`, {
           method: "POST",
           body: formData,
@@ -2146,7 +2190,7 @@ const KeyAccount = () => {
       setShowTripModal(false);
       setEditingOrderId(null);
       setTripForm(createEmptyTripForm());
-      setTripUpload(null);
+      setTripUpload([]);
     } catch (error) {
       console.error("Save trip order error:", error);
       setToast(error.message || "Unable to save order.");
@@ -3008,6 +3052,12 @@ const KeyAccount = () => {
         handleWtgVehicleFieldChange={handleWtgVehicleFieldChange}
         handleRemoveWtgVehicle={handleRemoveWtgVehicle}
         handleTripFileChange={handleTripFileChange}
+        handleAddTripFiles={handleAddTripFiles}
+        removeTripFile={removeTripFile}
+        apiBase={API_BASE_URL}
+        orderDbId={editingOrderId || ""}
+        existingCraneFiles={editingCraneFiles}
+        onCraneTripUpdated={handleCraneTripUpdated}
         handleCreateTrip={handleCreateTrip}
         isEditing={Boolean(editingOrderId)}
         isSaving={isSaving}
