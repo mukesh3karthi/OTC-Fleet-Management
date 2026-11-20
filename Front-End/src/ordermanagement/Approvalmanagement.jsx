@@ -1920,6 +1920,7 @@ const Approvalmanagement = () => {
               <select value={enquiryMovementFilter} onChange={(e) => setEnquiryMovementFilter(e.target.value)}>
                 <option value="All">All Movement</option>
                 <option value="WTG">WTG</option>
+                <option value="Line Movement">Line Movement</option>
                 <option value="Crane">Crane</option>
                 <option value="Intercarting">Intercarting</option>
               </select>
@@ -1961,7 +1962,10 @@ const Approvalmanagement = () => {
               return String(raw).trim() !== "" && Number.isFinite(Number(raw)) && Number(raw) > 0;
             });
             const sent = order.enquiryApproval?.status === "Sent";
-            const isWtgEnquiry = String(order.movementType || "").trim().toLowerCase() === "wtg movement";
+            const normalizedMovement = String(order.movementType || "")
+              .trim()
+              .toLowerCase();
+            const isWtgEnquiry = ["wtg movement", "line movement"].includes(normalizedMovement);
             const isIntercartingEnquiry = isIntercartingOrder(order);
             const craneWeight =
               order.weight ??
@@ -2013,7 +2017,13 @@ const Approvalmanagement = () => {
                     </div>
                     <div className="ae-modal-body">
                     <header className="ae-section-title">
-                      <div><h4>{isCraneOrder(order) ? "Crane" : "WTG"} Trip Information</h4>
+                      <div><h4>
+                        {isCraneOrder(order)
+                          ? "Crane"
+                          : normalizedMovement === "line movement"
+                            ? "Line"
+                            : "WTG"} Trip Information
+                      </h4>
                       <p>Customer and enquiry details • Read-only</p></div>
                       <span>TRIP ID <strong>{order.tripId || "—"}</strong></span>
                     </header>
@@ -3653,7 +3663,11 @@ const Approvalmanagement = () => {
         (() => {
           const order = orderDetailsModal;
           const status = getOrderApprovalStatus(order);
-          const isWtgOrder = String(order.movementType || "").trim().toLowerCase() === "wtg movement";
+          const movementKey = String(order.movementType || "")
+            .trim()
+            .toLowerCase()
+            .replace(/[\s_-]+/g, "");
+          const isWtgOrder = ["wtgmovement", "linemovement"].includes(movementKey);
           const isIntercarting = isIntercartingOrder(order);
           const showRateSummary = isWtgOrder || isIntercarting || isCraneOrder(order);
           const finalization =

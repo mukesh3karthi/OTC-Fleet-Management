@@ -532,7 +532,7 @@
 
 /* =========================================================
    COMMON 4-COLUMN GRID
-   WTG / INTERCARTING / OTHER / CRANE
+   LINE / INTERCARTING / OTHER / CRANE
 ========================================================= */
 
 .trip-form-grid {
@@ -717,8 +717,8 @@
 ========================================================= */
 
 .trip-input-unit,
-.wtg-quantity-control,
-.wtg-weight-control {
+.vehicle-quantity-control,
+.vehicle-weight-control {
   width: 100%;
   height: 42px;
 
@@ -738,8 +738,8 @@
 }
 
 .trip-input-unit:focus-within,
-.wtg-quantity-control:focus-within,
-.wtg-weight-control:focus-within {
+.vehicle-quantity-control:focus-within,
+.vehicle-weight-control:focus-within {
   border-color: #159b92;
 
   box-shadow:
@@ -747,8 +747,8 @@
 }
 
 .trip-input-unit input,
-.wtg-quantity-control input,
-.wtg-weight-control input {
+.vehicle-quantity-control input,
+.vehicle-weight-control input {
   width: 100%;
   min-width: 0;
   height: 100%;
@@ -774,8 +774,8 @@
 }
 
 .trip-input-unit > span,
-.wtg-quantity-control > span,
-.wtg-weight-control > span {
+.vehicle-quantity-control > span,
+.vehicle-weight-control > span {
   min-width: 44px;
 
   display: flex;
@@ -894,10 +894,10 @@
 
 
 /* =========================================================
-   WTG VEHICLE ROW
+   LINE VEHICLE ROW
 ========================================================= */
 
-.wtg-vehicle-rows,
+.line-vehicle-rows,
 .intercarting-vehicle-rows {
   width: 100%;
 
@@ -907,7 +907,7 @@
   gap: 3px;
 }
 
-.wtg-vehicle-row {
+.line-vehicle-row {
   position: relative;
 
   width: 100%;
@@ -931,7 +931,7 @@
   padding: 4px 0;
 }
 
-.wtg-vehicle-index,
+.line-vehicle-index,
 .intercarting-vehicle-index {
   width: 28px;
   height: 42px;
@@ -947,12 +947,12 @@
   font-weight: 900;
 }
 
-.wtg-vehicle-row .trip-field-group,
+.line-vehicle-row .trip-field-group,
 .intercarting-vehicle-row .trip-field-group {
   min-width: 0;
 }
 
-.wtg-vehicle-row .trip-field-group > label,
+.line-vehicle-row .trip-field-group > label,
 .intercarting-vehicle-row .trip-field-group > label {
   min-height: 20px;
 
@@ -969,12 +969,12 @@
    SUGGEST / DATALIST INPUT
 ========================================================= */
 
-.wtg-suggest-input {
+.vehicle-suggest-input {
   width: 100%;
   min-width: 0;
 }
 
-.wtg-suggest-input input {
+.vehicle-suggest-input input {
   width: 100%;
   height: 42px;
 
@@ -998,24 +998,24 @@
     box-shadow 0.18s ease;
 }
 
-.wtg-suggest-input input:focus {
+.vehicle-suggest-input input:focus {
   border-color: #159b92;
 
   box-shadow:
     0 0 0 3px rgba(21, 155, 146, 0.09);
 }
 
-.wtg-suggest-input input::placeholder {
+.vehicle-suggest-input input::placeholder {
   color: #8599a4;
   opacity: 1;
 }
 
 
 /* =========================================================
-   WTG DIMENSIONS — ONE SINGLE CONTROL
+   LINE DIMENSIONS — ONE SINGLE CONTROL
 ========================================================= */
 
-.wtg-dimensions-control {
+.vehicle-dimensions-control {
   width: 100%;
   height: 42px;
 
@@ -1034,21 +1034,21 @@
     box-shadow 0.18s ease;
 }
 
-.wtg-dimensions-control:focus-within {
+.vehicle-dimensions-control:focus-within {
   border-color: #159b92;
 
   box-shadow:
     0 0 0 3px rgba(21, 155, 146, 0.09);
 }
 
-.wtg-dimension-part {
+.vehicle-dimension-part {
   min-width: 0;
   flex: 1;
 
   display: flex;
 }
 
-.wtg-dimension-part input {
+.vehicle-dimension-part input {
   width: 100%;
   min-width: 0;
   height: 100%;
@@ -1070,13 +1070,13 @@
   font-weight: 700;
 }
 
-.wtg-dimension-part input::placeholder {
+.vehicle-dimension-part input::placeholder {
   color: #7e939e;
   opacity: 1;
   font-weight: 800;
 }
 
-.wtg-dimension-separator {
+.vehicle-dimension-separator {
   flex: 0 0 18px;
 
   display: flex;
@@ -1089,7 +1089,7 @@
   font-weight: 900;
 }
 
-.wtg-dimensions-unit {
+.vehicle-dimensions-unit {
   min-width: 38px;
 
   display: flex;
@@ -1111,7 +1111,7 @@
    REMOVE VEHICLE
 ========================================================= */
 
-.wtg-remove-vehicle-btn {
+.vehicle-remove-btn {
   width: 28px;
   height: 42px;
 
@@ -1136,29 +1136,29 @@
   cursor: pointer;
 }
 
-.wtg-remove-vehicle-btn:hover {
+.vehicle-remove-btn:hover {
   color: #b91c1c;
 }
 
 
 /* =========================================================
-   WTG COMPACT ADDED ROWS
+   LINE COMPACT ADDED ROWS
 ========================================================= */
 
-.wtg-vehicle-row-compact,
+.line-vehicle-row-compact,
 .intercarting-vehicle-row-compact {
   padding: 3px 0;
 }
 
-.wtg-vehicle-row-compact .trip-field-group > label,
+.line-vehicle-row-compact .trip-field-group > label,
 .intercarting-vehicle-row-compact .trip-field-group > label {
   display: none;
 }
 
-.wtg-vehicle-row-compact .wtg-vehicle-index,
-.wtg-vehicle-row-compact .wtg-remove-vehicle-btn,
+.line-vehicle-row-compact .line-vehicle-index,
+.line-vehicle-row-compact .vehicle-remove-btn,
 .intercarting-vehicle-row-compact .intercarting-vehicle-index,
-.intercarting-vehicle-row-compact .wtg-remove-vehicle-btn {
+.intercarting-vehicle-row-compact .vehicle-remove-btn {
   align-self: center;
 }
 
@@ -1195,7 +1195,7 @@
    REMARKS
 ========================================================= */
 
-.wtg-remark-field,
+.line-remark-field,
 .intercarting-remark-field,
 .crane-remark-field {
   width: 100%;
@@ -1203,7 +1203,7 @@
   margin-top: 8px;
 }
 
-.wtg-remark-field textarea,
+.line-remark-field textarea,
 .intercarting-remark-field textarea,
 .crane-remark-field textarea {
   width: 100%;
@@ -1233,7 +1233,7 @@
     box-shadow 0.18s ease;
 }
 
-.wtg-remark-field textarea:focus,
+.line-remark-field textarea:focus,
 .intercarting-remark-field textarea:focus,
 .crane-remark-field textarea:focus {
   border-color: #159b92;
@@ -1242,7 +1242,7 @@
     0 0 0 3px rgba(21, 155, 146, 0.09);
 }
 
-.wtg-remark-field textarea::placeholder,
+.line-remark-field textarea::placeholder,
 .intercarting-remark-field textarea::placeholder,
 .crane-remark-field textarea::placeholder {
   color: #8599a4;
@@ -1461,12 +1461,12 @@
 
 .trip-field-group input[type="number"]::-webkit-inner-spin-button,
 .trip-field-group input[type="number"]::-webkit-outer-spin-button,
-.wtg-quantity-control input::-webkit-inner-spin-button,
-.wtg-quantity-control input::-webkit-outer-spin-button,
-.wtg-weight-control input::-webkit-inner-spin-button,
-.wtg-weight-control input::-webkit-outer-spin-button,
-.wtg-dimension-part input::-webkit-inner-spin-button,
-.wtg-dimension-part input::-webkit-outer-spin-button {
+.vehicle-quantity-control input::-webkit-inner-spin-button,
+.vehicle-quantity-control input::-webkit-outer-spin-button,
+.vehicle-weight-control input::-webkit-inner-spin-button,
+.vehicle-weight-control input::-webkit-outer-spin-button,
+.vehicle-dimension-part input::-webkit-inner-spin-button,
+.vehicle-dimension-part input::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
@@ -1542,7 +1542,7 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .wtg-vehicle-row,
+  .line-vehicle-row,
   .intercarting-vehicle-row {
     grid-template-columns:
       26px
@@ -1552,56 +1552,56 @@
     row-gap: 7px;
   }
 
-  .wtg-vehicle-index,
+  .line-vehicle-index,
   .intercarting-vehicle-index {
     grid-column: 1;
     grid-row: 1 / 3;
     align-self: center;
   }
 
-  .wtg-vehicle-row .wtg-field-vehicle-type,
+  .line-vehicle-row .line-field-vehicle-type,
   .intercarting-vehicle-row .intercarting-field-vehicle-type {
     grid-column: 2;
     grid-row: 1;
   }
 
-  .wtg-vehicle-row .wtg-field-configuration,
+  .line-vehicle-row .line-field-configuration,
   .intercarting-vehicle-row .intercarting-field-configuration {
     grid-column: 3;
     grid-row: 1;
   }
 
-  .wtg-vehicle-row .wtg-field-classification,
+  .line-vehicle-row .line-field-classification,
   .intercarting-vehicle-row .intercarting-field-classification {
     grid-column: 4;
     grid-row: 1;
   }
 
-  .wtg-vehicle-row .wtg-field-quantity,
+  .line-vehicle-row .line-field-quantity,
   .intercarting-vehicle-row .intercarting-field-quantity {
     grid-column: 2;
     grid-row: 2;
   }
 
-  .wtg-vehicle-row .wtg-field-weight,
+  .line-vehicle-row .line-field-weight,
   .intercarting-vehicle-row .intercarting-field-weight {
     grid-column: 3;
     grid-row: 2;
   }
 
-  .wtg-vehicle-row .wtg-field-dimensions {
+  .line-vehicle-row .line-field-dimensions {
     grid-column: 4;
     grid-row: 2;
   }
 
-  .wtg-vehicle-row .wtg-remove-vehicle-btn,
-  .intercarting-vehicle-row .wtg-remove-vehicle-btn {
+  .line-vehicle-row .vehicle-remove-btn,
+  .intercarting-vehicle-row .vehicle-remove-btn {
     grid-column: 5;
     grid-row: 1 / 3;
     align-self: center;
   }
 
-  .wtg-vehicle-row-compact .trip-field-group > label,
+  .line-vehicle-row-compact .trip-field-group > label,
   .intercarting-vehicle-row-compact .trip-field-group > label {
     display: none;
   }
@@ -1653,7 +1653,7 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .wtg-vehicle-row,
+  .line-vehicle-row,
   .intercarting-vehicle-row {
     grid-template-columns:
       24px
@@ -1663,54 +1663,54 @@
     row-gap: 7px;
   }
 
-  .wtg-vehicle-index,
+  .line-vehicle-index,
   .intercarting-vehicle-index {
     grid-column: 1;
     grid-row: 1 / 4;
   }
 
-  .wtg-vehicle-row .wtg-field-vehicle-type,
+  .line-vehicle-row .line-field-vehicle-type,
   .intercarting-vehicle-row .intercarting-field-vehicle-type {
     grid-column: 2;
     grid-row: 1;
   }
 
-  .wtg-vehicle-row .wtg-field-configuration,
+  .line-vehicle-row .line-field-configuration,
   .intercarting-vehicle-row .intercarting-field-configuration {
     grid-column: 3;
     grid-row: 1;
   }
 
-  .wtg-vehicle-row .wtg-field-classification,
+  .line-vehicle-row .line-field-classification,
   .intercarting-vehicle-row .intercarting-field-classification {
     grid-column: 2;
     grid-row: 2;
   }
 
-  .wtg-vehicle-row .wtg-field-quantity,
+  .line-vehicle-row .line-field-quantity,
   .intercarting-vehicle-row .intercarting-field-quantity {
     grid-column: 3;
     grid-row: 2;
   }
 
-  .wtg-vehicle-row .wtg-field-weight,
+  .line-vehicle-row .line-field-weight,
   .intercarting-vehicle-row .intercarting-field-weight {
     grid-column: 2;
     grid-row: 3;
   }
 
-  .wtg-vehicle-row .wtg-field-dimensions {
+  .line-vehicle-row .line-field-dimensions {
     grid-column: 3;
     grid-row: 3;
   }
 
-  .wtg-vehicle-row .wtg-remove-vehicle-btn,
-  .intercarting-vehicle-row .wtg-remove-vehicle-btn {
+  .line-vehicle-row .vehicle-remove-btn,
+  .intercarting-vehicle-row .vehicle-remove-btn {
     grid-column: 4;
     grid-row: 1 / 4;
   }
 
-  .wtg-vehicle-row-compact .trip-field-group > label,
+  .line-vehicle-row-compact .trip-field-group > label,
   .intercarting-vehicle-row-compact .trip-field-group > label {
     display: flex;
   }
@@ -1806,7 +1806,7 @@
     display: none;
   }
 
-  .wtg-vehicle-row,
+  .line-vehicle-row,
   .intercarting-vehicle-row {
     grid-template-columns:
       22px
@@ -1819,7 +1819,7 @@
     padding: 7px 0;
   }
 
-  .wtg-vehicle-row .trip-field-group,
+  .line-vehicle-row .trip-field-group,
   .intercarting-vehicle-row .trip-field-group {
     grid-column: 2 !important;
     grid-row: auto !important;
@@ -1827,7 +1827,7 @@
     width: 100%;
   }
 
-  .wtg-vehicle-index,
+  .line-vehicle-index,
   .intercarting-vehicle-index {
     grid-column: 1;
     grid-row: 1;
@@ -1835,17 +1835,17 @@
     align-self: end;
   }
 
-  .wtg-vehicle-row .wtg-remove-vehicle-btn,
-  .intercarting-vehicle-row .wtg-remove-vehicle-btn {
+  .line-vehicle-row .vehicle-remove-btn,
+  .intercarting-vehicle-row .vehicle-remove-btn {
     grid-column: 3;
     grid-row: 1;
 
     align-self: end;
   }
 
-  .wtg-vehicle-row .trip-field-group > label,
+  .line-vehicle-row .trip-field-group > label,
   .intercarting-vehicle-row .trip-field-group > label,
-  .wtg-vehicle-row-compact .trip-field-group > label,
+  .line-vehicle-row-compact .trip-field-group > label,
   .intercarting-vehicle-row-compact .trip-field-group > label {
     display: flex;
     min-height: auto;
@@ -2006,13 +2006,13 @@
   textarea:disabled,
 .trip-select-wrap
   select:disabled,
-.wtg-suggest-input
+.vehicle-suggest-input
   input:disabled,
-.wtg-quantity-control
+.vehicle-quantity-control
   input:disabled,
-.wtg-weight-control
+.vehicle-weight-control
   input:disabled,
-.wtg-dimension-part
+.vehicle-dimension-part
   input:disabled {
   cursor: not-allowed;
 
@@ -2036,8 +2036,8 @@
 
 
 /* =========================================================
-   INTERCARTING / OTHER — MATCH WTG VEHICLE ROW DESIGN
-   WTG styles above remain unchanged.
+   INTERCARTING / OTHER — MATCH LINE VEHICLE ROW DESIGN
+   Line styles above remain unchanged.
 ========================================================= */
 
 .intercarting-vehicle-rows {
@@ -2071,7 +2071,7 @@
   min-height: 64px !important;
 }
 
-/* Same label rhythm as the WTG row */
+/* Same label rhythm as the Line row */
 .intercarting-vehicle-row .trip-field-group > label {
   height: 20px !important;
   min-height: 20px !important;
@@ -2094,49 +2094,49 @@
   margin: 0 0 5px !important;
 }
 
-/* Match WTG compact input height */
-.intercarting-vehicle-row .wtg-suggest-input input,
+/* Match Line compact input height */
+.intercarting-vehicle-row .vehicle-suggest-input input,
 .intercarting-vehicle-row .trip-select-wrap select,
-.intercarting-vehicle-row .wtg-quantity-control,
-.intercarting-vehicle-row .wtg-weight-control,
-.intercarting-vehicle-row .wtg-dimensions-control {
+.intercarting-vehicle-row .vehicle-quantity-control,
+.intercarting-vehicle-row .vehicle-weight-control,
+.intercarting-vehicle-row .vehicle-dimensions-control {
   height: 40px !important;
   min-height: 40px !important;
   border-radius: 9px !important;
 }
 
-.intercarting-vehicle-row .wtg-suggest-input input,
+.intercarting-vehicle-row .vehicle-suggest-input input,
 .intercarting-vehicle-row .trip-select-wrap select {
   padding-left: 10px !important;
   padding-right: 26px !important;
   font-size: 10px !important;
 }
 
-.intercarting-vehicle-row .wtg-quantity-control input,
-.intercarting-vehicle-row .wtg-weight-control input {
+.intercarting-vehicle-row .vehicle-quantity-control input,
+.intercarting-vehicle-row .vehicle-weight-control input {
   padding: 0 8px !important;
   font-size: 10px !important;
 }
 
-.intercarting-vehicle-row .wtg-quantity-control > span,
-.intercarting-vehicle-row .wtg-weight-control > span {
+.intercarting-vehicle-row .vehicle-quantity-control > span,
+.intercarting-vehicle-row .vehicle-weight-control > span {
   min-width: 38px !important;
   padding: 0 5px !important;
   font-size: 7px !important;
 }
 
-/* Dimension control is displayed for every movement in the same WTG format */
-.intercarting-vehicle-row .wtg-dimension-part input {
+/* Dimension control is displayed for every movement in the same Line format */
+.intercarting-vehicle-row .vehicle-dimension-part input {
   padding: 0 2px !important;
   font-size: 9px !important;
 }
 
-.intercarting-vehicle-row .wtg-dimension-separator {
+.intercarting-vehicle-row .vehicle-dimension-separator {
   flex-basis: 14px !important;
   font-size: 8px !important;
 }
 
-.intercarting-vehicle-row .wtg-dimensions-unit {
+.intercarting-vehicle-row .vehicle-dimensions-unit {
   min-width: 30px !important;
   font-size: 7px !important;
 }
@@ -2156,7 +2156,7 @@
   font-weight: 800;
 }
 
-.intercarting-vehicle-row .wtg-remove-vehicle-btn {
+.intercarting-vehicle-row .vehicle-remove-btn {
   width: 28px !important;
   height: 40px !important;
   align-self: end !important;
@@ -2191,26 +2191,26 @@
     column-gap: 6px !important;
   }
 
-  .intercarting-vehicle-row .wtg-suggest-input input,
+  .intercarting-vehicle-row .vehicle-suggest-input input,
   .intercarting-vehicle-row .trip-select-wrap select {
     font-size: 9px !important;
   }
 }
 
 /* =========================================================
-   UPDATED WTG ROWS: identical fields and labels for every row
-   This block intentionally overrides older WTG grid/media rules.
+   UPDATED Line ROWS: identical fields and labels for every row
+   This block intentionally overrides older Line grid/media rules.
    Intercarting and Crane layouts are unaffected.
 ========================================================= */
-.wtg-vehicle-rows {
+.line-vehicle-rows {
   width: 100%;
   min-width: 0;
   gap: 6px;
   overflow-x: hidden;
 }
 
-.wtg-vehicle-row,
-.wtg-vehicle-row-compact {
+.line-vehicle-row,
+.line-vehicle-row-compact {
   width: 100%;
   min-width: 0;
   max-width: 100%;
@@ -2232,15 +2232,15 @@
   border-bottom: 1px solid #edf2f4;
 }
 
-.wtg-vehicle-row .trip-field-group,
-.wtg-vehicle-row .wtg-suggest-input,
-.wtg-vehicle-row .wtg-dimensions-control {
+.line-vehicle-row .trip-field-group,
+.line-vehicle-row .vehicle-suggest-input,
+.line-vehicle-row .vehicle-dimensions-control {
   width: 100%;
   min-width: 0;
 }
 
-.wtg-vehicle-row .trip-field-group > label,
-.wtg-vehicle-row-compact .trip-field-group > label {
+.line-vehicle-row .trip-field-group > label,
+.line-vehicle-row-compact .trip-field-group > label {
   display: flex !important;
   align-items: end;
   min-height: 25px;
@@ -2250,34 +2250,34 @@
   line-height: 1.2;
 }
 
-.wtg-vehicle-row .trip-field-group > input,
-.wtg-vehicle-row .wtg-suggest-input input,
-.wtg-vehicle-row .wtg-quantity-control,
-.wtg-vehicle-row .wtg-weight-control,
-.wtg-vehicle-row .wtg-dimensions-control {
+.line-vehicle-row .trip-field-group > input,
+.line-vehicle-row .vehicle-suggest-input input,
+.line-vehicle-row .vehicle-quantity-control,
+.line-vehicle-row .vehicle-weight-control,
+.line-vehicle-row .vehicle-dimensions-control {
   width: 100%;
   min-width: 0;
   height: 42px;
 }
 
-.wtg-vehicle-row .trip-field-group > input,
-.wtg-vehicle-row .wtg-suggest-input input {
+.line-vehicle-row .trip-field-group > input,
+.line-vehicle-row .vehicle-suggest-input input {
   padding-left: 7px;
   padding-right: 7px;
   font-size: 10.5px;
 }
 
-.wtg-vehicle-row .wtg-quantity-control > span,
-.wtg-vehicle-row .wtg-weight-control > span {
+.line-vehicle-row .vehicle-quantity-control > span,
+.line-vehicle-row .vehicle-weight-control > span {
   min-width: 30px;
   padding: 0 3px;
   font-size: 7px;
 }
 
-.wtg-vehicle-row .wtg-dimension-separator { flex-basis: 11px; }
-.wtg-vehicle-row .wtg-dimensions-unit { min-width: 36px; }
-.wtg-vehicle-row .wtg-vehicle-index,
-.wtg-vehicle-row .wtg-remove-vehicle-btn {
+.line-vehicle-row .vehicle-dimension-separator { flex-basis: 11px; }
+.line-vehicle-row .vehicle-dimensions-unit { min-width: 36px; }
+.line-vehicle-row .line-vehicle-index,
+.line-vehicle-row .vehicle-remove-btn {
   width: 22px;
   height: 42px;
   align-self: end;
@@ -2286,36 +2286,36 @@
 /* Preserve one row at desktop widths. On smaller screens, wrap within
    the same vehicle item instead of causing a horizontal scrollbar. */
 @media (max-width: 1250px) {
-  .wtg-vehicle-row,
-  .wtg-vehicle-row-compact {
+  .line-vehicle-row,
+  .line-vehicle-row-compact {
     grid-template-columns: 22px repeat(6, minmax(0, 1fr)) 24px !important;
   }
-  .wtg-vehicle-row .wtg-field-vehicle-type { grid-column: 2 / span 2; }
-  .wtg-vehicle-row .wtg-field-configuration { grid-column: 4 / span 2; }
-  .wtg-vehicle-row .wtg-field-material { grid-column: 6 / span 2; }
-  .wtg-vehicle-row .wtg-field-weight { grid-column: 2; }
-  .wtg-vehicle-row .wtg-field-origin { grid-column: 3 / span 2; }
-  .wtg-vehicle-row .wtg-field-destination { grid-column: 5 / span 2; }
-  .wtg-vehicle-row .wtg-field-placement { grid-column: 2 / span 2; }
-  .wtg-vehicle-row .wtg-field-dimensions { grid-column: 4 / span 3; }
-  .wtg-vehicle-row .wtg-remove-vehicle-btn { grid-column: 8; grid-row: 1; }
+  .line-vehicle-row .line-field-vehicle-type { grid-column: 2 / span 2; }
+  .line-vehicle-row .line-field-configuration { grid-column: 4 / span 2; }
+  .line-vehicle-row .line-field-material { grid-column: 6 / span 2; }
+  .line-vehicle-row .line-field-weight { grid-column: 2; }
+  .line-vehicle-row .line-field-origin { grid-column: 3 / span 2; }
+  .line-vehicle-row .line-field-destination { grid-column: 5 / span 2; }
+  .line-vehicle-row .line-field-placement { grid-column: 2 / span 2; }
+  .line-vehicle-row .line-field-dimensions { grid-column: 4 / span 3; }
+  .line-vehicle-row .vehicle-remove-btn { grid-column: 8; grid-row: 1; }
 }
 
 @media (max-width: 600px) {
-  .wtg-vehicle-row,
-  .wtg-vehicle-row-compact {
+  .line-vehicle-row,
+  .line-vehicle-row-compact {
     grid-template-columns: 20px repeat(2, minmax(0, 1fr)) 22px !important;
   }
-  .wtg-vehicle-row .trip-field-group { grid-column: 2 / span 2 !important; }
-  .wtg-vehicle-row .wtg-field-weight { grid-column: auto !important; }
-  .wtg-vehicle-row .wtg-remove-vehicle-btn { grid-column: 4; grid-row: 1; }
+  .line-vehicle-row .trip-field-group { grid-column: 2 / span 2 !important; }
+  .line-vehicle-row .line-field-weight { grid-column: auto !important; }
+  .line-vehicle-row .vehicle-remove-btn { grid-column: 4; grid-row: 1; }
 }
 
 /* =========================================================
    VEHICLE ENTRY — COMPACT TABLE PRESENTATION
    Retains the existing editable form fields and handlers.
 ========================================================= */
-.wtg-vehicle-rows,
+.line-vehicle-rows,
 .intercarting-vehicle-rows {
   gap: 0 !important;
   border: 1px solid #d8e4e9;
@@ -2341,8 +2341,8 @@
 }
 .trip-vehicle-table-header > span:last-child { border-right: 0; }
 @media (min-width: 1251px) {
-  .trip-vehicle-table-header-wtg,
-  .wtg-vehicle-rows > .wtg-vehicle-row {
+  .trip-vehicle-table-header-line,
+  .line-vehicle-rows > .line-vehicle-row {
     grid-template-columns: 38px minmax(0,1.2fr) minmax(0,1.2fr)
       minmax(0,1.2fr) minmax(0,.85fr) minmax(0,.9fr)
       minmax(0,.9fr) minmax(0,1.05fr) minmax(0,1.4fr) 36px !important;
@@ -2352,7 +2352,7 @@
     grid-template-columns: 38px minmax(0,1.3fr) minmax(0,1.3fr)
       minmax(0,1.35fr) minmax(0,.85fr) minmax(0,1.6fr) 36px !important;
   }
-  .wtg-vehicle-rows > .wtg-vehicle-row,
+  .line-vehicle-rows > .line-vehicle-row,
   .intercarting-vehicle-rows > .intercarting-vehicle-row {
     gap: 0 !important;
     min-height: 55px !important;
@@ -2360,11 +2360,11 @@
     align-items: stretch !important;
     border-bottom: 1px solid #e1e9ec !important;
   }
-  .wtg-vehicle-rows > .wtg-vehicle-row:last-child,
+  .line-vehicle-rows > .line-vehicle-row:last-child,
   .intercarting-vehicle-rows > .intercarting-vehicle-row:last-child {
     border-bottom: 0 !important;
   }
-  .wtg-vehicle-row > .trip-field-group,
+  .line-vehicle-row > .trip-field-group,
   .intercarting-vehicle-row > .trip-field-group {
     min-width: 0;
     padding: 6px !important;
@@ -2374,7 +2374,7 @@
     flex-direction: column;
     justify-content: center;
   }
-  .wtg-vehicle-row > .trip-field-group > label,
+  .line-vehicle-row > .trip-field-group > label,
   .intercarting-vehicle-row > .trip-field-group > label {
     position: absolute !important;
     width: 1px !important;
@@ -2386,14 +2386,14 @@
     white-space: nowrap !important;
     border: 0 !important;
   }
-  .wtg-vehicle-row .wtg-vehicle-index,
+  .line-vehicle-row .line-vehicle-index,
   .intercarting-vehicle-row .intercarting-vehicle-index,
-  .wtg-vehicle-row .wtg-remove-vehicle-btn,
-  .intercarting-vehicle-row .wtg-remove-vehicle-btn {
+  .line-vehicle-row .vehicle-remove-btn,
+  .intercarting-vehicle-row .vehicle-remove-btn {
     align-self: center !important;
     justify-self: center !important;
   }
-  .wtg-vehicle-row input,
+  .line-vehicle-row input,
   .intercarting-vehicle-row input,
   .intercarting-vehicle-row select {
     font-size: 11px !important;
@@ -2511,4 +2511,315 @@
   .trip-selected-file-name {
     flex-basis: 100%;
   }
+}
+
+
+
+/* =========================================================
+   PROJECT MOVEMENT — RESPONSIVE VEHICLE TABLE
+   Dedicated grid; does not alter Line Movement or Intercarting.
+========================================================= */
+
+.intercarting-vehicle-rows:has(> .trip-vehicle-table-header-project) {
+  width: 100%;
+  min-width: 0;
+  overflow: visible !important;
+  display: flex;
+  flex-direction: column;
+  gap: 0 !important;
+  border: 1px solid #d8e4e9;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.trip-vehicle-table-header-project,
+.intercarting-vehicle-rows > .project-vehicle-row {
+  display: grid !important;
+  grid-template-columns:
+    38px
+    minmax(0, 1.12fr)
+    minmax(0, 1.12fr)
+    minmax(0, 1.12fr)
+    minmax(0, .9fr)
+    minmax(0, .62fr)
+    minmax(0, .82fr)
+    minmax(0, 1.35fr)
+    38px !important;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  column-gap: 0 !important;
+}
+
+.trip-vehicle-table-header-project {
+  min-height: 42px;
+  align-items: stretch;
+  background: #f1f6f8;
+  border-bottom: 1px solid #d8e4e9;
+  color: #426b82;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .025em;
+  text-transform: uppercase;
+}
+
+.trip-vehicle-table-header-project > span {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  padding: 9px 8px;
+  border-right: 1px solid #dce7eb;
+  line-height: 1.2;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.intercarting-vehicle-rows > .project-vehicle-row {
+  min-height: 62px !important;
+  align-items: stretch !important;
+  gap: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-bottom: 1px solid #e5edf0 !important;
+  border-radius: 0 !important;
+  background: #fff;
+  overflow: visible !important;
+}
+
+.intercarting-vehicle-rows > .project-vehicle-row:last-child {
+  border-bottom: 0 !important;
+}
+
+.project-vehicle-row:hover { background: #fbfefd; }
+
+.project-vehicle-row > .trip-field-group {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-self: stretch;
+  min-width: 0;
+  padding: 7px !important;
+  border: 0 !important;
+  border-right: 1px solid #e1e9ec !important;
+}
+
+.project-vehicle-row > .trip-field-group > label {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  min-height: 0 !important;
+  margin: -1px !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  clip: rect(0,0,0,0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+.project-vehicle-row .intercarting-vehicle-index {
+  width: 100%;
+  height: auto !important;
+  min-height: 100%;
+  align-self: stretch !important;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  padding: 0;
+  border-right: 1px solid #e1e9ec;
+  color: #07867e;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.project-vehicle-row .vehicle-suggest-input,
+.project-vehicle-row .vehicle-suggest-input input,
+.project-vehicle-row .trip-select-wrap,
+.project-vehicle-row .trip-select-wrap select,
+.project-vehicle-row > .trip-field-group > input,
+.project-vehicle-row .vehicle-weight-control,
+.project-vehicle-row .vehicle-dimensions-control {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.project-vehicle-row .vehicle-suggest-input input,
+.project-vehicle-row .trip-select-wrap select,
+.project-vehicle-row > .trip-field-group > input,
+.project-vehicle-row .vehicle-weight-control,
+.project-vehicle-row .vehicle-dimensions-control {
+  height: 42px !important;
+  min-height: 42px !important;
+  border-radius: 9px;
+}
+
+.project-vehicle-row .vehicle-suggest-input input,
+.project-vehicle-row .trip-select-wrap select,
+.project-vehicle-row > .trip-field-group > input {
+  padding-left: 10px;
+  padding-right: 10px;
+  font-size: 11px;
+}
+
+.project-vehicle-row .project-field-nos input {
+  text-align: center;
+  font-weight: 750;
+}
+
+.project-vehicle-row .vehicle-weight-control input {
+  min-width: 0;
+  padding: 0 8px;
+  font-size: 11px;
+}
+
+.project-vehicle-row .vehicle-weight-control > span,
+.project-vehicle-row .vehicle-dimensions-unit {
+  min-width: 34px;
+  padding: 0 5px;
+  font-size: 7px;
+}
+
+.project-vehicle-row .vehicle-dimension-part { min-width: 0; }
+.project-vehicle-row .vehicle-dimension-part input {
+  min-width: 0;
+  padding: 0 2px;
+  font-size: 10px;
+}
+.project-vehicle-row .vehicle-dimension-separator { flex: 0 0 12px; }
+
+.project-vehicle-row .vehicle-remove-btn {
+  width: 30px !important;
+  height: 38px !important;
+  align-self: center !important;
+  justify-self: center !important;
+  display: grid;
+  place-items: center;
+  margin: 0 auto !important;
+  padding: 0 !important;
+  border: 1px solid #f0caca !important;
+  border-radius: 8px !important;
+  background: #fff !important;
+  color: #d34c4c !important;
+  font-size: 18px;
+  line-height: 1;
+}
+.project-vehicle-row .vehicle-remove-btn:hover {
+  border-color: #e5a5a5 !important;
+  background: #fff5f5 !important;
+}
+
+/* Tablet: convert each vehicle into a readable two-column card. */
+@media (max-width: 1250px) {
+  .trip-vehicle-table-header-project { display: none !important; }
+
+  .intercarting-vehicle-rows > .project-vehicle-row {
+    grid-template-columns: 30px repeat(2, minmax(0, 1fr)) 34px !important;
+    grid-auto-flow: row;
+    gap: 10px 12px !important;
+    align-items: start !important;
+    padding: 14px !important;
+    border-bottom: 1px solid #dfe9ed !important;
+    border-radius: 0 !important;
+  }
+
+  .project-vehicle-row > .trip-field-group {
+    display: flex;
+    padding: 0 !important;
+    border: 0 !important;
+  }
+
+  .project-vehicle-row > .trip-field-group > label {
+    position: static !important;
+    width: auto !important;
+    height: auto !important;
+    min-height: 16px !important;
+    margin: 0 0 5px !important;
+    overflow: visible !important;
+    clip: auto !important;
+    color: #426477;
+    font-size: 9px;
+    font-weight: 800;
+    line-height: 1.2;
+    white-space: normal !important;
+  }
+
+  .project-vehicle-row .intercarting-vehicle-index {
+    grid-column: 1;
+    grid-row: 1 / span 4;
+    min-height: 42px;
+    border: 0;
+  }
+  .project-vehicle-row .intercarting-field-vehicle-type { grid-column: 2; }
+  .project-vehicle-row .intercarting-field-configuration { grid-column: 3; }
+  .project-vehicle-row .project-field-material { grid-column: 2; }
+  .project-vehicle-row .project-field-classification { grid-column: 3; }
+  .project-vehicle-row .project-field-nos { grid-column: 2; }
+  .project-vehicle-row .intercarting-field-weight { grid-column: 3; }
+  .project-vehicle-row .intercarting-field-dimensions { grid-column: 2 / span 2; }
+  .project-vehicle-row .vehicle-remove-btn {
+    grid-column: 4;
+    grid-row: 1;
+    align-self: start !important;
+  }
+}
+
+/* Mobile: single-column fields, no horizontal scrolling. */
+@media (max-width: 600px) {
+  .intercarting-vehicle-rows:has(> .trip-vehicle-table-header-project) {
+    overflow: visible !important;
+  }
+  .intercarting-vehicle-rows > .project-vehicle-row {
+    grid-template-columns: 26px minmax(0, 1fr) 32px !important;
+    gap: 10px 8px !important;
+    padding: 12px !important;
+  }
+  .project-vehicle-row .intercarting-vehicle-index {
+    grid-column: 1;
+    grid-row: 1 / span 7;
+  }
+  .project-vehicle-row .intercarting-field-vehicle-type,
+  .project-vehicle-row .intercarting-field-configuration,
+  .project-vehicle-row .project-field-material,
+  .project-vehicle-row .project-field-classification,
+  .project-vehicle-row .project-field-nos,
+  .project-vehicle-row .intercarting-field-weight,
+  .project-vehicle-row .intercarting-field-dimensions {
+    grid-column: 2;
+  }
+  .project-vehicle-row .vehicle-remove-btn {
+    grid-column: 3;
+    grid-row: 1;
+  }
+}
+
+
+/* =========================================================
+   LINE MOVEMENT — CLASSIFICATION COLUMN (added)
+   Adds one column (after Configuration Model) to the Line row/header.
+========================================================= */
+@media (min-width: 1251px) {
+  .trip-vehicle-table-header-line,
+  .line-vehicle-rows > .line-vehicle-row {
+    grid-template-columns: 38px minmax(0,1.2fr) minmax(0,1.2fr)
+      minmax(0,.9fr) minmax(0,1.2fr) minmax(0,.85fr) minmax(0,.9fr)
+      minmax(0,.9fr) minmax(0,1.05fr) minmax(0,1.4fr) 36px !important;
+  }
+}
+@media (max-width: 1250px) {
+  .line-vehicle-row,
+  .line-vehicle-row-compact {
+    grid-template-columns: 22px repeat(6, minmax(0, 1fr)) 24px !important;
+  }
+  .line-vehicle-row .line-field-classification { grid-column: 2 / span 2; }
+}
+.line-vehicle-row .trip-select-wrap,
+.line-vehicle-row .trip-select-wrap select {
+  width: 100%;
+  min-width: 0;
+}
+.line-vehicle-row .trip-select-wrap select {
+  height: 42px;
+  padding-left: 10px;
+  padding-right: 26px;
+  font-size: 10.5px;
 }

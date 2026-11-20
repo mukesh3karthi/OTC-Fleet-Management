@@ -695,7 +695,9 @@ const saveOrderFinalization = async (req, res) => {
     const movementKey = cleanString(trip.movementType)
       .toLowerCase()
       .replace(/[\s_-]+/g, "");
-    const isWtg = movementKey === "wtgmovement";
+    // Line Movement is the renamed WTG Movement and uses the same
+    // existing per-vehicle amount workflow. Keep Intercarting unchanged.
+    const isWtg = ["wtgmovement", "linemovement"].includes(movementKey);
     const isIntercarting = movementKey === "intercarting";
     const usesVehicleAmounts = isWtg || isIntercarting;
     const incomingVehicleAmounts = req.body.vehicleFinalAmounts;

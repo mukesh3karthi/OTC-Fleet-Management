@@ -145,6 +145,14 @@ const CraneDocumentActions = ({ order }) => {
   );
 };
 const safeArray = (value) => (Array.isArray(value) ? value : []);
+// "Line Movement" is the renamed WTG Movement, so it uses the same flow.
+const isWtgMovement = (trip) =>
+  ["wtgmovement", "linemovement"].includes(
+    String(trip?.movementType || "")
+      .trim()
+      .toLowerCase()
+      .replace(/[\s_-]+/g, ""),
+  );
 const isCurrentTrackingAllocation = (allocation) =>
   String(allocation?.vehicleStatus || "")
     .trim()
@@ -241,9 +249,8 @@ const formatAmount = (value) => {
 // WTG rates are available only after Management has entered a valid amount
 // for EVERY vehicle requirement and sent the complete enquiry allocation.
 const hasCompleteWtgApprovalAmounts = (trip) => {
-  const movement = String(trip?.movementType || "").trim().toLowerCase();
   const usesVehicleAmounts =
-    movement === "wtg movement" ||
+    isWtgMovement(trip) ||
     isIntercartingMovement(trip);
   if (!usesVehicleAmounts) return true;
   if (String(trip?.enquiryApproval?.status || "").trim().toLowerCase() !== "sent") return false;
@@ -262,7 +269,7 @@ const hasCompleteWtgApprovalAmounts = (trip) => {
 // Other movement types keep their existing quoted-rate behavior.
 const getWtgApprovalQuotedRate = (trip) => {
   if (
-    String(trip?.movementType || "").trim().toLowerCase() !== "wtg movement" ||
+    !isWtgMovement(trip) ||
     !hasCompleteWtgApprovalAmounts(trip)
   ) return null;
   const total = Number(trip?.enquiryApproval?.totalAmount);
@@ -680,7 +687,7 @@ const SectionHeading = ({ title, description, count, action }) => (
    READ ONLY ON ALL PAGES AFTER ENQUIRY
 ========================================================= */
 const CommonStepDetails = ({ order, totalRequiredVehicles, editing = false, editForm = {}, onEdit }) => {
-  const isWtg = String(order?.movementType || "").trim().toLowerCase() === "wtg movement";
+  const isWtg = isWtgMovement(order);
   if (isWtg) {
     const total = Number(order?.totalVehicles) || totalRequiredVehicles;
     const fields = [
@@ -876,7 +883,7 @@ const Lifecyclemodal = ({
     setEditError("");
     setEditOpen(true);
   };
-  const isWtgOrder = String((workingOrder || order)?.movementType || "").trim().toLowerCase() === "wtg movement";
+  const isWtgOrder = isWtgMovement(workingOrder || order);
   const isIntercartingOrder = isIntercartingMovement(workingOrder || order);
   const craneMovementKey = String((workingOrder || order)?.movementType || "")
     .trim()
@@ -6037,4 +6044,4 @@ const Lifecyclemodal = ({
     </div>
   );
 };
-export default Lifecyclemodal;
+export default Lifecyclemodal;  
