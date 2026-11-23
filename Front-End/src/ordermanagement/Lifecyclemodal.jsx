@@ -251,7 +251,8 @@ const formatAmount = (value) => {
 const hasCompleteWtgApprovalAmounts = (trip) => {
   const usesVehicleAmounts =
     isWtgMovement(trip) ||
-    isIntercartingMovement(trip);
+    isIntercartingMovement(trip) ||
+    isProjectMovement(trip);
   if (!usesVehicleAmounts) return true;
   if (String(trip?.enquiryApproval?.status || "").trim().toLowerCase() !== "sent") return false;
   const vehicles = safeArray(trip?.vehicleRequirements);
@@ -269,7 +270,7 @@ const hasCompleteWtgApprovalAmounts = (trip) => {
 // Other movement types keep their existing quoted-rate behavior.
 const getWtgApprovalQuotedRate = (trip) => {
   if (
-    !isWtgMovement(trip) ||
+    !(isWtgMovement(trip) || isProjectMovement(trip)) ||
     !hasCompleteWtgApprovalAmounts(trip)
   ) return null;
   const total = Number(trip?.enquiryApproval?.totalAmount);
@@ -405,6 +406,9 @@ const isIntercartingMovement = (order) =>
     .trim()
     .toLowerCase()
     .replace(/[\s-]+/g, "") === "intercarting";
+const isProjectMovement = (order) =>
+  String(order?.movementType || order?.movement || "")
+    .trim().toLowerCase().replace(/[\s_-]+/g, "") === "projectmovement";
 
 const invoiceIsFullyPaid = (order) => {
   const invoice = order?.invoicePayment || {};
@@ -463,6 +467,8 @@ const buildLifecycle = (order) => {
   const poDocumentStatus = isPoDocumentComplete(order)
     ? "Completed"
     : "Pending";
+  const projectRequests = safeArray(order?.projectVehicleAllocationRequests);
+  const projectAllocationStatus = projectRequests.some((item) => ["Pending Traffic", "Pending Management", "Approved"].includes(item.status)) ? "Completed" : "Pending";
   const requiredVendorVehicleCount = requirements.reduce(
     (total, requirement) => {
       const quantity = Number(
@@ -505,12 +511,16 @@ const buildLifecycle = (order) => {
     0,
   );
   const transportReplacementPending = hasPendingTransportReplacement(order);
-  const vendorFinalizationStatus = transportReplacementPending
-    ? "Replacement Pending"
-    : requiredVendorVehicleCount > 0 &&
-        approvedVendorVehicleCount >= requiredVendorVehicleCount
+  const vendorFinalizationStatus = isProjectMovement(order)
+    ? projectRequests.some((item) => item.status === "Approved")
       ? "Completed"
-      : "Pending";
+      : "Pending"
+    : transportReplacementPending
+      ? "Replacement Pending"
+      : requiredVendorVehicleCount > 0 &&
+          approvedVendorVehicleCount >= requiredVendorVehicleCount
+        ? "Completed"
+        : "Pending";
   const orderPlacedStatus =
     String(order?.orderPlaced?.status || "")
       .trim()
@@ -552,7 +562,7 @@ const buildLifecycle = (order) => {
   const orderPlacedCompleted = orderPlacedStatus === "Completed";
   const tripCompleted =
     orderFinalizationCompleted &&
-    poCompleted &&
+    (isProjectMovement(order) || poCompleted) &&
     vendorCompleted &&
     orderPlacedCompleted &&
     allRequiredVehiclesAllocated &&
@@ -576,6 +586,9 @@ const buildLifecycle = (order) => {
       status: orderFinalizationStatus,
     },
     { key: "po-document", title: "PO Document", status: poDocumentStatus },
+    ...(isProjectMovement(order)
+      ? [{ key: "vehicle-allocation-request", title: "Vehicle Allocation Request", status: projectAllocationStatus }]
+      : []),
     {
       key: "vendor-finalization",
       title: "Vendor Finalization",
@@ -599,38 +612,24 @@ const buildLifecycle = (order) => {
    CURRENT LIFECYCLE INDEX
 ========================================================= */
 const getLifecycleCurrentIndex = (order, lifecycle) => {
+  const indexOf = (key) => lifecycle.findIndex((step) => step.key === key);
   const getStepStatus = (key) =>
     String(lifecycle.find((step) => step.key === key)?.status || "Pending")
-      .trim()
-      .toLowerCase();
-  if (getStepStatus("trip-complete") === "completed") {
-    return 7;
+      .trim().toLowerCase();
+  if (getStepStatus("trip-complete") === "completed") return indexOf("trip-complete");
+  if (isIntercartingMovement(order) && getStepStatus("order-placed") === "completed") return indexOf("order-placed");
+  if (getStepStatus("order-finalization") === "rejected" || getStepStatus("order-finalization") !== "completed") return indexOf("order-finalization");
+  if (isProjectMovement(order)) {
+    const hasApprovedProjectRequest = safeArray(order?.projectVehicleAllocationRequests).some((item) => String(item?.status || "").trim().toLowerCase() === "approved");
+    if (!hasApprovedProjectRequest) return indexOf("vehicle-allocation-request");
+    if (getStepStatus("vendor-finalization") !== "completed") return indexOf("vendor-finalization");
+  } else if (getStepStatus("po-document") !== "completed") {
+    return indexOf("po-document");
   }
-  if (
-    isIntercartingMovement(order) &&
-    getStepStatus("order-placed") === "completed"
-  ) {
-    return 4;
-  }
-  if (getStepStatus("order-finalization") === "rejected") {
-    return 1;
-  }
-  if (getStepStatus("order-finalization") !== "completed") {
-    return 1;
-  }
-  if (getStepStatus("po-document") !== "completed") {
-    return 2;
-  }
-  if (getStepStatus("vendor-finalization") !== "completed") {
-    return 3;
-  }
-  if (getStepStatus("order-placed") !== "completed") {
-    return 4;
-  }
-  if (getStepStatus("tracking") === "completed") {
-    return 6;
-  }
-  return 5;
+  if (getStepStatus("vendor-finalization") !== "completed") return indexOf("vendor-finalization");
+  if (getStepStatus("order-placed") !== "completed") return indexOf("order-placed");
+  if (getStepStatus("tracking") === "completed") return indexOf("invoice-payment");
+  return indexOf("tracking");
 };
 /* =========================================================
    READ ONLY FIELD
@@ -688,6 +687,7 @@ const SectionHeading = ({ title, description, count, action }) => (
 ========================================================= */
 const CommonStepDetails = ({ order, totalRequiredVehicles, editing = false, editForm = {}, onEdit }) => {
   const isWtg = isWtgMovement(order);
+  const isProject = isProjectMovement(order);
   if (isWtg) {
     const total = Number(order?.totalVehicles) || totalRequiredVehicles;
     const fields = [
@@ -730,7 +730,7 @@ const CommonStepDetails = ({ order, totalRequiredVehicles, editing = false, edit
         <span>Customer</span>
         <strong title={order?.customer || ""}>{order?.customer || "—"}</strong>
       </div>
-      {!isIntercarting && (
+      {!isIntercarting && !isProject && (
         <div className="kam-common-step-item">
           <span>Material Type</span>
           <strong title={order?.materialType || ""}>
@@ -750,13 +750,13 @@ const CommonStepDetails = ({ order, totalRequiredVehicles, editing = false, edit
           {order?.assignedKam || "—"}
         </strong>
       </div>
-      {!isIntercarting && (
+      {!isIntercarting && !isProject && (
         <div className="kam-common-step-item">
           <span>Origin</span>
           <strong title={order?.origin || ""}>{order?.origin || "—"}</strong>
         </div>
       )}
-      {!isIntercarting && (
+      {!isIntercarting && !isProject && (
         <div className="kam-common-step-item">
           <span>Destination</span>
           <strong title={order?.destination || ""}>
@@ -764,10 +764,12 @@ const CommonStepDetails = ({ order, totalRequiredVehicles, editing = false, edit
           </strong>
         </div>
       )}
-      <div className="kam-common-step-item">
-        <span>Placement Date</span>
-        <strong>{formatDate(order?.placementDate)}</strong>
-      </div>
+      {!isProject && (
+        <div className="kam-common-step-item">
+          <span>Placement Date</span>
+          <strong>{formatDate(order?.placementDate)}</strong>
+        </div>
+      )}
     </div>
   );
 };
@@ -803,6 +805,9 @@ const Lifecyclemodal = ({
   const [poSaving, setPoSaving] = useState(false);
   const [poMessage, setPoMessage] = useState("");
   const [poError, setPoError] = useState("");
+  const [projectAllocationRows, setProjectAllocationRows] = useState({});
+  const [projectAllocationSaving, setProjectAllocationSaving] = useState(false);
+  const [projectAllocationError, setProjectAllocationError] = useState("");
   const workingOrder = latestOrderLoading ? null : localOrder || order;
   const openLifecycleEditor = () => {
     const o = workingOrder || order;
@@ -890,7 +895,8 @@ const Lifecyclemodal = ({
     .toLowerCase()
     .replace(/[\s_-]+/g, "");
   const isCraneOrder = ["crane", "cranemovement"].includes(craneMovementKey);
-  const isPerVehicleAmountOrder = isWtgOrder || isIntercartingOrder;
+  const isProjectOrder = isProjectMovement(workingOrder || order);
+  const isPerVehicleAmountOrder = isWtgOrder || isIntercartingOrder || isProjectOrder;
   const isIntercartingEdit = String((workingOrder || order)?.movementType || "")
     .toLowerCase()
     .includes("intercart");
@@ -905,17 +911,17 @@ const Lifecyclemodal = ({
     ["contactPerson", "Contact Person"],
     ["contactNumber", "Contact Number"],
     ["email", "Email"],
-    ...(!isIntercartingEdit ? [["materialType", "Material Type"]] : []),
+    ...(!isIntercartingEdit && !isProjectOrder ? [["materialType", "Material Type"]] : []),
     ["enquiryDate", "Enquiry Date"],
-    ["placementDate", "Placement Date"],
+    ...(!isProjectOrder ? [["placementDate", "Placement Date"]] : []),
     ["assignedKam", "Assigned KAM"],
-    ...(!isIntercartingEdit
+    ...(!isIntercartingEdit && !isProjectOrder
       ? [
           ["origin", "Origin"],
           ["destination", "Destination"],
         ]
       : []),
-    ...(!isIntercartingEdit ? [["distance", "Distance (km)"]] : []),
+    ...(!isIntercartingEdit && !isProjectOrder ? [["distance", "Distance (km)"]] : []),
   ];
   const inlineEditor = (stage) => (
     <section className="kam-inline-edit-panel">
@@ -2220,11 +2226,11 @@ const Lifecyclemodal = ({
             .trim()
             .toLowerCase() === "approved",
       );
-      if (hasAtLeastOneConfirmedTransporter) {
-        // Step 5: Order Placed is available after at least one transporter is confirmed.
+      if (isProjectMovement(updatedOrder)) {
+        setActiveStepIndex(3);
+      } else if (hasAtLeastOneConfirmedTransporter) {
         setActiveStepIndex(4);
       } else {
-        // Step 4: Vendor Finalization
         setActiveStepIndex(3);
       }
     } catch (error) {
@@ -2233,6 +2239,77 @@ const Lifecyclemodal = ({
       showToast(message, "error");
     } finally {
       setPoSaving(false);
+    }
+  };
+  const submitProjectVehicleAllocationRequest = async () => {
+    if (!workingOrder?._id) return;
+    const requirements = safeArray(workingOrder?.vehicleRequirements);
+    const activeStatuses = ["pending traffic", "pending management", "approved"];
+    const pendingBatch = requirements.map((requirement) => {
+      const requirementId = requirement?.requirementId;
+      const relatedRequests = safeArray(workingOrder?.projectVehicleAllocationRequests).filter((item) =>
+        item?.requirementId === requirementId && activeStatuses.includes(String(item?.status || "").trim().toLowerCase()),
+      );
+      const alreadyRequested = relatedRequests.reduce((sum, item) => sum + (Number(item?.requestedQuantity) || 0), 0);
+      const remaining = Math.max(0, (Number(requirement?.quantity) || 0) - alreadyRequested);
+      const row = projectAllocationRows[requirementId] || {};
+      const requestedQuantity = Number(row.requestedQuantity ?? remaining);
+      return {
+        requirementId,
+        requestedQuantity,
+        customerRequiredDate: row.customerRequiredDate || "",
+        remaining,
+        vehicleLabel: requirement?.vehicleType || requirementId,
+      };
+    }).filter((row) => row.requestedQuantity > 0);
+
+    if (!pendingBatch.length) {
+      setProjectAllocationError("Enter a request quantity for at least one vehicle requirement.");
+      return;
+    }
+    const invalidRow = pendingBatch.find((row) =>
+      !row.requirementId || !Number.isInteger(row.requestedQuantity) || row.requestedQuantity < 1 ||
+      row.requestedQuantity > row.remaining || !row.customerRequiredDate,
+    );
+    if (invalidRow) {
+      setProjectAllocationError(`${invalidRow.vehicleLabel}: enter a valid quantity (up to ${invalidRow.remaining}) and customer required date.`);
+      return;
+    }
+
+    try {
+      setProjectAllocationSaving(true);
+      setProjectAllocationError("");
+      let latestOrder = workingOrder;
+      let submittedCount = 0;
+      for (const row of pendingBatch) {
+        const response = await lifecycleApiFetch(`${TRIP_API_URL}/${workingOrder._id}/project-vehicle-allocation-requests`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify({
+            requirementId: row.requirementId,
+            requestedQuantity: row.requestedQuantity,
+            customerRequiredDate: row.customerRequiredDate,
+            requestedBy: sessionStorage.getItem("kamUsername") || "Key Account",
+          }),
+        });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(payload.message || `Unable to submit ${row.vehicleLabel}.`);
+        const updated = payload?.data || payload?.trip || payload?.order || payload;
+        if (updated?._id) latestOrder = updated;
+        submittedCount += 1;
+      }
+      if (latestOrder?._id) {
+        setLocalOrder(latestOrder);
+        onOrderUpdated?.(latestOrder);
+      }
+      setProjectAllocationRows({});
+      showToast(`${submittedCount} vehicle requirement${submittedCount === 1 ? "" : "s"} submitted to Traffic successfully.`, "success");
+    } catch (error) {
+      const message = error.message || "Unable to submit vehicle allocation requests.";
+      setProjectAllocationError(message);
+      showToast(message, "error");
+    } finally {
+      setProjectAllocationSaving(false);
     }
   };
   const placeOrder = async () => {
@@ -2335,7 +2412,7 @@ const Lifecyclemodal = ({
       if (typeof onOrderUpdated === "function") {
         onOrderUpdated(updatedOrder);
       }
-      setActiveStepIndex(isIntercartingMovement(order) ? 4 : 5);
+      setActiveStepIndex(isIntercartingMovement(order) ? 4 : isProjectMovement(order) ? 6 : 5);
     } catch (error) {
       const message = error.message || "Unable to place the order.";
       setPlaceOrderError(message);
@@ -2453,7 +2530,7 @@ const Lifecyclemodal = ({
     // It is available only when buildLifecycle() has independently validated
     // every prerequisite and every required vehicle unloading.
     if (
-      index === 7 &&
+      index === (isProjectMovement(order) ? 8 : 7) &&
       String(
         lifecycle.find((step) => step.key === "trip-complete")?.status || "",
       )
@@ -2473,11 +2550,11 @@ const Lifecyclemodal = ({
       String(order?.stage || "")
         .trim()
         .toLowerCase() === "tracking" ||
-      currentLifecycleIndex >= 5;
+      currentLifecycleIndex >= (isProjectMovement(order) ? 6 : 5);
     const canOpenOptionalOrOrderPlaced =
-      orderApproved && (index === 2 || index === 3 || index === 4);
+      orderApproved && (index === 2 || index === 3 || index === 4 || (isProjectMovement(order) && index === 5));
     const canOpenTracking =
-      orderPlacedCompleted && (index === 5 || index === 6);
+      orderPlacedCompleted && (index === (isProjectMovement(order) ? 6 : 5) || index === (isProjectMovement(order) ? 7 : 6));
     if (
       index <= currentLifecycleIndex ||
       canOpenOptionalOrOrderPlaced ||
@@ -2828,22 +2905,15 @@ const Lifecyclemodal = ({
      transporter quotation. Rejected balance quotations
      do not block Vendor Finalization.
   ========================================================= */
-  const vehicleApprovalCompleted =
-    totalRequiredVehicles > 0 &&
-    approvedQuotationVehicleCount >= totalRequiredVehicles;
+  const vehicleApprovalCompleted = isProjectMovement(order)
+    ? safeArray(order?.projectVehicleAllocationRequests).some((item) => item.status === "Approved")
+    : totalRequiredVehicles > 0 && approvedQuotationVehicleCount >= totalRequiredVehicles;
   const displayCurrentStage = (() => {
-    if (currentLifecycleIndex >= 7) {
-      return "Trip Complete";
-    }
-    if (currentLifecycleIndex >= 6) {
-      return "Invoice & Payment";
-    }
-    if (currentLifecycleIndex >= 5) {
-      return "Tracking";
-    }
-    if (currentLifecycleIndex >= 4) {
-      return "Order Placed";
-    }
+    const shift = isProjectMovement(order) ? 1 : 0;
+    if (currentLifecycleIndex >= 7 + shift) return "Trip Complete";
+    if (currentLifecycleIndex >= 6 + shift) return "Invoice & Payment";
+    if (currentLifecycleIndex >= 5 + shift) return "Tracking";
+    if (currentLifecycleIndex >= 4 + shift) return "Order Placed";
     return (
       lifecycle?.[currentLifecycleIndex]?.title ||
       order?.stage ||
@@ -2952,7 +3022,7 @@ const Lifecyclemodal = ({
                         )
                           .trim()
                           .toLowerCase() === "completed";
-                      if (index === 7 && !tripCompleteValidated) {
+                      if (index === (isProjectMovement(order) ? 8 : 7) && !tripCompleteValidated) {
                         return true;
                       }
                       const orderApproved =
@@ -2966,12 +3036,12 @@ const Lifecyclemodal = ({
                         String(order?.stage || "")
                           .trim()
                           .toLowerCase() === "tracking" ||
-                        currentLifecycleIndex >= 5;
+                        currentLifecycleIndex >= (isProjectMovement(order) ? 6 : 5);
                       const canOpenOptionalOrOrderPlaced =
                         orderApproved &&
-                        (index === 2 || index === 3 || index === 4);
+                        (index === 2 || index === 3 || index === 4 || (isProjectMovement(order) && index === 5));
                       const canOpenTracking =
-                        orderPlacedCompleted && (index === 5 || index === 6);
+                        orderPlacedCompleted && (index === (isProjectMovement(order) ? 6 : 5) || index === (isProjectMovement(order) ? 7 : 6));
                       return !(
                         index <= currentLifecycleIndex ||
                         canOpenOptionalOrOrderPlaced ||
@@ -3115,7 +3185,7 @@ const Lifecyclemodal = ({
                     }
                     value={order.assignedKam}
                   />
-                  {!isIntercartingEdit && (
+                  {!isIntercartingEdit && !isProjectOrder && (
                     <ReadOnlyField
                       label="Material Type"
                       editing={editOpen}
@@ -3161,7 +3231,7 @@ const Lifecyclemodal = ({
                       suffix={craneRequestWeight != null ? " TON" : ""}
                     />
                   )}
-                  {!isIntercartingEdit && (
+                  {!isIntercartingEdit && !isProjectOrder && (
                     <ReadOnlyField
                       label="Origin"
                       editing={editOpen}
@@ -3179,7 +3249,7 @@ const Lifecyclemodal = ({
                       value={order.originPincode || "—"}
                     />
                   )}
-                  {!isIntercartingEdit && (
+                  {!isIntercartingEdit && !isProjectOrder && (
                     <ReadOnlyField
                       label="Destination"
                       editing={editOpen}
@@ -3197,7 +3267,7 @@ const Lifecyclemodal = ({
                       value={order.destinationPincode || "—"}
                     />
                   )}
-                  {!isIntercartingEdit && (
+                  {!isIntercartingEdit && !isProjectOrder && (
                     <ReadOnlyField
                       label="Distance"
                       editing={editOpen}
@@ -3226,7 +3296,7 @@ const Lifecyclemodal = ({
                     }
                     value={formatDate(order.enquiryDate)}
                   />
-                  <ReadOnlyField
+                  {!isProjectOrder && <ReadOnlyField
                     label="Placement Date"
                     editing={editOpen}
                     fieldKey="placementDate"
@@ -3235,7 +3305,7 @@ const Lifecyclemodal = ({
                       setEditForm((prev) => ({ ...prev, [key]: value }))
                     }
                     value={formatDate(order.placementDate)}
-                  />
+                  />}
                   {!isCraneOrder && order.siteLocation && (
                     <ReadOnlyField
                       label="Site Location"
@@ -3516,9 +3586,11 @@ const Lifecyclemodal = ({
                           <th>Vehicle Type</th>
                           <th>Configuration</th>
                           <th>Classification</th>
+                          {isProjectOrder && <th>Material Type</th>}
+                          {isProjectOrder && <th>NOS</th>}
                           <th>Weight</th>
                           <th>L × H × W</th>
-                          {isIntercartingOrder && <th>Approval Amount</th>}
+                          {(isIntercartingOrder || isProjectOrder) && <th>Approval Amount</th>}
                         </tr>
                       </thead>
                       <tbody>
@@ -3571,6 +3643,12 @@ const Lifecyclemodal = ({
                                 "—"
                               )}
                             </td>
+                            {isProjectOrder && (
+                              <>
+                                <td>{requirement.materialType || order.materialType || "—"}</td>
+                                <td>{Number(requirement.quantity ?? requirement.nos ?? 1)} NOS</td>
+                              </>
+                            )}
                             <td>
                               {originalVehicleEdit(
                                 index,
@@ -3597,7 +3675,7 @@ const Lifecyclemodal = ({
                                 formatDimensions(requirement.dimensions)
                               )}
                             </td>
-                            {isIntercartingOrder && (
+                            {(isIntercartingOrder || isProjectOrder) && (
                               <td>
                                 {order.enquiryApproval?.status === "Sent"
                                   ? formatAmount(requirement.approvalAmount)
@@ -3610,7 +3688,7 @@ const Lifecyclemodal = ({
                       <tfoot>
                         <tr>
                           <td
-                            colSpan="4"
+                            colSpan={isProjectOrder ? 6 : 4}
                             style={{
                               textAlign: "right",
                             }}
@@ -3618,10 +3696,10 @@ const Lifecyclemodal = ({
                             <strong>Total Required</strong>
                           </td>
                           <td>
-                            <strong>{requirements.length} NOS</strong>
+                            <strong>{isProjectOrder ? requirements.reduce((sum, item) => sum + Math.max(0, Number(item.quantity ?? item.nos ?? 1) || 0), 0) : requirements.length} NOS</strong>
                           </td>
                           <td colSpan="2" />
-                          {isIntercartingOrder && (
+                          {(isIntercartingOrder || isProjectOrder) && (
                             <td>
                               {order.enquiryApproval?.status === "Sent"
                                 ? formatAmount(order.enquiryApproval.totalAmount)
@@ -3750,9 +3828,11 @@ const Lifecyclemodal = ({
                       <div className="kam-wtg-final-vehicle-wrap">
                         <table className={`kam-wtg-final-vehicle-table${isIntercartingOrder ? " kam-intercarting-final-vehicle-table" : ""}`}>
                           <thead><tr>
-                            {(isIntercartingOrder
-                              ? ["#", "Vehicle Type", "Configuration", "Classification", "Weight", "Dimensions (L × H × W)", "Customer Final Amount (₹)"]
-                              : ["#", "Vehicle Type", "Configuration", "Material", "Weight", "Origin", "Destination", "Placement", "L × H × W", "Customer Final Amount (₹)"]
+                            {(isProjectOrder
+                              ? ["#", "Vehicle Type", "Configuration Model", "Classification", "Material Type", "NOS", "Weight", "Dimensions (L × H × W)", "Customer Final Amount (₹)"]
+                              : isIntercartingOrder
+                                ? ["#", "Vehicle Type", "Configuration", "Classification", "Weight", "Dimensions (L × H × W)", "Customer Final Amount (₹)"]
+                                : ["#", "Vehicle Type", "Configuration", "Material", "Weight", "Origin", "Destination", "Placement", "L × H × W", "Customer Final Amount (₹)"]
                             ).map((heading) => <th key={heading}>{heading}</th>)}
                           </tr></thead>
                           <tbody>
@@ -3763,7 +3843,15 @@ const Lifecyclemodal = ({
                                   <td>{index + 1}</td>
                                   <td>{vehicle.vehicleType || "—"}</td>
                                   <td>{vehicle.configuration || "—"}</td>
-                                  {isIntercartingOrder ? (
+                                  {isProjectOrder ? (
+                                    <>
+                                      <td>{vehicle.classification || "—"}</td>
+                                      <td>{vehicle.materialType || order.materialType || "—"}</td>
+                                      <td>{Number(vehicle.quantity ?? vehicle.nos ?? 1)} NOS</td>
+                                      <td>{formatNumber(vehicle.weight, " TON")}</td>
+                                      <td>{formatDimensions(vehicle.dimensions)}</td>
+                                    </>
+                                  ) : isIntercartingOrder ? (
                                     <>
                                       <td>{vehicle.classification || "—"}</td>
                                       <td>{formatNumber(vehicle.weight, " TON")}</td>
@@ -3921,7 +4009,7 @@ const Lifecyclemodal = ({
               VENDOR FINALIZATION
               CONFIRMED TRANSPORTERS + QUOTATION VEHICLE STATUS
           ================================================= */}
-          {activeStepIndex === 3 && (
+          {activeStepIndex === (isProjectMovement(order) ? 4 : 3) && (
             <>
               {quotationPendingVehicleCount > 0 && (
                 <div className="kam-optional-commercial-warning kam-vendor-warning">
@@ -4418,22 +4506,69 @@ const Lifecyclemodal = ({
               </section>
             </div>
           )}
+          {isProjectMovement(order) && activeStepIndex === 3 && (
+            <div className="kam-step-page kam-step-page-project-allocation">
+              <section className="kam-client-vehicle-section kam-project-allocation-page">
+                <SectionHeading title="Vehicle Allocation Request" description="Enter the quantity and customer required date against each vehicle requirement, then submit all selected requirements together." />
+                <div className="kam-project-allocation-intro">
+                  <div><strong>Batch vehicle request</strong><span>One submission for all rows with a request quantity.</span></div>
+                  <div className="kam-project-allocation-intro-note">PO document is optional for Project Movement. You can upload it later.</div>
+                </div>
+                <div className="kam-project-allocation-table-wrap kam-project-allocation-entry-wrap">
+                  <table className="kam-project-allocation-entry-table">
+                    <thead><tr><th>Vehicle Requirement</th><th>Configuration</th><th>Total Required</th><th>Already Requested</th><th>Remaining</th><th>Request Qty</th><th>Customer Required Date</th></tr></thead>
+                    <tbody>
+                      {safeArray(order?.vehicleRequirements).map((requirement) => {
+                        const requirementId = requirement.requirementId;
+                        const requests = safeArray(order?.projectVehicleAllocationRequests).filter((item) => item.requirementId === requirementId && ["Pending Traffic", "Pending Management", "Approved"].includes(item.status));
+                        const alreadyRequested = requests.reduce((sum, item) => sum + (Number(item.requestedQuantity) || 0), 0);
+                        const remaining = Math.max(0, (Number(requirement.quantity) || 0) - alreadyRequested);
+                        const row = projectAllocationRows[requirementId] || {};
+                        const quantityValue = row.requestedQuantity ?? String(remaining);
+                        return (
+                          <tr key={requirementId} className={remaining < 1 ? "is-fully-requested" : ""}>
+                            <td><strong>{requirement.vehicleType || requirementId}</strong><small>{requirement.classification || requirement.materialType || "Vehicle requirement"}</small></td>
+                            <td>{requirement.configuration || "—"}</td>
+                            <td><strong>{requirement.quantity || 0} NOS</strong></td>
+                            <td>{alreadyRequested} NOS</td>
+                            <td><span className="kam-project-remaining-pill">{remaining} NOS</span></td>
+                            <td><input aria-label={`Request quantity for ${requirement.vehicleType || requirementId}`} type="number" min="0" max={remaining} step="1" value={quantityValue} disabled={remaining < 1 || projectAllocationSaving} onChange={(event) => setProjectAllocationRows((previous) => ({ ...previous, [requirementId]: { ...(previous[requirementId] || {}), requestedQuantity: event.target.value } }))} /></td>
+                            <td><input aria-label={`Customer required date for ${requirement.vehicleType || requirementId}`} type="date" value={row.customerRequiredDate || ""} disabled={remaining < 1 || projectAllocationSaving || Number(quantityValue) < 1} onChange={(event) => setProjectAllocationRows((previous) => ({ ...previous, [requirementId]: { ...(previous[requirementId] || {}), customerRequiredDate: event.target.value } }))} /></td>
+                          </tr>
+                        );
+                      })}
+                      {!safeArray(order?.vehicleRequirements).length && <tr><td colSpan="7" className="kam-project-allocation-empty">No vehicle requirements found for this order.</td></tr>}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="kam-project-allocation-submitbar">
+                  <span>Only rows with Request Qty above 0 will be submitted. All selected rows are sent in one action.</span>
+                  <button type="button" onClick={submitProjectVehicleAllocationRequest} disabled={projectAllocationSaving || !safeArray(order?.vehicleRequirements).some((item) => Number((projectAllocationRows[item.requirementId] || {}).requestedQuantity ?? Math.max(0, (Number(item.quantity) || 0) - safeArray(order?.projectVehicleAllocationRequests).filter((request) => request.requirementId === item.requirementId && ["Pending Traffic", "Pending Management", "Approved"].includes(request.status)).reduce((sum, request) => sum + (Number(request.requestedQuantity) || 0), 0))) > 0)}>{projectAllocationSaving ? "Submitting Requests..." : "Submit All Vehicle Requests"}</button>
+                </div>
+                {projectAllocationError && <div className="kam-form-error">{projectAllocationError}</div>}
+                <div className="kam-project-allocation-history">
+                  <div className="kam-project-allocation-history-heading"><div><strong>Submitted Vehicle Requests</strong><span>Track Traffic and Management progress for each submitted batch item.</span></div><span>{safeArray(order?.projectVehicleAllocationRequests).length} Request(s)</span></div>
+                  <div className="kam-project-allocation-table-wrap"><table className="kam-project-allocation-table"><thead><tr><th>Requirement</th><th>Qty</th><th>Customer Required</th><th>Traffic Vendor</th><th>Vendor Amount</th><th>Status</th></tr></thead><tbody>{safeArray(order?.projectVehicleAllocationRequests).map((item) => { const requirement = safeArray(order?.vehicleRequirements).find((r) => r.requirementId === item.requirementId); return <tr key={item.requestId}><td>{requirement?.vehicleType || item.requirementId}</td><td>{item.requestedQuantity}</td><td>{formatDate(item.customerRequiredDate)}</td><td>{item.vendorName || "Awaiting Traffic"}</td><td>{item.vendorAmount == null ? "—" : formatAmount(item.vendorAmount)}</td><td><span className={`kam-project-request-status ${String(item.status || "").toLowerCase().replace(/\s+/g, "-")}`}>{item.status}</span>{item.rejectionReason ? <small>{item.rejectionReason}</small> : null}</td></tr>; })}{!safeArray(order?.projectVehicleAllocationRequests).length && <tr><td colSpan="6">No vehicle allocation requests raised yet.</td></tr>}</tbody></table></div>
+                </div>
+              </section>
+            </div>
+          )}
           {/* =================================================
               ORDER PLACED - FINAL VERIFICATION
           ================================================= */}
-          {activeStepIndex === 4 && (
+          {activeStepIndex === (isProjectMovement(order) ? 5 : 4) && (
             <div className="kam-step-page kam-step-page-place-order">
               <section className="kam-place-order-section">
                 {(!isPoDocumentComplete(order) ||
-                  getStatusClass(lifecycle?.[3]?.status) === "pending") && (
+                  getStatusClass(lifecycle?.[lifecycle.findIndex((step) => step.key === "vendor-finalization")]?.status) === "pending") && (
                   <div className="kam-optional-commercial-warning">
                     <strong>⚠ Optional items pending</strong>
                     <span>
                       {!isPoDocumentComplete(order) && "PO Document"}
                       {!isPoDocumentComplete(order) &&
-                        getStatusClass(lifecycle?.[3]?.status) === "pending" &&
+                        getStatusClass(lifecycle?.[lifecycle.findIndex((step) => step.key === "vendor-finalization")]?.status) === "pending" &&
                         " • "}
-                      {getStatusClass(lifecycle?.[3]?.status) === "pending" &&
+                      {getStatusClass(lifecycle?.[lifecycle.findIndex((step) => step.key === "vendor-finalization")]?.status) === "pending" &&
                         "Vendor Finalization"}
                     </span>
                     <small>
@@ -4615,7 +4750,7 @@ const Lifecyclemodal = ({
           {/* =================================================
               TRACKING - ALLOCATED + PENDING VEHICLES
           ================================================= */}
-          {activeStepIndex === 5 && !isIntercartingMovement(order) && (
+          {activeStepIndex === (isProjectMovement(order) ? 6 : 5) && !isIntercartingMovement(order) && (
             <div className="kam-step-page kam-step-page-allocated-vehicles">
               {/* TRACKING ALLOCATION SUMMARY */}
               <section className="kam-client-vehicle-section">
@@ -4977,7 +5112,7 @@ const Lifecyclemodal = ({
             </div>
           )}
           {/* INVOICE & PAYMENT */}
-          {activeStepIndex === 6 && (
+          {activeStepIndex === (isProjectMovement(order) ? 7 : 6) && (
             <div className="kam-step-page kam-step-page-invoice-payment">
               <section className="kam-invoice-common-section">
                 <div className="kam-invoice-common-heading">
@@ -5407,7 +5542,7 @@ const Lifecyclemodal = ({
               TRIP COMPLETE - COMPACT OVERALL SUMMARY
               READ ONLY
           ================================================= */}
-          {activeStepIndex === 7 &&
+          {activeStepIndex === (isProjectMovement(order) ? 8 : 7) &&
             String(
               lifecycle.find((step) => step.key === "trip-complete")?.status ||
                 "",
@@ -5660,7 +5795,7 @@ const Lifecyclemodal = ({
                   return activeStepIndex === 1;
                 }
                 if (field.startsWith("allocatedvehicles.")) {
-                  return activeStepIndex === 5;
+                  return activeStepIndex === (isProjectMovement(order) ? 6 : 5);
                 }
                 return activeStepIndex === 0;
               }
@@ -5865,7 +6000,7 @@ const Lifecyclemodal = ({
                   </>
                 )}
                 {/* VENDOR FINALIZATION */}
-                {activeStepIndex === 3 && (
+                {activeStepIndex === (isProjectMovement(order) ? 4 : 3) && (
                   <>
                     {!vehicleApprovalCompleted ? (
                       <button
@@ -5889,6 +6024,11 @@ const Lifecyclemodal = ({
                   </>
                 )}
                 {/* PO DOCUMENT */}
+                {isProjectMovement(order) && activeStepIndex === 2 && (
+                  <button type="button" className="kam-request-approval-btn kam-po-save-btn" onClick={() => setActiveStepIndex(3)}>
+                    <span>Continue Without PO</span><span aria-hidden="true">→</span>
+                  </button>
+                )}
                 {activeStepIndex === 2 &&
                   (poLocked ? (
                     <button
@@ -5911,8 +6051,8 @@ const Lifecyclemodal = ({
                     </button>
                   ))}
                 {/* ORDER PLACED */}
-                {activeStepIndex === 4 &&
-                  (currentLifecycleIndex >= 5 ||
+                {activeStepIndex === (isProjectMovement(order) ? 5 : 4) &&
+                  (currentLifecycleIndex >= (isProjectMovement(order) ? 6 : 5) ||
                   String(order?.stage || "")
                     .trim()
                     .toLowerCase() === "tracking" ||

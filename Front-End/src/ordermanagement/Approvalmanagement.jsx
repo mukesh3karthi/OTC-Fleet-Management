@@ -23,6 +23,12 @@ const isIntercartingOrder = (order) =>
     .toLowerCase()
     .replace(/[\s-]+/g, "") === "intercarting";
 
+const isProjectMovementOrder = (order) =>
+  String(order?.movementType || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[\s_-]+/g, "") === "projectmovement";
+
 const isCraneOrder = (order) =>
   ["crane", "cranemovement"].includes(
     String(order?.movementType || "")
@@ -585,6 +591,8 @@ const Approvalmanagement = () => {
     setOrderActionRemark("");
   };
   const [quotationUpdatingKey, setQuotationUpdatingKey] = useState("");
+  const [projectAllocationUpdatingKey, setProjectAllocationUpdatingKey] = useState("");
+  const [projectVendorSelections, setProjectVendorSelections] = useState({});
   const [replacementUpdatingKey, setReplacementUpdatingKey] = useState("");
   const [replacementRemarks, setReplacementRemarks] = useState({});
   const [quotationActionModal, setQuotationActionModal] = useState(null);
@@ -1127,6 +1135,101 @@ const Approvalmanagement = () => {
   /* =======================================================
      QUOTATION CONFIRMATION
   ======================================================= */
+  const updateProjectAllocationDecision = async (
+    order,
+    request,
+    status,
+    selectedVendorQuotationId = "",
+  ) => {
+    if (!order?._id || !request?.requestId || projectAllocationUpdatingKey) return;
+
+    const vendorQuotations = safeArray(request.vendorQuotations);
+    const selectedVendor =
+      selectedVendorQuotationId ||
+      projectVendorSelections[`${order._id}:${request.requestId}`] ||
+      request.selectedVendorQuotationId ||
+      "";
+
+    if (status === "Approved" && vendorQuotations.length > 1 && !selectedVendor) {
+      showToast("Select one vendor quotation before approving this vehicle.", "warning");
+      return;
+    }
+
+    if (
+      status === "Approved" &&
+      vendorQuotations.length > 0 &&
+      !vendorQuotations.some((item) => item.quotationId === selectedVendor)
+    ) {
+      showToast("The selected vendor quotation is no longer available. Refresh and try again.", "error");
+      return;
+    }
+
+    const rejectionReason =
+      status === "Rejected" ? window.prompt("Enter rejection reason:") : "";
+    if (status === "Rejected" && !String(rejectionReason || "").trim()) return;
+
+    const rowKey = `${order._id}:${request.requestId}`;
+    try {
+      setProjectAllocationUpdatingKey(rowKey);
+      const response = await fetch(
+        `${TRIP_API_URL}/${order._id}/project-vehicle-allocation-requests/${encodeURIComponent(request.requestId)}/decision`,
+        {
+          method: "PUT",
+          headers: {
+            ...getAdminAuthHeaders(),
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({
+            status,
+            confirmedBy: "Approval Management",
+            remarks: "",
+            rejectionReason: String(rejectionReason || "").trim(),
+            ...(status === "Approved" && selectedVendor
+              ? { selectedVendorQuotationId: selectedVendor }
+              : {}),
+          }),
+        },
+      );
+
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(
+          payload.message || "Unable to update Project Movement allocation.",
+        );
+      }
+
+      const updated = payload?.data || payload?.trip || payload?.order || payload;
+      if (updated?._id) {
+        setOrders((previous) =>
+          previous.map((item) => (item._id === updated._id ? updated : item)),
+        );
+        setOrderDetailsModal(updated);
+      } else {
+        await fetchApprovals(true);
+      }
+
+      setProjectVendorSelections((previous) => {
+        const next = { ...previous };
+        delete next[rowKey];
+        return next;
+      });
+      showToast(
+        status === "Approved"
+          ? "Selected vendor and vehicle allocation approved."
+          : "Vehicle allocation rejected; requested quantity released.",
+        status === "Approved" ? "success" : "warning",
+      );
+    } catch (error) {
+      setError(error.message || "Unable to update Project Movement allocation.");
+      showToast(
+        error.message || "Unable to update Project Movement allocation.",
+        "error",
+      );
+    } finally {
+      setProjectAllocationUpdatingKey("");
+    }
+  };
   const updateQuotationApproval = async (
     order,
     requirement,
@@ -1292,6 +1395,7 @@ const Approvalmanagement = () => {
         </div>
       );
     }
+    const isProjectMovement = isProjectMovementOrder(order);
     const getVehicleDimension = (vehicle) => {
       const dimensions = vehicle?.dimensions || {};
       const length =
@@ -1310,14 +1414,23 @@ const Approvalmanagement = () => {
     };
     return (
       <div className="approval-vehicle-readonly-list">
-        <div className="approval-vehicle-readonly-header">
+        <div
+          className="approval-vehicle-readonly-header"
+          style={isProjectMovement ? { gridTemplateColumns: "48px 1.1fr 1.1fr 1fr .8fr 1fr 1.2fr 1.2fr 1.2fr 1fr" } : undefined}
+        >
           <div>No.</div>
           <div>Vehicle Type</div>
           <div>Configuration Model</div>
           <div>Material</div>
           <div>Weight</div>
-          <div>Route</div>
-          <div>Placement Date</div>
+          {isProjectMovement ? (
+            <div>Classification</div>
+          ) : (
+            <>
+              <div>Route</div>
+              <div>Placement Date</div>
+            </>
+          )}
           <div>Dimensions (L × H × W)</div>
           <div>Quoted Amount</div>
           <div>Customer Final Amount</div>
@@ -1342,12 +1455,15 @@ const Approvalmanagement = () => {
             ? `${vehicleOrigin} → ${vehicleDestination}`
             : vehicle?.route || vehicleOrigin || vehicleDestination || "—";
           const placementDate = vehicle?.placementDate || "";
+          const classification =
+            vehicle?.classification || vehicle?.movementClassification || "—";
           const amount = enquiryAmountFor(order, vehicle, index);
           const weight = vehicle?.weight ?? "—";
           const customerFinalAmount = vehicle?.finalAmount ?? safeArray(order?.orderFinalization?.vehicleFinalAmounts).find((item) => String(item?.requirementId) === String(vehicle?.requirementId))?.amount;
           return (
             <div
               className="approval-vehicle-readonly-row"
+              style={isProjectMovement ? { gridTemplateColumns: "48px 1.1fr 1.1fr 1fr .8fr 1fr 1.2fr 1.2fr 1.2fr 1fr" } : undefined}
               key={
                 vehicle?._id ||
                 vehicle?.vehicleSubId ||
@@ -1377,14 +1493,23 @@ const Approvalmanagement = () => {
                   {weight !== "—" ? <small> TON</small> : null}
                 </strong>
               </div>
-              <div className="approval-vehicle-readonly-field">
-                <span>Route</span>
-                <strong className="approval-vehicle-route-value">{route}</strong>
-              </div>
-              <div className="approval-vehicle-readonly-field">
-                <span>Placement Date</span>
-                <strong>{placementDate ? formatDate(placementDate) : "—"}</strong>
-              </div>
+              {isProjectMovement ? (
+                <div className="approval-vehicle-readonly-field">
+                  <span>Classification</span>
+                  <strong>{classification}</strong>
+                </div>
+              ) : (
+                <>
+                  <div className="approval-vehicle-readonly-field">
+                    <span>Route</span>
+                    <strong className="approval-vehicle-route-value">{route}</strong>
+                  </div>
+                  <div className="approval-vehicle-readonly-field">
+                    <span>Placement Date</span>
+                    <strong>{placementDate ? formatDate(placementDate) : "—"}</strong>
+                  </div>
+                </>
+              )}
               <div className="approval-vehicle-readonly-field approval-vehicle-dimension-field">
                 <span>Dimensions (L × H × W)</span>
                 <strong>{getVehicleDimension(vehicle)}</strong>
@@ -1921,6 +2046,7 @@ const Approvalmanagement = () => {
                 <option value="All">All Movement</option>
                 <option value="WTG">WTG</option>
                 <option value="Line Movement">Line Movement</option>
+                <option value="Project Movement">Project Movement</option>
                 <option value="Crane">Crane</option>
                 <option value="Intercarting">Intercarting</option>
               </select>
@@ -1967,6 +2093,7 @@ const Approvalmanagement = () => {
               .toLowerCase();
             const isWtgEnquiry = ["wtg movement", "line movement"].includes(normalizedMovement);
             const isIntercartingEnquiry = isIntercartingOrder(order);
+            const isProjectMovementEnquiry = isProjectMovementOrder(order);
             const craneWeight =
               order.weight ??
               requirements.find((requirement) => Number(requirement.weight) > 0)?.weight;
@@ -2001,7 +2128,7 @@ const Approvalmanagement = () => {
                     aria-expanded={expanded}>View Enquiry</button>
                 {expanded && (
                   <div className="ae-modal-overlay" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget && !enquirySavingId) setEnquiryExpandedId(""); }}>
-                  <div className={`ae-detail ${isWtgEnquiry || isIntercartingEnquiry ? "ae-wtg-modal" : isCraneOrder(order) ? "ae-crane-modal" : ""} ${isIntercartingEnquiry ? "ae-intercarting-modal" : ""}`} role="dialog" aria-modal="true" aria-label={`Enquiry details ${order.tripId || ""}`} onMouseDown={(event) => event.stopPropagation()}>
+                  <div className={`ae-detail ${isWtgEnquiry || isIntercartingEnquiry || isProjectMovementEnquiry ? "ae-wtg-modal" : isCraneOrder(order) ? "ae-crane-modal" : ""} ${isIntercartingEnquiry ? "ae-intercarting-modal" : ""}`} role="dialog" aria-modal="true" aria-label={`Enquiry details ${order.tripId || ""}`} onMouseDown={(event) => event.stopPropagation()}>
                     <div className="ae-modal-top">
                       <div className="ae-modal-brand">
                         <small>APPROVAL MANAGEMENT · ENQUIRY</small>
@@ -2022,12 +2149,14 @@ const Approvalmanagement = () => {
                           ? "Crane"
                           : normalizedMovement === "line movement"
                             ? "Line"
-                            : "WTG"} Trip Information
+                            : isProjectMovementEnquiry
+                              ? "Project"
+                              : "WTG"} Trip Information
                       </h4>
                       <p>Customer and enquiry details • Read-only</p></div>
                       <span>TRIP ID <strong>{order.tripId || "—"}</strong></span>
                     </header>
-                    <div className={`ae-info-grid ${isWtgEnquiry || isIntercartingEnquiry || isCraneOrder(order) ? "ae-wtg-info-grid" : ""}`}>
+                    <div className={`ae-info-grid ${isWtgEnquiry || isIntercartingEnquiry || isProjectMovementEnquiry || isCraneOrder(order) ? "ae-wtg-info-grid" : ""}`}>
                       {[
                         ["CUSTOMER", order.customer],
                         ["CONTACT PERSON", order.contactPerson],
@@ -2126,16 +2255,18 @@ const Approvalmanagement = () => {
                       <>
                     <header className="ae-section-title ae-vehicle-heading">
                       <div><h4>Vehicle & Dimensions</h4>
-                      <p>{isWtgEnquiry || isIntercartingEnquiry ? "Vehicle requirements • One row per vehicle; only Amount can be edited." : "Two compact rows per vehicle. Only Amount can be edited."}</p></div>
+                      <p>{isProjectMovementEnquiry ? "Project vehicle details from New Order Creation • Only Quoted Amount can be edited." : isWtgEnquiry || isIntercartingEnquiry ? "Vehicle requirements • One row per vehicle; only Amount can be edited." : "Two compact rows per vehicle. Only Amount can be edited."}</p></div>
                       <span>{requirements.length} Requirements</span>
                     </header>
-                    {isWtgEnquiry || isIntercartingEnquiry ? (
+                    {isWtgEnquiry || isIntercartingEnquiry || isProjectMovementEnquiry ? (
                       <div className="ae-wtg-table-wrap">
                         <table className="ae-wtg-table">
                           <thead><tr>
-                            {(isIntercartingEnquiry
-                              ? ["#", "VEHICLE TYPE", "CONFIGURATION", "CLASSIFICATION", "WEIGHT", "DIMENSIONS", "QUOTED AMOUNT (₹)"]
-                              : ["#", "VEHICLE TYPE", "CONFIGURATION", "MATERIAL", "WEIGHT", "ROUTE", "PLACEMENT", "L × H × W", "QUOTED AMOUNT (₹)"]
+                            {(isProjectMovementEnquiry
+                              ? ["#", "VEHICLE TYPE", "CONFIGURATION MODEL", "CLASSIFICATION", "MATERIAL TYPE", "NOS", "WEIGHT", "DIMENSIONS (L × H × W)", "QUOTED AMOUNT (₹)"]
+                              : isIntercartingEnquiry
+                                ? ["#", "VEHICLE TYPE", "CONFIGURATION", "CLASSIFICATION", "WEIGHT", "DIMENSIONS", "QUOTED AMOUNT (₹)"]
+                                : ["#", "VEHICLE TYPE", "CONFIGURATION", "MATERIAL", "WEIGHT", "ROUTE", "PLACEMENT", "L × H × W", "QUOTED AMOUNT (₹)"]
                             ).map((heading) => (
                               <th key={heading}>{heading}</th>
                             ))}
@@ -2149,7 +2280,15 @@ const Approvalmanagement = () => {
                                   <td><span className="ae-wtg-number">{index + 1}</span></td>
                                   <td>{requirement.vehicleType || "—"}</td>
                                   <td>{requirement.configuration || "—"}</td>
-                                  {isIntercartingEnquiry ? (
+                                  {isProjectMovementEnquiry ? (
+                                    <>
+                                      <td>{requirement.classification || "—"}</td>
+                                      <td>{requirement.materialType || "—"}</td>
+                                      <td>{requirement.quantity ?? 1} NOS</td>
+                                      <td>{requirement.weight ?? 0} TON</td>
+                                      <td>{formatDimension(requirement.dimensions)} FT</td>
+                                    </>
+                                  ) : isIntercartingEnquiry ? (
                                     <>
                                       <td>{requirement.classification || "—"}</td>
                                       <td>{requirement.weight ?? 0} TON</td>
@@ -2227,7 +2366,7 @@ const Approvalmanagement = () => {
                     )}
                     <label className="ae-field ae-remarks">
                       <span>REMARKS</span>
-                      <div className="ae-readonly">{order.remark || "—"}</div>
+                      <div className="ae-readonly">{order.remark || order.remarks || "—"}</div>
                     </label>
                     <footer className="ae-footer">
                       <div><small>Total Approval Amount</small>
@@ -3871,6 +4010,186 @@ const Approvalmanagement = () => {
                       renderRequirements(order)
                     )}
                   </section>
+                  {isProjectMovementOrder(order) && (
+                    <section className="approval-order-details-section approval-project-allocation-section">
+                      <div className="approval-order-details-section-head">
+                        <div>
+                          <span>PROJECT MOVEMENT</span>
+                          <h4>Vehicle Allocation & Vendor Comparison</h4>
+                        </div>
+                      </div>
+
+                      <div className="approval-project-allocation-list">
+                        {safeArray(order.projectVehicleAllocationRequests).map((request) => {
+                          const requirement = safeArray(order.vehicleRequirements).find(
+                            (item) => item.requirementId === request.requirementId,
+                          );
+                          const rowKey = `${order._id}:${request.requestId}`;
+                          const vendorQuotations = safeArray(request.vendorQuotations);
+                          const pendingRequest = request.status === "Pending Management";
+                          const selectedVendorQuotationId =
+                            projectVendorSelections[rowKey] ??
+                            request.selectedVendorQuotationId ??
+                            (vendorQuotations.length === 1
+                              ? vendorQuotations[0].quotationId
+                              : "");
+                          const selectedVendor = vendorQuotations.find(
+                            (item) => item.quotationId === selectedVendorQuotationId,
+                          );
+                          const isUpdating = projectAllocationUpdatingKey === rowKey;
+
+                          return (
+                            <article className="approval-project-allocation-row" key={request.requestId}>
+                              <div className="approval-project-allocation-heading">
+                                <div>
+                                  <span className="approval-project-allocation-kicker">
+                                    VEHICLE REQUEST · {request.requestId}
+                                  </span>
+                                  <strong>
+                                    {requirement?.vehicleType || request.requirementId} ·{" "}
+                                    {request.requestedQuantity} NOS
+                                  </strong>
+                                  <small>
+                                    Customer required date: {request.customerRequiredDate || "—"}
+                                  </small>
+                                </div>
+                                <span className={`approval-project-allocation-status ${getStatusClass(request.status)}`}>
+                                  {request.status || "Pending"}
+                                </span>
+                              </div>
+
+                              {vendorQuotations.length > 0 ? (
+                                <div className="approval-project-vendor-section">
+                                  <div className="approval-project-vendor-title">
+                                    <div>
+                                      <strong>Vendor quotations</strong>
+                                      <small>
+                                        {vendorQuotations.length} vendor{vendorQuotations.length === 1 ? "" : "s"} submitted by Traffic
+                                      </small>
+                                    </div>
+                                    {pendingRequest && vendorQuotations.length > 1 && (
+                                      <span>Select one vendor to approve</span>
+                                    )}
+                                  </div>
+
+                                  <div className="approval-project-vendor-grid">
+                                    {vendorQuotations.map((vendor, index) => {
+                                      const isSelected = selectedVendorQuotationId === vendor.quotationId;
+                                      const vendorStatus = normalizeStatus(vendor.status || "Pending");
+                                      return (
+                                        <label
+                                          className={`approval-project-vendor-card${isSelected ? " is-selected" : ""}`}
+                                          key={vendor.quotationId || `${vendor.vendorName}-${index}`}
+                                        >
+                                          {pendingRequest && (
+                                            <input
+                                              type="radio"
+                                              name={`project-vendor-${rowKey}`}
+                                              value={vendor.quotationId || ""}
+                                              checked={isSelected}
+                                              onChange={() =>
+                                                setProjectVendorSelections((previous) => ({
+                                                  ...previous,
+                                                  [rowKey]: vendor.quotationId,
+                                                }))
+                                              }
+                                              disabled={Boolean(projectAllocationUpdatingKey)}
+                                            />
+                                          )}
+                                          <div className="approval-project-vendor-content">
+                                            <div className="approval-project-vendor-topline">
+                                              <strong>{vendor.vendorName || "Unnamed vendor"}</strong>
+                                              <span className={`approval-project-vendor-status ${getStatusClass(vendorStatus)}`}>
+                                                {vendorStatus}
+                                              </span>
+                                            </div>
+                                            <strong className="approval-project-vendor-amount">
+                                              {vendor.vendorAmount == null ? "Amount not provided" : formatAmount(vendor.vendorAmount)}
+                                            </strong>
+                                            {vendor.remarks || vendor.trafficRemarks ? (
+                                              <p>{vendor.remarks || vendor.trafficRemarks}</p>
+                                            ) : (
+                                              <p className="is-muted">No remarks provided</p>
+                                            )}
+                                            <small>
+                                              Submitted by {vendor.quotedBy || "Traffic"} · {formatDateTime(vendor.quotedAt)}
+                                            </small>
+                                          </div>
+                                        </label>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="approval-project-vendor-legacy">
+                                  <strong>Vendor: {request.vendorName || "—"}</strong>
+                                  <span>
+                                    Amount: {request.vendorAmount == null ? "—" : formatAmount(request.vendorAmount)}
+                                  </span>
+                                  {request.trafficRemarks && <p>Traffic remarks: {request.trafficRemarks}</p>}
+                                </div>
+                              )}
+
+                              {request.rejectionReason && (
+                                <p className="approval-project-allocation-rejection">
+                                  Rejection: {request.rejectionReason}
+                                </p>
+                              )}
+
+                              {request.managementRemarks && (
+                                <p className="approval-project-allocation-rejection">
+                                  Management remarks: {request.managementRemarks}
+                                </p>
+                              )}
+
+                              {pendingRequest && (
+                                <div className="approval-project-allocation-actions">
+                                  <button
+                                    type="button"
+                                    className="approval-project-allocation-reject"
+                                    disabled={Boolean(projectAllocationUpdatingKey)}
+                                    onClick={() => updateProjectAllocationDecision(order, request, "Rejected")}
+                                  >
+                                    Reject
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="approval-project-allocation-approve"
+                                    disabled={
+                                      Boolean(projectAllocationUpdatingKey) ||
+                                      (vendorQuotations.length > 1 && !selectedVendorQuotationId)
+                                    }
+                                    onClick={() =>
+                                      updateProjectAllocationDecision(
+                                        order,
+                                        request,
+                                        "Approved",
+                                        selectedVendorQuotationId,
+                                      )
+                                    }
+                                  >
+                                    {isUpdating ? "Updating..." : "Approve Selected Vendor"}
+                                  </button>
+                                </div>
+                              )}
+
+                              {request.status === "Approved" && selectedVendor && (
+                                <div className="approval-project-selected-summary">
+                                  Approved vendor: <strong>{selectedVendor.vendorName}</strong>
+                                  {" · "}
+                                  {selectedVendor.vendorAmount == null ? "—" : formatAmount(selectedVendor.vendorAmount)}
+                                </div>
+                              )}
+                            </article>
+                          );
+                        })}
+
+                        {!safeArray(order.projectVehicleAllocationRequests).length && (
+                          <p>No Project Movement allocation requests have been submitted.</p>
+                        )}
+                      </div>
+                    </section>
+                  )}
                   {order.remark && (
                     <section className="approval-order-details-section">
                       <div className="approval-order-details-section-head">

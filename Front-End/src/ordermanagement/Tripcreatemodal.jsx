@@ -241,11 +241,11 @@ const VehicleRequirementRow = ({
       )}
 
       {/* ===================================================
-          LINE VEHICLE-SPECIFIC DETAILS
+          LINE / PROJECT CLASSIFICATION AND MATERIAL
       =================================================== */}
 
-      {isLine || isProject ? (
-        <div className={`trip-field-group ${isLine ? "line-field-material" : "project-field-material"}`}>
+      {isLine && (
+        <div className="trip-field-group line-field-material">
           <label htmlFor={`${prefix}-material-${index}`}>
             Material Type<span className="trip-required">*</span>
           </label>
@@ -257,7 +257,9 @@ const VehicleRequirementRow = ({
             onChange={handleVehicleFieldChange(index, "materialType")}
           />
         </div>
-      ) : (
+      )}
+
+      {!isLine && !isProject && (
         <div className="trip-field-group intercarting-field-classification">
           <label htmlFor={`${prefix}-classification-${index}`}>
             Movement Classification<span className="trip-required">*</span>
@@ -280,6 +282,8 @@ const VehicleRequirementRow = ({
         </div>
       )}
 
+      {/* Project Movement column order must match its table header:
+          Classification first, then Material Type. */}
       {isProject && (
         <div className="trip-field-group project-field-classification">
           <label htmlFor={`${prefix}-classification-${index}`}>
@@ -300,6 +304,21 @@ const VehicleRequirementRow = ({
             </select>
             <span className="trip-select-arrow">⌄</span>
           </div>
+        </div>
+      )}
+
+      {isProject && (
+        <div className="trip-field-group project-field-material">
+          <label htmlFor={`${prefix}-material-${index}`}>
+            Material Type<span className="trip-required">*</span>
+          </label>
+          <input
+            id={`${prefix}-material-${index}`}
+            type="text"
+            value={requirement.materialType || ""}
+            placeholder="Material"
+            onChange={handleVehicleFieldChange(index, "materialType")}
+          />
         </div>
       )}
 
@@ -1310,7 +1329,7 @@ const Tripcreatemodal = ({
                     readOnly
                   />
 
-                   {!isIntercarting && (
+                   {/* {!isIntercarting && (
                     <TripField
                       label="Distance"
                       type="number"
@@ -1321,7 +1340,7 @@ const Tripcreatemodal = ({
                       unit="KM"
                       onChange={handleTripFieldChange("distance")}
                     />
-                  )}
+                  )} */}
                 </div>
               </section>
 

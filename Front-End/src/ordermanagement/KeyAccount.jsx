@@ -2021,38 +2021,47 @@ const KeyAccount = () => {
     BUILD REQUIREMENTS
   ======================================================= */
   const buildVehicleRequirements = () =>
-    tripForm.vehicleRequirements.map((requirement, index) => ({
-      requirementId:
-        requirement.requirementId || `${tripForm.tripId}-REQ-${index + 1}`,
-      vehicleType: String(requirement.vehicleType || "").trim(),
-      configuration: String(requirement.configuration || "").trim(),
-      classification: String(requirement.classification || "").trim(),
-      ...(tripForm.movementType === "WTG Movement" && {
-        materialType: String(requirement.materialType || "").trim(),
-        origin: String(requirement.origin || "").trim(),
-        destination: String(requirement.destination || "").trim(),
-        placementDate: requirement.placementDate || null,
-      }),
-      quantity: Number(requirement.quantity || 1),
-      weight: Number(requirement.weight || 0),
-      dimensions: {
-        length:
-          requirement.dimensions?.length === "" ||
-          requirement.dimensions?.length === undefined
-            ? null
-            : Number(requirement.dimensions.length),
-        height:
-          requirement.dimensions?.height === "" ||
-          requirement.dimensions?.height === undefined
-            ? null
-            : Number(requirement.dimensions.height),
-        width:
-          requirement.dimensions?.width === "" ||
-          requirement.dimensions?.width === undefined
-            ? null
-            : Number(requirement.dimensions.width),
-      },
-    }));
+  tripForm.vehicleRequirements.map((requirement, index) => ({
+    requirementId:
+      requirement.requirementId || `${tripForm.tripId}-REQ-${index + 1}`,
+
+    vehicleType: String(requirement.vehicleType || "").trim(),
+    configuration: String(requirement.configuration || "").trim(),
+    classification: String(requirement.classification || "").trim(),
+
+    // Save material type for Project Movement and WTG Movement
+    materialType: String(requirement.materialType || "").trim(),
+
+    // These fields are specific to WTG Movement
+    ...(tripForm.movementType === "WTG Movement" && {
+      origin: String(requirement.origin || "").trim(),
+      destination: String(requirement.destination || "").trim(),
+      placementDate: requirement.placementDate || null,
+    }),
+
+    quantity: Number(requirement.quantity || 1),
+    weight: Number(requirement.weight || 0),
+
+    dimensions: {
+      length:
+        requirement.dimensions?.length === "" ||
+        requirement.dimensions?.length === undefined
+          ? null
+          : Number(requirement.dimensions.length),
+
+      height:
+        requirement.dimensions?.height === "" ||
+        requirement.dimensions?.height === undefined
+          ? null
+          : Number(requirement.dimensions.height),
+
+      width:
+        requirement.dimensions?.width === "" ||
+        requirement.dimensions?.width === undefined
+          ? null
+          : Number(requirement.dimensions.width),
+    },
+  }));
   /* =======================================================
     BUILD PAYLOAD
     IMPORTANT:

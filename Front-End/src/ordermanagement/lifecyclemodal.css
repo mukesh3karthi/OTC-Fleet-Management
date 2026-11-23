@@ -7914,3 +7914,59 @@
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
+
+/* Project Movement - batch vehicle allocation request table */
+.kam-step-page-project-allocation .kam-project-allocation-page { display: grid; gap: 16px; }
+.kam-project-allocation-intro { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 14px 16px; border: 1px solid #d9e9e8; border-radius: 10px; background: #f6fbfa; }
+.kam-project-allocation-intro > div:first-child { display: grid; gap: 4px; }
+.kam-project-allocation-intro strong { color: #173b4b; font-size: 13px; }
+.kam-project-allocation-intro span, .kam-project-allocation-intro-note { color: #627b85; font-size: 11px; }
+.kam-project-allocation-intro-note { padding: 7px 10px; border-radius: 7px; background: #fff; border: 1px solid #e5ecee; }
+.kam-project-allocation-entry-wrap { overflow-x: auto; border: 1px solid #dfe8eb; border-radius: 10px; background: #fff; }
+.kam-project-allocation-entry-table { width: 100%; min-width: 1120px; border-collapse: separate; border-spacing: 0; }
+.kam-project-allocation-entry-table th { padding: 12px 11px; background: #f3f7f8; color: #526d79; font-size: 10px; font-weight: 800; letter-spacing: .035em; text-align: left; white-space: nowrap; border-bottom: 1px solid #dfe8eb; }
+.kam-project-allocation-entry-table td { padding: 11px; color: #36525f; font-size: 12px; vertical-align: middle; border-bottom: 1px solid #edf1f3; }
+.kam-project-allocation-entry-table tbody tr:last-child td { border-bottom: 0; }
+.kam-project-allocation-entry-table td:first-child { min-width: 150px; }
+.kam-project-allocation-entry-table td:first-child strong { display: block; color: #173b4b; font-size: 12px; }
+.kam-project-allocation-entry-table td:first-child small { display: block; margin-top: 3px; color: #82949c; font-size: 10px; }
+.kam-project-allocation-entry-table input { width: 100%; min-width: 108px; height: 34px; padding: 0 8px; border: 1px solid #d6e1e5; border-radius: 6px; outline: none; background: #fff; color: #173b4b; font-size: 11px; }
+.kam-project-allocation-entry-table input[type="number"] { min-width: 76px; max-width: 90px; }
+.kam-project-allocation-entry-table input:focus { border-color: #078982; box-shadow: 0 0 0 2px rgba(7,137,130,.10); }
+.kam-project-allocation-entry-table input:disabled { background: #f3f6f7; color: #a0adb3; cursor: not-allowed; }
+.kam-project-remaining-pill { display: inline-flex; align-items: center; padding: 5px 8px; border-radius: 20px; background: #eaf6f3; color: #087f78; font-size: 11px; font-weight: 800; white-space: nowrap; }
+.kam-project-allocation-entry-table .is-fully-requested td { color: #94a2a8; background: #fafcfc; }
+.kam-project-allocation-submitbar { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 13px 15px; border: 1px solid #dfe8eb; border-radius: 9px; background: #fff; }
+.kam-project-allocation-submitbar > span { color: #657e88; font-size: 11px; line-height: 1.5; }
+.kam-project-allocation-submitbar > button { min-height: 38px; padding: 0 17px; border: 0; border-radius: 7px; background: #078982; color: #fff; font-size: 12px; font-weight: 800; white-space: nowrap; cursor: pointer; }
+.kam-project-allocation-submitbar > button:hover:not(:disabled) { background: #06766f; }
+.kam-project-allocation-submitbar > button:disabled { opacity: .55; cursor: not-allowed; }
+.kam-project-allocation-history { display: grid; gap: 10px; margin-top: 4px; }
+.kam-project-allocation-history-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.kam-project-allocation-history-heading > div { display: grid; gap: 4px; }
+.kam-project-allocation-history-heading strong { color: #173b4b; font-size: 13px; }
+.kam-project-allocation-history-heading span { color: #708690; font-size: 10px; }
+.kam-project-allocation-history-heading > span { padding: 5px 9px; border-radius: 20px; background: #f0f5f6; color: #48636e; font-weight: 750; white-space: nowrap; }
+.kam-project-allocation-empty { padding: 24px !important; color: #84959c !important; text-align: center; }
+@media (max-width: 760px) {
+  .kam-project-allocation-intro, .kam-project-allocation-submitbar { align-items: stretch; flex-direction: column; }
+  .kam-project-allocation-submitbar > button { width: 100%; }
+  .kam-project-allocation-intro-note { line-height: 1.45; }
+}
+
+/* Project Movement submitted request history — compact, clean and scannable */
+.kam-project-allocation-history-table-wrap { border: 1px solid #dce7eb; border-radius: 12px; overflow-x: auto; background: #fff; box-shadow: 0 5px 18px rgba(17,54,72,.045); }
+.kam-project-allocation-history-table-wrap .kam-project-allocation-table { min-width: 850px; width: 100%; border-collapse: separate; border-spacing: 0; }
+.kam-project-allocation-history-table-wrap .kam-project-allocation-table thead th { position: sticky; top: 0; z-index: 1; padding: 12px 14px; background: linear-gradient(180deg,#f7fafb,#f1f6f7); color: #59727e; font-size: 10px; font-weight: 850; letter-spacing: .045em; text-transform: uppercase; border-bottom: 1px solid #dce7eb; white-space: nowrap; }
+.kam-project-allocation-history-table-wrap .kam-project-allocation-table tbody td { padding: 12px 14px; color: #385565; font-size: 12px; border-bottom: 1px solid #edf2f4; vertical-align: middle; }
+.kam-project-allocation-history-table-wrap .kam-project-allocation-table tbody tr:last-child td { border-bottom: 0; }
+.kam-project-allocation-history-table-wrap .kam-project-allocation-table tbody tr:hover td { background: #f8fcfb; }
+.kam-project-allocation-history-table-wrap .kam-project-allocation-table td:first-child strong { display:block; color:#173b4b; font-weight:850; }
+.kam-project-allocation-history-table-wrap .kam-project-allocation-table td:first-child small { display:block; margin-top:3px; color:#81949d; font-size:10px; }
+.kam-project-history-vehicle { display:inline-flex; padding:5px 9px; border:1px solid #d1e6e3; border-radius:7px; background:#f0f9f7; color:#087d75; font-size:10px; font-weight:850; white-space:nowrap; }
+.kam-project-allocation-history-table-wrap .kam-project-request-status { display:inline-flex; align-items:center; min-height:24px; padding:4px 9px; border-radius:999px; border:1px solid #d8e6e9; background:#f6fafb; color:#58717d; font-size:10px; font-weight:800; white-space:nowrap; }
+.kam-project-allocation-history-table-wrap .kam-project-request-status.pending-traffic, .kam-project-allocation-history-table-wrap .kam-project-request-status.pending-management { border-color:#f0dca7; background:#fff8e8; color:#936d17; }
+.kam-project-allocation-history-table-wrap .kam-project-request-status.approved { border-color:#bfe2d6; background:#eef9f4; color:#17805f; }
+.kam-project-allocation-history-table-wrap .kam-project-request-status.rejected { border-color:#f0c9c5; background:#fff3f1; color:#b14b42; }
+.kam-project-allocation-history-table-wrap td small { display:block; margin-top:4px; color:#a64d44; font-size:10px; max-width:220px; }
+@media (max-width: 760px) { .kam-project-allocation-history-table-wrap .kam-project-allocation-table tbody td { padding:10px; } }

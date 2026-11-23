@@ -56,6 +56,9 @@ const {
   addTrafficQuotation,
 
   confirmVehicleQuotation,
+  createProjectVehicleAllocationRequest,
+  submitProjectVehicleAllocationQuotation,
+  decideProjectVehicleAllocationRequest,
 
   /* TRANSPORT REPLACEMENT APPROVAL */
 
@@ -429,6 +432,11 @@ router.put(
 
   confirmVehicleQuotation,
 );
+
+/* PROJECT MOVEMENT - PARTIAL VEHICLE ALLOCATION */
+router.post("/:id/project-vehicle-allocation-requests", createProjectVehicleAllocationRequest);
+router.put("/:id/project-vehicle-allocation-requests/:requestId/quotation", submitProjectVehicleAllocationQuotation);
+router.put("/:id/project-vehicle-allocation-requests/:requestId/decision", decideProjectVehicleAllocationRequest);
 
 /* =========================================================
 

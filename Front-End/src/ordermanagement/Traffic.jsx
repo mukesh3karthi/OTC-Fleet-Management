@@ -169,10 +169,23 @@ const createTransportReplacementForm = (
   currentAmount: quotation?.amount ?? "",
   proposedTransporter: "",
   proposedAmount: quotation?.amount ?? "",
-  currentQuantity: quotation?.quantity === "Multiple" ? "Multiple" : Math.max(1, Number(quotation?.quantity) || 1),
+  currentQuantity:
+    quotation?.quantity === "Multiple"
+      ? "Multiple"
+      : Math.max(1, Number(quotation?.quantity) || 1),
   quantity: 1,
   selectedAllocationIds: [],
-  availableVehicles: (order?.allocatedVehicles || []).filter(vehicle => String(vehicle.vehicleStatus || "").toLowerCase() !== "replaced" && vehicle.confirmationId === confirmation?.confirmationId && vehicle.quotationId === quotation?.quotationId).map(vehicle => ({allocationId:vehicle.allocationId,vehicleNumber:vehicle.vehicleNumber})),
+  availableVehicles: (order?.allocatedVehicles || [])
+    .filter(
+      (vehicle) =>
+        String(vehicle.vehicleStatus || "").toLowerCase() !== "replaced" &&
+        vehicle.confirmationId === confirmation?.confirmationId &&
+        vehicle.quotationId === quotation?.quotationId,
+    )
+    .map((vehicle) => ({
+      allocationId: vehicle.allocationId,
+      vehicleNumber: vehicle.vehicleNumber,
+    })),
   reason: "",
   remarks: "",
   requestedBy: "",
@@ -365,6 +378,7 @@ const Traffic = () => {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [projectVendorForms, setProjectVendorForms] = useState({});
   const [documentBusy, setDocumentBusy] = useState(false);
   const handleCraneDocument = async (download = false) => {
     const preview = download ? null : window.open("about:blank", "_blank");
@@ -430,9 +444,17 @@ const Traffic = () => {
   ========================================================= */
   const openTransportReplacement = (requirement, confirmation, quotation) => {
     if (!requirement || !confirmation || !quotation) return;
-    const nextForm = createTransportReplacementForm(requirement, confirmation, quotation, selectedOrder);
+    const nextForm = createTransportReplacementForm(
+      requirement,
+      confirmation,
+      quotation,
+      selectedOrder,
+    );
     // A one-vehicle quotation needs no extra quantity or vehicle-selection step.
-    if (Number(nextForm.currentQuantity) === 1) nextForm.selectedAllocationIds = nextForm.availableVehicles.slice(0,1).map(vehicle=>vehicle.allocationId);
+    if (Number(nextForm.currentQuantity) === 1)
+      nextForm.selectedAllocationIds = nextForm.availableVehicles
+        .slice(0, 1)
+        .map((vehicle) => vehicle.allocationId);
     setTransportReplacementForm(nextForm);
   };
   const closeTransportReplacement = () => {
@@ -473,13 +495,31 @@ const Traffic = () => {
     }
     const replaceQuantity = Number(transportReplacementForm.quantity);
     const selectedCount = transportReplacementForm.selectedAllocationIds.length;
-    const finiteQuantity = transportReplacementForm.currentQuantity !== "Multiple";
+    const finiteQuantity =
+      transportReplacementForm.currentQuantity !== "Multiple";
     const approvedQuantity = Number(transportReplacementForm.currentQuantity);
-    if (!Number.isInteger(replaceQuantity) || replaceQuantity < 1 || finiteQuantity && replaceQuantity > approvedQuantity) {
-      showToast("Enter a valid replacement quantity within the approved quantity.", "warning"); return;
+    if (
+      !Number.isInteger(replaceQuantity) ||
+      replaceQuantity < 1 ||
+      (finiteQuantity && replaceQuantity > approvedQuantity)
+    ) {
+      showToast(
+        "Enter a valid replacement quantity within the approved quantity.",
+        "warning",
+      );
+      return;
     }
-    if (selectedCount > replaceQuantity || finiteQuantity && transportReplacementForm.availableVehicles.length - selectedCount > approvedQuantity - replaceQuantity) {
-      showToast("Select the existing vehicle(s) being removed, or replace only unallocated slots.", "warning"); return;
+    if (
+      selectedCount > replaceQuantity ||
+      (finiteQuantity &&
+        transportReplacementForm.availableVehicles.length - selectedCount >
+          approvedQuantity - replaceQuantity)
+    ) {
+      showToast(
+        "Select the existing vehicle(s) being removed, or replace only unallocated slots.",
+        "warning",
+      );
+      return;
     }
     try {
       setSaving(true);
@@ -503,7 +543,8 @@ const Traffic = () => {
             ).trim(),
             proposedAmount: Number(transportReplacementForm.proposedAmount),
             quantity: replaceQuantity,
-            selectedAllocationIds: transportReplacementForm.selectedAllocationIds,
+            selectedAllocationIds:
+              transportReplacementForm.selectedAllocationIds,
             reason: String(transportReplacementForm.reason || "").trim(),
             remarks: String(transportReplacementForm.remarks || "").trim(),
             requestedBy: String(
@@ -536,6 +577,105 @@ const Traffic = () => {
         requestError.message || "Unable to request transport replacement.",
         "error",
       );
+    } finally {
+      setSaving(false);
+    }
+  };
+  const updateProjectVendorForm = (requestId, vendorIndex, field, value) => {
+    setProjectVendorForms((previous) => {
+      const current = previous[requestId] || {
+        vendorQuotations: [{ vendorName: "", vendorAmount: "", remarks: "" }],
+      };
+      const vendorQuotations = [...(current.vendorQuotations || [])];
+      vendorQuotations[vendorIndex] = {
+        ...(vendorQuotations[vendorIndex] || {}),
+        [field]: value,
+      };
+      return { ...previous, [requestId]: { ...current, vendorQuotations } };
+    });
+  };
+
+  const addProjectVendorForm = (requestId) => {
+    setProjectVendorForms((previous) => {
+      const current = previous[requestId] || {
+        vendorQuotations: [{ vendorName: "", vendorAmount: "", remarks: "" }],
+      };
+      return {
+        ...previous,
+        [requestId]: {
+          ...current,
+          vendorQuotations: [
+            ...(current.vendorQuotations || []),
+            { vendorName: "", vendorAmount: "", remarks: "" },
+          ],
+        },
+      };
+    });
+  };
+
+  const removeProjectVendorForm = (requestId, vendorIndex) => {
+    setProjectVendorForms((previous) => {
+      const current = previous[requestId] || { vendorQuotations: [] };
+      const vendorQuotations = (current.vendorQuotations || []).filter(
+        (_, index) => index !== vendorIndex,
+      );
+      return { ...previous, [requestId]: { ...current, vendorQuotations } };
+    });
+  };
+
+  const submitProjectVendorAllocation = async (request) => {
+    if (!selectedOrder?._id || !request?.requestId) return;
+    const form = projectVendorForms[request.requestId] || {};
+    const vendorQuotations = Array.isArray(form.vendorQuotations)
+      ? form.vendorQuotations
+      : [{ vendorName: "", vendorAmount: "", remarks: "" }];
+    if (
+      !vendorQuotations.length ||
+      vendorQuotations.some(
+        (vendor) =>
+          !String(vendor.vendorName || "").trim() ||
+          vendor.vendorAmount === "" ||
+          !Number.isFinite(Number(vendor.vendorAmount)) ||
+          Number(vendor.vendorAmount) < 0,
+      )
+    ) {
+      showToast("Enter a vendor name and valid amount for every vendor.", "warning");
+      return;
+    }
+    try {
+      setSaving(true);
+      const response = await fetch(
+        `${TRIP_API_URL}/${selectedOrder._id}/project-vehicle-allocation-requests/${encodeURIComponent(request.requestId)}/quotation`,
+        {
+          method: "PUT",
+          headers: {
+            ...getAdminAuthHeaders(),
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({
+            vendorQuotations: vendorQuotations.map((vendor) => ({
+              vendorName: String(vendor.vendorName).trim(),
+              vendorAmount: Number(vendor.vendorAmount),
+              trafficRemarks: String(vendor.remarks || "").trim(),
+            })),
+            quotedBy: "Traffic Team",
+          }),
+        },
+      );
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok)
+        throw new Error(payload.message || "Unable to submit vendor quotations.");
+      const updated = extractTrip(payload);
+      if (updated?._id) {
+        setSelectedOrder(updated);
+        setOrders((previous) =>
+          previous.map((item) => (item._id === updated._id ? updated : item)),
+        );
+      }
+      showToast("Vendor quotations sent to Management for comparison.", "success");
+    } catch (error) {
+      showToast(error.message || "Unable to submit vendor quotations.", "error");
     } finally {
       setSaving(false);
     }
@@ -650,7 +790,11 @@ const Traffic = () => {
   ========================================================= */
   const handleOpenOrder = (order) => {
     setHistoryFilters({});
-    setTransportView(getVehicleConfirmations(order).some(item=>item.status==="Approved")?"current":"quotes");
+    setTransportView(
+      getVehicleConfirmations(order).some((item) => item.status === "Approved")
+        ? "current"
+        : "quotes",
+    );
     setSelectedOrder(order);
     loadRequirementForms(order);
     setMessage("");
@@ -913,7 +1057,9 @@ const Traffic = () => {
                 ...(requirement.quotations || []),
                 {
                   ...createQuotationForm(),
-                  ...(isCrane ? { transporter: "Multiple", quantity: "Multiple" } : {}),
+                  ...(isCrane
+                    ? { transporter: "Multiple", quantity: "Multiple" }
+                    : {}),
                 },
               ],
             }
@@ -1010,9 +1156,7 @@ const Traffic = () => {
           ? "Multiple"
           : String(quotation.transporter || "").trim();
         const amount = Number(quotation.amount);
-        const quantity = isCraneMovement(selectedOrder)
-          ? "Multiple"
-          : 1;
+        const quantity = isCraneMovement(selectedOrder) ? "Multiple" : 1;
         const allocatedBy = String(quotation.allocatedBy || "").trim();
         /*
          * Completely blank temporary rows
@@ -1493,12 +1637,68 @@ const Traffic = () => {
             {/* =================================================
                 REQUIREMENTS
             ================================================= */}
-<div className="tv-navigation" aria-label="Transport views">
-              <div role="tablist" aria-label="Transport management">{[["current","Current Transport",Truck],["quotes","Quotations",FileText],["history","Change History",RefreshCw]].map(([key,label,Icon])=><button type="button" role="tab" id={`tv-tab-${key}`} aria-controls="tv-content" aria-selected={transportView===key} tabIndex={transportView===key?0:-1} key={key} className={transportView===key?"selected":""} onClick={()=>setTransportView(key)} onKeyDown={event=>{const keys=["current","quotes","history"];let index=keys.indexOf(transportView);if(event.key==="ArrowRight"||event.key==="ArrowLeft"){event.preventDefault();const next=keys[(index+(event.key==="ArrowRight"?1:2))%3];setTransportView(next);document.getElementById(`tv-tab-${next}`)?.focus();}}}><Icon size={15}/>{label}{key==="history" && getTransportReplacementRequests(selectedOrder).some(item=>item.status==="Pending") && <span className="tv-dot" title="Changes awaiting approval"/>}</button>)}</div>
-              <span>{transportView==="current"?"Manage approved transporters":transportView==="quotes"?"Add and review quotations":"Track requests and decisions"}</span>
+            <div className="tv-navigation" aria-label="Transport views">
+              <div role="tablist" aria-label="Transport management">
+                {[
+                  ["current", "Current Transport", Truck],
+                  ["quotes", "Quotations", FileText],
+                  ["history", "Change History", RefreshCw],
+                ].map(([key, label, Icon]) => (
+                  <button
+                    type="button"
+                    role="tab"
+                    id={`tv-tab-${key}`}
+                    aria-controls="tv-content"
+                    aria-selected={transportView === key}
+                    tabIndex={transportView === key ? 0 : -1}
+                    key={key}
+                    className={transportView === key ? "selected" : ""}
+                    onClick={() => setTransportView(key)}
+                    onKeyDown={(event) => {
+                      const keys = ["current", "quotes", "history"];
+                      let index = keys.indexOf(transportView);
+                      if (
+                        event.key === "ArrowRight" ||
+                        event.key === "ArrowLeft"
+                      ) {
+                        event.preventDefault();
+                        const next =
+                          keys[
+                            (index + (event.key === "ArrowRight" ? 1 : 2)) % 3
+                          ];
+                        setTransportView(next);
+                        document.getElementById(`tv-tab-${next}`)?.focus();
+                      }
+                    }}
+                  >
+                    <Icon size={15} />
+                    {label}
+                    {key === "history" &&
+                      getTransportReplacementRequests(selectedOrder).some(
+                        (item) => item.status === "Pending",
+                      ) && (
+                        <span
+                          className="tv-dot"
+                          title="Changes awaiting approval"
+                        />
+                      )}
+                  </button>
+                ))}
+              </div>
+              <span>
+                {transportView === "current"
+                  ? "Manage approved transporters"
+                  : transportView === "quotes"
+                    ? "Add and review quotations"
+                    : "Track requests and decisions"}
+              </span>
             </div>
-            <div className="traffic-modal-body" role="tabpanel" id="tv-content" aria-labelledby={`tv-tab-${transportView}`}>
-
+            <div
+              className="traffic-modal-body"
+              role="tabpanel"
+              id="tv-content"
+              aria-labelledby={`tv-tab-${transportView}`}
+            >
               {isCraneMovement(selectedOrder) && (
                 <section className="traffic-crane-compact">
                   <div className="traffic-crane-compact-main">
@@ -1553,397 +1753,1338 @@ const Traffic = () => {
                   </div>
                 </section>
               )}
-              {requirementForms.map((requirement, requirementIndex) => {
-                const status = getRequirementStatus(
-                  selectedOrder,
-                  requirement.requirementId,
-                );
-                const confirmation = getRequirementConfirmation(
-                  selectedOrder,
-                  requirement.requirementId,
-                );
-                const approvedConfirmations =
-                  getApprovedConfirmationsForRequirement(
-                    selectedOrder,
-                    requirement.requirementId,
-                  );
-                const approvedQuotationIds = new Set(
-                  approvedConfirmations
-                    .map((item) => item?.quotationId)
-                    .filter(Boolean),
-                );
-                const approvedQuotations = getRequirementQuotations(
-                  selectedOrder,
-                  requirement.requirementId,
-                ).filter((quotation) =>
-                  approvedQuotationIds.has(quotation?.quotationId),
-                );
-                // Pending replacement is a row-level state, not loss of existing approval.
-                const isApproved = getApprovedQuantityForRequirement(selectedOrder, requirement.requirementId) >= Math.max(1, Number(requirement.quantity) || 1);
-                const replacementHistory = getTransportReplacementRequests(selectedOrder).filter(item=>item.requirementId===requirement.requirementId).slice().sort((a,b)=>new Date(b.requestedAt)-new Date(a.requestedAt));
-                const requirementKey =
-                  requirement.requirementId || requirementIndex;
-                const requirementRoute = (() => {
-                  const origin = String(requirement.origin || selectedOrder?.origin || "").trim();
-                  const destination = String(requirement.destination || selectedOrder?.destination || "").trim();
-                  return origin && destination ? `${origin} → ${destination}` : requirement.route || origin || destination || "—";
-                })();
-                const requirementMaterial = requirement.materialType || requirement.material || selectedOrder?.materialType || selectedOrder?.material || "—";
-                const requirementPlacement = requirement.placementDate || selectedOrder?.placementDate;
-                return (
-                  <section
-                    className={`traffic-vehicle-card ${transportView === "current" ? "tv-current-requirement" : ""} ${
-                      isCraneMovement(selectedOrder)
-                        ? "traffic-crane-quotation-card"
-                        : ""
-                    }`}
-                    key={requirementKey}
-                  >
-                    {/* =============================================
-                          REQUIREMENT HEADER
-                      ============================================= */}
-                    <div className="traffic-vehicle-card-header">
-                      <div className="traffic-vehicle-header-main">
-                        <span className="traffic-vehicle-index">
-                          {String(requirementIndex + 1).padStart(2, "0")}
-                        </span>
-                        <div>
-                          <h3>{requirement.vehicleType || "Vehicle"}</h3>
-                          <p className="traffic-vehicle-compact-meta">
-                            <span>{requirement.configuration || "—"}</span>
-                            <span className="traffic-vehicle-meta-route" title={requirementRoute}>{requirementRoute}</span>
-                            <span className="traffic-vehicle-meta-placement">Placement: {requirementPlacement ? formatDate(requirementPlacement) : "—"}</span>
-                          </p>
-                        </div>
-                      </div>
-                      <div className="traffic-vehicle-header-actions">
-                        <span
-                          className={`traffic-status ${getStatusClass(status)}`}
-                        >
-                          <StatusIcon status={status} />
-                          {status}
-                        </span>
-                        {transportView==="quotes" && !isApproved && !isCraneMovement(selectedOrder) && (
-                          <button
-                            type="button"
-                            className="traffic-add-btn traffic-add-btn-header"
-                            onClick={() => handleAddTransport(requirementIndex)}
-                          >
-                            <Plus size={13} />
-                            {isCraneMovement(selectedOrder) ? "Add Option" : "Add Vehicle Row"}
-                          </button>
-                        )}
-                      </div>
+              {String(selectedOrder?.movementType || "")
+                .toLowerCase()
+                .replace(/[\s_-]+/g, "") === "projectmovement" && (
+                <section className="traffic-project-allocation-section">
+                  <div className="traffic-project-allocation-heading">
+                    <div>
+                      <span>PROJECT MOVEMENT</span>
+                      <h3>Vehicle Allocation Requests</h3>
+                      <p>
+                        Add multiple vendor quotations for each individual
+                        vehicle. Submit all vendors together for Management
+                        comparison and selection.
+                      </p>
                     </div>
-                    {status === "Rejected" && (
-                      <div className="traffic-kam-response rejected">
-                        <div>
-                          <strong>Management Response</strong>
-                          <p>
-                            Quotation rejected.
-                            {confirmation?.rejectionReason
-                              ? ` ${confirmation.rejectionReason}`
-                              : confirmation?.remarks
-                                ? ` ${confirmation.remarks}`
-                                : ""}
-                          </p>
-                        </div>
-                      </div>
-                    )}
-                    {/* =============================================
-                          QUOTATION TABLE
-                      ============================================= */}
-                    {transportView==="current" && (approvedQuotations.length ? <div className="traffic-transport-rows">
-                      {approvedConfirmations.map((approved,index)=>{const quote=approvedQuotations.find(item=>item.quotationId===approved.quotationId);if(!quote)return null;const pending=getPendingTransportReplacement(selectedOrder,approved.confirmationId);return <article className={`traffic-transport-row ${pending?"pending":""}`} key={approved.confirmationId}>
-                          <div className="traffic-transport-field"><span>VEHICLES</span><strong>{Number(quote.quantity)===1?`Vehicle ${index+1}`:`${quote.quantity} vehicles`}</strong></div>
-                          <div className="traffic-transport-field"><span>TRANSPORTER</span><strong>{quote.transporter||"—"}</strong></div>
-                          <div className="traffic-transport-field"><span>APPROVED AMOUNT</span><strong className="traffic-transport-price">{formatAmount(quote.amount)}</strong></div>
-                          <div className="traffic-transport-field"><span>ALLOCATED BY</span><strong>{quote.allocatedBy||quote.quotedBy||"—"}</strong></div>
-                          <span className={`tv-state ${pending?"pending":""}`}>{pending?"Change pending":"Approved"}</span>
-                          {pending?<button type="button" className="tv-view-request" onClick={()=>setTransportView("history")}>View request <ChevronRight size={12}/></button>:<button type="button" className="tv-change" disabled={saving} onClick={()=>openTransportReplacement(requirement,approved,quote)}><RefreshCw size={13}/>Change transporter</button>}
-                          {pending && <div className="traffic-transport-pending">Requested change: <strong>{pending.proposedTransporter}</strong><span>{formatAmount(pending.proposedAmount)}</span></div>}
-                        </article>;})}
-                    </div>:<div className="tv-empty"><Truck size={23}/><strong>No approved transporters yet</strong><span>Add quotations and send them for approval.</span><button type="button" onClick={()=>setTransportView("quotes")}>Open quotations <ChevronRight size={13}/></button></div>)}
-                    {transportView==="quotes" && <section className="tv-quotes">
-                    <div className="traffic-quotation-section">
-                      {isCraneMovement(selectedOrder) && !isApproved && (
-                        <div className="traffic-crane-option-toolbar">
-                          <span>Add another transporter quotation</span>
-                          <button
-                            type="button"
-                            className="traffic-add-btn traffic-add-btn-header"
-                            onClick={() => handleAddTransport(requirementIndex)}
-                            disabled={saving}
-                          >
-                            <Plus size={13} />
-                            Add Option
-                          </button>
-                        </div>
-                      )}
-                      <div className="traffic-quotation-table-wrap">
-                        <table className={`traffic-quotation-table ${isApproved ? "is-approved" : ""}`}>
-                          <thead>
-                            <tr>
-                              <th>S.No</th>
-                              <th>Transport Name</th>
-                              <th>Material</th>
-                              <th>{isCraneMovement(selectedOrder) ? "Quoted Amount" : "Amount / Vehicle"}</th>
-                              <th>Allocated By</th>
-                              <th>Status</th>
-                              {!isApproved && <th>Action</th>}
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {requirement.quotations?.length ? (
-                              requirement.quotations.map(
-                                (quotation, quotationIndex) => {
-                                  const isExisting = !quotation.isNew;
-                                  const selectedQuotation =
-                                    isExisting &&
-                                    Boolean(quotation?.quotationId) &&
-                                    approvedQuotationIds.has(
-                                      quotation.quotationId,
-                                    );
-                                  return (
-                                    <tr
-                                      key={
-                                        quotation.quotationId ||
-                                        quotation.localId ||
-                                        quotationIndex
-                                      }
-                                      className={
-                                        selectedQuotation
-                                          ? "selected-option"
-                                          : ""
-                                      }
-                                    >
-                                      <td>{quotationIndex + 1}</td>
-                                      {/* TRANSPORTER */}
-                                      <td>
-                                        {isExisting ? (
-                                          <strong>
-                                            {isCraneMovement(selectedOrder)
-                                              ? "Multiple"
-                                              : quotation.transporter || "—"}
-                                          </strong>
-                                        ) : isCraneMovement(selectedOrder) ? (
-                                          <select
-                                            aria-label="Transport"
-                                            value="Multiple"
-                                            disabled={saving}
-                                            style={{
-                                              width: "100%",
-                                              minHeight: 42,
-                                              padding: "0 10px",
-                                              border: "1px solid #c7dce2",
-                                              borderRadius: 6,
-                                              background: "#fff",
-                                              color: "#244f60",
-                                            }}
-                                          >
-                                            <option value="Multiple">
-                                              Multiple
-                                            </option>
-                                          </select>
-                                        ) : (
-                                          <input
-                                            type="text"
-                                            value={quotation.transporter || ""}
-                                            onChange={(event) =>
-                                              handleQuotationChange(
-                                                requirementIndex,
-                                                quotationIndex,
-                                                "transporter",
-                                                event.target.value,
-                                              )
-                                            }
-                                            placeholder="Enter transport name"
-                                            disabled={saving}
-                                          />
-                                        )}
-                                      </td>
-                                      <td className="traffic-quotation-material" title={String(requirementMaterial)}>{requirementMaterial}</td>
-                                      {/* AMOUNT */}
-                                      <td>
-                                        {isExisting ? (
-                                          <strong className="traffic-table-amount">
-                                            {formatAmount(quotation.amount)}
-                                          </strong>
-                                        ) : (
-                                          <div className="traffic-amount-input">
-                                            <span>₹</span>
+                  </div>
+                  <div className="traffic-project-allocation-table-wrap">
+                    <table className="traffic-project-allocation-table">
+                      <thead>
+                        <tr>
+                          <th>Requirement</th>
+                          <th>Vehicle</th>
+                          <th>Qty</th>
+                          <th>Customer Required</th>
+                          <th>Vendor Quotations</th>
+                          <th>Action / Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {(selectedOrder.projectVehicleAllocationRequests || [])
+                          .slice()
+                          .sort(
+                            (a, b) =>
+                              new Date(b.requestedAt) - new Date(a.requestedAt),
+                          )
+                          .map((request, requestIndex, sortedRequests) => {
+                            const requirement = (
+                              selectedOrder.vehicleRequirements || []
+                            ).find(
+                              (item) => item.requirementId === request.requirementId,
+                            );
+                            const vehicleIndex = sortedRequests.filter(
+                              (item, index) =>
+                                item.requirementId === request.requirementId &&
+                                index <= requestIndex,
+                            ).length;
+                            const form = projectVendorForms[request.requestId] || {};
+                            const vendorForms = Array.isArray(form.vendorQuotations)
+                              ? form.vendorQuotations
+                              : [{ vendorName: "", vendorAmount: "", remarks: "" }];
+                            const submittedVendors = Array.isArray(request.vendorQuotations)
+                              ? request.vendorQuotations
+                              : [];
+                            const selectedVendor = submittedVendors.find(
+                              (vendor) =>
+                                vendor.quotationId === request.selectedVendorQuotationId ||
+                                vendor.status === "Approved",
+                            );
+                            return (
+                              <tr key={request.requestId}>
+                                <td>{requirement?.vehicleType || request.requirementId}</td>
+                                <td>Vehicle {vehicleIndex}</td>
+                                <td>{request.requestedQuantity}</td>
+                                <td>
+                                  {request.customerRequiredDate || "—"} ·{" "}
+                                  {request.customerRequiredTime || "—"}
+                                </td>
+                                <td className="traffic-project-vendor-cell">
+                                  {request.status === "Pending Traffic" ? (
+                                    <div className="traffic-project-vendor-editor">
+                                      {vendorForms.map((vendor, vendorIndex) => (
+                                        <div
+                                          className="traffic-project-vendor-entry"
+                                          key={`${request.requestId}-vendor-${vendorIndex}`}
+                                        >
+                                          <div className="traffic-project-vendor-entry-heading">
+                                            <strong>Vendor {vendorIndex + 1}</strong>
+                                            {vendorForms.length > 1 && (
+                                              <button
+                                                type="button"
+                                                className="traffic-project-vendor-remove"
+                                                disabled={saving}
+                                                onClick={() =>
+                                                  removeProjectVendorForm(request.requestId, vendorIndex)
+                                                }
+                                              >
+                                                Remove
+                                              </button>
+                                            )}
+                                          </div>
+                                          <div className="traffic-project-vendor-fields">
+                                            <input
+                                              value={vendor.vendorName || ""}
+                                              onChange={(event) =>
+                                                updateProjectVendorForm(
+                                                  request.requestId,
+                                                  vendorIndex,
+                                                  "vendorName",
+                                                  event.target.value,
+                                                )
+                                              }
+                                              placeholder="Vendor name"
+                                            />
                                             <input
                                               type="number"
                                               min="0"
                                               step="0.01"
-                                              value={quotation.amount ?? ""}
+                                              value={vendor.vendorAmount ?? ""}
                                               onChange={(event) =>
-                                                handleQuotationChange(
-                                                  requirementIndex,
-                                                  quotationIndex,
-                                                  "amount",
+                                                updateProjectVendorForm(
+                                                  request.requestId,
+                                                  vendorIndex,
+                                                  "vendorAmount",
                                                   event.target.value,
                                                 )
                                               }
-                                              placeholder={
-                                                isCompanyTransporter(
-                                                  quotation.transporter,
+                                              placeholder="Amount (₹)"
+                                            />
+                                            <input
+                                              value={vendor.remarks || ""}
+                                              onChange={(event) =>
+                                                updateProjectVendorForm(
+                                                  request.requestId,
+                                                  vendorIndex,
+                                                  "remarks",
+                                                  event.target.value,
                                                 )
-                                                  ? "Optional for OTC"
-                                                  : "Enter amount"
                                               }
-                                              disabled={saving}
+                                              placeholder="Remarks (optional)"
                                             />
                                           </div>
-                                        )}
-                                      </td>
-                                      {/* ALLOCATED BY */}
-                                      <td>
-                                        {isExisting ? (
-                                          <strong className="traffic-allocator-name">
-                                            {quotation.quotedBy ||
-                                              quotation.allocatedBy ||
-                                              "—"}
-                                          </strong>
-                                        ) : (
-                                          <input
-                                            type="text"
-                                            className="traffic-allocator-input"
-                                            value={quotation.allocatedBy || ""}
-                                            onChange={(event) =>
-                                              handleQuotationChange(
-                                                requirementIndex,
-                                                quotationIndex,
-                                                "allocatedBy",
-                                                event.target.value,
-                                              )
-                                            }
-                                            placeholder="Enter allocator name"
-                                            disabled={saving}
-                                          />
-                                        )}
-                                      </td>
-                                      {/* STATUS */}
-                                      <td>
-                                        {selectedQuotation ? (
-                                          <span className="traffic-option-selected">
-                                            <CheckCircle2 size={12} />
-                                            Approved
-                                          </span>
-                                        ) : isExisting ? (
-                                          <span className="traffic-option-pending">
-                                            {status === "Rejected"
-                                              ? "Rejected"
-                                              : approvedQuotationIds.size > 0
-                                                ? "Not Selected"
-                                                : "Submitted"}
-                                          </span>
-                                        ) : (
-                                          <span className="traffic-option-pending">
-                                            Pending
-                                          </span>
-                                        )}
-                                      </td>
-                                      {/* DELETE */}
-                                      {!isApproved && (
-                                        <td>
-                                          {quotation.isNew ? (
-                                            <button
-                                              type="button"
-                                              className="traffic-delete-option"
-                                              onClick={() =>
-                                                handleRemoveTransport(
-                                                  requirementIndex,
-                                                  quotationIndex,
-                                                )
-                                              }
-                                              title="Remove transport option"
-                                              disabled={saving}
-                                            >
-                                              <Trash2 size={13} />
-                                            </button>
-                                          ) : (
-                                            <span>—</span>
+                                        </div>
+                                      ))}
+                                      <button
+                                        type="button"
+                                        className="traffic-project-vendor-add"
+                                        disabled={saving}
+                                        onClick={() => addProjectVendorForm(request.requestId)}
+                                      >
+                                        + Add Vendor
+                                      </button>
+                                    </div>
+                                  ) : submittedVendors.length ? (
+                                    <div className="traffic-project-vendor-list">
+                                      {submittedVendors.map((vendor, vendorIndex) => (
+                                        <div
+                                          className={`traffic-project-vendor-summary ${
+                                            vendor.status === "Approved" ? "is-approved" : ""
+                                          }`}
+                                          key={vendor.quotationId || `${request.requestId}-${vendorIndex}`}
+                                        >
+                                          <div>
+                                            <strong>{vendor.vendorName}</strong>
+                                            <span>
+                                              ₹{Number(vendor.vendorAmount || 0).toLocaleString("en-IN")}
+                                            </span>
+                                          </div>
+                                          {vendor.trafficRemarks && (
+                                            <small>{vendor.trafficRemarks}</small>
                                           )}
-                                        </td>
-                                      )}
-                                    </tr>
-                                  );
-                                },
-                              )
-                            ) : (
-                              <tr>
-                                <td
-                                  colSpan={isApproved ? 6 : 7}
-                                  className="traffic-no-options"
-                                >
-                                  No transport quotations.
+                                          {vendor.status === "Approved" && (
+                                            <em>Selected by Management</em>
+                                          )}
+                                          {vendor.status === "Not Selected" && (
+                                            <em>Not selected</em>
+                                          )}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  ) : (
+                                    <div className="traffic-project-vendor-summary">
+                                      <strong>{request.vendorName || "—"}</strong>
+                                      <span>
+                                        {request.vendorAmount == null
+                                          ? ""
+                                          : `₹${Number(request.vendorAmount).toLocaleString("en-IN")}`}
+                                      </span>
+                                    </div>
+                                  )}
+                                  {request.status === "Approved" && selectedVendor && (
+                                    <div className="traffic-project-vendor-approved">
+                                      Approved vendor: <strong>{selectedVendor.vendorName}</strong>
+                                    </div>
+                                  )}
+                                </td>
+                                <td>
+                                  {request.status === "Pending Traffic" ? (
+                                    <button
+                                      type="button"
+                                      disabled={saving}
+                                      onClick={() => submitProjectVendorAllocation(request)}
+                                    >
+                                      {saving ? "Submitting..." : "Submit All to Management"}
+                                    </button>
+                                  ) : (
+                                    <strong>{request.status}</strong>
+                                  )}
                                 </td>
                               </tr>
-                            )}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                    </section>}
-                    {transportView==="history" && (replacementHistory.length > 0 ? <section className="hx-history">
-                      <div className="hx-toolbar"><div className="hx-filters" role="group" aria-label="Filter replacement history">{["All","Pending","Approved","Rejected"].map(filter=><button type="button" key={filter} aria-pressed={(historyFilters[requirement.requirementId]||"All")===filter} className={(historyFilters[requirement.requirementId]||"All")===filter?"active":""} onClick={()=>setHistoryFilters(previous=>({...previous,[requirement.requirementId]:filter}))}>{filter}<span>{filter==="All"?replacementHistory.length:replacementHistory.filter(item=>item.status===filter).length}</span></button>)}</div><small>Latest first · Click a row for details</small></div>
-                      <div className="hx-columns" aria-hidden="true"><span>Requested on</span><span>Transporter · Old → New</span><span>Amount · Old → New</span><span>Status</span><span/></div>
-                      <div className="hx-rows">{replacementHistory.filter(item=>(historyFilters[requirement.requirementId]||"All")==="All"||item.status===historyFilters[requirement.requirementId]).map(item=><details key={item.requestId} className="hx-row">
-                        <summary><div className="hx-date"><strong>{item.requestedAt?new Date(item.requestedAt).toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"}):"Date unavailable"}</strong><small>{item.requestedAt?new Date(item.requestedAt).toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"}):""}</small></div><div className="hx-route"><span>{item.currentTransporter||"—"}</span><ChevronRight size={13}/><strong>{item.proposedTransporter||"—"}</strong></div><div className="hx-amount"><span>{formatAmount(item.currentAmount)}</span><ChevronRight size={12}/><strong>{formatAmount(item.proposedAmount)}</strong></div><span className={`hx-status ${String(item.status||"Pending").toLowerCase()}`}>{item.status||"Pending"}</span><ChevronDown size={14} className="hx-chevron"/></summary>
-                        <div className="hx-details"><p className="hx-result">{item.status==="Approved"?"Change approved and applied.":item.status==="Rejected"?"Change rejected. The original transporter was kept.":"Waiting for management approval. The current transporter is unchanged."}</p><dl><div><dt>Requested by</dt><dd>{item.requestedBy||"Traffic Team"}</dd></div><div><dt>Vehicle quantity</dt><dd>{item.quantity||1}</dd></div><div><dt>Reviewed by</dt><dd>{item.status==="Pending"?"Awaiting review":item.reviewedBy||"Management"}</dd></div><div><dt>Decision on</dt><dd>{item.reviewedAt?new Date(item.reviewedAt).toLocaleString("en-IN",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}):"—"}</dd></div><div className="hx-wide"><dt>Reason</dt><dd>{item.reason||"—"}</dd></div>{item.selectedVehicleNumbers?.length>0 && <div className="hx-wide"><dt>Vehicles</dt><dd>{item.selectedVehicleNumbers.join(", ")}</dd></div>}{item.remarks && <div><dt>Traffic remarks</dt><dd>{item.remarks}</dd></div>}{item.reviewRemarks && <div><dt>Management remarks</dt><dd>{item.reviewRemarks}</dd></div>}</dl></div>
-                      </details>)}</div>
-                      {!replacementHistory.some(item=>(historyFilters[requirement.requirementId]||"All")==="All"||item.status===historyFilters[requirement.requirementId]) && <div className="hx-empty">No {String(historyFilters[requirement.requirementId]||"").toLowerCase()} requests.</div>}
-                    </section>:<div className="tv-empty"><RefreshCw size={23}/><strong>No changes requested</strong><span>Future requests and approval decisions will appear here.</span></div>)}
-                  </section>
-                );
-              })}
+                            );
+                          })}
+                        {!(selectedOrder.projectVehicleAllocationRequests || []).length && (
+                          <tr>
+                            <td colSpan="6">No Project Movement allocation requests are waiting.</td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </section>
+              )}
+              {String(selectedOrder?.movementType || "")
+                .toLowerCase()
+                .replace(/[\s_-]+/g, "") === "projectmovement"
+                ? null
+                : requirementForms.map((requirement, requirementIndex) => {
+                    const status = getRequirementStatus(
+                      selectedOrder,
+                      requirement.requirementId,
+                    );
+                    const confirmation = getRequirementConfirmation(
+                      selectedOrder,
+                      requirement.requirementId,
+                    );
+                    const approvedConfirmations =
+                      getApprovedConfirmationsForRequirement(
+                        selectedOrder,
+                        requirement.requirementId,
+                      );
+                    const approvedQuotationIds = new Set(
+                      approvedConfirmations
+                        .map((item) => item?.quotationId)
+                        .filter(Boolean),
+                    );
+                    const approvedQuotations = getRequirementQuotations(
+                      selectedOrder,
+                      requirement.requirementId,
+                    ).filter((quotation) =>
+                      approvedQuotationIds.has(quotation?.quotationId),
+                    );
+                    // Pending replacement is a row-level state, not loss of existing approval.
+                    const isApproved =
+                      getApprovedQuantityForRequirement(
+                        selectedOrder,
+                        requirement.requirementId,
+                      ) >= Math.max(1, Number(requirement.quantity) || 1);
+                    const replacementHistory = getTransportReplacementRequests(
+                      selectedOrder,
+                    )
+                      .filter(
+                        (item) =>
+                          item.requirementId === requirement.requirementId,
+                      )
+                      .slice()
+                      .sort(
+                        (a, b) =>
+                          new Date(b.requestedAt) - new Date(a.requestedAt),
+                      );
+                    const requirementKey =
+                      requirement.requirementId || requirementIndex;
+                    const requirementRoute = (() => {
+                      const origin = String(
+                        requirement.origin || selectedOrder?.origin || "",
+                      ).trim();
+                      const destination = String(
+                        requirement.destination ||
+                          selectedOrder?.destination ||
+                          "",
+                      ).trim();
+                      return origin && destination
+                        ? `${origin} → ${destination}`
+                        : requirement.route || origin || destination || "—";
+                    })();
+                    const requirementMaterial =
+                      requirement.materialType ||
+                      requirement.material ||
+                      selectedOrder?.materialType ||
+                      selectedOrder?.material ||
+                      "—";
+                    const requirementPlacement =
+                      requirement.placementDate || selectedOrder?.placementDate;
+                    return (
+                      <section
+                        className={`traffic-vehicle-card ${transportView === "current" ? "tv-current-requirement" : ""} ${
+                          isCraneMovement(selectedOrder)
+                            ? "traffic-crane-quotation-card"
+                            : ""
+                        }`}
+                        key={requirementKey}
+                      >
+                        {/* =============================================
+                          REQUIREMENT HEADER
+                      ============================================= */}
+                        <div className="traffic-vehicle-card-header">
+                          <div className="traffic-vehicle-header-main">
+                            <span className="traffic-vehicle-index">
+                              {String(requirementIndex + 1).padStart(2, "0")}
+                            </span>
+                            <div>
+                              <h3>{requirement.vehicleType || "Vehicle"}</h3>
+                              <p className="traffic-vehicle-compact-meta">
+                                <span>{requirement.configuration || "—"}</span>
+                                <span
+                                  className="traffic-vehicle-meta-route"
+                                  title={requirementRoute}
+                                >
+                                  {requirementRoute}
+                                </span>
+                                <span className="traffic-vehicle-meta-placement">
+                                  Placement:{" "}
+                                  {requirementPlacement
+                                    ? formatDate(requirementPlacement)
+                                    : "—"}
+                                </span>
+                              </p>
+                            </div>
+                          </div>
+                          <div className="traffic-vehicle-header-actions">
+                            <span
+                              className={`traffic-status ${getStatusClass(status)}`}
+                            >
+                              <StatusIcon status={status} />
+                              {status}
+                            </span>
+                            {transportView === "quotes" &&
+                              !isApproved &&
+                              !isCraneMovement(selectedOrder) && (
+                                <button
+                                  type="button"
+                                  className="traffic-add-btn traffic-add-btn-header"
+                                  onClick={() =>
+                                    handleAddTransport(requirementIndex)
+                                  }
+                                >
+                                  <Plus size={13} />
+                                  {isCraneMovement(selectedOrder)
+                                    ? "Add Option"
+                                    : "Add Vehicle Row"}
+                                </button>
+                              )}
+                          </div>
+                        </div>
+                        {status === "Rejected" && (
+                          <div className="traffic-kam-response rejected">
+                            <div>
+                              <strong>Management Response</strong>
+                              <p>
+                                Quotation rejected.
+                                {confirmation?.rejectionReason
+                                  ? ` ${confirmation.rejectionReason}`
+                                  : confirmation?.remarks
+                                    ? ` ${confirmation.remarks}`
+                                    : ""}
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                        {/* =============================================
+                          QUOTATION TABLE
+                      ============================================= */}
+                        {transportView === "current" &&
+                          (approvedQuotations.length ? (
+                            <div className="traffic-transport-rows">
+                              {approvedConfirmations.map((approved, index) => {
+                                const quote = approvedQuotations.find(
+                                  (item) =>
+                                    item.quotationId === approved.quotationId,
+                                );
+                                if (!quote) return null;
+                                const pending = getPendingTransportReplacement(
+                                  selectedOrder,
+                                  approved.confirmationId,
+                                );
+                                return (
+                                  <article
+                                    className={`traffic-transport-row ${pending ? "pending" : ""}`}
+                                    key={approved.confirmationId}
+                                  >
+                                    <div className="traffic-transport-field">
+                                      <span>VEHICLES</span>
+                                      <strong>
+                                        {Number(quote.quantity) === 1
+                                          ? `Vehicle ${index + 1}`
+                                          : `${quote.quantity} vehicles`}
+                                      </strong>
+                                    </div>
+                                    <div className="traffic-transport-field">
+                                      <span>TRANSPORTER</span>
+                                      <strong>
+                                        {quote.transporter || "—"}
+                                      </strong>
+                                    </div>
+                                    <div className="traffic-transport-field">
+                                      <span>APPROVED AMOUNT</span>
+                                      <strong className="traffic-transport-price">
+                                        {formatAmount(quote.amount)}
+                                      </strong>
+                                    </div>
+                                    <div className="traffic-transport-field">
+                                      <span>ALLOCATED BY</span>
+                                      <strong>
+                                        {quote.allocatedBy ||
+                                          quote.quotedBy ||
+                                          "—"}
+                                      </strong>
+                                    </div>
+                                    <span
+                                      className={`tv-state ${pending ? "pending" : ""}`}
+                                    >
+                                      {pending ? "Change pending" : "Approved"}
+                                    </span>
+                                    {pending ? (
+                                      <button
+                                        type="button"
+                                        className="tv-view-request"
+                                        onClick={() =>
+                                          setTransportView("history")
+                                        }
+                                      >
+                                        View request <ChevronRight size={12} />
+                                      </button>
+                                    ) : (
+                                      <button
+                                        type="button"
+                                        className="tv-change"
+                                        disabled={saving}
+                                        onClick={() =>
+                                          openTransportReplacement(
+                                            requirement,
+                                            approved,
+                                            quote,
+                                          )
+                                        }
+                                      >
+                                        <RefreshCw size={13} />
+                                        Change transporter
+                                      </button>
+                                    )}
+                                    {pending && (
+                                      <div className="traffic-transport-pending">
+                                        Requested change:{" "}
+                                        <strong>
+                                          {pending.proposedTransporter}
+                                        </strong>
+                                        <span>
+                                          {formatAmount(pending.proposedAmount)}
+                                        </span>
+                                      </div>
+                                    )}
+                                  </article>
+                                );
+                              })}
+                            </div>
+                          ) : (
+                            <div className="tv-empty">
+                              <Truck size={23} />
+                              <strong>No approved transporters yet</strong>
+                              <span>
+                                Add quotations and send them for approval.
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => setTransportView("quotes")}
+                              >
+                                Open quotations <ChevronRight size={13} />
+                              </button>
+                            </div>
+                          ))}
+                        {transportView === "quotes" && (
+                          <section className="tv-quotes">
+                            <div className="traffic-quotation-section">
+                              {isCraneMovement(selectedOrder) &&
+                                !isApproved && (
+                                  <div className="traffic-crane-option-toolbar">
+                                    <span>
+                                      Add another transporter quotation
+                                    </span>
+                                    <button
+                                      type="button"
+                                      className="traffic-add-btn traffic-add-btn-header"
+                                      onClick={() =>
+                                        handleAddTransport(requirementIndex)
+                                      }
+                                      disabled={saving}
+                                    >
+                                      <Plus size={13} />
+                                      Add Option
+                                    </button>
+                                  </div>
+                                )}
+                              <div className="traffic-quotation-table-wrap">
+                                <table
+                                  className={`traffic-quotation-table ${isApproved ? "is-approved" : ""}`}
+                                >
+                                  <thead>
+                                    <tr>
+                                      <th>S.No</th>
+                                      <th>Transport Name</th>
+                                      <th>Material</th>
+                                      <th>
+                                        {isCraneMovement(selectedOrder)
+                                          ? "Quoted Amount"
+                                          : "Amount / Vehicle"}
+                                      </th>
+                                      <th>Allocated By</th>
+                                      <th>Status</th>
+                                      {!isApproved && <th>Action</th>}
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {requirement.quotations?.length ? (
+                                      requirement.quotations.map(
+                                        (quotation, quotationIndex) => {
+                                          const isExisting = !quotation.isNew;
+                                          const selectedQuotation =
+                                            isExisting &&
+                                            Boolean(quotation?.quotationId) &&
+                                            approvedQuotationIds.has(
+                                              quotation.quotationId,
+                                            );
+                                          return (
+                                            <tr
+                                              key={
+                                                quotation.quotationId ||
+                                                quotation.localId ||
+                                                quotationIndex
+                                              }
+                                              className={
+                                                selectedQuotation
+                                                  ? "selected-option"
+                                                  : ""
+                                              }
+                                            >
+                                              <td>{quotationIndex + 1}</td>
+                                              {/* TRANSPORTER */}
+                                              <td>
+                                                {isExisting ? (
+                                                  <strong>
+                                                    {isCraneMovement(
+                                                      selectedOrder,
+                                                    )
+                                                      ? "Multiple"
+                                                      : quotation.transporter ||
+                                                        "—"}
+                                                  </strong>
+                                                ) : isCraneMovement(
+                                                    selectedOrder,
+                                                  ) ? (
+                                                  <select
+                                                    aria-label="Transport"
+                                                    value="Multiple"
+                                                    disabled={saving}
+                                                    style={{
+                                                      width: "100%",
+                                                      minHeight: 42,
+                                                      padding: "0 10px",
+                                                      border:
+                                                        "1px solid #c7dce2",
+                                                      borderRadius: 6,
+                                                      background: "#fff",
+                                                      color: "#244f60",
+                                                    }}
+                                                  >
+                                                    <option value="Multiple">
+                                                      Multiple
+                                                    </option>
+                                                  </select>
+                                                ) : (
+                                                  <input
+                                                    type="text"
+                                                    value={
+                                                      quotation.transporter ||
+                                                      ""
+                                                    }
+                                                    onChange={(event) =>
+                                                      handleQuotationChange(
+                                                        requirementIndex,
+                                                        quotationIndex,
+                                                        "transporter",
+                                                        event.target.value,
+                                                      )
+                                                    }
+                                                    placeholder="Enter transport name"
+                                                    disabled={saving}
+                                                  />
+                                                )}
+                                              </td>
+                                              <td
+                                                className="traffic-quotation-material"
+                                                title={String(
+                                                  requirementMaterial,
+                                                )}
+                                              >
+                                                {requirementMaterial}
+                                              </td>
+                                              {/* AMOUNT */}
+                                              <td>
+                                                {isExisting ? (
+                                                  <strong className="traffic-table-amount">
+                                                    {formatAmount(
+                                                      quotation.amount,
+                                                    )}
+                                                  </strong>
+                                                ) : (
+                                                  <div className="traffic-amount-input">
+                                                    <span>₹</span>
+                                                    <input
+                                                      type="number"
+                                                      min="0"
+                                                      step="0.01"
+                                                      value={
+                                                        quotation.amount ?? ""
+                                                      }
+                                                      onChange={(event) =>
+                                                        handleQuotationChange(
+                                                          requirementIndex,
+                                                          quotationIndex,
+                                                          "amount",
+                                                          event.target.value,
+                                                        )
+                                                      }
+                                                      placeholder={
+                                                        isCompanyTransporter(
+                                                          quotation.transporter,
+                                                        )
+                                                          ? "Optional for OTC"
+                                                          : "Enter amount"
+                                                      }
+                                                      disabled={saving}
+                                                    />
+                                                  </div>
+                                                )}
+                                              </td>
+                                              {/* ALLOCATED BY */}
+                                              <td>
+                                                {isExisting ? (
+                                                  <strong className="traffic-allocator-name">
+                                                    {quotation.quotedBy ||
+                                                      quotation.allocatedBy ||
+                                                      "—"}
+                                                  </strong>
+                                                ) : (
+                                                  <input
+                                                    type="text"
+                                                    className="traffic-allocator-input"
+                                                    value={
+                                                      quotation.allocatedBy ||
+                                                      ""
+                                                    }
+                                                    onChange={(event) =>
+                                                      handleQuotationChange(
+                                                        requirementIndex,
+                                                        quotationIndex,
+                                                        "allocatedBy",
+                                                        event.target.value,
+                                                      )
+                                                    }
+                                                    placeholder="Enter allocator name"
+                                                    disabled={saving}
+                                                  />
+                                                )}
+                                              </td>
+                                              {/* STATUS */}
+                                              <td>
+                                                {selectedQuotation ? (
+                                                  <span className="traffic-option-selected">
+                                                    <CheckCircle2 size={12} />
+                                                    Approved
+                                                  </span>
+                                                ) : isExisting ? (
+                                                  <span className="traffic-option-pending">
+                                                    {status === "Rejected"
+                                                      ? "Rejected"
+                                                      : approvedQuotationIds.size >
+                                                          0
+                                                        ? "Not Selected"
+                                                        : "Submitted"}
+                                                  </span>
+                                                ) : (
+                                                  <span className="traffic-option-pending">
+                                                    Pending
+                                                  </span>
+                                                )}
+                                              </td>
+                                              {/* DELETE */}
+                                              {!isApproved && (
+                                                <td>
+                                                  {quotation.isNew ? (
+                                                    <button
+                                                      type="button"
+                                                      className="traffic-delete-option"
+                                                      onClick={() =>
+                                                        handleRemoveTransport(
+                                                          requirementIndex,
+                                                          quotationIndex,
+                                                        )
+                                                      }
+                                                      title="Remove transport option"
+                                                      disabled={saving}
+                                                    >
+                                                      <Trash2 size={13} />
+                                                    </button>
+                                                  ) : (
+                                                    <span>—</span>
+                                                  )}
+                                                </td>
+                                              )}
+                                            </tr>
+                                          );
+                                        },
+                                      )
+                                    ) : (
+                                      <tr>
+                                        <td
+                                          colSpan={isApproved ? 6 : 7}
+                                          className="traffic-no-options"
+                                        >
+                                          No transport quotations.
+                                        </td>
+                                      </tr>
+                                    )}
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+                          </section>
+                        )}
+                        {transportView === "history" &&
+                          (replacementHistory.length > 0 ? (
+                            <section className="hx-history">
+                              <div className="hx-toolbar">
+                                <div
+                                  className="hx-filters"
+                                  role="group"
+                                  aria-label="Filter replacement history"
+                                >
+                                  {[
+                                    "All",
+                                    "Pending",
+                                    "Approved",
+                                    "Rejected",
+                                  ].map((filter) => (
+                                    <button
+                                      type="button"
+                                      key={filter}
+                                      aria-pressed={
+                                        (historyFilters[
+                                          requirement.requirementId
+                                        ] || "All") === filter
+                                      }
+                                      className={
+                                        (historyFilters[
+                                          requirement.requirementId
+                                        ] || "All") === filter
+                                          ? "active"
+                                          : ""
+                                      }
+                                      onClick={() =>
+                                        setHistoryFilters((previous) => ({
+                                          ...previous,
+                                          [requirement.requirementId]: filter,
+                                        }))
+                                      }
+                                    >
+                                      {filter}
+                                      <span>
+                                        {filter === "All"
+                                          ? replacementHistory.length
+                                          : replacementHistory.filter(
+                                              (item) => item.status === filter,
+                                            ).length}
+                                      </span>
+                                    </button>
+                                  ))}
+                                </div>
+                                <small>
+                                  Latest first · Click a row for details
+                                </small>
+                              </div>
+                              <div className="hx-columns" aria-hidden="true">
+                                <span>Requested on</span>
+                                <span>Transporter · Old → New</span>
+                                <span>Amount · Old → New</span>
+                                <span>Status</span>
+                                <span />
+                              </div>
+                              <div className="hx-rows">
+                                {replacementHistory
+                                  .filter(
+                                    (item) =>
+                                      (historyFilters[
+                                        requirement.requirementId
+                                      ] || "All") === "All" ||
+                                      item.status ===
+                                        historyFilters[
+                                          requirement.requirementId
+                                        ],
+                                  )
+                                  .map((item) => (
+                                    <details
+                                      key={item.requestId}
+                                      className="hx-row"
+                                    >
+                                      <summary>
+                                        <div className="hx-date">
+                                          <strong>
+                                            {item.requestedAt
+                                              ? new Date(
+                                                  item.requestedAt,
+                                                ).toLocaleDateString("en-IN", {
+                                                  day: "2-digit",
+                                                  month: "short",
+                                                  year: "numeric",
+                                                })
+                                              : "Date unavailable"}
+                                          </strong>
+                                          <small>
+                                            {item.requestedAt
+                                              ? new Date(
+                                                  item.requestedAt,
+                                                ).toLocaleTimeString("en-IN", {
+                                                  hour: "2-digit",
+                                                  minute: "2-digit",
+                                                })
+                                              : ""}
+                                          </small>
+                                        </div>
+                                        <div className="hx-route">
+                                          <span>
+                                            {item.currentTransporter || "—"}
+                                          </span>
+                                          <ChevronRight size={13} />
+                                          <strong>
+                                            {item.proposedTransporter || "—"}
+                                          </strong>
+                                        </div>
+                                        <div className="hx-amount">
+                                          <span>
+                                            {formatAmount(item.currentAmount)}
+                                          </span>
+                                          <ChevronRight size={12} />
+                                          <strong>
+                                            {formatAmount(item.proposedAmount)}
+                                          </strong>
+                                        </div>
+                                        <span
+                                          className={`hx-status ${String(item.status || "Pending").toLowerCase()}`}
+                                        >
+                                          {item.status || "Pending"}
+                                        </span>
+                                        <ChevronDown
+                                          size={14}
+                                          className="hx-chevron"
+                                        />
+                                      </summary>
+                                      <div className="hx-details">
+                                        <p className="hx-result">
+                                          {item.status === "Approved"
+                                            ? "Change approved and applied."
+                                            : item.status === "Rejected"
+                                              ? "Change rejected. The original transporter was kept."
+                                              : "Waiting for management approval. The current transporter is unchanged."}
+                                        </p>
+                                        <dl>
+                                          <div>
+                                            <dt>Requested by</dt>
+                                            <dd>
+                                              {item.requestedBy ||
+                                                "Traffic Team"}
+                                            </dd>
+                                          </div>
+                                          <div>
+                                            <dt>Vehicle quantity</dt>
+                                            <dd>{item.quantity || 1}</dd>
+                                          </div>
+                                          <div>
+                                            <dt>Reviewed by</dt>
+                                            <dd>
+                                              {item.status === "Pending"
+                                                ? "Awaiting review"
+                                                : item.reviewedBy ||
+                                                  "Management"}
+                                            </dd>
+                                          </div>
+                                          <div>
+                                            <dt>Decision on</dt>
+                                            <dd>
+                                              {item.reviewedAt
+                                                ? new Date(
+                                                    item.reviewedAt,
+                                                  ).toLocaleString("en-IN", {
+                                                    day: "2-digit",
+                                                    month: "short",
+                                                    year: "numeric",
+                                                    hour: "2-digit",
+                                                    minute: "2-digit",
+                                                  })
+                                                : "—"}
+                                            </dd>
+                                          </div>
+                                          <div className="hx-wide">
+                                            <dt>Reason</dt>
+                                            <dd>{item.reason || "—"}</dd>
+                                          </div>
+                                          {item.selectedVehicleNumbers?.length >
+                                            0 && (
+                                            <div className="hx-wide">
+                                              <dt>Vehicles</dt>
+                                              <dd>
+                                                {item.selectedVehicleNumbers.join(
+                                                  ", ",
+                                                )}
+                                              </dd>
+                                            </div>
+                                          )}
+                                          {item.remarks && (
+                                            <div>
+                                              <dt>Traffic remarks</dt>
+                                              <dd>{item.remarks}</dd>
+                                            </div>
+                                          )}
+                                          {item.reviewRemarks && (
+                                            <div>
+                                              <dt>Management remarks</dt>
+                                              <dd>{item.reviewRemarks}</dd>
+                                            </div>
+                                          )}
+                                        </dl>
+                                      </div>
+                                    </details>
+                                  ))}
+                              </div>
+                              {!replacementHistory.some(
+                                (item) =>
+                                  (historyFilters[requirement.requirementId] ||
+                                    "All") === "All" ||
+                                  item.status ===
+                                    historyFilters[requirement.requirementId],
+                              ) && (
+                                <div className="hx-empty">
+                                  No{" "}
+                                  {String(
+                                    historyFilters[requirement.requirementId] ||
+                                      "",
+                                  ).toLowerCase()}{" "}
+                                  requests.
+                                </div>
+                              )}
+                            </section>
+                          ) : (
+                            <div className="tv-empty">
+                              <RefreshCw size={23} />
+                              <strong>No changes requested</strong>
+                              <span>
+                                Future requests and approval decisions will
+                                appear here.
+                              </span>
+                            </div>
+                          ))}
+                      </section>
+                    );
+                  })}
               {/* =================================================
                   FOOTER
               ================================================= */}
-              {transportView==="quotes" && requirementForms.some(item=>item.quotations?.some(quotation=>quotation.isNew)) && <div className="traffic-quotation-footer">
-                <span>
-                  Traffic Team submits transporter quotations only. Management
-                  will confirm the suitable transporter and amount.
-                </span>
-                <button
-                  type="button"
-                  className="traffic-submit-btn"
-                  disabled={saving}
-                  onClick={handleRequestApproval}
-                >
-                  <Send size={14} />
-                  {saving ? "Submitting..." : "Submit Quotations"}
-                </button>
-              </div>}
+              {transportView === "quotes" &&
+                requirementForms.some((item) =>
+                  item.quotations?.some((quotation) => quotation.isNew),
+                ) && (
+                  <div className="traffic-quotation-footer">
+                    <span>
+                      Traffic Team submits transporter quotations only.
+                      Management will confirm the suitable transporter and
+                      amount.
+                    </span>
+                    <button
+                      type="button"
+                      className="traffic-submit-btn"
+                      disabled={saving}
+                      onClick={handleRequestApproval}
+                    >
+                      <Send size={14} />
+                      {saving ? "Submitting..." : "Submit Quotations"}
+                    </button>
+                  </div>
+                )}
             </div>
           </div>
         </div>
       )}
-      {transportReplacementForm && createPortal(
-        <div className="tr-change-overlay" role="presentation" onMouseDown={event=>{if(event.target===event.currentTarget)closeTransportReplacement();}}>
-          <form className="tr-change" role="dialog" aria-modal="true" aria-labelledby="tr-change-title" onSubmit={event=>{event.preventDefault();handleTransportReplacementRequest();}} onKeyDown={event=>{if(event.key==="Escape"){event.stopPropagation();closeTransportReplacement();} if(event.key==="Tab"){const fields=Array.from(event.currentTarget.querySelectorAll('button:not([disabled]),input:not([disabled]),textarea:not([disabled])'));const first=fields[0],last=fields[fields.length-1];if(event.shiftKey && document.activeElement===first){event.preventDefault();last?.focus();}else if(!event.shiftKey && document.activeElement===last){event.preventDefault();first?.focus();}}}}>
-            <header className="tr-change-head"><div><span>TRANSPORT REQUEST</span><h3 id="tr-change-title">Change transporter</h3><p>The change takes effect after management approval.</p></div><button type="button" className="tr-change-close" aria-label="Close change transporter" onClick={closeTransportReplacement} disabled={saving}><X size={17}/></button></header>
-            <div className="tr-change-body">
-              <section className="tr-change-current" aria-label="Current approved transport"><div className="tr-change-current-main"><span className="tr-change-truck"><Truck size={19}/></span><div><small>CURRENT TRANSPORTER</small><strong>{transportReplacementForm.currentTransporter || "—"}</strong></div></div><div><small>APPROVED AMOUNT</small><strong>{formatAmount(transportReplacementForm.currentAmount)}</strong></div><div><small>VEHICLES</small><strong>{transportReplacementForm.currentQuantity === "Multiple" ? "Multiple" : `${transportReplacementForm.currentQuantity} vehicle${Number(transportReplacementForm.currentQuantity)===1?"":"s"}`}</strong></div></section>
-              {Number(transportReplacementForm.currentQuantity) === 1 ? <div className="tr-change-context"><Truck size={14}/><span>{transportReplacementForm.availableVehicles.length ? `Vehicle ${transportReplacementForm.availableVehicles[0].vehicleNumber} will be marked Replaced after approval. You can then allocate the new vehicle.` : "No vehicle assigned yet. This request changes the approved transporter for this vehicle."}</span></div> : <section className="tr-change-group"><div className="tr-change-group-head"><div><h4>Choose the replacement quantity</h4><p>Other vehicles stay with the current transporter.</p></div><label><span>Quantity</span><input type="number" min="1" step="1" required max={transportReplacementForm.currentQuantity === "Multiple" ? undefined : transportReplacementForm.currentQuantity} value={transportReplacementForm.quantity} disabled={saving} onChange={event=>handleTransportReplacementChange("quantity",event.target.value)}/></label></div>
-                {transportReplacementForm.availableVehicles.length>0 && <div className="tr-change-vehicles"><span>Select any assigned vehicles being replaced</span>{transportReplacementForm.availableVehicles.map(vehicle=><label key={vehicle.allocationId}><input type="checkbox" disabled={saving} checked={transportReplacementForm.selectedAllocationIds.includes(vehicle.allocationId)} onChange={event=>handleTransportReplacementChange("selectedAllocationIds",event.target.checked?[...transportReplacementForm.selectedAllocationIds,vehicle.allocationId]:transportReplacementForm.selectedAllocationIds.filter(id=>id!==vehicle.allocationId))}/><strong>{vehicle.vehicleNumber}</strong></label>)}</div>}
-                <p className="tr-change-group-note">{transportReplacementForm.currentQuantity === "Multiple" ? "Multiple allocation remains available." : `${Math.max(0,Number(transportReplacementForm.currentQuantity)-Number(transportReplacementForm.quantity||0))} remain with the current transporter.`} {transportReplacementForm.selectedAllocationIds.length} assigned vehicle(s) selected.</p>
-              </section>}
-              <section className="tr-change-details"><div className="tr-change-section"><span>NEW TRANSPORT DETAILS</span><small>* Required</small></div><div className="tr-change-grid">
-                <label><span>New transporter <b>*</b></span><input autoFocus required value={transportReplacementForm.proposedTransporter} disabled={saving} onChange={event=>handleTransportReplacementChange("proposedTransporter",event.target.value)} placeholder="Enter transporter name"/></label>
-                <label><span>New quotation amount {isCompanyTransporter(transportReplacementForm.proposedTransporter)?<small>(optional for OTC)</small>:<b>*</b>}</span><div className="tr-change-money"><span>₹</span><input type="number" min="0" step="0.01" required={!isCompanyTransporter(transportReplacementForm.proposedTransporter)} value={transportReplacementForm.proposedAmount} disabled={saving} onChange={event=>handleTransportReplacementChange("proposedAmount",event.target.value)} placeholder="Enter amount"/></div></label>
-                <label><span>Requested by</span><input value={transportReplacementForm.requestedBy} disabled={saving} onChange={event=>handleTransportReplacementChange("requestedBy",event.target.value)} placeholder="Your name"/></label>
-                <label><span>Reason for change <b>*</b></span><input required value={transportReplacementForm.reason} disabled={saving} onChange={event=>handleTransportReplacementChange("reason",event.target.value)} placeholder="e.g. Vehicle unavailable"/></label>
-                <label className="tr-change-wide"><span>Additional remarks <small>(optional)</small></span><textarea rows={2} value={transportReplacementForm.remarks} disabled={saving} onChange={event=>handleTransportReplacementChange("remarks",event.target.value)} placeholder="Add any details for management"/></label>
-              </div></section>
-              {Number(transportReplacementForm.currentQuantity)===1 && String(transportReplacementForm.proposedAmount??"").trim()!=="" && Number.isFinite(Number(transportReplacementForm.proposedAmount)) && Number(transportReplacementForm.proposedAmount)>=0 && <div className="tr-change-impact"><div><span>Current amount</span><strong>{formatAmount(transportReplacementForm.currentAmount)}</strong></div><span className="tr-change-arrow">→</span><div><span>New amount</span><strong>{formatAmount(transportReplacementForm.proposedAmount)}</strong></div><span className={`tr-change-difference ${Number(transportReplacementForm.proposedAmount)>Number(transportReplacementForm.currentAmount)?"increase":""}`}>{Number(transportReplacementForm.proposedAmount)===Number(transportReplacementForm.currentAmount)?"No amount change":`${formatAmount(Math.abs(Number(transportReplacementForm.proposedAmount)-Number(transportReplacementForm.currentAmount)))} ${Number(transportReplacementForm.proposedAmount)>Number(transportReplacementForm.currentAmount)?"increase":"less"}`}</span></div>}
-            </div>
-            <footer className="tr-change-footer"><span>Current approval stays active until this request is approved.</span><div><button type="button" className="tr-change-cancel" disabled={saving} onClick={closeTransportReplacement}>Cancel</button><button type="submit" className="tr-change-submit" disabled={saving}><Send size={14}/>{saving?"Sending...":"Send for approval"}</button></div></footer>
-          </form>
-        </div>,
-        document.body
-      )}
+      {transportReplacementForm &&
+        createPortal(
+          <div
+            className="tr-change-overlay"
+            role="presentation"
+            onMouseDown={(event) => {
+              if (event.target === event.currentTarget)
+                closeTransportReplacement();
+            }}
+          >
+            <form
+              className="tr-change"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="tr-change-title"
+              onSubmit={(event) => {
+                event.preventDefault();
+                handleTransportReplacementRequest();
+              }}
+              onKeyDown={(event) => {
+                if (event.key === "Escape") {
+                  event.stopPropagation();
+                  closeTransportReplacement();
+                }
+                if (event.key === "Tab") {
+                  const fields = Array.from(
+                    event.currentTarget.querySelectorAll(
+                      "button:not([disabled]),input:not([disabled]),textarea:not([disabled])",
+                    ),
+                  );
+                  const first = fields[0],
+                    last = fields[fields.length - 1];
+                  if (event.shiftKey && document.activeElement === first) {
+                    event.preventDefault();
+                    last?.focus();
+                  } else if (
+                    !event.shiftKey &&
+                    document.activeElement === last
+                  ) {
+                    event.preventDefault();
+                    first?.focus();
+                  }
+                }
+              }}
+            >
+              <header className="tr-change-head">
+                <div>
+                  <span>TRANSPORT REQUEST</span>
+                  <h3 id="tr-change-title">Change transporter</h3>
+                  <p>The change takes effect after management approval.</p>
+                </div>
+                <button
+                  type="button"
+                  className="tr-change-close"
+                  aria-label="Close change transporter"
+                  onClick={closeTransportReplacement}
+                  disabled={saving}
+                >
+                  <X size={17} />
+                </button>
+              </header>
+              <div className="tr-change-body">
+                <section
+                  className="tr-change-current"
+                  aria-label="Current approved transport"
+                >
+                  <div className="tr-change-current-main">
+                    <span className="tr-change-truck">
+                      <Truck size={19} />
+                    </span>
+                    <div>
+                      <small>CURRENT TRANSPORTER</small>
+                      <strong>
+                        {transportReplacementForm.currentTransporter || "—"}
+                      </strong>
+                    </div>
+                  </div>
+                  <div>
+                    <small>APPROVED AMOUNT</small>
+                    <strong>
+                      {formatAmount(transportReplacementForm.currentAmount)}
+                    </strong>
+                  </div>
+                  <div>
+                    <small>VEHICLES</small>
+                    <strong>
+                      {transportReplacementForm.currentQuantity === "Multiple"
+                        ? "Multiple"
+                        : `${transportReplacementForm.currentQuantity} vehicle${Number(transportReplacementForm.currentQuantity) === 1 ? "" : "s"}`}
+                    </strong>
+                  </div>
+                </section>
+                {Number(transportReplacementForm.currentQuantity) === 1 ? (
+                  <div className="tr-change-context">
+                    <Truck size={14} />
+                    <span>
+                      {transportReplacementForm.availableVehicles.length
+                        ? `Vehicle ${transportReplacementForm.availableVehicles[0].vehicleNumber} will be marked Replaced after approval. You can then allocate the new vehicle.`
+                        : "No vehicle assigned yet. This request changes the approved transporter for this vehicle."}
+                    </span>
+                  </div>
+                ) : (
+                  <section className="tr-change-group">
+                    <div className="tr-change-group-head">
+                      <div>
+                        <h4>Choose the replacement quantity</h4>
+                        <p>Other vehicles stay with the current transporter.</p>
+                      </div>
+                      <label>
+                        <span>Quantity</span>
+                        <input
+                          type="number"
+                          min="1"
+                          step="1"
+                          required
+                          max={
+                            transportReplacementForm.currentQuantity ===
+                            "Multiple"
+                              ? undefined
+                              : transportReplacementForm.currentQuantity
+                          }
+                          value={transportReplacementForm.quantity}
+                          disabled={saving}
+                          onChange={(event) =>
+                            handleTransportReplacementChange(
+                              "quantity",
+                              event.target.value,
+                            )
+                          }
+                        />
+                      </label>
+                    </div>
+                    {transportReplacementForm.availableVehicles.length > 0 && (
+                      <div className="tr-change-vehicles">
+                        <span>Select any assigned vehicles being replaced</span>
+                        {transportReplacementForm.availableVehicles.map(
+                          (vehicle) => (
+                            <label key={vehicle.allocationId}>
+                              <input
+                                type="checkbox"
+                                disabled={saving}
+                                checked={transportReplacementForm.selectedAllocationIds.includes(
+                                  vehicle.allocationId,
+                                )}
+                                onChange={(event) =>
+                                  handleTransportReplacementChange(
+                                    "selectedAllocationIds",
+                                    event.target.checked
+                                      ? [
+                                          ...transportReplacementForm.selectedAllocationIds,
+                                          vehicle.allocationId,
+                                        ]
+                                      : transportReplacementForm.selectedAllocationIds.filter(
+                                          (id) => id !== vehicle.allocationId,
+                                        ),
+                                  )
+                                }
+                              />
+                              <strong>{vehicle.vehicleNumber}</strong>
+                            </label>
+                          ),
+                        )}
+                      </div>
+                    )}
+                    <p className="tr-change-group-note">
+                      {transportReplacementForm.currentQuantity === "Multiple"
+                        ? "Multiple allocation remains available."
+                        : `${Math.max(0, Number(transportReplacementForm.currentQuantity) - Number(transportReplacementForm.quantity || 0))} remain with the current transporter.`}{" "}
+                      {transportReplacementForm.selectedAllocationIds.length}{" "}
+                      assigned vehicle(s) selected.
+                    </p>
+                  </section>
+                )}
+                <section className="tr-change-details">
+                  <div className="tr-change-section">
+                    <span>NEW TRANSPORT DETAILS</span>
+                    <small>* Required</small>
+                  </div>
+                  <div className="tr-change-grid">
+                    <label>
+                      <span>
+                        New transporter <b>*</b>
+                      </span>
+                      <input
+                        autoFocus
+                        required
+                        value={transportReplacementForm.proposedTransporter}
+                        disabled={saving}
+                        onChange={(event) =>
+                          handleTransportReplacementChange(
+                            "proposedTransporter",
+                            event.target.value,
+                          )
+                        }
+                        placeholder="Enter transporter name"
+                      />
+                    </label>
+                    <label>
+                      <span>
+                        New quotation amount{" "}
+                        {isCompanyTransporter(
+                          transportReplacementForm.proposedTransporter,
+                        ) ? (
+                          <small>(optional for OTC)</small>
+                        ) : (
+                          <b>*</b>
+                        )}
+                      </span>
+                      <div className="tr-change-money">
+                        <span>₹</span>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          required={
+                            !isCompanyTransporter(
+                              transportReplacementForm.proposedTransporter,
+                            )
+                          }
+                          value={transportReplacementForm.proposedAmount}
+                          disabled={saving}
+                          onChange={(event) =>
+                            handleTransportReplacementChange(
+                              "proposedAmount",
+                              event.target.value,
+                            )
+                          }
+                          placeholder="Enter amount"
+                        />
+                      </div>
+                    </label>
+                    <label>
+                      <span>Requested by</span>
+                      <input
+                        value={transportReplacementForm.requestedBy}
+                        disabled={saving}
+                        onChange={(event) =>
+                          handleTransportReplacementChange(
+                            "requestedBy",
+                            event.target.value,
+                          )
+                        }
+                        placeholder="Your name"
+                      />
+                    </label>
+                    <label>
+                      <span>
+                        Reason for change <b>*</b>
+                      </span>
+                      <input
+                        required
+                        value={transportReplacementForm.reason}
+                        disabled={saving}
+                        onChange={(event) =>
+                          handleTransportReplacementChange(
+                            "reason",
+                            event.target.value,
+                          )
+                        }
+                        placeholder="e.g. Vehicle unavailable"
+                      />
+                    </label>
+                    <label className="tr-change-wide">
+                      <span>
+                        Additional remarks <small>(optional)</small>
+                      </span>
+                      <textarea
+                        rows={2}
+                        value={transportReplacementForm.remarks}
+                        disabled={saving}
+                        onChange={(event) =>
+                          handleTransportReplacementChange(
+                            "remarks",
+                            event.target.value,
+                          )
+                        }
+                        placeholder="Add any details for management"
+                      />
+                    </label>
+                  </div>
+                </section>
+                {Number(transportReplacementForm.currentQuantity) === 1 &&
+                  String(
+                    transportReplacementForm.proposedAmount ?? "",
+                  ).trim() !== "" &&
+                  Number.isFinite(
+                    Number(transportReplacementForm.proposedAmount),
+                  ) &&
+                  Number(transportReplacementForm.proposedAmount) >= 0 && (
+                    <div className="tr-change-impact">
+                      <div>
+                        <span>Current amount</span>
+                        <strong>
+                          {formatAmount(transportReplacementForm.currentAmount)}
+                        </strong>
+                      </div>
+                      <span className="tr-change-arrow">→</span>
+                      <div>
+                        <span>New amount</span>
+                        <strong>
+                          {formatAmount(
+                            transportReplacementForm.proposedAmount,
+                          )}
+                        </strong>
+                      </div>
+                      <span
+                        className={`tr-change-difference ${Number(transportReplacementForm.proposedAmount) > Number(transportReplacementForm.currentAmount) ? "increase" : ""}`}
+                      >
+                        {Number(transportReplacementForm.proposedAmount) ===
+                        Number(transportReplacementForm.currentAmount)
+                          ? "No amount change"
+                          : `${formatAmount(Math.abs(Number(transportReplacementForm.proposedAmount) - Number(transportReplacementForm.currentAmount)))} ${Number(transportReplacementForm.proposedAmount) > Number(transportReplacementForm.currentAmount) ? "increase" : "less"}`}
+                      </span>
+                    </div>
+                  )}
+              </div>
+              <footer className="tr-change-footer">
+                <span>
+                  Current approval stays active until this request is approved.
+                </span>
+                <div>
+                  <button
+                    type="button"
+                    className="tr-change-cancel"
+                    disabled={saving}
+                    onClick={closeTransportReplacement}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="tr-change-submit"
+                    disabled={saving}
+                  >
+                    <Send size={14} />
+                    {saving ? "Sending..." : "Send for approval"}
+                  </button>
+                </div>
+              </footer>
+            </form>
+          </div>,
+          document.body,
+        )}
     </div>
   );
 };

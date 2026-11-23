@@ -675,14 +675,18 @@ const recordAmountChanges = (trip, before, updatedBy, source) => {
     trip.markModified("amountChangeHistory");
   }
 };
+
 const saveOrderFinalization = async (req, res) => {
   try {
     const result = await getTripDocument(req.params.id);
+
     if (result.error) {
       return sendError(res, result.status, result.error);
     }
+
     const trip = result.trip;
     const amountBefore = trip.toObject();
+
     if (trip.orderApproval?.status === "Approved") {
       return sendError(
         res,
@@ -690,27 +694,41 @@ const saveOrderFinalization = async (req, res) => {
         "Approved orders cannot be changed from Order Finalization.",
       );
     }
+
     const quotedRateRaw = req.body.quotedRate;
     const finalRateRaw = req.body.finalRate;
+
     const movementKey = cleanString(trip.movementType)
       .toLowerCase()
       .replace(/[\s_-]+/g, "");
-    // Line Movement is the renamed WTG Movement and uses the same
-    // existing per-vehicle amount workflow. Keep Intercarting unchanged.
+
+    // Existing movement conditions remain unchanged.
     const isWtg = ["wtgmovement", "linemovement"].includes(movementKey);
     const isIntercarting = movementKey === "intercarting";
-    const usesVehicleAmounts = isWtg || isIntercarting;
+
+    // Added only for Project Movement.
+    const isProjectMovement = movementKey === "projectmovement";
+
+    // Existing movements plus Project Movement.
+    const usesVehicleAmounts =
+      isWtg || isIntercarting || isProjectMovement;
+
     const incomingVehicleAmounts = req.body.vehicleFinalAmounts;
+
     let quotedRate =
       quotedRateRaw === "" ||
       quotedRateRaw === null ||
       quotedRateRaw === undefined
         ? null
         : Number(quotedRateRaw);
+
     let finalRate =
-      finalRateRaw === "" || finalRateRaw === null || finalRateRaw === undefined
+      finalRateRaw === "" ||
+      finalRateRaw === null ||
+      finalRateRaw === undefined
         ? null
         : Number(finalRateRaw);
+
     if (
       quotedRate !== null &&
       (!Number.isFinite(quotedRate) || quotedRate < 0)
@@ -721,60 +739,144 @@ const saveOrderFinalization = async (req, res) => {
         "Quoted Rate must be a valid positive number.",
       );
     }
-    if (finalRate !== null && (!Number.isFinite(finalRate) || finalRate < 0)) {
-      return sendError(res, 400, "Final Rate must be a valid positive number.");
+
+    if (
+      finalRate !== null &&
+      (!Number.isFinite(finalRate) || finalRate < 0)
+    ) {
+      return sendError(
+        res,
+        400,
+        "Final Rate must be a valid positive number.",
+      );
     }
+
     if (usesVehicleAmounts) {
-      if (cleanString(trip.enquiryApproval?.status).toLowerCase() !== "sent") {
-        return sendError(res, 409, "Management must send all vehicle quoted amounts first.");
+      if (
+        cleanString(trip.enquiryApproval?.status).toLowerCase() !== "sent"
+      ) {
+        return sendError(
+          res,
+          409,
+          "Management must send all vehicle quoted amounts first.",
+        );
       }
+
       const requirements = trip.vehicleRequirements || [];
       const managementTotal = Number(trip.enquiryApproval?.totalAmount);
-      if (!Number.isFinite(managementTotal) || managementTotal <= 0 ||
-          !requirements.every((vehicle) => Number.isFinite(Number(vehicle.approvalAmount)) &&
-            Number(vehicle.approvalAmount) > 0) ||
-          Math.abs(requirements.reduce((sum, vehicle) => sum + Number(vehicle.approvalAmount), 0) - managementTotal) > 0.01) {
-        return sendError(res, 409, "Management vehicle quoted amounts are incomplete.");
+
+      if (
+        !Number.isFinite(managementTotal) ||
+        managementTotal <= 0 ||
+        !requirements.every(
+          (vehicle) =>
+            Number.isFinite(Number(vehicle.approvalAmount)) &&
+            Number(vehicle.approvalAmount) > 0,
+        ) ||
+        Math.abs(
+          requirements.reduce(
+            (sum, vehicle) => sum + Number(vehicle.approvalAmount),
+            0,
+          ) - managementTotal,
+        ) > 0.01
+      ) {
+        return sendError(
+          res,
+          409,
+          "Management vehicle quoted amounts are incomplete.",
+        );
       }
+
       quotedRate = managementTotal;
-      if (!requirements.length || !Array.isArray(incomingVehicleAmounts) ||
-          incomingVehicleAmounts.length !== requirements.length) {
-        return sendError(res, 400, "Provide a customer final amount for every vehicle.");
+
+      if (
+        !requirements.length ||
+        !Array.isArray(incomingVehicleAmounts) ||
+        incomingVehicleAmounts.length !== requirements.length
+      ) {
+        return sendError(
+          res,
+          400,
+          "Provide a customer final amount for every vehicle.",
+        );
       }
+
       const supplied = new Map();
+
       for (const item of incomingVehicleAmounts) {
         const key = cleanString(item?.requirementId);
         const amount = Number(item?.amount);
-        if (!key || supplied.has(key) || item?.amount === "" || item?.amount == null ||
-            !Number.isFinite(amount) || amount < 0 || Math.abs(Math.round(amount * 100) - amount * 100) > 0.000001) {
-          return sendError(res, 400, "Every vehicle needs a valid customer final amount (up to two decimals).");
+
+        if (
+          !key ||
+          supplied.has(key) ||
+          item?.amount === "" ||
+          item?.amount == null ||
+          !Number.isFinite(amount) ||
+          amount < 0 ||
+          Math.abs(Math.round(amount * 100) - amount * 100) >
+            0.000001
+        ) {
+          return sendError(
+            res,
+            400,
+            "Every vehicle needs a valid customer final amount (up to two decimals).",
+          );
         }
+
         supplied.set(key, amount);
       }
+
       let totalPaise = 0;
+
       for (const vehicle of requirements) {
         const key = cleanString(vehicle.requirementId);
+
         if (!key || !supplied.has(key)) {
-          return sendError(res, 400, "Customer final amount is missing for a vehicle requirement.");
+          return sendError(
+            res,
+            400,
+            "Customer final amount is missing for a vehicle requirement.",
+          );
         }
+
         totalPaise += Math.round(supplied.get(key) * 100);
       }
+
       if (totalPaise <= 0) {
-        return sendError(res, 400, "Total Customer Final Amount must be greater than zero.");
+        return sendError(
+          res,
+          400,
+          "Total Customer Final Amount must be greater than zero.",
+        );
       }
+
       finalRate = totalPaise / 100;
+
       requirements.forEach((vehicle) => {
-        vehicle.finalAmount = supplied.get(cleanString(vehicle.requirementId));
+        vehicle.finalAmount = supplied.get(
+          cleanString(vehicle.requirementId),
+        );
       });
+
       trip.markModified("vehicleRequirements");
     }
+
     const commercialTerms = cleanString(req.body.commercialTerms);
-    const deliveryCommitments = cleanString(req.body.deliveryCommitments);
+
+    const deliveryCommitments = cleanString(
+      req.body.deliveryCommitments,
+    );
+
     const clientConfirmationNotes = cleanString(
       req.body.clientConfirmationNotes,
     );
-    const updatedBy = cleanString(req.body.updatedBy) || "Key Account";
+
+    const updatedBy =
+      cleanString(req.body.updatedBy) || "Key Account";
+
     const requestApproval = req.body.requestApproval === true;
+
     if (requestApproval) {
       if (quotedRate === null) {
         return sendError(
@@ -783,6 +885,7 @@ const saveOrderFinalization = async (req, res) => {
           "Quoted Rate is required before requesting approval.",
         );
       }
+
       if (finalRate === null) {
         return sendError(
           res,
@@ -790,6 +893,7 @@ const saveOrderFinalization = async (req, res) => {
           "Final Rate is required before requesting approval.",
         );
       }
+
       if (!commercialTerms) {
         return sendError(
           res,
@@ -797,6 +901,7 @@ const saveOrderFinalization = async (req, res) => {
           "Commercial Terms & Payment SLAs are required before requesting approval.",
         );
       }
+
       if (!deliveryCommitments) {
         return sendError(
           res,
@@ -805,6 +910,7 @@ const saveOrderFinalization = async (req, res) => {
         );
       }
     }
+
     trip.orderFinalization = {
       quotedRate,
       finalRate,
@@ -814,7 +920,9 @@ const saveOrderFinalization = async (req, res) => {
       updatedBy,
       updatedAt: new Date(),
     };
+
     trip.markModified("orderFinalization");
+
     if (requestApproval) {
       /*
        * NEW APPROVAL CYCLE:
@@ -828,13 +936,23 @@ const saveOrderFinalization = async (req, res) => {
         remarks: "",
         rejectionReason: "",
       };
+
       trip.status = "Pending";
       trip.stage = "Order Finalization";
       trip.markModified("orderApproval");
     }
-    recordAmountChanges(trip, amountBefore, updatedBy, "Order Finalization");
+
+    recordAmountChanges(
+      trip,
+      amountBefore,
+      updatedBy,
+      "Order Finalization",
+    );
+
     await trip.save();
+
     const updatedTrip = await TripOrder.findById(trip._id).lean();
+
     return sendSuccess(
       res,
       200,
@@ -845,9 +963,16 @@ const saveOrderFinalization = async (req, res) => {
     );
   } catch (error) {
     console.error("Save Order Finalization Error:", error);
-    return sendError(res, 500, "Unable to save order finalization.", error);
+
+    return sendError(
+      res,
+      500,
+      "Unable to save order finalization.",
+      error,
+    );
   }
 };
+
 /* =========================================================
    SAVE / DOWNLOAD PO DOCUMENT
 ========================================================= */
@@ -925,9 +1050,12 @@ const savePoDocument = async (req, res) => {
         cleanString(trip?.stage).toLowerCase(),
       );
     if (!alreadyReleasedToTracking) {
-      trip.stage = vendorApprovalCompleted
-        ? "Order Placed"
-        : "Vendor Finalization";
+      const isProjectMovement = cleanString(trip.movementType).toLowerCase().replace(/[\s_-]+/g, "") === "projectmovement";
+      trip.stage = isProjectMovement
+        ? "Vehicle Allocation Request"
+        : vendorApprovalCompleted
+          ? "Order Placed"
+          : "Vendor Finalization";
     }
     const hadExistingPO = Boolean(
       cleanString(beforePo?.poNumber) || cleanString(beforePo?.fileName),
@@ -3298,15 +3426,19 @@ const placeOrder = async (req, res) => {
          from the Tracking stage.
        - allocatedVehicles is intentionally NOT checked here.
     ===================================================== */
+    const isProjectMovement = cleanString(trip.movementType).toLowerCase().replace(/[\s_-]+/g, "") === "projectmovement";
+    const approvedProjectRequests = (trip.projectVehicleAllocationRequests || []).filter((request) => request.status === "Approved");
     const approvedConfirmations = getConfirmations(trip).filter(
       (confirmation) =>
         cleanString(confirmation?.status).trim().toLowerCase() === "approved",
     );
-    if (approvedConfirmations.length === 0) {
+    if (isProjectMovement ? approvedProjectRequests.length === 0 : approvedConfirmations.length === 0) {
       return sendError(
         res,
         409,
-        "Confirm at least one transporter before placing the order.",
+        isProjectMovement
+          ? "Management must approve at least one Project vehicle allocation request before placing the order."
+          : "Confirm at least one transporter before placing the order.",
       );
     }
     /* =====================================================
@@ -3345,7 +3477,9 @@ const placeOrder = async (req, res) => {
     return sendSuccess(
       res,
       200,
-      `Order placed successfully with ${approvedConfirmations.length} confirmed transporter quotation(s) and moved to Tracking.`,
+      isProjectMovement
+        ? `Order placed successfully with ${approvedProjectRequests.length} approved Project vehicle allocation request(s) and moved to Tracking.`
+        : `Order placed successfully with ${approvedConfirmations.length} confirmed transporter quotation(s) and moved to Tracking.`,
       updatedTrip,
     );
   } catch (error) {
@@ -4804,6 +4938,282 @@ const deleteCraneDocument = async (req, res) => {
   }
 };
 
+
+/* =========================================================
+   PROJECT MOVEMENT - PARTIAL VEHICLE ALLOCATION REQUESTS
+   This isolated workflow does not alter the standard quotation flow.
+========================================================= */
+const isProjectMovementOrder = (trip) =>
+  cleanString(trip?.movementType || trip?.movement || trip?.movementName)
+    .toLowerCase()
+    .replace(/[\s_-]+/g, "") === "projectmovement";
+
+const createProjectVehicleAllocationRequest = async (req, res) => {
+  try {
+    const result = await getTripDocument(req.params.id);
+    if (result.error) return sendError(res, result.status, result.error);
+    const trip = result.trip;
+    if (!isProjectMovementOrder(trip)) return sendError(res, 409, "This allocation request is available only for Project Movement.");
+    if (trip.orderApproval?.status !== "Approved") return sendError(res, 409, "Management must approve the order before requesting vehicles.");
+    // PO document is optional for Project Movement vehicle allocation requests.
+    const requirementId = cleanString(req.body.requirementId);
+    const requestedQuantity = Number(req.body.requestedQuantity);
+    const customerRequiredDate = cleanString(req.body.customerRequiredDate);
+    // Customer required time is optional for Project Movement.
+    const customerRequiredTime = cleanString(req.body.customerRequiredTime);
+    const requirement = findRequirement(trip, requirementId);
+    if (!requirement) return sendError(res, 404, "Vehicle requirement not found.");
+    if (!Number.isInteger(requestedQuantity) || requestedQuantity < 1) return sendError(res, 400, "Enter a valid vehicle quantity.");
+    const dateParts = customerRequiredDate.split("-").map(Number);
+    const [requiredYear, requiredMonth, requiredDay] = dateParts;
+    const parsedRequiredDate = new Date(Date.UTC(requiredYear, requiredMonth - 1, requiredDay));
+    const validRequiredDate = /^\d{4}-\d{2}-\d{2}$/.test(customerRequiredDate) &&
+      dateParts.length === 3 &&
+      parsedRequiredDate.getUTCFullYear() === requiredYear &&
+      parsedRequiredDate.getUTCMonth() === requiredMonth - 1 &&
+      parsedRequiredDate.getUTCDate() === requiredDay;
+    const validRequiredTime =
+      !customerRequiredTime || /^([01]\d|2[0-3]):[0-5]\d$/.test(customerRequiredTime);
+    if (!validRequiredDate || !validRequiredTime) {
+      return sendError(res, 400, "Enter a valid customer required date.");
+    }
+    const required = Math.max(0, Math.floor(toNumber(requirement.quantity, 0)));
+    const activeStatuses = ["Pending Traffic", "Pending Management", "Approved"];
+    const alreadyRequested = (trip.projectVehicleAllocationRequests || [])
+      .filter((item) => item.requirementId === requirementId && activeStatuses.includes(item.status))
+      .reduce((sum, item) => sum + Math.max(0, Number(item.requestedQuantity) || 0), 0);
+    if (requestedQuantity > required - alreadyRequested) return sendError(res, 409, `Only ${Math.max(0, required - alreadyRequested)} vehicle(s) remain available for this requirement.`);
+    // Project Movement: create one independent request record per vehicle.
+    // This gives every vehicle its own request ID, vendor quotation and approval.
+    const requestedBy =
+      cleanString(req.body.requestedBy) ||
+      cleanString(req.user?.username) ||
+      "Key Account";
+    const requestedAt = new Date();
+    const createdRequests = Array.from({ length: requestedQuantity }, () => ({
+      requestId: makeId("PVAR"),
+      requirementId,
+      requestedQuantity: 1,
+      customerRequiredDate,
+      customerRequiredTime,
+      requestedBy,
+      requestedAt,
+      status: "Pending Traffic",
+    }));
+    trip.projectVehicleAllocationRequests.push(...createdRequests);
+    const alreadyInTracking = cleanString(trip?.orderPlaced?.status).toLowerCase() === "completed" || cleanString(trip?.stage).toLowerCase() === "tracking";
+    if (!alreadyInTracking) trip.stage = "Vehicle Allocation Request";
+    trip.markModified("projectVehicleAllocationRequests");
+    await trip.save();
+    return sendSuccess(
+      res,
+      201,
+      `${requestedQuantity} individual vehicle allocation request(s) sent to Traffic.`,
+      {
+        trip,
+        createdRequests: createdRequests.map(({ requestId, requirementId, requestedQuantity: quantity, customerRequiredDate, customerRequiredTime, status }) => ({
+          requestId,
+          requirementId,
+          requestedQuantity: quantity,
+          customerRequiredDate,
+          customerRequiredTime,
+          status,
+        })),
+      },
+    );
+  } catch (error) {
+    console.error("Create Project Vehicle Allocation Request Error:", error);
+    return sendError(res, 500, "Unable to create Project vehicle allocation request.", error);
+  }
+};
+
+const submitProjectVehicleAllocationQuotation = async (req, res) => {
+  try {
+    const result = await getTripDocument(req.params.id);
+    if (result.error) return sendError(res, result.status, result.error);
+    const trip = result.trip;
+    if (!isProjectMovementOrder(trip)) return sendError(res, 409, "This action is available only for Project Movement.");
+    const request = (trip.projectVehicleAllocationRequests || []).find(
+      (item) => item.requestId === cleanString(req.params.requestId),
+    );
+    if (!request) return sendError(res, 404, "Project vehicle allocation request not found.");
+    if (request.status !== "Pending Traffic") return sendError(res, 409, "This request is no longer waiting for Traffic.");
+
+    const quotedBy = cleanString(req.body.quotedBy) || cleanString(req.user?.username) || "Traffic Team";
+    const incoming = Array.isArray(req.body.vendorQuotations)
+      ? req.body.vendorQuotations
+      : [{ vendorName: req.body.vendorName, vendorAmount: req.body.vendorAmount, trafficRemarks: req.body.trafficRemarks }];
+
+    if (!incoming.length) return sendError(res, 400, "Add at least one vendor quotation.");
+    const vendorQuotations = [];
+    for (let index = 0; index < incoming.length; index += 1) {
+      const item = incoming[index] || {};
+      const vendorName = cleanString(item.vendorName);
+      const rawAmount = item.vendorAmount;
+      const vendorAmount = Number(rawAmount);
+      if (!vendorName) return sendError(res, 400, `Vendor ${index + 1}: vendor name is required.`);
+      if (rawAmount === "" || rawAmount === null || rawAmount === undefined ||
+          !Number.isFinite(vendorAmount) || vendorAmount < 0) {
+        return sendError(res, 400, `Vendor ${index + 1}: enter a valid vendor amount.`);
+      }
+      vendorQuotations.push({
+        quotationId: makeId("PVQ"),
+        vendorName,
+        vendorAmount,
+        trafficRemarks: cleanString(item.trafficRemarks),
+        quotedBy,
+        quotedAt: new Date(),
+        status: "Pending",
+      });
+    }
+
+    request.vendorQuotations = vendorQuotations;
+    request.selectedVendorQuotationId = "";
+    request.vendorName = vendorQuotations[0].vendorName;
+    request.vendorAmount = vendorQuotations[0].vendorAmount;
+    request.trafficRemarks = vendorQuotations[0].trafficRemarks;
+    request.quotedBy = quotedBy;
+    request.quotedAt = new Date();
+    request.managementConfirmedBy = "";
+    request.managementConfirmedAt = null;
+    request.managementRemarks = "";
+    request.rejectionReason = "";
+    request.status = "Pending Management";
+
+    const alreadyInTracking =
+      cleanString(trip?.orderPlaced?.status).toLowerCase() === "completed" ||
+      cleanString(trip?.stage).toLowerCase() === "tracking";
+    if (!alreadyInTracking) trip.stage = "Vendor Finalization";
+    trip.markModified("projectVehicleAllocationRequests");
+    await trip.save();
+    return sendSuccess(res, 200,
+      `${vendorQuotations.length} vendor quotation(s) submitted for Management comparison.`,
+      trip);
+  } catch (error) {
+    console.error("Submit Project Vehicle Allocation Quotation Error:", error);
+    return sendError(res, 500, "Unable to submit vendor quotations.", error);
+  }
+};
+
+const decideProjectVehicleAllocationRequest = async (req, res) => {
+  try {
+    const result = await getTripDocument(req.params.id);
+    if (result.error) return sendError(res, result.status, result.error);
+    const trip = result.trip;
+    if (!isProjectMovementOrder(trip)) return sendError(res, 409, "This action is available only for Project Movement.");
+    const request = (trip.projectVehicleAllocationRequests || []).find(
+      (item) => item.requestId === cleanString(req.params.requestId),
+    );
+    if (!request) return sendError(res, 404, "Project vehicle allocation request not found.");
+    if (request.status !== "Pending Management") return sendError(res, 409, "This request is not waiting for Management confirmation.");
+
+    const status = cleanString(req.body.status);
+    const confirmedBy = cleanString(req.body.confirmedBy) || cleanString(req.user?.username) || "Approval Management";
+    const remarks = cleanString(req.body.remarks);
+    const rejectionReason = cleanString(req.body.rejectionReason);
+    if (!["Approved", "Rejected"].includes(status)) return sendError(res, 400, "Decision must be Approved or Rejected.");
+    if (status === "Rejected" && !rejectionReason) return sendError(res, 400, "Rejection reason is required.");
+
+    const vendorQuotations = Array.isArray(request.vendorQuotations) ? request.vendorQuotations : [];
+    let selectedVendor = null;
+    if (status === "Approved") {
+      const selectedId = cleanString(req.body.selectedVendorQuotationId);
+      if (vendorQuotations.length) {
+        selectedVendor = vendorQuotations.find((item) => item.quotationId === selectedId);
+        if (!selectedVendor) return sendError(res, 400, "Select one vendor quotation before approving this vehicle.");
+      } else {
+        // Backward compatibility for existing one-vendor requests.
+        selectedVendor = {
+          vendorName: cleanString(request.vendorName),
+          vendorAmount: Number(request.vendorAmount),
+          trafficRemarks: cleanString(request.trafficRemarks),
+          quotedBy: cleanString(request.quotedBy) || "Traffic Team",
+          quotedAt: request.quotedAt || new Date(),
+        };
+        if (!selectedVendor.vendorName || !Number.isFinite(selectedVendor.vendorAmount) || selectedVendor.vendorAmount < 0) {
+          return sendError(res, 409, "A valid vendor quotation is required before approval.");
+        }
+      }
+    }
+
+    const decidedAt = new Date();
+    request.status = status;
+    request.managementConfirmedBy = confirmedBy;
+    request.managementConfirmedAt = decidedAt;
+    request.managementRemarks = remarks;
+    request.rejectionReason = status === "Rejected" ? rejectionReason : "";
+
+    if (status === "Approved") {
+      if (vendorQuotations.length) {
+        vendorQuotations.forEach((item) => {
+          item.status = item.quotationId === selectedVendor.quotationId ? "Approved" : "Not Selected";
+          item.managementConfirmedBy = confirmedBy;
+          item.managementConfirmedAt = decidedAt;
+          item.managementRemarks = remarks;
+        });
+        request.selectedVendorQuotationId = selectedVendor.quotationId;
+      }
+      // Keep legacy fields synchronized with the selected vendor.
+      request.vendorName = selectedVendor.vendorName;
+      request.vendorAmount = selectedVendor.vendorAmount;
+      request.trafficRemarks = selectedVendor.trafficRemarks || "";
+      request.quotedBy = selectedVendor.quotedBy || "Traffic Team";
+      request.quotedAt = selectedVendor.quotedAt || decidedAt;
+
+      // Link only the Management-selected vendor to the existing Tracking flow.
+      const quotationId = makeId("PQT");
+      const confirmationId = makeId("PVC");
+      request.quotationId = quotationId;
+      request.confirmationId = confirmationId;
+      trip.trafficQuotations.push({
+        quotationId,
+        requirementId: request.requirementId,
+        transporter: selectedVendor.vendorName,
+        quantity: request.requestedQuantity,
+        amount: selectedVendor.vendorAmount,
+        quotedBy: selectedVendor.quotedBy || "Traffic Team",
+        allocatedBy: selectedVendor.quotedBy || "Traffic Team",
+        quotedAt: selectedVendor.quotedAt || decidedAt,
+        remarks: selectedVendor.trafficRemarks || "",
+      });
+      trip.vehicleConfirmations.push({
+        confirmationId,
+        requirementId: request.requirementId,
+        quotationId,
+        status: "Approved",
+        confirmedBy,
+        confirmedAt: decidedAt,
+        remarks: remarks || `Project allocation request ${request.requestId} approved.`,
+      });
+      const alreadyInTracking =
+        cleanString(trip?.orderPlaced?.status).toLowerCase() === "completed" ||
+        cleanString(trip?.stage).toLowerCase() === "tracking";
+      if (!alreadyInTracking) trip.stage = "Order Placed";
+    } else if (vendorQuotations.length) {
+      vendorQuotations.forEach((item) => {
+        item.status = "Rejected";
+        item.managementConfirmedBy = confirmedBy;
+        item.managementConfirmedAt = decidedAt;
+        item.managementRemarks = rejectionReason || remarks;
+      });
+    }
+
+    trip.markModified("projectVehicleAllocationRequests");
+    trip.markModified("trafficQuotations");
+    trip.markModified("vehicleConfirmations");
+    await trip.save();
+    return sendSuccess(res, 200,
+      status === "Approved"
+        ? `Project vehicle allocation approved with ${selectedVendor.vendorName}.`
+        : "Project vehicle allocation rejected; quantity released for a new request.",
+      trip);
+  } catch (error) {
+    console.error("Decide Project Vehicle Allocation Request Error:", error);
+    return sendError(res, 500, "Unable to update Project vehicle allocation decision.", error);
+  }
+};
+
+
 module.exports = {
   MAX_CRANE_FILES,
   addCraneDocuments,
@@ -4839,6 +5249,9 @@ module.exports = {
   approveOrder,
   addTrafficQuotation,
   confirmVehicleQuotation,
+  createProjectVehicleAllocationRequest,
+  submitProjectVehicleAllocationQuotation,
+  decideProjectVehicleAllocationRequest,
   requestTransportReplacement,
   reviewTransportReplacement,
   allocateTrafficVehicle,

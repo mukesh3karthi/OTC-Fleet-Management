@@ -12513,3 +12513,234 @@
   background: #fff0ed;
   color: #c24130;
 }
+
+
+/* =========================================================
+   PROJECT MOVEMENT - MULTIPLE VENDOR QUOTATION APPROVAL
+========================================================= */
+#approval-management-root .approval-project-allocation-list {
+  display: grid;
+  gap: 14px;
+}
+#approval-management-root .approval-project-allocation-row {
+  min-width: 0;
+  padding: 15px;
+  border: 1px solid #dce7eb;
+  border-radius: 12px;
+  background: #fbfdfe;
+}
+#approval-management-root .approval-project-allocation-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e5ecef;
+}
+#approval-management-root .approval-project-allocation-heading > div {
+  display: grid;
+  gap: 5px;
+}
+#approval-management-root .approval-project-allocation-kicker {
+  color: #0f766e;
+  font-size: 8px;
+  font-weight: 850;
+  letter-spacing: .08em;
+}
+#approval-management-root .approval-project-allocation-heading strong {
+  color: #173b4b;
+  font-size: 13px;
+  font-weight: 850;
+}
+#approval-management-root .approval-project-allocation-heading small {
+  color: #718791;
+  font-size: 10px;
+}
+#approval-management-root .approval-project-allocation-status,
+#approval-management-root .approval-project-vendor-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 23px;
+  padding: 3px 9px;
+  border: 1px solid #ead7a8;
+  border-radius: 999px;
+  background: #fff7e6;
+  color: #946200;
+  font-size: 8px;
+  font-weight: 850;
+  white-space: nowrap;
+}
+#approval-management-root .approval-project-allocation-status.approved,
+#approval-management-root .approval-project-vendor-status.approved {
+  border-color: #b7e0d0;
+  background: #ecf8f3;
+  color: #11785b;
+}
+#approval-management-root .approval-project-allocation-status.rejected,
+#approval-management-root .approval-project-vendor-status.rejected {
+  border-color: #efc3bf;
+  background: #fff2f1;
+  color: #bd4039;
+}
+#approval-management-root .approval-project-vendor-section {
+  padding-top: 12px;
+}
+#approval-management-root .approval-project-vendor-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+#approval-management-root .approval-project-vendor-title > div {
+  display: grid;
+  gap: 3px;
+}
+#approval-management-root .approval-project-vendor-title strong {
+  color: #244958;
+  font-size: 11px;
+  font-weight: 850;
+}
+#approval-management-root .approval-project-vendor-title small,
+#approval-management-root .approval-project-vendor-title > span {
+  color: #718791;
+  font-size: 9px;
+  font-weight: 650;
+}
+#approval-management-root .approval-project-vendor-title > span {
+  color: #0f766e;
+}
+#approval-management-root .approval-project-vendor-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+#approval-management-root .approval-project-vendor-card {
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 12px;
+  border: 1px solid #dce6ea;
+  border-radius: 10px;
+  background: #fff;
+  cursor: pointer;
+  transition: border-color .16s ease, background .16s ease, box-shadow .16s ease;
+}
+#approval-management-root .approval-project-vendor-card:hover {
+  border-color: #9bc8c2;
+}
+#approval-management-root .approval-project-vendor-card.is-selected {
+  border-color: #0f8b80;
+  background: #f0faf8;
+  box-shadow: 0 0 0 2px rgba(15, 118, 110, .08);
+}
+#approval-management-root .approval-project-vendor-card input {
+  flex: 0 0 auto;
+  margin: 3px 0 0;
+  accent-color: #0f766e;
+}
+#approval-management-root .approval-project-vendor-content {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 7px;
+}
+#approval-management-root .approval-project-vendor-topline {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+#approval-management-root .approval-project-vendor-topline > strong {
+  min-width: 0;
+  color: #193f50;
+  font-size: 11px;
+  font-weight: 850;
+  overflow-wrap: anywhere;
+}
+#approval-management-root .approval-project-vendor-amount {
+  color: #087f78;
+  font-size: 15px;
+  font-weight: 900;
+}
+#approval-management-root .approval-project-vendor-content p {
+  margin: 0;
+  color: #4c6878;
+  font-size: 9px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+#approval-management-root .approval-project-vendor-content p.is-muted {
+  color: #94a3aa;
+}
+#approval-management-root .approval-project-vendor-content > small {
+  color: #82949d;
+  font-size: 8px;
+}
+#approval-management-root .approval-project-vendor-legacy {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  padding: 12px 0;
+  color: #466673;
+  font-size: 10px;
+}
+#approval-management-root .approval-project-vendor-legacy p {
+  flex-basis: 100%;
+  margin: 0;
+}
+#approval-management-root .approval-project-allocation-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+#approval-management-root .approval-project-allocation-actions button {
+  min-height: 34px;
+  padding: 0 13px;
+  border: 1px solid #a9d8c6;
+  border-radius: 8px;
+  background: #ecf8f3;
+  color: #11785b;
+  font: inherit;
+  font-size: 9px;
+  font-weight: 850;
+  cursor: pointer;
+}
+#approval-management-root .approval-project-allocation-actions button.approval-project-allocation-reject {
+  border-color: #ebbbb7;
+  background: #fff2f1;
+  color: #bd4039;
+}
+#approval-management-root .approval-project-allocation-actions button:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+#approval-management-root .approval-project-allocation-rejection {
+  margin: 10px 0 0;
+  color: #b43d36;
+  font-size: 9px;
+  font-weight: 650;
+}
+#approval-management-root .approval-project-selected-summary {
+  margin-top: 11px;
+  padding: 10px 12px;
+  border: 1px solid #b7e0d0;
+  border-radius: 8px;
+  background: #ecf8f3;
+  color: #11785b;
+  font-size: 10px;
+}
+#approval-management-root .approval-project-selected-summary strong {
+  font-weight: 850;
+}
+@media (max-width: 760px) {
+  #approval-management-root .approval-project-vendor-grid {
+    grid-template-columns: 1fr;
+  }
+}

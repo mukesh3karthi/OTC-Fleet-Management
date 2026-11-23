@@ -1607,38 +1607,61 @@ const invoicePaymentSchema = new Schema(
     // its own balance and payment history. The legacy fields below remain for
     // existing non-Intercarting orders and older records.
     invoices: {
-      type: [new Schema({
-        invoiceNumber: { type: String, trim: true, maxlength: 100, default: "" },
-        invoiceDate: { type: String, default: "" },
-        remarks: { type: String, trim: true, maxlength: 2000, default: "" },
-        invoiceAmount: { type: Number, min: 0, default: null },
-        gstPercentage: { type: Number, min: 0, max: 100, default: 0 },
-        gstAmount: { type: Number, min: 0, default: 0 },
-        totalAmount: { type: Number, min: 0, default: null },
-        payments: { type: [new Schema({
+      type: [
+        new Schema({
+          invoiceNumber: {
+            type: String,
+            trim: true,
+            maxlength: 100,
+            default: "",
+          },
+          invoiceDate: { type: String, default: "" },
+          remarks: { type: String, trim: true, maxlength: 2000, default: "" },
+          invoiceAmount: { type: Number, min: 0, default: null },
+          gstPercentage: { type: Number, min: 0, max: 100, default: 0 },
+          gstAmount: { type: Number, min: 0, default: 0 },
+          totalAmount: { type: Number, min: 0, default: null },
+          payments: {
+            type: [
+              new Schema({
+                amount: { type: Number, required: true, min: 0.01 },
+                paymentDate: { type: String, required: true },
+                remarks: {
+                  type: String,
+                  trim: true,
+                  maxlength: 2000,
+                  default: "",
+                },
+                receivedBy: { type: String, default: "" },
+                createdAt: { type: Date, default: Date.now },
+              }),
+            ],
+            default: [],
+          },
+          totalReceived: { type: Number, min: 0, default: 0 },
+          remainingBalance: { type: Number, min: 0, default: null },
+          paymentStatus: {
+            type: String,
+            enum: ["Pending", "Partially Paid", "Fully Paid"],
+            default: "Pending",
+          },
+          invoiceDocument: { type: invoiceFileSchema, default: () => ({}) },
+          updatedBy: { type: String, default: "" },
+          updatedAt: { type: Date, default: null },
+        }),
+      ],
+      default: [],
+    },
+    payments: {
+      type: [
+        new Schema({
           amount: { type: Number, required: true, min: 0.01 },
           paymentDate: { type: String, required: true },
           remarks: { type: String, trim: true, maxlength: 2000, default: "" },
           receivedBy: { type: String, default: "" },
           createdAt: { type: Date, default: Date.now },
-        })], default: [] },
-        totalReceived: { type: Number, min: 0, default: 0 },
-        remainingBalance: { type: Number, min: 0, default: null },
-        paymentStatus: { type: String, enum: ["Pending", "Partially Paid", "Fully Paid"], default: "Pending" },
-        invoiceDocument: { type: invoiceFileSchema, default: () => ({}) },
-        updatedBy: { type: String, default: "" },
-        updatedAt: { type: Date, default: null },
-      })],
-      default: [],
-    },
-    payments: {
-      type: [new Schema({
-        amount: { type: Number, required: true, min: 0.01 },
-        paymentDate: { type: String, required: true },
-        remarks: { type: String, trim: true, maxlength: 2000, default: "" },
-        receivedBy: { type: String, default: "" },
-        createdAt: { type: Date, default: Date.now },
-      })],
+        }),
+      ],
       default: [],
     },
     proFormaInvoiceNumber: {
@@ -1670,6 +1693,62 @@ const invoicePaymentSchema = new Schema(
     updatedAt: { type: Date, default: null },
   },
   { _id: false },
+);
+
+const projectVendorQuotationSchema = new Schema(
+  {
+    quotationId: { type: String, required: true, trim: true },
+    vendorName: { type: String, required: true, trim: true },
+    vendorAmount: { type: Number, required: true, min: 0 },
+    trafficRemarks: { type: String, trim: true, default: "" },
+    quotedBy: { type: String, trim: true, default: "" },
+    quotedAt: { type: Date, default: Date.now },
+    status: {
+      type: String,
+      enum: ["Pending", "Approved", "Not Selected", "Rejected"],
+      default: "Pending",
+    },
+    managementRemarks: { type: String, trim: true, default: "" },
+    managementConfirmedBy: { type: String, trim: true, default: "" },
+    managementConfirmedAt: { type: Date, default: null },
+  },
+  { _id: false },
+);
+
+const projectVehicleAllocationRequestSchema = new Schema(
+  {
+    requestId: { type: String, required: true, trim: true },
+    requirementId: { type: String, required: true, trim: true },
+    quotationId: { type: String, trim: true, default: "" },
+    confirmationId: { type: String, trim: true, default: "" },
+    requestedQuantity: { type: Number, required: true, min: 1 },
+    customerRequiredDate: { type: String, required: true, trim: true },
+    customerRequiredTime: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    requestedBy: { type: String, default: "Key Account" },
+    requestedAt: { type: Date, default: Date.now },
+    status: {
+      type: String,
+      enum: ["Pending Traffic", "Pending Management", "Approved", "Rejected"],
+      default: "Pending Traffic",
+    },
+    vendorQuotations: { type: [projectVendorQuotationSchema], default: [] },
+    selectedVendorQuotationId: { type: String, trim: true, default: "" },
+    // Legacy summary fields retained for existing records and older clients.
+    vendorName: { type: String, trim: true, default: "" },
+    vendorAmount: { type: Number, min: 0, default: null },
+    trafficRemarks: { type: String, trim: true, default: "" },
+    quotedBy: { type: String, trim: true, default: "" },
+    quotedAt: { type: Date, default: null },
+    managementConfirmedBy: { type: String, trim: true, default: "" },
+    managementConfirmedAt: { type: Date, default: null },
+    managementRemarks: { type: String, trim: true, default: "" },
+    rejectionReason: { type: String, trim: true, default: "" },
+  },
+  { _id: true },
 );
 
 const tripOrderSchema = new Schema(
@@ -2028,6 +2107,11 @@ const tripOrderSchema = new Schema(
     trafficQuotations: {
       type: [trafficQuotationSchema],
 
+      default: [],
+    },
+
+    projectVehicleAllocationRequests: {
+      type: [projectVehicleAllocationRequestSchema],
       default: [],
     },
 
