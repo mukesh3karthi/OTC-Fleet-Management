@@ -20,6 +20,7 @@ import {
   RefreshCw,
   Search,
   Send,
+  Save,
   Trash2,
   Truck,
   X,
@@ -162,6 +163,7 @@ const createTransportReplacementForm = (
   quotation,
   order,
 ) => ({
+  materialType: requirement?.materialType || "",
   requirementId: requirement?.requirementId || "",
   currentConfirmationId: confirmation?.confirmationId || "",
   currentQuotationId: quotation?.quotationId || "",
@@ -195,6 +197,90 @@ const createTransportReplacementForm = (
 ========================================================= */
 const getAllocatedVehicles = (order) =>
   Array.isArray(order?.allocatedVehicles) ? order.allocatedVehicles : [];
+const isProjectMovement = (order) =>
+  String(order?.movementType || "")
+    .toLowerCase()
+    .replace(/[\s_-]+/g, "") === "projectmovement";
+
+const getProjectRequests = (order) =>
+  Array.isArray(order?.projectVehicleAllocationRequests)
+    ? order.projectVehicleAllocationRequests
+    : [];
+
+// Project requests represent individual vehicles, not vendor quotations.
+const getDisplayedVehicleQuantity = (order) =>
+  isProjectMovement(order)
+    ? getProjectRequests(order).length
+    : getTotalVehicleQuantity(order);
+
+const getProjectQuotationBatches = (order) => {
+  const groups = new Map();
+  getProjectRequests(order).forEach((request, index) => {
+    const batchId = request.batchId || request.requestBatchId;
+    const requestedAt = request.requestedAt || "";
+    // Never group by placement date. Legacy records without a batch ID
+    // remain independent because their original submission cannot be proven.
+    const key = batchId ? `batch:${batchId}` : `legacy:${request.requestId || index}`;
+    if (!groups.has(key)) groups.set(key, { key, batchId, requestedAt, requests: [] });
+    const group = groups.get(key);
+    if (requestedAt && (!group.requestedAt || new Date(requestedAt) < new Date(group.requestedAt))) group.requestedAt = requestedAt;
+    group.requests.push(request);
+  });
+  [...groups.values()].filter(g => g.batchId).sort((a,b) => (Date.parse(a.requestedAt)||0)-(Date.parse(b.requestedAt)||0)).forEach((g,i) => { g.batchNumber = i + 1; });
+  const pending = (g) => g.requests.some(r => r.status === "Pending Traffic");
+  return [...groups.values()].sort((a, b) =>
+    Number(pending(b)) - Number(pending(a)) ||
+    (Date.parse(b.requestedAt) || 0) - (Date.parse(a.requestedAt) || 0));
+};
+
+const getSelectedProjectVendor = (request) => {
+  const vendors = Array.isArray(request?.vendorQuotations)
+    ? request.vendorQuotations
+    : [];
+  return (
+    vendors.find(
+      (vendor) =>
+        vendor.quotationId === request?.selectedVendorQuotationId,
+    ) ||
+    vendors.find(
+      (vendor) =>
+        String(vendor?.status || "").trim().toLowerCase() === "approved",
+    ) ||
+    null
+  );
+};
+
+// The API should append one record here whenever Management changes an
+// already-approved vendor. Pending quotations and unselected vendors are
+// deliberately not treated as change history.
+const getProjectVendorHistory = (order) => {
+  const requestHistory = getProjectRequests(order).flatMap((request) => {
+    const entries = Array.isArray(request?.vendorChangeHistory)
+      ? request.vendorChangeHistory
+      : Array.isArray(request?.vendorHistory)
+        ? request.vendorHistory
+        : Array.isArray(request?.vendorChanges)
+          ? request.vendorChanges
+          : [];
+    return entries.map((entry) => ({
+      ...entry,
+      requestId: entry?.requestId || request.requestId,
+      requirementId: entry?.requirementId || request.requirementId,
+      vehicleNumber: entry?.vehicleNumber || request.vehicleNumber,
+    }));
+  });
+  const orderHistory = Array.isArray(order?.projectVendorChangeHistory)
+    ? order.projectVendorChangeHistory
+    : Array.isArray(order?.vendorChangeHistory)
+      ? order.vendorChangeHistory
+      : [];
+  const replacements = getTransportReplacementRequests(order).filter(item => item.status === "Approved").map(item => ({ ...item, changeId: item.requestId, previousVendorName: item.currentTransporter, newVendorName: item.proposedTransporter, previousAmount: item.currentAmount, newAmount: item.proposedAmount, changedAt: item.reviewedAt }));
+  return [...orderHistory, ...requestHistory, ...replacements].sort(
+    (a, b) =>
+      new Date(b?.changedAt || b?.createdAt || 0) -
+      new Date(a?.changedAt || a?.createdAt || 0),
+  );
+};
 const createTrafficVehicleForm = () => ({
   vehicleNumber: "",
   driverName: "",
@@ -378,6 +464,8 @@ const Traffic = () => {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [openProjectBatches, setOpenProjectBatches] = useState({});
+  const [openCurrentBatches, setOpenCurrentBatches] = useState({});
   const [projectVendorForms, setProjectVendorForms] = useState({});
   const [documentBusy, setDocumentBusy] = useState(false);
   const handleCraneDocument = async (download = false) => {
@@ -584,7 +672,7 @@ const Traffic = () => {
   const updateProjectVendorForm = (requestId, vendorIndex, field, value) => {
     setProjectVendorForms((previous) => {
       const current = previous[requestId] || {
-        vendorQuotations: [{ vendorName: "", vendorAmount: "", remarks: "" }],
+        vendorQuotations: [{ vendorName: "", vendorAmount: "", allocatedBy: "", remarks: "" }],
       };
       const vendorQuotations = [...(current.vendorQuotations || [])];
       vendorQuotations[vendorIndex] = {
@@ -598,7 +686,7 @@ const Traffic = () => {
   const addProjectVendorForm = (requestId) => {
     setProjectVendorForms((previous) => {
       const current = previous[requestId] || {
-        vendorQuotations: [{ vendorName: "", vendorAmount: "", remarks: "" }],
+        vendorQuotations: [{ vendorName: "", vendorAmount: "", allocatedBy: "", remarks: "" }],
       };
       return {
         ...previous,
@@ -606,7 +694,7 @@ const Traffic = () => {
           ...current,
           vendorQuotations: [
             ...(current.vendorQuotations || []),
-            { vendorName: "", vendorAmount: "", remarks: "" },
+            { vendorName: "", vendorAmount: "", allocatedBy: "", remarks: "" },
           ],
         },
       };
@@ -623,59 +711,104 @@ const Traffic = () => {
     });
   };
 
-  const submitProjectVendorAllocation = async (request) => {
-    if (!selectedOrder?._id || !request?.requestId) return;
-    const form = projectVendorForms[request.requestId] || {};
-    const vendorQuotations = Array.isArray(form.vendorQuotations)
-      ? form.vendorQuotations
-      : [{ vendorName: "", vendorAmount: "", remarks: "" }];
-    if (
-      !vendorQuotations.length ||
-      vendorQuotations.some(
-        (vendor) =>
-          !String(vendor.vendorName || "").trim() ||
-          vendor.vendorAmount === "" ||
-          !Number.isFinite(Number(vendor.vendorAmount)) ||
-          Number(vendor.vendorAmount) < 0,
-      )
-    ) {
-      showToast("Enter a vendor name and valid amount for every vendor.", "warning");
+  const submitAllProjectVendorAllocations = async (batchRequests = null) => {
+    if (!selectedOrder?._id) return;
+    const pendingRequests = getProjectRequests(selectedOrder).filter(
+      (request) => request.status === "Pending Traffic" &&
+        (!batchRequests || batchRequests.some((item) => item.requestId === request.requestId)),
+    );
+    if (!pendingRequests.length) {
+      showToast("There are no pending quotations to save.", "warning");
       return;
     }
+
+    // Ignore untouched vendor rows and vehicles without quotations.
+    const hasVendorInput = (vendor) =>
+      [vendor.vendorName, vendor.allocatedBy, vendor.vendorAmount, vendor.remarks]
+        .some((value) => String(value ?? "").trim() !== "");
+
+    const submissions = pendingRequests.map((request) => {
+      const form = projectVendorForms[request.requestId] || {};
+      const vendorQuotations = Array.isArray(form.vendorQuotations)
+        ? form.vendorQuotations.filter(hasVendorInput)
+        : [];
+      return { request, vendorQuotations };
+    }).filter(({ vendorQuotations }) => vendorQuotations.length > 0);
+
+    if (!submissions.length) {
+      showToast("Enter at least one vendor quotation to submit.", "warning");
+      return;
+    }
+
+    const invalid = submissions.find(({ vendorQuotations }) =>
+      vendorQuotations.some((vendor) =>
+        !String(vendor.vendorName || "").trim() ||
+        !String(vendor.allocatedBy || "").trim() ||
+        String(vendor.vendorAmount ?? "").trim() === "" ||
+        !Number.isFinite(Number(vendor.vendorAmount)) ||
+        Number(vendor.vendorAmount) < 0,
+      ),
+    );
+    if (invalid) {
+      showToast(
+        `Complete vendor name, Allocated By and a valid amount for ${invalid.request.vehicleType || "vehicle"} (${invalid.request.requestId}).`,
+        "warning",
+      );
+      return;
+    }
+
     try {
       setSaving(true);
-      const response = await fetch(
-        `${TRIP_API_URL}/${selectedOrder._id}/project-vehicle-allocation-requests/${encodeURIComponent(request.requestId)}/quotation`,
-        {
-          method: "PUT",
-          headers: {
-            ...getAdminAuthHeaders(),
-            "Content-Type": "application/json",
-            Accept: "application/json",
+      let latestOrder = selectedOrder;
+      for (const { request, vendorQuotations } of submissions) {
+        const response = await fetch(
+          `${TRIP_API_URL}/${selectedOrder._id}/project-vehicle-allocation-requests/${encodeURIComponent(request.requestId)}/quotation`,
+          {
+            method: "PUT",
+            headers: {
+              ...getAdminAuthHeaders(),
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+            body: JSON.stringify({
+              vendorQuotations: vendorQuotations.map((vendor) => ({
+                vendorName: String(vendor.vendorName).trim(),
+                vendorAmount: Number(vendor.vendorAmount),
+                allocatedBy: String(vendor.allocatedBy || "").trim(),
+                trafficRemarks: String(vendor.remarks || "").trim(),
+              })),
+              quotedBy: "Traffic Team",
+            }),
           },
-          body: JSON.stringify({
-            vendorQuotations: vendorQuotations.map((vendor) => ({
-              vendorName: String(vendor.vendorName).trim(),
-              vendorAmount: Number(vendor.vendorAmount),
-              trafficRemarks: String(vendor.remarks || "").trim(),
-            })),
-            quotedBy: "Traffic Team",
-          }),
-        },
-      );
-      const payload = await response.json().catch(() => ({}));
-      if (!response.ok)
-        throw new Error(payload.message || "Unable to submit vendor quotations.");
-      const updated = extractTrip(payload);
-      if (updated?._id) {
-        setSelectedOrder(updated);
-        setOrders((previous) =>
-          previous.map((item) => (item._id === updated._id ? updated : item)),
         );
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          throw new Error(payload.message || `Unable to save quotations for ${request.vehicleType || "a vehicle"}.`);
+        }
+        const updated = extractTrip(payload);
+        if (updated?._id) {
+          latestOrder = updated;
+          setSelectedOrder(updated);
+          setOrders((previous) => previous.map((item) =>
+            item._id === updated._id ? updated : item,
+          ));
+        }
       }
-      showToast("Vendor quotations sent to Management for comparison.", "success");
+
+      if (latestOrder?._id) {
+        setSelectedOrder(latestOrder);
+        setOrders((previous) => previous.map((item) =>
+          item._id === latestOrder._id ? latestOrder : item,
+        ));
+      }
+      setProjectVendorForms((previous) => {
+        const next = { ...previous };
+        submissions.forEach(({ request }) => delete next[request.requestId]);
+        return next;
+      });
+      showToast(`Quotations saved for ${submissions.length} vehicle request(s). Unfilled requests remain pending.`, "success");
     } catch (error) {
-      showToast(error.message || "Unable to submit vendor quotations.", "error");
+      showToast(error.message || "Unable to save vendor quotations.", "error");
     } finally {
       setSaving(false);
     }
@@ -789,9 +922,15 @@ const Traffic = () => {
      OPEN ORDER
   ========================================================= */
   const handleOpenOrder = (order) => {
+    setOpenProjectBatches({});
+    setOpenCurrentBatches({});
     setHistoryFilters({});
     setTransportView(
-      getVehicleConfirmations(order).some((item) => item.status === "Approved")
+      getVehicleConfirmations(order).some((item) => item.status === "Approved") ||
+        (isProjectMovement(order) &&
+          getProjectRequests(order).some(
+            (request) => request.status === "Approved" && getSelectedProjectVendor(request),
+          ))
         ? "current"
         : "quotes",
     );
@@ -1480,7 +1619,7 @@ const Traffic = () => {
                 <th>Order ID</th>
                 <th>Customer</th>
                 <th>Movement</th>
-                <th>Vehicles</th>
+                <th>Required Qty</th>
                 <th>Quotation Status</th>
                 <th>Action</th>
               </tr>
@@ -1541,7 +1680,7 @@ const Traffic = () => {
                       <td>
                         <span className="traffic-vehicle-count">
                           <Truck size={12} />
-                          {getTotalVehicleQuantity(order)} NOS
+                          {getDisplayedVehicleQuantity(order)} NOS
                         </span>
                       </td>
                       <td>
@@ -1575,14 +1714,14 @@ const Traffic = () => {
       ===================================================== */}
       {selectedOrder && (
         <div
-          className="traffic-modal-overlay"
+          className={`traffic-modal-overlay${isProjectMovement(selectedOrder) ? " traffic-project-compact-overlay" : ""}`} 
           onMouseDown={(event) => {
             if (event.target === event.currentTarget) {
               handleCloseOrder();
             }
           }}
         >
-          <div className="traffic-modal">
+          <div className={`traffic-modal${isProjectMovement(selectedOrder) ? " traffic-project-compact-modal" : ""}`}>
             {/* =================================================
                 MODAL HEADER
             ================================================= */}
@@ -1599,12 +1738,21 @@ const Traffic = () => {
                     {selectedOrder.movementType || "—"}
                   </span>
                 </div>
+                {!isProjectMovement(selectedOrder) && (
                 <p>
                   {selectedOrder.tripId}
                   {" • "}
                   {selectedOrder.customer || "—"}
                 </p>
+                )}
               </div>
+              {isProjectMovement(selectedOrder) && (
+                <div className="traffic-project-header-meta">
+                  <div><small>Order ID</small><strong>{selectedOrder.tripId || "—"}</strong></div>
+                  <div><small>Customer</small><strong>{selectedOrder.customer || "—"}</strong></div>
+                  <div><small>Required Qty</small><strong>{getDisplayedVehicleQuantity(selectedOrder)} NOS</strong></div>
+                </div>
+              )}
               <div className="traffic-modal-header-actions">
                 <button
                   type="button"
@@ -1620,6 +1768,7 @@ const Traffic = () => {
             {/* =================================================
                 ORDER INFO
             ================================================= */}
+            {!isProjectMovement(selectedOrder) && (
             <div className="traffic-order-overview">
               <div>
                 <span>Order ID</span>
@@ -1634,6 +1783,7 @@ const Traffic = () => {
                 <strong>{getTotalVehicleQuantity(selectedOrder)} NOS</strong>
               </div>
             </div>
+            )}
             {/* =================================================
                 REQUIREMENTS
             ================================================= */}
@@ -1687,10 +1837,10 @@ const Traffic = () => {
               </div>
               <span>
                 {transportView === "current"
-                  ? "Manage approved transporters"
+                  ? "View approved vendors"
                   : transportView === "quotes"
                     ? "Add and review quotations"
-                    : "Track requests and decisions"}
+                    : "View vendor changes"}
               </span>
             </div>
             <div
@@ -1753,216 +1903,465 @@ const Traffic = () => {
                   </div>
                 </section>
               )}
-              {String(selectedOrder?.movementType || "")
-                .toLowerCase()
-                .replace(/[\s_-]+/g, "") === "projectmovement" && (
-                <section className="traffic-project-allocation-section">
+              {isProjectMovement(selectedOrder) && transportView === "quotes" && (
+                <section className="traffic-project-allocation-section traffic-project-quotation-exact">
                   <div className="traffic-project-allocation-heading">
                     <div>
                       <span>PROJECT MOVEMENT</span>
                       <h3>Vehicle Allocation Requests</h3>
-                      <p>
-                        Add multiple vendor quotations for each individual
-                        vehicle. Submit all vendors together for Management
-                        comparison and selection.
-                      </p>
+                      <p>Material is common for each vehicle type; Allocated By is entered separately for every vendor.</p>
                     </div>
                   </div>
+                  <div className="traffic-project-batch-list">
+                    {getProjectQuotationBatches(selectedOrder).map((batch) => {
+                      const pending = batch.requests.filter(r => r.status === "Pending Traffic").length;
+                      const approved = batch.requests.filter(r => r.status === "Approved").length;
+                      const expanded = openProjectBatches[batch.key] ?? pending > 0;
+                      return (
+                        <div className="traffic-project-batch" key={batch.key}>
+                          <button type="button" className="traffic-project-batch-toggle" aria-expanded={expanded}
+                            onClick={() => setOpenProjectBatches(prev => ({ ...prev, [batch.key]: !expanded }))}>
+                            {expanded ? <ChevronDown size={17} /> : <ChevronRight size={17} />}
+                            <span className="traffic-project-batch-name">
+                              <strong>{batch.batchId ? `Batch ${String(batch.batchNumber).padStart(2, "0")}` : "Individual request (legacy)"}</strong>
+                              <small>Requested on: {batch.requestedAt ? formatDate(batch.requestedAt) : "Not recorded"}</small>
+                            </span>
+                            <span>{batch.requests.length} vehicle requests</span>
+                            <span>{approved} approved</span>
+                            <span className={pending ? "is-pending" : ""}>{pending} pending quotation</span>
+                          </button>
+                          {expanded && (
                   <div className="traffic-project-allocation-table-wrap">
-                    <table className="traffic-project-allocation-table">
+                    <table className="traffic-project-allocation-table traffic-project-quotation-table">
                       <thead>
                         <tr>
-                          <th>Requirement</th>
-                          <th>Vehicle</th>
-                          <th>Qty</th>
-                          <th>Customer Required</th>
-                          <th>Vendor Quotations</th>
-                          <th>Action / Status</th>
+                          <th>Sr. No.</th>
+                          <th>Vehicle Type</th>
+                          <th>Material (Common)</th>
+                          <th>Origin</th>
+                          <th>Destination</th>
+                          <th>Placement Date</th>
+                          <th>Vendors</th>
+                          <th>Allocated By</th>
+                          <th>Amount (₹)</th>
+                          <th>Remarks</th>
+                          <th>Action</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {(selectedOrder.projectVehicleAllocationRequests || [])
-                          .slice()
-                          .sort(
-                            (a, b) =>
-                              new Date(b.requestedAt) - new Date(a.requestedAt),
-                          )
+                        {batch.requests
+                          .flatMap((request) => [
+                            request,
+                            ...(request.rejectedQuotationHistory || []).map((history, index) => ({
+                              ...request,
+                              ...history,
+                              requestId: `${request.requestId}-rejected-${index}`,
+                              status: "Rejected",
+                              vendorQuotations: history.vendorQuotations?.length ? history.vendorQuotations : [history],
+                            })),
+                          ])
+                          .sort((a, b) => {
+                            const rank = (request) => request.status === "Pending Traffic" ? 0 : request.status === "Approved" ? 2 : request.status === "Rejected" ? 3 : 1;
+                            if (rank(a) !== rank(b)) return rank(a) - rank(b);
+                            const requirements = selectedOrder.vehicleRequirements || [];
+                            const aOrder = requirements.findIndex((item) => item.requirementId === a.requirementId);
+                            const bOrder = requirements.findIndex((item) => item.requirementId === b.requirementId);
+                            if (aOrder !== bOrder) return aOrder - bOrder;
+                            return new Date(a.requestedAt || 0) - new Date(b.requestedAt || 0);
+                          })
                           .map((request, requestIndex, sortedRequests) => {
-                            const requirement = (
-                              selectedOrder.vehicleRequirements || []
-                            ).find(
+                            const requirement = (selectedOrder.vehicleRequirements || []).find(
                               (item) => item.requirementId === request.requirementId,
                             );
-                            const vehicleIndex = sortedRequests.filter(
-                              (item, index) =>
-                                item.requirementId === request.requirementId &&
-                                index <= requestIndex,
-                            ).length;
+                            const group = (item) => item.status === "Pending Traffic" ? "entry" : item.status === "Approved" ? "approved" : item.status === "Rejected" ? "rejected" : "submitted";
+                            const sameGroup = (item) => item && group(item) === group(request) && item.requirementId === request.requirementId;
+                            const firstForRequirement = !sameGroup(sortedRequests[requestIndex - 1]);
+                            let requirementRowSpan = 1;
+                            while (sameGroup(sortedRequests[requestIndex + requirementRowSpan])) requirementRowSpan += 1;
+                            const firstInGroup = requestIndex === 0 || group(sortedRequests[requestIndex - 1]) !== group(request);
+                            const selectedVendor = request.status === "Approved" ? getSelectedProjectVendor(request) : null;
+                            const vendorClass = (vendor) => `traffic-project-vendor-stack-row${selectedVendor && vendor === selectedVendor ? " is-approved-vendor" : selectedVendor ? " is-unselected-vendor" : ""}`;
+                            const materialRaw =
+                              requirement?.materialType ||
+                              requirement?.material ||
+                              request.materialType ||
+                              request.material ||
+                              selectedOrder?.materialType ||
+                              selectedOrder?.material ||
+                              "—";
+                            const material = Array.isArray(materialRaw)
+                              ? materialRaw.join(", ")
+                              : typeof materialRaw === "object"
+                                ? materialRaw?.name || materialRaw?.label || "—"
+                                : materialRaw;
                             const form = projectVendorForms[request.requestId] || {};
                             const vendorForms = Array.isArray(form.vendorQuotations)
                               ? form.vendorQuotations
-                              : [{ vendorName: "", vendorAmount: "", remarks: "" }];
-                            const submittedVendors = Array.isArray(request.vendorQuotations)
+                              : [{ vendorName: "", vendorAmount: "", allocatedBy: "", remarks: "" }];
+                            const submittedVendors = Array.isArray(request.vendorQuotations) && request.vendorQuotations.length
                               ? request.vendorQuotations
-                              : [];
-                            const selectedVendor = submittedVendors.find(
-                              (vendor) =>
-                                vendor.quotationId === request.selectedVendorQuotationId ||
-                                vendor.status === "Approved",
-                            );
+                              : request.status === "Rejected" && request.vendorName ? [request] : [];
+                            const canEdit = request.status === "Pending Traffic";
+                            const rows = canEdit
+                              ? vendorForms
+                              : submittedVendors;
+                            const displayRows = rows.length ? rows : [{ vendorName: "", vendorAmount: "", allocatedBy: "", remarks: "" }];
                             return (
-                              <tr key={request.requestId}>
-                                <td>{requirement?.vehicleType || request.requirementId}</td>
-                                <td>Vehicle {vehicleIndex}</td>
-                                <td>{request.requestedQuantity}</td>
-                                <td>
-                                  {request.customerRequiredDate || "—"} ·{" "}
-                                  {request.customerRequiredTime || "—"}
+                              <React.Fragment key={request.requestId}>
+                              {firstInGroup && (
+                                <tr className={`traffic-project-group-heading is-${group(request)}`}>
+                                  <td colSpan={11}>{group(request) === "entry" ? "Pending Vendor Quotations — Add Vendor" : group(request) === "approved" ? "Approved Vendor Quotations" : group(request) === "rejected" ? "Rejected Vendor Quotations" : "Submitted Vendor Quotations"}</td>
+                                </tr>
+                              )}
+                              <tr className={`traffic-project-vehicle-row is-${group(request)}`}>
+                                <td className="traffic-project-sno-cell">
+                                  <span>{batch.requests.findIndex(item => item.requestId === request.requestId || request.requestId.startsWith(`${item.requestId}-rejected-`)) + 1}</span>
                                 </td>
-                                <td className="traffic-project-vendor-cell">
-                                  {request.status === "Pending Traffic" ? (
-                                    <div className="traffic-project-vendor-editor">
-                                      {vendorForms.map((vendor, vendorIndex) => (
-                                        <div
-                                          className="traffic-project-vendor-entry"
-                                          key={`${request.requestId}-vendor-${vendorIndex}`}
-                                        >
-                                          <div className="traffic-project-vendor-entry-heading">
-                                            <strong>Vendor {vendorIndex + 1}</strong>
-                                            {vendorForms.length > 1 && (
-                                              <button
-                                                type="button"
-                                                className="traffic-project-vendor-remove"
-                                                disabled={saving}
-                                                onClick={() =>
-                                                  removeProjectVendorForm(request.requestId, vendorIndex)
-                                                }
-                                              >
-                                                Remove
-                                              </button>
-                                            )}
-                                          </div>
-                                          <div className="traffic-project-vendor-fields">
-                                            <input
-                                              value={vendor.vendorName || ""}
-                                              onChange={(event) =>
-                                                updateProjectVendorForm(
-                                                  request.requestId,
-                                                  vendorIndex,
-                                                  "vendorName",
-                                                  event.target.value,
-                                                )
-                                              }
-                                              placeholder="Vendor name"
-                                            />
-                                            <input
-                                              type="number"
-                                              min="0"
-                                              step="0.01"
-                                              value={vendor.vendorAmount ?? ""}
-                                              onChange={(event) =>
-                                                updateProjectVendorForm(
-                                                  request.requestId,
-                                                  vendorIndex,
-                                                  "vendorAmount",
-                                                  event.target.value,
-                                                )
-                                              }
-                                              placeholder="Amount (₹)"
-                                            />
+                                {firstForRequirement && (
+                                  <td
+                                    className="traffic-project-vehicle-type-cell traffic-project-common-requirement-cell"
+                                    rowSpan={requirementRowSpan}
+                                  >
+                                    {requirement?.vehicleType || request.vehicleType || request.requirementId || "—"}
+                                  </td>
+                                )}
+                                {firstForRequirement && (
+                                  <td
+                                    className="traffic-project-material-cell traffic-project-common-requirement-cell"
+                                    rowSpan={requirementRowSpan}
+                                  >
+                                    <span className="traffic-project-material-value">
+                                      {material || "—"}
+                                    </span>
+                                  </td>
+                                )}
+                                <td className="traffic-project-route-cell">{request.origin || "—"}</td>
+                                <td className="traffic-project-route-cell">{request.destination || "—"}</td>
+                                <td className="traffic-project-required-date">{formatDate(request.placementDate || request.customerRequiredDate)}{(canEdit || request.status === "Rejected") && request.rejectionReason && <small style={{ display: "block" }}>Rejected: {request.rejectionReason}</small>}</td>
+                                <td className="traffic-project-vendor-stack-cell">
+                                  <div className="traffic-project-vendor-stack">
+                                    {displayRows.map((vendor, vendorIndex) => (
+                                      <div className={vendorClass(vendor)} key={vendor.quotationId || `${request.requestId}-vendor-${vendorIndex}`}>
+                                        {canEdit ? (
+                                          <input
+                                            value={vendor.vendorName || ""}
+                                            onChange={(event) => updateProjectVendorForm(request.requestId, vendorIndex, "vendorName", event.target.value)}
+                                            placeholder="Vendor name"
+                                            aria-label={`Vendor ${vendorIndex + 1} name`}
+                                          />
+                                        ) : (
+                                          <strong>{vendor.vendorName || "—"}</strong>
+                                        )}
+                                      </div>
+                                    ))}
+                                  </div>
+                                </td>
+                                <td className="traffic-project-allocated-by-stack-cell">
+                                  <div className="traffic-project-vendor-stack">
+                                    {displayRows.map((vendor, vendorIndex) => (
+                                      <div className={vendorClass(vendor)} key={vendor.quotationId || `${request.requestId}-allocated-${vendorIndex}`}>
+                                        {canEdit ? (
+                                          <input
+                                            value={vendor.allocatedBy || vendor.allocatedByName || ""}
+                                            onChange={(event) => updateProjectVendorForm(request.requestId, vendorIndex, "allocatedBy", event.target.value)}
+                                            placeholder="Allocated by"
+                                            aria-label={`Vendor ${vendorIndex + 1} allocated by`}
+                                          />
+                                        ) : (
+                                          <strong>{vendor.allocatedBy || vendor.allocatedByName || "Not recorded"}</strong>
+                                        )}
+                                      </div>
+                                    ))}
+                                  </div>
+                                </td>
+                                <td className="traffic-project-amount-stack-cell">
+                                  <div className="traffic-project-vendor-stack">
+                                    {displayRows.map((vendor, vendorIndex) => (
+                                      <div className={vendorClass(vendor)} key={vendor.quotationId || `${request.requestId}-amount-${vendorIndex}`}>
+                                        {canEdit ? (
+                                          <input
+                                            type="number"
+                                            min="0"
+                                            step="0.01"
+                                            value={vendor.vendorAmount ?? ""}
+                                            onChange={(event) => updateProjectVendorForm(request.requestId, vendorIndex, "vendorAmount", event.target.value)}
+                                            placeholder="Amount (₹)"
+                                            aria-label={`Vendor ${vendorIndex + 1} amount`}
+                                          />
+                                        ) : (
+                                          <strong>₹ {Number(vendor.vendorAmount || 0).toLocaleString("en-IN")}</strong>
+                                        )}
+                                      </div>
+                                    ))}
+                                  </div>
+                                </td>
+                                <td className="traffic-project-remarks-stack-cell">
+                                  <div className="traffic-project-vendor-stack">
+                                    {displayRows.map((vendor, vendorIndex) => (
+                                      <div className={vendorClass(vendor)} key={vendor.quotationId || `${request.requestId}-remarks-${vendorIndex}`}>
+                                        {canEdit ? (
+                                          <div className="traffic-project-remark-control">
                                             <input
                                               value={vendor.remarks || ""}
-                                              onChange={(event) =>
-                                                updateProjectVendorForm(
-                                                  request.requestId,
-                                                  vendorIndex,
-                                                  "remarks",
-                                                  event.target.value,
-                                                )
-                                              }
+                                              onChange={(event) => updateProjectVendorForm(request.requestId, vendorIndex, "remarks", event.target.value)}
                                               placeholder="Remarks (optional)"
+                                              aria-label={`Vendor ${vendorIndex + 1} remarks`}
                                             />
+                                            <button
+                                              type="button"
+                                              className="traffic-project-row-remove"
+                                              aria-label={`Remove vendor ${vendorIndex + 1}`}
+                                              title={`Remove vendor ${vendorIndex + 1}`}
+                                              disabled={saving || vendorForms.length <= 1}
+                                              onClick={() => removeProjectVendorForm(request.requestId, vendorIndex)}
+                                            >
+                                              <Trash2 size={14} />
+                                            </button>
                                           </div>
-                                        </div>
-                                      ))}
+                                        ) : (
+                                          <span>{vendor.trafficRemarks || vendor.remarks || "—"}</span>
+                                        )}
+                                      </div>
+                                    ))}
+                                  </div>
+                                </td>
+                                <td className="traffic-project-vendor-action-cell">
+                                  {canEdit ? (
+                                    <div className="traffic-project-row-actions">
                                       <button
                                         type="button"
-                                        className="traffic-project-vendor-add"
+                                        className="traffic-project-row-add"
                                         disabled={saving}
                                         onClick={() => addProjectVendorForm(request.requestId)}
                                       >
-                                        + Add Vendor
+                                        <Plus size={14} /> {request.rejectionReason ? "Add New Vendor" : "Add Vendor"}
                                       </button>
                                     </div>
-                                  ) : submittedVendors.length ? (
-                                    <div className="traffic-project-vendor-list">
-                                      {submittedVendors.map((vendor, vendorIndex) => (
-                                        <div
-                                          className={`traffic-project-vendor-summary ${
-                                            vendor.status === "Approved" ? "is-approved" : ""
-                                          }`}
-                                          key={vendor.quotationId || `${request.requestId}-${vendorIndex}`}
-                                        >
-                                          <div>
-                                            <strong>{vendor.vendorName}</strong>
-                                            <span>
-                                              ₹{Number(vendor.vendorAmount || 0).toLocaleString("en-IN")}
-                                            </span>
-                                          </div>
-                                          {vendor.trafficRemarks && (
-                                            <small>{vendor.trafficRemarks}</small>
-                                          )}
-                                          {vendor.status === "Approved" && (
-                                            <em>Selected by Management</em>
-                                          )}
-                                          {vendor.status === "Not Selected" && (
-                                            <em>Not selected</em>
-                                          )}
-                                        </div>
-                                      ))}
-                                    </div>
                                   ) : (
-                                    <div className="traffic-project-vendor-summary">
-                                      <strong>{request.vendorName || "—"}</strong>
-                                      <span>
-                                        {request.vendorAmount == null
-                                          ? ""
-                                          : `₹${Number(request.vendorAmount).toLocaleString("en-IN")}`}
-                                      </span>
-                                    </div>
-                                  )}
-                                  {request.status === "Approved" && selectedVendor && (
-                                    <div className="traffic-project-vendor-approved">
-                                      Approved vendor: <strong>{selectedVendor.vendorName}</strong>
-                                    </div>
-                                  )}
-                                </td>
-                                <td>
-                                  {request.status === "Pending Traffic" ? (
-                                    <button
-                                      type="button"
-                                      disabled={saving}
-                                      onClick={() => submitProjectVendorAllocation(request)}
-                                    >
-                                      {saving ? "Submitting..." : "Submit All to Management"}
-                                    </button>
-                                  ) : (
-                                    <strong>{request.status}</strong>
+                                    <span className={`project-request-status ${String(request.status || "").toLowerCase().replace(/\s+/g, "-")}`}>
+                                      {request.status === "Pending Management" ? "Pending Management" : request.status || "Submitted"}
+                                    </span>
                                   )}
                                 </td>
                               </tr>
+                              </React.Fragment>
                             );
                           })}
-                        {!(selectedOrder.projectVehicleAllocationRequests || []).length && (
-                          <tr>
-                            <td colSpan="6">No Project Movement allocation requests are waiting.</td>
-                          </tr>
-                        )}
+
                       </tbody>
                     </table>
                   </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                    {!getProjectRequests(selectedOrder).length && <p>No vehicle allocation requests are available.</p>}
+                  </div>
                 </section>
               )}
+              {isProjectMovement(selectedOrder) && transportView === "current" && (
+                <section className="traffic-project-transport-section is-current">
+                  <div className="traffic-project-transport-heading">
+                    <div>
+                      <h3>Current Transport</h3>
+                      <p>Only vendors approved by Management are shown here.</p>
+                    </div>
+                    <strong>
+                      {getProjectRequests(selectedOrder).filter(
+                        (request) =>
+                          request.status === "Approved" &&
+                          getSelectedProjectVendor(request),
+                      ).length}{" "}
+                      approved vehicles
+                    </strong>
+                  </div>
+                  {getProjectRequests(selectedOrder).some(
+                    (request) =>
+                      request.status === "Approved" &&
+                      getSelectedProjectVendor(request),
+                  ) ? (
+                  <div className="traffic-current-batches">
+                    {(() => {
+                      const isApproved = (request) => request.status === "Approved" && getSelectedProjectVendor(request);
+                      const byDate = (a, b) => (Date.parse(a.requestedAt) || 0) - (Date.parse(b.requestedAt) || 0);
+                      const allApprovedRequests = getProjectRequests(selectedOrder).filter(isApproved).sort(byDate);
+                      return getProjectQuotationBatches(selectedOrder)
+                        .slice().sort((a, b) => byDate(a, b))
+                        .map((batch) => {
+                          const approvedRequests = batch.requests.filter(isApproved).sort(byDate);
+                          if (!approvedRequests.length) return null;
+                          const vehicleGroups = new Map();
+                          approvedRequests.forEach((request) => {
+                            const requirement = (selectedOrder.vehicleRequirements || []).find(
+                              (item) => item.requirementId === request.requirementId,
+                            );
+                            const type = requirement?.vehicleType || request.vehicleType || "—";
+                            if (!vehicleGroups.has(type)) vehicleGroups.set(type, []);
+                            vehicleGroups.get(type).push(request);
+                          });
+                          return (
+                            <article className="traffic-current-batch" key={batch.key}>
+                              <div className="traffic-current-batch-heading"
+                                style={{ position: "relative", paddingRight: 36 }}>
+                                <button type="button"
+                                  aria-label={`Toggle ${batch.batchId ? `Batch ${batch.batchNumber}` : "individual request"} vehicle details`}
+                                  aria-expanded={!!openCurrentBatches[batch.key]}
+                                  onClick={() => setOpenCurrentBatches(previous => ({ ...previous, [batch.key]: !previous[batch.key] }))}
+                                  style={{ position: "absolute", inset: 0, width: "100%", border: 0, background: "transparent", cursor: "pointer", borderRadius: "inherit" }}
+                                />
+                                <span aria-hidden="true" style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", display: "flex", pointerEvents: "none" }}>
+                                  {openCurrentBatches[batch.key] ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                                </span>
+                                <div>
+                                  <h4>{batch.batchId ? `Batch ${String(batch.batchNumber).padStart(2, "0")}` : "Individual request (legacy)"}</h4>
+                                  <p>Requested on: {batch.requestedAt ? formatDate(batch.requestedAt) : "Not recorded"}</p>
+                                </div>
+                                <span>{approvedRequests.length} approved vehicles</span>
+                              </div>
+                  {openCurrentBatches[batch.key] && (
+                  <div className="traffic-project-transport-table-wrap">
+                    <table className="traffic-project-transport-table">
+                      <thead>
+                        <tr>
+                          <th>Vehicle</th>
+                          <th>Material Type</th>
+                          <th>Approved Vendor</th>
+                          <th>Approved Amount</th>
+                          <th>Status</th>
+                          <th>Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {Array.from(vehicleGroups, ([type, requests]) => (
+                          <React.Fragment key={type}>
+                            <tr className="traffic-current-type-heading">
+                              <td colSpan={6}>
+                                <div className="traffic-current-type-label">
+                                  <Truck size={16} aria-hidden="true" />
+                                  <strong>{type}</strong>
+                                  <span>{requests.length} {requests.length === 1 ? "vehicle" : "vehicles"}</span>
+                                </div>
+                              </td>
+                            </tr>
+                            {requests.map((request, index) => {
+                              const vendor = getSelectedProjectVendor(request);
+                              const requirement = getVehicleRequirements(selectedOrder).find(item => item.requirementId === request.requirementId);
+                              const confirmation = getVehicleConfirmations(selectedOrder).find(item => item.confirmationId === request.confirmationId && item.status === "Approved");
+                              const quotation = getTrafficQuotations(selectedOrder).find(item => item.quotationId === confirmation?.quotationId);
+                              const pending = getPendingTransportReplacement(selectedOrder, request.confirmationId);
+                              const material = requirement?.materialType || request.materialType || "—";
+                              const sameRequirementBefore = allApprovedRequests
+                                .slice(0, allApprovedRequests.indexOf(request))
+                                .filter((item) => item.requirementId === request.requirementId).length;
+                              return (
+                                <tr key={request.requestId || index}>
+                                  <td>Vehicle {sameRequirementBefore + 1}</td>
+                                  <td>{material}</td>
+                                  <td><strong>{quotation?.transporter || vendor?.vendorName || "—"}</strong></td>
+                                  <td className="project-transport-amount">{formatAmount(quotation?.amount ?? vendor?.vendorAmount)}</td>
+                                  <td><span className={pending ? "traffic-status waiting" : "project-transport-approved"}>{pending ? "Replacement Pending" : "Approved"}</span></td>
+                                  <td><button type="button" className="traffic-project-change-btn" disabled={saving || !!pending || !requirement || !confirmation || !quotation} onClick={() => openTransportReplacement(requirement, confirmation, quotation)}><RefreshCw size={13} /> Change Transport</button></td>
+                                </tr>
+                              );
+                            })}
+                          </React.Fragment>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  )}
+                            </article>
+                          );
+                        });
+                    })()}
+                  </div>
+                  ) : (
+                    <div className="project-transport-empty-state">
+                      <Truck size={25} strokeWidth={1.8} />
+                      <strong>No approved transporters yet</strong>
+                      <span>Approved vendors will appear here after Management approval.</span>
+                      <button type="button" onClick={() => setTransportView("quotes")}>
+                        Open quotations <ChevronRight size={14} />
+                      </button>
+                    </div>
+                  )}
+                </section>
+              )}
+
+              {isProjectMovement(selectedOrder) && transportView === "history" && (
+                <section className="traffic-project-transport-section is-history">
+                  <div className="traffic-project-transport-heading">
+                    <div>
+                      <h3>Change History</h3>
+                      <p>Only changes to an already-approved vendor are listed.</p>
+                    </div>
+                    <strong>
+                      {getProjectVendorHistory(selectedOrder).length} changes
+                    </strong>
+                  </div>
+                  {getProjectVendorHistory(selectedOrder).length ? (
+                  <div className="traffic-project-transport-table-wrap">
+                    <table className="traffic-project-transport-table">
+                      <thead>
+                        <tr>
+                          <th>S.No</th>
+                          <th>Vehicle</th>
+                          <th>Previous Vendor</th>
+                          <th>New Vendor</th>
+                          <th>Previous Amount</th>
+                          <th>New Amount</th>
+                          <th>Changed On</th>
+                          <th>Changed By</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {getProjectVendorHistory(selectedOrder).map((item, index) => {
+                          const requirement = (
+                            selectedOrder.vehicleRequirements || []
+                          ).find(
+                            (entry) =>
+                              entry.requirementId === item.requirementId,
+                          );
+                          const changedAt = item.changedAt || item.createdAt;
+                          return (
+                            <tr key={item.changeId || item._id || `${item.requestId || "change"}-${index}`}>
+                              <td>{index + 1}</td>
+                              <td>
+                                {item.vehicleNumber ||
+                                  `${requirement?.vehicleType || "Vehicle"} ${
+                                    item.vehicleIndex || ""
+                                  }`}
+                              </td>
+                              <td>{item.previousVendorName || item.oldVendorName || item.fromVendor || "—"}</td>
+                              <td>
+                                <strong>
+                                  {item.newVendorName || item.proposedVendorName || item.toVendor || "—"}
+                                </strong>
+                              </td>
+                              <td>{formatAmount(item.previousAmount ?? item.oldAmount)}</td>
+                              <td className="project-transport-amount">
+                                {formatAmount(item.newAmount ?? item.proposedAmount)}
+                              </td>
+                              <td>
+                                {changedAt ? formatDate(changedAt) : "—"}
+                              </td>
+                              <td>{item.changedBy || item.reviewedBy || item.updatedBy || "—"}</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                  ) : (
+                    <div className="project-transport-empty-state">
+                      <RefreshCw size={25} strokeWidth={1.8} />
+                      <strong>No changes requested</strong>
+                      <span>Future vendor changes and approval decisions will appear here.</span>
+                    </div>
+                  )}
+                </section>
+              )}
+
               {String(selectedOrder?.movementType || "")
                 .toLowerCase()
                 .replace(/[\s_-]+/g, "") === "projectmovement"
@@ -2568,16 +2967,7 @@ const Traffic = () => {
                                                 })
                                               : "Date unavailable"}
                                           </strong>
-                                          <small>
-                                            {item.requestedAt
-                                              ? new Date(
-                                                  item.requestedAt,
-                                                ).toLocaleTimeString("en-IN", {
-                                                  hour: "2-digit",
-                                                  minute: "2-digit",
-                                                })
-                                              : ""}
-                                          </small>
+
                                         </div>
                                         <div className="hx-route">
                                           <span>
@@ -2717,7 +3107,8 @@ const Traffic = () => {
               {/* =================================================
                   FOOTER
               ================================================= */}
-              {transportView === "quotes" &&
+              {!isProjectMovement(selectedOrder) &&
+                transportView === "quotes" &&
                 requirementForms.some((item) =>
                   item.quotations?.some((quotation) => quotation.isNew),
                 ) && (
@@ -2739,6 +3130,17 @@ const Traffic = () => {
                   </div>
                 )}
             </div>
+            {isProjectMovement(selectedOrder) && (
+              <footer className="traffic-project-fixed-footer">
+                <small>{transportView === "quotes" ? `${getProjectRequests(selectedOrder).filter((request) => request.status === "Pending Traffic").length} vehicle requests pending quotation` : "Project Movement"}</small>
+                <button type="button" className="traffic-project-footer-close" onClick={handleCloseOrder} disabled={saving}>Close</button>
+                {transportView === "quotes" && (
+                  <button type="button" className="traffic-project-common-save" onClick={() => submitAllProjectVendorAllocations()} disabled={saving || !getProjectRequests(selectedOrder).some((request) => request.status === "Pending Traffic")}>
+                    <Send size={14} /> {saving ? "Submitting..." : "Submit All Quotations"}
+                  </button>
+                )}
+              </footer>
+            )}
           </div>
         </div>
       )}
@@ -2833,6 +3235,7 @@ const Traffic = () => {
                         : `${transportReplacementForm.currentQuantity} vehicle${Number(transportReplacementForm.currentQuantity) === 1 ? "" : "s"}`}
                     </strong>
                   </div>
+                  {isProjectMovement(selectedOrder) && <div><small>MATERIAL TYPE</small><strong>{transportReplacementForm.materialType || "—"}</strong></div>}
                 </section>
                 {Number(transportReplacementForm.currentQuantity) === 1 ? (
                   <div className="tr-change-context">

@@ -2531,7 +2531,7 @@
   color: #0f766e;
 }
 
-.traffic-movement-badge.wtg {
+.traffic-movement-badge.line {
   border-color: #cbd9e8;
   background: #f1f6fb;
   color: #356b9a;
@@ -5449,4 +5449,865 @@
   .traffic-project-vendor-fields {
     grid-template-columns: 1fr;
   }
+}
+
+
+/* PROJECT MOVEMENT — compact table views for large vehicle counts */
+.traffic-project-transport-section {
+  margin: 8px 0 12px;
+  padding: 12px;
+  border: 1px solid #dce7eb;
+  border-radius: 9px;
+  background: #fff;
+}
+.traffic-project-transport-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 9px;
+}
+.traffic-project-transport-heading h3 {
+  margin: 0;
+  color: #173b4b;
+  font-size: 14px;
+  font-weight: 800;
+}
+.traffic-project-transport-heading p {
+  margin: 3px 0 0;
+  color: #71858e;
+  font-size: 10px;
+}
+.traffic-project-transport-heading > strong {
+  flex: 0 0 auto;
+  padding: 5px 8px;
+  border: 1px solid #dce9e7;
+  border-radius: 6px;
+  background: #f5faf9;
+  color: #28756f;
+  font-size: 10px;
+  font-weight: 750;
+}
+.traffic-project-transport-table-wrap {
+  width: 100%;
+  max-height: min(58vh, 620px);
+  overflow: auto;
+  border: 1px solid #e1e9ec;
+  border-radius: 7px;
+}
+.traffic-project-transport-table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 11px;
+}
+.traffic-project-transport-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+.traffic-project-transport-table th {
+  height: 34px;
+  padding: 7px 10px;
+  background: #eaf2f3;
+  border-bottom: 1px solid #d8e4e7;
+  color: #45616c;
+  text-align: left;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .035em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.traffic-project-transport-table td {
+  height: 37px;
+  padding: 7px 10px;
+  border-bottom: 1px solid #edf1f2;
+  background: #fff;
+  color: #294653;
+  font-size: 11px;
+  font-weight: 550;
+  vertical-align: middle;
+}
+.traffic-project-transport-table tbody tr:nth-child(even) td {
+  background: #fbfdfd;
+}
+.traffic-project-transport-table tbody tr:hover td {
+  background: #f2f9f7;
+}
+.traffic-project-transport-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+.traffic-project-transport-table td strong {
+  color: #173f4c;
+  font-weight: 800;
+}
+.traffic-project-transport-table .project-transport-amount {
+  color: #08776f;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.project-transport-approved {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 7px;
+  border: 1px solid #c6e5d5;
+  border-radius: 5px;
+  background: #eff9f3;
+  color: #18794e;
+  font-size: 9px;
+  font-weight: 800;
+}
+.traffic-project-transport-table .project-transport-empty {
+  height: 68px;
+  color: #7b8e96;
+  text-align: center;
+  font-weight: 500;
+}
+@media (max-width: 650px) {
+  .traffic-project-transport-section {
+    padding: 9px;
+  }
+  .traffic-project-transport-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .traffic-project-transport-table-wrap {
+    max-height: 55vh;
+  }
+}
+
+/* Project Movement empty states — clean, spacious and consistent across tabs */
+.project-transport-empty-state {
+  min-height: 205px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 28px 18px;
+  border: 1px solid #e0e8e8;
+  border-radius: 10px;
+  background: #fff;
+  color: #82aaa2;
+  text-align: center;
+}
+.project-transport-empty-state > svg {
+  color: #82aaa2;
+  margin-bottom: 1px;
+}
+.project-transport-empty-state > strong {
+  color: #536f76;
+  font-size: 14px;
+  font-weight: 750;
+}
+.project-transport-empty-state > span {
+  color: #89999e;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.project-transport-empty-state > button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 36px;
+  margin-top: 7px;
+  padding: 0 14px;
+  border: 1px solid #dce8e5;
+  border-radius: 8px;
+  background: #fff;
+  color: #238477;
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background .18s ease, border-color .18s ease;
+}
+.project-transport-empty-state > button:hover {
+  border-color: #b8d8d0;
+  background: #f5fbf9;
+}
+@media (max-width: 650px) {
+  .project-transport-empty-state {
+    min-height: 185px;
+    padding: 22px 14px;
+  }
+}
+
+
+/* PROJECT MOVEMENT — refined compact quotation editor */
+.traffic-project-allocation-section{margin:2px 0 10px!important;padding:10px 12px!important;border-radius:10px}
+.traffic-project-allocation-heading h3{margin:2px 0 3px;font-size:16px}
+.traffic-project-allocation-heading p{margin:0 0 9px;font-size:11px}
+.traffic-project-allocation-table{min-width:980px}
+.traffic-project-allocation-table th{padding:8px 9px;background:#f2f6f7}
+.traffic-project-allocation-table td{padding:8px 9px}
+.traffic-project-vendor-editor{gap:6px}
+.traffic-project-vendor-entry{padding:7px}
+.traffic-project-vendor-entry-heading{margin-bottom:5px}
+.traffic-project-vendor-fields{grid-template-columns:minmax(120px,1.05fr) minmax(105px,.7fr) minmax(125px,1fr);gap:6px}
+.traffic-project-vendor-actions{display:flex;align-items:center;justify-content:flex-start;flex-wrap:wrap;gap:7px}
+.traffic-project-allocation-table .traffic-project-vendor-actions button{min-height:31px;padding:6px 10px;border-radius:7px;font-size:10px}
+.traffic-project-allocation-table .traffic-project-vendor-save{background:#087f78;color:#fff}
+.traffic-project-allocation-table .traffic-project-vendor-save:disabled{opacity:.45}
+.project-request-status{display:inline-flex;align-items:center;padding:5px 8px;border-radius:20px;background:#f1f5f6;color:#657983;font-size:10px;font-weight:750;white-space:nowrap}
+.project-request-status.pending-management{background:#fff7e8;color:#98651c}
+.project-request-status.approved{background:#eaf7ef;color:#18794e}
+.project-request-status.rejected{background:#fff0ef;color:#b33e36}
+
+/* Distinct visual identity for Current Transport and Change History. */
+.traffic-project-transport-section.is-current{border-color:#cfe7e2;background:linear-gradient(180deg,#f7fcfb 0,#fff 110px)}
+.traffic-project-transport-section.is-current .traffic-project-transport-heading h3{color:#08776f}
+.traffic-project-transport-section.is-current .traffic-project-transport-table th{background:#eaf7f4;color:#276d67;border-bottom-color:#d1e9e3}
+.traffic-project-transport-section.is-current .traffic-project-transport-heading>strong{background:#eaf7f1;border-color:#cce7d9;color:#18794e}
+.traffic-project-transport-section.is-history{border-color:#dce2f0;background:linear-gradient(180deg,#f8f9fe 0,#fff 110px)}
+.traffic-project-transport-section.is-history .traffic-project-transport-heading h3{color:#465b91}
+.traffic-project-transport-section.is-history .traffic-project-transport-table th{background:#eef1fa;color:#52618b;border-bottom-color:#dce2f0}
+.traffic-project-transport-section.is-history .traffic-project-transport-heading>strong{background:#f0f2fb;border-color:#dce2f0;color:#52618b}
+.traffic-project-transport-section.is-history .traffic-project-transport-table tbody tr:hover td{background:#f6f7fc}
+.traffic-project-transport-section.is-history .project-transport-amount{color:#52618b}
+@media(max-width:760px){.traffic-project-allocation-section{padding:8px!important}.traffic-project-vendor-fields{grid-template-columns:1fr}.traffic-project-vendor-actions{justify-content:flex-start}}
+
+/* Project Movement quotations — compact vehicle-wise grouped table */
+.traffic-project-quotation-exact {
+  margin: 3px 0 12px !important;
+  padding: 10px 12px !important;
+  border: 1px solid #dcebe9 !important;
+  border-radius: 11px !important;
+  background: #fff !important;
+}
+.traffic-project-quotation-exact .traffic-project-allocation-heading {
+  margin: 0 0 9px;
+}
+.traffic-project-quotation-exact .traffic-project-allocation-heading span {
+  color: #168b83;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .08em;
+}
+.traffic-project-quotation-exact .traffic-project-allocation-heading h3 {
+  margin: 2px 0 3px;
+  color: #183d4a;
+  font-size: 16px;
+}
+.traffic-project-quotation-exact .traffic-project-allocation-heading p {
+  margin: 0;
+  color: #71838a;
+  font-size: 11px;
+}
+.traffic-project-quotation-table-wrap,
+.traffic-project-quotation-exact .traffic-project-allocation-table-wrap {
+  overflow-x: auto;
+  border: 1px solid #dfe9eb;
+  border-radius: 9px;
+}
+.traffic-project-quotation-table {
+  width: 100%;
+  min-width: 1040px !important;
+  border-collapse: separate !important;
+  border-spacing: 0;
+  table-layout: fixed;
+  font-size: 12px;
+}
+.traffic-project-quotation-table th {
+  padding: 10px 12px !important;
+  background: #dff5f3 !important;
+  color: #263f4a !important;
+  border-right: 1px solid #cce8e5;
+  text-align: left;
+  text-transform: none !important;
+  font-size: 11px !important;
+  font-weight: 750;
+  white-space: nowrap;
+}
+.traffic-project-quotation-table th:nth-child(1) { width: 7%; text-align: center; }
+.traffic-project-quotation-table th:nth-child(2) { width: 16%; }
+.traffic-project-quotation-table th:nth-child(3) { width: 12%; }
+.traffic-project-quotation-table th:nth-child(4) { width: 23%; }
+.traffic-project-quotation-table th:nth-child(5) { width: 12%; }
+.traffic-project-quotation-table th:nth-child(6) { width: 18%; }
+.traffic-project-quotation-table th:nth-child(7) { width: 12%; }
+.traffic-project-quotation-table td {
+  padding: 7px 10px !important;
+  border-top: 1px solid #e8eef0;
+  border-right: 1px solid #e8eef0;
+  color: #263f4a;
+  vertical-align: middle !important;
+  background: #fff;
+}
+.traffic-project-quotation-table .traffic-project-vehicle-row:hover td {
+  background: #fbfefd;
+}
+.traffic-project-quotation-table .traffic-project-sno-cell {
+  text-align: center;
+}
+.traffic-project-sno-cell > span {
+  display: inline-flex;
+  width: 31px;
+  height: 31px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #d9f7f1;
+  color: #087e75;
+  font-size: 12px;
+  font-weight: 800;
+}
+.traffic-project-vehicle-type-cell,
+.traffic-project-vehicle-number-cell {
+  font-size: 12px;
+  font-weight: 550;
+}
+.traffic-project-vendor-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  overflow: hidden;
+  border: 1px solid #e0e9eb;
+  border-radius: 8px;
+  background: #fff;
+}
+.traffic-project-vendor-stack-row {
+  display: flex;
+  min-height: 37px;
+  align-items: center;
+  padding: 4px 9px;
+  border-bottom: 1px solid #e8eef0;
+  color: #293f49;
+  font-size: 11px;
+}
+.traffic-project-vendor-stack-row:last-child { border-bottom: 0; }
+.traffic-project-vendor-stack-row > strong {
+  font-size: 11px;
+  font-weight: 600;
+}
+.traffic-project-vendor-stack-row > span {
+  font-size: 11px;
+}
+.traffic-project-vendor-stack-row input {
+  width: 100%;
+  min-width: 0 !important;
+  height: 29px;
+  padding: 5px 7px !important;
+  border: 1px solid transparent !important;
+  border-radius: 5px !important;
+  outline: none;
+  background: #fff;
+  color: #263f4a;
+  font-size: 11px !important;
+}
+.traffic-project-vendor-stack-row input:focus {
+  border-color: #8bcfc8 !important;
+  background: #fbfffe;
+  box-shadow: 0 0 0 2px rgba(17, 153, 142, .08);
+}
+.traffic-project-amount-stack-cell .traffic-project-vendor-stack-row > strong {
+  color: #263f4a;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.traffic-project-remark-control {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 5px;
+}
+.traffic-project-remark-control input { flex: 1; }
+.traffic-project-quotation-table .traffic-project-row-remove {
+  display: inline-flex;
+  width: 25px;
+  min-width: 25px;
+  height: 25px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 5px !important;
+  background: transparent !important;
+  color: #e23c3c !important;
+  cursor: pointer;
+}
+.traffic-project-quotation-table .traffic-project-row-remove:hover:not(:disabled) {
+  background: #fff0ef !important;
+}
+.traffic-project-quotation-table .traffic-project-row-remove:disabled {
+  opacity: .35;
+  cursor: not-allowed;
+}
+.traffic-project-vendor-action-cell { min-width: 125px; }
+.traffic-project-row-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 7px;
+}
+.traffic-project-quotation-table .traffic-project-row-add {
+  display: inline-flex;
+  min-height: 35px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 9px !important;
+  border: 1px solid #55b9b0 !important;
+  border-radius: 9px !important;
+  background: #f8fffe !important;
+  color: #087c74 !important;
+  font-size: 11px !important;
+  font-weight: 750;
+}
+.traffic-project-quotation-table .traffic-project-row-add:hover:not(:disabled) {
+  background: #e8f8f6 !important;
+}
+.traffic-project-quotation-table .traffic-project-row-save {
+  min-height: 30px;
+  padding: 5px 8px !important;
+  border-radius: 7px !important;
+  background: #078b82 !important;
+  color: #fff !important;
+  font-size: 10px !important;
+}
+.traffic-project-quotation-table .traffic-project-row-save:disabled { opacity: .4; }
+.traffic-project-quotation-table .traffic-project-empty-row {
+  padding: 24px !important;
+  color: #71838a;
+  text-align: center;
+}
+@media (max-width: 760px) {
+  .traffic-project-quotation-exact { padding: 8px !important; }
+  .traffic-project-quotation-table { min-width: 960px !important; }
+}
+
+
+/* Project Movement quotations: Allocated By + Material columns; no vehicle number. */
+.traffic-project-quotation-table { min-width: 1120px !important; }
+.traffic-project-quotation-table th:nth-child(1) { width: 7%; text-align: center; }
+.traffic-project-quotation-table th:nth-child(2) { width: 19%; }
+.traffic-project-quotation-table th:nth-child(3) { width: 14%; }
+.traffic-project-quotation-table th:nth-child(4) { width: 11%; }
+.traffic-project-quotation-table th:nth-child(5) { width: 21%; }
+.traffic-project-quotation-table th:nth-child(6) { width: 11%; }
+.traffic-project-quotation-table th:nth-child(7) { width: 12%; }
+.traffic-project-quotation-table th:nth-child(8) { width: 13%; }
+.traffic-project-allocated-by-cell,
+.traffic-project-material-cell {
+  color: #314b55;
+  font-size: 11px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+/* Project Movement quotations: one Allocated By value per vendor + one shared save action. */
+.traffic-project-quotation-table { min-width: 1260px !important; }
+.traffic-project-quotation-table th:nth-child(1) { width: 6%; }
+.traffic-project-quotation-table th:nth-child(2) { width: 17%; }
+.traffic-project-quotation-table th:nth-child(3) { width: 10%; }
+.traffic-project-quotation-table th:nth-child(4) { width: 18%; }
+.traffic-project-quotation-table th:nth-child(5) { width: 15%; }
+.traffic-project-quotation-table th:nth-child(6) { width: 11%; }
+.traffic-project-quotation-table th:nth-child(7) { width: 14%; }
+.traffic-project-quotation-table th:nth-child(8) { width: 9%; }
+.traffic-project-allocated-by-stack-cell { min-width: 150px; }
+.traffic-project-allocated-by-stack-cell input {
+  width: 100%; min-width: 0; height: 34px; padding: 0 9px;
+  border: 1px solid #d8e3e8; border-radius: 7px; background: #fff;
+  color: #294653; font: inherit; font-size: 11px; outline: none;
+}
+.traffic-project-allocated-by-stack-cell input:focus {
+  border-color: #36a69b; box-shadow: 0 0 0 3px rgba(15,139,130,.09);
+}
+.traffic-project-common-save-wrap {
+  display: flex; justify-content: center; align-items: center;
+  padding: 14px 8px 3px;
+}
+.traffic-project-common-save {
+  min-width: 230px; min-height: 42px; padding: 0 22px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+  border: 1px solid #078b82; border-radius: 9px;
+  background: linear-gradient(135deg,#0b9b91,#087e79);
+  color: #fff; font-size: 12px; font-weight: 800;
+  box-shadow: 0 5px 13px rgba(8,139,130,.18); cursor: pointer;
+}
+.traffic-project-common-save:hover:not(:disabled) {
+  background: linear-gradient(135deg,#087f78,#066d68);
+  transform: translateY(-1px);
+}
+.traffic-project-common-save:disabled { opacity: .55; cursor: not-allowed; }
+.traffic-project-row-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 7px; }
+
+
+/* Common material is displayed once per vehicle row; vendor allocation remains vendor-wise. */
+.traffic-project-quotation-table .traffic-project-material-cell {
+  min-width: 125px;
+  vertical-align: middle;
+  text-align: center;
+  background: #f3fbfa;
+  color: #176b68;
+  font-weight: 700;
+}
+.traffic-project-material-value {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  padding: 5px 10px;
+  border: 1px solid #d6eeeb;
+  border-radius: 7px;
+  background: #ffffff;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+/* Project Movement: one shared vehicle/material cell for all individual
+   allocation requests belonging to the same vehicle requirement. */
+.traffic-project-quotation-table .traffic-project-common-requirement-cell {
+  vertical-align: middle !important;
+  background: #fbfefd;
+  font-weight: 700;
+  color: #173f48;
+  border-bottom: 1px solid #dce9e7;
+}
+.traffic-project-quotation-table .traffic-project-material-cell {
+  color: #087f78;
+  font-weight: 700;
+}
+@media (max-width: 760px) {
+  .traffic-project-quotation-table .traffic-project-common-requirement-cell {
+    vertical-align: middle !important;
+  }
+}
+
+
+/* Project Movement quotation groups: editable requests first. */
+.traffic-project-quotation-exact .traffic-project-group-heading td {
+  padding: 10px 14px !important;
+  font-weight: 800;
+  background: #edf3f5;
+  color: #345967;
+}
+.traffic-project-quotation-exact .traffic-project-group-heading.is-entry td {
+  background: #fff0c9; color: #805600;
+}
+.traffic-project-quotation-exact .traffic-project-group-heading.is-approved td {
+  background: #dff3e9; color: #17694c;
+}
+.traffic-project-quotation-exact .traffic-project-vehicle-row.is-entry td {
+  background: #fff9e9;
+  border-bottom-color: #eadfc3;
+}
+.traffic-project-quotation-exact .traffic-project-vehicle-row.is-entry:hover td {
+  background: #fff5dc;
+}
+.traffic-project-quotation-exact .traffic-project-vehicle-row.is-entry .traffic-project-vendor-stack {
+  border-color: #e5d4a6;
+}
+.traffic-project-quotation-exact .traffic-project-vendor-stack-row.is-approved-vendor {
+  background: #e5f5ee; color: #17694c;
+}
+.traffic-project-quotation-exact .traffic-project-vendor-stack-row.is-approved-vendor > strong {
+  color: #17694c;
+}
+.traffic-project-quotation-exact .traffic-project-vendor-stack-row.is-unselected-vendor {
+  background: #f4f7f8;
+}
+
+/* Project Movement only: compact viewport layout. */
+.traffic-project-compact-overlay { padding: 8px; box-sizing: border-box; }
+.traffic-project-compact-modal { width: 100%; max-width: none; height: calc(100vh - 16px); max-height: calc(100vh - 16px); height: calc(100dvh - 16px); max-height: calc(100dvh - 16px); border-radius: 12px; }
+.traffic-project-compact-modal > .traffic-modal-header { flex: 0 0 auto; min-height: 0; padding: 8px 14px; gap: 12px; }
+.traffic-project-compact-modal .traffic-modal-heading { flex: 1 1 300px; }
+.traffic-project-compact-modal .traffic-modal-heading > span { min-height: 16px; margin: 0 0 3px; padding: 0 6px; font-size: 9px; }
+.traffic-project-compact-modal .traffic-modal-title-row { gap: 6px; flex-wrap: wrap; }
+.traffic-project-compact-modal .traffic-modal-header h2 { font-size: 17px; }
+.traffic-project-compact-modal .traffic-modal-movement { min-height: 18px; margin: 0; padding: 0 6px; font-size: 9px; }
+.traffic-project-header-meta { display: grid; grid-template-columns: 1fr 1.4fr 1fr; flex: 1 1 420px; gap: 10px; min-width: 0; z-index: 2; }
+.traffic-project-header-meta > div { min-width: 0; border-left: 1px solid #ffffff30; padding-left: 12px; }
+.traffic-project-header-meta small { display: block; color: #b6e3e1; font-size: 10px; text-transform: uppercase; margin-bottom: 3px; }
+.traffic-project-header-meta strong { display: block; color: white; font-size: 13px; overflow-wrap: anywhere; }
+.traffic-project-compact-modal .traffic-modal-close { width: 30px; height: 30px; flex-basis: 30px; }
+.traffic-project-compact-modal > .tv-navigation { padding: 4px 8px; gap: 6px; }
+.traffic-project-compact-modal .tv-navigation > [role="tablist"] { padding: 2px; gap: 2px; }
+.traffic-project-compact-modal .tv-navigation button { padding: 6px 10px; gap: 5px; }
+.traffic-project-compact-modal > .traffic-modal-body { flex: 1 1 0; min-height: 0; padding: 5px 7px; overflow-y: auto; }
+.traffic-project-compact-modal .traffic-project-quotation-exact,
+.traffic-project-compact-modal .traffic-project-transport-section { margin: 0 !important; padding: 5px !important; }
+.traffic-project-compact-modal .traffic-project-allocation-heading,
+.traffic-project-compact-modal .traffic-project-transport-heading { margin: 0 0 5px; padding: 0; }
+.traffic-project-compact-modal .traffic-project-allocation-heading h3 { font-size: 14px; margin: 0 0 2px; }
+.traffic-project-compact-modal .traffic-project-allocation-heading p { font-size: 10px; }
+.traffic-project-compact-modal .traffic-project-quotation-table { min-width: 1000px !important; }
+.traffic-project-compact-modal .traffic-project-quotation-table th,
+.traffic-project-compact-modal .traffic-project-transport-table th { height: auto; padding: 7px 6px !important; }
+.traffic-project-compact-modal .traffic-project-quotation-table td,
+.traffic-project-compact-modal .traffic-project-transport-table td { height: auto; padding: 3px 6px !important; }
+.traffic-project-compact-modal .traffic-project-quotation-exact .traffic-project-group-heading td { padding: 5px 8px !important; }
+.traffic-project-compact-modal .traffic-project-vendor-stack-row { min-height: 28px; padding: 2px 5px; box-sizing: border-box; }
+.traffic-project-compact-modal .traffic-project-vendor-stack-row input { height: 26px; box-sizing: border-box; }
+.traffic-project-compact-modal .traffic-project-sno-cell > span { width: 25px; height: 25px; }
+.traffic-project-compact-modal .traffic-project-material-value { min-height: 24px; padding: 2px 6px; }
+.traffic-project-compact-modal .traffic-project-quotation-table .traffic-project-row-add { min-height: 28px; padding: 3px 6px !important; }
+.traffic-project-compact-modal .traffic-project-row-actions { gap: 3px; }
+.traffic-project-fixed-footer { flex: 0 0 auto; display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding: 6px 12px; background: linear-gradient(135deg,#0b3447,#0d8f87); color: white; }
+.traffic-project-fixed-footer small { margin-right: auto; font-size: 11px; }
+.traffic-project-fixed-footer .traffic-project-common-save { min-width: 0; min-height: 32px; padding: 0 12px; box-shadow: none; background: white; color: #08776f; }
+.traffic-project-fixed-footer .traffic-project-common-save:hover:not(:disabled) { background: #e3f5f2; color: #08776f; transform: none; }
+.traffic-project-footer-close { min-height: 32px; padding: 0 12px; border: 1px solid #ffffff66; border-radius: 7px; background: #ffffff15; color: white; cursor: pointer; }
+.traffic-project-footer-close:disabled { opacity: .55; cursor: not-allowed; }
+@media (max-width: 760px) {
+  .traffic-project-compact-modal > .traffic-modal-header { flex-wrap: wrap; gap: 6px; }
+  .traffic-project-compact-modal .traffic-modal-heading { flex: 1 1 75%; }
+  .traffic-project-header-meta { order: 3; flex: 1 1 100%; }
+  .traffic-project-compact-modal .tv-navigation { overflow-x: auto; }
+  .traffic-project-compact-modal .tv-navigation > span { display: none; }
+  .traffic-project-fixed-footer { flex-wrap: wrap; }
+}
+
+/* Project quotation batch accordion — moderate spacing */
+.traffic-project-compact-modal > .traffic-modal-body:has(.traffic-project-batch-list) { padding: 9px 12px; }
+.traffic-project-compact-modal .traffic-project-quotation-exact { padding: 10px !important; }
+.traffic-project-compact-modal .traffic-project-allocation-heading { margin-bottom: 9px; }
+.traffic-project-batch-list { display: grid; gap: 9px; }
+.traffic-project-batch { border: 1px solid #d2e4e7; border-radius: 9px; overflow: hidden; background: #fff; }
+.traffic-project-batch-toggle { display: flex; align-items: center; gap: 12px; width: 100%; padding: 10px 12px; border: 0; background: #edf6f6; color: #173c4e; text-align: left; font: inherit; font-size: 12px; cursor: pointer; }
+.traffic-project-batch-toggle:hover { background: #e0f1ef; }
+.traffic-project-batch-toggle:focus-visible { outline: 2px solid #08776f; outline-offset: -2px; }
+.traffic-project-batch-name { flex: 1; display: grid; gap: 3px; }
+.traffic-project-batch-name small { color: #668697; }
+.traffic-project-batch-toggle .is-pending { color: #956500; font-weight: 700; }
+.traffic-project-batch .traffic-project-allocation-table-wrap { margin: 7px !important; width: auto !important; }
+.traffic-project-compact-modal .traffic-project-quotation-table td { padding: 5px 8px !important; }
+.traffic-project-compact-modal .traffic-project-quotation-table th { padding: 9px 8px !important; }
+.traffic-project-compact-modal .traffic-project-vendor-stack-row { min-height: 31px; }
+@media(max-width:760px) { .traffic-project-batch-toggle { flex-wrap: wrap; gap: 8px; } }
+
+/* Project request dates */
+.traffic-project-batch .traffic-project-required-date { white-space: nowrap; font-size: 12px; }
+.traffic-project-batch-name small { line-height: 1.4; }
+
+/* Project batch placement dates: keep each vehicle date readable. */
+.traffic-project-batch .traffic-project-required-date { min-width: 105px; font-weight: 600; color: #245967; }
+
+
+/* Project batch quotations only: nine-column layout and aligned controls. */
+.traffic-project-compact-modal .traffic-project-batch-list {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+}
+.traffic-project-compact-modal .traffic-project-batch { min-width: 0; }
+.traffic-project-compact-modal .traffic-project-batch .traffic-project-allocation-table-wrap {
+  margin: 8px !important;
+  width: auto !important;
+  min-width: 0;
+  overflow-x: auto;
+}
+.traffic-project-compact-modal .traffic-project-batch .traffic-project-quotation-table {
+  width: 100%; min-width: 1280px !important; table-layout: fixed;
+}
+.traffic-project-compact-modal .traffic-project-batch .traffic-project-quotation-table th,
+.traffic-project-compact-modal .traffic-project-batch .traffic-project-quotation-table td {
+  box-sizing: border-box; padding: 6px 8px !important;
+  position: static;
+}
+.traffic-project-compact-modal .traffic-project-batch .traffic-project-quotation-table th:nth-child(1) { width: 4%; }
+.traffic-project-compact-modal .traffic-project-batch .traffic-project-quotation-table th:nth-child(2) { width: 14%; }
+.traffic-project-compact-modal .traffic-project-batch .traffic-project-quotation-table th:nth-child(3) { width: 9%; }
+.traffic-project-compact-modal .traffic-project-batch .traffic-project-quotation-table th:nth-child(4) { width: 10%; }
+.traffic-project-compact-modal .traffic-project-batch .traffic-project-quotation-table th:nth-child(5) { width: 15%; }
+.traffic-project-compact-modal .traffic-project-batch .traffic-project-quotation-table th:nth-child(6) { width: 12%; }
+.traffic-project-compact-modal .traffic-project-batch .traffic-project-quotation-table th:nth-child(7) { width: 11%; }
+.traffic-project-compact-modal .traffic-project-batch .traffic-project-quotation-table th:nth-child(8) { width: 15%; }
+.traffic-project-compact-modal .traffic-project-batch .traffic-project-quotation-table th:nth-child(9) { width: 10%; }
+
+.traffic-project-compact-modal .traffic-project-batch .traffic-project-quotation-table th {
+  padding: 10px 8px !important; white-space: normal;
+}
+.traffic-project-compact-modal .traffic-project-batch .traffic-project-quotation-table td {
+  min-width: 0; overflow-wrap: anywhere;
+}
+.traffic-project-compact-modal .traffic-project-batch .traffic-project-required-date {
+  min-width: 0; white-space: nowrap;
+}
+.traffic-project-compact-modal .traffic-project-batch .traffic-project-vendor-stack {
+  min-width: 0; width: 100%; box-sizing: border-box;
+}
+.traffic-project-compact-modal .traffic-project-batch .traffic-project-vendor-stack-row {
+  min-width: 0; height: 38px; padding: 3px 5px; box-sizing: border-box;
+}
+.traffic-project-compact-modal .traffic-project-batch .traffic-project-vendor-stack-row input {
+  width: 100%; min-width: 0 !important; height: 30px; box-sizing: border-box;
+}
+.traffic-project-compact-modal .traffic-project-batch .traffic-project-remark-control {
+  min-width: 0; gap: 4px;
+}
+.traffic-project-compact-modal .traffic-project-batch .traffic-project-remark-control input {
+  flex: 1 1 0; width: 0; min-width: 0 !important;
+}
+.traffic-project-compact-modal .traffic-project-batch .traffic-project-row-remove {
+  flex: 0 0 22px; width: 22px; min-width: 22px;
+}
+.traffic-project-compact-modal .traffic-project-batch .traffic-project-row-actions {
+  align-items: stretch; min-width: 0;
+}
+.traffic-project-compact-modal .traffic-project-batch .traffic-project-quotation-table .traffic-project-row-add {
+  width: 100%; min-width: 0; min-height: 32px; box-sizing: border-box;
+  white-space: nowrap; gap: 4px; padding: 4px 5px !important;
+}
+.traffic-project-compact-modal .traffic-project-batch .traffic-project-row-add svg { flex-shrink: 0; }
+.traffic-project-compact-modal .traffic-project-batch .traffic-project-group-heading td {
+  padding: 7px 10px !important;
+}
+.traffic-project-compact-modal .traffic-project-batch .traffic-project-vendor-stack-row > strong,
+.traffic-project-compact-modal .traffic-project-batch .traffic-project-vendor-stack-row > span {
+  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+/* Project Movement: header, navigation and footer typography only. */
+.traffic-project-compact-modal > .traffic-modal-header { min-height: 56px; box-sizing: border-box; padding: 8px 14px; }
+.traffic-project-compact-modal > .traffic-modal-header .traffic-modal-heading > span { font-size: 10px; font-weight: 600; line-height: 1.2; }
+.traffic-project-compact-modal > .traffic-modal-header .traffic-modal-title-row h2 { font-size: 16px; font-weight: 700; line-height: 1.2; }
+.traffic-project-compact-modal > .traffic-modal-header .traffic-modal-title-row .traffic-modal-movement { font-size: 10px; font-weight: 600; line-height: 1.2; }
+.traffic-project-compact-modal > .traffic-modal-header .traffic-project-header-meta small { font-size: 11px; font-weight: 500; line-height: 1.2; }
+.traffic-project-compact-modal > .traffic-modal-header .traffic-project-header-meta strong { font-size: 12px; font-weight: 600; line-height: 1.3; }
+.traffic-project-compact-modal > .tv-navigation { min-height: 38px; box-sizing: border-box; padding: 4px 10px; }
+.traffic-project-compact-modal > .tv-navigation > [role="tablist"] > button { font-family: inherit; font-size: 11px; font-weight: 600; line-height: 1.2; min-height: 28px; box-sizing: border-box; padding: 5px 10px; gap: 6px; }
+.traffic-project-compact-modal > .tv-navigation > span { font-size: 12px; font-weight: 500; }
+.traffic-project-compact-modal > .traffic-project-fixed-footer { min-height: 42px; box-sizing: border-box; padding: 5px 12px; }
+.traffic-project-compact-modal > .traffic-project-fixed-footer > small { font-size: 12px; font-weight: 500; line-height: 1.3; }
+.traffic-project-compact-modal > .traffic-project-fixed-footer > .traffic-project-footer-close,
+.traffic-project-compact-modal > .traffic-project-fixed-footer > .traffic-project-common-save { font-family: inherit; font-size: 11px; font-weight: 600; line-height: 1.2; height: 30px; min-height: 30px; box-sizing: border-box; padding: 0 12px; border-radius: 7px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+
+/* Project quotation rejection history only */
+.traffic-project-quotation-exact .traffic-project-group-heading.is-rejected td { background: #fde8e7; color: #a52b25; }
+.traffic-project-quotation-exact .traffic-project-vehicle-row.is-rejected .traffic-project-vendor-stack { background: #fff3f2; border-color: #efd3d0; }
+.traffic-project-quotation-exact .traffic-project-vehicle-row.is-rejected .traffic-project-vendor-stack-row { background: #fff3f2; color: #a52b25; }
+
+/* Current Transport only — batch-wise layout and comfortable spacing */
+.traffic-project-compact-modal > .traffic-modal-body:has(.traffic-project-transport-section.is-current) { padding: 12px; }
+.traffic-project-compact-modal .traffic-project-transport-section.is-current { padding: 12px !important; border-radius: 12px; }
+.traffic-project-compact-modal .is-current .traffic-project-transport-heading { margin-bottom: 12px; gap: 16px; flex-wrap: wrap; }
+.traffic-project-compact-modal .is-current .traffic-project-transport-heading h3 { font-size: 16px; line-height: 1.4; }
+.traffic-project-compact-modal .is-current .traffic-project-transport-heading p { font-size: 12px; line-height: 1.5; margin-top: 4px; }
+.traffic-project-compact-modal .is-current .traffic-project-transport-heading > strong { font-size: 11px; padding: 5px 9px; }
+.traffic-current-batches { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+.traffic-current-batch { min-width: 0; border: 1px solid #cfe7e2; border-radius: 10px; background: #fff; overflow: hidden; }
+.traffic-current-batch-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 9px 12px; background: #f0f8f6; }
+.traffic-current-batch-heading h4 { margin: 0; font-size: 14px; color: #08776f; }
+.traffic-current-batch-heading p { margin: 5px 0 0; font-size: 11px; color: #668697; }
+.traffic-current-batch-heading > span { font-size: 11px; font-weight: 600; color: #18794e; }
+.traffic-project-compact-modal .is-current .traffic-project-transport-table-wrap { width: auto; max-height: none; margin: 8px; overflow-x: auto; }
+.traffic-project-compact-modal .is-current .traffic-project-transport-table { min-width: 760px; table-layout: fixed; }
+.traffic-project-compact-modal .is-current .traffic-project-transport-table th { height: 34px; padding: 7px 12px !important; font-size: 11px; }
+.traffic-project-compact-modal .is-current .traffic-project-transport-table td { height: 40px; padding: 7px 12px !important; font-size: 13px; line-height: 1.4; overflow-wrap: anywhere; }
+.traffic-project-compact-modal .is-current .traffic-project-transport-table th:first-child { width: 8%; }
+.traffic-project-compact-modal .is-current .project-transport-approved { font-size: 11px; padding: 4px 8px; }
+@media (max-width: 760px) {
+  .traffic-project-compact-modal > .traffic-modal-body:has(.traffic-project-transport-section.is-current) { padding: 10px; }
+  .traffic-project-compact-modal .traffic-project-transport-section.is-current { padding: 12px !important; }
+}
+
+
+/* Current Transport only: grouped vehicle type table (Sample 2). */
+.traffic-project-compact-modal .is-current .traffic-current-batch .traffic-project-transport-table th:first-child { width: 25%; }
+.traffic-project-compact-modal .is-current .traffic-current-batch .traffic-project-transport-table th:nth-child(2) { width: 30%; }
+.traffic-project-compact-modal .is-current .traffic-current-batch .traffic-project-transport-table th:nth-child(3) { width: 25%; }
+.traffic-project-compact-modal .is-current .traffic-current-batch .traffic-project-transport-table th:nth-child(4) { width: 20%; }
+.traffic-project-compact-modal .is-current .traffic-project-transport-table tbody tr.traffic-current-type-heading td {
+  height: 34px; padding: 6px 12px !important; background: #eaf5f3;
+  color: #08776f; border-top: 1px solid #cfe7e2; border-bottom: 1px solid #cfe7e2;
+}
+.traffic-current-type-label { display: flex; align-items: center; gap: 8px; }
+.traffic-current-type-label strong { color: #08776f; font-size: 13px; font-weight: 700; }
+.traffic-current-type-label span { margin-left: auto; color: #08776f; font-size: 11px; font-weight: 600; }
+.traffic-current-type-label svg { flex-shrink: 0; }
+
+/* Project Current Transport: material and replacement action */
+.traffic-project-compact-modal .is-current .traffic-current-batch .traffic-project-transport-table { min-width: 900px; }
+.traffic-project-compact-modal .is-current .traffic-current-batch .traffic-project-transport-table th:nth-child(1) { width: 15%; }
+.traffic-project-compact-modal .is-current .traffic-current-batch .traffic-project-transport-table th:nth-child(2) { width: 17%; }
+.traffic-project-compact-modal .is-current .traffic-current-batch .traffic-project-transport-table th:nth-child(3) { width: 17%; }
+.traffic-project-compact-modal .is-current .traffic-current-batch .traffic-project-transport-table th:nth-child(4) { width: 17%; }
+.traffic-project-compact-modal .is-current .traffic-current-batch .traffic-project-transport-table th:nth-child(5) { width: 16%; }
+.traffic-project-compact-modal .is-current .traffic-current-batch .traffic-project-transport-table th:nth-child(6) { width: 18%; }
+.traffic-project-change-btn { display:inline-flex; align-items:center; gap:5px; padding:6px 9px; border:1px solid #b9dcd4; border-radius:6px; background:#fff; color:#08776f; font:inherit; font-size:11px; cursor:pointer; white-space:nowrap; }
+.traffic-project-change-btn:disabled { opacity:.5; cursor:not-allowed; }
+
+/* Project Movement / Current Transport: white data rows and soft orange group headings. */
+.traffic-project-compact-modal .is-current .traffic-current-batch .traffic-project-transport-table tbody tr:not(.traffic-current-type-heading) td {
+  background: #ffffff;
+}
+.traffic-project-compact-modal .is-current .traffic-current-batch .traffic-project-transport-table tbody tr.traffic-current-type-heading td {
+  background: #fff1df;
+  color: #975710;
+  border-top-color: #f0d7b5;
+  border-bottom-color: #f0d7b5;
+  box-shadow: inset 3px 0 0 #e5a34b;
+}
+.traffic-project-compact-modal .is-current .traffic-current-type-label strong,
+.traffic-project-compact-modal .is-current .traffic-current-type-label span,
+.traffic-project-compact-modal .is-current .traffic-current-type-label svg {
+  color: #975710;
+}
+
+/* Append to traffic.css: Project Movement quotation route columns only. */
+.traffic-project-compact-modal .traffic-project-batch .traffic-project-quotation-table { min-width: 1450px !important; }
+.traffic-project-compact-modal .traffic-project-batch .traffic-project-allocation-table-wrap { overflow-x: auto; }
+.traffic-project-quotation-table .traffic-project-route-cell { white-space: normal; overflow-wrap: anywhere; min-width: 100px; }
+.traffic-project-compact-modal .traffic-project-batch .traffic-project-quotation-table th:nth-child(1) { width: 4% !important; }
+.traffic-project-compact-modal .traffic-project-batch .traffic-project-quotation-table th:nth-child(2) { width: 12% !important; }
+.traffic-project-compact-modal .traffic-project-batch .traffic-project-quotation-table th:nth-child(3) { width: 8% !important; }
+.traffic-project-compact-modal .traffic-project-batch .traffic-project-quotation-table th:nth-child(4) { width: 8% !important; }
+.traffic-project-compact-modal .traffic-project-batch .traffic-project-quotation-table th:nth-child(5) { width: 8% !important; }
+.traffic-project-compact-modal .traffic-project-batch .traffic-project-quotation-table th:nth-child(6) { width: 9% !important; }
+.traffic-project-compact-modal .traffic-project-batch .traffic-project-quotation-table th:nth-child(7) { width: 13% !important; }
+.traffic-project-compact-modal .traffic-project-batch .traffic-project-quotation-table th:nth-child(8) { width: 10% !important; }
+.traffic-project-compact-modal .traffic-project-batch .traffic-project-quotation-table th:nth-child(9) { width: 9% !important; }
+.traffic-project-compact-modal .traffic-project-batch .traffic-project-quotation-table th:nth-child(10) { width: 11% !important; }
+.traffic-project-compact-modal .traffic-project-batch .traffic-project-quotation-table th:nth-child(11) { width: 8% !important; }
+
+
+/* Project Movement only: match Line Movement header and tab dimensions.
+   Existing content placement, colours, layout and footer are preserved. */
+.traffic-project-compact-modal > .traffic-modal-header {
+  min-height: 84px;
+  padding: 13px 20px;
+}
+.traffic-project-compact-modal > .traffic-modal-header .traffic-modal-heading > span {
+  min-height: 21px;
+  margin-bottom: 6px;
+  padding: 0 9px;
+  font-size: 9px;
+  font-weight: 800;
+  line-height: normal;
+}
+.traffic-project-compact-modal .traffic-modal-title-row { gap: 8px; }
+.traffic-project-compact-modal > .traffic-modal-header .traffic-modal-title-row h2 {
+  font-size: 19px;
+  font-weight: 800;
+  line-height: 1.15;
+}
+.traffic-project-compact-modal > .traffic-modal-header .traffic-modal-title-row .traffic-modal-movement {
+  min-height: 21px;
+  padding: 0 9px;
+  font-size: 9px;
+  font-weight: 850;
+  line-height: normal;
+}
+.traffic-project-compact-modal > .traffic-modal-header .traffic-project-header-meta small { font-size: 9px; font-weight: 800; }
+.traffic-project-compact-modal > .traffic-modal-header .traffic-project-header-meta strong { font-size: 11px; font-weight: 800; }
+.traffic-project-compact-modal .traffic-modal-close { width: 32px; height: 32px; flex-basis: 32px; }
+.traffic-project-compact-modal > .tv-navigation { min-height: 0; padding: 6px 12px; gap: 8px; }
+.traffic-project-compact-modal .tv-navigation > [role="tablist"] { padding: 4px; gap: 5px; }
+.traffic-project-compact-modal > .tv-navigation > [role="tablist"] > button {
+  min-height: 0;
+  padding: 8px 13px;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: normal;
+}
+.traffic-project-compact-modal > .tv-navigation > span { font-size: 10px; font-weight: 500; }
+@media (max-width: 720px) {
+  .traffic-project-compact-modal > .traffic-modal-header { padding: 12px 14px; }
+  .traffic-project-compact-modal > .tv-navigation > [role="tablist"] > button { padding: 8px 10px; }
 }

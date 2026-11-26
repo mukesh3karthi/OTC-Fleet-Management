@@ -513,7 +513,7 @@ const formatKamName = (value) =>
 // Project Movement total is the sum of Nos; other movements count requirement rows.
 const getTotalVehicles = (requirements, movementType) => {
   if (!Array.isArray(requirements)) return 0;
-  if (movementType === "Other") {
+  if (movementType === "Project Movement") {
     return requirements.reduce(
       (total, requirement) => total + Math.max(0, Number(requirement.quantity) || 0),
       0,
@@ -783,15 +783,9 @@ const Tripcreatemodal = ({
   handleMovementTypeChange,
   handleCloseTripModal,
   handleTripFieldChange,
-  handleAddVehicle: addVehicleProp,
-  handleVehicleFieldChange: vehicleFieldChangeProp,
-  handleRemoveVehicle: removeVehicleProp,
-  // TEMPORARY legacy prop names, so the modal still works while the parent
-  // still passes the old names. Delete these three lines once the parent
-  // passes handleAddVehicle / handleVehicleFieldChange / handleRemoveVehicle.
-  handleAddWtgVehicle: legacyAddVehicle,
-  handleWtgVehicleFieldChange: legacyVehicleFieldChange,
-  handleRemoveWtgVehicle: legacyRemoveVehicle,
+  handleAddVehicle,
+  handleVehicleFieldChange,
+  handleRemoveVehicle,
   handleTripFileChange,
   removeTripFile,
   handleCreateTrip,
@@ -803,10 +797,6 @@ const Tripcreatemodal = ({
   existingCraneFiles = [],
   onCraneTripUpdated,
 }) => {
-  const handleAddVehicle = addVehicleProp ?? legacyAddVehicle;
-  const handleVehicleFieldChange =
-    vehicleFieldChangeProp ?? legacyVehicleFieldChange;
-  const handleRemoveVehicle = removeVehicleProp ?? legacyRemoveVehicle;
 
   const selectedTripFiles = Array.isArray(tripUpload) ? tripUpload : [];
   const loggedInKamUsername = getLoggedInKamUsername();
@@ -865,7 +855,7 @@ const Tripcreatemodal = ({
     if (
       !showTripModal ||
       tripForm.movementType === "Crane" ||
-      tripForm.movementType === "Other"
+      tripForm.movementType === "Project Movement"
     ) return;
     (Array.isArray(tripForm.vehicleRequirements)
       ? tripForm.vehicleRequirements
@@ -901,14 +891,11 @@ const Tripcreatemodal = ({
     ? tripForm.vehicleRequirements
     : [];
 
-  // "WTG Movement" = legacy stored value; treated as Line Movement.
-  const isLine =
-    tripForm.movementType === "Line Movement" ||
-    tripForm.movementType === "WTG Movement";
+  const isLine = tripForm.movementType === "Line Movement";
 
   const isIntercarting = tripForm.movementType === "Intercarting";
 
-  const isIntercartingOrOther = ["Intercarting", "Other"].includes(
+  const isIntercartingOrProject = ["Intercarting", "Project Movement"].includes(
     tripForm.movementType,
   );
 
@@ -964,21 +951,13 @@ const Tripcreatemodal = ({
                   >
                     <option value="">Select Movement...</option>
 
-                    <option
-                      value={
-                        tripForm.movementType === "Line Movement"
-                          ? "Line Movement"
-                          : "WTG Movement"
-                      }
-                    >
-                      Line Movement
-                    </option>
+                    <option value="Line Movement">Line Movement</option>
 
                     <option value="Intercarting">Intercarting</option>
 
                     <option value="Crane">Crane</option>
 
-                    <option value="Other">Project Movement</option>
+                    <option value="Project Movement">Project Movement</option>
                   </select>
 
                   <span className="trip-header-select-arrow">⌄</span>
@@ -1190,10 +1169,10 @@ const Tripcreatemodal = ({
           )}
 
           {/* ===============================================
-              INTERCARTING / OTHER
+              INTERCARTING / PROJECT MOVEMENT
           =============================================== */}
 
-          {isIntercartingOrOther && (
+          {isIntercartingOrProject && (
             <>
               {/* BASIC DETAILS */}
 

@@ -292,8 +292,8 @@ const getEditableMovementType = (order = {}) => {
   const normalized = String(order?.movementType || "")
     .trim()
     .toLowerCase();
-  if (normalized === "wtg movement" || normalized === "wtg") {
-    return "WTG Movement";
+  if (normalized === "line movement" || normalized === "line") {
+    return "Line Movement";
   }
   if (
     normalized === "intercarting" ||
@@ -305,8 +305,8 @@ const getEditableMovementType = (order = {}) => {
   if (normalized === "crane" || normalized === "crane movement") {
     return "Crane";
   }
-  if (normalized === "other") {
-    return "Other";
+  if (normalized === "project movement") {
+    return "Project Movement";
   }
   if (order?.dieselScope || order?.siteLocation || order?.period) {
     return "Intercarting";
@@ -320,7 +320,7 @@ const getEditableMovementType = (order = {}) => {
   if (vehicleText.includes("crane")) {
     return "Crane";
   }
-  const wtgKeywords = [
+  const lineKeywords = [
     "low bed",
     "hydraulic axle",
     "multi axle",
@@ -329,10 +329,10 @@ const getEditableMovementType = (order = {}) => {
     "modular hydraulic",
     "spmt",
   ];
-  if (wtgKeywords.some((keyword) => vehicleText.includes(keyword))) {
-    return "WTG Movement";
+  if (lineKeywords.some((keyword) => vehicleText.includes(keyword))) {
+    return "Line Movement";
   }
-  return "Other";
+  return "Project Movement";
 };
 /* =========================================================
   STAGE CLASS
@@ -1891,7 +1891,7 @@ const KeyAccount = () => {
   /* =======================================================
     REQUIREMENT FIELD
   ======================================================= */
-  const handleWtgVehicleFieldChange = (index, field) => (event) => {
+  const handleVehicleFieldChange = (index, field) => (event) => {
     const value = event.target.value;
     setTripForm((previous) => ({
       ...previous,
@@ -1920,7 +1920,7 @@ const KeyAccount = () => {
   /* =======================================================
     ADD REQUIREMENT
   ======================================================= */
-  const handleAddWtgVehicle = () => {
+  const handleAddVehicle = () => {
     setTripForm((previous) => ({
       ...previous,
       vehicleRequirements: [
@@ -1932,7 +1932,7 @@ const KeyAccount = () => {
   /* =======================================================
     REMOVE REQUIREMENT
   ======================================================= */
-  const handleRemoveWtgVehicle = (index) => {
+  const handleRemoveVehicle = (index) => {
     setTripForm((previous) => {
       if (previous.vehicleRequirements.length <= 1) {
         return previous;
@@ -1964,7 +1964,7 @@ const KeyAccount = () => {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(tripForm.email).trim())) {
       return "Please enter a valid email address.";
     }
-    if (tripForm.movementType === "WTG Movement") {
+    if (tripForm.movementType === "Line Movement") {
       const totalVehicles = Number(tripForm.totalVehicles);
       if (!Number.isInteger(totalVehicles) || totalVehicles < 1) {
         return "Please enter a valid Total Vehicles value.";
@@ -1972,7 +1972,7 @@ const KeyAccount = () => {
     }
     /*
      * Crane movement uses an uploaded vehicle requirement document.
-     * Existing WTG / Intercarting / Other validation stays unchanged.
+     * Existing Line / Intercarting / Project Movement validation stays unchanged.
      */
     if (tripForm.movementType === "Crane") {
       if (!editingOrderId && (!Array.isArray(tripUpload) || !tripUpload.length)) {
@@ -2029,11 +2029,11 @@ const KeyAccount = () => {
     configuration: String(requirement.configuration || "").trim(),
     classification: String(requirement.classification || "").trim(),
 
-    // Save material type for Project Movement and WTG Movement
+    // Save material type for Project Movement and Line Movement
     materialType: String(requirement.materialType || "").trim(),
 
-    // These fields are specific to WTG Movement
-    ...(tripForm.movementType === "WTG Movement" && {
+    // These fields are specific to Line Movement
+    ...(tripForm.movementType === "Line Movement" && {
       origin: String(requirement.origin || "").trim(),
       destination: String(requirement.destination || "").trim(),
       placementDate: requirement.placementDate || null,
@@ -3057,9 +3057,9 @@ const KeyAccount = () => {
         handleMovementTypeChange={handleMovementTypeChange}
         handleCloseTripModal={handleCloseTripModal}
         handleTripFieldChange={handleTripFieldChange}
-        handleAddWtgVehicle={handleAddWtgVehicle}
-        handleWtgVehicleFieldChange={handleWtgVehicleFieldChange}
-        handleRemoveWtgVehicle={handleRemoveWtgVehicle}
+        handleAddVehicle={handleAddVehicle}
+        handleVehicleFieldChange={handleVehicleFieldChange}
+        handleRemoveVehicle={handleRemoveVehicle}
         handleTripFileChange={handleTripFileChange}
         handleAddTripFiles={handleAddTripFiles}
         removeTripFile={removeTripFile}

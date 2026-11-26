@@ -934,8 +934,6 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .approval-order-info-grid {
-  }
 
   .approval-quotation-main {
     grid-template-columns: 1fr;
@@ -1353,8 +1351,6 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .approval-md-commercial-grid {
-  }
 }
 
 @media (max-width: 700px) {
@@ -3019,8 +3015,6 @@
     gap: 10px;
   }
 
-  .approval-qv-actionbar {
-  }
 
   .approval-qv-actions {
     justify-content: flex-end;
@@ -3054,8 +3048,6 @@
     grid-template-columns: 1fr 1fr;
   }
 
-  .approval-qaction-summary {
-  }
 }
 
 .approval-quotation-row-value {
@@ -4072,8 +4064,8 @@
   white-space: nowrap;
 }
 
-.approval-md-movement.movement-wtg,
-.approval-quotation-movement.movement-wtg {
+.approval-md-movement.movement-line,
+.approval-quotation-movement.movement-line {
   border-color: #b9d7f4;
   background: #edf6ff;
   color: #1769aa;
@@ -4094,7 +4086,9 @@
 }
 
 .approval-md-movement.movement-other,
-.approval-quotation-movement.movement-other {
+.approval-md-movement.movement-project-movement,
+.approval-quotation-movement.movement-other,
+.approval-quotation-movement.movement-project-movement {
   border-color: #d6c9ef;
   background: #f5f0ff;
   color: #6842a6;
@@ -5150,8 +5144,8 @@
   white-space: nowrap;
 }
 
-.approval-md-movement.movement-wtg,
-.approval-md-movement.movement-wtg-movement {
+.approval-md-movement.movement-line,
+.approval-md-movement.movement-line-movement {
   background: #e7f8f5;
   border-color: #a9ddd5;
   color: #087d74;
@@ -5192,7 +5186,8 @@
   color: #a43e66;
 }
 
-.approval-md-movement.movement-other {
+.approval-md-movement.movement-other,
+.approval-md-movement.movement-project-movement {
   background: #f1f4f6;
   border-color: #d3dde2;
   color: #536c78;
@@ -5238,8 +5233,6 @@
     padding-right: 8px;
   }
 
-  #approval-management-root .approval-md-main-row td {
-  }
 }
 
 .approval-table-wrap {
@@ -5788,8 +5781,6 @@
     border-radius: 13px;
   }
 
-  .approval-replacement-modal-content {
-  }
 
   .approval-replacement-modal-close {
     top: 18px;
@@ -6220,8 +6211,6 @@
     flex-direction: column-reverse;
   }
 
-  .approval-replacement-detail-actions button {
-  }
 }
 
 @media (max-width: 480px) {
@@ -9660,8 +9649,6 @@
   .ar-details {
     padding: 0 8px 12px;
   }
-  .ar-wide {
-  }
   .ar-filters button {
     padding: 6px 8px;
   }
@@ -10032,7 +10019,7 @@
   background: #fff;
 }
 .ae-field input:focus,
-.ae-wtg-table input:focus {
+.ae-line-table input:focus {
   outline: 2px solid #b5e7df;
   border-color: #078d83;
 }
@@ -10110,56 +10097,56 @@
   border: 1px solid #9ecdc7;
 }
 .ae-amount input:disabled,
-.ae-wtg-table input:disabled {
+.ae-line-table input:disabled {
   background: #edf4f5;
   color: #174a4b;
   cursor: default;
 }
 
-.ae-modal-overlay .ae-wtg-modal {
+.ae-modal-overlay .ae-line-modal {
   width: min(1840px, calc(100vw - 44px));
   max-height: calc(100vh - 48px);
   height: calc(100vh - 48px);
 }
-.ae-wtg-modal .ae-modal-top {
+.ae-line-modal .ae-modal-top {
   min-height: 78px;
   padding: 14px 24px;
   color: #fff;
   background: linear-gradient(110deg, #092f43, #075267 56%, #087d74);
   border-bottom: 0;
 }
-.ae-wtg-modal .ae-modal-brand small {
+.ae-line-modal .ae-modal-brand small {
   color: #6ee1d6;
 }
-.ae-wtg-modal .ae-modal-brand strong {
+.ae-line-modal .ae-modal-brand strong {
   color: #fff;
   font-size: 20px;
 }
-.ae-wtg-modal .ae-modal-brand span {
+.ae-line-modal .ae-modal-brand span {
   color: #c1e4e5;
 }
-.ae-wtg-modal .ae-modal-top button {
+.ae-line-modal .ae-modal-top button {
   color: #fff;
   border-color: rgba(255, 255, 255, 0.25);
 }
-.ae-wtg-modal .ae-modal-body {
+.ae-line-modal .ae-modal-body {
   padding: 15px 20px;
   gap: 14px;
 }
-.ae-wtg-modal .ae-wtg-info-grid {
+.ae-line-modal .ae-line-info-grid {
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
 }
-.ae-wtg-modal .ae-wtg-info-grid .ae-readonly {
+.ae-line-modal .ae-line-info-grid .ae-readonly {
   padding: 7px 7px;
   min-height: 30px;
 }
-.ae-wtg-modal .ae-wtg-info-grid .ae-field > span {
+.ae-line-modal .ae-line-info-grid .ae-field > span {
   font-size: 9px;
   white-space: nowrap;
 }
 
-/* Keep Crane enquiry branding consistent with the WTG movement modal. */
+/* Keep Crane enquiry branding consistent with the Line Movement modal. */
 .ae-modal-overlay .ae-crane-modal {
   width: min(1840px, calc(100vw - 44px));
   max-height: calc(100vh - 48px);
@@ -10169,15 +10156,15 @@
   padding: 15px 20px;
   gap: 14px;
 }
-.ae-crane-modal .ae-wtg-info-grid {
+.ae-crane-modal .ae-line-info-grid {
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
 }
-.ae-crane-modal .ae-wtg-info-grid .ae-readonly {
+.ae-crane-modal .ae-line-info-grid .ae-readonly {
   min-height: 30px;
   padding: 7px;
 }
-.ae-crane-modal .ae-wtg-info-grid .ae-field > span {
+.ae-crane-modal .ae-line-info-grid .ae-field > span {
   font-size: 9px;
   white-space: nowrap;
 }
@@ -10226,7 +10213,7 @@
   border-radius: 0;
   background: transparent;
 }
-.ae-crane-modal .ae-crane-approval-amounts .ae-wtg-table {
+.ae-crane-modal .ae-crane-approval-amounts .ae-line-table {
   min-width: 760px;
 }
 .ae-crane-approval-amounts h5,
@@ -10272,12 +10259,12 @@
   }
 }
 @media (max-width: 1300px) {
-  .ae-crane-modal .ae-wtg-info-grid {
+  .ae-crane-modal .ae-line-info-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 @media (max-width: 800px) {
-  .ae-crane-modal .ae-wtg-info-grid {
+  .ae-crane-modal .ae-line-info-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -10287,20 +10274,20 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
-.ae-wtg-table-wrap {
+.ae-line-table-wrap {
   width: 100%;
   border: 1px solid #d9e7ec;
   border-radius: 12px;
   overflow-x: auto;
 }
-.ae-wtg-table {
+.ae-line-table {
   width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
   font-size: 11px;
   color: #234659;
 }
-.ae-wtg-table th {
+.ae-line-table th {
   background: #f4f8fa;
   border-bottom: 1px solid #dce8eb;
   padding: 12px 5px;
@@ -10310,38 +10297,38 @@
   font-weight: 800;
   white-space: normal;
 }
-.ae-wtg-table td {
+.ae-line-table td {
   padding: 11px 5px;
   font-weight: 600;
   vertical-align: middle;
   border-bottom: 1px solid #e3ebef;
   overflow-wrap: anywhere;
 }
-.ae-wtg-table tbody tr:last-child td {
+.ae-line-table tbody tr:last-child td {
   border-bottom: 0;
 }
-.ae-wtg-table th:first-child,
-.ae-wtg-table td:first-child {
+.ae-line-table th:first-child,
+.ae-line-table td:first-child {
   width: 40px;
   padding-left: 12px;
 }
-.ae-wtg-table th:nth-child(2),
-.ae-wtg-table td:nth-child(2) {
+.ae-line-table th:nth-child(2),
+.ae-line-table td:nth-child(2) {
   width: 13%;
 }
-.ae-wtg-table th:nth-child(3),
-.ae-wtg-table td:nth-child(3) {
+.ae-line-table th:nth-child(3),
+.ae-line-table td:nth-child(3) {
   width: 10%;
 }
-.ae-wtg-table th:nth-child(10),
-.ae-wtg-table td:nth-child(10) {
+.ae-line-table th:nth-child(10),
+.ae-line-table td:nth-child(10) {
   width: 11%;
 }
-.ae-wtg-table th:last-child,
-.ae-wtg-table td:last-child {
+.ae-line-table th:last-child,
+.ae-line-table td:last-child {
   width: 12%;
 }
-.ae-wtg-number {
+.ae-line-number {
   display: inline-grid;
   place-items: center;
   min-width: 26px;
@@ -10350,7 +10337,7 @@
   color: #078b83;
   background: #eaf6f3;
 }
-.ae-wtg-table input {
+.ae-line-table input {
   box-sizing: border-box;
   width: 100%;
   min-width: 0;
@@ -10362,17 +10349,17 @@
   font: inherit;
   font-size: 11px;
 }
-.ae-wtg-modal .ae-footer,
+.ae-line-modal .ae-footer,
 .ae-crane-modal .ae-footer {
   margin: 0;
   padding: 14px 17px;
   background: #eaf7f3;
 }
 @media (max-width: 1300px) {
-  .ae-wtg-modal .ae-wtg-info-grid {
+  .ae-line-modal .ae-line-info-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
-  .ae-wtg-table {
+  .ae-line-table {
     min-width: 1150px;
   }
 }
@@ -10389,7 +10376,7 @@
   .ae-modal-overlay {
     padding: 8px;
   }
-  .ae-wtg-modal .ae-wtg-info-grid {
+  .ae-line-modal .ae-line-info-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -10513,7 +10500,7 @@
   }
 }
 
-#approval-management-root .ae-wtg-modal .ae-wtg-table-wrap {
+#approval-management-root .ae-line-modal .ae-line-table-wrap {
   width: 100%;
   height: auto !important;
   max-height: none !important;
@@ -10522,14 +10509,14 @@
   border-radius: 10px;
 }
 
-#approval-management-root .ae-wtg-modal .ae-wtg-table th {
+#approval-management-root .ae-line-modal .ae-line-table th {
   padding: 10px 5px;
   font-size: 9px;
   font-weight: 650;
   white-space: normal;
 }
 
-#approval-management-root .ae-wtg-modal .ae-wtg-table td {
+#approval-management-root .ae-line-modal .ae-line-table td {
   padding: 10px 5px;
   font-size: 10.5px;
   font-weight: 500;
@@ -10538,7 +10525,7 @@
   vertical-align: middle;
 }
 
-#approval-management-root .ae-wtg-modal .ae-wtg-table input {
+#approval-management-root .ae-line-modal .ae-line-table input {
   width: 100%;
   min-width: 0;
   padding: 8px 6px;
@@ -10546,14 +10533,14 @@
   box-sizing: border-box;
 }
 
-#approval-management-root .ae-wtg-modal .ae-wtg-table tbody {
+#approval-management-root .ae-line-modal .ae-line-table tbody {
   height: auto !important;
   max-height: none !important;
   overflow: visible !important;
 }
 
 @media (max-width: 1300px) {
-  #approval-management-root .ae-wtg-modal .ae-wtg-table {
+  #approval-management-root .ae-line-modal .ae-line-table {
     min-width: 0 !important;
   }
 }
@@ -10638,7 +10625,7 @@
   }
 }
 
-#approval-management-root .ae-wtg-modal .ae-wtg-table-wrap {
+#approval-management-root .ae-line-modal .ae-line-table-wrap {
   width: 100%;
   border: 1px solid #d6e3e8;
   border-radius: 12px;
@@ -10646,7 +10633,7 @@
   background: #ffffff;
 }
 
-#approval-management-root .ae-wtg-modal .ae-wtg-table {
+#approval-management-root .ae-line-modal .ae-line-table {
   width: 100%;
   min-width: 0;
   border-collapse: collapse;
@@ -10654,7 +10641,7 @@
   background: #ffffff;
 }
 
-#approval-management-root .ae-wtg-modal .ae-wtg-table thead th {
+#approval-management-root .ae-line-modal .ae-line-table thead th {
   background: #f2f6f7;
   color: #426b82;
   font-size: 10px;
@@ -10668,7 +10655,7 @@
   vertical-align: middle;
 }
 
-#approval-management-root .ae-wtg-modal .ae-wtg-table tbody td {
+#approval-management-root .ae-line-modal .ae-line-table tbody td {
   background: #ffffff !important;
   color: #123f50;
   font-size: 11px;
@@ -10681,34 +10668,34 @@
   overflow-wrap: anywhere;
 }
 
-#approval-management-root .ae-wtg-modal .ae-wtg-table tbody tr,
-#approval-management-root .ae-wtg-modal .ae-wtg-table tbody tr:nth-child(even),
-#approval-management-root .ae-wtg-modal .ae-wtg-table tbody tr:nth-child(odd),
+#approval-management-root .ae-line-modal .ae-line-table tbody tr,
+#approval-management-root .ae-line-modal .ae-line-table tbody tr:nth-child(even),
+#approval-management-root .ae-line-modal .ae-line-table tbody tr:nth-child(odd),
 #approval-management-root
-  .ae-wtg-modal
-  .ae-wtg-table
+  .ae-line-modal
+  .ae-line-table
   tbody
   tr:nth-child(even)
   td,
 #approval-management-root
-  .ae-wtg-modal
-  .ae-wtg-table
+  .ae-line-modal
+  .ae-line-table
   tbody
   tr:nth-child(odd)
   td {
   background: #ffffff !important;
 }
 
-#approval-management-root .ae-wtg-modal .ae-wtg-table th:last-child,
-#approval-management-root .ae-wtg-modal .ae-wtg-table td:last-child {
+#approval-management-root .ae-line-modal .ae-line-table th:last-child,
+#approval-management-root .ae-line-modal .ae-line-table td:last-child {
   border-right: none;
 }
 
-#approval-management-root .ae-wtg-modal .ae-wtg-table tbody tr:last-child td {
+#approval-management-root .ae-line-modal .ae-line-table tbody tr:last-child td {
   border-bottom: none;
 }
 
-#approval-management-root .ae-wtg-modal .ae-wtg-number {
+#approval-management-root .ae-line-modal .ae-line-number {
   background: transparent;
   color: #174c61;
   font-size: 11px;
@@ -10716,7 +10703,7 @@
   border-radius: 0;
 }
 
-#approval-management-root .ae-wtg-modal .ae-wtg-table input {
+#approval-management-root .ae-line-modal .ae-line-table input {
   width: 100%;
   min-width: 0;
   box-sizing: border-box;
@@ -10780,7 +10767,7 @@
   flex-shrink: 0;
 }
 
-#approval-management-root .ae-wtg-modal .ae-footer,
+#approval-management-root .ae-line-modal .ae-footer,
 #approval-management-root .ae-crane-modal .ae-footer {
   position: relative;
   display: flex;
@@ -10798,7 +10785,7 @@
   box-sizing: border-box;
   overflow: visible;
 }
-#approval-management-root .ae-wtg-modal .ae-footer > div:first-child,
+#approval-management-root .ae-line-modal .ae-footer > div:first-child,
 #approval-management-root .ae-crane-modal .ae-footer > div:first-child {
   display: flex;
   flex-direction: column;
@@ -10807,14 +10794,14 @@
   min-width: 0;
   gap: 3px;
 }
-#approval-management-root .ae-wtg-modal .ae-footer small,
+#approval-management-root .ae-line-modal .ae-footer small,
 #approval-management-root .ae-crane-modal .ae-footer small {
   display: block;
   margin: 0;
   font-size: 11px;
   line-height: 1.3;
 }
-#approval-management-root .ae-wtg-modal .ae-footer strong,
+#approval-management-root .ae-line-modal .ae-footer strong,
 #approval-management-root .ae-crane-modal .ae-footer strong {
   display: block;
   margin: 0;
@@ -10822,7 +10809,7 @@
   font-weight: 750;
   line-height: 1.15;
 }
-#approval-management-root .ae-wtg-modal .ae-footer button,
+#approval-management-root .ae-line-modal .ae-footer button,
 #approval-management-root .ae-crane-modal .ae-footer button {
   flex-shrink: 0;
   min-height: 36px;
@@ -10830,7 +10817,7 @@
   border-radius: 8px;
   font-size: 11px;
 }
-#approval-management-root .ae-wtg-modal .ae-footer-actions,
+#approval-management-root .ae-line-modal .ae-footer-actions,
 #approval-management-root .ae-crane-modal .ae-footer-actions {
   display: flex;
   align-items: center;
@@ -11106,7 +11093,7 @@
   line-height: 1.2;
 }
 
-#approval-management-root .ae-wtg-modal .ae-wtg-table td input[type="number"] {
+#approval-management-root .ae-line-modal .ae-line-table td input[type="number"] {
   height: 36px;
   min-height: 36px;
   padding: 6px;
@@ -11186,62 +11173,62 @@
   outline-offset: -2px;
 }
 
-#approval-management-root .ae-wtg-modal .ae-wtg-table th:nth-child(7),
-#approval-management-root .ae-wtg-modal .ae-wtg-table td:nth-child(7) {
+#approval-management-root .ae-line-modal .ae-line-table th:nth-child(7),
+#approval-management-root .ae-line-modal .ae-line-table td:nth-child(7) {
   width: 15%;
   overflow-wrap: anywhere;
 }
-#approval-management-root .ae-wtg-modal .ae-wtg-table th:nth-child(10),
-#approval-management-root .ae-wtg-modal .ae-wtg-table td:nth-child(10) {
+#approval-management-root .ae-line-modal .ae-line-table th:nth-child(10),
+#approval-management-root .ae-line-modal .ae-line-table td:nth-child(10) {
   width: 12%;
 }
 
-#approval-management-root .ae-wtg-modal .ae-wtg-table-wrap {
+#approval-management-root .ae-line-modal .ae-line-table-wrap {
   width: 100%;
   overflow: hidden;
   border: 1px solid #d9e5e9;
   border-radius: 10px;
 }
-#approval-management-root .ae-wtg-modal .ae-wtg-table {
+#approval-management-root .ae-line-modal .ae-line-table {
   width: 100%;
   min-width: 0 !important;
   table-layout: fixed;
   border-collapse: collapse;
 }
-#approval-management-root .ae-wtg-modal .ae-wtg-table :is(th, td) {
+#approval-management-root .ae-line-modal .ae-line-table :is(th, td) {
   min-width: 0 !important;
   max-width: none !important;
   box-sizing: border-box;
 }
-#approval-management-root .ae-wtg-modal .ae-wtg-table :is(th, td):nth-child(2) {
+#approval-management-root .ae-line-modal .ae-line-table :is(th, td):nth-child(2) {
   width: 16% !important;
 }
-#approval-management-root .ae-wtg-modal .ae-wtg-table :is(th, td):nth-child(3) {
+#approval-management-root .ae-line-modal .ae-line-table :is(th, td):nth-child(3) {
   width: 11% !important;
 }
-#approval-management-root .ae-wtg-modal .ae-wtg-table :is(th, td):nth-child(4) {
+#approval-management-root .ae-line-modal .ae-line-table :is(th, td):nth-child(4) {
   width: 9% !important;
 }
-#approval-management-root .ae-wtg-modal .ae-wtg-table :is(th, td):nth-child(6) {
+#approval-management-root .ae-line-modal .ae-line-table :is(th, td):nth-child(6) {
   width: 7% !important;
 }
-#approval-management-root .ae-wtg-modal .ae-wtg-table :is(th, td):nth-child(7) {
+#approval-management-root .ae-line-modal .ae-line-table :is(th, td):nth-child(7) {
   width: 13% !important;
 }
-#approval-management-root .ae-wtg-modal .ae-wtg-table :is(th, td):nth-child(8) {
+#approval-management-root .ae-line-modal .ae-line-table :is(th, td):nth-child(8) {
   width: 11% !important;
 }
-#approval-management-root .ae-wtg-modal .ae-wtg-table :is(th, td):nth-child(9) {
+#approval-management-root .ae-line-modal .ae-line-table :is(th, td):nth-child(9) {
   width: 14% !important;
 }
 #approval-management-root
-  .ae-wtg-modal
-  .ae-wtg-table
+  .ae-line-modal
+  .ae-line-table
   :is(th, td):nth-child(10) {
   width: 10% !important;
 }
 
-#approval-management-root .ae-wtg-modal .ae-wtg-table thead th {
+#approval-management-root .ae-line-modal .ae-line-table thead th {
   height: 36px;
   padding: 7px 6px;
   background: #f2f6f7;
@@ -11257,7 +11244,7 @@
   overflow-wrap: normal;
   word-break: normal;
 }
-#approval-management-root .ae-wtg-modal .ae-wtg-table tbody td {
+#approval-management-root .ae-line-modal .ae-line-table tbody td {
   height: 52px;
   padding: 8px 6px;
   background: #ffffff !important;
@@ -11271,23 +11258,23 @@
   overflow-wrap: anywhere;
 }
 #approval-management-root
-  .ae-wtg-modal
-  .ae-wtg-table
+  .ae-line-modal
+  .ae-line-table
   tbody
   tr:nth-child(even)
   td,
 #approval-management-root
-  .ae-wtg-modal
-  .ae-wtg-table
+  .ae-line-modal
+  .ae-line-table
   tbody
   tr:nth-child(odd)
   td {
   background: #ffffff !important;
 }
-#approval-management-root .ae-wtg-modal .ae-wtg-table :is(th, td):last-child {
+#approval-management-root .ae-line-modal .ae-line-table :is(th, td):last-child {
   border-right: none;
 }
-#approval-management-root .ae-wtg-modal .ae-wtg-table td input[type="number"] {
+#approval-management-root .ae-line-modal .ae-line-table td input[type="number"] {
   width: 100%;
   height: 30px;
   min-height: 30px;
@@ -11312,58 +11299,58 @@
     minmax(0, 0.9fr) 65px minmax(0, 1fr) minmax(0, 0.85fr)
     minmax(0, 1fr) minmax(0, 1.03fr) minmax(0, 1.13fr) !important;
 }
-#approval-management-root .ae-wtg-modal .ae-wtg-table th:nth-child(6),
-#approval-management-root .ae-wtg-modal .ae-wtg-table td:nth-child(6) {
+#approval-management-root .ae-line-modal .ae-line-table th:nth-child(6),
+#approval-management-root .ae-line-modal .ae-line-table td:nth-child(6) {
   width: 13%;
 }
-#approval-management-root .ae-wtg-modal .ae-wtg-table th:nth-child(9),
-#approval-management-root .ae-wtg-modal .ae-wtg-table td:nth-child(9) {
+#approval-management-root .ae-line-modal .ae-line-table th:nth-child(9),
+#approval-management-root .ae-line-modal .ae-line-table td:nth-child(9) {
   width: 12%;
 }
-#approval-management-root .ae-wtg-modal .ae-wtg-table th:nth-child(10),
-#approval-management-root .ae-wtg-modal .ae-wtg-table td:nth-child(10) {
+#approval-management-root .ae-line-modal .ae-line-table th:nth-child(10),
+#approval-management-root .ae-line-modal .ae-line-table td:nth-child(10) {
   width: 13%;
 }
 
-#approval-management-root .ae-wtg-modal .ae-wtg-table {
+#approval-management-root .ae-line-modal .ae-line-table {
   table-layout: fixed !important;
   width: 100% !important;
 }
-#approval-management-root .ae-wtg-modal .ae-wtg-table :is(th, td):nth-child(1) {
+#approval-management-root .ae-line-modal .ae-line-table :is(th, td):nth-child(1) {
   width: 3% !important;
 }
-#approval-management-root .ae-wtg-modal .ae-wtg-table :is(th, td):nth-child(2) {
+#approval-management-root .ae-line-modal .ae-line-table :is(th, td):nth-child(2) {
   width: 15% !important;
 }
-#approval-management-root .ae-wtg-modal .ae-wtg-table :is(th, td):nth-child(3) {
+#approval-management-root .ae-line-modal .ae-line-table :is(th, td):nth-child(3) {
   width: 10% !important;
 }
-#approval-management-root .ae-wtg-modal .ae-wtg-table :is(th, td):nth-child(4) {
+#approval-management-root .ae-line-modal .ae-line-table :is(th, td):nth-child(4) {
   width: 8% !important;
 }
-#approval-management-root .ae-wtg-modal .ae-wtg-table :is(th, td):nth-child(5) {
+#approval-management-root .ae-line-modal .ae-line-table :is(th, td):nth-child(5) {
   width: 6% !important;
 }
-#approval-management-root .ae-wtg-modal .ae-wtg-table :is(th, td):nth-child(6) {
+#approval-management-root .ae-line-modal .ae-line-table :is(th, td):nth-child(6) {
   width: 15% !important;
 }
-#approval-management-root .ae-wtg-modal .ae-wtg-table :is(th, td):nth-child(7) {
+#approval-management-root .ae-line-modal .ae-line-table :is(th, td):nth-child(7) {
   width: 10% !important;
 }
-#approval-management-root .ae-wtg-modal .ae-wtg-table :is(th, td):nth-child(8) {
+#approval-management-root .ae-line-modal .ae-line-table :is(th, td):nth-child(8) {
   width: 10% !important;
 }
-#approval-management-root .ae-wtg-modal .ae-wtg-table :is(th, td):nth-child(9) {
+#approval-management-root .ae-line-modal .ae-line-table :is(th, td):nth-child(9) {
   width: 12% !important;
 }
 #approval-management-root
-  .ae-wtg-modal
-  .ae-wtg-table
+  .ae-line-modal
+  .ae-line-table
   :is(th, td):nth-child(10) {
   width: 11% !important;
 }
 
-#approval-management-root .ae-wtg-modal .ae-wtg-table :is(th, td) {
+#approval-management-root .ae-line-modal .ae-line-table :is(th, td) {
   min-width: 0 !important;
   box-sizing: border-box;
   overflow: hidden;
@@ -11373,8 +11360,8 @@
   word-break: normal;
   vertical-align: middle;
 }
-#approval-management-root .ae-wtg-modal .ae-wtg-table tbody td:nth-child(6),
-#approval-management-root .ae-wtg-modal .ae-wtg-table tbody td:nth-child(7) {
+#approval-management-root .ae-line-modal .ae-line-table tbody td:nth-child(6),
+#approval-management-root .ae-line-modal .ae-line-table tbody td:nth-child(7) {
   white-space: normal;
   overflow-wrap: anywhere;
   line-height: 1.4;
@@ -11485,40 +11472,40 @@
 }
 
 /* Enquiry vehicle table: long Route on one line at desktop widths. */
-#approval-management-root .ae-wtg-modal .ae-wtg-table :is(th, td):nth-child(1) {
+#approval-management-root .ae-line-modal .ae-line-table :is(th, td):nth-child(1) {
   width: 3% !important;
 }
-#approval-management-root .ae-wtg-modal .ae-wtg-table :is(th, td):nth-child(2) {
+#approval-management-root .ae-line-modal .ae-line-table :is(th, td):nth-child(2) {
   width: 13% !important;
 }
-#approval-management-root .ae-wtg-modal .ae-wtg-table :is(th, td):nth-child(3) {
+#approval-management-root .ae-line-modal .ae-line-table :is(th, td):nth-child(3) {
   width: 9% !important;
 }
-#approval-management-root .ae-wtg-modal .ae-wtg-table :is(th, td):nth-child(4) {
+#approval-management-root .ae-line-modal .ae-line-table :is(th, td):nth-child(4) {
   width: 7% !important;
 }
-#approval-management-root .ae-wtg-modal .ae-wtg-table :is(th, td):nth-child(5) {
+#approval-management-root .ae-line-modal .ae-line-table :is(th, td):nth-child(5) {
   width: 6% !important;
 }
-#approval-management-root .ae-wtg-modal .ae-wtg-table :is(th, td):nth-child(6) {
+#approval-management-root .ae-line-modal .ae-line-table :is(th, td):nth-child(6) {
   width: 22% !important;
 }
-#approval-management-root .ae-wtg-modal .ae-wtg-table :is(th, td):nth-child(7) {
+#approval-management-root .ae-line-modal .ae-line-table :is(th, td):nth-child(7) {
   width: 9% !important;
 }
-#approval-management-root .ae-wtg-modal .ae-wtg-table :is(th, td):nth-child(8) {
+#approval-management-root .ae-line-modal .ae-line-table :is(th, td):nth-child(8) {
   width: 8% !important;
 }
-#approval-management-root .ae-wtg-modal .ae-wtg-table :is(th, td):nth-child(9) {
+#approval-management-root .ae-line-modal .ae-line-table :is(th, td):nth-child(9) {
   width: 12% !important;
 }
 #approval-management-root
-  .ae-wtg-modal
-  .ae-wtg-table
+  .ae-line-modal
+  .ae-line-table
   :is(th, td):nth-child(10) {
   width: 11% !important;
 }
-#approval-management-root .ae-wtg-modal .ae-wtg-table tbody td:nth-child(6) {
+#approval-management-root .ae-line-modal .ae-line-table tbody td:nth-child(6) {
   white-space: nowrap;
   text-align: left;
   font-size: 10.5px;
@@ -11527,7 +11514,7 @@
   text-overflow: ellipsis;
 }
 @media (max-width: 1100px) {
-  #approval-management-root .ae-wtg-modal .ae-wtg-table tbody td:nth-child(6) {
+  #approval-management-root .ae-line-modal .ae-line-table tbody td:nth-child(6) {
     white-space: normal;
     overflow-wrap: anywhere;
   }
@@ -12414,32 +12401,32 @@
   background: rgba(255, 255, 255, 0.22);
 }
 
-/* Intercarting uses the WTG enquiry popup styling with a seven-column table. */
-#approval-management-root .ae-intercarting-modal .ae-wtg-table-wrap {
+/* Intercarting uses the Line enquiry popup styling with a seven-column table. */
+#approval-management-root .ae-intercarting-modal .ae-line-table-wrap {
   overflow-x: auto;
 }
-#approval-management-root .ae-intercarting-modal .ae-wtg-table {
+#approval-management-root .ae-intercarting-modal .ae-line-table {
   min-width: 900px !important;
 }
-#approval-management-root .ae-intercarting-modal .ae-wtg-table :is(th, td):nth-child(1) {
+#approval-management-root .ae-intercarting-modal .ae-line-table :is(th, td):nth-child(1) {
   width: 4% !important;
 }
-#approval-management-root .ae-intercarting-modal .ae-wtg-table :is(th, td):nth-child(2) {
+#approval-management-root .ae-intercarting-modal .ae-line-table :is(th, td):nth-child(2) {
   width: 20% !important;
 }
-#approval-management-root .ae-intercarting-modal .ae-wtg-table :is(th, td):nth-child(3) {
+#approval-management-root .ae-intercarting-modal .ae-line-table :is(th, td):nth-child(3) {
   width: 15% !important;
 }
-#approval-management-root .ae-intercarting-modal .ae-wtg-table :is(th, td):nth-child(4) {
+#approval-management-root .ae-intercarting-modal .ae-line-table :is(th, td):nth-child(4) {
   width: 17% !important;
 }
-#approval-management-root .ae-intercarting-modal .ae-wtg-table :is(th, td):nth-child(5) {
+#approval-management-root .ae-intercarting-modal .ae-line-table :is(th, td):nth-child(5) {
   width: 10% !important;
 }
-#approval-management-root .ae-intercarting-modal .ae-wtg-table :is(th, td):nth-child(6) {
+#approval-management-root .ae-intercarting-modal .ae-line-table :is(th, td):nth-child(6) {
   width: 18% !important;
 }
-#approval-management-root .ae-intercarting-modal .ae-wtg-table :is(th, td):nth-child(7) {
+#approval-management-root .ae-intercarting-modal .ae-line-table :is(th, td):nth-child(7) {
   width: 16% !important;
 }
 
@@ -12743,4 +12730,204 @@
   #approval-management-root .approval-project-vendor-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* Project Movement quotation comparison table only */
+.approval-project-table-wrap { overflow-x: auto; width: 100%; }
+.approval-project-table { width: 100%; min-width: 1100px; border-collapse: collapse; table-layout: auto; text-align: left; font-size: 13px; color: #173c4e; }
+.approval-project-table th, .approval-project-table td { padding: 12px 10px; border-bottom: 1px solid #dce8eb; text-align: left; vertical-align: middle; }
+.approval-project-table th { background: #e6f3f3; font-size: 12px; white-space: nowrap; }
+.approval-project-table td { background: #fff; }
+.approval-project-table small { display: block; color: #668697; font-size: 10px; margin-top: 4px; overflow-wrap: anywhere; }
+.approval-project-table .approval-project-table-vendors { padding: 6px; min-width: 360px; }
+.approval-project-table-vendor { display: grid; grid-template-columns: minmax(140px, 1.5fr) minmax(90px, 1fr) 60px; align-items: center; gap: 10px; padding: 9px; border: 1px solid #dce8eb; border-radius: 6px; margin: 3px 0; cursor: pointer; text-align: left; }
+.approval-project-table-vendor.is-selected { background: #ecfaf7; border-color: #0d8f87; }
+.approval-project-table-vendor input { accent-color: #0d8f87; width: 16px; height: 16px; }
+.approval-project-table .approval-project-allocation-actions { display: flex; flex-direction: column; gap: 6px; margin: 0; padding: 0; border: 0; }
+.approval-project-table .approval-project-allocation-actions button { width: 100%; white-space: nowrap; }
+
+/* Project Movement common decision controls */
+.approval-project-common-actions { display: flex; justify-content: flex-end; gap: 10px; padding: 14px; border-top: 1px solid #dce8eb; }
+
+/* Compact Project Movement vendor selection only */
+.approval-project-table { min-width: 850px; table-layout: auto; }
+.approval-project-table th, .approval-project-table td { padding: 8px 12px; }
+.approval-project-table .approval-project-table-vendors { min-width: 280px; padding: 4px 12px; }
+.approval-project-table-vendor { grid-template-columns: minmax(100px, 1fr) minmax(85px, auto) 24px; border: 0; border-radius: 4px; margin: 0; padding: 6px 8px; gap: 12px; background: transparent; }
+.approval-project-table-vendor + .approval-project-table-vendor { border-top: 1px solid #e1eaed; }
+.approval-project-table-vendor.is-selected { background: #e5f5f1; }
+.approval-project-table-vendor small:empty { display: none; }
+.approval-project-table-vendor small { margin-top: 2px; }
+.approval-project-common-actions { position: sticky; bottom: 0; z-index: 2; background: #fff; }
+
+/* Project Movement batch approval only */
+#approval-management-root .approval-project-batch-modal-body {display:flex;flex-direction:column;min-height:0;overflow:hidden;padding:10px;}
+#approval-management-root .approval-project-batch-section {display:flex;flex-direction:column;min-height:0;min-width:0;flex:1;gap:8px;}
+#approval-management-root .approval-project-batch-scroll {flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:10px;padding:2px;}
+#approval-management-root .approval-project-batch-heading {display:grid;gap:3px;text-align:left;color:#173e50;}
+#approval-management-root .approval-project-batch-heading small,#approval-management-root .approval-project-batch-name small {font-size:12px;color:#668697;font-weight:400;}
+#approval-management-root .approval-project-batch-stats {display:flex;flex-wrap:wrap;gap:8px 24px;padding:9px 12px;background:#f0f7f7;border:1px solid #dce8eb;border-radius:8px;font-size:12px;}
+#approval-management-root .approval-project-batch-card {flex-shrink:0;border:1px solid #d4e4e7;border-radius:9px;overflow:hidden;background:white;}
+#approval-management-root .approval-project-batch-toggle {width:100%;display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:10px 14px;border:0;background:#eaf4f4;color:#173e50;text-align:left;font:inherit;font-size:12px;cursor:pointer;}
+#approval-management-root .approval-project-batch-name {flex:1;min-width:160px;display:grid;gap:3px;}
+#approval-management-root .approval-project-batch-toggle .is-pending {color:#946200;font-weight:700;}
+#approval-management-root .approval-project-batch-card .approval-project-table-wrap {padding:8px;}
+#approval-management-root .approval-project-batch-card .approval-project-table {min-width:1000px;table-layout:fixed;}
+#approval-management-root .approval-project-batch-card th,#approval-management-root .approval-project-batch-card td {padding:7px 9px;overflow-wrap:anywhere;text-align:left;}
+#approval-management-root .approval-project-batch-card th {white-space:normal;}
+#approval-management-root .approval-project-batch-card th:nth-child(1){width:5%;} 
+#approval-management-root .approval-project-batch-card th:nth-child(2){width:14%;}
+#approval-management-root .approval-project-batch-card th:nth-child(3){width:6%;}
+#approval-management-root .approval-project-batch-card th:nth-child(4){width:9%;}
+#approval-management-root .approval-project-batch-card th:nth-child(5){width:11%;}
+#approval-management-root .approval-project-batch-card th:nth-child(6){width:27%;}
+#approval-management-root .approval-project-batch-card th:nth-child(7){width:14%;}
+#approval-management-root .approval-project-batch-card th:nth-child(8){width:14%;}
+#approval-management-root .approval-project-batch-card .approval-project-table-vendor {grid-template-columns:minmax(0,1fr) minmax(70px,auto) 24px;gap:8px;}
+#approval-management-root .approval-project-batch-card .approval-project-selected-summary {margin:0;padding:6px;font-size:11px;}
+#approval-management-root .approval-project-batch-footer {flex-shrink:0;position:sticky;bottom:0;z-index:3;display:flex;align-items:center;gap:8px;margin:0;padding:9px 12px;background:#0d535b;border-radius:8px;color:white;}
+#approval-management-root .approval-project-batch-total {margin-right:auto;display:grid;gap:3px;font-size:12px;text-align:left;}
+#approval-management-root .approval-project-batch-footer button {font-size:12px;min-height:36px;}
+
+
+/* Project Movement batch table spacing only */
+#approval-management-root .approval-project-batch-scroll {
+  padding: 4px 6px 8px;
+  gap: 12px;
+}
+#approval-management-root .approval-project-batch-card .approval-project-table-wrap {
+  box-sizing: border-box;
+  width: calc(100% - 20px);
+  margin: 10px;
+  padding: 0;
+  border: 1px solid #dce8eb;
+  border-radius: 8px;
+  overflow-x: auto;
+}
+#approval-management-root .approval-project-batch-card .approval-project-table {
+  margin: 0;
+}
+#approval-management-root .approval-project-batch-card .approval-project-table th,
+#approval-management-root .approval-project-batch-card .approval-project-table td {
+  padding: 8px 10px;
+}
+#approval-management-root .approval-project-batch-card .approval-project-table-vendor {
+  margin: 3px 0;
+  padding: 5px 8px;
+  border: 1px solid #dce8eb;
+  border-radius: 6px;
+}
+#approval-management-root .approval-project-batch-card .approval-project-table-vendor.is-selected {
+  border-color: #0d8f87;
+}
+
+/* Project batch separate quotation columns */
+#approval-management-root .approval-project-batch-card .approval-project-table { min-width: 1250px; }
+#approval-management-root .approval-project-batch-card .approval-project-table th:nth-child(1) { width: 4%; }
+#approval-management-root .approval-project-batch-card .approval-project-table th:nth-child(2) { width: 13%; }
+#approval-management-root .approval-project-batch-card .approval-project-table th:nth-child(3) { width: 5%; }
+#approval-management-root .approval-project-batch-card .approval-project-table th:nth-child(4) { width: 8%; }
+#approval-management-root .approval-project-batch-card .approval-project-table th:nth-child(5) { width: 10%; }
+#approval-management-root .approval-project-batch-card .approval-project-table th:nth-child(6) { width: 14%; }
+#approval-management-root .approval-project-batch-card .approval-project-table th:nth-child(7) { width: 12%; }
+#approval-management-root .approval-project-batch-card .approval-project-table th:nth-child(8) { width: 10%; }
+#approval-management-root .approval-project-batch-card .approval-project-table th:nth-child(9) { width: 5%; }
+#approval-management-root .approval-project-batch-card .approval-project-table th:nth-child(10) { width: 10%; }
+#approval-management-root .approval-project-batch-card .approval-project-table th:nth-child(11) { width: 9%; }
+#approval-management-root .approval-project-batch-card .approval-project-table td { border-right: 1px solid #e5edef; }
+#approval-management-root .approval-project-batch-card .approval-project-table .approval-project-quote-first td { border-top: 1px solid #cbdde1; }
+#approval-management-root .approval-project-batch-card .approval-project-table td.approval-project-quote-selected { background: #e1f3ed; }
+#approval-management-root .approval-project-batch-card .approval-project-table input[type="checkbox"] { width: 16px; height: 16px; accent-color: #087e76; }
+
+/* Project Movement estimated quotation margin */
+#approval-management-root .approval-project-batch-card .approval-project-table { min-width: 1400px; }
+#approval-management-root .approval-project-batch-card .approval-project-table th:nth-child(1) { width: 4%; }
+#approval-management-root .approval-project-batch-card .approval-project-table th:nth-child(2) { width: 11%; }
+#approval-management-root .approval-project-batch-card .approval-project-table th:nth-child(3) { width: 5%; }
+#approval-management-root .approval-project-batch-card .approval-project-table th:nth-child(4) { width: 7%; }
+#approval-management-root .approval-project-batch-card .approval-project-table th:nth-child(5) { width: 9%; }
+#approval-management-root .approval-project-batch-card .approval-project-table th:nth-child(6) { width: 11%; }
+#approval-management-root .approval-project-batch-card .approval-project-table th:nth-child(7) { width: 9%; }
+#approval-management-root .approval-project-batch-card .approval-project-table th:nth-child(8) { width: 11%; }
+#approval-management-root .approval-project-batch-card .approval-project-table th:nth-child(9) { width: 9%; }
+#approval-management-root .approval-project-batch-card .approval-project-table th:nth-child(10) { width: 10%; }
+#approval-management-root .approval-project-batch-card .approval-project-table th:nth-child(11) { width: 5%; }
+#approval-management-root .approval-project-batch-card .approval-project-table th:nth-child(12) { width: 9%; }
+#approval-management-root .approval-project-batch-card .approval-project-margin { white-space: nowrap; font-variant-numeric: tabular-nums; }
+#approval-management-root .approval-project-batch-card .approval-project-margin.is-positive { color: #087653; }
+#approval-management-root .approval-project-batch-card .approval-project-margin.is-negative { color: #b42318; }
+
+#approval-management-root .approval-project-batch-card .approval-project-customer-amount { white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+/* Project Movement compact summary only */
+#approval-management-root .approval-project-compact-summary {
+  display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap;
+  gap:8px 20px; padding:9px 12px; background:#f0f7f7;
+  border:1px solid #dce8eb; border-radius:8px; color:#173e50; flex-shrink:0;
+}
+#approval-management-root .approval-project-compact-summary > strong {font-size:13px; text-align:left;}
+#approval-management-root .approval-project-compact-summary .approval-project-batch-stats {
+  padding:0; border:0; background:transparent; gap:6px 20px; align-items:center;
+}
+#approval-management-root .approval-project-compact-summary .approval-project-batch-stats span {white-space:nowrap;}
+
+/* Project Movement only: contain the table and keep decision controls visible. */
+#approval-management-root .approval-project-quotation-panel {
+  width: min(96vw, 1720px);
+  max-width: calc(100vw - 24px);
+  min-width: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+#approval-management-root .approval-project-batch-modal-body,
+#approval-management-root .approval-project-batch-section,
+#approval-management-root .approval-project-batch-scroll,
+#approval-management-root .approval-project-batch-card {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+#approval-management-root .approval-project-batch-scroll { overflow-x: hidden; overflow-y: auto; }
+#approval-management-root .approval-project-batch-card .approval-project-table-wrap {
+  width: auto; max-width: calc(100% - 20px); min-width: 0; overflow-x: auto;
+}
+#approval-management-root .approval-project-batch-card .approval-project-table {
+  width: 100%; min-width: 1180px; table-layout: fixed; font-size: 12px;
+}
+#approval-management-root .approval-project-batch-card .approval-project-table th,
+#approval-management-root .approval-project-batch-card .approval-project-table td {
+  padding: 8px 7px; white-space: normal; overflow-wrap: anywhere;
+}
+#approval-management-root .approval-project-batch-card .approval-project-table th:nth-child(1) { width: 4%; }
+#approval-management-root .approval-project-batch-card .approval-project-table th:nth-child(2) { width: 11%; }
+#approval-management-root .approval-project-batch-card .approval-project-table th:nth-child(3) { width: 5%; }
+#approval-management-root .approval-project-batch-card .approval-project-table th:nth-child(4) { width: 7%; }
+#approval-management-root .approval-project-batch-card .approval-project-table th:nth-child(5) { width: 9%; }
+#approval-management-root .approval-project-batch-card .approval-project-table th:nth-child(6) { width: 10%; }
+#approval-management-root .approval-project-batch-card .approval-project-table th:nth-child(7) { width: 8%; }
+#approval-management-root .approval-project-batch-card .approval-project-table th:nth-child(8) { width: 11%; }
+#approval-management-root .approval-project-batch-card .approval-project-table th:nth-child(9) { width: 9%; }
+#approval-management-root .approval-project-batch-card .approval-project-table th:nth-child(10) { width: 10%; }
+#approval-management-root .approval-project-batch-card .approval-project-table th:nth-child(11) { width: 5%; }
+#approval-management-root .approval-project-batch-card .approval-project-table th:nth-child(12) { width: 11%; }
+#approval-management-root .approval-project-batch-card .approval-project-allocation-status {
+  max-width: 100%; min-width: 0; white-space: normal; overflow-wrap: anywhere;
+  text-align: center; font-size: 10px; line-height: 1.3; padding: 4px 6px;
+}
+#approval-management-root .approval-project-batch-card .approval-project-margin,
+#approval-management-root .approval-project-batch-card .approval-project-customer-amount {
+  white-space: normal; overflow-wrap: anywhere;
+}
+#approval-management-root .approval-project-batch-footer {
+  width: 100%; min-width: 0; max-width: 100%; flex-wrap: wrap; box-sizing: border-box;
+}
+#approval-management-root .approval-project-select-all {
+  display: inline-flex; align-items: center; gap: 7px; padding: 6px 10px;
+  font-size: 12px; font-weight: 700; color: #fff; cursor: pointer;
+}
+#approval-management-root .approval-project-select-all input[type="checkbox"] {
+  width: 16px; height: 16px; min-height: 0; margin: 0; padding: 0; accent-color: #0d8f87;
+}
+@media (max-width: 760px) {
+  #approval-management-root .approval-project-batch-total { flex-basis: 100%; }
 }

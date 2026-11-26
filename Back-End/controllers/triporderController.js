@@ -183,8 +183,8 @@ const normalizeRequirement = (requirement, index, isLineMovement = false, isProj
 const normalizeMovementType = (value) => {
   const movement = cleanString(value);
   const normalized = movement.toLowerCase();
-  if (normalized === "wtg movement") return "Line Movement";
-  if (normalized === "other") return "Project Movement";
+  if (normalized === "line movement") return "Line Movement";
+  if (normalized === "project movement") return "Project Movement";
   return movement;
 };
 
@@ -197,7 +197,7 @@ const buildTripData = (body = {}) => ({
   email: cleanString(body.email).toLowerCase(),
   assignedKam: cleanString(body.assignedKam),
   enquiryDate: toDateOrNull(body.enquiryDate),
-  placementDate: ["project movement", "other"].includes(
+  placementDate: ["project movement"].includes(
     cleanString(body.movementType).toLowerCase(),
   )
     ? null
@@ -211,7 +211,7 @@ const buildTripData = (body = {}) => ({
   routeLocations: Array.isArray(body.routeLocations)
     ? body.routeLocations.map(cleanString).filter(Boolean)
     : [],
-  materialType: ["project movement", "other"].includes(
+  materialType: ["project movement"].includes(
     cleanString(body.movementType).toLowerCase(),
   )
     ? ""
@@ -221,17 +221,17 @@ const buildTripData = (body = {}) => ({
       ? null
       : Math.max(0, toNumber(body.weight, 0)),
   remark: cleanString(body.remark),
-  siteLocation: ["project movement", "other"].includes(
+  siteLocation: ["project movement"].includes(
     cleanString(body.movementType).toLowerCase(),
   )
     ? ""
     : cleanString(body.siteLocation),
-  period: ["project movement", "other"].includes(
+  period: ["project movement"].includes(
     cleanString(body.movementType).toLowerCase(),
   )
     ? ""
     : cleanString(body.period),
-  dieselScope: ["project movement", "other"].includes(
+  dieselScope: ["project movement"].includes(
     cleanString(body.movementType).toLowerCase(),
   )
     ? ""
@@ -241,10 +241,10 @@ const buildTripData = (body = {}) => ({
         normalizeRequirement(
           requirement,
           index,
-          ["line movement", "wtg movement"].includes(
+          ["line movement"].includes(
             cleanString(body.movementType).toLowerCase(),
           ),
-          ["project movement", "other"].includes(
+          ["project movement"].includes(
             cleanString(body.movementType).toLowerCase(),
           ),
         )
@@ -703,7 +703,7 @@ const saveOrderFinalization = async (req, res) => {
       .replace(/[\s_-]+/g, "");
 
     // Existing movement conditions remain unchanged.
-    const isWtg = ["wtgmovement", "linemovement"].includes(movementKey);
+    const isLine = ["linemovement"].includes(movementKey);
     const isIntercarting = movementKey === "intercarting";
 
     // Added only for Project Movement.
@@ -711,7 +711,7 @@ const saveOrderFinalization = async (req, res) => {
 
     // Existing movements plus Project Movement.
     const usesVehicleAmounts =
-      isWtg || isIntercarting || isProjectMovement;
+      isLine || isIntercarting || isProjectMovement;
 
     const incomingVehicleAmounts = req.body.vehicleFinalAmounts;
 
@@ -2232,6 +2232,19 @@ const reviewTransportReplacement = async (req, res) => {
       });
       replacementRequest.replacementQuotationId = replacementQuotationId;
       replacementRequest.replacementConfirmationId = replacementConfirmationId;
+      if (isProjectMovementOrder(trip)) {
+        const projectRequest = (trip.projectVehicleAllocationRequests || []).find(item => item.confirmationId === currentConfirmation.confirmationId);
+        if (!projectRequest || selection.remaining !== 0 || Number(replacementRequest.quantity) !== 1)
+          return sendError(res, 409, "Project replacement must match one approved vehicle request.");
+        const vendorId = makeId("PVQ");
+        projectRequest.vendorQuotations = [{ quotationId: vendorId, vendorName: replacementRequest.proposedTransporter, vendorAmount: replacementRequest.proposedAmount, allocatedBy: replacementRequest.requestedBy, quotedBy: replacementRequest.requestedBy, quotedAt: now, status: "Approved", managementConfirmedBy: reviewedBy, managementConfirmedAt: now, managementRemarks: reviewRemarks }];
+        projectRequest.selectedVendorQuotationId = vendorId;
+        projectRequest.vendorName = replacementRequest.proposedTransporter;
+        projectRequest.vendorAmount = replacementRequest.proposedAmount;
+        projectRequest.quotationId = replacementQuotationId;
+        projectRequest.confirmationId = replacementConfirmationId;
+        trip.markModified("projectVehicleAllocationRequests");
+      }
     }
     trip.markModified("trafficQuotations");
     trip.markModified("vehicleConfirmations");
@@ -2242,6 +2255,7 @@ const reviewTransportReplacement = async (req, res) => {
         "trafficQuotations",
         "vehicleConfirmations",
         "transportReplacementRequests",
+        ...(status === "Approved" && isProjectMovementOrder(trip) ? ["projectVehicleAllocationRequests"] : []),
       ],
       status === "Approved"
         ? replacementRequest.selectedAllocationIds || []
@@ -4958,7 +4972,12 @@ const createProjectVehicleAllocationRequest = async (req, res) => {
     // PO document is optional for Project Movement vehicle allocation requests.
     const requirementId = cleanString(req.body.requirementId);
     const requestedQuantity = Number(req.body.requestedQuantity);
-    const customerRequiredDate = cleanString(req.body.customerRequiredDate);
+    const vehicleDetails = req.body.vehicles;
+    if (!Array.isArray(vehicleDetails) || vehicleDetails.length !== requestedQuantity) return sendError(res, 400, "Provide placement details for every vehicle.");
+    const normalizedVehicles = vehicleDetails.map(v => ({ origin: cleanString(v?.origin), destination: cleanString(v?.destination), placementDate: cleanString(v?.placementDate) }));
+    const validPlacementDate = value => { if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false; const date = new Date(value + "T00:00:00Z"); return Number.isFinite(date.getTime()) && date.toISOString().slice(0,10) === value; };
+    if (normalizedVehicles.some(v => !v.origin || !v.destination || !validPlacementDate(v.placementDate))) return sendError(res, 400, "Enter origin, destination and valid placement date for every vehicle.");
+    const customerRequiredDate = normalizedVehicles[0]?.placementDate || "";
     // Customer required time is optional for Project Movement.
     const customerRequiredTime = cleanString(req.body.customerRequiredTime);
     const requirement = findRequirement(trip, requirementId);
@@ -4989,12 +5008,17 @@ const createProjectVehicleAllocationRequest = async (req, res) => {
       cleanString(req.body.requestedBy) ||
       cleanString(req.user?.username) ||
       "Key Account";
+    const batchId = cleanString(req.body.batchId) || makeId("PB");
     const requestedAt = new Date();
-    const createdRequests = Array.from({ length: requestedQuantity }, () => ({
+    const createdRequests = normalizedVehicles.map(vehicle => ({
       requestId: makeId("PVAR"),
+      batchId,
       requirementId,
       requestedQuantity: 1,
-      customerRequiredDate,
+      origin: vehicle.origin,
+      destination: vehicle.destination,
+      placementDate: vehicle.placementDate,
+      customerRequiredDate: vehicle.placementDate,
       customerRequiredTime,
       requestedBy,
       requestedAt,
@@ -5011,10 +5035,12 @@ const createProjectVehicleAllocationRequest = async (req, res) => {
       `${requestedQuantity} individual vehicle allocation request(s) sent to Traffic.`,
       {
         trip,
-        createdRequests: createdRequests.map(({ requestId, requirementId, requestedQuantity: quantity, customerRequiredDate, customerRequiredTime, status }) => ({
+        createdRequests: createdRequests.map(({ requestId, batchId, requirementId, requestedQuantity: quantity, customerRequiredDate, customerRequiredTime, origin, destination, placementDate, status }) => ({
           requestId,
+          batchId,
           requirementId,
           requestedQuantity: quantity,
+          origin, destination, placementDate,
           customerRequiredDate,
           customerRequiredTime,
           status,
@@ -5060,6 +5086,7 @@ const submitProjectVehicleAllocationQuotation = async (req, res) => {
         quotationId: makeId("PVQ"),
         vendorName,
         vendorAmount,
+        allocatedBy: cleanString(item.allocatedBy),
         trafficRemarks: cleanString(item.trafficRemarks),
         quotedBy,
         quotedAt: new Date(),
@@ -5137,7 +5164,7 @@ const decideProjectVehicleAllocationRequest = async (req, res) => {
     }
 
     const decidedAt = new Date();
-    request.status = status;
+    request.status = status === "Rejected" ? "Pending Traffic" : status;
     request.managementConfirmedBy = confirmedBy;
     request.managementConfirmedAt = decidedAt;
     request.managementRemarks = remarks;
@@ -5172,7 +5199,7 @@ const decideProjectVehicleAllocationRequest = async (req, res) => {
         quantity: request.requestedQuantity,
         amount: selectedVendor.vendorAmount,
         quotedBy: selectedVendor.quotedBy || "Traffic Team",
-        allocatedBy: selectedVendor.quotedBy || "Traffic Team",
+        allocatedBy: selectedVendor.allocatedBy || selectedVendor.quotedBy || "Traffic Team",
         quotedAt: selectedVendor.quotedAt || decidedAt,
         remarks: selectedVendor.trafficRemarks || "",
       });
@@ -5189,13 +5216,32 @@ const decideProjectVehicleAllocationRequest = async (req, res) => {
         cleanString(trip?.orderPlaced?.status).toLowerCase() === "completed" ||
         cleanString(trip?.stage).toLowerCase() === "tracking";
       if (!alreadyInTracking) trip.stage = "Order Placed";
-    } else if (vendorQuotations.length) {
+    } else {
       vendorQuotations.forEach((item) => {
         item.status = "Rejected";
         item.managementConfirmedBy = confirmedBy;
         item.managementConfirmedAt = decidedAt;
         item.managementRemarks = rejectionReason || remarks;
       });
+      request.rejectedQuotationHistory.push({
+        vendorQuotations: vendorQuotations.map(item => item.toObject ? item.toObject() : { ...item }),
+        vendorName: request.vendorName,
+        vendorAmount: request.vendorAmount,
+        quotedBy: request.quotedBy,
+        quotedAt: request.quotedAt,
+        trafficRemarks: request.trafficRemarks,
+        rejectionReason,
+        managementRemarks: remarks,
+        rejectedBy: confirmedBy,
+        rejectedAt: decidedAt,
+      });
+      request.vendorQuotations = [];
+      request.selectedVendorQuotationId = "";
+      request.vendorName = "";
+      request.vendorAmount = null;
+      request.trafficRemarks = "";
+      request.quotedBy = "";
+      request.quotedAt = null;
     }
 
     trip.markModified("projectVehicleAllocationRequests");
@@ -5205,7 +5251,7 @@ const decideProjectVehicleAllocationRequest = async (req, res) => {
     return sendSuccess(res, 200,
       status === "Approved"
         ? `Project vehicle allocation approved with ${selectedVendor.vendorName}.`
-        : "Project vehicle allocation rejected; quantity released for a new request.",
+        : "Project vehicle quotation rejected and returned to Traffic for resubmission.",
       trip);
   } catch (error) {
     console.error("Decide Project Vehicle Allocation Request Error:", error);

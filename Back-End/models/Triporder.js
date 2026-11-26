@@ -1697,6 +1697,7 @@ const invoicePaymentSchema = new Schema(
 
 const projectVendorQuotationSchema = new Schema(
   {
+    allocatedBy: { type: String, trim: true, default: "" },
     quotationId: { type: String, required: true, trim: true },
     vendorName: { type: String, required: true, trim: true },
     vendorAmount: { type: Number, required: true, min: 0 },
@@ -1717,11 +1718,16 @@ const projectVendorQuotationSchema = new Schema(
 
 const projectVehicleAllocationRequestSchema = new Schema(
   {
+    batchId: { type: String, trim: true, default: "" },
     requestId: { type: String, required: true, trim: true },
     requirementId: { type: String, required: true, trim: true },
     quotationId: { type: String, trim: true, default: "" },
     confirmationId: { type: String, trim: true, default: "" },
     requestedQuantity: { type: Number, required: true, min: 1 },
+    // Individual Project Movement vehicle placement details.
+    origin: { type: String, trim: true, default: "" },
+    destination: { type: String, trim: true, default: "" },
+    placementDate: { type: String, trim: true, default: "" },
     customerRequiredDate: { type: String, required: true, trim: true },
     customerRequiredTime: {
       type: String,
@@ -1736,6 +1742,7 @@ const projectVehicleAllocationRequestSchema = new Schema(
       default: "Pending Traffic",
     },
     vendorQuotations: { type: [projectVendorQuotationSchema], default: [] },
+    rejectedQuotationHistory: { type: [Schema.Types.Mixed], default: [] },
     selectedVendorQuotationId: { type: String, trim: true, default: "" },
     // Legacy summary fields retained for existing records and older clients.
     vendorName: { type: String, trim: true, default: "" },
