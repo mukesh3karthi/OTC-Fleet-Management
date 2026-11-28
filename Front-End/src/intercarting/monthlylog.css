@@ -1073,3 +1073,22 @@ body.monthly-modal-open {
     transition: none;
   }
 }
+
+/* Match the compact Daily Log header; screen only. */
+@media screen {
+  .monthly-log-page .monthly-log-toolbar {
+    padding: 10px 12px;
+    gap: 10px 16px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    background: linear-gradient(110deg, #0b3044, #10465e 55%, #106574);
+  }
+  .monthly-log-page .monthly-log-title h1 { color: #fff; font-size: 18px; line-height: 1.25; }
+  .monthly-log-page .monthly-log-title p { color: #c6e1f3; font-size: 11px; }
+  .monthly-log-page .monthly-back-button { color: #fff; background: rgba(255,255,255,.07); border-color: rgba(255,255,255,.28); }
+  .monthly-log-page .monthly-back-button:hover { color: #fff; background: rgba(255,255,255,.16); }
+  .monthly-log-page .monthly-toolbar-actions button { font-size: 12px; min-height: 34px; }
+  .monthly-log-page .monthly-filter-card { padding: 8px 12px; gap: 10px; margin-bottom: 8px; }
+  .monthly-log-page .monthly-input-with-icon,
+  .monthly-log-page .monthly-filter-field select { height: 34px; }
+}

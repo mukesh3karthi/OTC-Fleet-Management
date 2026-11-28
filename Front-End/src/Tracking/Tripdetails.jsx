@@ -1481,21 +1481,17 @@ const StandardTripdetails = ({ movementOnly = false }) => {
           {/* =================================
           TOP ACTION BAR
       ================================= */}
-          <div className="trip-page-actions">
+          <header className="trip-page-header trip-compact-header">
             <button
               type="button"
               className="trip-back-button"
               onClick={handleBack}
+              aria-label="Back to Tracking"
             >
               <ArrowLeft size={16} />
               <span>Back to Tracking</span>
             </button>
-          </div>
-          {/* =================================
-          PAGE HEADING
-      ================================= */}
-          <header className="trip-page-header">
-            <div>
+            <div className="trip-compact-heading">
               <span className="trip-page-eyebrow">FLEET OPERATIONS</span>
               <h1>Trip List</h1>
               <p>View and manage all vehicle tracking trips.</p>
@@ -1556,23 +1552,21 @@ const StandardTripdetails = ({ movementOnly = false }) => {
               ) : trips.length > 0 ? (
                 trips.map((trip, index) => {
                   const allocatedVehicleCount = getCurrentVehicles(trip).length;
-                  const requirementVehicleCount = safeArray(
-                    trip?.vehicleRequirements,
-                  ).reduce((total, requirement) => {
-                    const quantity = Number(
-                      requirement?.quantity ??
-                        requirement?.qty ??
-                        requirement?.requiredQuantity ??
-                        0,
+                  const approvedVehicleCount = safeArray(
+                    trip?.vehicleConfirmations,
+                  ).reduce((total, confirmation) => {
+                    if (String(confirmation?.status || "").trim().toLowerCase() !== "approved") {
+                      return total;
+                    }
+                    const quotation = safeArray(trip?.trafficQuotations).find(
+                      (quote) => confirmation?.quotationId &&
+                        String(quote?.quotationId) === String(confirmation.quotationId),
                     );
-                    return total + (Number.isFinite(quantity) ? quantity : 0);
+                    const quantity = Number(quotation?.quantity ?? confirmation?.approvedQuantity ?? confirmation?.quantity ?? 0);
+                    return total + (Number.isFinite(quantity) && quantity > 0 ? quantity : 0);
                   }, 0);
-                  const requiredVehicleCount =
-                    requirementVehicleCount > 0
-                      ? requirementVehicleCount
-                      : Number(trip?.totalVehicles || 0);
                   const pendingVehicleCount = Math.max(
-                    requiredVehicleCount - allocatedVehicleCount,
+                    approvedVehicleCount - allocatedVehicleCount,
                     0,
                   );
                   const tripStatus = getTripStatus(trip);
@@ -1646,12 +1640,12 @@ const StandardTripdetails = ({ movementOnly = false }) => {
                         ) : (
                           <span className="trip-row-vehicle-count">
                             <Truck size={14} />
-                            {allocatedVehicleCount}/{requiredVehicleCount}
+                            {allocatedVehicleCount}/{approvedVehicleCount}
                           </span>
                         )}
                         {!isCraneTrip(trip) && pendingVehicleCount > 0 && (
                           <small className="trip-row-vehicle-pending">
-                            {pendingVehicleCount} Pending
+                            {pendingVehicleCount} Pending allocation
                           </small>
                         )}
                       </div>

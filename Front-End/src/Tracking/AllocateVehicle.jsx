@@ -39,6 +39,7 @@ import {
   Building2,
   CalendarDays,
   ChevronRight,
+  ChevronDown,
   Clock3,
   Gauge,
   MapPin,
@@ -205,6 +206,57 @@ const getConfirmedRequirementData = (order) =>
         item.quotation &&
         item.quotation.requirementId === item.requirement.requirementId,
     );
+
+// Use the original Key Account request batches, not material-type guesses.
+const getMatchingProjectRequest = (order, requirement, confirmation) => {
+  const requests = safeArray(order?.projectVehicleAllocationRequests);
+  const exact = requests.filter(r => r.confirmationId && String(r.confirmationId) === String(confirmation.confirmationId));
+  if (exact.length === 1) return exact[0];
+  if (exact.length > 1) return null;
+  const matches = requests.filter(r => String(r.requirementId) === String(requirement.requirementId));
+  return matches.length === 1 && !matches[0].confirmationId ? matches[0] : null;
+};
+
+const groupConfirmedRequirements = (order, rows) => {
+  const requests = safeArray(order?.projectVehicleAllocationRequests);
+  if (!requests.length) return rows.map((row) => ({ ...row, batchHeading: null }));
+  const batches = new Map();
+  const byConfirmation = new Map();
+  const byRequirement = new Map();
+  requests.forEach((request) => {
+    const id = request.batchId || request.requestBatchId;
+    if (!id) return;
+    const key = String(id);
+    if (!batches.has(key)) batches.set(key, { key, date: request.requestedAt, rows: [] });
+    const add = (map, value) => {
+      if (!value) return;
+      const keys = map.get(String(value)) || new Set();
+      keys.add(key);
+      map.set(String(value), keys);
+    };
+    add(byConfirmation, request.confirmationId);
+    add(byRequirement, request.requirementId);
+  });
+  const ordered = [...batches.values()].sort((a, b) =>
+    (Date.parse(a.date) || 0) - (Date.parse(b.date) || 0));
+  if (!ordered.length) return rows.map((row) => ({ ...row, batchHeading: null }));
+  const unassigned = [];
+  rows.forEach((row) => {
+    const keys = byConfirmation.get(String(row.confirmation.confirmationId)) ||
+      byRequirement.get(String(row.requirement.requirementId));
+    if (keys?.size === 1) batches.get([...keys][0]).rows.push(row);
+    else unassigned.push(row);
+  });
+  const result = ordered.flatMap((batch, index) => batch.rows.map((row, rowIndex) => ({
+    ...row,
+    batchKey: batch.key,
+    batchHeading: rowIndex === 0 ? { label: `Batch ${String(index + 1).padStart(2, "0")}`, count: batch.rows.length } : null,
+  })));
+  return result.concat(unassigned.map((row, index) => ({ ...row,
+    batchKey: "legacy-unassigned",
+    batchHeading: index === 0 ? { label: "Unassigned / legacy requests", count: unassigned.length } : null,
+  })));
+};
 
 const getLatestTracking = (allocation) => {
   const history = safeArray(allocation?.dailyTracking);
@@ -531,10 +583,47 @@ const AllocateVehicle = () => {
     [selectedOrder],
   );
 
+  const batchOrderedRequirements = useMemo(
+    () => isCraneOrder(selectedOrder)
+      ? confirmedRequirements
+      : groupConfirmedRequirements(selectedOrder, confirmedRequirements),
+    [selectedOrder, confirmedRequirements],
+  );
+
+  const allocationBatchTables = useMemo(() => {
+    const groups = new Map();
+    batchOrderedRequirements.forEach((row, index) => {
+      const key = row.batchKey || "all";
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push({ ...row, originalIndex: index });
+    });
+    return groups.size ? [...groups.entries()] : [["all", []]];
+  }, [batchOrderedRequirements]);
+  const [collapsedBatches, setCollapsedBatches] = useState({});
+  const toggleBatch = (key) => setCollapsedBatches(prev => ({ ...prev, [selectedOrderId]: { ...prev[selectedOrderId], [key]: !prev[selectedOrderId]?.[key] } }));
+
   const allocations = useMemo(
     () => safeArray(selectedOrder?.allocatedVehicles),
     [selectedOrder],
   );
+
+  const [collapsedLiveBatches, setCollapsedLiveBatches] = useState({});
+  const liveVehicleBatches = useMemo(() => {
+    const groups = new Map();
+    const labels = new Map(batchOrderedRequirements.filter(row => row.batchHeading).map(row => [row.batchKey, row.batchHeading.label]));
+    const hasBatches = labels.size > 0;
+    allocations.forEach((allocation, index) => {
+      if (String(allocation?.vehicleStatus || "").toLowerCase() === "replaced") return;
+      const exact = batchOrderedRequirements.filter(row => allocation.confirmationId && String(row.confirmation.confirmationId) === String(allocation.confirmationId));
+      const matches = exact.length ? exact : batchOrderedRequirements.filter(row => allocation.requirementId && String(row.requirement.requirementId) === String(allocation.requirementId));
+      const keys = new Set(matches.map(row => row.batchKey).filter(Boolean));
+      const key = hasBatches ? (keys.size === 1 ? [...keys][0] : "legacy-unassigned") : "all-vehicles";
+      if (!groups.has(key)) groups.set(key, { key, label: labels.get(key) || (hasBatches ? "Unassigned / legacy requests" : "Current Vehicles"), vehicles: [] });
+      groups.get(key).vehicles.push({ allocation, index });
+    });
+    const order = [...labels.keys(), "legacy-unassigned", "all-vehicles"];
+    return [...groups.values()].sort((a, b) => order.indexOf(a.key) - order.indexOf(b.key));
+  }, [allocations, batchOrderedRequirements]);
 
   /* =======================================================
      OPEN MOVEMENT FROM TRIP DETAILS
@@ -1448,8 +1537,11 @@ const AllocateVehicle = () => {
                 />
 
                 <div className="tracking-form-card-body tracking-required-vehicle-body">
-                  <div className="tracking-required-vehicle-table-wrap">
+                  <div className="tracking-allocation-batch-stack">
+                  {allocationBatchTables.map(([tableKey, tableRows]) => (
+                  <div className="tracking-required-vehicle-table-wrap" key={tableKey}>
                     <table className="tracking-required-vehicle-table">
+                      {!tableRows.some(row => row.batchHeading) && (
                       <thead>
                         <tr>
                           <th>#</th>
@@ -1482,10 +1574,11 @@ const AllocateVehicle = () => {
                           <th>Action</th>
                         </tr>
                       </thead>
+                      )}
 
                       <tbody>
-                        {confirmedRequirements.map(
-                          ({ requirement, confirmation, quotation }, index) => {
+                        {tableRows.map(
+                          ({ requirement, confirmation, quotation, batchHeading, batchKey, originalIndex: index }) => {
                             const requirementId = requirement.requirementId;
 
                             const approvedQuantity = getApprovedQuantity(
@@ -1524,14 +1617,59 @@ const AllocateVehicle = () => {
                               quotation.quotationId
                                 ? allocationForms[requirementId]
                                 : null;
+                            const request = getMatchingProjectRequest(selectedOrder, requirement, confirmation);
                             const createdValue = (field) =>
+                              getCreatedVehicleValue(request, field) ||
+                              (field === "placementDate" ? request?.customerRequiredDate : "") ||
                               getCreatedVehicleValue(requirement, field) ||
-                              (isCraneOrder(selectedOrder)
-                                ? selectedOrder[field]
-                                : "");
-
+                              (isCraneOrder(selectedOrder) ? selectedOrder[field] : "");
+                            const collapsed = Boolean(batchKey && collapsedBatches[selectedOrderId]?.[batchKey]);
+                            const heading = batchHeading && (
+                              <tr className="tracking-allocation-batch-row">
+                                <td colSpan={11}>
+                                  <button type="button" className="tracking-allocation-batch-heading" aria-expanded={!collapsed} disabled={saving} onClick={() => toggleBatch(batchKey)}>
+                                    <strong>{collapsed ? <ChevronRight size={16}/> : <ChevronDown size={16}/>} {batchHeading.label}</strong>
+                                    <span>{batchHeading.count} approved requirement{batchHeading.count === 1 ? "" : "s"}</span>
+                                  </button>
+                                </td>
+                              </tr>
+                            );
+                            if (collapsed) return <React.Fragment key={confirmation.confirmationId}>{heading}</React.Fragment>;
                             return (
                               <React.Fragment key={confirmation.confirmationId}>
+                                {heading}
+                                {batchHeading && !collapsed && (
+<tr className="tracking-batch-column-head">
+                          <th>#</th>
+                          <th>
+                            {isCraneOrder(selectedOrder)
+                              ? "Crane / Material Type"
+                              : "Vehicle Type"}
+                          </th>
+                          {!isCraneOrder(selectedOrder) && (
+                            <>
+                              <th>Configuration</th>
+                            </>
+                          )}
+                          <th>Origin</th>
+                          <th>Destination</th>
+                          {!isCraneOrder(selectedOrder) && <th>Material Type</th>}
+                          <th>Placement Date</th>
+                          {isCraneOrder(selectedOrder) ? (
+                            <>
+                              <th>Weight</th>
+                              <th>Vehicle Count</th>
+                            </>
+                          ) : (
+                            <>
+                              <th>Weight</th>
+                              <th>L × H × W</th>
+                            </>
+                          )}
+                          <th>Confirmed Transporter</th>
+                          <th>Action</th>
+                        </tr>
+                                )}
                                 <tr>
                                   <td>
                                     <span className="tracking-required-row-number">
@@ -2154,6 +2292,8 @@ const AllocateVehicle = () => {
                       </tbody>
                     </table>
                   </div>
+                  ))}
+                  </div>
                 </div>
               </section>
 
@@ -2161,7 +2301,7 @@ const AllocateVehicle = () => {
                   ALLOCATED VEHICLES
               ========================================= */}
 
-              <section className="tracking-form-card">
+              <section className="tracking-form-card tracking-live-operations-card">
                 <CardHeader
                   icon={<Truck size={18} />}
                   iconClass="indigo"
@@ -2197,14 +2337,19 @@ const AllocateVehicle = () => {
                     </div>
                   ) : (
                     <div className="tracking-vehicle-list">
-                      {allocations
-                        .filter(
-                          (allocation) =>
-                            String(
-                              allocation?.vehicleStatus || "",
-                            ).toLowerCase() !== "replaced",
-                        )
-                        .map((allocation, index) => {
+                      {liveVehicleBatches.map(batch => {
+                        const modalOpen = batch.vehicles.some(({ allocation }) => allocation.allocationId === activeVehicleModal);
+                        const collapsed = !modalOpen && Boolean(collapsedLiveBatches[selectedOrderId]?.[batch.key]);
+                        return (
+                          <div className="tracking-live-batch" key={batch.key}>
+                            <button type="button" className="tracking-live-batch-heading" aria-expanded={!collapsed}
+                              disabled={modalOpen}
+                              onClick={() => setCollapsedLiveBatches(prev => ({ ...prev, [selectedOrderId]: { ...prev[selectedOrderId], [batch.key]: !prev[selectedOrderId]?.[batch.key] } }))}>
+                              <strong>{collapsed ? <ChevronRight size={16} /> : <ChevronDown size={16} />} {batch.label}</strong>
+                              <span>{batch.vehicles.length} current vehicle{batch.vehicles.length === 1 ? "" : "s"}</span>
+                            </button>
+                            <div className="tracking-live-batch-body" hidden={collapsed}>
+                              {batch.vehicles.map(({ allocation, index }) => {
                           const requirement = getRequirement(
                             selectedOrder,
                             allocation.requirementId,
@@ -3612,6 +3757,10 @@ const AllocateVehicle = () => {
                             </article>
                           );
                         })}
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
@@ -3966,6 +4115,7 @@ const VehicleAllocationHistory = (() => {
 
   return function VehicleAllocationHistory({ order, showAmounts = true }) {
     const [tab, setTab] = useState("current");
+    const [collapsedTransportBatches, setCollapsedTransportBatches] = useState({});
     const vehicles = list(order?.allocatedVehicles);
     const previous = vehicles.filter(isPrevious);
     const quotes = list(order?.trafficQuotations);
@@ -3983,6 +4133,18 @@ const VehicleAllocationHistory = (() => {
         ),
       }))
       .filter((row) => row.quote);
+    const batchRows = groupConfirmedRequirements(order, getConfirmedRequirementData(order));
+    const labels = new Map(batchRows.filter(row => row.batchHeading).map(row => [row.batchKey, row.batchHeading.label]));
+    const groups = new Map();
+    current.forEach(row => {
+      const matches = batchRows.filter(item => item.confirmation.confirmationId === row.confirmation.confirmationId);
+      const keys = new Set(matches.map(item => item.batchKey).filter(Boolean));
+      const key = labels.size ? (keys.size === 1 ? [...keys][0] : "legacy-unassigned") : "all";
+      if (!groups.has(key)) groups.set(key, { key, label: labels.get(key) || (labels.size ? "Unassigned / legacy requests" : "Current transport"), rows: [] });
+      groups.get(key).rows.push(row);
+    });
+    const batchOrder = [...labels.keys(), "legacy-unassigned", "all"];
+    const transportGroups = [...groups.values()].sort((a,b) => batchOrder.indexOf(a.key) - batchOrder.indexOf(b.key));
     const byId = (id) =>
       id ? vehicles.find((v) => v.allocationId === id) : null;
     const quoteFor = (vehicle) =>
@@ -3993,15 +4155,10 @@ const VehicleAllocationHistory = (() => {
         className={`vah${isCraneOrder(order) ? " vah-crane" : ""}`}
         aria-label="Vehicle change history"
       >
-        <header className="vah-head">
-          <div>
-            <h3>Transport &amp; vehicles</h3>
-            <p>Current transport details and previous history.</p>
-          </div>
-          <span className="vah-total">
-            {previous.length} previous vehicle{previous.length === 1 ? "" : "s"}
-          </span>
-        </header>
+        <div className="vah-head">
+          <div><h3>Transport &amp; vehicles</h3><p>Current transport details and previous history.</p></div>
+          <span className="vah-total">{previous.length} previous vehicle{previous.length === 1 ? "" : "s"}</span>
+        </div>
         <div className="vah-tabs" role="group" aria-label="History view">
           <button
             type="button"
@@ -4022,7 +4179,28 @@ const VehicleAllocationHistory = (() => {
           className={`vah-content ${tab === "current" ? "vah-current-grid" : ""}`}
           key={`${order?._id || order?.tripId || ""}-${tab}`}
         >
-          {tab === "current" &&
+          {tab === "current" && !isCraneOrder(order) && (
+            current.length ? transportGroups.map(batch => {
+              const key = JSON.stringify([order?._id || order?.tripId, batch.key]);
+              const collapsed = Boolean(collapsedTransportBatches[key]);
+              return <section className="tracking-live-batch vah-transport-batch" key={key}>
+                <button type="button" className="tracking-live-batch-heading" aria-expanded={!collapsed} onClick={() => setCollapsedTransportBatches(prev => ({ ...prev, [key]: !prev[key] }))}>
+                  <strong>{collapsed ? <ChevronRight size={16}/> : <ChevronDown size={16}/>} {batch.label}</strong><span>{batch.rows.length} approved requirements</span>
+                </button>
+                {!collapsed && <div className="vah-transport-table-wrap"><table className="vah-transport-table">
+                  <thead><tr><th>#</th><th>Transporter</th><th>Approved quantity</th><th>Assigned</th><th>Awaiting allocation</th><th>Vehicle number</th>{showAmounts && <th>Amount / vehicle</th>}</tr></thead>
+                  <tbody>{batch.rows.map(({ confirmation, quote, assigned }, index) => {
+                    const unlimited = lower(quote.quantity) === "multiple";
+                    const quantity = Number(quote.quantity);
+                    const pending = !unlimited && Number.isFinite(quantity) ? Math.max(0, quantity - assigned.length) : null;
+                    const request = requests.find(r => lower(r.status) === "pending" && r.currentConfirmationId === confirmation.confirmationId);
+                    return <tr key={confirmation.confirmationId}><td>{index + 1}</td><td><strong>{text(quote.transporter)}</strong>{request && <p className="vah-note vah-pending-note">Transporter change awaiting approval.</p>}</td><td>{unlimited ? "Multiple" : text(quote.quantity)}</td><td>{assigned.length}</td><td>{pending === null ? "As needed" : pending}</td><td>{assigned.length ? assigned.map(vehicle => <span className="vah-vehicle-chip" key={vehicle.allocationId}>{text(vehicle.vehicleNumber)}</span>) : <span className="vah-awaiting">Not assigned</span>}</td>{showAmounts && <td>{money(quote.amount)}</td>}</tr>;
+                  })}</tbody>
+                </table></div>}
+              </section>;
+            }) : <p className="vah-empty">No current approved transporter.</p>
+          )}
+          {tab === "current" && isCraneOrder(order) &&
             (current.length ? (
               current.map(({ confirmation, quote, assigned }) => {
                 const unlimited =

@@ -4011,3 +4011,43 @@
   background: #f4f7f8
 }
 
+
+/* Compact Trip List header — scoped to the list only */
+.trip-list-page .trip-page-header.trip-compact-header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: nowrap;
+  gap: 14px;
+  min-height: 70px;
+  padding: 10px 14px;
+  margin: 0 0 12px;
+  border-radius: 9px;
+  background: linear-gradient(110deg, #0b3044, #10465d 60%, #116675);
+  color: #fff;
+}
+.trip-compact-header .trip-compact-heading { flex: 1 1 auto; min-width: 0; }
+.trip-compact-header .trip-page-eyebrow { color: #b5d8df; font-size: 9px; margin: 0 0 3px; }
+.trip-list-page .trip-compact-header h1 { color: #fff; font-size: 21px; line-height: 1.15; margin: 0; }
+.trip-list-page .trip-compact-header p { color: #d0e3eb; font-size: 11px; line-height: 1.3; margin: 3px 0 0; }
+.trip-list-page .trip-compact-header .trip-back-button,
+.trip-list-page .trip-compact-header .trip-refresh-button {
+  flex: 0 0 auto; height: 36px; min-height: 36px; color: #fff;
+  background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.28);
+  border-radius: 7px; box-shadow: none;
+}
+.trip-list-page .trip-compact-header .trip-back-button { width: auto; padding: 0 11px; white-space: nowrap; font-size: 11px; }
+.trip-list-page .trip-compact-header .trip-refresh-button { width: 36px; padding: 0; }
+.trip-list-page .trip-compact-header .trip-back-button:hover,
+.trip-list-page .trip-compact-header .trip-refresh-button:hover { background: rgba(255,255,255,.18); color: #fff; transform: none; }
+.trip-compact-header .trip-page-header-actions { flex: 0 0 auto; display: flex; align-items: center; gap: 8px; }
+.trip-list-page .trip-compact-header .trip-total-badge { display: inline-flex; min-height: 36px; padding: 0 11px; white-space: nowrap; background: #fff; color: #087f78; border: 1px solid #d4e8e8; border-radius: 7px; font-size: 11px; }
+@media (max-width: 560px) {
+  .trip-list-page .trip-page-header.trip-compact-header { gap: 8px; padding: 9px; }
+  .trip-list-page .trip-compact-header .trip-back-button { width: 34px; padding: 0; }
+  .trip-compact-header .trip-back-button span { display: none; }
+  .trip-list-page .trip-compact-header h1 { font-size: 17px; }
+  .trip-list-page .trip-compact-header p { font-size: 9px; }
+  .trip-list-page .trip-compact-header .trip-total-badge { padding: 0 6px; font-size: 10px; }
+  .trip-compact-header .trip-page-header-actions { gap: 5px; }
+}

@@ -1,6 +1,8 @@
-import { Navigate, Route, Routes } from "react-router-dom";
+
+import { Navigate, Route, Routes, Outlet } from "react-router-dom";
 import Login from "./Loginpage/Login";
 import Dashboard from "./component/Dashboard";
+
 import ProtectedRoute from "./Protectedroute/MainloginProtectedRoute";
 import Intercartingprotected from "./Protectedroute/IntercartingProtectedRoute";
 import Ownvehicleprotected from "./Protectedroute/OwnvehicleProtectedRoute";
@@ -9,6 +11,7 @@ import AssetsProtectedRoute from "./Protectedroute/AssetsProtectedRoute";
 import KeyaccountProtectedRoute from "./Protectedroute/KeyaccountProtectedRoute";
 import TrafficProtectedRoute from "./Protectedroute/TrafficProtectedRoute";
 import ApprovalProtectedRoute from "./Protectedroute/ApprovalProtectedRoute";
+
 import DashContent from "./pages/DashContent";
 import Intercartingdash from "./pages/Intercartingdash";
 import InAndOutBound from "./pages/InAndOutBound";
@@ -20,14 +23,20 @@ import Assets from "./pages/Assets";
 import Vehiclemaintenance from "./pages/Vehiclemaintenance";
 import Ownvehicledash from "./pages/Ownvehicledash";
 import TripDashboard from "./pages/OrderManagement";
+
 import KeyAccount from "./ordermanagement/KeyAccount";
+import Lifecyclemodal from "./ordermanagement/Lifecyclemodal";
 import TrafficManagement from "./ordermanagement/Traffic";
 import Approvalmanagement from "./ordermanagement/Approvalmanagement";
+
 import Trackinginput from "./Tracking/AllocateVehicle";
 import Tripdetails from "./Tracking/Tripdetails";
 import VehicleDetails from "./Tracking/VehicleDetails";
 import CraneVehicles from "./Tracking/CraneVehicles";
+import ProjectMovement from "./Tracking/ProjectMovement";
+
 import Ownvehicledetails from "./Ownvehicledetails/Ownvehicledetails";
+
 import Intercarting from "./intercarting/Intercarting";
 import Intercartingorder from "./intercarting/Intercartingorder";
 import Vehicledetails from "./intercarting/Vehicledetails";
@@ -37,8 +46,10 @@ import Monthlylog from "./intercarting/Monthlylog";
 function App() {
   return (
     <Routes>
+      {/* MAIN LOGIN */}
       <Route path="/" element={<Login />} />
 
+      {/* DASHBOARD */}
       <Route
         path="/dashboard"
         element={
@@ -50,6 +61,7 @@ function App() {
         <Route index element={<DashContent />} />
       </Route>
 
+      {/* ASSETS */}
       <Route
         path="/assets"
         element={
@@ -68,6 +80,7 @@ function App() {
         />
       </Route>
 
+      {/* TRACKING DASHBOARD */}
       <Route
         path="/tracking"
         element={
@@ -79,6 +92,20 @@ function App() {
         <Route index element={<Tracking />} />
       </Route>
 
+      {/* PROJECT MOVEMENT */}
+      {/* Main login protection only */}
+      <Route
+        path="/project-movement/:id"
+        element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<ProjectMovement />} />
+      </Route>
+
+      {/* VEHICLE DETAILS */}
       <Route
         path="/vehicle-details/:id"
         element={
@@ -90,6 +117,7 @@ function App() {
         <Route index element={<VehicleDetails />} />
       </Route>
 
+      {/* TRIP DETAILS */}
       <Route
         path="/trip-details"
         element={
@@ -108,6 +136,7 @@ function App() {
         />
       </Route>
 
+      {/* CRANE VEHICLES */}
       <Route
         path="/crane-vehicles/:id"
         element={
@@ -126,6 +155,7 @@ function App() {
         />
       </Route>
 
+      {/* CRANE VEHICLE MOVEMENT */}
       <Route
         path="/crane-vehicles/:id/movement/:allocationId"
         element={
@@ -144,6 +174,7 @@ function App() {
         />
       </Route>
 
+      {/* TRACKING INPUT / VEHICLE ALLOCATION */}
       <Route
         path="/tracking-input"
         element={
@@ -162,6 +193,7 @@ function App() {
         />
       </Route>
 
+      {/* INBOUND AND OUTBOUND */}
       <Route
         path="/inbound-outbound"
         element={
@@ -173,6 +205,7 @@ function App() {
         <Route index element={<InAndOutBound />} />
       </Route>
 
+      {/* VEHICLE MAINTENANCE */}
       <Route
         path="/vehicle-maintenance"
         element={
@@ -184,6 +217,7 @@ function App() {
         <Route index element={<Vehiclemaintenance />} />
       </Route>
 
+      {/* WAREHOUSE */}
       <Route
         path="/warehouse"
         element={
@@ -195,6 +229,7 @@ function App() {
         <Route index element={<Warehouse />} />
       </Route>
 
+      {/* DRIVER MANAGEMENT */}
       <Route
         path="/driver-management"
         element={
@@ -206,6 +241,7 @@ function App() {
         <Route index element={<DriverManagement />} />
       </Route>
 
+      {/* VEHICLE DOCUMENTS */}
       <Route
         path="/vehicle-documents"
         element={
@@ -217,6 +253,7 @@ function App() {
         <Route index element={<VehicleDocuments />} />
       </Route>
 
+      {/* OWN VEHICLE DASHBOARD */}
       <Route
         path="/ownvehicledetaildash"
         element={
@@ -226,6 +263,7 @@ function App() {
         }
       >
         <Route index element={<Ownvehicledash />} />
+
         <Route
           path="ownvehicledetails"
           element={
@@ -236,6 +274,7 @@ function App() {
         />
       </Route>
 
+      {/* INTERCARTING DASHBOARD */}
       <Route
         path="/intercartingdash"
         element={
@@ -245,6 +284,7 @@ function App() {
         }
       >
         <Route index element={<Intercartingdash />} />
+
         <Route
           path="intercarting"
           element={
@@ -253,6 +293,7 @@ function App() {
             </Intercartingprotected>
           }
         />
+
         <Route
           path="intercarting/vehicle-details"
           element={
@@ -261,6 +302,7 @@ function App() {
             </Intercartingprotected>
           }
         />
+
         <Route
           path="intercarting/daily-logs"
           element={
@@ -269,6 +311,7 @@ function App() {
             </Intercartingprotected>
           }
         />
+
         <Route
           path="intercarting/monthly-logs"
           element={
@@ -277,6 +320,7 @@ function App() {
             </Intercartingprotected>
           }
         />
+
         <Route
           path="intercarting/intercarting-orders"
           element={
@@ -287,6 +331,7 @@ function App() {
         />
       </Route>
 
+      {/* ORDER MANAGEMENT DASHBOARD */}
       <Route
         path="/trip-dashboard"
         element={
@@ -296,14 +341,27 @@ function App() {
         }
       >
         <Route index element={<TripDashboard />} />
+
+        {/* KEY ACCOUNT - SHARED PROTECTED ROUTE */}
         <Route
           path="key-account"
           element={
             <KeyaccountProtectedRoute>
-              <KeyAccount />
+              <Outlet />
             </KeyaccountProtectedRoute>
           }
-        />
+        >
+          {/* KEY ACCOUNT DASHBOARD */}
+          <Route index element={<KeyAccount />} />
+
+          {/* ORDER LIFECYCLE FULL PAGE */}
+          <Route
+            path="orders/:orderId"
+            element={<Lifecyclemodal />}
+          />
+        </Route>
+
+        {/* TRAFFIC MANAGEMENT */}
         <Route
           path="traffic-management"
           element={
@@ -312,6 +370,8 @@ function App() {
             </TrafficProtectedRoute>
           }
         />
+
+        {/* APPROVAL MANAGEMENT */}
         <Route
           path="approval-management"
           element={
@@ -322,7 +382,11 @@ function App() {
         />
       </Route>
 
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      {/* FALLBACK ROUTE */}
+      <Route
+        path="*"
+        element={<Navigate to="/dashboard" replace />}
+      />
     </Routes>
   );
 }

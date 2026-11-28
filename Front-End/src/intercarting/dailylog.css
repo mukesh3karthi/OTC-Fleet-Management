@@ -1137,3 +1137,45 @@ body.daily-modal-open {
   border-color: #07877f;
   background: #07877f;
 }
+
+/* Compact Daily Log header and site/status strip only */
+.daily-log-page .daily-log-top-section {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  background: linear-gradient(110deg, #0b3044, #10465e 55%, #106574);
+  border-radius: 8px;
+}
+.daily-log-page .daily-log-header h1 { color: #fff; font-size: 18px; line-height: 1.25; }
+.daily-log-page .daily-log-header p { color: #c6e1f3; font-size: 11px; }
+.daily-log-page .daily-log-back-button { color: #fff; background: rgba(255,255,255,.07); border-color: rgba(255,255,255,.28); }
+.daily-log-page .daily-log-back-button:hover { color: #fff; background: rgba(255,255,255,.16); }
+.daily-log-page .daily-header-actions { width: auto; flex-direction: row; align-items: center; flex-wrap: wrap; gap: 8px; }
+.daily-log-page .daily-search-box { width: 260px; flex: 0 1 auto; margin: 0; height: 32px; font-size: 12px; }
+.daily-log-page .daily-date-section { width: 170px; position: relative; }
+.daily-log-page .daily-date-input-wrapper { height: 32px; font-size: 12px; }
+.daily-log-page .daily-date-input-wrapper svg { flex-shrink: 0; }
+.daily-log-page .daily-date-section label,
+.daily-log-page .daily-date-section > span { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.daily-log-page .daily-compact-filters { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px 12px; padding: 7px 10px; margin-bottom: 8px; background: #fff; border: 1px solid #dde3ed; border-radius: 8px; }
+.daily-log-page .daily-compact-filters .daily-filter-row { flex-direction: row; align-items: center; flex-wrap: wrap; gap: 8px; margin: 0; }
+.daily-log-page .single-site-selector { display: flex; align-items: center; gap: 8px; width: auto; }
+.daily-log-page .single-site-selector label { margin: 0; white-space: nowrap; }
+.daily-log-page .single-site-button { width: 180px; height: 30px; font-size: 12px; }
+.daily-log-page .single-site-button > span { min-width: 0; overflow: hidden; white-space: nowrap; }
+.daily-log-page .single-site-button svg { flex-shrink: 0; }
+.daily-log-page .site-dropdown-list { left: auto; right: 0; width: 180px; }
+.daily-log-page .clear-all-filter-button { height: 30px; font-size: 11px; }
+.daily-log-page .daily-compact-filters .vehicle-status-bar { margin: 0 0 0 auto; padding: 0; border: 0; background: transparent; gap: 8px 12px; font-size: 11px; }
+.daily-log-page .daily-compact-filters .vehicle-status-bar span { white-space: nowrap; gap: 4px; }
+@media (max-width: 650px) {
+  .daily-log-page .daily-header-actions { width: 100%; }
+  .daily-log-page .daily-search-box { flex: 1 1 180px; width: auto; }
+  .daily-log-page .daily-date-section { flex: 1 1 150px; }
+  .daily-log-page .daily-compact-filters .vehicle-status-bar { margin-left: 0; }
+}

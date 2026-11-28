@@ -326,6 +326,42 @@ const authFetch = (url, options = {}) => {
   headers.set("Authorization", `Bearer ${token}`);
   return fetch(url, { ...options, headers });
 };
+const getRouteLocation = (trip, requirement, vehicle, field) => {
+  const aliases = field === "origin"
+    ? ["origin", "from", "fromLocation", "loadingPoint", "loadingLocation"]
+    : ["destination", "to", "toLocation", "unloadingPoint", "unloadingLocation"];
+  const movement = String(trip?.movementType || trip?.movement || trip?.movementName || trip?.movementCategory || trip?.orderFinalization?.movementType || trip?.enquiryDetails?.movementType || "")
+    .toLowerCase().replace(/[\s_-]+/g, "");
+  const requirementId = vehicle?.requirementId || array(trip?.vehicleConfirmations).find(
+    (item) => vehicle?.confirmationId && idText(item.confirmationId) === idText(vehicle.confirmationId),
+  )?.requirementId;
+  const matchedRequirement = requirementId && array(trip?.vehicleRequirements).find(
+    (item) => idText(item.requirementId) === idText(requirementId),
+  );
+  requirement = matchedRequirement || (requirementId ? requirement : {});
+  // Match the original project request exactly as in AllocateVehicle.
+  const requests = array(trip?.projectVehicleAllocationRequests);
+  const confirmationId = idText(vehicle?.confirmationId);
+  const exact = requests.filter(item => confirmationId && idText(item.confirmationId) === confirmationId);
+  const matches = requests.filter(item => requirementId && idText(item.requirementId) === idText(requirementId));
+  const projectRequest = exact.length === 1 ? exact[0]
+    : exact.length === 0 && matches.length === 1 && !matches[0].confirmationId ? matches[0] : null;
+  const requestSources = [projectRequest, projectRequest?.vehicleDetails, projectRequest?.route];
+  const vehicleSources = [...requestSources, requirement, requirement?.vehicleDetails, requirement?.route, vehicle, vehicle?.vehicleDetails, vehicle?.route];
+  const orderSources = [trip, trip?.orderFinalization, trip?.enquiryDetails, trip?.route];
+  const sources = movement === "projectmovement" ? vehicleSources : [...orderSources, ...vehicleSources];
+  for (const source of sources) {
+    for (const key of aliases) {
+      const raw = source?.[key];
+      const value = typeof raw === "object" && raw !== null
+        ? raw.location || raw.locationName || raw.name || raw.address
+        : raw;
+      if (typeof value === "string" && value.trim() && !["—", "-"].includes(value.trim())) return value.trim();
+    }
+  }
+  return "";
+};
+
 const routePoints = (trip, requirement = {}, vehicle = {}) => {
   const routeRequirement =
     requirement && Object.keys(requirement).length
@@ -1256,31 +1292,7 @@ const VehicleDetails = () => {
           </button>
           <label className="vdt-trip-dropdown">
             <span className="vdt-sr-only">Select trip</span>
-            <select
-              value={selectedTripValue}
-              onChange={switchTrip}
-              disabled={tripListLoading || loading || !tripOptions.length}
-              aria-label="Select trip"
-              title="Switch trip"
-            >
-              {!tripOptions.length && (
-                <option value="">
-                  {tripListLoading ? "Loading trips…" : "No trips available"}
-                </option>
-              )}
-              {tripOptions.map((item) => (
-                <option
-                  key={idText(item._id || item.tripId)}
-                  value={idText(item._id || item.tripId)}
-                >
-                  {display(item.tripId)}
-                  {item.customer ? ` · ${display(item.customer)}` : ""}
-                  {item.origin && item.destination
-                    ? ` · ${item.origin} → ${item.destination}`
-                    : ""}
-                </option>
-              ))}
-            </select>
+            
           </label>
           <button
             type="button"
@@ -2164,21 +2176,13 @@ const VehicleDetails = () => {
                               [
                                 "Origin",
                                 display(
-                                  trip.origin ||
-                                    trip.orderFinalization?.origin ||
-                                    trip.enquiryDetails?.origin ||
-                                    requirement.origin ||
-                                    vehicle.origin,
+                                  getRouteLocation(trip, requirement, vehicle, "origin"),
                                 ),
                               ],
                               [
                                 "Destination",
                                 display(
-                                  trip.destination ||
-                                    trip.orderFinalization?.destination ||
-                                    trip.enquiryDetails?.destination ||
-                                    requirement.destination ||
-                                    vehicle.destination,
+                                  getRouteLocation(trip, requirement, vehicle, "destination"),
                                 ),
                               ],
                               ["Total KM", km(totalKm)],

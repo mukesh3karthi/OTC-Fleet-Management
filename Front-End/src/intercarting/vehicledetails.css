@@ -1336,3 +1336,24 @@ body.modal-open {
   opacity: 0.6;
   cursor: not-allowed;
 }
+/* Inventory header only: leave the separate In & Out page unchanged. */
+.vehicle-page .vehicle-header:not(.inout-page-header) {
+    padding: 10px 12px;
+    gap: 10px 16px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    background: linear-gradient(110deg, #0b3044, #10465e 55%, #106574);
+    flex-wrap: wrap;
+}
+.vehicle-page .vehicle-header:not(.inout-page-header) .vehicle-title-section h1 { color: #fff; font-size: 18px; line-height: 1.25; }
+.vehicle-page .vehicle-header:not(.inout-page-header) .vehicle-header-subtitle { color: #c6e1f3; font-size: 11px; }
+.vehicle-page .vehicle-header:not(.inout-page-header) .vehicle-back-button { color: #fff; background: rgba(255,255,255,.07); border-color: rgba(255,255,255,.28); }
+.vehicle-page .vehicle-header:not(.inout-page-header) .vehicle-back-button:hover { color: #fff; background: rgba(255,255,255,.16); }
+.vehicle-page .vehicle-header:not(.inout-page-header) .vehicle-header-actions { gap: 8px; flex-wrap: wrap; min-width: 0; }
+.vehicle-page .vehicle-header:not(.inout-page-header) .vehicle-search-box { width: 260px; }
+@media (max-width: 900px) {
+    .vehicle-page .vehicle-header:not(.inout-page-header) .vehicle-search-box { width: auto; flex: 1 1 180px; }
+}
+@media (max-width: 768px) {
+    .vehicle-page .vehicle-header:not(.inout-page-header) .vehicle-search-box { width: 100%; flex: 0 0 auto; }
+}

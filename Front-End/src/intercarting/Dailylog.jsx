@@ -574,6 +574,9 @@ const Dailylog = () => {
   const inactiveVehicles = filteredVehicles.filter(
     (vehicle) => getVehicleStatus(vehicle) === "Inactive"
   ).length;
+  const absentVehicles = filteredVehicles.filter(
+    (vehicle) => normalizeText(vehicle.attendance) === "absent"
+  ).length;
   const totalDistance = filteredVehicles.reduce(
     (sum, vehicle) => sum + Number(vehicle.todayKm || 0),
     0
@@ -1037,6 +1040,7 @@ const Dailylog = () => {
       {!loading && error && (
         <div className="daily-log-error">{error}</div>
       )}
+      <div className="daily-compact-filters">
       {!loading && (
         <div className="daily-filter-row">
           <div
@@ -1126,6 +1130,11 @@ const Dailylog = () => {
           <i className="status-dot inactive-dot" />
           Inactive: <strong>{inactiveVehicles}</strong>
         </span>
+        <span>
+          <i className="status-dot inactive-dot" />
+          Absent: <strong>{absentVehicles}</strong>
+        </span>
+      </div>
       </div>
       <div className="daily-log-information">
         <span>

@@ -1,10 +1,4 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Wallet,
   Download,
@@ -23,7 +17,7 @@ import "../ordermanagement/keyaccount.css";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import Tripcreatemodal from "./Tripcreatemodal";
-import Lifecyclemodal from "./Lifecyclemodal";
+import { useNavigate, useLocation } from "react-router-dom";
 /* =========================================================
   API
 ========================================================= */
@@ -1271,6 +1265,8 @@ const downloadOrderPdf = (order = {}) => {
   MAIN COMPONENT
 ========================================================= */
 const KeyAccount = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [refreshing, setRefreshing] = useState(false);
   const [loggedInName] = useState(() => {
     try {
@@ -1294,15 +1290,15 @@ const KeyAccount = () => {
       .join("")
       .toUpperCase() || "KA";
   const [orders, setOrders] = useState([]);
-  const [search, setSearch] = useState("");
-  const [stageFilter, setStageFilter] = useState("All Stages");
-  const [selectedOrderId, setSelectedOrderId] = useState(null);
+  const [search, setSearch] = useState(location.state?.listState?.search || "");
+  const [stageFilter, setStageFilter] = useState(
+    location.state?.listState?.stageFilter || "All Stages",
+  );
   const [showTripModal, setShowTripModal] = useState(false);
   const [tripForm, setTripForm] = useState(() => createEmptyTripForm());
   const [toast, setToast] = useState("");
   const [tripUpload, setTripUpload] = useState([]);
   const [editingOrderId, setEditingOrderId] = useState(null);
-  const [lifecycleEditOrderId, setLifecycleEditOrderId] = useState(null);
   const [paymentAlertsOpen, setPaymentAlertsOpen] = useState(false);
   const [paymentSearch, setPaymentSearch] = useState("");
   const [paymentCustomerFilter, setPaymentCustomerFilter] = useState("All");
@@ -1312,7 +1308,6 @@ const KeyAccount = () => {
   const [paymentSort, setPaymentSort] = useState("high");
   const [paymentExportFormat, setPaymentExportFormat] = useState("pdf");
   const [selectedPaymentOrderIds, setSelectedPaymentOrderIds] = useState([]);
-  const [openPaymentStep, setOpenPaymentStep] = useState(false);
   const pendingPaymentOrders = useMemo(
     () =>
       orders
@@ -1403,28 +1398,35 @@ const KeyAccount = () => {
       : filteredPaymentOrders;
     const exportDetails = exportOrders.map(({ order, due }) => {
       const invoice = order?.invoicePayment || {};
-      const payments = Array.isArray(invoice.payments) && invoice.payments.length
-        ? invoice.payments
-        : Number(invoice.receivedAmount) > 0 && invoice.paymentDate
-          ? [{
-              amount: invoice.receivedAmount,
-              paymentDate: invoice.paymentDate,
-              remarks: invoice.paymentRemarks || "",
-              receivedBy: invoice.updatedBy || "",
-            }]
-          : [];
-      const received = payments.reduce(
-        (sum, payment) => sum + Math.round(Number(payment.amount || 0) * 100),
-        0,
-      ) / 100;
+      const payments =
+        Array.isArray(invoice.payments) && invoice.payments.length
+          ? invoice.payments
+          : Number(invoice.receivedAmount) > 0 && invoice.paymentDate
+            ? [
+                {
+                  amount: invoice.receivedAmount,
+                  paymentDate: invoice.paymentDate,
+                  remarks: invoice.paymentRemarks || "",
+                  receivedBy: invoice.updatedBy || "",
+                },
+              ]
+            : [];
+      const received =
+        payments.reduce(
+          (sum, payment) => sum + Math.round(Number(payment.amount || 0) * 100),
+          0,
+        ) / 100;
       const explicitTotal = Number(invoice.totalAmount);
-      const base = Number(invoice.invoiceAmount ?? invoice.amount ?? invoice.baseAmount);
+      const base = Number(
+        invoice.invoiceAmount ?? invoice.amount ?? invoice.baseAmount,
+      );
       const gst = Number(invoice.gstPercentage || 0);
-      const total = Number.isFinite(explicitTotal) && explicitTotal > 0
-        ? explicitTotal
-        : Number.isFinite(base) && base > 0
-          ? Math.round(base * (100 + gst)) / 100
-          : received + due;
+      const total =
+        Number.isFinite(explicitTotal) && explicitTotal > 0
+          ? explicitTotal
+          : Number.isFinite(base) && base > 0
+            ? Math.round(base * (100 + gst)) / 100
+            : received + due;
       const days = getInvoicePendingDays(order);
       return {
         order,
@@ -1504,7 +1506,9 @@ const KeyAccount = () => {
         doc.text("RECEIVED PAYMENT HISTORY", 14, doc.lastAutoTable.finalY + 10);
         autoTable(doc, {
           startY: doc.lastAutoTable.finalY + 13,
-          head: [["#", "Received Date", "Amount (INR)", "Remarks", "Received By"]],
+          head: [
+            ["#", "Received Date", "Amount (INR)", "Remarks", "Received By"],
+          ],
           body: historyRows,
           styles: { fontSize: 8, cellPadding: 3 },
           headStyles: { fillColor: [207, 231, 230], textColor: [18, 59, 75] },
@@ -1526,31 +1530,35 @@ const KeyAccount = () => {
       "Receipt Remarks",
       "Received By",
     ];
-    const csvRows = exportDetails.flatMap(({ order, due, total, received, days, payments }) => {
-      const base = [
-        String(order.tripId || order.id || "—"),
-        String(order.customer || "—"),
-        String(order.poDocument?.poNumber || "—"),
-        getPaymentInvoiceNumber(order),
-        displayPaymentInvoiceDate(order),
-        days,
-        total.toFixed(2),
-        received.toFixed(2),
-        Number(due).toFixed(2),
-      ];
-      return payments.length
-        ? payments.map((payment) => [
-            ...base,
-            payment.paymentDate || "—",
-            Number(payment.amount || 0).toFixed(2),
-            payment.remarks || "—",
-            payment.receivedBy || "—",
-          ])
-        : [[...base, "—", "—", "No payments recorded", "—"]];
-    });
+    const csvRows = exportDetails.flatMap(
+      ({ order, due, total, received, days, payments }) => {
+        const base = [
+          String(order.tripId || order.id || "—"),
+          String(order.customer || "—"),
+          String(order.poDocument?.poNumber || "—"),
+          getPaymentInvoiceNumber(order),
+          displayPaymentInvoiceDate(order),
+          days,
+          total.toFixed(2),
+          received.toFixed(2),
+          Number(due).toFixed(2),
+        ];
+        return payments.length
+          ? payments.map((payment) => [
+              ...base,
+              payment.paymentDate || "—",
+              Number(payment.amount || 0).toFixed(2),
+              payment.remarks || "—",
+              payment.receivedBy || "—",
+            ])
+          : [[...base, "—", "—", "No payments recorded", "—"]];
+      },
+    );
     const csv =
       "\uFEFF" +
-      [csvHeaders, ...csvRows].map((row) => row.map(safeCell).join(",")).join("\r\n");
+      [csvHeaders, ...csvRows]
+        .map((row) => row.map(safeCell).join(","))
+        .join("\r\n");
     const url = URL.createObjectURL(
       new Blob([csv], { type: "text/csv;charset=utf-8" }),
     );
@@ -1635,22 +1643,26 @@ const KeyAccount = () => {
   /* =======================================================
     SELECTED ORDER
   ======================================================= */
-  const selectedOrder = useMemo(
-    () =>
-      orders.find((order) => getOrderKey(order) === selectedOrderId) || null,
-    [orders, selectedOrderId],
-  );
+
   /* =======================================================
     STAGES
   ======================================================= */
+  const displayStagesByOrder = useMemo(
+    () => new Map(orders.map((order) => [order, getDisplayStage(order)])),
+    [orders],
+  );
   const stages = useMemo(
     () => [
       "All Stages",
       ...Array.from(
-        new Set(orders.map((order) => getDisplayStage(order)).filter(Boolean)),
+        new Set(
+          orders
+            .map((order) => displayStagesByOrder.get(order))
+            .filter(Boolean),
+        ),
       ),
     ],
-    [orders],
+    [orders, displayStagesByOrder],
   );
   /* =======================================================
     FILTER
@@ -1681,7 +1693,7 @@ const KeyAccount = () => {
         order.destination,
         order.distance,
         order.totalVehicles,
-        getDisplayStage(order),
+        displayStagesByOrder.get(order),
         order.status,
         order.orderApproval?.status,
         order.enquiryDate,
@@ -1697,10 +1709,11 @@ const KeyAccount = () => {
         .toLowerCase();
       const matchesSearch = !searchText || haystack.includes(searchText);
       const matchesStage =
-        stageFilter === "All Stages" || getDisplayStage(order) === stageFilter;
+        stageFilter === "All Stages" ||
+        displayStagesByOrder.get(order) === stageFilter;
       return matchesSearch && matchesStage;
     });
-  }, [orders, search, stageFilter]);
+  }, [orders, search, stageFilter, displayStagesByOrder]);
   /* =======================================================
     STATS
   ======================================================= */
@@ -1759,15 +1772,17 @@ const KeyAccount = () => {
   /* =======================================================
     OPEN ORDER
   ======================================================= */
-  const handleOrderClick = (order) => {
-    setOpenPaymentStep(false);
-    setSelectedOrderId(getOrderKey(order));
+  const openLifecycle = (order, options = {}) => {
+    const id = getMongoId(order?._id);
+    if (!id) {
+      setToast("Order database ID is missing.");
+      return;
+    }
+    navigate(`/trip-dashboard/key-account/orders/${encodeURIComponent(id)}`, {
+      state: { ...options, listState: { search, stageFilter } },
+    });
   };
-  const handleBackFromDetail = () => {
-    setOpenPaymentStep(false);
-    setLifecycleEditOrderId(null);
-    setSelectedOrderId(null);
-  };
+  const handleOrderClick = (order) => openLifecycle(order);
   /* =======================================================
     NEW TRIP
   ======================================================= */
@@ -1782,15 +1797,13 @@ const KeyAccount = () => {
     All orders can be edited.
   ======================================================= */
   const handleEditTrip = (order) => {
-    setOpenPaymentStep(false);
     if (getDisplayStage(order) === "Trip Complete") {
       setToast("Completed trips are read-only.");
       return;
     }
     setOpenActionMenu(null);
     setActionMenuPosition(null);
-    setSelectedOrderId(null);
-    setLifecycleEditOrderId(null);
+
     const normalized = mapDbTripToOrder(order);
     setTripForm({
       ...createEmptyTripForm(normalized.tripId),
@@ -1815,11 +1828,10 @@ const KeyAccount = () => {
     }
     setOpenActionMenu(null);
     setActionMenuPosition(null);
-    setOpenPaymentStep(false);
+
     setShowTripModal(false);
     setEditingOrderId(null);
-    setLifecycleEditOrderId(getOrderKey(order));
-    setSelectedOrderId(getOrderKey(order));
+    openLifecycle(order, { initialEdit: true });
   };
   /* =======================================================
     CLOSE MODAL
@@ -1975,12 +1987,16 @@ const KeyAccount = () => {
      * Existing Line / Intercarting / Project Movement validation stays unchanged.
      */
     if (tripForm.movementType === "Crane") {
-      if (!editingOrderId && (!Array.isArray(tripUpload) || !tripUpload.length)) {
+      if (
+        !editingOrderId &&
+        (!Array.isArray(tripUpload) || !tripUpload.length)
+      ) {
         return "Upload at least one Crane supporting document.";
       }
       if (
         [tripForm.originPincode, tripForm.destinationPincode].some(
-          (pin) => String(pin || "").trim() && !/^\d{6}$/.test(String(pin).trim()),
+          (pin) =>
+            String(pin || "").trim() && !/^\d{6}$/.test(String(pin).trim()),
         )
       ) {
         return "Pincodes must be exactly 6 digits.";
@@ -2021,47 +2037,47 @@ const KeyAccount = () => {
     BUILD REQUIREMENTS
   ======================================================= */
   const buildVehicleRequirements = () =>
-  tripForm.vehicleRequirements.map((requirement, index) => ({
-    requirementId:
-      requirement.requirementId || `${tripForm.tripId}-REQ-${index + 1}`,
+    tripForm.vehicleRequirements.map((requirement, index) => ({
+      requirementId:
+        requirement.requirementId || `${tripForm.tripId}-REQ-${index + 1}`,
 
-    vehicleType: String(requirement.vehicleType || "").trim(),
-    configuration: String(requirement.configuration || "").trim(),
-    classification: String(requirement.classification || "").trim(),
+      vehicleType: String(requirement.vehicleType || "").trim(),
+      configuration: String(requirement.configuration || "").trim(),
+      classification: String(requirement.classification || "").trim(),
 
-    // Save material type for Project Movement and Line Movement
-    materialType: String(requirement.materialType || "").trim(),
+      // Save material type for Project Movement and Line Movement
+      materialType: String(requirement.materialType || "").trim(),
 
-    // These fields are specific to Line Movement
-    ...(tripForm.movementType === "Line Movement" && {
-      origin: String(requirement.origin || "").trim(),
-      destination: String(requirement.destination || "").trim(),
-      placementDate: requirement.placementDate || null,
-    }),
+      // These fields are specific to Line Movement
+      ...(tripForm.movementType === "Line Movement" && {
+        origin: String(requirement.origin || "").trim(),
+        destination: String(requirement.destination || "").trim(),
+        placementDate: requirement.placementDate || null,
+      }),
 
-    quantity: Number(requirement.quantity || 1),
-    weight: Number(requirement.weight || 0),
+      quantity: Number(requirement.quantity || 1),
+      weight: Number(requirement.weight || 0),
 
-    dimensions: {
-      length:
-        requirement.dimensions?.length === "" ||
-        requirement.dimensions?.length === undefined
-          ? null
-          : Number(requirement.dimensions.length),
+      dimensions: {
+        length:
+          requirement.dimensions?.length === "" ||
+          requirement.dimensions?.length === undefined
+            ? null
+            : Number(requirement.dimensions.length),
 
-      height:
-        requirement.dimensions?.height === "" ||
-        requirement.dimensions?.height === undefined
-          ? null
-          : Number(requirement.dimensions.height),
+        height:
+          requirement.dimensions?.height === "" ||
+          requirement.dimensions?.height === undefined
+            ? null
+            : Number(requirement.dimensions.height),
 
-      width:
-        requirement.dimensions?.width === "" ||
-        requirement.dimensions?.width === undefined
-          ? null
-          : Number(requirement.dimensions.width),
-    },
-  }));
+        width:
+          requirement.dimensions?.width === "" ||
+          requirement.dimensions?.width === undefined
+            ? null
+            : Number(requirement.dimensions.width),
+      },
+    }));
   /* =======================================================
     BUILD PAYLOAD
     IMPORTANT:
@@ -2190,7 +2206,7 @@ const KeyAccount = () => {
         }
         return [savedOrder, ...previous];
       });
-      setSelectedOrderId(getOrderKey(savedOrder));
+      openLifecycle(savedOrder);
       setToast(
         editingOrderId
           ? `${savedOrder.tripId} updated successfully.`
@@ -2230,9 +2246,7 @@ const KeyAccount = () => {
       setOrders((previous) =>
         previous.filter((item) => getMongoId(item._id) !== orderId),
       );
-      if (selectedOrderId === getOrderKey(order)) {
-        setSelectedOrderId(null);
-      }
+
       if (editingOrderId === orderId) {
         setShowTripModal(false);
         setEditingOrderId(null);
@@ -2493,9 +2507,9 @@ const KeyAccount = () => {
                       role="button"
                       tabIndex={0}
                       onClick={() => {
-                        setOpenPaymentStep(true);
-                        setLifecycleEditOrderId(null);
-                        setSelectedOrderId(getOrderKey(order));
+                        openLifecycle(order, {
+                          initialStep: "invoice-payment",
+                        });
                         setPaymentAlertsOpen(false);
                       }}
                       onKeyDown={(event) => {
@@ -2806,17 +2820,23 @@ const KeyAccount = () => {
                         {/* TOTAL VEHICLES */}
                         <td>
                           <div className="kam-vehicle-count">
-                            <Truck size={13} strokeWidth={1.8} aria-hidden="true" />
+                            <Truck
+                              size={13}
+                              strokeWidth={1.8}
+                              aria-hidden="true"
+                            />
                             <strong>{getTotalVehicles(order)} NOS</strong>
                           </div>
                         </td>
                         {/* STAGE */}
                         <td>
                           <span
-                            className={getStageClass(getDisplayStage(order))}
+                            className={getStageClass(
+                              displayStagesByOrder.get(order),
+                            )}
                           >
                             <span className="stage-dot" />
-                            {getDisplayStage(order)}
+                            {displayStagesByOrder.get(order)}
                           </span>
                         </td>
                         {/* ORDER STATUS */}
@@ -2910,7 +2930,11 @@ const KeyAccount = () => {
                                   }}
                                 >
                                   <span className="kam-action-item-icon">
-                                    <ClipboardList size={16} strokeWidth={2} aria-hidden="true" />
+                                    <ClipboardList
+                                      size={16}
+                                      strokeWidth={2}
+                                      aria-hidden="true"
+                                    />
                                   </span>
                                   <span className="kam-action-item-text">
                                     <strong>Edit Lifecycle</strong>
@@ -3021,30 +3045,7 @@ const KeyAccount = () => {
           </div>
         </section>
       </div>
-      {/* ===================================================
-            READ-ONLY ORDER LIFECYCLE
-            No onUpdate.
-            Lifecyclemodal will be converted to read-only.
-        =================================================== */}
-      {selectedOrder && (
-        <Lifecyclemodal
-          key={getOrderKey(selectedOrder)}
-          order={selectedOrder}
-          initialEdit={lifecycleEditOrderId === getOrderKey(selectedOrder)}
-          initialStep={openPaymentStep ? "invoice-payment" : undefined}
-          onOrderUpdated={(updated) => {
-            const mapped = mapDbTripToOrder(updated);
-            setOrders((previous) =>
-              previous.map((item) =>
-                getOrderKey(item) === getOrderKey(mapped) ? mapped : item,
-              ),
-            );
-            setLifecycleEditOrderId(null);
-          }}
-          onClose={handleBackFromDetail}
-          primaryVehicleTypes={PRIMARY_VEHICLE_TYPES}
-        />
-      )}
+
       {/* ===================================================
             CREATE / EDIT
         =================================================== */}

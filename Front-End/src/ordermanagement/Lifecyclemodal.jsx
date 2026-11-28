@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { createPortal } from "react-dom";
 import "./lifecyclemodal.css";
 /* =========================================================
@@ -71,7 +72,8 @@ const CraneDocumentActions = ({ order }) => {
       if (!response.ok) {
         const payload = await response.json().catch(() => ({}));
         throw new Error(
-          payload.message || `Unable to ${download ? "download" : "view"} ${file.fileName}.`,
+          payload.message ||
+            `Unable to ${download ? "download" : "view"} ${file.fileName}.`,
         );
       }
 
@@ -207,32 +209,39 @@ const buildCurrentTrackingAllocations = (allocations, approvedRows) => {
   return result;
 };
 
+const formatDateFormatter = new Intl.DateTimeFormat("en-IN", {
+  day: "2-digit",
+  month: "short",
+  year: "numeric",
+});
 const formatDate = (value) => {
   if (!value) return "—";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) {
     return String(value);
   }
-  return new Intl.DateTimeFormat("en-IN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  }).format(date);
+  return formatDateFormatter.format(date);
 };
+const formatDateTimeFormatter = new Intl.DateTimeFormat("en-IN", {
+  day: "2-digit",
+  month: "short",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+});
 const formatDateTime = (value) => {
   if (!value) return "—";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) {
     return String(value);
   }
-  return new Intl.DateTimeFormat("en-IN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(date);
+  return formatDateTimeFormatter.format(date);
 };
+const formatAmountFormatter = new Intl.NumberFormat("en-IN", {
+  style: "currency",
+  currency: "INR",
+  maximumFractionDigits: 0,
+});
 const formatAmount = (value) => {
   if (value === "" || value === null || value === undefined) {
     return "—";
@@ -241,11 +250,7 @@ const formatAmount = (value) => {
   if (!Number.isFinite(number)) {
     return "—";
   }
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 0,
-  }).format(number);
+  return formatAmountFormatter.format(number);
 };
 // Line rates are available only after Management has entered a valid amount
 // for EVERY vehicle requirement and sent the complete enquiry allocation.
@@ -255,17 +260,30 @@ const hasCompleteLineApprovalAmounts = (trip) => {
     isIntercartingMovement(trip) ||
     isProjectMovement(trip);
   if (!usesVehicleAmounts) return true;
-  if (String(trip?.enquiryApproval?.status || "").trim().toLowerCase() !== "sent") return false;
+  if (
+    String(trip?.enquiryApproval?.status || "")
+      .trim()
+      .toLowerCase() !== "sent"
+  )
+    return false;
   const vehicles = safeArray(trip?.vehicleRequirements);
   if (!vehicles.length) return false;
   const amounts = vehicles.map((vehicle, index) => {
     const key = String(vehicle?.requirementId || index);
-    return Number(vehicle?.approvalAmount ?? trip?.enquiryApproval?.amounts?.[key]);
+    return Number(
+      vehicle?.approvalAmount ?? trip?.enquiryApproval?.amounts?.[key],
+    );
   });
-  if (!amounts.every((amount) => Number.isFinite(amount) && amount > 0)) return false;
+  if (!amounts.every((amount) => Number.isFinite(amount) && amount > 0))
+    return false;
   const managementTotal = Number(trip?.enquiryApproval?.totalAmount);
-  return Number.isFinite(managementTotal) && managementTotal > 0 &&
-    Math.abs(amounts.reduce((sum, amount) => sum + amount, 0) - managementTotal) < 0.01;
+  return (
+    Number.isFinite(managementTotal) &&
+    managementTotal > 0 &&
+    Math.abs(
+      amounts.reduce((sum, amount) => sum + amount, 0) - managementTotal,
+    ) < 0.01
+  );
 };
 
 // Other movement types keep their existing quoted-rate behavior.
@@ -273,7 +291,8 @@ const getLineApprovalQuotedRate = (trip) => {
   if (
     !(isLineMovement(trip) || isProjectMovement(trip)) ||
     !hasCompleteLineApprovalAmounts(trip)
-  ) return null;
+  )
+    return null;
   const total = Number(trip?.enquiryApproval?.totalAmount);
   return Number.isFinite(total) && total > 0 ? String(total) : null;
 };
@@ -282,21 +301,31 @@ const getCraneApprovalQuotedRate = (trip) => {
     .trim()
     .toLowerCase()
     .replace(/[\s_-]+/g, "");
-  if (!(["crane", "cranemovement"].includes(movement))) return null;
-  if (String(trip?.enquiryApproval?.status || "").trim().toLowerCase() !== "sent")
+  if (!["crane", "cranemovement"].includes(movement)) return null;
+  if (
+    String(trip?.enquiryApproval?.status || "")
+      .trim()
+      .toLowerCase() !== "sent"
+  )
     return null;
   const requirements = safeArray(trip?.vehicleRequirements);
   if (!requirements.length) return null;
-  const amounts = requirements.map((requirement) => Number(requirement?.approvalAmount));
-  if (!amounts.every((amount) => Number.isFinite(amount) && amount > 0)) return null;
+  const amounts = requirements.map((requirement) =>
+    Number(requirement?.approvalAmount),
+  );
+  if (!amounts.every((amount) => Number.isFinite(amount) && amount > 0))
+    return null;
   const total = Number(trip?.enquiryApproval?.totalAmount);
   if (!Number.isFinite(total) || total <= 0) return null;
-  if (Math.abs(amounts.reduce((sum, amount) => sum + amount, 0) - total) >= 0.01)
+  if (
+    Math.abs(amounts.reduce((sum, amount) => sum + amount, 0) - total) >= 0.01
+  )
     return null;
   return String(total);
 };
 const getIntercartingApprovalQuotedRate = (trip) => {
-  if (!isIntercartingMovement(trip) || !hasCompleteLineApprovalAmounts(trip)) return null;
+  if (!isIntercartingMovement(trip) || !hasCompleteLineApprovalAmounts(trip))
+    return null;
   const total = Number(trip?.enquiryApproval?.totalAmount);
   return Number.isFinite(total) && total > 0 ? String(total) : null;
 };
@@ -384,19 +413,25 @@ const getLatestTracking = (allocation) => {
     const time = value ? new Date(value).getTime() : 0;
     return Number.isFinite(time) ? time : 0;
   };
-  return history
-    .slice()
-    .sort((a, b) => dateValue(a) - dateValue(b))
-    .at(-1);
+  // Match stable-sort behavior: the last entry wins when dates tie.
+  let latest = history[0];
+  let latestTime = dateValue(latest);
+  for (let index = 1; index < history.length; index += 1) {
+    const entry = history[index];
+    const time = dateValue(entry);
+    if (time >= latestTime) {
+      latest = entry;
+      latestTime = time;
+    }
+  }
+  return latest;
 };
 const isPoDocumentComplete = (order) => {
   const po = order?.poDocument || {};
   const hasPoNumber = Boolean(String(po?.poNumber || "").trim());
   const hasValidity = Boolean(po?.poValidityPeriod);
   const hasBillingGstin = Boolean(String(po?.billingGstin || "").trim());
-  const hasDocument = Boolean(
-    po?.fileName || po?.fileUrl || po?.documentUrl,
-  );
+  const hasDocument = Boolean(po?.fileName || po?.fileUrl || po?.documentUrl);
   return hasPoNumber && hasValidity && hasBillingGstin && hasDocument;
 };
 /* =========================================================
@@ -409,104 +444,304 @@ const isIntercartingMovement = (order) =>
     .replace(/[\s-]+/g, "") === "intercarting";
 const isProjectMovement = (order) =>
   String(order?.movementType || order?.movement || "")
-    .trim().toLowerCase().replace(/[\s_-]+/g, "") === "projectmovement";
+    .trim()
+    .toLowerCase()
+    .replace(/[\s_-]+/g, "") === "projectmovement";
 
 const invoiceIsFullyPaid = (order) => {
   const invoice = order?.invoicePayment || {};
   if (isIntercartingMovement(order)) {
     const invoices = safeArray(invoice.invoices);
-    return invoices.length > 0 && invoices.every((item) => {
-      const total = Number(item.totalAmount);
-      const received = safeArray(item.payments).reduce(
-        (sum, payment) => sum + Math.round(Number(payment.amount || 0) * 100), 0,
-      );
-      return String(item.invoiceNumber || "").trim() &&
-        String(item.invoiceDate || "").trim() &&
-        item.totalAmount != null && Number.isFinite(total) && total > 0 &&
-        received >= Math.round(total * 100);
-    });
+    return (
+      invoices.length > 0 &&
+      invoices.every((item) => {
+        const total = Number(item.totalAmount);
+        const received = safeArray(item.payments).reduce(
+          (sum, payment) => sum + Math.round(Number(payment.amount || 0) * 100),
+          0,
+        );
+        return (
+          String(item.invoiceNumber || "").trim() &&
+          String(item.invoiceDate || "").trim() &&
+          item.totalAmount != null &&
+          Number.isFinite(total) &&
+          total > 0 &&
+          received >= Math.round(total * 100)
+        );
+      })
+    );
   }
   const total = Number(invoice.totalAmount);
   const payments = safeArray(invoice.payments);
   const received = payments.length
-    ? payments.reduce((sum, payment) => sum + Math.round(Number(payment.amount || 0) * 100), 0)
+    ? payments.reduce(
+        (sum, payment) => sum + Math.round(Number(payment.amount || 0) * 100),
+        0,
+      )
     : Math.round(Number(invoice.receivedAmount || 0) * 100);
   return Boolean(
     String(invoice.invoiceNumber || "").trim() &&
     String(invoice.invoiceDate || "").trim() &&
     invoice.totalAmount != null &&
-    Number.isFinite(total) && total > 0 &&
-    received >= Math.round(total * 100)
+    Number.isFinite(total) &&
+    total > 0 &&
+    received >= Math.round(total * 100),
   );
 };
 
 const getLifecycleProjectRows = (order, includePending = false) => {
   const seen = new Set();
   const numbers = new Map();
-  return safeArray(order?.projectVehicleAllocationRequests).flatMap((request, index) => {
-    const key = request.requestId || request._id || index;
-    if (seen.has(key)) return [];
-    seen.add(key);
-    const requirement = getRequirement(order, request.requirementId) || {};
-    const number = (numbers.get(request.requirementId) || 0) + 1;
-    numbers.set(request.requirementId, number);
-    if (!includePending && request.status !== "Approved") return [];
-    const confirmation = safeArray(order.vehicleConfirmations).find(item => item.confirmationId === request.confirmationId && item.status === "Approved");
-    const quotation = confirmation && getQuotation(order, confirmation.quotationId);
-    const vendor = safeArray(request.vendorQuotations).find(item => item.quotationId === request.selectedVendorQuotationId && item.status === "Approved") || safeArray(request.vendorQuotations).find(item => item.status === "Approved");
-    const approved = request.status === "Approved" && Boolean(quotation || vendor || request.vendorName);
-    if (!includePending && !approved) return [];
-    const history = getTransportReplacementRequests(order).filter(item => request.confirmationId && item.confirmationId === request.confirmationId);
-    return [{ key, request, requirement, number, confirmation, quotation, vendor, history, approved }];
-  });
+  return safeArray(order?.projectVehicleAllocationRequests).flatMap(
+    (request, index) => {
+      const key = request.requestId || request._id || index;
+      if (seen.has(key)) return [];
+      seen.add(key);
+      const requirement = getRequirement(order, request.requirementId) || {};
+      const number = (numbers.get(request.requirementId) || 0) + 1;
+      numbers.set(request.requirementId, number);
+      if (!includePending && request.status !== "Approved") return [];
+      const confirmation = safeArray(order.vehicleConfirmations).find(
+        (item) =>
+          item.confirmationId === request.confirmationId &&
+          item.status === "Approved",
+      );
+      const quotation =
+        confirmation && getQuotation(order, confirmation.quotationId);
+      const vendor =
+        safeArray(request.vendorQuotations).find(
+          (item) =>
+            item.quotationId === request.selectedVendorQuotationId &&
+            item.status === "Approved",
+        ) ||
+        safeArray(request.vendorQuotations).find(
+          (item) => item.status === "Approved",
+        );
+      const approved =
+        request.status === "Approved" &&
+        Boolean(quotation || vendor || request.vendorName);
+      if (!includePending && !approved) return [];
+      const history = getTransportReplacementRequests(order).filter(
+        (item) =>
+          request.confirmationId &&
+          item.confirmationId === request.confirmationId,
+      );
+      return [
+        {
+          key,
+          request,
+          requirement,
+          number,
+          confirmation,
+          quotation,
+          vendor,
+          history,
+          approved,
+        },
+      ];
+    },
+  );
 };
-const getLifecycleProjectRequired = (order) => getLifecycleProjectRows(order, true).length;
-const getLifecycleProjectConfirmed = (order) => getLifecycleProjectRows(order).length;
+const getLifecycleProjectRequired = (order) =>
+  getLifecycleProjectRows(order, true).length;
+const getLifecycleProjectConfirmed = (order) =>
+  getLifecycleProjectRows(order).length;
 
 const ProjectConfirmedTransporters = ({ order }) => {
   const rows = getLifecycleProjectRows(order, true);
   const batches = new Map();
-  safeArray(order.projectVehicleAllocationRequests).forEach((request, index) => {
-    const id = request.batchId || request.requestBatchId;
-    const key = id ? `batch:${id}` : `legacy:${request.requestId || request._id || index}`;
-    if (!batches.has(key)) batches.set(key, { key, id, date: request.requestedAt, requests: [], rows: [] });
-    batches.get(key).requests.push(request);
-  });
-  rows.forEach(row => {
-    const batch = [...batches.values()].find(item => item.requests.includes(row.request));
+  safeArray(order.projectVehicleAllocationRequests).forEach(
+    (request, index) => {
+      const id = request.batchId || request.requestBatchId;
+      const key = id
+        ? `batch:${id}`
+        : `legacy:${request.requestId || request._id || index}`;
+      if (!batches.has(key))
+        batches.set(key, {
+          key,
+          id,
+          date: request.requestedAt,
+          requests: [],
+          rows: [],
+        });
+      batches.get(key).requests.push(request);
+    },
+  );
+  rows.forEach((row) => {
+    const batch = [...batches.values()].find((item) =>
+      item.requests.includes(row.request),
+    );
     if (batch) batch.rows.push(row);
   });
   let batchNumber = 0;
-  return <div className="kam-project-vendor-batches">
-    {[...batches.values()].sort((a,b) => (Date.parse(a.date)||0)-(Date.parse(b.date)||0)).map(batch => {
-      const label = batch.id ? `Batch ${String(++batchNumber).padStart(2, "0")}` : "Individual request (legacy)";
-      if (!batch.rows.length) return null;
-      const groups = new Map();
-      batch.rows.forEach(row => {
-        const type = row.requirement.vehicleType || row.request.vehicleType || "—";
-        if (!groups.has(type)) groups.set(type, []);
-        groups.get(type).push(row);
-      });
-      return <details className="kam-project-vendor-batch" key={batch.key}>
-        <summary><div><strong>{label}</strong><small>Requested on: {formatDate(batch.date)}</small></div><span>{batch.rows.filter(row => row.approved).length} Approved · {batch.rows.filter(row => !row.approved).length} Pending · {batch.rows.length} Required</span></summary>
-        <div className="kam-client-vehicle-table-wrap"><table className="kam-client-vehicle-table kam-project-vendor-table"><thead><tr>{["Vehicle", "Material Type", "Origin", "Destination", "Placement Date", "Current Transporter", "Current Amount", "Status", "Confirmed By", "Confirmed At", "Replacement History"].map(label => <th key={label}>{label}</th>)}</tr></thead><tbody>
-        {[...groups].map(([type, items]) => <React.Fragment key={type}><tr className="kam-project-vendor-group"><td colSpan={11}><strong>{type}</strong><span>{items.length} vehicle{items.length === 1 ? "" : "s"}</span></td></tr>{items.map(row => <tr key={row.key}>
-          <td><strong>Vehicle {row.number}</strong><small className="kam-vendor-config">{row.requirement.configuration}</small></td>
-          <td>{row.requirement.materialType || row.request.materialType || "—"}</td>
-          <td>{row.request.origin || "—"}</td>
-          <td>{row.request.destination || "—"}</td>
-          <td>{formatDate(row.request.placementDate || row.request.customerRequiredDate)}</td>
-          <td><strong>{row.approved ? (row.quotation?.transporter || row.vendor?.vendorName || row.request.vendorName || "—") : "—"}</strong></td>
-          <td><strong className="kam-vendor-current-amount">{formatAmount(row.approved ? (row.quotation?.amount ?? row.vendor?.vendorAmount ?? row.request.vendorAmount) : null)}</strong></td>
-          <td><span className={`kam-vehicle-vendor-status ${!row.approved ? (row.request.status === "Rejected" ? "rejected" : "approval-pending") : row.history.some(item => item.status === "Pending") ? "approval-pending" : "approved"}`}>{!row.approved ? (row.request.status === "Pending Traffic" ? "Quotation Pending" : row.request.status === "Pending Management" ? "Approval Pending" : row.request.status === "Rejected" ? "Rejected" : "Pending") : row.history.some(item => item.status === "Pending") ? "Replacement Pending" : "Approved"}</span></td>
-          <td>{row.confirmation?.confirmedBy || row.vendor?.managementConfirmedBy || "—"}</td><td>{formatDateTime(row.confirmation?.confirmedAt || row.vendor?.managementConfirmedAt)}</td>
-          <td>{row.history.length ? row.history.map((item,index) => <div key={item.requestId || index}>{item.currentTransporter || "—"} → {item.proposedTransporter || "—"}<small className="kam-vendor-config">{formatAmount(item.currentAmount)} → {formatAmount(item.proposedAmount)} · {item.status} · {formatDateTime(item.reviewedAt || item.requestedAt)}</small></div>) : "—"}</td>
-        </tr>)}</React.Fragment>)}
-        </tbody></table></div>
-      </details>;
-    })}
-    {!rows.length && <div className="kam-lifecycle-empty">No vehicle requests yet.</div>}
-  </div>;
+  return (
+    <div className="kam-project-vendor-batches">
+      {[...batches.values()]
+        .sort((a, b) => (Date.parse(a.date) || 0) - (Date.parse(b.date) || 0))
+        .map((batch) => {
+          const label = batch.id
+            ? `Batch ${String(++batchNumber).padStart(2, "0")}`
+            : "Individual request (legacy)";
+          if (!batch.rows.length) return null;
+          const groups = new Map();
+          batch.rows.forEach((row) => {
+            const type =
+              row.requirement.vehicleType || row.request.vehicleType || "—";
+            if (!groups.has(type)) groups.set(type, []);
+            groups.get(type).push(row);
+          });
+          return (
+            <details className="kam-project-vendor-batch" key={batch.key}>
+              <summary>
+                <div>
+                  <strong>{label}</strong>
+                  <small>Requested on: {formatDate(batch.date)}</small>
+                </div>
+                <span>
+                  {batch.rows.filter((row) => row.approved).length} Approved ·{" "}
+                  {batch.rows.filter((row) => !row.approved).length} Pending ·{" "}
+                  {batch.rows.length} Required
+                </span>
+              </summary>
+              <div className="kam-client-vehicle-table-wrap">
+                <table className="kam-client-vehicle-table kam-project-vendor-table">
+                  <thead>
+                    <tr>
+                      {[
+                        "Vehicle",
+                        "Material Type",
+                        "Origin",
+                        "Destination",
+                        "Placement Date",
+                        "Current Transporter",
+                        "Current Amount",
+                        "Status",
+                        "Confirmed By",
+                        "Confirmed At",
+                        "Replacement History",
+                      ].map((label) => (
+                        <th key={label}>{label}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[...groups].map(([type, items]) => (
+                      <React.Fragment key={type}>
+                        <tr className="kam-project-vendor-group">
+                          <td colSpan={11}>
+                            <strong>{type}</strong>
+                            <span>
+                              {items.length} vehicle
+                              {items.length === 1 ? "" : "s"}
+                            </span>
+                          </td>
+                        </tr>
+                        {items.map((row) => (
+                          <tr key={row.key}>
+                            <td>
+                              <strong>Vehicle {row.number}</strong>
+                              <small className="kam-vendor-config">
+                                {row.requirement.configuration}
+                              </small>
+                            </td>
+                            <td>
+                              {row.requirement.materialType ||
+                                row.request.materialType ||
+                                "—"}
+                            </td>
+                            <td>{row.request.origin || "—"}</td>
+                            <td>{row.request.destination || "—"}</td>
+                            <td>
+                              {formatDate(
+                                row.request.placementDate ||
+                                  row.request.customerRequiredDate,
+                              )}
+                            </td>
+                            <td>
+                              <strong>
+                                {row.approved
+                                  ? row.quotation?.transporter ||
+                                    row.vendor?.vendorName ||
+                                    row.request.vendorName ||
+                                    "—"
+                                  : "—"}
+                              </strong>
+                            </td>
+                            <td>
+                              <strong className="kam-vendor-current-amount">
+                                {formatAmount(
+                                  row.approved
+                                    ? (row.quotation?.amount ??
+                                        row.vendor?.vendorAmount ??
+                                        row.request.vendorAmount)
+                                    : null,
+                                )}
+                              </strong>
+                            </td>
+                            <td>
+                              <span
+                                className={`kam-vehicle-vendor-status ${!row.approved ? (row.request.status === "Rejected" ? "rejected" : "approval-pending") : row.history.some((item) => item.status === "Pending") ? "approval-pending" : "approved"}`}
+                              >
+                                {!row.approved
+                                  ? row.request.status === "Pending Traffic"
+                                    ? "Quotation Pending"
+                                    : row.request.status ===
+                                        "Pending Management"
+                                      ? "Approval Pending"
+                                      : row.request.status === "Rejected"
+                                        ? "Rejected"
+                                        : "Pending"
+                                  : row.history.some(
+                                        (item) => item.status === "Pending",
+                                      )
+                                    ? "Replacement Pending"
+                                    : "Approved"}
+                              </span>
+                            </td>
+                            <td>
+                              {row.confirmation?.confirmedBy ||
+                                row.vendor?.managementConfirmedBy ||
+                                "—"}
+                            </td>
+                            <td>
+                              {formatDateTime(
+                                row.confirmation?.confirmedAt ||
+                                  row.vendor?.managementConfirmedAt,
+                              )}
+                            </td>
+                            <td>
+                              {row.history.length
+                                ? row.history.map((item, index) => (
+                                    <div key={item.requestId || index}>
+                                      {item.currentTransporter || "—"} →{" "}
+                                      {item.proposedTransporter || "—"}
+                                      <small className="kam-vendor-config">
+                                        {formatAmount(item.currentAmount)} →{" "}
+                                        {formatAmount(item.proposedAmount)} ·{" "}
+                                        {item.status} ·{" "}
+                                        {formatDateTime(
+                                          item.reviewedAt || item.requestedAt,
+                                        )}
+                                      </small>
+                                    </div>
+                                  ))
+                                : "—"}
+                            </td>
+                          </tr>
+                        ))}
+                      </React.Fragment>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </details>
+          );
+        })}
+      {!rows.length && (
+        <div className="kam-lifecycle-empty">No vehicle requests yet.</div>
+      )}
+    </div>
+  );
 };
 
 const ProjectRequestStatus = ({ order }) => {
@@ -514,55 +749,309 @@ const ProjectRequestStatus = ({ order }) => {
   const closeRef = useRef(null);
   const triggerRef = useRef(null);
   const rows = getLifecycleProjectRows(order, true);
-  const quantity = row => Number(row.request.requestedQuantity) || 1;
-  const count = items => items.reduce((sum, row) => sum + quantity(row), 0);
+  const quantity = (row) => Number(row.request.requestedQuantity) || 1;
+  const count = (items) => items.reduce((sum, row) => sum + quantity(row), 0);
   const groups = new Map();
   const batches = new Map();
-  rows.forEach(row => {
+  rows.forEach((row) => {
     const id = row.request.requirementId;
     if (!groups.has(id)) groups.set(id, []);
     groups.get(id).push(row);
     const batchId = row.request.batchId || row.request.requestBatchId;
     const key = batchId ? `batch:${batchId}` : `legacy:${row.key}`;
-    if (!batches.has(key)) batches.set(key, { key, batchId, date: row.request.requestedAt, rows: [] });
+    if (!batches.has(key))
+      batches.set(key, {
+        key,
+        batchId,
+        date: row.request.requestedAt,
+        rows: [],
+      });
     batches.get(key).rows.push(row);
   });
   let batchNumber = 0;
-  const orderedBatches = [...batches.values()].sort((a,b) => (Date.parse(a.date)||0)-(Date.parse(b.date)||0)).map(batch => ({...batch, label: batch.batchId ? `Batch ${String(++batchNumber).padStart(2, "0")}` : "Individual request (legacy)"}));
+  const orderedBatches = [...batches.values()]
+    .sort((a, b) => (Date.parse(a.date) || 0) - (Date.parse(b.date) || 0))
+    .map((batch) => ({
+      ...batch,
+      label: batch.batchId
+        ? `Batch ${String(++batchNumber).padStart(2, "0")}`
+        : "Individual request (legacy)",
+    }));
   const items = groups.get(selected) || [];
   const requirement = items[0]?.requirement || {};
-  const close = () => { setSelected(null); triggerRef.current?.focus(); };
+  const close = () => {
+    setSelected(null);
+    triggerRef.current?.focus();
+  };
   useEffect(() => {
     if (selected === null) return;
     closeRef.current?.focus();
-    const handleKey = event => {
-      if (event.key === "Escape") { event.preventDefault(); event.stopPropagation(); setSelected(null); triggerRef.current?.focus(); }
+    const handleKey = (event) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        event.stopPropagation();
+        setSelected(null);
+        triggerRef.current?.focus();
+      }
       if (event.key === "Tab") {
         const dialog = closeRef.current?.closest('[role="dialog"]');
-        const buttons = dialog?.querySelectorAll('button:not([disabled])');
+        const buttons = dialog?.querySelectorAll("button:not([disabled])");
         if (!buttons?.length) return;
-        const first = buttons[0], last = buttons[buttons.length-1];
-        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
-        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+        const first = buttons[0],
+          last = buttons[buttons.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
       }
     };
     document.addEventListener("keydown", handleKey, true);
     return () => document.removeEventListener("keydown", handleKey, true);
   }, [selected]);
-  const stats = items => <div className="kam-prs-stats">{[["Requested",count(items)],["Approved",count(items.filter(r=>r.approved))],["Pending",count(items.filter(r=>!r.approved && r.request.status !== "Rejected"))],["Rejected",count(items.filter(r=>r.request.status === "Rejected"))]].map(([label,value])=><div key={label}><small>{label}</small><strong>{value} NOS</strong></div>)}</div>;
-  return <div className="kam-project-allocation-history kam-prs">
-    <div className="kam-project-allocation-history-heading"><div><strong>Vehicle Request Status</strong><span>View submitted vehicle requests and vendor approval progress.</span></div><span>{count(rows)} Requested</span></div>
-    {stats(rows)}
-    <div className="kam-project-allocation-table-wrap"><table className="kam-project-allocation-table kam-prs-table"><thead><tr>{["Vehicle Requirement","Material Type","Requested","Approved","Pending","Rejected","Action"].map(h=><th key={h}>{h}</th>)}</tr></thead><tbody>
-    {[...groups].map(([id, group])=>{const req=group[0].requirement; return <tr key={id}><td><strong>{req.vehicleType || id}</strong><small>{req.configuration || "—"}</small></td><td>{req.materialType || group[0].request.materialType || "—"}</td><td>{count(group)} NOS</td><td className="kam-prs-approved">{count(group.filter(r=>r.approved))} NOS</td><td className="kam-prs-pending">{count(group.filter(r=>!r.approved && r.request.status !== "Rejected"))} NOS</td><td>{count(group.filter(r=>r.request.status === "Rejected"))} NOS</td><td><button type="button" className="kam-prs-view" onClick={event=>{triggerRef.current=event.currentTarget;setSelected(id);}}>View Details</button></td></tr>})}
-    {!rows.length && <tr><td colSpan={7}>No vehicle allocation requests raised yet.</td></tr>}
-    </tbody></table></div>
-    {selected !== null && createPortal(<div className="kam-prs-overlay" onClick={event=>{event.stopPropagation();if(event.target===event.currentTarget) close();}}><div className="kam-prs-dialog" role="dialog" aria-modal="true" aria-label="Vehicle request details">
-      <header className="kam-prs-header"><div><small>VEHICLE REQUEST DETAILS</small><h3>{requirement.vehicleType || selected}</h3><span>{requirement.configuration || "—"} · {requirement.materialType || items[0]?.request.materialType || "—"}</span></div><button type="button" ref={closeRef} onClick={close} aria-label="Close vehicle details">×</button></header>
-      <div className="kam-prs-body">{stats(items)}{orderedBatches.map(batch=>{const matching=batch.rows.filter(row=>row.request.requirementId===selected);if(!matching.length)return null;return <section className="kam-prs-batch" key={batch.key}><div className="kam-prs-batch-heading"><div><strong>{batch.label}</strong><small>Requested on: {formatDate(batch.date)}</small></div><span>{count(matching)} vehicles</span></div><div className="kam-project-allocation-table-wrap"><table className="kam-project-allocation-table kam-prs-table"><thead><tr>{["Vehicle","Material Type","Qty","Origin","Destination","Placement Date","Traffic Vendor","Vendor Amount","Status"].map(h=><th key={h}>{h}</th>)}</tr></thead><tbody>{matching.map(row=><tr key={row.key}><td>Vehicle {row.number}</td><td>{row.requirement.materialType || row.request.materialType || "—"}</td><td>{quantity(row)}</td><td>{row.request.origin || "—"}</td><td>{row.request.destination || "—"}</td><td>{formatDate(row.request.placementDate || row.request.customerRequiredDate)}</td><td>{row.quotation?.transporter || row.vendor?.vendorName || row.request.vendorName || "Awaiting Traffic"}</td><td>{formatAmount(row.quotation?.amount ?? row.vendor?.vendorAmount ?? row.request.vendorAmount)}</td><td><span className={`kam-project-request-status ${String(row.request.status || "Pending").toLowerCase().replace(/\s+/g,"-")}`}>{row.request.status || "Pending"}</span>{row.request.rejectionReason && <small>{row.request.rejectionReason}</small>}</td></tr>)}</tbody></table></div></section>})}</div>
-      <footer className="kam-prs-footer"><strong>Project Movement</strong><button type="button" onClick={close}>Close</button></footer>
-    </div></div>, document.body)}
-  </div>;
+  const stats = (items) => (
+    <div className="kam-prs-stats">
+      {[
+        ["Requested", count(items)],
+        ["Approved", count(items.filter((r) => r.approved))],
+        [
+          "Pending",
+          count(
+            items.filter((r) => !r.approved && r.request.status !== "Rejected"),
+          ),
+        ],
+        [
+          "Rejected",
+          count(items.filter((r) => r.request.status === "Rejected")),
+        ],
+      ].map(([label, value]) => (
+        <div key={label}>
+          <small>{label}</small>
+          <strong>{value} NOS</strong>
+        </div>
+      ))}
+    </div>
+  );
+  return (
+    <div className="kam-project-allocation-history kam-prs">
+      <div className="kam-project-allocation-history-heading">
+        <div>
+          <strong>Vehicle Request Status</strong>
+          <span>
+            View submitted vehicle requests and vendor approval progress.
+          </span>
+        </div>
+        <span>{count(rows)} Requested</span>
+      </div>
+      {stats(rows)}
+      <div className="kam-project-allocation-table-wrap">
+        <table className="kam-project-allocation-table kam-prs-table">
+          <thead>
+            <tr>
+              {[
+                "Vehicle Requirement",
+                "Material Type",
+                "Requested",
+                "Approved",
+                "Pending",
+                "Rejected",
+                "Action",
+              ].map((h) => (
+                <th key={h}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {[...groups].map(([id, group]) => {
+              const req = group[0].requirement;
+              return (
+                <tr key={id}>
+                  <td>
+                    <strong>{req.vehicleType || id}</strong>
+                    <small>{req.configuration || "—"}</small>
+                  </td>
+                  <td>
+                    {req.materialType || group[0].request.materialType || "—"}
+                  </td>
+                  <td>{count(group)} NOS</td>
+                  <td className="kam-prs-approved">
+                    {count(group.filter((r) => r.approved))} NOS
+                  </td>
+                  <td className="kam-prs-pending">
+                    {count(
+                      group.filter(
+                        (r) => !r.approved && r.request.status !== "Rejected",
+                      ),
+                    )}{" "}
+                    NOS
+                  </td>
+                  <td>
+                    {count(
+                      group.filter((r) => r.request.status === "Rejected"),
+                    )}{" "}
+                    NOS
+                  </td>
+                  <td>
+                    <button
+                      type="button"
+                      className="kam-prs-view"
+                      onClick={(event) => {
+                        triggerRef.current = event.currentTarget;
+                        setSelected(id);
+                      }}
+                    >
+                      View Details
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
+            {!rows.length && (
+              <tr>
+                <td colSpan={7}>No vehicle allocation requests raised yet.</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+      {selected !== null &&
+        createPortal(
+          <div
+            className="kam-prs-overlay"
+            onClick={(event) => {
+              event.stopPropagation();
+              if (event.target === event.currentTarget) close();
+            }}
+          >
+            <div
+              className="kam-prs-dialog"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Vehicle request details"
+            >
+              <header className="kam-prs-header">
+                <div>
+                  <small>VEHICLE REQUEST DETAILS</small>
+                  <h3>{requirement.vehicleType || selected}</h3>
+                  <span>
+                    {requirement.configuration || "—"} ·{" "}
+                    {requirement.materialType ||
+                      items[0]?.request.materialType ||
+                      "—"}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  ref={closeRef}
+                  onClick={close}
+                  aria-label="Close vehicle details"
+                >
+                  ×
+                </button>
+              </header>
+              <div className="kam-prs-body">
+                {stats(items)}
+                {orderedBatches.map((batch) => {
+                  const matching = batch.rows.filter(
+                    (row) => row.request.requirementId === selected,
+                  );
+                  if (!matching.length) return null;
+                  return (
+                    <section className="kam-prs-batch" key={batch.key}>
+                      <div className="kam-prs-batch-heading">
+                        <div>
+                          <strong>{batch.label}</strong>
+                          <small>Requested on: {formatDate(batch.date)}</small>
+                        </div>
+                        <span>{count(matching)} vehicles</span>
+                      </div>
+                      <div className="kam-project-allocation-table-wrap">
+                        <table className="kam-project-allocation-table kam-prs-table">
+                          <thead>
+                            <tr>
+                              {[
+                                "Vehicle",
+                                "Material Type",
+                                "Qty",
+                                "Origin",
+                                "Destination",
+                                "Placement Date",
+                                "Traffic Vendor",
+                                "Vendor Amount",
+                                "Status",
+                              ].map((h) => (
+                                <th key={h}>{h}</th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {matching.map((row) => (
+                              <tr key={row.key}>
+                                <td>Vehicle {row.number}</td>
+                                <td>
+                                  {row.requirement.materialType ||
+                                    row.request.materialType ||
+                                    "—"}
+                                </td>
+                                <td>{quantity(row)}</td>
+                                <td>{row.request.origin || "—"}</td>
+                                <td>{row.request.destination || "—"}</td>
+                                <td>
+                                  {formatDate(
+                                    row.request.placementDate ||
+                                      row.request.customerRequiredDate,
+                                  )}
+                                </td>
+                                <td>
+                                  {row.quotation?.transporter ||
+                                    row.vendor?.vendorName ||
+                                    row.request.vendorName ||
+                                    "Awaiting Traffic"}
+                                </td>
+                                <td>
+                                  {formatAmount(
+                                    row.quotation?.amount ??
+                                      row.vendor?.vendorAmount ??
+                                      row.request.vendorAmount,
+                                  )}
+                                </td>
+                                <td>
+                                  <span
+                                    className={`kam-project-request-status ${String(
+                                      row.request.status || "Pending",
+                                    )
+                                      .toLowerCase()
+                                      .replace(/\s+/g, "-")}`}
+                                  >
+                                    {row.request.status || "Pending"}
+                                  </span>
+                                  {row.request.rejectionReason && (
+                                    <small>{row.request.rejectionReason}</small>
+                                  )}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </section>
+                  );
+                })}
+              </div>
+              <footer className="kam-prs-footer">
+                <strong>Project Movement</strong>
+                <button type="button" onClick={close}>
+                  Close
+                </button>
+              </footer>
+            </div>
+          </div>,
+          document.body,
+        )}
+    </div>
+  );
 };
 
 const buildLifecycle = (order) => {
@@ -595,14 +1084,29 @@ const buildLifecycle = (order) => {
     : "Pending";
   const projectRequests = safeArray(order?.projectVehicleAllocationRequests);
   const activeProjectRequests = projectRequests.filter((item) =>
-    ["pending traffic", "pending management", "approved"].includes(String(item?.status || "").trim().toLowerCase()),
+    ["pending traffic", "pending management", "approved"].includes(
+      String(item?.status || "")
+        .trim()
+        .toLowerCase(),
+    ),
   );
-  const requiredProjectRequirements = requirements.filter((item) => Number(item.quantity) > 0);
-  const projectAllocationComplete = requiredProjectRequirements.length > 0 && requiredProjectRequirements.every((requirement) =>
-    activeProjectRequests.filter((item) => item.requirementId === requirement.requirementId)
-      .reduce((sum, item) => sum + (Number(item.requestedQuantity) || 0), 0) >= Number(requirement.quantity),
+  const requiredProjectRequirements = requirements.filter(
+    (item) => Number(item.quantity) > 0,
   );
-  const projectAllocationStatus = projectAllocationComplete ? "Completed" : "Pending";
+  const projectAllocationComplete =
+    requiredProjectRequirements.length > 0 &&
+    requiredProjectRequirements.every(
+      (requirement) =>
+        activeProjectRequests
+          .filter((item) => item.requirementId === requirement.requirementId)
+          .reduce(
+            (sum, item) => sum + (Number(item.requestedQuantity) || 0),
+            0,
+          ) >= Number(requirement.quantity),
+    );
+  const projectAllocationStatus = projectAllocationComplete
+    ? "Completed"
+    : "Pending";
   const requiredVendorVehicleCount = requirements.reduce(
     (total, requirement) => {
       const quantity = Number(
@@ -646,9 +1150,13 @@ const buildLifecycle = (order) => {
   );
   const transportReplacementPending = hasPendingTransportReplacement(order);
   const vendorFinalizationStatus = isProjectMovement(order)
-    ? transportReplacementPending ? "Replacement Pending" : getLifecycleProjectRequired(order) > 0 && getLifecycleProjectConfirmed(order) >= getLifecycleProjectRequired(order)
-      ? "Completed"
-      : "Pending"
+    ? transportReplacementPending
+      ? "Replacement Pending"
+      : getLifecycleProjectRequired(order) > 0 &&
+          getLifecycleProjectConfirmed(order) >=
+            getLifecycleProjectRequired(order)
+        ? "Completed"
+        : "Pending"
     : transportReplacementPending
       ? "Replacement Pending"
       : requiredVendorVehicleCount > 0 &&
@@ -703,7 +1211,9 @@ const buildLifecycle = (order) => {
     allAllocatedVehiclesUnloaded &&
     invoiceIsFullyPaid(order);
   const transportCompleted =
-    orderPlacedCompleted && allRequiredVehiclesAllocated && allAllocatedVehiclesUnloaded;
+    orderPlacedCompleted &&
+    allRequiredVehiclesAllocated &&
+    allAllocatedVehiclesUnloaded;
   const trackingStatus = transportCompleted
     ? "Completed"
     : orderPlacedCompleted && hasTracking
@@ -721,7 +1231,13 @@ const buildLifecycle = (order) => {
     },
     { key: "po-document", title: "PO Document", status: poDocumentStatus },
     ...(isProjectMovement(order)
-      ? [{ key: "vehicle-allocation-request", title: "Vehicle Allocation Request", status: projectAllocationStatus }]
+      ? [
+          {
+            key: "vehicle-allocation-request",
+            title: "Vehicle Allocation Request",
+            status: projectAllocationStatus,
+          },
+        ]
       : []),
     {
       key: "vendor-finalization",
@@ -749,19 +1265,43 @@ const getLifecycleCurrentIndex = (order, lifecycle) => {
   const indexOf = (key) => lifecycle.findIndex((step) => step.key === key);
   const getStepStatus = (key) =>
     String(lifecycle.find((step) => step.key === key)?.status || "Pending")
-      .trim().toLowerCase();
-  if (getStepStatus("trip-complete") === "completed") return indexOf("trip-complete");
-  if (isIntercartingMovement(order) && getStepStatus("order-placed") === "completed") return indexOf("order-placed");
-  if (getStepStatus("order-finalization") === "rejected" || getStepStatus("order-finalization") !== "completed") return indexOf("order-finalization");
+      .trim()
+      .toLowerCase();
+  if (getStepStatus("trip-complete") === "completed")
+    return indexOf("trip-complete");
+  if (
+    isIntercartingMovement(order) &&
+    getStepStatus("order-placed") === "completed"
+  )
+    return indexOf("order-placed");
+  if (
+    getStepStatus("order-finalization") === "rejected" ||
+    getStepStatus("order-finalization") !== "completed"
+  )
+    return indexOf("order-finalization");
   if (isProjectMovement(order)) {
-    const hasApprovedProjectRequest = safeArray(order?.projectVehicleAllocationRequests).some((item) => String(item?.status || "").trim().toLowerCase() === "approved");
-    if (!hasApprovedProjectRequest) return indexOf("vehicle-allocation-request");
+    const hasApprovedProjectRequest = safeArray(
+      order?.projectVehicleAllocationRequests,
+    ).some(
+      (item) =>
+        String(item?.status || "")
+          .trim()
+          .toLowerCase() === "approved",
+    );
+    if (!hasApprovedProjectRequest)
+      return indexOf("vehicle-allocation-request");
   } else if (getStepStatus("po-document") !== "completed") {
     return indexOf("po-document");
   }
-  if (!isProjectMovement(order) && getStepStatus("vendor-finalization") !== "completed") return indexOf("vendor-finalization");
-  if (getStepStatus("order-placed") !== "completed") return indexOf("order-placed");
-  if (getStepStatus("tracking") === "completed") return indexOf("invoice-payment");
+  if (
+    !isProjectMovement(order) &&
+    getStepStatus("vendor-finalization") !== "completed"
+  )
+    return indexOf("vendor-finalization");
+  if (getStepStatus("order-placed") !== "completed")
+    return indexOf("order-placed");
+  if (getStepStatus("tracking") === "completed")
+    return indexOf("invoice-payment");
   return indexOf("tracking");
 };
 /* =========================================================
@@ -786,7 +1326,7 @@ const ReadOnlyField = ({
           type={
             ["enquiryDate", "placementDate"].includes(fieldKey)
               ? "date"
-            : ["distance", "totalVehicles", "weight"].includes(fieldKey)
+              : ["distance", "totalVehicles", "weight"].includes(fieldKey)
                 ? "number"
                 : "text"
           }
@@ -810,7 +1350,9 @@ const SectionHeading = ({ title, description, count, action }) => (
       <h3>{title}</h3>
       {description && <p>{description}</p>}
     </div>
-    {action && <div style={{ marginLeft: "auto", marginRight: 10 }}>{action}</div>}
+    {action && (
+      <div style={{ marginLeft: "auto", marginRight: 10 }}>{action}</div>
+    )}
     {count !== undefined && <span>{count}</span>}
   </div>
 );
@@ -818,19 +1360,36 @@ const SectionHeading = ({ title, description, count, action }) => (
    COMMON DETAILS
    READ ONLY ON ALL PAGES AFTER ENQUIRY
 ========================================================= */
-const ProjectOverviewDetails = ({ order, editing = false, editForm = {}, onEdit, editRequirementsLocked = false, enquiry = false }) => {
+const ProjectOverviewDetails = ({
+  order,
+  editing = false,
+  editForm = {},
+  onEdit,
+  editRequirementsLocked = false,
+  enquiry = false,
+}) => {
   const fields = [
     ["Customer", "customer", order.customer],
     ["Contact Person", "contactPerson", order.contactPerson],
     ["Contact Number", "contactNumber", order.contactNumber],
     ["Email", "email", order.email],
-    ...(enquiry ? [
-      ["Total Vehicles", "totalVehicles", editing && !editRequirementsLocked ? editForm.totalVehicles : order.totalVehicles],
-      ["Enquiry Date", "enquiryDate", formatDate(order.enquiryDate)],
-    ] : []),
+    ...(enquiry
+      ? [
+          [
+            "Total Vehicles",
+            "totalVehicles",
+            editing && !editRequirementsLocked
+              ? editForm.totalVehicles
+              : order.totalVehicles,
+          ],
+          ["Enquiry Date", "enquiryDate", formatDate(order.enquiryDate)],
+        ]
+      : []),
   ];
   return (
-    <div className={`kam-client-trip-grid kam-project-overview-grid${enquiry ? "" : " kam-project-overview-common"}`}>
+    <div
+      className={`kam-client-trip-grid kam-project-overview-grid${enquiry ? "" : " kam-project-overview-common"}`}
+    >
       {fields.map(([label, key, value]) => (
         <ReadOnlyField
           key={key}
@@ -840,16 +1399,32 @@ const ProjectOverviewDetails = ({ order, editing = false, editForm = {}, onEdit,
           editing={editing && key !== "totalVehicles"}
           inputValue={editForm[key]}
           onEdit={onEdit}
-          suffix={key === "totalVehicles" && order.totalVehicles !== "" && order.totalVehicles != null ? " NOS" : ""}
+          suffix={
+            key === "totalVehicles" &&
+            order.totalVehicles !== "" &&
+            order.totalVehicles != null
+              ? " NOS"
+              : ""
+          }
         />
       ))}
-      {order.siteLocation && <ReadOnlyField label="Site Location" value={order.siteLocation} />}
+      {order.siteLocation && (
+        <ReadOnlyField label="Site Location" value={order.siteLocation} />
+      )}
       {order.period && <ReadOnlyField label="Period" value={order.period} />}
-      {order.dieselScope && <ReadOnlyField label="Diesel Scope" value={order.dieselScope} />}
+      {order.dieselScope && (
+        <ReadOnlyField label="Diesel Scope" value={order.dieselScope} />
+      )}
     </div>
   );
 };
-const CommonStepDetails = ({ order, totalRequiredVehicles, editing = false, editForm = {}, onEdit }) => {
+const CommonStepDetails = ({
+  order,
+  totalRequiredVehicles,
+  editing = false,
+  editForm = {},
+  onEdit,
+}) => {
   const isLine = isLineMovement(order);
   const isProject = isProjectMovement(order);
   if (isProject) return <ProjectOverviewDetails order={order} />;
@@ -870,7 +1445,13 @@ const CommonStepDetails = ({ order, totalRequiredVehicles, editing = false, edit
             <span>{label}</span>
             {editing ? (
               <input
-                type={key === "enquiryDate" ? "date" : key === "totalVehicles" ? "number" : "text"}
+                type={
+                  key === "enquiryDate"
+                    ? "date"
+                    : key === "totalVehicles"
+                      ? "number"
+                      : "text"
+                }
                 value={editForm[key] ?? ""}
                 onChange={(event) => onEdit?.(key, event.target.value)}
               />
@@ -885,7 +1466,10 @@ const CommonStepDetails = ({ order, totalRequiredVehicles, editing = false, edit
   const isIntercarting = String(order?.movementType || "")
     .toLowerCase()
     .includes("intercart");
-  const isCrane = String(order?.movementType || "").trim().toLowerCase() === "crane";
+  const isCrane =
+    String(order?.movementType || "")
+      .trim()
+      .toLowerCase() === "crane";
   const storedTotalVehicles = Number(order?.totalVehicles) || 0;
   const displayTotalVehicles =
     storedTotalVehicles > 0 ? storedTotalVehicles : totalRequiredVehicles;
@@ -936,17 +1520,19 @@ const CommonStepDetails = ({ order, totalRequiredVehicles, editing = false, edit
    MAIN COMPONENT
 ========================================================= */
 const isCompletedTrip = (trip) =>
-  buildLifecycle(trip || {}).find((step) => step.key === "trip-complete")?.status ===
-  "Completed";
+  buildLifecycle(trip || {}).find((step) => step.key === "trip-complete")
+    ?.status === "Completed";
 const Lifecyclemodal = ({
   order,
   onClose,
   onOrderUpdated,
   initialEdit = false,
   initialStep = null,
+  pageMode = false,
+  preloaded = false,
 }) => {
   const [localOrder, setLocalOrder] = useState(null);
-  const [latestOrderLoading, setLatestOrderLoading] = useState(true);
+  const [latestOrderLoading, setLatestOrderLoading] = useState(!preloaded);
   const [editOpen, setEditOpen] = useState(false);
   const [editSaving, setEditSaving] = useState(false);
   const [editError, setEditError] = useState("");
@@ -987,7 +1573,9 @@ const Lifecyclemodal = ({
       materialType: o.materialType || "",
       weight:
         o.weight ??
-        safeArray(o.vehicleRequirements).find((requirement) => Number(requirement?.weight) > 0)?.weight ??
+        safeArray(o.vehicleRequirements).find(
+          (requirement) => Number(requirement?.weight) > 0,
+        )?.weight ??
         "",
       remark: o.remark || "",
       siteLocation: o.siteLocation || "",
@@ -1000,7 +1588,8 @@ const Lifecyclemodal = ({
         ? String(o.placementDate).slice(0, 10)
         : "",
       orderFinalization: {
-        quotedRate: getManagementQuotedRate(o) ?? o.orderFinalization?.quotedRate ?? "",
+        quotedRate:
+          getManagementQuotedRate(o) ?? o.orderFinalization?.quotedRate ?? "",
         finalRate: o.orderFinalization?.finalRate ?? "",
         commercialTerms: o.orderFinalization?.commercialTerms || "",
         deliveryCommitments: o.orderFinalization?.deliveryCommitments || "",
@@ -1015,7 +1604,9 @@ const Lifecyclemodal = ({
         materialType: r.materialType || "",
         origin: r.origin || "",
         destination: r.destination || "",
-        placementDate: r.placementDate ? String(r.placementDate).slice(0, 10) : "",
+        placementDate: r.placementDate
+          ? String(r.placementDate).slice(0, 10)
+          : "",
         quantity: r.quantity ?? 1,
         weight: r.weight ?? 0,
         dimensions: {
@@ -1056,7 +1647,8 @@ const Lifecyclemodal = ({
     .replace(/[\s_-]+/g, "");
   const isCraneOrder = ["crane", "cranemovement"].includes(craneMovementKey);
   const isProjectOrder = isProjectMovement(workingOrder || order);
-  const isPerVehicleAmountOrder = isLineOrder || isIntercartingOrder || isProjectOrder;
+  const isPerVehicleAmountOrder =
+    isLineOrder || isIntercartingOrder || isProjectOrder;
   const isIntercartingEdit = String((workingOrder || order)?.movementType || "")
     .toLowerCase()
     .includes("intercart");
@@ -1071,7 +1663,9 @@ const Lifecyclemodal = ({
     ["contactPerson", "Contact Person"],
     ["contactNumber", "Contact Number"],
     ["email", "Email"],
-    ...(!isIntercartingEdit && !isProjectOrder ? [["materialType", "Material Type"]] : []),
+    ...(!isIntercartingEdit && !isProjectOrder
+      ? [["materialType", "Material Type"]]
+      : []),
     ["enquiryDate", "Enquiry Date"],
     ...(!isProjectOrder ? [["placementDate", "Placement Date"]] : []),
     ...(!isIntercartingEdit && !isProjectOrder
@@ -1080,7 +1674,9 @@ const Lifecyclemodal = ({
           ["destination", "Destination"],
         ]
       : []),
-    ...(!isIntercartingEdit && !isProjectOrder ? [["distance", "Distance (km)"]] : []),
+    ...(!isIntercartingEdit && !isProjectOrder
+      ? [["distance", "Distance (km)"]]
+      : []),
   ];
   const inlineEditor = (stage) => (
     <section className="kam-inline-edit-panel">
@@ -1246,7 +1842,14 @@ const Lifecyclemodal = ({
     return (
       <input
         className="kam-original-edit-input kam-original-vehicle-input"
-        style={{ display: "block", width: "100%", minWidth: 0, maxWidth: "100%", boxSizing: "border-box", margin: 0 }}
+        style={{
+          display: "block",
+          width: "100%",
+          minWidth: 0,
+          maxWidth: "100%",
+          boxSizing: "border-box",
+          margin: 0,
+        }}
         value={nested ? (row?.dimensions?.[key] ?? "") : (row?.[key] ?? "")}
         onChange={(e) =>
           changeEditArray(
@@ -1277,29 +1880,33 @@ const Lifecyclemodal = ({
       return {
         ...prev,
         [section]: rows,
-        ...(section === "vehicleRequirements" ? {
-          totalVehicles: rows.length,
-        } : {}),
+        ...(section === "vehicleRequirements"
+          ? {
+              totalVehicles: rows.length,
+            }
+          : {}),
       };
     });
   const addEnquiryVehicle = () => {
     if (editRequirementsLocked || !editOpen) return;
     setEditForm((prev) => {
-      const rows = [...safeArray(prev.vehicleRequirements), {
-        requirementId: `${(workingOrder || order)?.tripId || "ORDER"}-REQ-${Date.now()}`,
-        vehicleType: "",
-        configuration: "",
-        classification: "",
-        materialType: "",
-        quantity: 1,
-        weight: "",
-        origin: "",
-        destination: "",
-        placementDate: "",
-        dimensions: { length: "", height: "", width: "" },
-      }];
-      return { ...prev, vehicleRequirements: rows,
-        totalVehicles: rows.length };
+      const rows = [
+        ...safeArray(prev.vehicleRequirements),
+        {
+          requirementId: `${(workingOrder || order)?.tripId || "ORDER"}-REQ-${Date.now()}`,
+          vehicleType: "",
+          configuration: "",
+          classification: "",
+          materialType: "",
+          quantity: 1,
+          weight: "",
+          origin: "",
+          destination: "",
+          placementDate: "",
+          dimensions: { length: "", height: "", width: "" },
+        },
+      ];
+      return { ...prev, vehicleRequirements: rows, totalVehicles: rows.length };
     });
   };
   const removeEnquiryVehicle = (index) => {
@@ -1307,8 +1914,7 @@ const Lifecyclemodal = ({
     setEditForm((prev) => {
       if (safeArray(prev.vehicleRequirements).length <= 1) return prev;
       const rows = prev.vehicleRequirements.filter((_, i) => i !== index);
-      return { ...prev, vehicleRequirements: rows,
-        totalVehicles: rows.length };
+      return { ...prev, vehicleRequirements: rows, totalVehicles: rows.length };
     });
   };
   const saveLifecycleCorrections = async () => {
@@ -1343,11 +1949,15 @@ const Lifecyclemodal = ({
             siteLocation: undefined,
             period: undefined,
             dieselScope: undefined,
-            totalVehicles: editRequirementsLocked ? undefined : editForm.totalVehicles,
+            totalVehicles: editRequirementsLocked
+              ? undefined
+              : editForm.totalVehicles,
             vehicleRequirements: editRequirementsLocked
               ? undefined
               : editForm.vehicleRequirements.map((r) =>
-                  isIntercartingEdit ? { ...r, quantity: 1, dimensions: undefined } : { ...r, quantity: 1 },
+                  isIntercartingEdit
+                    ? { ...r, quantity: 1, dimensions: undefined }
+                    : { ...r, quantity: 1 },
                 ),
           }),
         },
@@ -1430,11 +2040,15 @@ const Lifecyclemodal = ({
           siteLocation: undefined,
           period: undefined,
           dieselScope: undefined,
-          totalVehicles: editRequirementsLocked ? undefined : editForm.totalVehicles,
+          totalVehicles: editRequirementsLocked
+            ? undefined
+            : editForm.totalVehicles,
           vehicleRequirements: editRequirementsLocked
             ? undefined
             : editForm.vehicleRequirements.map((r) =>
-                isIntercartingEdit ? { ...r, quantity: 1, dimensions: undefined } : { ...r, quantity: 1 },
+                isIntercartingEdit
+                  ? { ...r, quantity: 1, dimensions: undefined }
+                  : { ...r, quantity: 1 },
               ),
         };
         const response = await lifecycleApiFetch(
@@ -1467,17 +2081,27 @@ const Lifecyclemodal = ({
           "billingGstin",
           poForm.billingGstin.trim().toUpperCase(),
         );
-        const complete = Boolean(poForm.poNumber.trim() && poForm.poValidityPeriod && poForm.billingGstin.trim() && (poFile || trip?.poDocument?.fileName || trip?.poDocument?.fileUrl || trip?.poDocument?.documentUrl));
+        const complete = Boolean(
+          poForm.poNumber.trim() &&
+          poForm.poValidityPeriod &&
+          poForm.billingGstin.trim() &&
+          (poFile ||
+            trip?.poDocument?.fileName ||
+            trip?.poDocument?.fileUrl ||
+            trip?.poDocument?.documentUrl),
+        );
         formData.append("status", complete ? "Completed" : "Pending");
         formData.append("updatedBy", updatedBy);
         formData.append(
           "documentName",
-          poFile?.name || trip?.poDocument?.documentName || trip?.poDocument?.fileName || "PO Document",
+          poFile?.name ||
+            trip?.poDocument?.documentName ||
+            trip?.poDocument?.fileName ||
+            "PO Document",
         );
         formData.append(
           "uploadedBy",
-          sessionStorage.getItem("kamUsername") ||
-            "Key Account",
+          sessionStorage.getItem("kamUsername") || "Key Account",
         );
         if (poFile) formData.append("document", poFile);
         const response = await lifecycleApiFetch(
@@ -1516,6 +2140,7 @@ const Lifecyclemodal = ({
     }
   };
   useEffect(() => {
+    if (preloaded) return;
     let cancelled = false;
     setLatestOrderLoading(true);
     setLocalOrder(null);
@@ -1560,13 +2185,19 @@ const Lifecyclemodal = ({
     return () => {
       cancelled = true;
     };
-  }, [order?._id]);
+  }, [order?._id, preloaded]);
   // Do not fall back to the stale table-row order while the latest
   // MongoDB order is loading. This prevents the PO page flashing first.
   const lifecycle = useMemo(
     () => buildLifecycle(workingOrder || {}),
     [workingOrder],
   );
+  const completedCurrentOrder =
+    lifecycle.find((step) => step.key === "trip-complete")?.status ===
+    "Completed";
+  const completedDisplayedOrder = workingOrder
+    ? completedCurrentOrder
+    : isCompletedTrip(order);
   const currentLifecycleIndex = useMemo(
     () => getLifecycleCurrentIndex(workingOrder || {}, lifecycle),
     [workingOrder, lifecycle],
@@ -1581,8 +2212,10 @@ const Lifecyclemodal = ({
   const [invoiceDocument, setInvoiceDocument] = useState(null);
   const invoiceDocumentInputRef = useRef(null);
   // Intercarting-only invoice entry popup and invoice-level remarks.
-  const [intercartingInvoiceModalOpen, setIntercartingInvoiceModalOpen] = useState(false);
-  const [intercartingInvoiceRemarks, setIntercartingInvoiceRemarks] = useState("");
+  const [intercartingInvoiceModalOpen, setIntercartingInvoiceModalOpen] =
+    useState(false);
+  const [intercartingInvoiceRemarks, setIntercartingInvoiceRemarks] =
+    useState("");
   const [invoiceSaving, setInvoiceSaving] = useState(false);
   const [paymentSaving, setPaymentSaving] = useState(false);
   const [paymentEntryOpen, setPaymentEntryOpen] = useState(false);
@@ -1591,49 +2224,77 @@ const Lifecyclemodal = ({
     paymentDate: "",
     remarks: "",
   });
-  const [selectedIntercartingInvoiceId, setSelectedIntercartingInvoiceId] = useState("");
+  const [selectedIntercartingInvoiceId, setSelectedIntercartingInvoiceId] =
+    useState("");
   // Close confirmation is only displayed when edits would be lost.
   const [showUnsavedClose, setShowUnsavedClose] = useState(false);
-  const [invoiceFormReadyForOrder, setInvoiceFormReadyForOrder] = useState(null);
+  const [invoiceFormReadyForOrder, setInvoiceFormReadyForOrder] =
+    useState(null);
   const invoiceData = workingOrder?.invoicePayment || {};
   const storedIntercartingInvoices = safeArray(invoiceData.invoices);
   const intercartingInvoices = storedIntercartingInvoices.length
     ? storedIntercartingInvoices
     : String(invoiceData.invoiceNumber || "").trim()
-      ? [{
-          _id: "legacy",
-          invoiceNumber: invoiceData.invoiceNumber,
-          invoiceDate: invoiceData.invoiceDate,
-          invoiceAmount: invoiceData.invoiceAmount ?? invoiceData.amount ?? invoiceData.baseAmount,
-          gstPercentage: invoiceData.gstPercentage ?? 0,
-          gstAmount: invoiceData.gstAmount ?? 0,
-          totalAmount: invoiceData.totalAmount,
-          invoiceDocument: invoiceData.invoiceDocument,
-          payments: safeArray(invoiceData.payments).length
-            ? invoiceData.payments
-            : Number(invoiceData.receivedAmount) > 0 && invoiceData.paymentDate
-              ? [{ amount: invoiceData.receivedAmount, paymentDate: invoiceData.paymentDate, remarks: invoiceData.paymentRemarks, receivedBy: invoiceData.updatedBy }]
-              : [],
-        }]
+      ? [
+          {
+            _id: "legacy",
+            invoiceNumber: invoiceData.invoiceNumber,
+            invoiceDate: invoiceData.invoiceDate,
+            invoiceAmount:
+              invoiceData.invoiceAmount ??
+              invoiceData.amount ??
+              invoiceData.baseAmount,
+            gstPercentage: invoiceData.gstPercentage ?? 0,
+            gstAmount: invoiceData.gstAmount ?? 0,
+            totalAmount: invoiceData.totalAmount,
+            invoiceDocument: invoiceData.invoiceDocument,
+            payments: safeArray(invoiceData.payments).length
+              ? invoiceData.payments
+              : Number(invoiceData.receivedAmount) > 0 &&
+                  invoiceData.paymentDate
+                ? [
+                    {
+                      amount: invoiceData.receivedAmount,
+                      paymentDate: invoiceData.paymentDate,
+                      remarks: invoiceData.paymentRemarks,
+                      receivedBy: invoiceData.updatedBy,
+                    },
+                  ]
+                : [],
+          },
+        ]
       : [];
   const selectedIntercartingInvoice = intercartingInvoices.find(
     (item) => String(item._id) === String(selectedIntercartingInvoiceId),
   );
-  const intercartingTotals = intercartingInvoices.reduce((totals, item) => ({
-    gross: totals.gross + Number(item.invoiceAmount || 0),
-    gst: totals.gst + Number(item.gstAmount || 0),
-    net: totals.net + Number(item.totalAmount || 0),
-    received: totals.received + safeArray(item.payments).reduce(
-      (sum, payment) => sum + Number(payment.amount || 0), 0,
-    ),
-  }), { gross: 0, gst: 0, net: 0, received: 0 });
+  const intercartingTotals = intercartingInvoices.reduce(
+    (totals, item) => ({
+      gross: totals.gross + Number(item.invoiceAmount || 0),
+      gst: totals.gst + Number(item.gstAmount || 0),
+      net: totals.net + Number(item.totalAmount || 0),
+      received:
+        totals.received +
+        safeArray(item.payments).reduce(
+          (sum, payment) => sum + Number(payment.amount || 0),
+          0,
+        ),
+    }),
+    { gross: 0, gst: 0, net: 0, received: 0 },
+  );
   const intercartingInvoiceReceived = selectedIntercartingInvoice
     ? safeArray(selectedIntercartingInvoice.payments).reduce(
-        (sum, item) => sum + Math.round(Number(item.amount || 0) * 100), 0,
+        (sum, item) => sum + Math.round(Number(item.amount || 0) * 100),
+        0,
       ) / 100
     : 0;
   const intercartingInvoiceDue = selectedIntercartingInvoice
-    ? Math.max(0, Math.round(Number(selectedIntercartingInvoice.totalAmount || 0) * 100 - intercartingInvoiceReceived * 100) / 100)
+    ? Math.max(
+        0,
+        Math.round(
+          Number(selectedIntercartingInvoice.totalAmount || 0) * 100 -
+            intercartingInvoiceReceived * 100,
+        ) / 100,
+      )
     : 0;
   const finalRateString = String(
     workingOrder?.orderFinalization?.finalRate ?? workingOrder?.finalRate ?? "",
@@ -1655,7 +2316,10 @@ const Lifecyclemodal = ({
   const totalPayable = Math.round((baseAmount + gstAmount) * 100) / 100;
   const hasFinalRate = validAmount && validGst;
   const savedAmount = Number(
-    invoiceData.invoiceAmount ?? invoiceData.amount ?? invoiceData.baseAmount ?? finalRateString,
+    invoiceData.invoiceAmount ??
+      invoiceData.amount ??
+      invoiceData.baseAmount ??
+      finalRateString,
   );
   const savedGst = Number(invoiceData.gstPercentage ?? 0);
   // Prefer the server-calculated total to avoid rounding/readback differences.
@@ -1665,7 +2329,7 @@ const Lifecyclemodal = ({
     invoiceData.totalAmount !== undefined &&
     Number.isFinite(storedTotal)
       ? storedTotal
-      : Math.round((savedAmount * (100 + savedGst))) / 100;
+      : Math.round(savedAmount * (100 + savedGst)) / 100;
   const hasUnsavedInvoiceAmount = Math.abs(totalPayable - savedTotal) > 0.005;
   const payments =
     Array.isArray(invoiceData.payments) && invoiceData.payments.length
@@ -1696,16 +2360,26 @@ const Lifecyclemodal = ({
     })}`;
   useEffect(() => {
     if (isIntercartingMovement(workingOrder)) {
-      setInvoicePaymentForm({ invoiceNumber: "", invoiceDate: "", amount: "", gstPercentage: "0" });
+      setInvoicePaymentForm({
+        invoiceNumber: "",
+        invoiceDate: "",
+        amount: "",
+        gstPercentage: "0",
+      });
       setInvoiceFormReadyForOrder(workingOrder?._id ?? null);
       return;
     }
     setInvoicePaymentForm((previous) => ({
       ...previous,
       invoiceNumber: invoiceData.invoiceNumber || "",
-      invoiceDate: invoiceData.invoiceDate ? String(invoiceData.invoiceDate).slice(0, 10) : "",
+      invoiceDate: invoiceData.invoiceDate
+        ? String(invoiceData.invoiceDate).slice(0, 10)
+        : "",
       amount: String(
-        invoiceData.invoiceAmount ?? invoiceData.amount ?? invoiceData.baseAmount ?? finalRateString,
+        invoiceData.invoiceAmount ??
+          invoiceData.amount ??
+          invoiceData.baseAmount ??
+          finalRateString,
       ),
       gstPercentage: String(invoiceData.gstPercentage ?? 0),
     }));
@@ -1729,19 +2403,22 @@ const Lifecyclemodal = ({
     invoiceDate: invoiceData.invoiceDate
       ? String(invoiceData.invoiceDate).slice(0, 10)
       : "",
-    amount: isIntercartingOrder ? "" : String(
-      invoiceData.invoiceAmount ??
-      invoiceData.amount ??
-      invoiceData.baseAmount ??
-      finalRateString,
-    ),
+    amount: isIntercartingOrder
+      ? ""
+      : String(
+          invoiceData.invoiceAmount ??
+            invoiceData.amount ??
+            invoiceData.baseAmount ??
+            finalRateString,
+        ),
     gstPercentage: String(invoiceData.gstPercentage ?? 0),
   };
   const invoiceFormDirty =
     invoiceFormReadyForOrder === workingOrder?._id &&
     (Object.keys(persistedInvoice).some(
       (key) => String(invoicePaymentForm[key] ?? "") !== persistedInvoice[key],
-    ) || Boolean(invoiceDocument) ||
+    ) ||
+      Boolean(invoiceDocument) ||
       (isIntercartingOrder && Boolean(intercartingInvoiceRemarks.trim())));
   const unfinishedPayment =
     paymentEntryOpen &&
@@ -1784,7 +2461,10 @@ const Lifecyclemodal = ({
         "error",
       );
     }
-    if (!isIntercartingMovement(workingOrder) && totalPayable + 0.005 < receivedTotal) {
+    if (
+      !isIntercartingMovement(workingOrder) &&
+      totalPayable + 0.005 < receivedTotal
+    ) {
       return showToast(
         "Total amount cannot be less than payments already received.",
         "error",
@@ -1796,7 +2476,8 @@ const Lifecyclemodal = ({
       form.append("invoiceNumber", invoicePaymentForm.invoiceNumber.trim());
       form.append("invoiceDate", invoicePaymentForm.invoiceDate);
       if (invoiceDocument) form.append("invoiceDocument", invoiceDocument);
-      if (isIntercartingOrder) form.append("remarks", intercartingInvoiceRemarks.trim());
+      if (isIntercartingOrder)
+        form.append("remarks", intercartingInvoiceRemarks.trim());
       form.append("amount", baseAmount.toFixed(2));
       form.append("gstPercentage", String(gstPercentage));
       form.append("gstAmount", gstAmount.toFixed(2));
@@ -1817,11 +2498,18 @@ const Lifecyclemodal = ({
       if (typeof onOrderUpdated === "function") onOrderUpdated(updated);
       setInvoiceDocument(null);
       if (isIntercartingMovement(workingOrder)) {
-        setInvoicePaymentForm({ invoiceNumber: "", invoiceDate: "", amount: "", gstPercentage: "0" });
+        setInvoicePaymentForm({
+          invoiceNumber: "",
+          invoiceDate: "",
+          amount: "",
+          gstPercentage: "0",
+        });
         setIntercartingInvoiceRemarks("");
         setIntercartingInvoiceModalOpen(false);
         const updatedInvoices = safeArray(updated.invoicePayment?.invoices);
-        setSelectedIntercartingInvoiceId(String(updatedInvoices.at(-1)?._id || ""));
+        setSelectedIntercartingInvoiceId(
+          String(updatedInvoices.at(-1)?._id || ""),
+        );
       }
       if (invoiceDocumentInputRef.current)
         invoiceDocumentInputRef.current.value = "";
@@ -1837,7 +2525,8 @@ const Lifecyclemodal = ({
     const preview = download ? null : window.open("about:blank", "_blank");
     if (preview) preview.opener = null;
     try {
-      if (!download && !preview) throw new Error("Please allow popups to view the invoice.");
+      if (!download && !preview)
+        throw new Error("Please allow popups to view the invoice.");
       const query = new URLSearchParams({
         invoiceId: String(invoice._id),
         disposition: download ? "attachment" : "inline",
@@ -1853,7 +2542,9 @@ const Lifecyclemodal = ({
       if (download) {
         const link = window.document.createElement("a");
         link.href = blobUrl;
-        link.download = invoice.invoiceDocument?.fileName || `invoice-${invoice.invoiceNumber}`;
+        link.download =
+          invoice.invoiceDocument?.fileName ||
+          `invoice-${invoice.invoiceNumber}`;
         window.document.body.appendChild(link);
         link.click();
         link.remove();
@@ -1870,11 +2561,16 @@ const Lifecyclemodal = ({
   const savePaymentInstallment = async () => {
     const amount = Number(paymentEntry.amount);
     const isIntercartingInvoice = isIntercartingMovement(workingOrder);
-    const paymentDue = isIntercartingInvoice ? intercartingInvoiceDue : dueBalance;
+    const paymentDue = isIntercartingInvoice
+      ? intercartingInvoiceDue
+      : dueBalance;
     if (isIntercartingInvoice && !selectedIntercartingInvoice)
       return showToast("Choose an invoice before recording payment.", "error");
-    if ((!isIntercartingInvoice && !hasFinalRate) ||
-        (isIntercartingInvoice && !(Number(selectedIntercartingInvoice?.totalAmount) > 0)))
+    if (
+      (!isIntercartingInvoice && !hasFinalRate) ||
+      (isIntercartingInvoice &&
+        !(Number(selectedIntercartingInvoice?.totalAmount) > 0))
+    )
       return showToast(
         "Enter the invoice amount and valid GST percentage first.",
         "error",
@@ -1907,7 +2603,9 @@ const Lifecyclemodal = ({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             ...paymentEntry,
-            ...(isIntercartingInvoice ? { invoiceId: selectedIntercartingInvoice._id } : {}),
+            ...(isIntercartingInvoice
+              ? { invoiceId: selectedIntercartingInvoice._id }
+              : {}),
           }),
         },
       );
@@ -1980,13 +2678,17 @@ const Lifecyclemodal = ({
     )
       return;
     autoEditOpenedRef.current = true;
-    if (!isCompletedTrip(workingOrder)) openLifecycleEditor();
+    if (!completedCurrentOrder) openLifecycleEditor();
   }, [initialEdit, latestOrderLoading, workingOrder]);
   /* =========================================================
      ORDER FINALIZATION INPUT DATA
   ========================================================= */
   const [finalizationForm, setFinalizationForm] = useState({
-    quotedRate: getManagementQuotedRate(order) ?? order?.orderFinalization?.quotedRate ?? order?.quotedRate ?? "",
+    quotedRate:
+      getManagementQuotedRate(order) ??
+      order?.orderFinalization?.quotedRate ??
+      order?.quotedRate ??
+      "",
     finalRate: order?.orderFinalization?.finalRate ?? order?.finalRate ?? "",
     commercialTerms:
       order?.orderFinalization?.commercialTerms ?? order?.commercialTerms ?? "",
@@ -2002,20 +2704,28 @@ const Lifecyclemodal = ({
   const [lineFinalVehicleAmounts, setLineFinalVehicleAmounts] = useState({});
   useEffect(() => {
     const next = {};
-    for (const [index, vehicle] of (workingOrder?.vehicleRequirements || []).entries()) {
+    for (const [index, vehicle] of (
+      workingOrder?.vehicleRequirements || []
+    ).entries()) {
       next[vehicle.requirementId || String(index)] = String(
-        vehicle.finalAmount ?? vehicle.approvalAmount ?? ""
+        vehicle.finalAmount ?? vehicle.approvalAmount ?? "",
       );
     }
     setLineFinalVehicleAmounts(next);
-  }, [workingOrder?._id, workingOrder?.orderFinalization?.updatedAt, workingOrder?.enquiryApproval?.updatedAt]);
+  }, [
+    workingOrder?._id,
+    workingOrder?.orderFinalization?.updatedAt,
+    workingOrder?.enquiryApproval?.updatedAt,
+  ]);
   useEffect(() => {
     if (workingOrder) {
       const requestedIndex =
         typeof initialStep === "string"
           ? lifecycle.findIndex((step) => step.key === initialStep)
           : -1;
-      setActiveStepIndex(requestedIndex >= 0 ? requestedIndex : currentLifecycleIndex);
+      setActiveStepIndex(
+        requestedIndex >= 0 ? requestedIndex : currentLifecycleIndex,
+      );
     }
   }, [
     initialStep,
@@ -2127,25 +2837,36 @@ const Lifecyclemodal = ({
   // Pending/Approved orders are read-only. Rejected orders reopen for editing.
   const finalizationLocked =
     !editOpen && (orderApprovalApproved || orderApprovalPending);
-  const lineAmountsReady = !isPerVehicleAmountOrder || hasCompleteLineApprovalAmounts(workingOrder);
+  const lineAmountsReady =
+    !isPerVehicleAmountOrder || hasCompleteLineApprovalAmounts(workingOrder);
   const lineFinalRateRaw = editOpen
     ? editForm.orderFinalization?.finalRate
     : finalizationForm.finalRate;
   // Individual Key Account vehicle amounts are editable after Management sends
   // the allocation. The final rate is their calculated sum, not a manual field.
-  const lineVehicleFinalTotal = safeArray(workingOrder?.vehicleRequirements).reduce((sum, vehicle, index) => {
+  const lineVehicleFinalTotal = safeArray(
+    workingOrder?.vehicleRequirements,
+  ).reduce((sum, vehicle, index) => {
     const key = vehicle.requirementId || String(index);
     const amount = lineFinalVehicleAmounts[key];
     return sum + (amount === "" || amount == null ? 0 : Number(amount) || 0);
   }, 0);
-  const lineVehicleAmountsComplete = safeArray(workingOrder?.vehicleRequirements).length > 0 &&
+  const lineVehicleAmountsComplete =
+    safeArray(workingOrder?.vehicleRequirements).length > 0 &&
     safeArray(workingOrder?.vehicleRequirements).every((vehicle, index) => {
-    const raw = lineFinalVehicleAmounts[vehicle.requirementId || String(index)];
-    return raw !== "" && raw != null && Number.isFinite(Number(raw)) && Number(raw) >= 0;
+      const raw =
+        lineFinalVehicleAmounts[vehicle.requirementId || String(index)];
+      return (
+        raw !== "" &&
+        raw != null &&
+        Number.isFinite(Number(raw)) &&
+        Number(raw) >= 0
+      );
     });
-  const effectiveFinalRate = isPerVehicleAmountOrder && lineAmountsReady
-    ? String(Math.round(lineVehicleFinalTotal * 100) / 100)
-    : finalizationForm.finalRate;
+  const effectiveFinalRate =
+    isPerVehicleAmountOrder && lineAmountsReady
+      ? String(Math.round(lineVehicleFinalTotal * 100) / 100)
+      : finalizationForm.finalRate;
   const poLocked =
     !editOpen &&
     String(order?.poDocument?.status || "")
@@ -2167,15 +2888,18 @@ const Lifecyclemodal = ({
     if (poFile) return poFile;
     const storedUrl = savedPo.fileUrl || savedPo.documentUrl;
     if (!storedUrl) {
-      throw new Error("The saved PO has no file URL. Configure a backend PO document view/download endpoint.");
+      throw new Error(
+        "The saved PO has no file URL. Configure a backend PO document view/download endpoint.",
+      );
     }
     const url = new URL(storedUrl, `${API_BASE_URL}/`);
     if (url.protocol !== "https:" && url.protocol !== "http:") {
       throw new Error("Unsupported PO document URL.");
     }
-    const response = url.origin === new URL(API_BASE_URL).origin
-      ? await lifecycleApiFetch(url.toString())
-      : await fetch(url.toString());
+    const response =
+      url.origin === new URL(API_BASE_URL).origin
+        ? await lifecycleApiFetch(url.toString())
+        : await fetch(url.toString());
     if (!response.ok) throw new Error("Unable to retrieve PO document.");
     const blob = await response.blob();
     if (blob.type.includes("json") || blob.type.includes("html")) {
@@ -2206,7 +2930,11 @@ const Lifecyclemodal = ({
       const objectUrl = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = objectUrl;
-      link.download = poFile?.name || savedPo.fileName || savedPo.documentName || "PO-Document";
+      link.download =
+        poFile?.name ||
+        savedPo.fileName ||
+        savedPo.documentName ||
+        "PO-Document";
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -2279,7 +3007,10 @@ const Lifecyclemodal = ({
       formData.append("status", automaticPoStatus);
       formData.append(
         "documentName",
-        poFile?.name || savedPo.documentName || savedPo.fileName || "PO Document",
+        poFile?.name ||
+          savedPo.documentName ||
+          savedPo.fileName ||
+          "PO Document",
       );
       formData.append(
         "uploadedBy",
@@ -2403,35 +3134,74 @@ const Lifecyclemodal = ({
   const submitProjectVehicleAllocationRequest = async () => {
     if (!workingOrder?._id) return;
     const requirements = safeArray(workingOrder?.vehicleRequirements);
-    const activeStatuses = ["pending traffic", "pending management", "approved"];
-    const pendingBatch = requirements.map((requirement) => {
-      const requirementId = requirement?.requirementId;
-      const relatedRequests = safeArray(workingOrder?.projectVehicleAllocationRequests).filter((item) =>
-        item?.requirementId === requirementId && activeStatuses.includes(String(item?.status || "").trim().toLowerCase()),
-      );
-      const alreadyRequested = relatedRequests.reduce((sum, item) => sum + (Number(item?.requestedQuantity) || 0), 0);
-      const remaining = Math.max(0, (Number(requirement?.quantity) || 0) - alreadyRequested);
-      const row = projectAllocationRows[requirementId] || {};
-      const requestedQuantity = Number(row.requestedQuantity ?? 0);
-      return {
-        requirementId,
-        requestedQuantity,
-        vehicles: Array.from({ length: Math.max(0, Math.min(remaining, Math.floor(requestedQuantity) || 0)) }, (_, index) => row.vehicles?.[index] || {}),
-        remaining,
-        vehicleLabel: requirement?.vehicleType || requirementId,
-      };
-    }).filter((row) => row.requestedQuantity > 0);
+    const activeStatuses = [
+      "pending traffic",
+      "pending management",
+      "approved",
+    ];
+    const pendingBatch = requirements
+      .map((requirement) => {
+        const requirementId = requirement?.requirementId;
+        const relatedRequests = safeArray(
+          workingOrder?.projectVehicleAllocationRequests,
+        ).filter(
+          (item) =>
+            item?.requirementId === requirementId &&
+            activeStatuses.includes(
+              String(item?.status || "")
+                .trim()
+                .toLowerCase(),
+            ),
+        );
+        const alreadyRequested = relatedRequests.reduce(
+          (sum, item) => sum + (Number(item?.requestedQuantity) || 0),
+          0,
+        );
+        const remaining = Math.max(
+          0,
+          (Number(requirement?.quantity) || 0) - alreadyRequested,
+        );
+        const row = projectAllocationRows[requirementId] || {};
+        const requestedQuantity = Number(row.requestedQuantity ?? 0);
+        return {
+          requirementId,
+          requestedQuantity,
+          vehicles: Array.from(
+            {
+              length: Math.max(
+                0,
+                Math.min(remaining, Math.floor(requestedQuantity) || 0),
+              ),
+            },
+            (_, index) => row.vehicles?.[index] || {},
+          ),
+          remaining,
+          vehicleLabel: requirement?.vehicleType || requirementId,
+        };
+      })
+      .filter((row) => row.requestedQuantity > 0);
 
     if (!pendingBatch.length) {
-      setProjectAllocationError("Enter a request quantity for at least one vehicle requirement.");
+      setProjectAllocationError(
+        "Enter a request quantity for at least one vehicle requirement.",
+      );
       return;
     }
-    const invalidRow = pendingBatch.find((row) =>
-      !row.requirementId || !Number.isInteger(row.requestedQuantity) || row.requestedQuantity < 1 ||
-      row.requestedQuantity > row.remaining || row.vehicles.some(v => !v.origin?.trim() || !v.destination?.trim() || !v.placementDate),
+    const invalidRow = pendingBatch.find(
+      (row) =>
+        !row.requirementId ||
+        !Number.isInteger(row.requestedQuantity) ||
+        row.requestedQuantity < 1 ||
+        row.requestedQuantity > row.remaining ||
+        row.vehicles.some(
+          (v) =>
+            !v.origin?.trim() || !v.destination?.trim() || !v.placementDate,
+        ),
     );
     if (invalidRow) {
-      setProjectAllocationError(`${invalidRow.vehicleLabel}: enter a valid quantity (up to ${invalidRow.remaining}) and complete origin, destination and placement date for every vehicle.`);
+      setProjectAllocationError(
+        `${invalidRow.vehicleLabel}: enter a valid quantity (up to ${invalidRow.remaining}) and complete origin, destination and placement date for every vehicle.`,
+      );
       return;
     }
 
@@ -2446,35 +3216,65 @@ const Lifecyclemodal = ({
       });
     };
     const refreshSubmittedOrder = async () => {
-      const response = await lifecycleApiFetch(`${TRIP_API_URL}/${workingOrder._id}`, {
-        method: "GET", cache: "no-store", headers: { Accept: "application/json" },
-      });
+      const response = await lifecycleApiFetch(
+        `${TRIP_API_URL}/${workingOrder._id}`,
+        {
+          method: "GET",
+          cache: "no-store",
+          headers: { Accept: "application/json" },
+        },
+      );
       const payload = await response.json().catch(() => ({}));
-      const fresh = payload?.data?.trip || payload?.data?.order || payload?.data || payload?.trip || payload?.order || payload;
-      if (!response.ok || !fresh?._id) throw new Error("Unable to refresh the saved order.");
+      const fresh =
+        payload?.data?.trip ||
+        payload?.data?.order ||
+        payload?.data ||
+        payload?.trip ||
+        payload?.order ||
+        payload;
+      if (!response.ok || !fresh?._id)
+        throw new Error("Unable to refresh the saved order.");
       latestOrder = fresh;
       setLocalOrder(fresh);
     };
     try {
       setProjectAllocationSaving(true);
       setProjectAllocationError("");
-      const batchId = globalThis.crypto?.randomUUID?.() || `PB-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      const batchId =
+        globalThis.crypto?.randomUUID?.() ||
+        `PB-${Date.now()}-${Math.random().toString(36).slice(2)}`;
       for (const row of pendingBatch) {
-        const response = await lifecycleApiFetch(`${TRIP_API_URL}/${workingOrder._id}/project-vehicle-allocation-requests`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Accept: "application/json" },
-          body: JSON.stringify({
-            batchId,
-            requirementId: row.requirementId,
-            requestedQuantity: row.requestedQuantity,
-            vehicles: row.vehicles,
-            customerRequiredDate: row.vehicles[0].placementDate,
-            requestedBy: sessionStorage.getItem("kamUsername") || "Key Account",
-          }),
-        });
+        const response = await lifecycleApiFetch(
+          `${TRIP_API_URL}/${workingOrder._id}/project-vehicle-allocation-requests`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+            body: JSON.stringify({
+              batchId,
+              requirementId: row.requirementId,
+              requestedQuantity: row.requestedQuantity,
+              vehicles: row.vehicles,
+              customerRequiredDate: row.vehicles[0].placementDate,
+              requestedBy:
+                sessionStorage.getItem("kamUsername") || "Key Account",
+            }),
+          },
+        );
         const payload = await response.json().catch(() => ({}));
-        if (!response.ok) throw new Error(payload.message || `Unable to submit ${row.vehicleLabel}.`);
-        const updated = payload?.data?.trip || payload?.data?.order || payload?.data || payload?.trip || payload?.order || payload;
+        if (!response.ok)
+          throw new Error(
+            payload.message || `Unable to submit ${row.vehicleLabel}.`,
+          );
+        const updated =
+          payload?.data?.trip ||
+          payload?.data?.order ||
+          payload?.data ||
+          payload?.trip ||
+          payload?.order ||
+          payload;
         submittedCount += 1;
         clearSubmittedRow(row.requirementId);
         if (updated?._id) {
@@ -2490,15 +3290,23 @@ const Lifecyclemodal = ({
         onOrderUpdated?.(latestOrder);
       }
       setProjectAllocationRows({});
-      showToast(`${submittedCount} vehicle requirement${submittedCount === 1 ? "" : "s"} submitted to Traffic successfully.`, "success");
+      showToast(
+        `${submittedCount} vehicle requirement${submittedCount === 1 ? "" : "s"} submitted to Traffic successfully.`,
+        "success",
+      );
     } catch (error) {
       if (submittedCount > 0) {
-        try { await refreshSubmittedOrder(); } catch (refreshError) { console.error(refreshError); }
+        try {
+          await refreshSubmittedOrder();
+        } catch (refreshError) {
+          console.error(refreshError);
+        }
         onOrderUpdated?.(latestOrder);
       }
-      const message = submittedCount > 0
-        ? `${submittedCount} requirement(s) saved. ${error.message || "Unable to finish submission."} Check remaining quantities before retrying.`
-        : error.message || "Unable to submit vehicle allocation requests.";
+      const message =
+        submittedCount > 0
+          ? `${submittedCount} requirement(s) saved. ${error.message || "Unable to finish submission."} Check remaining quantities before retrying.`
+          : error.message || "Unable to submit vehicle allocation requests.";
       setProjectAllocationError(message);
       showToast(message, "error");
     } finally {
@@ -2605,7 +3413,9 @@ const Lifecyclemodal = ({
       if (typeof onOrderUpdated === "function") {
         onOrderUpdated(updatedOrder);
       }
-      setActiveStepIndex(isIntercartingMovement(order) ? 4 : isProjectMovement(order) ? 6 : 5);
+      setActiveStepIndex(
+        isIntercartingMovement(order) ? 4 : isProjectMovement(order) ? 6 : 5,
+      );
     } catch (error) {
       const message = error.message || "Unable to place the order.";
       setPlaceOrderError(message);
@@ -2622,14 +3432,16 @@ const Lifecyclemodal = ({
       return;
     }
     if (isPerVehicleAmountOrder && !lineAmountsReady) {
-      const message = "Wait for Approval Management to enter and send an amount for every vehicle before entering rates or requesting approval.";
+      const message =
+        "Wait for Approval Management to enter and send an amount for every vehicle before entering rates or requesting approval.";
       setFinalizationError(message);
       showToast(message, "warning");
       return;
     }
     if (isPerVehicleAmountOrder) {
       if (!lineVehicleAmountsComplete || lineVehicleFinalTotal <= 0) {
-        const message = "Enter a valid amount for every vehicle. Final Rate is calculated automatically.";
+        const message =
+          "Enter a valid amount for every vehicle. Final Rate is calculated automatically.";
         setFinalizationError(message);
         showToast(message, "warning");
         return;
@@ -2637,7 +3449,9 @@ const Lifecyclemodal = ({
     }
     if (requestApproval) {
       const quotedRate = String(
-        getManagementQuotedRate(workingOrder) ?? finalizationForm.quotedRate ?? ""
+        getManagementQuotedRate(workingOrder) ??
+          finalizationForm.quotedRate ??
+          "",
       ).trim();
       const finalRate = String(effectiveFinalRate ?? "").trim();
       const commercialTerms = String(
@@ -2671,17 +3485,26 @@ const Lifecyclemodal = ({
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            quotedRate: getManagementQuotedRate(workingOrder) ?? finalizationForm.quotedRate,
+            quotedRate:
+              getManagementQuotedRate(workingOrder) ??
+              finalizationForm.quotedRate,
             finalRate: effectiveFinalRate,
             commercialTerms: finalizationForm.commercialTerms,
             deliveryCommitments: finalizationForm.deliveryCommitments,
             clientConfirmationNotes: finalizationForm.clientConfirmationNotes,
-            ...(isPerVehicleAmountOrder && getManagementQuotedRate(workingOrder) !== null ? {
-              vehicleFinalAmounts: requirements.map((vehicle, index) => ({
-                requirementId: vehicle.requirementId,
-                amount: Number(lineFinalVehicleAmounts[vehicle.requirementId || String(index)]),
-              })),
-            } : {}),
+            ...(isPerVehicleAmountOrder &&
+            getManagementQuotedRate(workingOrder) !== null
+              ? {
+                  vehicleFinalAmounts: requirements.map((vehicle, index) => ({
+                    requirementId: vehicle.requirementId,
+                    amount: Number(
+                      lineFinalVehicleAmounts[
+                        vehicle.requirementId || String(index)
+                      ],
+                    ),
+                  })),
+                }
+              : {}),
             updatedBy: sessionStorage.getItem("kamUsername") || "Key Account",
             requestApproval,
           }),
@@ -2745,9 +3568,15 @@ const Lifecyclemodal = ({
         .toLowerCase() === "tracking" ||
       currentLifecycleIndex >= (isProjectMovement(order) ? 6 : 5);
     const canOpenOptionalOrOrderPlaced =
-      orderApproved && (index === 2 || index === 3 || index === 4 || (isProjectMovement(order) && index === 5));
+      orderApproved &&
+      (index === 2 ||
+        index === 3 ||
+        index === 4 ||
+        (isProjectMovement(order) && index === 5));
     const canOpenTracking =
-      orderPlacedCompleted && (index === (isProjectMovement(order) ? 6 : 5) || index === (isProjectMovement(order) ? 7 : 6));
+      orderPlacedCompleted &&
+      (index === (isProjectMovement(order) ? 6 : 5) ||
+        index === (isProjectMovement(order) ? 7 : 6));
     if (
       index <= currentLifecycleIndex ||
       canOpenOptionalOrOrderPlaced ||
@@ -2757,9 +3586,10 @@ const Lifecyclemodal = ({
     }
   };
   /* Derived order collections used by lifecycle logic */
-  const requirements = editOpen && !editRequirementsLocked
-    ? safeArray(editForm.vehicleRequirements)
-    : safeArray(order?.vehicleRequirements);
+  const requirements =
+    editOpen && !editRequirementsLocked
+      ? safeArray(editForm.vehicleRequirements)
+      : safeArray(order?.vehicleRequirements);
   const craneRequestWeight =
     order?.weight ??
     requirements.find((requirement) => Number(requirement?.weight) > 0)?.weight;
@@ -3021,12 +3851,17 @@ const Lifecyclemodal = ({
     );
     return Number.isFinite(quantity) && quantity > 0 ? quantity : 1;
   };
-  const approvedQuotationVehicleCount = isProjectMovement(order) ? getLifecycleProjectConfirmed(order) : approvedConfirmations.reduce(
-    (total, confirmation) => total + getApprovedQuotationQuantity(confirmation),
-    0,
-  );
+  const approvedQuotationVehicleCount = isProjectMovement(order)
+    ? getLifecycleProjectConfirmed(order)
+    : approvedConfirmations.reduce(
+        (total, confirmation) =>
+          total + getApprovedQuotationQuantity(confirmation),
+        0,
+      );
   const quotationPendingVehicleCount = Math.max(
-    (isProjectMovement(order) ? getLifecycleProjectRequired(order) : totalRequiredVehicles) - approvedQuotationVehicleCount,
+    (isProjectMovement(order)
+      ? getLifecycleProjectRequired(order)
+      : totalRequiredVehicles) - approvedQuotationVehicleCount,
     0,
   );
   /*
@@ -3099,8 +3934,12 @@ const Lifecyclemodal = ({
      do not block Vendor Finalization.
   ========================================================= */
   const vehicleApprovalCompleted = isProjectMovement(order)
-    ? getLifecycleProjectRequired(order) > 0 && getLifecycleProjectConfirmed(order) >= getLifecycleProjectRequired(order) && !hasPendingTransportReplacement(order)
-    : totalRequiredVehicles > 0 && approvedQuotationVehicleCount >= totalRequiredVehicles;
+    ? getLifecycleProjectRequired(order) > 0 &&
+      getLifecycleProjectConfirmed(order) >=
+        getLifecycleProjectRequired(order) &&
+      !hasPendingTransportReplacement(order)
+    : totalRequiredVehicles > 0 &&
+      approvedQuotationVehicleCount >= totalRequiredVehicles;
   const displayCurrentStage = (() => {
     const shift = isProjectMovement(order) ? 1 : 0;
     if (currentLifecycleIndex >= 7 + shift) return "Trip Complete";
@@ -3115,14 +3954,14 @@ const Lifecyclemodal = ({
   })();
   return (
     <div
-      className="kam-workflow-modal-overlay"
+      className={pageMode ? "kam-lifecycle-page" : "kam-workflow-modal-overlay"}
       role="presentation"
-      onMouseDown={requestLifecycleClose}
+      onMouseDown={pageMode ? undefined : requestLifecycleClose}
     >
       <section
-        className={`kam-workflow-modal ${isCompletedTrip(workingOrder || order) ? "kam-trip-readonly" : ""}`}
-        role="dialog"
-        aria-modal="true"
+        className={`kam-workflow-modal ${pageMode ? "kam-workflow-page" : ""} ${completedDisplayedOrder ? "kam-trip-readonly" : ""}`}
+        role={pageMode ? "region" : "dialog"}
+        aria-modal={pageMode ? undefined : true}
         aria-label={`Order lifecycle ${order.tripId || ""}`}
         onMouseDown={(event) => event.stopPropagation()}
       >
@@ -3137,7 +3976,7 @@ const Lifecyclemodal = ({
               onClick={requestLifecycleClose}
               aria-label="Back"
             >
-              ←
+              {pageMode ? "← Back" : "←"}
             </button>
             <div className="kam-modal-heading">
               <span>ORDER LIFECYCLE</span>
@@ -3149,14 +3988,16 @@ const Lifecyclemodal = ({
               <span>{order.movementType || "—"}</span>
               <strong>{order.tripId || "—"}</strong>
             </div>
-            <button
-              type="button"
-              className="kam-workflow-close"
-              onClick={requestLifecycleClose}
-              aria-label="Close"
-            >
-              ×
-            </button>
+            {!pageMode && (
+              <button
+                type="button"
+                className="kam-workflow-close"
+                onClick={requestLifecycleClose}
+                aria-label="Close"
+              >
+                ×
+              </button>
+            )}
           </div>
         </div>
         {/* =================================================
@@ -3176,7 +4017,8 @@ const Lifecyclemodal = ({
               const optionalPending =
                 (step.key === "po-document" ||
                   step.key === "vendor-finalization" ||
-                  (step.key === "vehicle-allocation-request" && isProjectMovement(order))) &&
+                  (step.key === "vehicle-allocation-request" &&
+                    isProjectMovement(order))) &&
                 statusClass === "pending" &&
                 String(order?.orderApproval?.status || "")
                   .trim()
@@ -3216,7 +4058,10 @@ const Lifecyclemodal = ({
                         )
                           .trim()
                           .toLowerCase() === "completed";
-                      if (index === (isProjectMovement(order) ? 8 : 7) && !tripCompleteValidated) {
+                      if (
+                        index === (isProjectMovement(order) ? 8 : 7) &&
+                        !tripCompleteValidated
+                      ) {
                         return true;
                       }
                       const orderApproved =
@@ -3230,12 +4075,18 @@ const Lifecyclemodal = ({
                         String(order?.stage || "")
                           .trim()
                           .toLowerCase() === "tracking" ||
-                        currentLifecycleIndex >= (isProjectMovement(order) ? 6 : 5);
+                        currentLifecycleIndex >=
+                          (isProjectMovement(order) ? 6 : 5);
                       const canOpenOptionalOrOrderPlaced =
                         orderApproved &&
-                        (index === 2 || index === 3 || index === 4 || (isProjectMovement(order) && index === 5));
+                        (index === 2 ||
+                          index === 3 ||
+                          index === 4 ||
+                          (isProjectMovement(order) && index === 5));
                       const canOpenTracking =
-                        orderPlacedCompleted && (index === (isProjectMovement(order) ? 6 : 5) || index === (isProjectMovement(order) ? 7 : 6));
+                        orderPlacedCompleted &&
+                        (index === (isProjectMovement(order) ? 6 : 5) ||
+                          index === (isProjectMovement(order) ? 7 : 6));
                       return !(
                         index <= currentLifecycleIndex ||
                         canOpenOptionalOrOrderPlaced ||
@@ -3326,7 +4177,9 @@ const Lifecyclemodal = ({
                     editing={editOpen}
                     editForm={editForm}
                     editRequirementsLocked={editRequirementsLocked}
-                    onEdit={(key, value) => setEditForm((previous) => ({ ...previous, [key]: value }))}
+                    onEdit={(key, value) =>
+                      setEditForm((previous) => ({ ...previous, [key]: value }))
+                    }
                   />
                 ) : isLineOrder ? (
                   <CommonStepDetails
@@ -3334,187 +4187,193 @@ const Lifecyclemodal = ({
                     totalRequiredVehicles={totalRequiredVehicles}
                     editing={editOpen}
                     editForm={editForm}
-                    onEdit={(key, value) => setEditForm((previous) => ({ ...previous, [key]: value }))}
+                    onEdit={(key, value) =>
+                      setEditForm((previous) => ({ ...previous, [key]: value }))
+                    }
                   />
                 ) : (
-                <div className="kam-client-trip-grid">
-                  <ReadOnlyField
-                    label="Customer"
-                    editing={editOpen}
-                    fieldKey="customer"
-                    inputValue={editForm.customer}
-                    onEdit={(key, value) =>
-                      setEditForm((prev) => ({ ...prev, [key]: value }))
-                    }
-                    value={order.customer}
-                  />
-                  <ReadOnlyField
-                    label="Contact Person"
-                    editing={editOpen}
-                    fieldKey="contactPerson"
-                    inputValue={editForm.contactPerson}
-                    onEdit={(key, value) =>
-                      setEditForm((prev) => ({ ...prev, [key]: value }))
-                    }
-                    value={order.contactPerson}
-                  />
-                  <ReadOnlyField
-                    label="Contact Number"
-                    editing={editOpen}
-                    fieldKey="contactNumber"
-                    inputValue={editForm.contactNumber}
-                    onEdit={(key, value) =>
-                      setEditForm((prev) => ({ ...prev, [key]: value }))
-                    }
-                    value={order.contactNumber}
-                  />
-                  <ReadOnlyField
-                    label="Email"
-                    editing={editOpen}
-                    fieldKey="email"
-                    inputValue={editForm.email}
-                    onEdit={(key, value) =>
-                      setEditForm((prev) => ({ ...prev, [key]: value }))
-                    }
-                    value={order.email}
-                  />
-                  {!isIntercartingEdit && !isProjectOrder && (
+                  <div className="kam-client-trip-grid">
                     <ReadOnlyField
-                      label="Material Type"
+                      label="Customer"
                       editing={editOpen}
-                      fieldKey="materialType"
-                      inputValue={editForm.materialType}
+                      fieldKey="customer"
+                      inputValue={editForm.customer}
                       onEdit={(key, value) =>
                         setEditForm((prev) => ({ ...prev, [key]: value }))
                       }
-                      value={order.materialType}
+                      value={order.customer}
                     />
-                  )}
-                  {!isCraneOrder && (
                     <ReadOnlyField
-                      label="Total Vehicles"
-                      editing={false}
-                      fieldKey="totalVehicles"
-                      inputValue={editForm.totalVehicles}
-                      onEdit={(key, value) =>
-                        setEditForm((prev) => ({ ...prev, [key]: value }))
-                      }
-                      value={editOpen && !editRequirementsLocked
-                        ? editForm.totalVehicles
-                        : order.totalVehicles}
-                      suffix={
-                        order.totalVehicles !== "" &&
-                        order.totalVehicles !== null &&
-                        order.totalVehicles !== undefined
-                          ? " NOS"
-                          : ""
-                      }
-                    />
-                  )}
-                  {isCraneOrder && (
-                    <ReadOnlyField
-                      label="Weight in Tons"
+                      label="Contact Person"
                       editing={editOpen}
-                      fieldKey="weight"
-                      inputValue={editForm.weight}
+                      fieldKey="contactPerson"
+                      inputValue={editForm.contactPerson}
                       onEdit={(key, value) =>
                         setEditForm((prev) => ({ ...prev, [key]: value }))
                       }
-                      value={craneRequestWeight}
-                      suffix={craneRequestWeight != null ? " TON" : ""}
+                      value={order.contactPerson}
                     />
-                  )}
-                  {!isIntercartingEdit && !isProjectOrder && (
                     <ReadOnlyField
-                      label="Origin"
+                      label="Contact Number"
                       editing={editOpen}
-                      fieldKey="origin"
-                      inputValue={editForm.origin}
+                      fieldKey="contactNumber"
+                      inputValue={editForm.contactNumber}
                       onEdit={(key, value) =>
                         setEditForm((prev) => ({ ...prev, [key]: value }))
                       }
-                      value={order.origin}
+                      value={order.contactNumber}
                     />
-                  )}
-                  {isCraneOrder && (
                     <ReadOnlyField
-                      label="Origin Pincode"
-                      value={order.originPincode || "—"}
-                    />
-                  )}
-                  {!isIntercartingEdit && !isProjectOrder && (
-                    <ReadOnlyField
-                      label="Destination"
+                      label="Email"
                       editing={editOpen}
-                      fieldKey="destination"
-                      inputValue={editForm.destination}
+                      fieldKey="email"
+                      inputValue={editForm.email}
                       onEdit={(key, value) =>
                         setEditForm((prev) => ({ ...prev, [key]: value }))
                       }
-                      value={order.destination}
+                      value={order.email}
                     />
-                  )}
-                  {isCraneOrder && (
+                    {!isIntercartingEdit && !isProjectOrder && (
+                      <ReadOnlyField
+                        label="Material Type"
+                        editing={editOpen}
+                        fieldKey="materialType"
+                        inputValue={editForm.materialType}
+                        onEdit={(key, value) =>
+                          setEditForm((prev) => ({ ...prev, [key]: value }))
+                        }
+                        value={order.materialType}
+                      />
+                    )}
+                    {!isCraneOrder && (
+                      <ReadOnlyField
+                        label="Total Vehicles"
+                        editing={false}
+                        fieldKey="totalVehicles"
+                        inputValue={editForm.totalVehicles}
+                        onEdit={(key, value) =>
+                          setEditForm((prev) => ({ ...prev, [key]: value }))
+                        }
+                        value={
+                          editOpen && !editRequirementsLocked
+                            ? editForm.totalVehicles
+                            : order.totalVehicles
+                        }
+                        suffix={
+                          order.totalVehicles !== "" &&
+                          order.totalVehicles !== null &&
+                          order.totalVehicles !== undefined
+                            ? " NOS"
+                            : ""
+                        }
+                      />
+                    )}
+                    {isCraneOrder && (
+                      <ReadOnlyField
+                        label="Weight in Tons"
+                        editing={editOpen}
+                        fieldKey="weight"
+                        inputValue={editForm.weight}
+                        onEdit={(key, value) =>
+                          setEditForm((prev) => ({ ...prev, [key]: value }))
+                        }
+                        value={craneRequestWeight}
+                        suffix={craneRequestWeight != null ? " TON" : ""}
+                      />
+                    )}
+                    {!isIntercartingEdit && !isProjectOrder && (
+                      <ReadOnlyField
+                        label="Origin"
+                        editing={editOpen}
+                        fieldKey="origin"
+                        inputValue={editForm.origin}
+                        onEdit={(key, value) =>
+                          setEditForm((prev) => ({ ...prev, [key]: value }))
+                        }
+                        value={order.origin}
+                      />
+                    )}
+                    {isCraneOrder && (
+                      <ReadOnlyField
+                        label="Origin Pincode"
+                        value={order.originPincode || "—"}
+                      />
+                    )}
+                    {!isIntercartingEdit && !isProjectOrder && (
+                      <ReadOnlyField
+                        label="Destination"
+                        editing={editOpen}
+                        fieldKey="destination"
+                        inputValue={editForm.destination}
+                        onEdit={(key, value) =>
+                          setEditForm((prev) => ({ ...prev, [key]: value }))
+                        }
+                        value={order.destination}
+                      />
+                    )}
+                    {isCraneOrder && (
+                      <ReadOnlyField
+                        label="Destination Pincode"
+                        value={order.destinationPincode || "—"}
+                      />
+                    )}
+                    {!isIntercartingEdit && !isProjectOrder && (
+                      <ReadOnlyField
+                        label="Distance"
+                        editing={editOpen}
+                        fieldKey="distance"
+                        inputValue={editForm.distance}
+                        onEdit={(key, value) =>
+                          setEditForm((prev) => ({ ...prev, [key]: value }))
+                        }
+                        value={order.distance}
+                        suffix={
+                          order.distance !== "" &&
+                          order.distance !== null &&
+                          order.distance !== undefined
+                            ? " KM"
+                            : ""
+                        }
+                      />
+                    )}
                     <ReadOnlyField
-                      label="Destination Pincode"
-                      value={order.destinationPincode || "—"}
-                    />
-                  )}
-                  {!isIntercartingEdit && !isProjectOrder && (
-                    <ReadOnlyField
-                      label="Distance"
+                      label="Enquiry Date"
                       editing={editOpen}
-                      fieldKey="distance"
-                      inputValue={editForm.distance}
+                      fieldKey="enquiryDate"
+                      inputValue={editForm.enquiryDate}
                       onEdit={(key, value) =>
                         setEditForm((prev) => ({ ...prev, [key]: value }))
                       }
-                      value={order.distance}
-                      suffix={
-                        order.distance !== "" &&
-                        order.distance !== null &&
-                        order.distance !== undefined
-                          ? " KM"
-                          : ""
-                      }
+                      value={formatDate(order.enquiryDate)}
                     />
-                  )}
-                  <ReadOnlyField
-                    label="Enquiry Date"
-                    editing={editOpen}
-                    fieldKey="enquiryDate"
-                    inputValue={editForm.enquiryDate}
-                    onEdit={(key, value) =>
-                      setEditForm((prev) => ({ ...prev, [key]: value }))
-                    }
-                    value={formatDate(order.enquiryDate)}
-                  />
-                  {!isProjectOrder && <ReadOnlyField
-                    label="Placement Date"
-                    editing={editOpen}
-                    fieldKey="placementDate"
-                    inputValue={editForm.placementDate}
-                    onEdit={(key, value) =>
-                      setEditForm((prev) => ({ ...prev, [key]: value }))
-                    }
-                    value={formatDate(order.placementDate)}
-                  />}
-                  {!isCraneOrder && order.siteLocation && (
-                    <ReadOnlyField
-                      label="Site Location"
-                      value={order.siteLocation}
-                    />
-                  )}
-                  {!isCraneOrder && order.period && (
-                    <ReadOnlyField label="Period" value={order.period} />
-                  )}
-                  {!isCraneOrder && order.dieselScope && (
-                    <ReadOnlyField
-                      label="Diesel Scope"
-                      value={order.dieselScope}
-                    />
-                  )}
-                </div>
+                    {!isProjectOrder && (
+                      <ReadOnlyField
+                        label="Placement Date"
+                        editing={editOpen}
+                        fieldKey="placementDate"
+                        inputValue={editForm.placementDate}
+                        onEdit={(key, value) =>
+                          setEditForm((prev) => ({ ...prev, [key]: value }))
+                        }
+                        value={formatDate(order.placementDate)}
+                      />
+                    )}
+                    {!isCraneOrder && order.siteLocation && (
+                      <ReadOnlyField
+                        label="Site Location"
+                        value={order.siteLocation}
+                      />
+                    )}
+                    {!isCraneOrder && order.period && (
+                      <ReadOnlyField label="Period" value={order.period} />
+                    )}
+                    {!isCraneOrder && order.dieselScope && (
+                      <ReadOnlyField
+                        label="Diesel Scope"
+                        value={order.dieselScope}
+                      />
+                    )}
+                  </div>
                 )}
                 {(order.remark || editOpen) && (
                   <div className="kam-professional-remark">
@@ -3575,19 +4434,32 @@ const Lifecyclemodal = ({
                         <span>APPROVAL MANAGEMENT &amp; KEY ACCOUNT</span>
                         <strong>Quoted Amounts</strong>
                       </div>
-                      <b className={order.enquiryApproval?.status === "Sent" ? "sent" : "pending"}>
-                        {order.enquiryApproval?.status === "Sent" ? "Received" : "Awaiting Amount"}
+                      <b
+                        className={
+                          order.enquiryApproval?.status === "Sent"
+                            ? "sent"
+                            : "pending"
+                        }
+                      >
+                        {order.enquiryApproval?.status === "Sent"
+                          ? "Received"
+                          : "Awaiting Amount"}
                       </b>
                     </div>
                     {order.enquiryApproval?.status === "Sent" ? (
                       <>
                         <div className="kam-crane-enquiry-amount-list">
                           {requirements.map((requirement, index) => (
-                            <div className="kam-crane-enquiry-amount-row" key={requirement.requirementId || index}>
+                            <div
+                              className="kam-crane-enquiry-amount-row"
+                              key={requirement.requirementId || index}
+                            >
                               <span>Crane requirement {index + 1}</span>
                               <div>
                                 <small>Quoted</small>
-                                <strong>{formatAmount(requirement.approvalAmount)}</strong>
+                                <strong>
+                                  {formatAmount(requirement.approvalAmount)}
+                                </strong>
                               </div>
                             </div>
                           ))}
@@ -3596,13 +4468,22 @@ const Lifecyclemodal = ({
                           <div className="kam-crane-enquiry-amount-total">
                             <span>Total amounts</span>
                             <div>
-                              <span>Quoted <strong>{formatAmount(order.enquiryApproval.totalAmount)}</strong></span>
+                              <span>
+                                Quoted{" "}
+                                <strong>
+                                  {formatAmount(
+                                    order.enquiryApproval.totalAmount,
+                                  )}
+                                </strong>
+                              </span>
                             </div>
                           </div>
                         )}
                       </>
                     ) : (
-                      <p>Approval Management will enter and send the quote here.</p>
+                      <p>
+                        Approval Management will enter and send the quote here.
+                      </p>
                     )}
                   </div>
                 )}
@@ -3620,289 +4501,563 @@ const Lifecyclemodal = ({
                   title="Vehicle Requirements"
                   description="Vehicle requirements entered during New Trip Creation."
                   count={requirements.length}
-                  action={editOpen && !editRequirementsLocked ? (
-                    <button
-                      type="button"
-                      onClick={addEnquiryVehicle}
-                      style={{ border: "1px solid #b9dedb", borderRadius: 7, background: "#eefaf8", color: "#087e77", padding: "7px 11px", fontSize: 11, fontWeight: 750, whiteSpace: "nowrap", cursor: "pointer" }}
-                    >
-                      + Add Vehicle
-                    </button>
-                  ) : null}
+                  action={
+                    editOpen && !editRequirementsLocked ? (
+                      <button
+                        type="button"
+                        onClick={addEnquiryVehicle}
+                        style={{
+                          border: "1px solid #b9dedb",
+                          borderRadius: 7,
+                          background: "#eefaf8",
+                          color: "#087e77",
+                          padding: "7px 11px",
+                          fontSize: 11,
+                          fontWeight: 750,
+                          whiteSpace: "nowrap",
+                          cursor: "pointer",
+                        }}
+                      >
+                        + Add Vehicle
+                      </button>
+                    ) : null
+                  }
                 />
                 {requirements.length > 0 ? (
-                  isLineOrder ? (editOpen && !editRequirementsLocked ? (
-                    <div className="kam-line-create-style-wrap">
-                      <table className="kam-line-create-style-table">
-                        <thead>
-                          <tr>
-                            <th>No.</th>
-                            <th>Vehicle Type</th>
-                            <th>Configuration Model</th>
-                            <th>Material Type</th>
-                            <th>Weight</th>
-                            <th>Origin</th>
-                            <th>Destination</th>
-                            <th>Placement Date</th>
-                            <th>Dimensions (L × H × W)</th>
-                            <th aria-label="Remove vehicle" />
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {requirements.map((requirement, index) => (
-                            <tr key={requirement.requirementId || index}>
-                              <td className="kam-line-create-row-index">{index + 1}</td>
-                              {[
-                                ["vehicleType", "Enter vehicle type"],
-                                ["configuration", "Enter configuration"],
-                                ["materialType", "Material"],
-                                ["weight", "0.00"],
-                                ["origin", "Origin"],
-                                ["destination", "Destination"],
-                              ].map(([key, placeholder]) => (
-                                <td key={key}>
-                                  <div className="kam-line-create-input-wrap">
-                                    <input
-                                      value={editForm.vehicleRequirements?.[index]?.[key] ?? ""}
-                                      placeholder={placeholder}
-                                      type={key === "weight" ? "number" : "text"}
-                                      min={key === "weight" ? "0" : undefined}
-                                      onChange={(event) => changeEditArray("vehicleRequirements", index, null, key, event.target.value)}
-                                    />
-                                    {key === "weight" && <span className="kam-line-create-unit">TON</span>}
+                  isLineOrder ? (
+                    editOpen && !editRequirementsLocked ? (
+                      <div className="kam-line-create-style-wrap">
+                        <table className="kam-line-create-style-table">
+                          <thead>
+                            <tr>
+                              <th>No.</th>
+                              <th>Vehicle Type</th>
+                              <th>Configuration Model</th>
+                              <th>Material Type</th>
+                              <th>Weight</th>
+                              <th>Origin</th>
+                              <th>Destination</th>
+                              <th>Placement Date</th>
+                              <th>Dimensions (L × H × W)</th>
+                              <th aria-label="Remove vehicle" />
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {requirements.map((requirement, index) => (
+                              <tr key={requirement.requirementId || index}>
+                                <td className="kam-line-create-row-index">
+                                  {index + 1}
+                                </td>
+                                {[
+                                  ["vehicleType", "Enter vehicle type"],
+                                  ["configuration", "Enter configuration"],
+                                  ["materialType", "Material"],
+                                  ["weight", "0.00"],
+                                  ["origin", "Origin"],
+                                  ["destination", "Destination"],
+                                ].map(([key, placeholder]) => (
+                                  <td key={key}>
+                                    <div className="kam-line-create-input-wrap">
+                                      <input
+                                        value={
+                                          editForm.vehicleRequirements?.[
+                                            index
+                                          ]?.[key] ?? ""
+                                        }
+                                        placeholder={placeholder}
+                                        type={
+                                          key === "weight" ? "number" : "text"
+                                        }
+                                        min={key === "weight" ? "0" : undefined}
+                                        onChange={(event) =>
+                                          changeEditArray(
+                                            "vehicleRequirements",
+                                            index,
+                                            null,
+                                            key,
+                                            event.target.value,
+                                          )
+                                        }
+                                      />
+                                      {key === "weight" && (
+                                        <span className="kam-line-create-unit">
+                                          TON
+                                        </span>
+                                      )}
+                                    </div>
+                                  </td>
+                                ))}
+                                <td>
+                                  <input
+                                    className="kam-line-create-date"
+                                    type="date"
+                                    value={
+                                      editForm.vehicleRequirements?.[index]
+                                        ?.placementDate || ""
+                                    }
+                                    onChange={(event) =>
+                                      changeEditArray(
+                                        "vehicleRequirements",
+                                        index,
+                                        null,
+                                        "placementDate",
+                                        event.target.value,
+                                      )
+                                    }
+                                  />
+                                </td>
+                                <td>
+                                  <div className="kam-line-create-dimensions">
+                                    {["length", "height", "width"].map(
+                                      (key, i) => (
+                                        <React.Fragment key={key}>
+                                          {i > 0 && <span>×</span>}
+                                          <input
+                                            type="number"
+                                            min="0"
+                                            placeholder={key[0].toUpperCase()}
+                                            value={
+                                              editForm.vehicleRequirements?.[
+                                                index
+                                              ]?.dimensions?.[key] ?? ""
+                                            }
+                                            onChange={(event) =>
+                                              changeEditArray(
+                                                "vehicleRequirements",
+                                                index,
+                                                "dimensions",
+                                                key,
+                                                event.target.value,
+                                              )
+                                            }
+                                          />
+                                        </React.Fragment>
+                                      ),
+                                    )}
+                                    <span className="kam-line-create-unit">
+                                      FT
+                                    </span>
                                   </div>
                                 </td>
+                                <td className="kam-line-create-remove">
+                                  <button
+                                    type="button"
+                                    aria-label={`Remove vehicle ${index + 1}`}
+                                    disabled={requirements.length <= 1}
+                                    onClick={() => removeEnquiryVehicle(index)}
+                                  >
+                                    ×
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                        <div className="kam-line-create-total">
+                          Total Vehicles:{" "}
+                          <strong>{requirements.length} NOS</strong>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="kam-client-vehicle-table-wrap kam-line-enquiry-table-wrap">
+                        <table className="kam-client-vehicle-table kam-line-enquiry-table">
+                          <thead>
+                            <tr>
+                              {[
+                                "#",
+                                "Requirement ID",
+                                "Vehicle Type",
+                                "Configuration",
+                                "Material",
+                                "Weight",
+                                "Origin",
+                                "Destination",
+                                "Placement Date",
+                                "L × H × W",
+                                "Approval Amount",
+                              ].map((label) => (
+                                <th key={label}>{label}</th>
                               ))}
-                              <td>
-                                <input className="kam-line-create-date" type="date"
-                                  value={editForm.vehicleRequirements?.[index]?.placementDate || ""}
-                                  onChange={(event) => changeEditArray("vehicleRequirements", index, null, "placementDate", event.target.value)} />
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {requirements.map((requirement, index) => (
+                              <tr key={requirement.requirementId || index}>
+                                <td>
+                                  <span className="kam-client-row-no">
+                                    {index + 1}
+                                  </span>
+                                </td>
+                                <td className="kam-line-requirement-id">
+                                  {requirement.requirementId || "—"}
+                                  {editOpen &&
+                                    !editRequirementsLocked &&
+                                    requirements.length > 1 && (
+                                      <button
+                                        type="button"
+                                        onClick={() =>
+                                          removeEnquiryVehicle(index)
+                                        }
+                                        style={{
+                                          display: "block",
+                                          marginTop: 6,
+                                          padding: 0,
+                                          border: 0,
+                                          background: "transparent",
+                                          color: "#b42332",
+                                          fontSize: 10,
+                                          fontWeight: 700,
+                                          cursor: "pointer",
+                                        }}
+                                      >
+                                        Remove
+                                      </button>
+                                    )}
+                                </td>
+                                <td>
+                                  {originalVehicleEdit(
+                                    index,
+                                    "vehicleType",
+                                    requirement.vehicleType || "—",
+                                  )}
+                                </td>
+                                <td>
+                                  {originalVehicleEdit(
+                                    index,
+                                    "configuration",
+                                    requirement.configuration || "—",
+                                  )}
+                                </td>
+                                <td>
+                                  {originalVehicleEdit(
+                                    index,
+                                    "materialType",
+                                    requirement.materialType ||
+                                      order.materialType ||
+                                      "—",
+                                  )}
+                                </td>
+                                <td>
+                                  {originalVehicleEdit(
+                                    index,
+                                    "weight",
+                                    formatNumber(requirement.weight, " TON"),
+                                  )}
+                                </td>
+                                <td>
+                                  {originalVehicleEdit(
+                                    index,
+                                    "origin",
+                                    requirement.origin || order.origin || "—",
+                                  )}
+                                </td>
+                                <td>
+                                  {originalVehicleEdit(
+                                    index,
+                                    "destination",
+                                    requirement.destination ||
+                                      order.destination ||
+                                      "—",
+                                  )}
+                                </td>
+                                <td>
+                                  {editOpen && !editRequirementsLocked ? (
+                                    <input
+                                      type="date"
+                                      className="kam-original-edit-input kam-original-vehicle-input"
+                                      style={{
+                                        display: "block",
+                                        width: "100%",
+                                        minWidth: 0,
+                                        boxSizing: "border-box",
+                                      }}
+                                      value={
+                                        editForm.vehicleRequirements?.[index]
+                                          ?.placementDate || ""
+                                      }
+                                      onChange={(e) =>
+                                        changeEditArray(
+                                          "vehicleRequirements",
+                                          index,
+                                          null,
+                                          "placementDate",
+                                          e.target.value,
+                                        )
+                                      }
+                                    />
+                                  ) : (
+                                    formatDate(
+                                      requirement.placementDate ||
+                                        order.placementDate,
+                                    )
+                                  )}
+                                </td>
+                                <td>
+                                  {editOpen && !editRequirementsLocked ? (
+                                    <div
+                                      className="kam-original-dimensions"
+                                      style={{
+                                        display: "grid",
+                                        gridTemplateColumns:
+                                          "repeat(3, minmax(0, 1fr))",
+                                        gap: 4,
+                                        width: "100%",
+                                        minWidth: 0,
+                                      }}
+                                    >
+                                      {["length", "height", "width"].map(
+                                        (key) => (
+                                          <label
+                                            key={key}
+                                            style={{ minWidth: 0, fontSize: 9 }}
+                                          >
+                                            {key[0].toUpperCase()}
+                                            {originalVehicleEdit(
+                                              index,
+                                              key,
+                                              "",
+                                              true,
+                                            )}
+                                          </label>
+                                        ),
+                                      )}
+                                    </div>
+                                  ) : (
+                                    formatDimensions(requirement.dimensions)
+                                  )}
+                                </td>
+                                <td>
+                                  <span className="kam-line-enquiry-amount">
+                                    {order.enquiryApproval?.status === "Sent"
+                                      ? formatAmount(requirement.approvalAmount)
+                                      : "Pending Amount"}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                          <tfoot>
+                            <tr>
+                              <td colSpan={5} style={{ textAlign: "right" }}>
+                                <strong>Total Required</strong>
                               </td>
                               <td>
-                                <div className="kam-line-create-dimensions">
-                                  {["length", "height", "width"].map((key, i) => (
-                                    <React.Fragment key={key}>
-                                      {i > 0 && <span>×</span>}
-                                      <input type="number" min="0" placeholder={key[0].toUpperCase()}
-                                        value={editForm.vehicleRequirements?.[index]?.dimensions?.[key] ?? ""}
-                                        onChange={(event) => changeEditArray("vehicleRequirements", index, "dimensions", key, event.target.value)} />
-                                    </React.Fragment>
-                                  ))}
-                                  <span className="kam-line-create-unit">FT</span>
-                                </div>
+                                <strong>{requirements.length} NOS</strong>
                               </td>
-                              <td className="kam-line-create-remove">
-                                <button type="button" aria-label={`Remove vehicle ${index + 1}`}
-                                  disabled={requirements.length <= 1}
-                                  onClick={() => removeEnquiryVehicle(index)}>×</button>
+                              <td colSpan={3} style={{ textAlign: "right" }}>
+                                <strong>Total Approval Amount</strong>
+                              </td>
+                              <td
+                                colSpan={2}
+                                style={{ color: "#078b83", fontWeight: 800 }}
+                              >
+                                {order.enquiryApproval?.status === "Sent"
+                                  ? formatAmount(
+                                      order.enquiryApproval.totalAmount,
+                                    )
+                                  : "Pending Amount"}
                               </td>
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                      <div className="kam-line-create-total">Total Vehicles: <strong>{requirements.length} NOS</strong></div>
-                    </div>
+                          </tfoot>
+                        </table>
+                      </div>
+                    )
                   ) : (
-                    <div className="kam-client-vehicle-table-wrap kam-line-enquiry-table-wrap">
-                      <table className="kam-client-vehicle-table kam-line-enquiry-table">
+                    <div className="kam-client-vehicle-table-wrap">
+                      <table className="kam-client-vehicle-table">
                         <thead>
                           <tr>
-                            {["#", "Requirement ID", "Vehicle Type", "Configuration", "Material", "Weight", "Origin", "Destination", "Placement Date", "L × H × W", "Approval Amount"].map((label) => (
-                              <th key={label}>{label}</th>
-                            ))}
+                            <th>#</th>
+                            <th>Requirement ID</th>
+                            <th>Vehicle Type</th>
+                            <th>Configuration</th>
+                            <th>Classification</th>
+                            {isProjectOrder && <th>Material Type</th>}
+                            {isProjectOrder && <th>NOS</th>}
+                            <th>Weight</th>
+                            <th>L × H × W</th>
+                            {(isIntercartingOrder || isProjectOrder) && (
+                              <th>Approval Amount</th>
+                            )}
                           </tr>
                         </thead>
                         <tbody>
                           {requirements.map((requirement, index) => (
                             <tr key={requirement.requirementId || index}>
-                              <td><span className="kam-client-row-no">{index + 1}</span></td>
-                              <td className="kam-line-requirement-id">
-                                {requirement.requirementId || "—"}
-                                {editOpen && !editRequirementsLocked && requirements.length > 1 && (
-                                  <button type="button" onClick={() => removeEnquiryVehicle(index)}
-                                    style={{ display: "block", marginTop: 6, padding: 0, border: 0, background: "transparent", color: "#b42332", fontSize: 10, fontWeight: 700, cursor: "pointer" }}>
-                                    Remove
-                                  </button>
+                              <td>
+                                <span className="kam-client-row-no">
+                                  {index + 1}
+                                </span>
+                              </td>
+                              <td>
+                                <strong>
+                                  {requirement.requirementId || "—"}
+                                </strong>
+                                {editOpen &&
+                                  !editRequirementsLocked &&
+                                  requirements.length > 1 && (
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        removeEnquiryVehicle(index)
+                                      }
+                                      style={{
+                                        display: "block",
+                                        marginTop: 6,
+                                        padding: 0,
+                                        border: 0,
+                                        background: "transparent",
+                                        color: "#b42332",
+                                        fontSize: 10,
+                                        fontWeight: 700,
+                                        cursor: "pointer",
+                                      }}
+                                    >
+                                      Remove
+                                    </button>
+                                  )}
+                              </td>
+                              <td>
+                                <strong>
+                                  {originalVehicleEdit(
+                                    index,
+                                    "vehicleType",
+                                    requirement.vehicleType || "—",
+                                  )}
+                                </strong>
+                              </td>
+                              <td>
+                                {originalVehicleEdit(
+                                  index,
+                                  "configuration",
+                                  requirement.configuration || "—",
                                 )}
                               </td>
-                              <td>{originalVehicleEdit(index, "vehicleType", requirement.vehicleType || "—")}</td>
-                              <td>{originalVehicleEdit(index, "configuration", requirement.configuration || "—")}</td>
-                              <td>{originalVehicleEdit(index, "materialType", requirement.materialType || order.materialType || "—")}</td>
-                              <td>{originalVehicleEdit(index, "weight", formatNumber(requirement.weight, " TON"))}</td>
-                              <td>{originalVehicleEdit(index, "origin", requirement.origin || order.origin || "—")}</td>
-                              <td>{originalVehicleEdit(index, "destination", requirement.destination || order.destination || "—")}</td>
-                              <td>{editOpen && !editRequirementsLocked
-                                ? <input type="date" className="kam-original-edit-input kam-original-vehicle-input"
-                                    style={{ display: "block", width: "100%", minWidth: 0, boxSizing: "border-box" }}
-                                    value={editForm.vehicleRequirements?.[index]?.placementDate || ""}
-                                    onChange={(e) => changeEditArray("vehicleRequirements", index, null, "placementDate", e.target.value)} />
-                                : formatDate(requirement.placementDate || order.placementDate)}</td>
-                              <td>{editOpen && !editRequirementsLocked ? (
-                                <div className="kam-original-dimensions" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 4, width: "100%", minWidth: 0 }}>
-                                  {["length", "height", "width"].map((key) => (
-                                    <label key={key} style={{ minWidth: 0, fontSize: 9 }}>
-                                      {key[0].toUpperCase()}
-                                      {originalVehicleEdit(index, key, "", true)}
-                                    </label>
-                                  ))}
-                                </div>
-                              ) : formatDimensions(requirement.dimensions)}</td>
-                              <td><span className="kam-line-enquiry-amount">
-                                {order.enquiryApproval?.status === "Sent"
-                                  ? formatAmount(requirement.approvalAmount)
-                                  : "Pending Amount"}
-                              </span></td>
+                              <td>
+                                {editOpen && !editRequirementsLocked ? (
+                                  originalVehicleEdit(
+                                    index,
+                                    "classification",
+                                    requirement.classification || "—",
+                                  )
+                                ) : requirement.classification ? (
+                                  <span className="kam-client-classification">
+                                    {requirement.classification}
+                                  </span>
+                                ) : (
+                                  "—"
+                                )}
+                              </td>
+                              {isProjectOrder && (
+                                <>
+                                  <td>
+                                    {requirement.materialType ||
+                                      order.materialType ||
+                                      "—"}
+                                  </td>
+                                  <td>
+                                    {Number(
+                                      requirement.quantity ??
+                                        requirement.nos ??
+                                        1,
+                                    )}{" "}
+                                    NOS
+                                  </td>
+                                </>
+                              )}
+                              <td>
+                                {originalVehicleEdit(
+                                  index,
+                                  "weight",
+                                  formatNumber(requirement.weight, " TON"),
+                                )}
+                              </td>
+                              <td>
+                                {editOpen && !editRequirementsLocked ? (
+                                  <div
+                                    className="kam-original-dimensions"
+                                    style={{
+                                      display: "grid",
+                                      gridTemplateColumns:
+                                        "repeat(3, minmax(0, 1fr))",
+                                      gap: 4,
+                                      width: "100%",
+                                      minWidth: 0,
+                                    }}
+                                  >
+                                    {["length", "height", "width"].map(
+                                      (key) => (
+                                        <label
+                                          key={key}
+                                          style={{ minWidth: 0, fontSize: 9 }}
+                                        >
+                                          {key[0].toUpperCase()}
+                                          {originalVehicleEdit(
+                                            index,
+                                            key,
+                                            "",
+                                            true,
+                                          )}
+                                        </label>
+                                      ),
+                                    )}
+                                  </div>
+                                ) : (
+                                  formatDimensions(requirement.dimensions)
+                                )}
+                              </td>
+                              {(isIntercartingOrder || isProjectOrder) && (
+                                <td>
+                                  {order.enquiryApproval?.status === "Sent"
+                                    ? formatAmount(requirement.approvalAmount)
+                                    : "Pending Amount"}
+                                </td>
+                              )}
                             </tr>
                           ))}
                         </tbody>
                         <tfoot>
                           <tr>
-                            <td colSpan={5} style={{ textAlign: "right" }}><strong>Total Required</strong></td>
-                            <td><strong>{requirements.length} NOS</strong></td>
-                            <td colSpan={3} style={{ textAlign: "right" }}><strong>Total Approval Amount</strong></td>
-                            <td colSpan={2} style={{ color: "#078b83", fontWeight: 800 }}>
-                              {order.enquiryApproval?.status === "Sent"
-                                ? formatAmount(order.enquiryApproval.totalAmount)
-                                : "Pending Amount"}
-                            </td>
-                          </tr>
-                        </tfoot>
-                      </table>
-                    </div>
-                  )) : (
-                  <div className="kam-client-vehicle-table-wrap">
-                    <table className="kam-client-vehicle-table">
-                      <thead>
-                        <tr>
-                          <th>#</th>
-                          <th>Requirement ID</th>
-                          <th>Vehicle Type</th>
-                          <th>Configuration</th>
-                          <th>Classification</th>
-                          {isProjectOrder && <th>Material Type</th>}
-                          {isProjectOrder && <th>NOS</th>}
-                          <th>Weight</th>
-                          <th>L × H × W</th>
-                          {(isIntercartingOrder || isProjectOrder) && <th>Approval Amount</th>}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {requirements.map((requirement, index) => (
-                          <tr key={requirement.requirementId || index}>
-                            <td>
-                              <span className="kam-client-row-no">
-                                {index + 1}
-                              </span>
+                            <td
+                              colSpan={isProjectOrder ? 6 : 4}
+                              style={{
+                                textAlign: "right",
+                              }}
+                            >
+                              <strong>Total Required</strong>
                             </td>
                             <td>
                               <strong>
-                                {requirement.requirementId || "—"}
-                              </strong>
-                              {editOpen && !editRequirementsLocked && requirements.length > 1 && (
-                                <button type="button" onClick={() => removeEnquiryVehicle(index)}
-                                  style={{ display: "block", marginTop: 6, padding: 0, border: 0, background: "transparent", color: "#b42332", fontSize: 10, fontWeight: 700, cursor: "pointer" }}>
-                                  Remove
-                                </button>
-                              )}
-                            </td>
-                            <td>
-                              <strong>
-                                {originalVehicleEdit(
-                                  index,
-                                  "vehicleType",
-                                  requirement.vehicleType || "—",
-                                )}
+                                {isProjectOrder
+                                  ? requirements.reduce(
+                                      (sum, item) =>
+                                        sum +
+                                        Math.max(
+                                          0,
+                                          Number(
+                                            item.quantity ?? item.nos ?? 1,
+                                          ) || 0,
+                                        ),
+                                      0,
+                                    )
+                                  : requirements.length}{" "}
+                                NOS
                               </strong>
                             </td>
-                            <td>
-                              {originalVehicleEdit(
-                                index,
-                                "configuration",
-                                requirement.configuration || "—",
-                              )}
-                            </td>
-                            <td>
-                              {editOpen && !editRequirementsLocked ? (
-                                originalVehicleEdit(
-                                  index,
-                                  "classification",
-                                  requirement.classification || "—",
-                                )
-                              ) : requirement.classification ? (
-                                <span className="kam-client-classification">
-                                  {requirement.classification}
-                                </span>
-                              ) : (
-                                "—"
-                              )}
-                            </td>
-                            {isProjectOrder && (
-                              <>
-                                <td>{requirement.materialType || order.materialType || "—"}</td>
-                                <td>{Number(requirement.quantity ?? requirement.nos ?? 1)} NOS</td>
-                              </>
-                            )}
-                            <td>
-                              {originalVehicleEdit(
-                                index,
-                                "weight",
-                                formatNumber(requirement.weight, " TON"),
-                              )}
-                            </td>
-                            <td>
-                              {editOpen && !editRequirementsLocked ? (
-                                <div className="kam-original-dimensions" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 4, width: "100%", minWidth: 0 }}>
-                                  {["length", "height", "width"].map((key) => (
-                                    <label key={key} style={{ minWidth: 0, fontSize: 9 }}>
-                                      {key[0].toUpperCase()}
-                                      {originalVehicleEdit(
-                                        index,
-                                        key,
-                                        "",
-                                        true,
-                                      )}
-                                    </label>
-                                  ))}
-                                </div>
-                              ) : (
-                                formatDimensions(requirement.dimensions)
-                              )}
-                            </td>
+                            <td colSpan="2" />
                             {(isIntercartingOrder || isProjectOrder) && (
                               <td>
                                 {order.enquiryApproval?.status === "Sent"
-                                  ? formatAmount(requirement.approvalAmount)
+                                  ? formatAmount(
+                                      order.enquiryApproval.totalAmount,
+                                    )
                                   : "Pending Amount"}
                               </td>
                             )}
                           </tr>
-                        ))}
-                      </tbody>
-                      <tfoot>
-                        <tr>
-                          <td
-                            colSpan={isProjectOrder ? 6 : 4}
-                            style={{
-                              textAlign: "right",
-                            }}
-                          >
-                            <strong>Total Required</strong>
-                          </td>
-                          <td>
-                            <strong>{isProjectOrder ? requirements.reduce((sum, item) => sum + Math.max(0, Number(item.quantity ?? item.nos ?? 1) || 0), 0) : requirements.length} NOS</strong>
-                          </td>
-                          <td colSpan="2" />
-                          {(isIntercartingOrder || isProjectOrder) && (
-                            <td>
-                              {order.enquiryApproval?.status === "Sent"
-                                ? formatAmount(order.enquiryApproval.totalAmount)
-                                : "Pending Amount"}
-                            </td>
-                          )}
-                        </tr>
-                      </tfoot>
-                    </table>
-                  </div>
+                        </tfoot>
+                      </table>
+                    </div>
                   )
                 ) : (
                   <div className="kam-lifecycle-empty">
@@ -3945,7 +5100,9 @@ const Lifecyclemodal = ({
                     </span>
                   </div>
                 )}
-                <div className={`kam-client-trip-grid${isPerVehicleAmountOrder ? " kam-line-finalization-grid" : ""}`}>
+                <div
+                  className={`kam-client-trip-grid${isPerVehicleAmountOrder ? " kam-line-finalization-grid" : ""}`}
+                >
                   {/* QUOTED RATE */}
                   <div className="kam-client-trip-field">
                     <span>Quoted Rate *</span>
@@ -3953,12 +5110,12 @@ const Lifecyclemodal = ({
                       type="number"
                       name="quotedRate"
                       value={
-                        !lineAmountsReady ? "" : (
-                          getManagementQuotedRate(workingOrder) ??
-                          (editOpen
-                            ? editForm.orderFinalization?.quotedRate
-                            : finalizationForm.quotedRate)
-                        )
+                        !lineAmountsReady
+                          ? ""
+                          : (getManagementQuotedRate(workingOrder) ??
+                            (editOpen
+                              ? editForm.orderFinalization?.quotedRate
+                              : finalizationForm.quotedRate))
                       }
                       onChange={
                         editOpen
@@ -3970,21 +5127,32 @@ const Lifecyclemodal = ({
                               )
                           : handleFinalizationChange
                       }
-                      placeholder={!lineAmountsReady
-                        ? "Pending Management vehicle amounts"
-                        : isCraneOrder && getCraneApprovalQuotedRate(workingOrder) === null
-                          ? "Pending Approval Management quoted amount"
-                          : isIntercartingOrder && getIntercartingApprovalQuotedRate(workingOrder) === null
-                            ? "Pending Approval Management vehicle amounts"
-                            : "Enter quoted rate"}
+                      placeholder={
+                        !lineAmountsReady
+                          ? "Pending Management vehicle amounts"
+                          : isCraneOrder &&
+                              getCraneApprovalQuotedRate(workingOrder) === null
+                            ? "Pending Approval Management quoted amount"
+                            : isIntercartingOrder &&
+                                getIntercartingApprovalQuotedRate(
+                                  workingOrder,
+                                ) === null
+                              ? "Pending Approval Management vehicle amounts"
+                              : "Enter quoted rate"
+                      }
                       readOnly={getManagementQuotedRate(workingOrder) !== null}
-                      title={getManagementQuotedRate(workingOrder) !== null
-                        ? "Automatically fetched from Approval Management enquiry amounts"
-                        : ""}
+                      title={
+                        getManagementQuotedRate(workingOrder) !== null
+                          ? "Automatically fetched from Approval Management enquiry amounts"
+                          : ""
+                      }
                       disabled={
                         !lineAmountsReady ||
-                        (isCraneOrder && getCraneApprovalQuotedRate(workingOrder) === null) ||
-                        (isIntercartingOrder && getIntercartingApprovalQuotedRate(workingOrder) === null) ||
+                        (isCraneOrder &&
+                          getCraneApprovalQuotedRate(workingOrder) === null) ||
+                        (isIntercartingOrder &&
+                          getIntercartingApprovalQuotedRate(workingOrder) ===
+                            null) ||
                         (!editOpen && finalizationLocked)
                       }
                     />
@@ -3995,8 +5163,15 @@ const Lifecyclemodal = ({
                     <input
                       type="number"
                       name="finalRate"
-                      value={!lineAmountsReady ? "" : (isPerVehicleAmountOrder ? effectiveFinalRate :
-                        (editOpen ? editForm.orderFinalization?.finalRate : finalizationForm.finalRate))}
+                      value={
+                        !lineAmountsReady
+                          ? ""
+                          : isPerVehicleAmountOrder
+                            ? effectiveFinalRate
+                            : editOpen
+                              ? editForm.orderFinalization?.finalRate
+                              : finalizationForm.finalRate
+                      }
                       onChange={
                         editOpen
                           ? (event) =>
@@ -4007,30 +5182,76 @@ const Lifecyclemodal = ({
                               )
                           : handleFinalizationChange
                       }
-                      placeholder={!lineAmountsReady ? "Pending Management vehicle amounts" : "Enter final rate"}
+                      placeholder={
+                        !lineAmountsReady
+                          ? "Pending Management vehicle amounts"
+                          : "Enter final rate"
+                      }
                       readOnly={isPerVehicleAmountOrder}
-                      disabled={!lineAmountsReady || (!editOpen && finalizationLocked)}
+                      disabled={
+                        !lineAmountsReady || (!editOpen && finalizationLocked)
+                      }
                     />
                   </div>
                   {isPerVehicleAmountOrder && (
                     <div className="kam-line-final-vehicle-panel">
                       <div className="kam-line-final-vehicle-heading">
                         <strong>Vehicle Requirements &amp; Amounts</strong>
-                        <span>{lineAmountsReady ? "Enter each vehicle amount; Final Rate updates automatically" : "Waiting for Management vehicle amounts"}</span>
+                        <span>
+                          {lineAmountsReady
+                            ? "Enter each vehicle amount; Final Rate updates automatically"
+                            : "Waiting for Management vehicle amounts"}
+                        </span>
                       </div>
                       <div className="kam-line-final-vehicle-wrap">
-                        <table className={`kam-line-final-vehicle-table${isIntercartingOrder ? " kam-intercarting-final-vehicle-table" : ""}`}>
-                          <thead><tr>
-                            {(isProjectOrder
-                              ? ["#", "Vehicle Type", "Configuration Model", "Classification", "Material Type", "NOS", "Weight", "Dimensions (L × H × W)", "Customer Final Amount (₹)"]
-                              : isIntercartingOrder
-                                ? ["#", "Vehicle Type", "Configuration", "Classification", "Weight", "Dimensions (L × H × W)", "Customer Final Amount (₹)"]
-                                : ["#", "Vehicle Type", "Configuration", "Material", "Weight", "Origin", "Destination", "Placement", "L × H × W", "Customer Final Amount (₹)"]
-                            ).map((heading) => <th key={heading}>{heading}</th>)}
-                          </tr></thead>
+                        <table
+                          className={`kam-line-final-vehicle-table${isIntercartingOrder ? " kam-intercarting-final-vehicle-table" : ""}`}
+                        >
+                          <thead>
+                            <tr>
+                              {(isProjectOrder
+                                ? [
+                                    "#",
+                                    "Vehicle Type",
+                                    "Configuration Model",
+                                    "Classification",
+                                    "Material Type",
+                                    "NOS",
+                                    "Weight",
+                                    "Dimensions (L × H × W)",
+                                    "Customer Final Amount (₹)",
+                                  ]
+                                : isIntercartingOrder
+                                  ? [
+                                      "#",
+                                      "Vehicle Type",
+                                      "Configuration",
+                                      "Classification",
+                                      "Weight",
+                                      "Dimensions (L × H × W)",
+                                      "Customer Final Amount (₹)",
+                                    ]
+                                  : [
+                                      "#",
+                                      "Vehicle Type",
+                                      "Configuration",
+                                      "Material",
+                                      "Weight",
+                                      "Origin",
+                                      "Destination",
+                                      "Placement",
+                                      "L × H × W",
+                                      "Customer Final Amount (₹)",
+                                    ]
+                              ).map((heading) => (
+                                <th key={heading}>{heading}</th>
+                              ))}
+                            </tr>
+                          </thead>
                           <tbody>
                             {requirements.map((vehicle, index) => {
-                              const key = vehicle.requirementId || String(index);
+                              const key =
+                                vehicle.requirementId || String(index);
                               return (
                                 <tr key={key}>
                                   <td>{index + 1}</td>
@@ -4039,40 +5260,76 @@ const Lifecyclemodal = ({
                                   {isProjectOrder ? (
                                     <>
                                       <td>{vehicle.classification || "—"}</td>
-                                      <td>{vehicle.materialType || order.materialType || "—"}</td>
-                                      <td>{Number(vehicle.quantity ?? vehicle.nos ?? 1)} NOS</td>
-                                      <td>{formatNumber(vehicle.weight, " TON")}</td>
-                                      <td>{formatDimensions(vehicle.dimensions)}</td>
+                                      <td>
+                                        {vehicle.materialType ||
+                                          order.materialType ||
+                                          "—"}
+                                      </td>
+                                      <td>
+                                        {Number(
+                                          vehicle.quantity ?? vehicle.nos ?? 1,
+                                        )}{" "}
+                                        NOS
+                                      </td>
+                                      <td>
+                                        {formatNumber(vehicle.weight, " TON")}
+                                      </td>
+                                      <td>
+                                        {formatDimensions(vehicle.dimensions)}
+                                      </td>
                                     </>
                                   ) : isIntercartingOrder ? (
                                     <>
                                       <td>{vehicle.classification || "—"}</td>
-                                      <td>{formatNumber(vehicle.weight, " TON")}</td>
-                                      <td>{formatDimensions(vehicle.dimensions)}</td>
+                                      <td>
+                                        {formatNumber(vehicle.weight, " TON")}
+                                      </td>
+                                      <td>
+                                        {formatDimensions(vehicle.dimensions)}
+                                      </td>
                                     </>
                                   ) : (
                                     <>
                                       <td>{vehicle.materialType || "—"}</td>
-                                      <td>{formatNumber(vehicle.weight, " TON")}</td>
+                                      <td>
+                                        {formatNumber(vehicle.weight, " TON")}
+                                      </td>
                                       <td>{vehicle.origin || "—"}</td>
                                       <td>{vehicle.destination || "—"}</td>
-                                      <td>{formatDate(vehicle.placementDate)}</td>
-                                      <td>{formatDimensions(vehicle.dimensions)}</td>
+                                      <td>
+                                        {formatDate(vehicle.placementDate)}
+                                      </td>
+                                      <td>
+                                        {formatDimensions(vehicle.dimensions)}
+                                      </td>
                                     </>
                                   )}
                                   <td>
                                     {lineAmountsReady ? (
                                       <input
-                                        type="number" min="0" step="0.01"
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
                                         aria-label={`Customer final amount for vehicle ${index + 1}`}
-                                        value={lineFinalVehicleAmounts[key] ?? ""}
-                                        onChange={(event) => setLineFinalVehicleAmounts((previous) => ({
-                                          ...previous, [key]: event.target.value,
-                                        }))}
-                                        disabled={finalizationLocked && !editOpen}
+                                        value={
+                                          lineFinalVehicleAmounts[key] ?? ""
+                                        }
+                                        onChange={(event) =>
+                                          setLineFinalVehicleAmounts(
+                                            (previous) => ({
+                                              ...previous,
+                                              [key]: event.target.value,
+                                            }),
+                                          )
+                                        }
+                                        disabled={
+                                          finalizationLocked && !editOpen
+                                        }
                                       />
                                     ) : (
-                                      <span className="kam-line-final-amount-readonly">{formatAmount(vehicle.approvalAmount)}</span>
+                                      <span className="kam-line-final-amount-readonly">
+                                        {formatAmount(vehicle.approvalAmount)}
+                                      </span>
                                     )}
                                   </td>
                                 </tr>
@@ -4085,13 +5342,17 @@ const Lifecyclemodal = ({
                         <span>Total Customer Final Amount</span>
                         <strong>{formatAmount(lineVehicleFinalTotal)}</strong>
                         {lineAmountsReady && !lineVehicleAmountsComplete && (
-                          <span className="is-unmatched">Enter all vehicle amounts</span>
+                          <span className="is-unmatched">
+                            Enter all vehicle amounts
+                          </span>
                         )}
                       </div>
                     </div>
                   )}
                   {/* COMMERCIAL TERMS */}
-                  <div className={`kam-client-trip-field${isPerVehicleAmountOrder ? " kam-line-final-note" : ""}`}>
+                  <div
+                    className={`kam-client-trip-field${isPerVehicleAmountOrder ? " kam-line-final-note" : ""}`}
+                  >
                     <span>Commercial Terms & Payment SLAs *</span>
                     <textarea
                       name="commercialTerms"
@@ -4116,7 +5377,9 @@ const Lifecyclemodal = ({
                     />
                   </div>
                   {/* DELIVERY COMMITMENTS */}
-                  <div className={`kam-client-trip-field${isPerVehicleAmountOrder ? " kam-line-final-note" : ""}`}>
+                  <div
+                    className={`kam-client-trip-field${isPerVehicleAmountOrder ? " kam-line-final-note" : ""}`}
+                  >
                     <span>Delivery Commitments & Transit SLAs *</span>
                     <textarea
                       name="deliveryCommitments"
@@ -4143,7 +5406,11 @@ const Lifecyclemodal = ({
                   {/* CLIENT CONFIRMATION */}
                   <div
                     className={`kam-client-trip-field${isPerVehicleAmountOrder ? " kam-line-final-note" : ""}`}
-                    style={orderApprovalApproved && !isLineOrder ? { gridColumn: "auto" } : undefined}
+                    style={
+                      orderApprovalApproved && !isLineOrder
+                        ? { gridColumn: "auto" }
+                        : undefined
+                    }
                   >
                     <span>Client Confirmation Notes</span>
                     <textarea
@@ -4170,10 +5437,16 @@ const Lifecyclemodal = ({
                   </div>
                   {/* APPROVAL REMARKS — READ ONLY, AFTER CLIENT CONFIRMATION */}
                   {orderApprovalApproved && (
-                    <div className="kam-client-trip-field" style={{ gridColumn: "auto" }}>
+                    <div
+                      className="kam-client-trip-field"
+                      style={{ gridColumn: "1 / -1" }}
+                    >
                       <span>Approval Remarks</span>
                       <textarea
-                        value={order?.orderApproval?.remarks || "No approval remarks provided."}
+                        value={
+                          order?.orderApproval?.remarks ||
+                          "No approval remarks provided."
+                        }
                         rows={3}
                         readOnly
                         disabled
@@ -4222,11 +5495,25 @@ const Lifecyclemodal = ({
               <div className="kam-step-page kam-step-page-confirmed-transporters">
                 <section className="kam-client-vehicle-section">
                   <SectionHeading
-                    title={isProjectMovement(order) ? "Required Vehicle Status" : "Confirmed Transporters"}
-                    description={isProjectMovement(order) ? "Batch-wise approved and pending status for requested vehicles." : "Approved transporter quotation for each vehicle requirement."}
-                    count={isProjectMovement(order) ? getLifecycleProjectRequired(order) : requirements.length}
+                    title={
+                      isProjectMovement(order)
+                        ? "Required Vehicle Status"
+                        : "Confirmed Transporters"
+                    }
+                    description={
+                      isProjectMovement(order)
+                        ? "Batch-wise approved and pending status for requested vehicles."
+                        : "Approved transporter quotation for each vehicle requirement."
+                    }
+                    count={
+                      isProjectMovement(order)
+                        ? getLifecycleProjectRequired(order)
+                        : requirements.length
+                    }
                   />
-                  {isProjectMovement(order) ? <ProjectConfirmedTransporters order={order} /> : requirements.length > 0 ? (
+                  {isProjectMovement(order) ? (
+                    <ProjectConfirmedTransporters order={order} />
+                  ) : requirements.length > 0 ? (
                     <div className="kam-client-vehicle-table-wrap">
                       <table className="kam-client-vehicle-table kam-vendor-history-table">
                         <thead>
@@ -4473,128 +5760,134 @@ const Lifecyclemodal = ({
               {/* =================================================
                   QUOTATION VEHICLE STATUS
               ================================================= */}
-              {!isProjectMovement(order) && <div className="kam-step-page kam-step-page-pending-vehicles">
-                <section className="kam-client-vehicle-section">
-                  <SectionHeading
-                    title="Quotation Vehicle Status"
-                    description="Required, quotation confirmed and quotation pending vehicles for this order."
-                    count={quotationPendingVehicleCount}
-                  />
-                  <div className="kam-client-vehicle-table-wrap">
-                    <table className="kam-client-vehicle-table">
-                      <thead>
-                        <tr>
-                          <th>Required Vehicles</th>
-                          <th>Quotation Confirmed</th>
-                          <th>Quotation Pending</th>
-                          <th>Status</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <td>
-                            <strong>{isProjectMovement(order) ? getLifecycleProjectRequired(order) : totalRequiredVehicles}</strong>
-                          </td>
-                          <td>
-                            <strong>{approvedQuotationVehicleCount}</strong>
-                          </td>
-                          <td>
-                            <strong
-                              style={{
-                                color:
-                                  quotationPendingVehicleCount > 0
-                                    ? "#b77900"
-                                    : "#0d8f87",
-                              }}
-                            >
-                              {quotationPendingVehicleCount}
-                            </strong>
-                          </td>
-                          <td>
-                            {hasPendingTransportReplacement(order) ? (
-                              <span
+              {!isProjectMovement(order) && (
+                <div className="kam-step-page kam-step-page-pending-vehicles">
+                  <section className="kam-client-vehicle-section">
+                    <SectionHeading
+                      title="Quotation Vehicle Status"
+                      description="Required, quotation confirmed and quotation pending vehicles for this order."
+                      count={quotationPendingVehicleCount}
+                    />
+                    <div className="kam-client-vehicle-table-wrap">
+                      <table className="kam-client-vehicle-table">
+                        <thead>
+                          <tr>
+                            <th>Required Vehicles</th>
+                            <th>Quotation Confirmed</th>
+                            <th>Quotation Pending</th>
+                            <th>Status</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td>
+                              <strong>
+                                {isProjectMovement(order)
+                                  ? getLifecycleProjectRequired(order)
+                                  : totalRequiredVehicles}
+                              </strong>
+                            </td>
+                            <td>
+                              <strong>{approvedQuotationVehicleCount}</strong>
+                            </td>
+                            <td>
+                              <strong
                                 style={{
-                                  display: "inline-flex",
-                                  alignItems: "center",
-                                  gap: "6px",
-                                  padding: "6px 10px",
-                                  border: "1px solid #f0c56a",
-                                  borderRadius: "999px",
-                                  background: "#fff7e2",
-                                  color: "#9a6200",
-                                  fontSize: "10px",
-                                  fontWeight: 900,
+                                  color:
+                                    quotationPendingVehicleCount > 0
+                                      ? "#b77900"
+                                      : "#0d8f87",
                                 }}
                               >
-                                ⚠ Replacement Pending
-                              </span>
-                            ) : quotationPendingVehicleCount > 0 ? (
-                              <span
-                                style={{
-                                  display: "inline-flex",
-                                  alignItems: "center",
-                                  gap: "6px",
-                                  padding: "6px 10px",
-                                  border: "1px solid #f0c56a",
-                                  borderRadius: "999px",
-                                  background: "#fff7e2",
-                                  color: "#9a6200",
-                                  fontSize: "10px",
-                                  fontWeight: 900,
-                                }}
-                              >
-                                ⚠ {quotationPendingVehicleCount} Pending
-                              </span>
-                            ) : (
-                              <span
-                                style={{
-                                  display: "inline-flex",
-                                  alignItems: "center",
-                                  gap: "6px",
-                                  padding: "6px 10px",
-                                  border: "1px solid #b9ddd8",
-                                  borderRadius: "999px",
-                                  background: "#eefaf8",
-                                  color: "#08776f",
-                                  fontSize: "10px",
-                                  fontWeight: 900,
-                                }}
-                              >
-                                ✓ Quotation Complete
-                              </span>
-                            )}
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                  {(quotationPendingVehicleCount > 0 ||
-                    hasPendingTransportReplacement(order)) && (
-                    <div
-                      style={{
-                        marginTop: "12px",
-                        padding: "10px 12px",
-                        border: "1px solid #f0c56a",
-                        borderLeft: "4px solid #e5a62f",
-                        borderRadius: "8px",
-                        background: "#fff8e8",
-                        color: "#8a5a00",
-                        fontSize: "10px",
-                        fontWeight: 700,
-                        lineHeight: 1.5,
-                      }}
-                    >
-                      {hasPendingTransportReplacement(order)
-                        ? "⚠ Transport replacement approval pending"
-                        : `⚠ ${quotationPendingVehicleCount} vehicle${
-                            quotationPendingVehicleCount === 1 ? "" : "s"
-                          } pending`}
-                      quotation/finalization. Order Placed and Tracking can
-                      still continue.
+                                {quotationPendingVehicleCount}
+                              </strong>
+                            </td>
+                            <td>
+                              {hasPendingTransportReplacement(order) ? (
+                                <span
+                                  style={{
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: "6px",
+                                    padding: "6px 10px",
+                                    border: "1px solid #f0c56a",
+                                    borderRadius: "999px",
+                                    background: "#fff7e2",
+                                    color: "#9a6200",
+                                    fontSize: "10px",
+                                    fontWeight: 900,
+                                  }}
+                                >
+                                  ⚠ Replacement Pending
+                                </span>
+                              ) : quotationPendingVehicleCount > 0 ? (
+                                <span
+                                  style={{
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: "6px",
+                                    padding: "6px 10px",
+                                    border: "1px solid #f0c56a",
+                                    borderRadius: "999px",
+                                    background: "#fff7e2",
+                                    color: "#9a6200",
+                                    fontSize: "10px",
+                                    fontWeight: 900,
+                                  }}
+                                >
+                                  ⚠ {quotationPendingVehicleCount} Pending
+                                </span>
+                              ) : (
+                                <span
+                                  style={{
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: "6px",
+                                    padding: "6px 10px",
+                                    border: "1px solid #b9ddd8",
+                                    borderRadius: "999px",
+                                    background: "#eefaf8",
+                                    color: "#08776f",
+                                    fontSize: "10px",
+                                    fontWeight: 900,
+                                  }}
+                                >
+                                  ✓ Quotation Complete
+                                </span>
+                              )}
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
                     </div>
-                  )}
-                </section>
-              </div>}
+                    {(quotationPendingVehicleCount > 0 ||
+                      hasPendingTransportReplacement(order)) && (
+                      <div
+                        style={{
+                          marginTop: "12px",
+                          padding: "10px 12px",
+                          border: "1px solid #f0c56a",
+                          borderLeft: "4px solid #e5a62f",
+                          borderRadius: "8px",
+                          background: "#fff8e8",
+                          color: "#8a5a00",
+                          fontSize: "10px",
+                          fontWeight: 700,
+                          lineHeight: 1.5,
+                        }}
+                      >
+                        {hasPendingTransportReplacement(order)
+                          ? "⚠ Transport replacement approval pending"
+                          : `⚠ ${quotationPendingVehicleCount} vehicle${
+                              quotationPendingVehicleCount === 1 ? "" : "s"
+                            } pending`}
+                        quotation/finalization. Order Placed and Tracking can
+                        still continue.
+                      </div>
+                    )}
+                  </section>
+                </div>
+              )}
             </>
           )}
           {/* =================================================
@@ -4663,7 +5956,10 @@ const Lifecyclemodal = ({
                       value={automaticPoStatus}
                       readOnly
                       aria-label="Automatic PO status"
-                      style={{ color: isPoFormComplete ? "#087f5b" : "#9a6700", fontWeight: 600 }}
+                      style={{
+                        color: isPoFormComplete ? "#087f5b" : "#9a6700",
+                        fontWeight: 600,
+                      }}
                     />
                   </div>
                   <div className="kam-client-trip-field kam-po-upload-field">
@@ -4685,9 +5981,19 @@ const Lifecyclemodal = ({
                           "PDF, Word, JPG or PNG"}
                     </small>
                     {hasPoFile && (
-                      <div className="kam-po-document-actions" style={{ display: "flex", gap: 8, marginTop: 8 }}>
-                        <button type="button" onClick={handleViewPoDocument}>View Document</button>
-                        <button type="button" onClick={handleDownloadPoDocument}>Download Document</button>
+                      <div
+                        className="kam-po-document-actions"
+                        style={{ display: "flex", gap: 8, marginTop: 8 }}
+                      >
+                        <button type="button" onClick={handleViewPoDocument}>
+                          View Document
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleDownloadPoDocument}
+                        >
+                          Download Document
+                        </button>
                       </div>
                     )}
                   </div>
@@ -4702,63 +6008,416 @@ const Lifecyclemodal = ({
           {isProjectMovement(order) && activeStepIndex === 3 && (
             <div className="kam-step-page kam-step-page-project-allocation">
               <section className="kam-client-vehicle-section kam-project-allocation-page">
-                <SectionHeading title="Vehicle Allocation Request" description="Enter the quantity and individual vehicle origin, destination and placement date, then submit all selected requirements together." />
+                <SectionHeading
+                  title="Vehicle Allocation Request"
+                  description="Enter the quantity and individual vehicle origin, destination and placement date, then submit all selected requirements together."
+                />
                 <div className="kam-project-allocation-intro">
-                  <div><strong>Batch vehicle request</strong><span>One submission for all rows with a request quantity.</span></div>
-                  <div className="kam-project-allocation-intro-note">PO document is optional for Project Movement. You can upload it later.</div>
+                  <div>
+                    <strong>Batch vehicle request</strong>
+                    <span>
+                      One submission for all rows with a request quantity.
+                    </span>
+                  </div>
+                  <div className="kam-project-allocation-intro-note">
+                    PO document is optional for Project Movement. You can upload
+                    it later.
+                  </div>
                 </div>
                 <div className="kam-project-allocation-table-wrap kam-project-allocation-entry-wrap">
                   <table className="kam-project-allocation-entry-table">
-                    <thead><tr><th>Vehicle Requirement</th><th>Configuration</th><th>Total Required</th><th>Already Requested</th><th>Remaining</th><th>Request Qty</th><th>Placement Details</th></tr></thead>
+                    <thead>
+                      <tr>
+                        <th>Vehicle Requirement</th>
+                        <th>Configuration</th>
+                        <th>Total Required</th>
+                        <th>Already Requested</th>
+                        <th>Remaining</th>
+                        <th>Request Qty</th>
+                        <th>Placement Details</th>
+                      </tr>
+                    </thead>
                     <tbody>
-                      {safeArray(order?.vehicleRequirements).map((requirement) => {
-                        const requirementId = requirement.requirementId;
-                        const requests = safeArray(order?.projectVehicleAllocationRequests).filter((item) => item.requirementId === requirementId && ["Pending Traffic", "Pending Management", "Approved"].includes(item.status));
-                        const alreadyRequested = requests.reduce((sum, item) => sum + (Number(item.requestedQuantity) || 0), 0);
-                        const remaining = Math.max(0, (Number(requirement.quantity) || 0) - alreadyRequested);
-                        const row = projectAllocationRows[requirementId] || {};
-                        const quantityValue = row.requestedQuantity ?? "";
-                        return (
-                          <React.Fragment key={requirementId}><tr className={remaining < 1 ? "is-fully-requested" : ""}>
-                            <td><strong>{requirement.vehicleType || requirementId}</strong><small>{requirement.classification || requirement.materialType || "Vehicle requirement"}</small></td>
-                            <td>{requirement.configuration || "—"}</td>
-                            <td><strong>{requirement.quantity || 0} NOS</strong></td>
-                            <td>{alreadyRequested} NOS</td>
-                            <td><span className="kam-project-remaining-pill">{remaining} NOS</span></td>
-                            <td><input aria-label={`Request quantity for ${requirement.vehicleType || requirementId}`} type="number" min="0" max={remaining} step="1" placeholder="Enter qty" value={quantityValue} disabled={remaining < 1 || projectAllocationSaving} onChange={(event) => setProjectAllocationRows((previous) => ({ ...previous, [requirementId]: { ...(previous[requirementId] || {}), requestedQuantity: event.target.value, vehicles: safeArray(previous[requirementId]?.vehicles).slice(0, Math.max(0, Math.min(remaining, Math.floor(Number(event.target.value)) || 0))) } }))} /></td>
-                            <td>{(() => {
-                              const count = Math.min(remaining, Math.max(0, Math.floor(Number(quantityValue)) || 0));
-                              const completed = Array.from({length: count}, (_, i) => row.vehicles?.[i]).filter(v => v?.origin?.trim() && v?.destination?.trim() && v?.placementDate).length;
-                              return <div className="kam-placement-action"><button type="button" disabled={!count || projectAllocationSaving} onClick={() => setPlacementPopup({ requirementId, vehicleType: requirement.vehicleType || requirementId, configuration: requirement.configuration, materialType: requirement.materialType, vehicles: Array.from({length: count}, (_, i) => ({...row.vehicles?.[i]})) })}>{count > 0 && completed === count ? "Edit Details" : "Add Details"}</button>{count > 0 && <small className={completed === count ? "is-complete" : ""}>{completed}/{count} Completed</small>}</div>;
-                            })()}</td>
-                          </tr>
-                          </React.Fragment>
-                        );
-                      })}
-                      {!safeArray(order?.vehicleRequirements).length && <tr><td colSpan="7" className="kam-project-allocation-empty">No vehicle requirements found for this order.</td></tr>}
+                      {safeArray(order?.vehicleRequirements).map(
+                        (requirement) => {
+                          const requirementId = requirement.requirementId;
+                          const requests = safeArray(
+                            order?.projectVehicleAllocationRequests,
+                          ).filter(
+                            (item) =>
+                              item.requirementId === requirementId &&
+                              [
+                                "Pending Traffic",
+                                "Pending Management",
+                                "Approved",
+                              ].includes(item.status),
+                          );
+                          const alreadyRequested = requests.reduce(
+                            (sum, item) =>
+                              sum + (Number(item.requestedQuantity) || 0),
+                            0,
+                          );
+                          const remaining = Math.max(
+                            0,
+                            (Number(requirement.quantity) || 0) -
+                              alreadyRequested,
+                          );
+                          const row =
+                            projectAllocationRows[requirementId] || {};
+                          const quantityValue = row.requestedQuantity ?? "";
+                          return (
+                            <React.Fragment key={requirementId}>
+                              <tr
+                                className={
+                                  remaining < 1 ? "is-fully-requested" : ""
+                                }
+                              >
+                                <td>
+                                  <strong>
+                                    {requirement.vehicleType || requirementId}
+                                  </strong>
+                                  <small>
+                                    {requirement.classification ||
+                                      requirement.materialType ||
+                                      "Vehicle requirement"}
+                                  </small>
+                                </td>
+                                <td>{requirement.configuration || "—"}</td>
+                                <td>
+                                  <strong>
+                                    {requirement.quantity || 0} NOS
+                                  </strong>
+                                </td>
+                                <td>{alreadyRequested} NOS</td>
+                                <td>
+                                  <span className="kam-project-remaining-pill">
+                                    {remaining} NOS
+                                  </span>
+                                </td>
+                                <td>
+                                  <input
+                                    aria-label={`Request quantity for ${requirement.vehicleType || requirementId}`}
+                                    type="number"
+                                    min="0"
+                                    max={remaining}
+                                    step="1"
+                                    placeholder="Enter qty"
+                                    value={quantityValue}
+                                    disabled={
+                                      remaining < 1 || projectAllocationSaving
+                                    }
+                                    onChange={(event) =>
+                                      setProjectAllocationRows((previous) => ({
+                                        ...previous,
+                                        [requirementId]: {
+                                          ...(previous[requirementId] || {}),
+                                          requestedQuantity: event.target.value,
+                                          vehicles: safeArray(
+                                            previous[requirementId]?.vehicles,
+                                          ).slice(
+                                            0,
+                                            Math.max(
+                                              0,
+                                              Math.min(
+                                                remaining,
+                                                Math.floor(
+                                                  Number(event.target.value),
+                                                ) || 0,
+                                              ),
+                                            ),
+                                          ),
+                                        },
+                                      }))
+                                    }
+                                  />
+                                </td>
+                                <td>
+                                  {(() => {
+                                    const count = Math.min(
+                                      remaining,
+                                      Math.max(
+                                        0,
+                                        Math.floor(Number(quantityValue)) || 0,
+                                      ),
+                                    );
+                                    const completed = Array.from(
+                                      { length: count },
+                                      (_, i) => row.vehicles?.[i],
+                                    ).filter(
+                                      (v) =>
+                                        v?.origin?.trim() &&
+                                        v?.destination?.trim() &&
+                                        v?.placementDate,
+                                    ).length;
+                                    return (
+                                      <div className="kam-placement-action">
+                                        <button
+                                          type="button"
+                                          disabled={
+                                            !count || projectAllocationSaving
+                                          }
+                                          onClick={() =>
+                                            setPlacementPopup({
+                                              requirementId,
+                                              vehicleType:
+                                                requirement.vehicleType ||
+                                                requirementId,
+                                              configuration:
+                                                requirement.configuration,
+                                              materialType:
+                                                requirement.materialType,
+                                              vehicles: Array.from(
+                                                { length: count },
+                                                (_, i) => ({
+                                                  ...row.vehicles?.[i],
+                                                }),
+                                              ),
+                                            })
+                                          }
+                                        >
+                                          {count > 0 && completed === count
+                                            ? "Edit Details"
+                                            : "Add Details"}
+                                        </button>
+                                        {count > 0 && (
+                                          <small
+                                            className={
+                                              completed === count
+                                                ? "is-complete"
+                                                : ""
+                                            }
+                                          >
+                                            {completed}/{count} Completed
+                                          </small>
+                                        )}
+                                      </div>
+                                    );
+                                  })()}
+                                </td>
+                              </tr>
+                            </React.Fragment>
+                          );
+                        },
+                      )}
+                      {!safeArray(order?.vehicleRequirements).length && (
+                        <tr>
+                          <td
+                            colSpan="7"
+                            className="kam-project-allocation-empty"
+                          >
+                            No vehicle requirements found for this order.
+                          </td>
+                        </tr>
+                      )}
                     </tbody>
                   </table>
                 </div>
                 <div className="kam-project-allocation-submitbar">
-                  <span>Only rows with Request Qty above 0 will be submitted. All selected rows are sent in one action.</span>
-                  <button type="button" onClick={submitProjectVehicleAllocationRequest} disabled={projectAllocationSaving || !safeArray(order?.vehicleRequirements).some((item) => Number((projectAllocationRows[item.requirementId] || {}).requestedQuantity ?? 0) > 0)}>{projectAllocationSaving ? "Submitting Requests..." : "Submit All Vehicle Requests"}</button>
+                  <span>
+                    Only rows with Request Qty above 0 will be submitted. All
+                    selected rows are sent in one action.
+                  </span>
+                  <button
+                    type="button"
+                    onClick={submitProjectVehicleAllocationRequest}
+                    disabled={
+                      projectAllocationSaving ||
+                      !safeArray(order?.vehicleRequirements).some(
+                        (item) =>
+                          Number(
+                            (projectAllocationRows[item.requirementId] || {})
+                              .requestedQuantity ?? 0,
+                          ) > 0,
+                      )
+                    }
+                  >
+                    {projectAllocationSaving
+                      ? "Submitting Requests..."
+                      : "Submit All Vehicle Requests"}
+                  </button>
                 </div>
-                {projectAllocationError && <div className="kam-form-error">{projectAllocationError}</div>}
-                {placementPopup && createPortal(
-                  <div className="kam-placement-overlay" onClick={event => {event.stopPropagation(); if (event.target === event.currentTarget) setPlacementPopup(null);}}>
-                    <div className="kam-placement-dialog" role="dialog" aria-modal="true" aria-label="Vehicle Placement Details" onKeyDown={event => {if (event.key === "Escape") {event.stopPropagation(); setPlacementPopup(null);}}}>
-                      <header className="kam-placement-header"><div><small>PROJECT MOVEMENT</small><h3>Vehicle Placement Details</h3></div><button type="button" aria-label="Close placement details" onClick={() => setPlacementPopup(null)}>×</button></header>
-                      <div className="kam-placement-body">
-                        <div className="kam-placement-summary"><div><small>Vehicle Requirement</small><strong>{placementPopup.vehicleType}</strong></div><div><small>Configuration</small><strong>{placementPopup.configuration || "—"}</strong></div><div><small>Request Quantity</small><strong>{placementPopup.vehicles.length} NOS</strong></div></div>
-                        <div className="kam-placement-table-wrap"><table className="kam-placement-table"><thead><tr>{["Vehicle", "Material Type", "Origin *", "Destination *", "Placement Date *"].map(label => <th key={label}>{label}</th>)}</tr></thead><tbody>
-                          {placementPopup.vehicles.map((vehicle, index) => <tr key={index}><td>Vehicle {index + 1}</td><td>{placementPopup.materialType || "—"}</td>{["origin", "destination", "placementDate"].map(field => <td key={field}><input autoFocus={index === 0 && field === "origin"} aria-label={`${field} for vehicle ${index + 1}`} type={field === "placementDate" ? "date" : "text"} placeholder={field === "origin" ? "Enter origin" : field === "destination" ? "Enter destination" : undefined} value={vehicle[field] || ""} onChange={event => {const value = event.target.value; setPlacementPopup(previous => ({...previous, vehicles: previous.vehicles.map((v, i) => i === index ? {...v, [field]: value} : v)}));}} /></td>)}</tr>)}
-                        </tbody></table></div>
-                        <small className="kam-placement-progress">{placementPopup.vehicles.filter(v => v.origin?.trim() && v.destination?.trim() && v.placementDate).length} of {placementPopup.vehicles.length} vehicle details completed</small>
+                {projectAllocationError && (
+                  <div className="kam-form-error">{projectAllocationError}</div>
+                )}
+                {placementPopup &&
+                  createPortal(
+                    <div
+                      className="kam-placement-overlay"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        if (event.target === event.currentTarget)
+                          setPlacementPopup(null);
+                      }}
+                    >
+                      <div
+                        className="kam-placement-dialog"
+                        role="dialog"
+                        aria-modal="true"
+                        aria-label="Vehicle Placement Details"
+                        onKeyDown={(event) => {
+                          if (event.key === "Escape") {
+                            event.stopPropagation();
+                            setPlacementPopup(null);
+                          }
+                        }}
+                      >
+                        <header className="kam-placement-header">
+                          <div>
+                            <small>PROJECT MOVEMENT</small>
+                            <h3>Vehicle Placement Details</h3>
+                          </div>
+                          <button
+                            type="button"
+                            aria-label="Close placement details"
+                            onClick={() => setPlacementPopup(null)}
+                          >
+                            ×
+                          </button>
+                        </header>
+                        <div className="kam-placement-body">
+                          <div className="kam-placement-summary">
+                            <div>
+                              <small>Vehicle Requirement</small>
+                              <strong>{placementPopup.vehicleType}</strong>
+                            </div>
+                            <div>
+                              <small>Configuration</small>
+                              <strong>
+                                {placementPopup.configuration || "—"}
+                              </strong>
+                            </div>
+                            <div>
+                              <small>Request Quantity</small>
+                              <strong>
+                                {placementPopup.vehicles.length} NOS
+                              </strong>
+                            </div>
+                          </div>
+                          <div className="kam-placement-table-wrap">
+                            <table className="kam-placement-table">
+                              <thead>
+                                <tr>
+                                  {[
+                                    "Vehicle",
+                                    "Material Type",
+                                    "Origin *",
+                                    "Destination *",
+                                    "Placement Date *",
+                                  ].map((label) => (
+                                    <th key={label}>{label}</th>
+                                  ))}
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {placementPopup.vehicles.map(
+                                  (vehicle, index) => (
+                                    <tr key={index}>
+                                      <td>Vehicle {index + 1}</td>
+                                      <td>
+                                        {placementPopup.materialType || "—"}
+                                      </td>
+                                      {[
+                                        "origin",
+                                        "destination",
+                                        "placementDate",
+                                      ].map((field) => (
+                                        <td key={field}>
+                                          <input
+                                            autoFocus={
+                                              index === 0 && field === "origin"
+                                            }
+                                            aria-label={`${field} for vehicle ${index + 1}`}
+                                            type={
+                                              field === "placementDate"
+                                                ? "date"
+                                                : "text"
+                                            }
+                                            placeholder={
+                                              field === "origin"
+                                                ? "Enter origin"
+                                                : field === "destination"
+                                                  ? "Enter destination"
+                                                  : undefined
+                                            }
+                                            value={vehicle[field] || ""}
+                                            onChange={(event) => {
+                                              const value = event.target.value;
+                                              setPlacementPopup((previous) => ({
+                                                ...previous,
+                                                vehicles: previous.vehicles.map(
+                                                  (v, i) =>
+                                                    i === index
+                                                      ? { ...v, [field]: value }
+                                                      : v,
+                                                ),
+                                              }));
+                                            }}
+                                          />
+                                        </td>
+                                      ))}
+                                    </tr>
+                                  ),
+                                )}
+                              </tbody>
+                            </table>
+                          </div>
+                          <small className="kam-placement-progress">
+                            {
+                              placementPopup.vehicles.filter(
+                                (v) =>
+                                  v.origin?.trim() &&
+                                  v.destination?.trim() &&
+                                  v.placementDate,
+                              ).length
+                            }{" "}
+                            of {placementPopup.vehicles.length} vehicle details
+                            completed
+                          </small>
+                        </div>
+                        <footer className="kam-placement-footer">
+                          <span>
+                            Total: {placementPopup.vehicles.length} Vehicles
+                          </span>
+                          <div>
+                            <button
+                              type="button"
+                              onClick={() => setPlacementPopup(null)}
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              type="button"
+                              disabled={placementPopup.vehicles.some(
+                                (v) =>
+                                  !v.origin?.trim() ||
+                                  !v.destination?.trim() ||
+                                  !v.placementDate,
+                              )}
+                              onClick={() => {
+                                const { requirementId, vehicles } =
+                                  placementPopup;
+                                setProjectAllocationRows((previous) => ({
+                                  ...previous,
+                                  [requirementId]: {
+                                    ...previous[requirementId],
+                                    vehicles,
+                                  },
+                                }));
+                                setPlacementPopup(null);
+                              }}
+                            >
+                              Save Details
+                            </button>
+                          </div>
+                        </footer>
                       </div>
-                      <footer className="kam-placement-footer"><span>Total: {placementPopup.vehicles.length} Vehicles</span><div><button type="button" onClick={() => setPlacementPopup(null)}>Cancel</button><button type="button" disabled={placementPopup.vehicles.some(v => !v.origin?.trim() || !v.destination?.trim() || !v.placementDate)} onClick={() => {const {requirementId, vehicles} = placementPopup; setProjectAllocationRows(previous => ({...previous, [requirementId]: {...previous[requirementId], vehicles}})); setPlacementPopup(null);}}>Save Details</button></div></footer>
-                    </div>
-                  </div>, document.body)}
-                <ProjectRequestStatus key={order._id || order.tripId} order={order} />
+                    </div>,
+                    document.body,
+                  )}
+                <ProjectRequestStatus
+                  key={order._id || order.tripId}
+                  order={order}
+                />
               </section>
             </div>
           )}
@@ -4769,16 +6428,33 @@ const Lifecyclemodal = ({
             <div className="kam-step-page kam-step-page-place-order">
               <section className="kam-place-order-section">
                 {(!isPoDocumentComplete(order) ||
-                  getStatusClass(lifecycle?.[lifecycle.findIndex((step) => step.key === "vendor-finalization")]?.status) === "pending") && (
+                  getStatusClass(
+                    lifecycle?.[
+                      lifecycle.findIndex(
+                        (step) => step.key === "vendor-finalization",
+                      )
+                    ]?.status,
+                  ) === "pending") && (
                   <div className="kam-optional-commercial-warning">
                     <strong>⚠ Optional items pending</strong>
                     <span>
                       {!isPoDocumentComplete(order) && "PO Document"}
                       {!isPoDocumentComplete(order) &&
-                        getStatusClass(lifecycle?.[lifecycle.findIndex((step) => step.key === "vendor-finalization")]?.status) === "pending" &&
+                        getStatusClass(
+                          lifecycle?.[
+                            lifecycle.findIndex(
+                              (step) => step.key === "vendor-finalization",
+                            )
+                          ]?.status,
+                        ) === "pending" &&
                         " • "}
-                      {getStatusClass(lifecycle?.[lifecycle.findIndex((step) => step.key === "vendor-finalization")]?.status) === "pending" &&
-                        "Vendor Finalization"}
+                      {getStatusClass(
+                        lifecycle?.[
+                          lifecycle.findIndex(
+                            (step) => step.key === "vendor-finalization",
+                          )
+                        ]?.status,
+                      ) === "pending" && "Vendor Finalization"}
                     </span>
                     <small>
                       {isIntercartingMovement(order)
@@ -4959,367 +6635,376 @@ const Lifecyclemodal = ({
           {/* =================================================
               TRACKING - ALLOCATED + PENDING VEHICLES
           ================================================= */}
-          {activeStepIndex === (isProjectMovement(order) ? 6 : 5) && !isIntercartingMovement(order) && (
-            <div className="kam-step-page kam-step-page-allocated-vehicles">
-              {/* TRACKING ALLOCATION SUMMARY */}
-              <section className="kam-client-vehicle-section">
-                <SectionHeading
-                  title="Vehicle Allocation Status"
-                  description="Allocated and allocation-pending vehicles for this trip."
-                  count={approvedTrackingVehicleCount}
-                />
-                <div className="kam-client-vehicle-table-wrap">
-                  <table className="kam-client-vehicle-table">
-                    <thead>
-                      <tr>
-                        <th>Required Vehicles</th>
-                        <th>Allocated Vehicles</th>
-                        <th>Allocation Pending</th>
-                        <th>Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td>
-                          <strong>{approvedTrackingVehicleCount}</strong>
-                        </td>
-                        <td>
-                          <strong style={{ color: "#08776f" }}>
-                            {totalAllocatedVehicles}
-                          </strong>
-                        </td>
-                        <td>
-                          <strong
-                            style={{
-                              color:
-                                pendingVehicleCount > 0 ? "#b77900" : "#08776f",
-                            }}
-                          >
-                            {pendingVehicleCount}
-                          </strong>
-                        </td>
-                        <td>
-                          {pendingVehicleCount > 0 ? (
-                            <span
-                              style={{
-                                display: "inline-flex",
-                                alignItems: "center",
-                                gap: "6px",
-                                padding: "6px 10px",
-                                border: "1px solid #f0c56a",
-                                borderRadius: "999px",
-                                background: "#fff7e2",
-                                color: "#9a6200",
-                                fontSize: "10px",
-                                fontWeight: 900,
-                              }}
-                            >
-                              ⚠ {pendingVehicleCount} Pending
-                            </span>
-                          ) : (
-                            <span
-                              style={{
-                                display: "inline-flex",
-                                alignItems: "center",
-                                gap: "6px",
-                                padding: "6px 10px",
-                                border: "1px solid #b9ddd8",
-                                borderRadius: "999px",
-                                background: "#eefaf8",
-                                color: "#08776f",
-                                fontSize: "10px",
-                                fontWeight: 900,
-                              }}
-                            >
-                              ✓ Fully Allocated
-                            </span>
-                          )}
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </section>
-              {/* ALLOCATED VEHICLES */}
-              <section className="kam-client-vehicle-section">
-                <SectionHeading
-                  title="Allocated Vehicles"
-                  description="Actual vehicles allocated and managed by the Tracking team."
-                  count={totalAllocatedVehicles}
-                />
-                {validTrackingAllocations.length > 0 ? (
+          {activeStepIndex === (isProjectMovement(order) ? 6 : 5) &&
+            !isIntercartingMovement(order) && (
+              <div className="kam-step-page kam-step-page-allocated-vehicles">
+                {/* TRACKING ALLOCATION SUMMARY */}
+                <section className="kam-client-vehicle-section">
+                  <SectionHeading
+                    title="Vehicle Allocation Status"
+                    description="Allocated and allocation-pending vehicles for this trip."
+                    count={approvedTrackingVehicleCount}
+                  />
                   <div className="kam-client-vehicle-table-wrap">
                     <table className="kam-client-vehicle-table">
                       <thead>
                         <tr>
-                          <th>#</th>
-                          <th>Vehicle Number</th>
-                          <th>Requirement</th>
-                          <th>Transporter</th>
-                          <th>Driver</th>
-                          <th>Current Location</th>
-                          <th>Day</th>
+                          <th>Required Vehicles</th>
+                          <th>Allocated Vehicles</th>
+                          <th>Allocation Pending</th>
                           <th>Status</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {validTrackingAllocations.map((allocation, index) => {
-                          const requirement = getRequirement(
-                            order,
-                            allocation.requirementId,
-                          );
-                          const confirmation =
-                            safeArray(order.vehicleConfirmations).find(
-                              (item) =>
-                                item.confirmationId ===
-                                allocation.confirmationId,
-                            ) ||
-                            getApprovedConfirmation(
+                        <tr>
+                          <td>
+                            <strong>{approvedTrackingVehicleCount}</strong>
+                          </td>
+                          <td>
+                            <strong style={{ color: "#08776f" }}>
+                              {totalAllocatedVehicles}
+                            </strong>
+                          </td>
+                          <td>
+                            <strong
+                              style={{
+                                color:
+                                  pendingVehicleCount > 0
+                                    ? "#b77900"
+                                    : "#08776f",
+                              }}
+                            >
+                              {pendingVehicleCount}
+                            </strong>
+                          </td>
+                          <td>
+                            {pendingVehicleCount > 0 ? (
+                              <span
+                                style={{
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  gap: "6px",
+                                  padding: "6px 10px",
+                                  border: "1px solid #f0c56a",
+                                  borderRadius: "999px",
+                                  background: "#fff7e2",
+                                  color: "#9a6200",
+                                  fontSize: "10px",
+                                  fontWeight: 900,
+                                }}
+                              >
+                                ⚠ {pendingVehicleCount} Pending
+                              </span>
+                            ) : (
+                              <span
+                                style={{
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  gap: "6px",
+                                  padding: "6px 10px",
+                                  border: "1px solid #b9ddd8",
+                                  borderRadius: "999px",
+                                  background: "#eefaf8",
+                                  color: "#08776f",
+                                  fontSize: "10px",
+                                  fontWeight: 900,
+                                }}
+                              >
+                                ✓ Fully Allocated
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </section>
+                {/* ALLOCATED VEHICLES */}
+                <section className="kam-client-vehicle-section">
+                  <SectionHeading
+                    title="Allocated Vehicles"
+                    description="Actual vehicles allocated and managed by the Tracking team."
+                    count={totalAllocatedVehicles}
+                  />
+                  {validTrackingAllocations.length > 0 ? (
+                    <div className="kam-client-vehicle-table-wrap">
+                      <table className="kam-client-vehicle-table">
+                        <thead>
+                          <tr>
+                            <th>#</th>
+                            <th>Vehicle Number</th>
+                            <th>Requirement</th>
+                            <th>Transporter</th>
+                            <th>Driver</th>
+                            <th>Current Location</th>
+                            <th>Day</th>
+                            <th>Status</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {validTrackingAllocations.map((allocation, index) => {
+                            const requirement = getRequirement(
                               order,
                               allocation.requirementId,
                             );
-                          const quotation = getQuotation(
-                            order,
-                            allocation.quotationId || confirmation?.quotationId,
-                          );
-                          const latest = getLatestTracking(allocation);
-                          const unloadingCompleted =
-                            String(allocation?.unloading?.status || "")
-                              .trim()
-                              .toLowerCase() === "completed";
-                          const vehicleStatus = unloadingCompleted
-                            ? "Reached"
-                            : latest?.status ||
-                              allocation?.latestTracking?.status ||
-                              allocation?.status ||
-                              "Idle";
-                          return (
-                            <tr key={allocation.allocationId || index}>
-                              <td>
-                                <span className="kam-client-row-no">
-                                  {index + 1}
-                                </span>
-                              </td>
-                              <td>
-                                <div className="kam-simple-vehicle-number">
-                                  <strong>
-                                    {allocation.vehicleNumber || "—"}
-                                  </strong>
-                                  {safeArray(allocation.replacementHistory)
-                                    .length > 0 &&
-                                    (() => {
-                                      const history = safeArray(
-                                        allocation.replacementHistory,
-                                      );
-                                      const vehicleChain = [
-                                        history[0]?.oldVehicleNumber,
-                                        ...history.map(
-                                          (item) => item?.newVehicleNumber,
-                                        ),
-                                      ].filter(Boolean);
-                                      const uniqueVehicleChain =
-                                        vehicleChain.filter(
-                                          (vehicleNumber, index, array) =>
-                                            index === 0 ||
-                                            vehicleNumber !== array[index - 1],
-                                        );
-                                      return (
-                                        <div
-                                          className="kam-simple-replacement-chain"
-                                          title={uniqueVehicleChain.join(" → ")}
-                                        >
-                                          {uniqueVehicleChain.map(
-                                            (vehicleNumber, index) => (
-                                              <React.Fragment
-                                                key={`${allocation.allocationId || allocation._id}-replacement-${vehicleNumber}-${index}`}
-                                              >
-                                                <span
-                                                  className={
-                                                    index ===
-                                                    uniqueVehicleChain.length -
-                                                      1
-                                                      ? "current"
-                                                      : "previous"
-                                                  }
-                                                >
-                                                  {vehicleNumber}
-                                                </span>
-                                                {index <
-                                                  uniqueVehicleChain.length -
-                                                    1 && <b>→</b>}
-                                              </React.Fragment>
-                                            ),
-                                          )}
-                                        </div>
-                                      );
-                                    })()}
-                                </div>
-                              </td>
-                              <td>
-                                {requirement?.vehicleType ||
-                                  allocation.requirementId ||
-                                  "—"}
-                              </td>
-                              <td>
-                                {quotation?.transporter ||
-                                  confirmation?.selectedTransport ||
-                                  confirmation?.transporter ||
-                                  "—"}
-                              </td>
-                              <td>
-                                <strong>
-                                  {allocation?.driver?.name ||
-                                    allocation?.driverName ||
-                                    "—"}
-                                </strong>
-                                {(allocation?.driver?.contactNumber ||
-                                  allocation?.driverNumber) && (
-                                  <small style={{ display: "block" }}>
-                                    {allocation?.driver?.contactNumber ||
-                                      allocation?.driverNumber}
-                                  </small>
-                                )}
-                              </td>
-                              <td>
-                                {latest?.currentLocation ||
-                                  allocation?.todayLocation ||
-                                  "—"}
-                              </td>
-                              <td>{latest?.day || "—"}</td>
-                              <td>
-                                <span
-                                  className={`approval-status ${getStatusClass(
-                                    vehicleStatus,
-                                  )}`}
-                                >
-                                  {vehicleStatus}
-                                </span>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                ) : (
-                  <div className="kam-lifecycle-empty">
-                    No vehicles have been allocated by the Tracking team yet.
-                  </div>
-                )}
-              </section>
-              {/* ALLOCATION PENDING VEHICLES */}
-              <section className="kam-client-vehicle-section">
-                <SectionHeading
-                  title="Allocation Pending Vehicles"
-                  description="Vehicle quantity still waiting for actual vehicle allocation by the Tracking team."
-                  count={pendingVehicleCount}
-                />
-                {pendingVehicleCount > 0 ? (
-                  <div className="kam-client-vehicle-table-wrap">
-                    <table className="kam-client-vehicle-table">
-                      <thead>
-                        <tr>
-                          <th>#</th>
-                          <th>Requirement ID</th>
-                          <th>Vehicle Requirement</th>
-                          <th>Required</th>
-                          <th>Allocated</th>
-                          <th>Pending</th>
-                          <th>Status</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {approvedTrackingRows
-                          .map((approvedItem) => {
-                            const requirement = getRequirement(
+                            const confirmation =
+                              safeArray(order.vehicleConfirmations).find(
+                                (item) =>
+                                  item.confirmationId ===
+                                  allocation.confirmationId,
+                              ) ||
+                              getApprovedConfirmation(
+                                order,
+                                allocation.requirementId,
+                              );
+                            const quotation = getQuotation(
                               order,
-                              approvedItem.requirementId,
+                              allocation.quotationId ||
+                                confirmation?.quotationId,
                             );
-                            const requiredQty = approvedItem.approvedQuantity;
-                            const allocatedQty = Math.min(
-                              getAllocatedQuantityForRequirement(
+                            const latest = getLatestTracking(allocation);
+                            const unloadingCompleted =
+                              String(allocation?.unloading?.status || "")
+                                .trim()
+                                .toLowerCase() === "completed";
+                            const vehicleStatus = unloadingCompleted
+                              ? "Reached"
+                              : latest?.status ||
+                                allocation?.latestTracking?.status ||
+                                allocation?.status ||
+                                "Idle";
+                            return (
+                              <tr key={allocation.allocationId || index}>
+                                <td>
+                                  <span className="kam-client-row-no">
+                                    {index + 1}
+                                  </span>
+                                </td>
+                                <td>
+                                  <div className="kam-simple-vehicle-number">
+                                    <strong>
+                                      {allocation.vehicleNumber || "—"}
+                                    </strong>
+                                    {safeArray(allocation.replacementHistory)
+                                      .length > 0 &&
+                                      (() => {
+                                        const history = safeArray(
+                                          allocation.replacementHistory,
+                                        );
+                                        const vehicleChain = [
+                                          history[0]?.oldVehicleNumber,
+                                          ...history.map(
+                                            (item) => item?.newVehicleNumber,
+                                          ),
+                                        ].filter(Boolean);
+                                        const uniqueVehicleChain =
+                                          vehicleChain.filter(
+                                            (vehicleNumber, index, array) =>
+                                              index === 0 ||
+                                              vehicleNumber !==
+                                                array[index - 1],
+                                          );
+                                        return (
+                                          <div
+                                            className="kam-simple-replacement-chain"
+                                            title={uniqueVehicleChain.join(
+                                              " → ",
+                                            )}
+                                          >
+                                            {uniqueVehicleChain.map(
+                                              (vehicleNumber, index) => (
+                                                <React.Fragment
+                                                  key={`${allocation.allocationId || allocation._id}-replacement-${vehicleNumber}-${index}`}
+                                                >
+                                                  <span
+                                                    className={
+                                                      index ===
+                                                      uniqueVehicleChain.length -
+                                                        1
+                                                        ? "current"
+                                                        : "previous"
+                                                    }
+                                                  >
+                                                    {vehicleNumber}
+                                                  </span>
+                                                  {index <
+                                                    uniqueVehicleChain.length -
+                                                      1 && <b>→</b>}
+                                                </React.Fragment>
+                                              ),
+                                            )}
+                                          </div>
+                                        );
+                                      })()}
+                                  </div>
+                                </td>
+                                <td>
+                                  {requirement?.vehicleType ||
+                                    allocation.requirementId ||
+                                    "—"}
+                                </td>
+                                <td>
+                                  {quotation?.transporter ||
+                                    confirmation?.selectedTransport ||
+                                    confirmation?.transporter ||
+                                    "—"}
+                                </td>
+                                <td>
+                                  <strong>
+                                    {allocation?.driver?.name ||
+                                      allocation?.driverName ||
+                                      "—"}
+                                  </strong>
+                                  {(allocation?.driver?.contactNumber ||
+                                    allocation?.driverNumber) && (
+                                    <small style={{ display: "block" }}>
+                                      {allocation?.driver?.contactNumber ||
+                                        allocation?.driverNumber}
+                                    </small>
+                                  )}
+                                </td>
+                                <td>
+                                  {latest?.currentLocation ||
+                                    allocation?.todayLocation ||
+                                    "—"}
+                                </td>
+                                <td>{latest?.day || "—"}</td>
+                                <td>
+                                  <span
+                                    className={`approval-status ${getStatusClass(
+                                      vehicleStatus,
+                                    )}`}
+                                  >
+                                    {vehicleStatus}
+                                  </span>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <div className="kam-lifecycle-empty">
+                      No vehicles have been allocated by the Tracking team yet.
+                    </div>
+                  )}
+                </section>
+                {/* ALLOCATION PENDING VEHICLES */}
+                <section className="kam-client-vehicle-section">
+                  <SectionHeading
+                    title="Allocation Pending Vehicles"
+                    description="Vehicle quantity still waiting for actual vehicle allocation by the Tracking team."
+                    count={pendingVehicleCount}
+                  />
+                  {pendingVehicleCount > 0 ? (
+                    <div className="kam-client-vehicle-table-wrap">
+                      <table className="kam-client-vehicle-table">
+                        <thead>
+                          <tr>
+                            <th>#</th>
+                            <th>Requirement ID</th>
+                            <th>Vehicle Requirement</th>
+                            <th>Required</th>
+                            <th>Allocated</th>
+                            <th>Pending</th>
+                            <th>Status</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {approvedTrackingRows
+                            .map((approvedItem) => {
+                              const requirement = getRequirement(
+                                order,
                                 approvedItem.requirementId,
-                              ),
-                              requiredQty,
-                            );
-                            const pendingQty = Math.max(
-                              requiredQty - allocatedQty,
-                              0,
-                            );
-                            return {
-                              requirement,
-                              requiredQty,
-                              allocatedQty,
-                              pendingQty,
-                            };
-                          })
-                          .filter((item) => item.pendingQty > 0)
-                          .map((item, index) => (
-                            <tr key={item.requirement?.requirementId || index}>
-                              <td>
-                                <span className="kam-client-row-no">
-                                  {index + 1}
-                                </span>
-                              </td>
-                              <td>
-                                <strong>
-                                  {item.requirement?.requirementId || "—"}
-                                </strong>
-                              </td>
-                              <td>
-                                <strong>
-                                  {item.requirement?.vehicleType || "—"}
-                                </strong>
-                                {item.requirement?.configuration && (
-                                  <small style={{ display: "block" }}>
-                                    {item.requirement.configuration}
-                                  </small>
-                                )}
-                              </td>
-                              <td>
-                                <strong>{item.requiredQty}</strong>
-                              </td>
-                              <td>
-                                <strong style={{ color: "#08776f" }}>
-                                  {item.allocatedQty}
-                                </strong>
-                              </td>
-                              <td>
-                                <strong style={{ color: "#b77900" }}>
-                                  {item.pendingQty}
-                                </strong>
-                              </td>
-                              <td>
-                                <span
-                                  style={{
-                                    display: "inline-flex",
-                                    alignItems: "center",
-                                    gap: "6px",
-                                    padding: "6px 10px",
-                                    border: "1px solid #f0c56a",
-                                    borderRadius: "999px",
-                                    background: "#fff7e2",
-                                    color: "#9a6200",
-                                    fontSize: "10px",
-                                    fontWeight: 900,
-                                  }}
-                                >
-                                  ⚠ Allocation Pending
-                                </span>
-                              </td>
-                            </tr>
-                          ))}
-                      </tbody>
-                    </table>
-                  </div>
-                ) : (
-                  <div className="kam-lifecycle-empty">
-                    ✓ All required vehicles have been allocated.
-                  </div>
-                )}
-              </section>
-            </div>
-          )}
+                              );
+                              const requiredQty = approvedItem.approvedQuantity;
+                              const allocatedQty = Math.min(
+                                getAllocatedQuantityForRequirement(
+                                  approvedItem.requirementId,
+                                ),
+                                requiredQty,
+                              );
+                              const pendingQty = Math.max(
+                                requiredQty - allocatedQty,
+                                0,
+                              );
+                              return {
+                                requirement,
+                                requiredQty,
+                                allocatedQty,
+                                pendingQty,
+                              };
+                            })
+                            .filter((item) => item.pendingQty > 0)
+                            .map((item, index) => (
+                              <tr
+                                key={item.requirement?.requirementId || index}
+                              >
+                                <td>
+                                  <span className="kam-client-row-no">
+                                    {index + 1}
+                                  </span>
+                                </td>
+                                <td>
+                                  <strong>
+                                    {item.requirement?.requirementId || "—"}
+                                  </strong>
+                                </td>
+                                <td>
+                                  <strong>
+                                    {item.requirement?.vehicleType || "—"}
+                                  </strong>
+                                  {item.requirement?.configuration && (
+                                    <small style={{ display: "block" }}>
+                                      {item.requirement.configuration}
+                                    </small>
+                                  )}
+                                </td>
+                                <td>
+                                  <strong>{item.requiredQty}</strong>
+                                </td>
+                                <td>
+                                  <strong style={{ color: "#08776f" }}>
+                                    {item.allocatedQty}
+                                  </strong>
+                                </td>
+                                <td>
+                                  <strong style={{ color: "#b77900" }}>
+                                    {item.pendingQty}
+                                  </strong>
+                                </td>
+                                <td>
+                                  <span
+                                    style={{
+                                      display: "inline-flex",
+                                      alignItems: "center",
+                                      gap: "6px",
+                                      padding: "6px 10px",
+                                      border: "1px solid #f0c56a",
+                                      borderRadius: "999px",
+                                      background: "#fff7e2",
+                                      color: "#9a6200",
+                                      fontSize: "10px",
+                                      fontWeight: 900,
+                                    }}
+                                  >
+                                    ⚠ Allocation Pending
+                                  </span>
+                                </td>
+                              </tr>
+                            ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <div className="kam-lifecycle-empty">
+                      ✓ All required vehicles have been allocated.
+                    </div>
+                  )}
+                </section>
+              </div>
+            )}
           {/* INVOICE & PAYMENT */}
           {activeStepIndex === (isProjectMovement(order) ? 7 : 6) && (
             <div className="kam-step-page kam-step-page-invoice-payment">
@@ -5335,20 +7020,40 @@ const Lifecyclemodal = ({
                     <>
                       <div className="kam-invoice-group">
                         <div className="kam-invoice-amount-breakdown">
-                          <div><span>Total Invoiced</span><strong>{formatRupees(intercartingTotals.gross)}</strong></div>
-                          <div><span>Total GST</span><strong>{formatRupees(intercartingTotals.gst)}</strong></div>
-                          <div className="kam-invoice-grand-total"><span>Invoice Total</span><strong>{formatRupees(intercartingTotals.net)}</strong></div>
+                          <div>
+                            <span>Total Invoiced</span>
+                            <strong>
+                              {formatRupees(intercartingTotals.gross)}
+                            </strong>
+                          </div>
+                          <div>
+                            <span>Total GST</span>
+                            <strong>
+                              {formatRupees(intercartingTotals.gst)}
+                            </strong>
+                          </div>
+                          <div className="kam-invoice-grand-total">
+                            <span>Invoice Total</span>
+                            <strong>
+                              {formatRupees(intercartingTotals.net)}
+                            </strong>
+                          </div>
                         </div>
                         <div className="kam-intercarting-add-invoice-toolbar">
                           <div>
                             <h4 className="kam-invoice-subheading">Invoices</h4>
-                            <p>Add a new invoice and keep its payment history separately.</p>
+                            <p>
+                              Add a new invoice and keep its payment history
+                              separately.
+                            </p>
                           </div>
                           <button
                             type="button"
                             className="kam-request-approval-btn kam-intercarting-open-invoice"
-                            onClick={() => setIntercartingInvoiceModalOpen(true)}
-                            disabled={isCompletedTrip(workingOrder)}
+                            onClick={() =>
+                              setIntercartingInvoiceModalOpen(true)
+                            }
+                            disabled={completedCurrentOrder}
                           >
                             + Add Invoice
                           </button>
@@ -5357,7 +7062,10 @@ const Lifecyclemodal = ({
                           <div
                             className="kam-intercarting-invoice-modal-overlay"
                             onMouseDown={(event) => {
-                              if (event.target === event.currentTarget && !invoiceSaving)
+                              if (
+                                event.target === event.currentTarget &&
+                                !invoiceSaving
+                              )
                                 setIntercartingInvoiceModalOpen(false);
                             }}
                           >
@@ -5370,47 +7078,128 @@ const Lifecyclemodal = ({
                               <header className="kam-intercarting-invoice-modal-head">
                                 <div>
                                   <span>INTERCARTING · INVOICE ENTRY</span>
-                                  <h3 id="kam-intercarting-invoice-modal-title">Add New Invoice</h3>
-                                  <p>Enter invoice details, attach the document and add remarks.</p>
+                                  <h3 id="kam-intercarting-invoice-modal-title">
+                                    Add New Invoice
+                                  </h3>
+                                  <p>
+                                    Enter invoice details, attach the document
+                                    and add remarks.
+                                  </p>
                                 </div>
                                 <button
                                   type="button"
                                   aria-label="Close invoice popup"
-                                  onClick={() => setIntercartingInvoiceModalOpen(false)}
+                                  onClick={() =>
+                                    setIntercartingInvoiceModalOpen(false)
+                                  }
                                   disabled={invoiceSaving}
-                                >×</button>
+                                >
+                                  ×
+                                </button>
                               </header>
                               <div className="kam-intercarting-invoice-modal-body">
                                 <div className="kam-invoice-fields kam-invoice-four-fields">
                                   <label className="kam-client-trip-field">
                                     <span>Invoice Number</span>
-                                    <input className="kam-original-edit-input" type="text" maxLength={100} placeholder="Enter invoice number" value={invoicePaymentForm.invoiceNumber} onChange={(event) => updateInvoicePaymentField("invoiceNumber", event.target.value)} />
+                                    <input
+                                      className="kam-original-edit-input"
+                                      type="text"
+                                      maxLength={100}
+                                      placeholder="Enter invoice number"
+                                      value={invoicePaymentForm.invoiceNumber}
+                                      onChange={(event) =>
+                                        updateInvoicePaymentField(
+                                          "invoiceNumber",
+                                          event.target.value,
+                                        )
+                                      }
+                                    />
                                   </label>
                                   <label className="kam-client-trip-field">
                                     <span>Invoice Date</span>
-                                    <input className="kam-original-edit-input" type="date" value={invoicePaymentForm.invoiceDate} onChange={(event) => updateInvoicePaymentField("invoiceDate", event.target.value)} />
+                                    <input
+                                      className="kam-original-edit-input"
+                                      type="date"
+                                      value={invoicePaymentForm.invoiceDate}
+                                      onChange={(event) =>
+                                        updateInvoicePaymentField(
+                                          "invoiceDate",
+                                          event.target.value,
+                                        )
+                                      }
+                                    />
                                   </label>
                                   <label className="kam-client-trip-field">
                                     <span>Amount (₹)</span>
-                                    <input className="kam-original-edit-input" type="number" min="0.01" step="0.01" placeholder="Enter amount" value={invoicePaymentForm.amount} onChange={(event) => updateInvoicePaymentField("amount", event.target.value)} />
+                                    <input
+                                      className="kam-original-edit-input"
+                                      type="number"
+                                      min="0.01"
+                                      step="0.01"
+                                      placeholder="Enter amount"
+                                      value={invoicePaymentForm.amount}
+                                      onChange={(event) =>
+                                        updateInvoicePaymentField(
+                                          "amount",
+                                          event.target.value,
+                                        )
+                                      }
+                                    />
                                   </label>
                                   <label className="kam-client-trip-field">
                                     <span>GST Percentage (%)</span>
-                                    <select className="kam-original-edit-input kam-gst-select" value={invoicePaymentForm.gstPercentage} onChange={(event) => updateInvoicePaymentField("gstPercentage", event.target.value)}>
-                                      <option value="0">0% — No GST</option><option value="5">5%</option><option value="12">12%</option><option value="18">18%</option><option value="28">28%</option><option value="40">40%</option>
+                                    <select
+                                      className="kam-original-edit-input kam-gst-select"
+                                      value={invoicePaymentForm.gstPercentage}
+                                      onChange={(event) =>
+                                        updateInvoicePaymentField(
+                                          "gstPercentage",
+                                          event.target.value,
+                                        )
+                                      }
+                                    >
+                                      <option value="0">0% — No GST</option>
+                                      <option value="5">5%</option>
+                                      <option value="12">12%</option>
+                                      <option value="18">18%</option>
+                                      <option value="28">28%</option>
+                                      <option value="40">40%</option>
                                     </select>
                                   </label>
                                 </div>
                                 <div className="kam-invoice-upload-row">
                                   <label className="kam-client-trip-field">
                                     <span>Upload Invoice (PDF / Image)</span>
-                                    <input ref={invoiceDocumentInputRef} className="kam-original-edit-input" type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={(event) => setInvoiceDocument(event.target.files?.[0] || null)} />
-                                    {invoiceDocument && <strong>{invoiceDocument.name}</strong>}
+                                    <input
+                                      ref={invoiceDocumentInputRef}
+                                      className="kam-original-edit-input"
+                                      type="file"
+                                      accept=".pdf,.jpg,.jpeg,.png"
+                                      onChange={(event) =>
+                                        setInvoiceDocument(
+                                          event.target.files?.[0] || null,
+                                        )
+                                      }
+                                    />
+                                    {invoiceDocument && (
+                                      <strong>{invoiceDocument.name}</strong>
+                                    )}
                                   </label>
                                 </div>
                                 <label className="kam-client-trip-field kam-intercarting-invoice-remarks">
                                   <span>Remarks</span>
-                                  <textarea className="kam-original-edit-input" rows={3} maxLength={2000} placeholder="Enter invoice remarks (optional)" value={intercartingInvoiceRemarks} onChange={(event) => setIntercartingInvoiceRemarks(event.target.value)} />
+                                  <textarea
+                                    className="kam-original-edit-input"
+                                    rows={3}
+                                    maxLength={2000}
+                                    placeholder="Enter invoice remarks (optional)"
+                                    value={intercartingInvoiceRemarks}
+                                    onChange={(event) =>
+                                      setIntercartingInvoiceRemarks(
+                                        event.target.value,
+                                      )
+                                    }
+                                  />
                                 </label>
                                 <div className="kam-intercarting-invoice-total-preview">
                                   <span>Invoice Total (including GST)</span>
@@ -5418,10 +7207,35 @@ const Lifecyclemodal = ({
                                 </div>
                               </div>
                               <footer className="kam-intercarting-invoice-modal-foot">
-                                <span>{!invoicePaymentForm.invoiceNumber.trim() || !invoicePaymentForm.invoiceDate ? "Invoice number and date are required." : "Check the details before saving."}</span>
+                                <span>
+                                  {!invoicePaymentForm.invoiceNumber.trim() ||
+                                  !invoicePaymentForm.invoiceDate
+                                    ? "Invoice number and date are required."
+                                    : "Check the details before saving."}
+                                </span>
                                 <div>
-                                  <button type="button" className="kam-request-approval-btn kam-payment-cancel-button" onClick={() => setIntercartingInvoiceModalOpen(false)} disabled={invoiceSaving}>Cancel</button>
-                                  <button type="button" className="kam-request-approval-btn kam-invoice-save-button" onClick={saveInvoiceDetails} disabled={invoiceSaving || isCompletedTrip(workingOrder)}>{invoiceSaving ? "Saving..." : "Save Invoice"}</button>
+                                  <button
+                                    type="button"
+                                    className="kam-request-approval-btn kam-payment-cancel-button"
+                                    onClick={() =>
+                                      setIntercartingInvoiceModalOpen(false)
+                                    }
+                                    disabled={invoiceSaving}
+                                  >
+                                    Cancel
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="kam-request-approval-btn kam-invoice-save-button"
+                                    onClick={saveInvoiceDetails}
+                                    disabled={
+                                      invoiceSaving || completedCurrentOrder
+                                    }
+                                  >
+                                    {invoiceSaving
+                                      ? "Saving..."
+                                      : "Save Invoice"}
+                                  </button>
                                 </div>
                               </footer>
                             </section>
@@ -5429,318 +7243,564 @@ const Lifecyclemodal = ({
                         )}
                       </div>
                       <div className="kam-invoice-group">
-                        <h4 className="kam-invoice-subheading">Saved Invoices ({intercartingInvoices.length})</h4>
+                        <h4 className="kam-invoice-subheading">
+                          Saved Invoices ({intercartingInvoices.length})
+                        </h4>
                         {intercartingInvoices.length ? (
                           <div className="kam-intercarting-invoice-list">
                             {intercartingInvoices.map((invoice, index) => {
-                              const invoicePayments = safeArray(invoice.payments);
-                              const invoiceReceived = invoicePayments.reduce((sum, item) => sum + Number(item.amount || 0), 0);
-                              const invoiceDue = Math.max(0, Number(invoice.totalAmount || 0) - invoiceReceived);
+                              const invoicePayments = safeArray(
+                                invoice.payments,
+                              );
+                              const invoiceReceived = invoicePayments.reduce(
+                                (sum, item) => sum + Number(item.amount || 0),
+                                0,
+                              );
+                              const invoiceDue = Math.max(
+                                0,
+                                Number(invoice.totalAmount || 0) -
+                                  invoiceReceived,
+                              );
                               return (
-                                <article className="kam-intercarting-invoice-card" key={invoice._id || index}>
-                                  <div className="kam-intercarting-invoice-card-head"><div><span>Invoice {index + 1}</span><strong>{invoice.invoiceNumber}</strong><small>{invoice.invoiceDate}</small></div><span className={`kam-payment-pill${invoiceDue === 0 ? " is-paid" : ""}`}>{invoiceDue === 0 ? "Fully Paid" : invoiceReceived > 0 ? "Partially Paid" : "Pending"}</span></div>
-                                  <div className="kam-intercarting-invoice-values"><div><span>Invoice Total</span><strong>{formatRupees(invoice.totalAmount)}</strong></div><div><span>Received</span><strong>{formatRupees(invoiceReceived)}</strong></div><div><span>Balance</span><strong>{formatRupees(invoiceDue)}</strong></div></div>
-                                  {invoice.remarks && <div className="kam-intercarting-saved-invoice-remarks"><span>Remarks</span><p>{invoice.remarks}</p></div>}
+                                <article
+                                  className="kam-intercarting-invoice-card"
+                                  key={invoice._id || index}
+                                >
+                                  <div className="kam-intercarting-invoice-card-head">
+                                    <div>
+                                      <span>Invoice {index + 1}</span>
+                                      <strong>{invoice.invoiceNumber}</strong>
+                                      <small>{invoice.invoiceDate}</small>
+                                    </div>
+                                    <span
+                                      className={`kam-payment-pill${invoiceDue === 0 ? " is-paid" : ""}`}
+                                    >
+                                      {invoiceDue === 0
+                                        ? "Fully Paid"
+                                        : invoiceReceived > 0
+                                          ? "Partially Paid"
+                                          : "Pending"}
+                                    </span>
+                                  </div>
+                                  <div className="kam-intercarting-invoice-values">
+                                    <div>
+                                      <span>Invoice Total</span>
+                                      <strong>
+                                        {formatRupees(invoice.totalAmount)}
+                                      </strong>
+                                    </div>
+                                    <div>
+                                      <span>Received</span>
+                                      <strong>
+                                        {formatRupees(invoiceReceived)}
+                                      </strong>
+                                    </div>
+                                    <div>
+                                      <span>Balance</span>
+                                      <strong>
+                                        {formatRupees(invoiceDue)}
+                                      </strong>
+                                    </div>
+                                  </div>
+                                  {invoice.remarks && (
+                                    <div className="kam-intercarting-saved-invoice-remarks">
+                                      <span>Remarks</span>
+                                      <p>{invoice.remarks}</p>
+                                    </div>
+                                  )}
                                   <div className="kam-payment-toolbar">
                                     <div className="kam-intercarting-invoice-document-actions">
-                                      <span>{invoice.invoiceDocument?.fileName ? `Document: ${invoice.invoiceDocument.fileName}` : "No invoice document attached"}</span>
-                                      {invoice.invoiceDocument?.fileName && <>
-                                        <button type="button" className="kam-intercarting-document-action" onClick={() => openIntercartingInvoiceDocument(invoice, false)}>View</button>
-                                        <button type="button" className="kam-intercarting-document-action" onClick={() => openIntercartingInvoiceDocument(invoice, true)}>Download</button>
-                                      </>}
+                                      <span>
+                                        {invoice.invoiceDocument?.fileName
+                                          ? `Document: ${invoice.invoiceDocument.fileName}`
+                                          : "No invoice document attached"}
+                                      </span>
+                                      {invoice.invoiceDocument?.fileName && (
+                                        <>
+                                          <button
+                                            type="button"
+                                            className="kam-intercarting-document-action"
+                                            onClick={() =>
+                                              openIntercartingInvoiceDocument(
+                                                invoice,
+                                                false,
+                                              )
+                                            }
+                                          >
+                                            View
+                                          </button>
+                                          <button
+                                            type="button"
+                                            className="kam-intercarting-document-action"
+                                            onClick={() =>
+                                              openIntercartingInvoiceDocument(
+                                                invoice,
+                                                true,
+                                              )
+                                            }
+                                          >
+                                            Download
+                                          </button>
+                                        </>
+                                      )}
                                     </div>
-                                    <button type="button" className="kam-request-approval-btn" disabled={invoiceDue <= 0 || paymentSaving || isCompletedTrip(workingOrder)} onClick={() => { setSelectedIntercartingInvoiceId(String(invoice._id)); setPaymentEntryOpen(true); setPaymentEntry({ amount: "", paymentDate: "", remarks: "" }); }}>+ Add Payment</button>
+                                    <button
+                                      type="button"
+                                      className="kam-request-approval-btn"
+                                      disabled={
+                                        invoiceDue <= 0 ||
+                                        paymentSaving ||
+                                        completedCurrentOrder
+                                      }
+                                      onClick={() => {
+                                        setSelectedIntercartingInvoiceId(
+                                          String(invoice._id),
+                                        );
+                                        setPaymentEntryOpen(true);
+                                        setPaymentEntry({
+                                          amount: "",
+                                          paymentDate: "",
+                                          remarks: "",
+                                        });
+                                      }}
+                                    >
+                                      + Add Payment
+                                    </button>
                                   </div>
-                                  <div className="kam-payment-history"><h4>Payment History ({invoicePayments.length})</h4>{invoicePayments.length ? <table className="kam-history-table"><thead><tr><th>#</th><th>Date</th><th>Amount</th><th>Remarks</th><th>Received By</th></tr></thead><tbody>{invoicePayments.map((payment, paymentIndex) => <tr key={payment._id || paymentIndex}><td>{paymentIndex + 1}</td><td>{payment.paymentDate || "—"}</td><td><strong>{formatRupees(payment.amount)}</strong></td><td>{payment.remarks || "—"}</td><td>{payment.receivedBy || "—"}</td></tr>)}</tbody></table> : <p>No payments recorded for this invoice.</p>}</div>
-                                  {paymentEntryOpen && String(selectedIntercartingInvoiceId) === String(invoice._id) && (
-                                    <div className="kam-intercarting-payment-panel"><h4>Record Payment <span>Balance: {formatRupees(invoiceDue)}</span></h4><div className="kam-invoice-fields kam-payment-entry"><label className="kam-client-trip-field"><span>Received Amount (₹)</span><input className="kam-original-edit-input" type="number" min="0.01" max={invoiceDue} step="0.01" value={paymentEntry.amount} placeholder="Enter installment amount" onChange={(event) => setPaymentEntry((previous) => ({ ...previous, amount: event.target.value }))} /></label><label className="kam-client-trip-field"><span>Payment Date</span><input className="kam-original-edit-input" type="date" value={paymentEntry.paymentDate} onChange={(event) => setPaymentEntry((previous) => ({ ...previous, paymentDate: event.target.value }))} /></label><label className="kam-client-trip-field kam-payment-remarks"><span>Remarks</span><textarea className="kam-original-edit-input" rows={2} maxLength={2000} value={paymentEntry.remarks} onChange={(event) => setPaymentEntry((previous) => ({ ...previous, remarks: event.target.value }))} /></label><div className="kam-payment-entry-actions"><button type="button" className="kam-request-approval-btn kam-payment-cancel-button" onClick={() => setPaymentEntryOpen(false)}>Cancel</button><button type="button" className="kam-request-approval-btn kam-payment-save-button" disabled={paymentSaving} onClick={savePaymentInstallment}>{paymentSaving ? "Saving..." : "Save Payment"}</button></div></div></div>
-                                  )}
+                                  <div className="kam-payment-history">
+                                    <h4>
+                                      Payment History ({invoicePayments.length})
+                                    </h4>
+                                    {invoicePayments.length ? (
+                                      <table className="kam-history-table">
+                                        <thead>
+                                          <tr>
+                                            <th>#</th>
+                                            <th>Date</th>
+                                            <th>Amount</th>
+                                            <th>Remarks</th>
+                                            <th>Received By</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          {invoicePayments.map(
+                                            (payment, paymentIndex) => (
+                                              <tr
+                                                key={
+                                                  payment._id || paymentIndex
+                                                }
+                                              >
+                                                <td>{paymentIndex + 1}</td>
+                                                <td>
+                                                  {payment.paymentDate || "—"}
+                                                </td>
+                                                <td>
+                                                  <strong>
+                                                    {formatRupees(
+                                                      payment.amount,
+                                                    )}
+                                                  </strong>
+                                                </td>
+                                                <td>
+                                                  {payment.remarks || "—"}
+                                                </td>
+                                                <td>
+                                                  {payment.receivedBy || "—"}
+                                                </td>
+                                              </tr>
+                                            ),
+                                          )}
+                                        </tbody>
+                                      </table>
+                                    ) : (
+                                      <p>
+                                        No payments recorded for this invoice.
+                                      </p>
+                                    )}
+                                  </div>
+                                  {paymentEntryOpen &&
+                                    String(selectedIntercartingInvoiceId) ===
+                                      String(invoice._id) && (
+                                      <div className="kam-intercarting-payment-panel">
+                                        <h4>
+                                          Record Payment{" "}
+                                          <span>
+                                            Balance: {formatRupees(invoiceDue)}
+                                          </span>
+                                        </h4>
+                                        <div className="kam-invoice-fields kam-payment-entry">
+                                          <label className="kam-client-trip-field">
+                                            <span>Received Amount (₹)</span>
+                                            <input
+                                              className="kam-original-edit-input"
+                                              type="number"
+                                              min="0.01"
+                                              max={invoiceDue}
+                                              step="0.01"
+                                              value={paymentEntry.amount}
+                                              placeholder="Enter installment amount"
+                                              onChange={(event) =>
+                                                setPaymentEntry((previous) => ({
+                                                  ...previous,
+                                                  amount: event.target.value,
+                                                }))
+                                              }
+                                            />
+                                          </label>
+                                          <label className="kam-client-trip-field">
+                                            <span>Payment Date</span>
+                                            <input
+                                              className="kam-original-edit-input"
+                                              type="date"
+                                              value={paymentEntry.paymentDate}
+                                              onChange={(event) =>
+                                                setPaymentEntry((previous) => ({
+                                                  ...previous,
+                                                  paymentDate:
+                                                    event.target.value,
+                                                }))
+                                              }
+                                            />
+                                          </label>
+                                          <label className="kam-client-trip-field kam-payment-remarks">
+                                            <span>Remarks</span>
+                                            <textarea
+                                              className="kam-original-edit-input"
+                                              rows={2}
+                                              maxLength={2000}
+                                              value={paymentEntry.remarks}
+                                              onChange={(event) =>
+                                                setPaymentEntry((previous) => ({
+                                                  ...previous,
+                                                  remarks: event.target.value,
+                                                }))
+                                              }
+                                            />
+                                          </label>
+                                          <div className="kam-payment-entry-actions">
+                                            <button
+                                              type="button"
+                                              className="kam-request-approval-btn kam-payment-cancel-button"
+                                              onClick={() =>
+                                                setPaymentEntryOpen(false)
+                                              }
+                                            >
+                                              Cancel
+                                            </button>
+                                            <button
+                                              type="button"
+                                              className="kam-request-approval-btn kam-payment-save-button"
+                                              disabled={paymentSaving}
+                                              onClick={savePaymentInstallment}
+                                            >
+                                              {paymentSaving
+                                                ? "Saving..."
+                                                : "Save Payment"}
+                                            </button>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    )}
                                 </article>
                               );
                             })}
                           </div>
-                        ) : <p className="kam-intercarting-empty">No invoices added yet. Add and save an invoice above to start recording payments.</p>}
+                        ) : (
+                          <p className="kam-intercarting-empty">
+                            No invoices added yet. Add and save an invoice above
+                            to start recording payments.
+                          </p>
+                        )}
                       </div>
                     </>
                   ) : (
                     <>
-                  <div className="kam-invoice-group">
-                    <div className="kam-invoice-amount-breakdown">
-                      <div>
-                        <span>Gross Amount</span>
-                        <strong>{formatRupees(baseAmount)}</strong>
-                      </div>
-                      <div>
-                        <span>GST ({gstPercentage}%)</span>
-                        <strong>{formatRupees(gstAmount)}</strong>
-                      </div>
-                      <div className="kam-invoice-grand-total">
-                        <span>Net Amount ( Including GST )</span>
-                        <strong>{formatRupees(totalPayable)}</strong>
-                      </div>
-                    </div>
-                    <h4 className="kam-invoice-subheading">Invoice</h4>
-                    <div className="kam-invoice-fields kam-invoice-four-fields">
-                      <label className="kam-client-trip-field">
-                        <span>Invoice Number</span>
-                        <input
-                          className="kam-original-edit-input"
-                          type="text"
-                          name="invoiceNumber"
-                          maxLength={100}
-                          placeholder="Enter invoice number"
-                          value={invoicePaymentForm.invoiceNumber}
-                          onChange={(event) =>
-                            updateInvoicePaymentField(
-                              "invoiceNumber",
-                              event.target.value,
-                            )
-                          }
-                        />
-                      </label>
-                      <label className="kam-client-trip-field">
-                        <span>Invoice Date</span>
-                        <input
-                          className="kam-original-edit-input"
-                          type="date"
-                          name="invoiceDate"
-                          value={invoicePaymentForm.invoiceDate}
-                          onChange={(event) =>
-                            updateInvoicePaymentField("invoiceDate", event.target.value)
-                          }
-                        />
-                      </label>
-                      <label className="kam-client-trip-field">
-                        <span>Amount (₹)</span>
-                        <input
-                          className="kam-original-edit-input"
-                          type="number"
-                          name="amount"
-                          min="0.01"
-                          step="0.01"
-                          placeholder="Enter amount"
-                          value={invoicePaymentForm.amount}
-                          onChange={(event) =>
-                            updateInvoicePaymentField(
-                              "amount",
-                              event.target.value,
-                            )
-                          }
-                        />
-                      </label>
-                      <label className="kam-client-trip-field">
-                        <span>GST Percentage (%)</span>
-                        <select
-                          className="kam-original-edit-input kam-gst-select"
-                          name="gstPercentage"
-                          value={invoicePaymentForm.gstPercentage}
-                          onChange={(event) =>
-                            updateInvoicePaymentField(
-                              "gstPercentage",
-                              event.target.value,
-                            )
-                          }
-                        >
-                          {["0", "5", "12", "18", "28", "40"].includes(
-                            String(invoicePaymentForm.gstPercentage),
-                          ) ? null : (
-                            <option value={invoicePaymentForm.gstPercentage}>
-                              {invoicePaymentForm.gstPercentage}% (Previously saved)
-                            </option>
-                          )}
-                          <option value="0">0% — No GST</option>
-                          <option value="5">5%</option>
-                          <option value="12">12%</option>
-                          <option value="18">18%</option>
-                          <option value="28">28%</option>
-                          <option value="40">40%</option>
-                        </select>
-                      </label>
-                    </div>
-                    <div className="kam-invoice-upload-row">
-                      <label className="kam-client-trip-field">
-                        <span>Upload Invoice (PDF / Image)</span>
-                        <input
-                          ref={invoiceDocumentInputRef}
-                          className="kam-original-edit-input"
-                          type="file"
-                          name="invoiceDocument"
-                          accept=".pdf,.jpg,.jpeg,.png"
-                          onChange={(event) =>
-                            setInvoiceDocument(event.target.files?.[0] || null)
-                          }
-                        />
-                        {invoiceDocument && (
-                          <strong>{invoiceDocument.name}</strong>
-                        )}
-                        {!invoiceDocument &&
-                          invoiceData.invoiceDocument?.fileName && (
-                            <small>
-                              Saved: {invoiceData.invoiceDocument.fileName}
-                            </small>
-                          )}
-                      </label>
-                    </div>
-                    <div className="kam-payment-toolbar">
-                      <span>
-                        {hasUnsavedInvoiceAmount
-                          ? "Save the calculated total before adding payments."
-                          : ""}
-                      </span>
-                      <button
-                        type="button"
-                        className="kam-request-approval-btn kam-invoice-save-button"
-                        onClick={saveInvoiceDetails}
-                        disabled={
-                          invoiceSaving || isCompletedTrip(workingOrder)
-                        }
-                      >
-                        {invoiceSaving ? "Saving..." : "Save Invoice Details"}
-                      </button>
-                    </div>
-                  </div>
-                  <div className="kam-invoice-group">
-                    <h4 className="kam-invoice-subheading">Payment Received</h4>
-                    <div className="kam-payment-summary">
-                      
-                      <div>
-                        <span>Total Received</span>
-                        <strong>{formatRupees(receivedTotal)}</strong>
-                      </div>
-                      <div>
-                        <span>Remaining Balance</span>
-                        <strong>
-                          {hasFinalRate ? formatRupees(dueBalance) : "—"}
-                        </strong>
-                      </div>
-                    </div>
-                    <div className="kam-payment-toolbar">
-                      <span className="kam-payment-pill">
-                        {hasFinalRate && dueBalance === 0
-                          ? "Fully Paid"
-                          : receivedTotal > 0
-                            ? "Partially Paid"
-                            : "Pending"}
-                      </span>
-                      {!paymentEntryOpen && (
-                        <button
-                          type="button"
-                          className="kam-request-approval-btn"
-                          disabled={
-                            !hasFinalRate ||
-                            hasUnsavedInvoiceAmount ||
-                            dueBalance <= 0 ||
-                            paymentSaving ||
-                            isCompletedTrip(workingOrder)
-                          }
-                          onClick={() => setPaymentEntryOpen(true)}
-                        >
-                          + Add Amount
-                        </button>
-                      )}
-                    </div>
-                    {paymentEntryOpen && (
-                      <div className="kam-invoice-fields kam-payment-entry">
-                        <label className="kam-client-trip-field">
-                          <span>Received Amount (₹)</span>
-                          <input
-                            className="kam-original-edit-input"
-                            type="number"
-                            min="0.01"
-                            max={dueBalance}
-                            step="0.01"
-                            value={paymentEntry.amount}
-                            placeholder="Enter installment amount"
-                            onChange={(event) =>
-                              setPaymentEntry((p) => ({
-                                ...p,
-                                amount: event.target.value,
-                              }))
-                            }
-                          />
-                        </label>
-                        <label className="kam-client-trip-field">
-                          <span>Payment Date</span>
-                          <input
-                            className="kam-original-edit-input"
-                            type="date"
-                            value={paymentEntry.paymentDate}
-                            onChange={(event) =>
-                              setPaymentEntry((p) => ({
-                                ...p,
-                                paymentDate: event.target.value,
-                              }))
-                            }
-                          />
-                        </label>
-                        <label className="kam-client-trip-field kam-payment-remarks">
-                          <span>Remarks</span>
-                          <textarea
-                            className="kam-original-edit-input"
-                            rows={2}
-                            maxLength={2000}
-                            value={paymentEntry.remarks}
-                            onChange={(event) =>
-                              setPaymentEntry((p) => ({
-                                ...p,
-                                remarks: event.target.value,
-                              }))
-                            }
-                          />
-                        </label>
-                        <div className="kam-payment-entry-actions">
+                      <div className="kam-invoice-group">
+                        <div className="kam-invoice-amount-breakdown">
+                          <div>
+                            <span>Gross Amount</span>
+                            <strong>{formatRupees(baseAmount)}</strong>
+                          </div>
+                          <div>
+                            <span>GST ({gstPercentage}%)</span>
+                            <strong>{formatRupees(gstAmount)}</strong>
+                          </div>
+                          <div className="kam-invoice-grand-total">
+                            <span>Net Amount ( Including GST )</span>
+                            <strong>{formatRupees(totalPayable)}</strong>
+                          </div>
+                        </div>
+                        <h4 className="kam-invoice-subheading">Invoice</h4>
+                        <div className="kam-invoice-fields kam-invoice-four-fields">
+                          <label className="kam-client-trip-field">
+                            <span>Invoice Number</span>
+                            <input
+                              className="kam-original-edit-input"
+                              type="text"
+                              name="invoiceNumber"
+                              maxLength={100}
+                              placeholder="Enter invoice number"
+                              value={invoicePaymentForm.invoiceNumber}
+                              onChange={(event) =>
+                                updateInvoicePaymentField(
+                                  "invoiceNumber",
+                                  event.target.value,
+                                )
+                              }
+                            />
+                          </label>
+                          <label className="kam-client-trip-field">
+                            <span>Invoice Date</span>
+                            <input
+                              className="kam-original-edit-input"
+                              type="date"
+                              name="invoiceDate"
+                              value={invoicePaymentForm.invoiceDate}
+                              onChange={(event) =>
+                                updateInvoicePaymentField(
+                                  "invoiceDate",
+                                  event.target.value,
+                                )
+                              }
+                            />
+                          </label>
+                          <label className="kam-client-trip-field">
+                            <span>Amount (₹)</span>
+                            <input
+                              className="kam-original-edit-input"
+                              type="number"
+                              name="amount"
+                              min="0.01"
+                              step="0.01"
+                              placeholder="Enter amount"
+                              value={invoicePaymentForm.amount}
+                              onChange={(event) =>
+                                updateInvoicePaymentField(
+                                  "amount",
+                                  event.target.value,
+                                )
+                              }
+                            />
+                          </label>
+                          <label className="kam-client-trip-field">
+                            <span>GST Percentage (%)</span>
+                            <select
+                              className="kam-original-edit-input kam-gst-select"
+                              name="gstPercentage"
+                              value={invoicePaymentForm.gstPercentage}
+                              onChange={(event) =>
+                                updateInvoicePaymentField(
+                                  "gstPercentage",
+                                  event.target.value,
+                                )
+                              }
+                            >
+                              {["0", "5", "12", "18", "28", "40"].includes(
+                                String(invoicePaymentForm.gstPercentage),
+                              ) ? null : (
+                                <option
+                                  value={invoicePaymentForm.gstPercentage}
+                                >
+                                  {invoicePaymentForm.gstPercentage}%
+                                  (Previously saved)
+                                </option>
+                              )}
+                              <option value="0">0% — No GST</option>
+                              <option value="5">5%</option>
+                              <option value="12">12%</option>
+                              <option value="18">18%</option>
+                              <option value="28">28%</option>
+                              <option value="40">40%</option>
+                            </select>
+                          </label>
+                        </div>
+                        <div className="kam-invoice-upload-row">
+                          <label className="kam-client-trip-field">
+                            <span>Upload Invoice (PDF / Image)</span>
+                            <input
+                              ref={invoiceDocumentInputRef}
+                              className="kam-original-edit-input"
+                              type="file"
+                              name="invoiceDocument"
+                              accept=".pdf,.jpg,.jpeg,.png"
+                              onChange={(event) =>
+                                setInvoiceDocument(
+                                  event.target.files?.[0] || null,
+                                )
+                              }
+                            />
+                            {invoiceDocument && (
+                              <strong>{invoiceDocument.name}</strong>
+                            )}
+                            {!invoiceDocument &&
+                              invoiceData.invoiceDocument?.fileName && (
+                                <small>
+                                  Saved: {invoiceData.invoiceDocument.fileName}
+                                </small>
+                              )}
+                          </label>
+                        </div>
+                        <div className="kam-payment-toolbar">
+                          <span>
+                            {hasUnsavedInvoiceAmount
+                              ? "Save the calculated total before adding payments."
+                              : ""}
+                          </span>
                           <button
                             type="button"
-                            className="kam-request-approval-btn kam-payment-cancel-button"
-                            onClick={() => setPaymentEntryOpen(false)}
+                            className="kam-request-approval-btn kam-invoice-save-button"
+                            onClick={saveInvoiceDetails}
+                            disabled={invoiceSaving || completedCurrentOrder}
                           >
-                            Cancel
-                          </button>
-                          <button
-                            type="button"
-                            className="kam-request-approval-btn kam-payment-save-button"
-                            disabled={paymentSaving}
-                            onClick={savePaymentInstallment}
-                          >
-                            {paymentSaving ? "Saving..." : "Save Payment"}
+                            {invoiceSaving
+                              ? "Saving..."
+                              : "Save Invoice Details"}
                           </button>
                         </div>
                       </div>
-                    )}
-                    <div className="kam-payment-history">
-                      <h4>Payment History ({payments.length})</h4>
-                      {payments.length ? (
-                        <table className="kam-history-table">
-                          <thead>
-                            <tr>
-                              <th>#</th>
-                              <th>Date</th>
-                              <th>Amount</th>
-                              <th>Remarks</th>
-                              <th>Received By</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {payments.map((payment, index) => (
-                              <tr key={payment._id || index}>
-                                <td>{index + 1}</td>
-                                <td>{payment.paymentDate || "—"}</td>
-                                <td>
-                                  <strong>
-                                    {formatRupees(payment.amount)}
-                                  </strong>
-                                </td>
-                                <td>{payment.remarks || "—"}</td>
-                                <td>{payment.receivedBy || "—"}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      ) : (
-                        <p>No payments recorded yet.</p>
-                      )}
-                    </div>
-                  </div>
+                      <div className="kam-invoice-group">
+                        <h4 className="kam-invoice-subheading">
+                          Payment Received
+                        </h4>
+                        <div className="kam-payment-summary">
+                          <div>
+                            <span>Total Received</span>
+                            <strong>{formatRupees(receivedTotal)}</strong>
+                          </div>
+                          <div>
+                            <span>Remaining Balance</span>
+                            <strong>
+                              {hasFinalRate ? formatRupees(dueBalance) : "—"}
+                            </strong>
+                          </div>
+                        </div>
+                        <div className="kam-payment-toolbar">
+                          <span className="kam-payment-pill">
+                            {hasFinalRate && dueBalance === 0
+                              ? "Fully Paid"
+                              : receivedTotal > 0
+                                ? "Partially Paid"
+                                : "Pending"}
+                          </span>
+                          {!paymentEntryOpen && (
+                            <button
+                              type="button"
+                              className="kam-request-approval-btn"
+                              disabled={
+                                !hasFinalRate ||
+                                hasUnsavedInvoiceAmount ||
+                                dueBalance <= 0 ||
+                                paymentSaving ||
+                                completedCurrentOrder
+                              }
+                              onClick={() => setPaymentEntryOpen(true)}
+                            >
+                              + Add Amount
+                            </button>
+                          )}
+                        </div>
+                        {paymentEntryOpen && (
+                          <div className="kam-invoice-fields kam-payment-entry">
+                            <label className="kam-client-trip-field">
+                              <span>Received Amount (₹)</span>
+                              <input
+                                className="kam-original-edit-input"
+                                type="number"
+                                min="0.01"
+                                max={dueBalance}
+                                step="0.01"
+                                value={paymentEntry.amount}
+                                placeholder="Enter installment amount"
+                                onChange={(event) =>
+                                  setPaymentEntry((p) => ({
+                                    ...p,
+                                    amount: event.target.value,
+                                  }))
+                                }
+                              />
+                            </label>
+                            <label className="kam-client-trip-field">
+                              <span>Payment Date</span>
+                              <input
+                                className="kam-original-edit-input"
+                                type="date"
+                                value={paymentEntry.paymentDate}
+                                onChange={(event) =>
+                                  setPaymentEntry((p) => ({
+                                    ...p,
+                                    paymentDate: event.target.value,
+                                  }))
+                                }
+                              />
+                            </label>
+                            <label className="kam-client-trip-field kam-payment-remarks">
+                              <span>Remarks</span>
+                              <textarea
+                                className="kam-original-edit-input"
+                                rows={2}
+                                maxLength={2000}
+                                value={paymentEntry.remarks}
+                                onChange={(event) =>
+                                  setPaymentEntry((p) => ({
+                                    ...p,
+                                    remarks: event.target.value,
+                                  }))
+                                }
+                              />
+                            </label>
+                            <div className="kam-payment-entry-actions">
+                              <button
+                                type="button"
+                                className="kam-request-approval-btn kam-payment-cancel-button"
+                                onClick={() => setPaymentEntryOpen(false)}
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                type="button"
+                                className="kam-request-approval-btn kam-payment-save-button"
+                                disabled={paymentSaving}
+                                onClick={savePaymentInstallment}
+                              >
+                                {paymentSaving ? "Saving..." : "Save Payment"}
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                        <div className="kam-payment-history">
+                          <h4>Payment History ({payments.length})</h4>
+                          {payments.length ? (
+                            <table className="kam-history-table">
+                              <thead>
+                                <tr>
+                                  <th>#</th>
+                                  <th>Date</th>
+                                  <th>Amount</th>
+                                  <th>Remarks</th>
+                                  <th>Received By</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {payments.map((payment, index) => (
+                                  <tr key={payment._id || index}>
+                                    <td>{index + 1}</td>
+                                    <td>{payment.paymentDate || "—"}</td>
+                                    <td>
+                                      <strong>
+                                        {formatRupees(payment.amount)}
+                                      </strong>
+                                    </td>
+                                    <td>{payment.remarks || "—"}</td>
+                                    <td>{payment.receivedBy || "—"}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          ) : (
+                            <p>No payments recorded yet.</p>
+                          )}
+                        </div>
+                      </div>
                     </>
                   )}
                 </div>
@@ -5771,11 +7831,11 @@ const Lifecyclemodal = ({
                     <ReadOnlyField label="Customer" value={order.customer} />
                     {!isIntercartingEdit &&
                       String(order.materialType || "").trim() && (
-                      <ReadOnlyField
-                        label="Material Type"
-                        value={order.materialType}
-                      />
-                    )}
+                        <ReadOnlyField
+                          label="Material Type"
+                          value={order.materialType}
+                        />
+                      )}
                     {!isIntercartingEdit &&
                       (String(order.origin || "").trim() ||
                         String(order.destination || "").trim()) && (
@@ -6079,7 +8139,7 @@ const Lifecyclemodal = ({
             Current Stage: <strong>{displayCurrentStage}</strong>
           </div>
           <div className="kam-footer-action-buttons">
-            {isCompletedTrip(workingOrder || order) && (
+            {completedDisplayedOrder && (
               <>
                 <span className="kam-completed-readonly-label">
                   ✓ Trip Completed · Read Only
@@ -6093,7 +8153,7 @@ const Lifecyclemodal = ({
                 </button>
               </>
             )}
-            {!isCompletedTrip(workingOrder || order) && editOpen && (
+            {!completedDisplayedOrder && editOpen && (
               <>
                 <button
                   type="button"
@@ -6116,7 +8176,7 @@ const Lifecyclemodal = ({
                 </button>
               </>
             )}
-            {!isCompletedTrip(workingOrder || order) && !editOpen && (
+            {!completedDisplayedOrder && !editOpen && (
               <>
                 {/* ENQUIRY */}
                 {activeStepIndex === 0 && (
@@ -6234,8 +8294,13 @@ const Lifecyclemodal = ({
                 )}
                 {/* PO DOCUMENT */}
                 {isProjectMovement(order) && activeStepIndex === 2 && (
-                  <button type="button" className="kam-request-approval-btn kam-po-save-btn" onClick={() => setActiveStepIndex(3)}>
-                    <span>Continue Without PO</span><span aria-hidden="true">→</span>
+                  <button
+                    type="button"
+                    className="kam-request-approval-btn kam-po-save-btn"
+                    onClick={() => setActiveStepIndex(3)}
+                  >
+                    <span>Continue Without PO</span>
+                    <span aria-hidden="true">→</span>
                   </button>
                 )}
                 {activeStepIndex === 2 &&
@@ -6261,7 +8326,8 @@ const Lifecyclemodal = ({
                   ))}
                 {/* ORDER PLACED */}
                 {activeStepIndex === (isProjectMovement(order) ? 5 : 4) &&
-                  (currentLifecycleIndex >= (isProjectMovement(order) ? 6 : 5) ||
+                  (currentLifecycleIndex >=
+                    (isProjectMovement(order) ? 6 : 5) ||
                   String(order?.stage || "")
                     .trim()
                     .toLowerCase() === "tracking" ||
@@ -6322,11 +8388,13 @@ const Lifecyclemodal = ({
             aria-labelledby="kam-unsaved-confirm-title"
             aria-describedby="kam-unsaved-confirm-description"
           >
-            <div className="kam-unsaved-confirm-icon" aria-hidden="true">!</div>
+            <div className="kam-unsaved-confirm-icon" aria-hidden="true">
+              !
+            </div>
             <h3 id="kam-unsaved-confirm-title">Unsaved Changes</h3>
             <p id="kam-unsaved-confirm-description">
-              Your latest changes have not been saved. Do you want to close
-              this order without saving them?
+              Your latest changes have not been saved. Do you want to close this
+              order without saving them?
             </p>
             <div className="kam-unsaved-confirm-actions">
               <button
@@ -6393,4 +8461,86 @@ const Lifecyclemodal = ({
     </div>
   );
 };
-export default Lifecyclemodal;  
+export default function LifecyclePage() {
+  const { orderId } = useParams();
+  const navigate = useNavigate();
+  const { state } = useLocation();
+  const [result, setResult] = useState(null);
+  const [retry, setRetry] = useState(0);
+  const back = () =>
+    navigate("/trip-dashboard/key-account", {
+      replace: true,
+      state: { listState: state?.listState },
+    });
+  useEffect(() => {
+    const controller = new AbortController();
+    setResult(null);
+    async function load() {
+      try {
+        const token = sessionStorage.getItem("kamToken");
+        if (!token?.trim())
+          throw new Error(
+            "Please sign in with your Key Account credentials again.",
+          );
+        const response = await fetch(
+          `${TRIP_API_URL}/${encodeURIComponent(orderId)}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              Accept: "application/json",
+            },
+            signal: controller.signal,
+          },
+        );
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok)
+          throw new Error(payload.message || "Unable to load order.");
+        const order = payload.data || payload.trip || payload.order || payload;
+        if (!order?._id) throw new Error("Order not found.");
+        if (!controller.signal.aborted) setResult({ id: orderId, order });
+      } catch (error) {
+        if (!controller.signal.aborted)
+          setResult({ id: orderId, error: error.message });
+      }
+    }
+    load();
+    return () => controller.abort();
+  }, [orderId, retry]);
+  if (result?.id !== orderId || !result?.order) {
+    const error = result?.id === orderId ? result.error : null;
+    return (
+      <section className="kam-route-loader" aria-busy={!error}>
+        <header className="kam-route-loader-header">
+          <button type="button" onClick={back}>← Back to My Data</button>
+          <div><small>ORDER LIFECYCLE</small><strong>{error ? "Order unavailable" : "Loading order details"}</strong></div>
+        </header>
+        {!error && <div className="kam-route-loader-steps" aria-hidden="true">
+          {Array.from({ length: 9 }, (_, i) => <div key={i}><i /><span /></div>)}
+        </div>}
+        <div className="kam-route-loader-body">
+          {!error && <div className="kam-route-loader-grid" aria-hidden="true">
+            {Array.from({ length: 4 }, (_, i) => <div key={i}><i /><span /></div>)}
+          </div>}
+          <div className="kam-route-loader-message" role={error ? "alert" : "status"}>
+            <div className={error ? "kam-route-loader-warning" : "kam-route-loader-spinner"} aria-hidden="true">{error ? "!" : ""}</div>
+            <strong>{error ? "Unable to load order" : "Loading latest order..."}</strong>
+            <p>{error || "Please wait while we retrieve the latest order information."}</p>
+            {error && <button type="button" onClick={() => setRetry((v) => v + 1)}>Retry</button>}
+          </div>
+        </div>
+      </section>
+    );
+  }
+  return (
+    <Lifecyclemodal
+      key={orderId}
+      order={result.order}
+      pageMode
+      preloaded
+      initialEdit={Boolean(state?.initialEdit)}
+      initialStep={state?.initialStep}
+      onClose={back}
+      onOrderUpdated={(order) => setResult({ id: orderId, order })}
+    />
+  );
+}

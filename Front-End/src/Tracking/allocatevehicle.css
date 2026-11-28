@@ -8498,3 +8498,72 @@
 .crane-compact-modal .crane-bulk-row-actions {
   min-width: 0;
 }
+
+/* Original request batch grouping — allocation plan only */
+.tracking-required-vehicle-table tbody .tracking-allocation-batch-row > td {
+  padding: 10px 14px;
+  background: var(--tracking-navy-2, #0d5260);
+  color: #fff;
+}
+.tracking-allocation-batch-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  white-space: nowrap;
+}
+.tracking-allocation-batch-heading strong { color: inherit; font-size: 12px; }
+.tracking-allocation-batch-heading span { color: #d1f0eb; font-size: 10px; }
+
+/* Expandable allocation batches */
+.tracking-required-vehicle-table tbody .tracking-allocation-batch-row > td { padding:0; }
+.tracking-allocation-batch-heading { width:100%; border:0; background:transparent; color:inherit; padding:12px 14px; font:inherit; cursor:pointer; text-align:left; }
+.tracking-allocation-batch-heading strong { display:flex; align-items:center; gap:8px; }
+.tracking-allocation-batch-heading:focus-visible { outline:2px solid white; outline-offset:-3px; }
+
+/* Batch headers retain contrast during row hover. */
+.tracking-required-vehicle-table tbody tr.tracking-allocation-batch-row > td,
+.tracking-required-vehicle-table tbody tr.tracking-allocation-batch-row:hover > td {
+  background: #305548 !important;
+  color: #fff !important;
+}
+.tracking-required-vehicle-table tbody tr.tracking-allocation-batch-row:hover > td { background: #26483d !important; }
+.tracking-required-vehicle-table .tracking-allocation-batch-heading,
+.tracking-required-vehicle-table .tracking-allocation-batch-heading:hover { background: transparent !important; color: #fff !important; }
+.tracking-required-vehicle-table .tracking-allocation-batch-heading strong { color: #fff !important; }
+.tracking-required-vehicle-table .tracking-allocation-batch-heading span { color: #d1f0eb !important; }
+.tracking-required-vehicle-table tbody tr.tracking-batch-column-head > th { background: #f4f8f9; color: #587181; }
+
+/* Live vehicle operations: independent expandable batches. */
+.tracking-live-batch { min-width: 0; border: 1px solid var(--tracking-line); border-radius: 11px; overflow: hidden; }
+.tracking-live-batch > .tracking-live-batch-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; border: 0; padding: 12px 14px; background: #305548; color: #fff; font: inherit; text-align: left; cursor: pointer; }
+.tracking-live-batch > .tracking-live-batch-heading:hover { background: #26483d; color: #fff; }
+.tracking-live-batch-heading strong { display: flex; align-items: center; gap: 8px; color: #fff; font-size: 12px; }
+.tracking-live-batch-heading span { color: #d1f0eb; font-size: 10px; }
+.tracking-live-batch-heading:focus-visible { outline: 2px solid #fff; outline-offset: -3px; }
+.tracking-live-batch-body { display: flex; flex-direction: column; gap: 12px; padding: 12px; }
+.tracking-live-batch-body[hidden] { display: none; }
+
+/* Independent batch spacing and transport section expansion. */
+.tracking-allocation-batch-stack { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.tracking-live-batch + .tracking-live-batch { margin-top: 16px; }
+/* Compact spacing between Live Vehicle Operations and Transport & vehicles. */
+.tracking-live-operations-card > .tracking-form-card-body {
+  padding-top: 8px;
+}
+.tracking-live-operations-card > .tracking-form-card-body > .vah {
+  margin: 0 0 12px;
+}
+
+/* Current transport: one row per approved confirmation, independent batches. */
+.tracking-live-operations-card .vah .vah-current-grid { grid-template-columns: minmax(0,1fr); }
+.vah .vah-transport-batch { min-width: 0; }
+.vah .vah-transport-batch + .vah-transport-batch { margin-top: 9px; }
+.vah .vah-transport-table-wrap { overflow-x: auto; }
+.vah .vah-transport-table { width: 100%; border-collapse: collapse; font: inherit; white-space: nowrap; }
+.vah .vah-transport-table th, .vah .vah-transport-table td { padding: 12px 14px; text-align: left; border-bottom: 1px solid #e0e9e7; }
+.vah .vah-transport-table th { background: #f4f8f9; color: #587181; font-weight: 650; }
+.vah .vah-transport-table td { color: #173f50; }
+.vah .vah-transport-table tbody tr:hover { background: #f4f8f8; }
+.vah .vah-transport-table tbody tr:last-child td { border-bottom: 0; }
+.vah .vah-transport-table .vah-vehicle-chip { display: inline-block; margin-right: 5px; }

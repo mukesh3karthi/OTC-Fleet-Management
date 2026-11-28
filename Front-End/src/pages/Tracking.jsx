@@ -55,6 +55,11 @@ const STATUSES = ["Moving", "Idle", "Breakdown", "Pending", "Reached"];
 const list = (value) => (Array.isArray(value) ? value : []);
 const text = (value) => (value == null ? "" : String(value?.$oid ?? value));
 const keyOf = (trip) => text(trip?._id) || text(trip?.tripId) || text(trip?.id);
+const movementPath = (trip) => {
+  const movement = trip?.movementType || trip?.movement || trip?.movementName || trip?.movementCategory || trip?.orderFinalization?.movementType || trip?.enquiryDetails?.movementType || "";
+  const project = ["projectmovement", "project", "other"].includes(String(movement).trim().toLowerCase().replace(/[\s_-]+/g, ""));
+  return `/${project ? "project-movement" : "vehicle-details"}/${encodeURIComponent(keyOf(trip))}`;
+};
 const dateFormatter = new Intl.DateTimeFormat("en-CA", {
   timeZone: "Asia/Kolkata",
   year: "numeric",
@@ -628,7 +633,7 @@ const RecentTrackingUpdates = ({ trips }) => {
                 <div className="td-recent-heading">
                   <div className="td-recent-identity">
                   {id ? (
-                    <Link className="td-trip-link" to={`/vehicle-details/${encodeURIComponent(id)}`}
+                    <Link className="td-trip-link" to={movementPath(trip)}
                       state={{ mongoId: id, tripId: trip.tripId }}>
                       {text(trip.tripId) || id}<ArrowUpRight size={12} />
                     </Link>
@@ -871,7 +876,7 @@ const Tracking = () => {
   const openTrip = (trip) => {
     const id = keyOf(trip);
     if (!id) return;
-    navigate(`/vehicle-details/${encodeURIComponent(id)}`, {
+    navigate(movementPath(trip), {
       state: { mongoId: id, tripId: trip.tripId },
     });
   };
@@ -1044,7 +1049,7 @@ const Tracking = () => {
                         <td>
                           {id ? (
                             <Link
-                              to={`/vehicle-details/${encodeURIComponent(id)}`}
+                              to={movementPath(trip)}
                               state={{ mongoId: id, tripId: trip.tripId }}
                               className="td-trip-link"
                               aria-label={`Open vehicle details for ${text(trip.tripId) || id}`}
